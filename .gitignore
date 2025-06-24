@@ -3,3 +3,6 @@ node_modules
 .env
 
 /generated/prisma
+.next/
+node_modules/
+.DS_Store
