@@ -1,0 +1,315 @@
+.checkoutContainer {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 6rem 1rem 2rem;
+  position: relative;
+  z-index: 1;
+}
+
+.pageTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #000;
+  text-align: center;
+}
+
+.sectionTitle {
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin-bottom: 0.4rem;
+  color: #000;
+  margin-top: 0;
+}
+
+.section {
+  background-color: #fff;
+  border: 1px solid #eaeaea;
+  border-radius: 0.4rem;
+  padding: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.section:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Summary styles */
+.summaryItem {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.25rem 0;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.summaryItem:last-child {
+  border-bottom: none;
+}
+
+.totalRow {
+  display: flex;
+  justify-content: space-between;
+  margin: 0.15rem 0;
+  transition: all 0.2s ease;
+}
+
+.discountRow {
+  color: #10b981;
+  animation: fadeIn 0.5s ease;
+}
+
+.divider {
+  height: 1px;
+  background-color: #eaeaea;
+  margin: 0.7rem 0;
+}
+
+.finalTotal {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+  font-size: 1.05rem;
+  margin-top: 0.4rem;
+  padding-top: 0.3rem;
+  transition: all 0.3s ease;
+}
+
+/* Form controls */
+.formGroup {
+  margin-bottom: 0.4rem;
+  transition: all 0.2s ease;
+}
+
+.formLabel {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-weight: 500;
+}
+
+.select, .input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 0.25rem;
+  background-color: #fff;
+  transition: all 0.2s ease;
+}
+
+.select:focus, .input:focus {
+  outline: none;
+  border-color: #000;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
+}
+
+.inputGroup {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.button {
+  background-color: #000;
+  color: #fff;
+  padding: 0.5rem 0.9rem;
+  border-radius: 0.25rem;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.button:hover {
+  background-color: #333;
+  transform: translateY(-1px);
+}
+
+.button:active {
+  transform: translateY(1px);
+}
+
+.button:disabled {
+  background-color: #666;
+  cursor: not-allowed;
+}
+
+.submitButton {
+  background-color: #000;
+  color: #fff;
+  font-weight: 500;
+  padding: 0.8rem 1rem;
+  border-radius: 0.25rem;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 1.5rem;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.submitButton:hover {
+  background-color: #333;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.submitButton:active {
+  transform: translateY(1px);
+}
+
+.submitButton:disabled {
+  background-color: #666;
+  cursor: not-allowed;
+}
+
+.submitButton::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.5);
+  opacity: 0;
+  border-radius: 100%;
+  transform: scale(1, 1) translate(-50%);
+  transform-origin: 50% 50%;
+}
+
+.submitButton:focus:not(:active)::after {
+  animation: ripple 1s ease-out;
+}
+
+/* Address styles */
+.addressOption {
+  display: block;
+  padding: 0.5rem;
+  margin-bottom: 0.25rem;
+  border: 1px solid #eaeaea;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.addressOption:hover {
+  background-color: #f9f9f9;
+  transform: translateY(-1px);
+}
+
+.addressOptionSelected {
+  border-color: #000;
+  background-color: #f9f9f9;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.addNewAddressButton {
+  width: 100%;
+  background: none;
+  border: 1px dashed #ddd;
+  padding: 0.5rem;
+  text-align: center;
+  margin-top: 0.5rem;
+  cursor: pointer;
+  border-radius: 0.25rem;
+  transition: all 0.2s ease;
+}
+
+.addNewAddressButton:hover {
+  border-color: #000;
+  background-color: #f9f9f9;
+  transform: translateY(-1px);
+}
+
+.addressForm {
+  margin-top: 0.4rem;
+  animation: slideDown 0.3s ease;
+}
+
+/* Messages */
+.message {
+  margin-top: 0.25rem;
+  font-size: 0.8rem;
+  animation: fadeIn 0.3s ease;
+}
+
+.success {
+  color: #10b981;
+}
+
+.error {
+  color: #ef4444;
+}
+
+/* Loading and empty states */
+.centeredContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 50vh;
+  padding-top: 4rem;
+}
+
+.loadingText, .emptyCartText {
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.emptyCartLink {
+  color: #000;
+  text-decoration: underline;
+  transition: all 0.2s ease;
+}
+
+.emptyCartLink:hover {
+  color: #333;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideDown {
+  from { 
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0, 0);
+    opacity: 1;
+  }
+  20% {
+    transform: scale(25, 25);
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(40, 40);
+  }
+}
+
+.loadingSpinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+} 

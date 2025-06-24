@@ -1,0 +1,151 @@
+.imageContainer {
+  position: relative;
+  width: 100%;
+  /* Responsive height based on aspect ratio */
+  padding-bottom: 75%; /* 4:3 Aspect Ratio */
+  height: 0;
+  overflow: hidden;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(8px);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transform-style: preserve-3d;
+}
+
+.imageContainer:hover {
+  transform: translateY(-5px) scale(1.01) translateZ(10px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+}
+
+.mainImage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 14px;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.mainImage.loading {
+  opacity: 0;
+}
+
+.noImagePlaceholder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #e2e8f0;
+  border-radius: 14px;
+  color: #94a3b8;
+  font-style: italic;
+  font-size: 1.1rem;
+}
+
+.navigationButton {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(5px);
+  padding: 0.75rem;
+  border-radius: 50%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 10;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  color: #1a202c;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+}
+
+.navigationButton:hover {
+  background-color: #1a202c;
+  color: #ffffff;
+  transform: translateY(-50%) scale(1.1);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.navigationButton.prev {
+  left: 1.5rem;
+}
+
+.navigationButton.next {
+  right: 1.5rem;
+}
+
+.thumbnailStrip {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem; /* For scrollbar space */
+  justify-content: center; /* Center thumbnails if they don't fill width */
+}
+
+.thumbnailButton {
+  flex-shrink: 0;
+  width: 100px;
+  height: 75px;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  background-color: rgba(255, 255, 255, 0.7); /* Light background for thumbnails */
+  backdrop-filter: blur(3px);
+}
+
+.thumbnailButton:hover {
+  border-color: #1a202c;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.thumbnailButton.active {
+  border-color: #1a202c;
+  box-shadow: 0 0 0 3px rgba(26, 32, 44, 0.2);
+}
+
+.thumbnailImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .imageContainer {
+    padding-bottom: 100%; /* Square aspect ratio on mobile */
+  }
+
+  .navigationButton {
+    width: 35px;
+    height: 35px;
+    font-size: 1rem;
+    left: 0.5rem;
+    right: 0.5rem;
+  }
+
+  .thumbnailStrip {
+    gap: 0.5rem;
+  }
+
+  .thumbnailButton {
+    width: 80px;
+    height: 60px;
+  }
+} 

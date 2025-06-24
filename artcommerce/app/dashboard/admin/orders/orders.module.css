@@ -1,0 +1,420 @@
+.container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  padding: 3rem;
+  position: relative;
+  overflow: hidden;
+  perspective: 1000px;
+}
+
+.container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(26, 32, 44, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(26, 32, 44, 0.03) 0%, transparent 50%),
+    url('/images/art-pattern.png') center/cover no-repeat;
+  opacity: 0.05;
+  z-index: 0;
+  animation: backgroundShift 20s ease-in-out infinite alternate;
+}
+
+@keyframes backgroundShift {
+  0% {
+    transform: scale(1) translate(0, 0);
+  }
+  100% {
+    transform: scale(1.1) translate(-1%, -1%);
+  }
+}
+
+.header {
+  margin-bottom: 2.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+.title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #1a202c;
+  margin-bottom: 2rem;
+  letter-spacing: -0.025em;
+  position: relative;
+  display: inline-block;
+}
+
+.title::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 40%;
+  height: 2px;
+  background: linear-gradient(90deg, #1a202c, transparent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.title:hover::after {
+  transform: scaleX(1);
+  animation: gradientFlow 3s ease-in-out infinite;
+}
+
+.filtersContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 16px;
+  padding: 2rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.filtersContainer:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.filterGroup {
+  flex: 1;
+  min-width: 200px;
+}
+
+.filterLabel {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #4a5568;
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.3px;
+}
+
+.filterInput,
+.filterSelect {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.9);
+  color: #1a202c;
+  font-size: 0.875rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.filterInput:focus,
+.filterSelect:focus {
+  outline: none;
+  border-color: #1a202c;
+  box-shadow: 0 0 0 3px rgba(26, 32, 44, 0.1);
+  transform: translateY(-1px);
+}
+
+.exportButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #1a202c;
+  background-color: transparent;
+  border: 2px solid #1a202c;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.exportButton:hover {
+  background-color: #1a202c;
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.ordersList {
+  display: grid;
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.orderCard {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 16px;
+  padding: 2rem;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  transform-style: preserve-3d;
+}
+
+.orderCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, transparent, rgba(26, 32, 44, 0.02), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.orderCard:hover {
+  transform: translateY(-4px) translateZ(20px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+}
+
+.orderCard:hover::before {
+  transform: translateX(100%);
+}
+
+.orderHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+}
+
+.orderNumber {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1a202c;
+}
+
+.orderAmount {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1a202c;
+}
+
+.orderDate {
+  font-size: 0.875rem;
+  color: #4a5568;
+  margin-top: 0.25rem;
+}
+
+.customerInfo {
+  margin-top: 1.5rem;
+}
+
+.customerName {
+  font-weight: 600;
+  color: #1a202c;
+}
+
+.customerEmail {
+  color: #4a5568;
+  font-size: 0.875rem;
+}
+
+.shippingAddress {
+  margin-top: 1rem;
+  font-size: 0.875rem;
+  color: #4a5568;
+}
+
+.orderActions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.statusBadge {
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.viewLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #1a202c;
+  background-color: transparent;
+  border: 1px solid #1a202c;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-align: center;
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.viewLink::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(26, 32, 44, 0.03),
+    transparent
+  );
+  transform: translateX(-100%);
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.viewLink:hover {
+  background-color: #1a202c;
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.viewLink:hover::before {
+  transform: translateX(100%);
+}
+
+@keyframes gradientFlow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 1.5rem;
+  }
+
+  .title {
+    font-size: 2rem;
+  }
+
+  .filtersContainer {
+    padding: 1.5rem;
+    gap: 1rem;
+  }
+
+  .filterGroup {
+    min-width: 100%;
+  }
+
+  .orderCard {
+    padding: 1.5rem;
+  }
+
+  .orderActions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .viewLink {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .statusBadge {
+    text-align: center;
+  }
+}
+
+.chartCard {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 16px;
+  padding: 2rem;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  transform-style: preserve-3d;
+}
+
+.chartCard:hover {
+  transform: translateY(-4px) translateZ(20px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+}
+
+.chartTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1a202c;
+  margin-bottom: 1.5rem;
+  position: relative;
+  display: inline-block;
+}
+
+.chartTitle::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 30%;
+  height: 1px;
+  background: linear-gradient(90deg, #1a202c, transparent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.chartTitle:hover::after {
+  transform: scaleX(1);
+  animation: gradientFlow 3s ease-in-out infinite;
+}
+
+.noDataText {
+  color: #4a5568;
+  font-size: 0.875rem;
+  text-align: center;
+  padding: 2rem;
+}
+
+/* Status badge colors */
+.statusBadge.pending {
+  background-color: rgba(251, 191, 36, 0.1);
+  color: #d97706;
+}
+
+.statusBadge.accepted {
+  background-color: rgba(96, 165, 250, 0.1);
+  color: #2563eb;
+}
+
+.statusBadge.shipped {
+  background-color: rgba(139, 92, 246, 0.1);
+  color: #7c3aed;
+}
+
+.statusBadge.delivered {
+  background-color: rgba(74, 222, 128, 0.1);
+  color: #16a34a;
+}
+
+.statusBadge.cancelled {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+} 
