@@ -1,0 +1,10 @@
+{
+  "name": "artcommerce-root",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "cd artcommerce && npm run dev",
+    "build": "cd artcommerce && npm run build",
+    "start": "cd artcommerce && npm run start"
+  }
+} 

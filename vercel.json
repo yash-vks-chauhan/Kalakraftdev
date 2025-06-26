@@ -1,6 +1,5 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "cd artcommerce && npm run build",
-  "outputDirectory": "artcommerce/.next",
-  "installCommand": "cd artcommerce && npm install"
+  "framework": "nextjs",
+  "outputDirectory": "artcommerce/.next"
 } 
