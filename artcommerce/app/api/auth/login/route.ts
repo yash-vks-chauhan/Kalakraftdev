@@ -31,9 +31,19 @@ export async function POST(request: Request) {
     }
 
     // 2️⃣ Check password
-    const isValid = await bcrypt.compare(password, user.passwordHash)
-    if (!isValid) {
-      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
+    // Check if passwordHash is null or not a string
+    if (!user.passwordHash || typeof user.passwordHash !== 'string') {
+      return NextResponse.json({ error: 'Account not properly configured' }, { status: 401 })
+    }
+
+    try {
+      const isValid = await bcrypt.compare(password, user.passwordHash)
+      if (!isValid) {
+        return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
+      }
+    } catch (err) {
+      console.error('Password comparison error:', err)
+      return NextResponse.json({ error: 'Authentication error' }, { status: 401 })
     }
 
     // 3️⃣ Sign JWT including userId, email, and role

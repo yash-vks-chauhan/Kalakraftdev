@@ -44,7 +44,11 @@ export default function LoginPage() {
     setFormLoading(true)
 
     try {
-      await login(email, password)
+      const result = await login(email, password)
+      if (result && result.success) {
+        console.log('Login successful, redirecting to home page')
+        router.push('/')
+      }
     } catch (err: any) {
       setPassword('') // Clear password field but keep email for retry
       setError(err.message || 'An error occurred during login')

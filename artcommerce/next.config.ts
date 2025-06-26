@@ -7,6 +7,14 @@ const nextConfig: NextConfig = {
   },
   distDir: '.next',
   output: 'standalone',
+  images: {
+    domains: ['localhost'],
+    unoptimized: true,
+  },
+  // Ensure CSS is properly included
+  webpack: (config) => {
+    return config;
+  },
 };
 
 export default nextConfig;

@@ -12,6 +12,7 @@
     "@getbrevo/brevo": "^2.2.0",
     "@radix-ui/react-slot": "^1.2.3",
     "@sendgrid/mail": "^8.1.5",
+    "@tailwindcss/postcss": "^4.1.11",
     "@types/js-cookie": "^3.0.6",
     "@types/three": "^0.177.0",
     "aos": "^2.3.4",
@@ -47,11 +48,11 @@
     "@types/nodemailer": "^6.4.17",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.35",
     "prisma": "^6.10.1",
     "tailwindcss": "^3.4.4",
-    "typescript": "^5",
-    "autoprefixer": "^10.4.16",
-    "postcss": "^8.4.35"
+    "typescript": "^5"
   },
   "postinstall": "prisma generate"
 }
