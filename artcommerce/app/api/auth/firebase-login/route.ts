@@ -13,27 +13,42 @@ const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY
       privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
     };
 
+console.log('Firebase Admin config loaded:', {
+  projectIdPresent: !!serviceAccount.projectId,
+  clientEmailPresent: !!serviceAccount.clientEmail,
+  privateKeyPresent: !!serviceAccount.privateKey,
+});
+
 // Initialize Firebase Admin SDK once
 if (!getApps().length) {
-  initializeApp({
-    credential: cert(serviceAccount as any),
-  });
+  try {
+    initializeApp({
+      credential: cert(serviceAccount as any),
+    });
+    console.log('Firebase Admin SDK initialized successfully');
+  } catch (error) {
+    console.error('Error initializing Firebase Admin SDK:', error);
+  }
 }
 
 const adminAuth = getAuth();
 const JWT_SECRET = process.env.JWT_SECRET!;
 
 export async function POST(req: NextRequest) {
+  console.log('Firebase login endpoint called');
   try {
     const { idToken } = await req.json();
 
     if (!idToken) {
+      console.log('No ID token provided');
       return NextResponse.json({ error: 'ID token is required' }, { status: 400 });
     }
 
+    console.log('Verifying Firebase ID token...');
     // 1) Verify Firebase ID token
     const decodedToken = await adminAuth.verifyIdToken(idToken);
     const uid = decodedToken.uid;
+    console.log('Firebase token verified for user:', decodedToken.email);
 
     // 2) Look up or create user in DB
     let user = await prisma.user.findUnique({
@@ -41,6 +56,7 @@ export async function POST(req: NextRequest) {
     });
 
     if (!user) {
+      console.log('Creating new user in database for:', decodedToken.email);
       user = await prisma.user.create({
         data: {
           id: uid,
@@ -50,6 +66,9 @@ export async function POST(req: NextRequest) {
           avatarUrl: decodedToken.picture || null,
         },
       });
+      console.log('New user created:', user.id);
+    } else {
+      console.log('Existing user found:', user.id);
     }
 
     // 3) Create our custom JWT
@@ -58,6 +77,7 @@ export async function POST(req: NextRequest) {
       JWT_SECRET,
       { expiresIn: '7d' }
     );
+    console.log('JWT created successfully');
 
     // 4) Return response
     const res = NextResponse.json({ user, token }, { status: 200 });
@@ -68,10 +88,14 @@ export async function POST(req: NextRequest) {
       path: '/',
       maxAge: 60 * 60 * 24 * 7,
     });
+    console.log('Login successful, returning response');
 
     return res;
   } catch (error: any) {
     console.error('Firebase login error:', error);
-    return NextResponse.json({ error: 'Invalid ID token' }, { status: 401 });
+    return NextResponse.json({ 
+      error: 'Invalid ID token', 
+      details: error.message || 'Unknown error' 
+    }, { status: 401 });
   }
 } 

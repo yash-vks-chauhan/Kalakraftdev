@@ -8,8 +8,14 @@ const nextConfig: NextConfig = {
   distDir: '.next',
   output: 'standalone',
   images: {
-    domains: ['localhost'],
+    domains: ['localhost', 'firebasestorage.googleapis.com', 'lh3.googleusercontent.com'],
     unoptimized: true,
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
+    ],
   },
   // Ensure CSS is properly included
   webpack: (config) => {
