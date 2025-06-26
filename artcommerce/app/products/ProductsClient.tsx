@@ -105,18 +105,25 @@ export default function ProductsClient() {
         const data = await res.json()
         if (!res.ok) throw new Error(data.error || 'Failed to fetch products')
         
-        // Normalize imageUrls for each product (handle possible stringified JSON)
+        // Normalize imageUrls and prefix any bare filename with '/uploads/'
         let filteredProducts = (Array.isArray(data.products) ? data.products : []).map((p: any) => {
-          const imgs = Array.isArray(p.imageUrls)
-            ? p.imageUrls
-            : (() => {
-                try {
-                  const parsed = JSON.parse(p.imageUrls || '[]')
-                  return Array.isArray(parsed) ? parsed : []
-                } catch {
-                  return []
-                }
-              })()
+          let rawImgs: string[] = []
+          if (Array.isArray(p.imageUrls)) {
+            rawImgs = p.imageUrls
+          } else {
+            try {
+              const parsed = JSON.parse(p.imageUrls || '[]')
+              rawImgs = Array.isArray(parsed) ? parsed : []
+            } catch {
+              rawImgs = []
+            }
+          }
+          const imgs = rawImgs.map((img: string) => {
+            // If already a URL or absolute path, leave it, otherwise prefix uploads
+            return img.startsWith('http') || img.startsWith('/')
+              ? img
+              : `/uploads/${img}`
+          })
           const tagsArr = Array.isArray(p.usageTags) ? p.usageTags : (() => {
             try {
               const parsed = JSON.parse(p.usageTags || '[]')
