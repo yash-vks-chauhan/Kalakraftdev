@@ -1,6 +1,6 @@
 // Example: app/api/secure/route.ts
 import { NextResponse }   from 'next/server'
-import { adminAuth }      from '../../../lib/firebase-admin'
+import { auth as adminAuth } from '../../../lib/firebase-admin'
 
 export async function GET(request: Request) {
   const auth = request.headers.get('authorization') || ''

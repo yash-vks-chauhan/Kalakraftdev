@@ -2,7 +2,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useAuth } from '../../../contexts/FirebaseAuthContext';
+import { useFirebaseAuth } from '../../../contexts/FirebaseAuthContext';
 
 type Ticket = {
   id: string;
@@ -11,7 +11,7 @@ type Ticket = {
 };
 
 export default function MyTicketsPage() {
-  const { user, getIdToken } = useAuth();
+  const { user } = useFirebaseAuth();
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -23,7 +23,7 @@ export default function MyTicketsPage() {
     }
     (async () => {
       try {
-        const token = await getIdToken();
+        const token = await user.getIdToken();
         const res = await fetch('/api/support/my-tickets', {
           headers: { Authorization: `Bearer ${token}` },
         });

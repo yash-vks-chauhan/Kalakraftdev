@@ -1,6 +1,6 @@
 // app/api/protected/route.ts
 import { NextResponse } from "next/server"
-import { adminAuth }     from "../../../lib/firebase-admin"
+import { auth as adminAuth } from "../../../lib/firebase-admin"
 
 export async function GET(request: Request) {
   const authHeader = request.headers.get("authorization") || ""
