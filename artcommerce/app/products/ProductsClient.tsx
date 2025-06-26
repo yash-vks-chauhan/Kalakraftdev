@@ -285,6 +285,7 @@ export default function ProductsClient() {
               )}
             </div>
           </details>
+        )}
 
         {/* Rating */}
         <details open className={styles.filterSection}>
