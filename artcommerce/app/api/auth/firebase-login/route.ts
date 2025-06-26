@@ -34,6 +34,11 @@ if (!getApps().length) {
 const adminAuth = getAuth();
 const JWT_SECRET = process.env.JWT_SECRET!;
 
+// Check if JWT_SECRET is available
+if (!JWT_SECRET) {
+  console.error('JWT_SECRET environment variable is not set!');
+}
+
 export async function POST(req: NextRequest) {
   console.log('Firebase login endpoint called');
   try {
@@ -51,46 +56,66 @@ export async function POST(req: NextRequest) {
     console.log('Firebase token verified for user:', decodedToken.email);
 
     // 2) Look up or create user in DB
-    let user = await prisma.user.findUnique({
-      where: { email: decodedToken.email || '' },
-    });
-
-    if (!user) {
-      console.log('Creating new user in database for:', decodedToken.email);
-      user = await prisma.user.create({
-        data: {
-          id: uid,
-          email: decodedToken.email!,
-          fullName: decodedToken.name || decodedToken.email!,
-          role: 'user',
-          avatarUrl: decodedToken.picture || null,
-        },
+    try {
+      // Test database connection first
+      await prisma.$queryRaw`SELECT 1`;
+      console.log('Database connection successful');
+      
+      let user = await prisma.user.findUnique({
+        where: { email: decodedToken.email || '' },
       });
-      console.log('New user created:', user.id);
-    } else {
-      console.log('Existing user found:', user.id);
+
+      if (!user) {
+        console.log('Creating new user in database for:', decodedToken.email);
+        try {
+          user = await prisma.user.create({
+            data: {
+              id: uid,
+              email: decodedToken.email!,
+              fullName: decodedToken.name || decodedToken.email!,
+              role: 'user',
+              avatarUrl: decodedToken.picture || null,
+            },
+          });
+          console.log('New user created:', user.id);
+        } catch (createError) {
+          console.error('Error creating user:', createError);
+          return NextResponse.json({ 
+            error: 'Failed to create user account', 
+            details: createError.message 
+          }, { status: 500 });
+        }
+      } else {
+        console.log('Existing user found:', user.id);
+      }
+
+      // 3) Create our custom JWT
+      const token = jwt.sign(
+        { userId: user.id, email: user.email, role: user.role },
+        JWT_SECRET,
+        { expiresIn: '7d' }
+      );
+      console.log('JWT created successfully');
+
+      // 4) Return response
+      const res = NextResponse.json({ user, token }, { status: 200 });
+      res.cookies.set('token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 60 * 60 * 24 * 7,
+      });
+      console.log('Login successful, returning response');
+
+      return res;
+    } catch (dbError) {
+      console.error('Database error:', dbError);
+      return NextResponse.json({ 
+        error: 'Database connection failed', 
+        details: dbError.message 
+      }, { status: 500 });
     }
-
-    // 3) Create our custom JWT
-    const token = jwt.sign(
-      { userId: user.id, email: user.email, role: user.role },
-      JWT_SECRET,
-      { expiresIn: '7d' }
-    );
-    console.log('JWT created successfully');
-
-    // 4) Return response
-    const res = NextResponse.json({ user, token }, { status: 200 });
-    res.cookies.set('token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 60 * 60 * 24 * 7,
-    });
-    console.log('Login successful, returning response');
-
-    return res;
   } catch (error: any) {
     console.error('Firebase login error:', error);
     return NextResponse.json({ 

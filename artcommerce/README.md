@@ -20,7 +20,7 @@ An e-commerce platform for art products.
    JWT_SECRET=your_jwt_secret_here
 
    # Database URL
-   DATABASE_URL="file:./dev.db"
+   DATABASE_URL="postgresql://username:password@hostname:port/database_name"
 
    # Pusher Configuration (for real-time features)
    PUSHER_APP_ID=your_pusher_app_id
@@ -50,6 +50,34 @@ If you're getting a "Firebase: Error (auth/unauthorized-domain)" error when depl
 
 This will allow Firebase authentication to work on your deployed domain.
 
+## Database Configuration for Production
+
+For production deployment, you need to set up a PostgreSQL database:
+
+1. Create a PostgreSQL database on a platform like:
+   - [Supabase](https://supabase.com/) (recommended)
+   - [Railway](https://railway.app/)
+   - [Neon](https://neon.tech/)
+   - [Vercel Postgres](https://vercel.com/docs/storage/vercel-postgres)
+
+2. Get your database connection string in this format:
+   ```
+   postgresql://username:password@hostname:port/database_name
+   ```
+
+3. Add this connection string to your Vercel environment variables:
+   - Go to your project in the Vercel dashboard
+   - Go to Settings > Environment Variables
+   - Add `DATABASE_URL` with your PostgreSQL connection string
+   - Make sure to check "Production" environment
+
+4. Deploy your application to apply the database configuration
+
+5. Run the database migrations in the production environment:
+   ```bash
+   npx prisma migrate deploy
+   ```
+
 ## Environment Variables for Vercel Deployment
 
 When deploying to Vercel, make sure to add all the required environment variables in your Vercel project settings:
@@ -61,11 +89,17 @@ When deploying to Vercel, make sure to add all the required environment variable
 
 ## Database Setup
 
-The application uses Prisma with SQLite by default. To set up the database:
+The application uses Prisma with PostgreSQL. To set up the database:
 
 ```bash
-npx prisma migrate dev
+# Generate Prisma client based on your schema
 npx prisma generate
+
+# For development - create and apply migrations
+npx prisma migrate dev
+
+# For production - apply existing migrations
+npx prisma migrate deploy
 ```
 
 ## Scripts
