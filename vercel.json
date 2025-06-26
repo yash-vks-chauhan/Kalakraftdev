@@ -1,3 +1,6 @@
 {
-  "rootDirectory": "artcommerce"
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "cd Artcommerce && npm run build",
+  "outputDirectory": "Artcommerce/.next",
+  "installCommand": "cd Artcommerce && npm install"
 } 
