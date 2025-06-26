@@ -1,3 +1,80 @@
+# Artcommerce
+
+An e-commerce platform for art products.
+
+## Setup
+
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Create a `.env.local` file in the root directory with the following variables:
+   ```
+   # Firebase Configuration
+   NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key_here
+   NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project_id.firebaseapp.com
+   NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+
+   # JWT Secret for Authentication
+   JWT_SECRET=your_jwt_secret_here
+
+   # Database URL
+   DATABASE_URL="file:./dev.db"
+
+   # Pusher Configuration (for real-time features)
+   PUSHER_APP_ID=your_pusher_app_id
+   PUSHER_KEY=your_pusher_key
+   PUSHER_SECRET=your_pusher_secret
+   PUSHER_CLUSTER=your_pusher_cluster
+
+   # Email Configuration
+   EMAIL_SERVER=smtp://username:password@smtp.example.com:587
+   EMAIL_FROM=noreply@example.com
+   ```
+
+4. Run the development server:
+   ```bash
+   npm run dev
+   ```
+
+## Firebase Authentication Domain Configuration
+
+If you're getting a "Firebase: Error (auth/unauthorized-domain)" error when deploying your application, you need to add your deployed domain to the authorized domains in Firebase:
+
+1. Go to the [Firebase Console](https://console.firebase.google.com/)
+2. Select your project
+3. Go to Authentication > Settings > Authorized domains
+4. Add your deployed domain (e.g., `your-app.vercel.app`) to the list of authorized domains
+5. Save changes
+
+This will allow Firebase authentication to work on your deployed domain.
+
+## Environment Variables for Vercel Deployment
+
+When deploying to Vercel, make sure to add all the required environment variables in your Vercel project settings:
+
+1. Go to your project in the Vercel dashboard
+2. Go to Settings > Environment Variables
+3. Add all the environment variables from your `.env.local` file
+4. Redeploy your application
+
+## Database Setup
+
+The application uses Prisma with SQLite by default. To set up the database:
+
+```bash
+npx prisma migrate dev
+npx prisma generate
+```
+
+## Scripts
+
+- `npm run dev`: Start the development server
+- `npm run build`: Build the application for production
+- `npm start`: Start the production server
+- `npm run lint`: Run linting checks
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
