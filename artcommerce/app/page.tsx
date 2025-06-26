@@ -38,7 +38,7 @@ const productCategories = [
 
 {
 
-image: '../images/imagecollection1.png',
+image: '/images/imagecollection1.png',
 
 title: 'COASTERS',
 
@@ -48,7 +48,7 @@ alt: 'Handcrafted resin coasters'
 
 {
 
-image: '../images/imageclock.png',
+image: '/images/imageclock.png',
 
 title: 'WALL ART',
 
@@ -58,7 +58,7 @@ alt: 'Resin wall art pieces'
 
 {
 
-image: '../images/imagecollection99.png',
+image: '/images/imagecollection99.png',
 
 title: 'HOME DECOR',
 
@@ -68,7 +68,7 @@ alt: 'Decorative resin items'
 
 {
 
-image: '../images/collectionwall.png',
+image: '/images/collectionwall.png',
 
 title: 'CUSTOM PIECES',
 
@@ -78,7 +78,7 @@ alt: 'Custom resin artwork'
 
 {
 
-image: '../images/category1.png',
+image: '/images/category1.png',
 
 title: 'CLOCKS',
 
@@ -88,7 +88,7 @@ alt: 'Handcrafted resin clocks'
 
 {
 
-image: '../images/trayscollection.png',
+image: '/images/trayscollection.png',
 
 title: 'JEWELRY TRAYS',
 
@@ -98,7 +98,7 @@ alt: 'Elegant resin jewelry trays'
 
 {
 
-image: '../images/vases.png',
+image: '/images/vases.png',
 
 title: 'VASES',
 
@@ -108,7 +108,7 @@ alt: 'Decorative resin vases'
 
 {
 
-image: '../images/category4.png',
+image: '/images/category4.png',
 
 title: 'TRAYS',
 
