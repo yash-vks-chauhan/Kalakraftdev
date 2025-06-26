@@ -4,13 +4,14 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3002",
-    "build": "next build && node scripts/copy-static-files.js",
+    "build": "prisma generate && next build && node scripts/copy-static-files.js",
     "postbuild": "prisma migrate deploy",
     "start": "next start -p 3002",
     "lint": "next lint"
   },
   "dependencies": {
     "@getbrevo/brevo": "^2.2.0",
+    "@prisma/client": "^6.10.1",
     "@radix-ui/react-slot": "^1.2.3",
     "@sendgrid/mail": "^8.1.5",
     "@tailwindcss/postcss": "^4.1.11",
@@ -44,7 +45,6 @@
     "uuid": "^11.1.0"
   },
   "devDependencies": {
-    "@prisma/client": "^6.10.1",
     "@types/aos": "^3.0.7",
     "@types/node": "^20",
     "@types/nodemailer": "^6.4.17",
