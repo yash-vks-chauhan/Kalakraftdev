@@ -1,9 +1,6 @@
-import dynamic from 'next/dynamic'
+'use client'
 
-const ProductsClient = dynamic(
-  () => import('./ProductsClient.tsx'),
-  { ssr: false, loading: () => <div>Loading products…</div> }
-)
+import ProductsClient from './ProductsClient'
 
 export default function Page() {
   return <ProductsClient />
