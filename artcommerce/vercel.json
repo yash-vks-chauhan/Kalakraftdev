@@ -12,6 +12,14 @@
       "dest": "/public/uploads/$1"
     },
     {
+      "src": "/images/(.*\\.mp4)",
+      "dest": "/public/images/$1",
+      "headers": {
+        "Content-Type": "video/mp4",
+        "Cache-Control": "public, max-age=31536000, immutable"
+      }
+    },
+    {
       "src": "/images/(.*)",
       "dest": "/public/images/$1"
     },
