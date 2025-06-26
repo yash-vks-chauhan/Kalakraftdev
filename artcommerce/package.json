@@ -21,6 +21,7 @@
     "bcryptjs": "^3.0.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "file-loader": "^6.2.0",
     "firebase": "^9.23.0",
     "firebase-admin": "^13.4.0",
     "framer-motion": "^12.18.1",

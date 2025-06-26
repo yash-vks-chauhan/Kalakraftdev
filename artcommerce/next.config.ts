@@ -19,6 +19,23 @@ const nextConfig: NextConfig = {
   },
   // Ensure CSS is properly included
   webpack: (config) => {
+    // Add proper handling for video files
+    config.module = config.module || {};
+    config.module.rules = config.module.rules || [];
+    
+    // Add specific handling for media files
+    config.module.rules.push({
+      test: /\.(mp4|webm|ogg|mp3|wav|flac|aac)(\?.*)?$/,
+      use: {
+        loader: 'file-loader',
+        options: {
+          publicPath: '/_next/static/media/',
+          outputPath: 'static/media/',
+          name: '[name].[hash:8].[ext]',
+        },
+      },
+    });
+    
     return config;
   },
   // Ensure public directory is copied to the output
