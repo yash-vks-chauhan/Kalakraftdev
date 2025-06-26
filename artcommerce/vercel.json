@@ -4,6 +4,20 @@
   "buildCommand": "npm run build",
   "outputDirectory": ".next",
   "env": {
-    "DATABASE_URL": "postgresql://postgres:password@localhost:5432/artcommerce"
-  }
+    "DATABASE_URL": "postgres://default:Rnz6jtJDQPER@ep-polished-bush-a4k3wd01-pooler.us-east-1.aws.neon.tech:5432/verceldb?sslmode=require"
+  },
+  "routes": [
+    {
+      "src": "/uploads/(.*)",
+      "dest": "/public/uploads/$1"
+    },
+    {
+      "src": "/images/(.*)",
+      "dest": "/public/images/$1"
+    },
+    {
+      "src": "/avatars/(.*)",
+      "dest": "/public/avatars/$1"
+    }
+  ]
 } 

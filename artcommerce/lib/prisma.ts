@@ -9,12 +9,19 @@ declare global {
 // Add better error handling and logging for database connection
 const prismaClientSingleton = () => {
   try {
+    // Log database connection info (without exposing credentials)
+    const dbUrl = process.env.DATABASE_URL || '';
     console.log('Initializing Prisma client with DATABASE_URL:', 
-      process.env.DATABASE_URL ? `${process.env.DATABASE_URL.substring(0, 15)}...` : 'undefined');
+      dbUrl ? `${dbUrl.split('@')[1]?.split('/')[0] || 'configured'}` : 'undefined');
     
     return new PrismaClient({
       log: ['error', 'warn'],
       errorFormat: 'pretty',
+      datasources: {
+        db: {
+          url: process.env.DATABASE_URL
+        }
+      }
     })
   } catch (error) {
     console.error('Failed to initialize Prisma client:', error);
