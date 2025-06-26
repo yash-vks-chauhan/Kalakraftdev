@@ -1,9 +1,12 @@
-'use client'
+import { Suspense } from 'react'
+import ProductsClient from './ProductsClient'
 
 export const dynamic = 'force-dynamic'
 
-import ProductsClient from './ProductsClient'
-
 export default function Page() {
-  return <ProductsClient />
+  return (
+    <Suspense fallback={<div>Loading products…</div>}>
+      <ProductsClient />
+    </Suspense>
+  )
 } 
