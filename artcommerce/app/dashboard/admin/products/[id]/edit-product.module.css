@@ -1,0 +1,700 @@
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 2.5rem;
+  background-color: white;
+  min-height: 100vh;
+}
+
+.header {
+  margin-bottom: 2rem;
+  border-bottom: 1px solid #f3f4f6;
+  padding-bottom: 1.5rem;
+}
+
+.title {
+  font-size: 1.875rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 0.5rem;
+  position: relative;
+  display: inline-block;
+}
+
+.title::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: -2px;
+  left: 0;
+  background: linear-gradient(to right, 
+    rgba(17, 24, 39, 1) 0%,
+    rgba(17, 24, 39, 0.8) 50%,
+    rgba(17, 24, 39, 0.1) 100%
+  );
+  transition: width 0.25s ease-out;
+}
+
+.title:hover::after {
+  width: 100%;
+}
+
+.subtitle {
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.card {
+  background: white;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  margin-bottom: 1.5rem;
+  border: 1px solid #f3f4f6;
+}
+
+.sectionTitle {
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: #111827;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #f3f4f6;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  position: relative;
+  cursor: pointer;
+}
+
+.sectionTitle::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: -1px;
+  left: 0;
+  background: linear-gradient(to right, 
+    rgba(17, 24, 39, 1) 0%,
+    rgba(17, 24, 39, 0.8) 50%,
+    rgba(17, 24, 39, 0.1) 100%
+  );
+  transition: width 0.25s ease-out;
+}
+
+.sectionTitle:hover::after {
+  width: 100%;
+}
+
+.sectionIcon {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: #6b7280;
+}
+
+.formGroup {
+  margin-bottom: 1.5rem;
+}
+
+.formGroup:last-child {
+  margin-bottom: 0;
+}
+
+.label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.input,
+.textarea,
+.select {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  color: #111827;
+  background-color: white;
+  transition: all 0.2s ease;
+}
+
+.input:hover,
+.textarea:hover,
+.select:hover {
+  border-color: #9ca3af;
+}
+
+.input:focus,
+.textarea:focus,
+.select:focus {
+  outline: none;
+  border-color: #111827;
+  box-shadow: 0 0 0 2px rgba(17, 24, 39, 0.1);
+}
+
+.textarea {
+  min-height: 120px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 0.5rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+  padding-right: 2.5rem;
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkboxInput {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 0.25rem;
+  border: 2px solid #d1d5db;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.checkboxInput:checked {
+  background-color: #111827;
+  border-color: #111827;
+}
+
+.checkboxLabel {
+  font-size: 0.875rem;
+  color: #374151;
+}
+
+.imageSection {
+  margin-top: 2rem;
+}
+
+.imageGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.imagePreviewContainer {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  border: 2px solid #e5e7eb;
+  transition: all 0.2s ease;
+}
+
+.imagePreviewContainer:hover {
+  border-color: #111827;
+  transform: translateY(-2px);
+}
+
+.imagePreview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.removeImageButton {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 9999px;
+  background-color: rgba(239, 68, 68, 0.9);
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(4px);
+}
+
+.removeImageButton:hover {
+  background-color: rgb(239, 68, 68);
+  transform: scale(1.1);
+}
+
+.fileInput {
+  display: none;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid #f3f4f6;
+}
+
+.saveButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1.75rem;
+  background-color: white;
+  color: #111827;
+  border: 2px solid #111827;
+  border-radius: 0.25rem;
+  font-weight: 500;
+  font-size: 0.9375rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  position: relative;
+}
+
+.saveButton:hover {
+  background-color: #111827;
+  color: white;
+  transform: translateY(-1px);
+}
+
+.saveButton svg:first-child {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.cancelButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1.75rem;
+  background-color: white;
+  color: #111827;
+  border: 2px solid #111827;
+  border-radius: 0.25rem;
+  font-weight: 500;
+  font-size: 0.9375rem;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  position: relative;
+}
+
+.cancelButton:hover {
+  background-color: #111827;
+  color: white;
+  transform: translateY(-1px);
+}
+
+.cancelButton svg:first-child {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.addImageButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1.75rem;
+  background-color: white;
+  color: #111827;
+  border: 2px solid #111827;
+  border-radius: 0.25rem;
+  font-weight: 500;
+  font-size: 0.9375rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  position: relative;
+  margin-top: 1rem;
+}
+
+.addImageButton:hover {
+  background-color: #111827;
+  color: white;
+  transform: translateY(-1px);
+}
+
+.arrowIcon {
+  width: 1.25rem;
+  height: 1.25rem;
+  opacity: 0;
+  transform: translateX(-10px);
+  transition: all 0.2s ease;
+}
+
+.saveButton:hover .arrowIcon,
+.cancelButton:hover .arrowIcon,
+.addImageButton:hover .arrowIcon {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  color: #6b7280;
+}
+
+.error {
+  background-color: #fef2f2;
+  color: #dc2626;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin: 1rem 0;
+  text-align: center;
+  font-size: 0.875rem;
+}
+
+.notification {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  animation: slideInUp 0.3s ease;
+  z-index: 50;
+}
+
+.success {
+  background-color: #dcfce7;
+  color: #166534;
+  border: 2px solid #166534;
+}
+
+.error {
+  background-color: #fef2f2;
+  color: #dc2626;
+  border: 2px solid #dc2626;
+}
+
+.notificationIcon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+@keyframes slideInUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 40;
+  animation: fadeIn 0.2s ease;
+}
+
+.modal {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 0.25rem;
+  width: 100%;
+  max-width: 28rem;
+  animation: scaleIn 0.2s ease;
+}
+
+.modalTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 0.75rem;
+}
+
+.modalText {
+  color: #6b7280;
+  margin-bottom: 1.5rem;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+.modalButtons {
+  display: flex;
+  gap: 1rem;
+}
+
+.modalButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1.75rem;
+  background-color: white;
+  color: #111827;
+  border: 2px solid #111827;
+  border-radius: 0.25rem;
+  font-weight: 500;
+  font-size: 0.9375rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  position: relative;
+  flex: 1;
+  justify-content: center;
+}
+
+.modalButton:hover {
+  background-color: #111827;
+  color: white;
+  transform: translateY(-1px);
+}
+
+.confirmButton {
+  background-color: #111827;
+  color: white;
+}
+
+.confirmButton:hover {
+  background-color: #1f2937;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.uploadingOverlay {
+  position: relative;
+  background-color: #1a1a1a;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  color: white;
+  font-size: 14px;
+}
+
+.uploadProgress {
+  position: absolute;
+  bottom: 8px;
+  left: 16px;
+  right: 16px;
+  height: 2px;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.uploadProgressBar {
+  height: 100%;
+  background-color: white;
+  transition: width 0.3s ease;
+}
+
+.uploadingOverlay.completed .uploadProgressBar {
+  background-color: white;
+}
+
+.uploadingOverlay.error {
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid #EF4444;
+}
+
+.uploadingOverlay.error .uploadProgressBar {
+  background-color: #EF4444;
+}
+
+.fileInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.fileIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  object-fit: cover;
+  background-color: #333;
+}
+
+.fileName {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: white;
+  font-weight: 500;
+}
+
+.fileSize {
+  color: #888;
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  color: #888;
+  cursor: pointer;
+  padding: 4px;
+  margin-left: 12px;
+  opacity: 0.8;
+  transition: opacity 0.2s ease;
+}
+
+.closeButton:hover {
+  opacity: 1;
+  color: white;
+}
+
+.dropzone {
+  border: 2px dashed #D1D5DB;
+  border-radius: 0.5rem;
+  padding: 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background-color: #F9FAFB;
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.dropzone:hover,
+.dropzoneDragActive {
+  border-color: #111827;
+  background-color: #F3F4F6;
+}
+
+.dropzoneText {
+  color: #6B7280;
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.dropzoneIcon {
+  width: 2rem;
+  height: 2rem;
+  margin: 0 auto 1rem;
+  color: #6B7280;
+}
+
+.browseButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  background-color: white;
+  color: #111827;
+  border: 2px solid #111827;
+  border-radius: 0.25rem;
+  font-weight: 500;
+  font-size: 0.9375rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  margin-top: 1rem;
+}
+
+.browseButton:hover {
+  background-color: #111827;
+  color: white;
+  transform: translateY(-1px);
+}
+
+.browseButton svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+/* === Styling Idea Preview Grid === */
+.previewItem {
+  position: relative;
+  border: 1px solid #D1D5DB;
+  border-radius: 0.375rem;
+  overflow: hidden;
+  background: white;
+  transition: all 0.2s ease;
+}
+
+.previewItem:hover {
+  border-color: #111827;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.previewImg {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-bottom: 1px solid #D1D5DB;
+}
+
+.stylingCaptionInput {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: none;
+  border-top: 1px solid #D1D5DB;
+  font-size: 0.875rem;
+  color: #374151;
+}
+
+.stylingCaptionInput:focus {
+  outline: none;
+  background-color: #F9FAFB;
+}
+
+.removeBtn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: rgba(255, 255, 255, 0.8);
+  border: none;
+  border-radius: 9999px;
+  padding: 0.25rem;
+  cursor: pointer;
+  color: #6B7280;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.removeBtn:hover {
+  color: #DC2626;
+  transform: scale(1.1);
+} 

@@ -1,0 +1,288 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+
+  // ── NEW FIELDS ──
+  fullName         String
+  passwordHash     String?
+  avatarUrl        String?   @default("") // OK to store a blank avatar URL
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  role             String    @default("user")
+  addresses        Address[]
+  defaultAddressId Int?      @unique
+  defaultAddress   Address?  @relation("DefaultAddress", fields: [defaultAddressId], references: [id])
+
+  emailChangeOtp     String?
+  emailChangeNew     String?
+  emailChangeExpires DateTime?
+
+  passwordChangeOtp     String?
+  passwordChangeExpires DateTime?
+
+  cartItems     CartItem[]
+  wishlistItems WishlistItem[]
+  orders        Order[]
+  orderNotes    OrderNote[] // ← and add this here
+  reviews       ProductReview[]
+
+  authoredNotes OrderNote[] @relation("AuthorNotes")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? 
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ── NEW MODEL ───────────────────────────────────────────────────────────
+model Address {
+  id     Int  @id @default(autoincrement())
+  user   User @relation(fields: [userId], references: [id])
+  userId String
+
+  label      String // e.g. "Home", "Work"
+  line1      String
+  line2      String?
+  city       String
+  postalCode String
+  country    String
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  userAsDefault User?    @relation("DefaultAddress")
+}
+
+model Category {
+  id       Int        @id @default(autoincrement())
+  name     String
+  slug     String     @unique
+  parentId Int?
+  parent   Category?  @relation("CategoryToCategory", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryToCategory")
+  products Product[]
+}
+
+model Product {
+  id          Int    @id @default(autoincrement())
+  name        String
+  slug        String @unique
+  description String
+  shortDesc   String
+  price       Float
+  currency    String
+
+  // —————————— This must always be valid JSON. We default it to an empty array. ——————————
+  imageUrls Json @default("[]")
+
+  stockQuantity Int      @default(0)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // ← This is the one-to-many relation to Category:
+  category   Category? @relation(fields: [categoryId], references: [id])
+  categoryId Int?
+
+  // Other relations (you already have these):
+  cartItems     CartItem[]
+  wishlistItems WishlistItem[]
+  orderItems    OrderItem[]
+  
+
+  // ── NEW FIELDS FOR PRODUCT DETAILS ──
+  specifications     String?    // Detailed specs in Markdown or text
+  careInstructions   String?    // Care & Maintenance instructions
+  stylingIdeaImages  Json?      @default("[]") // Array of image URLs for Artful Styling Ideas
+  usageTags         Json?      @default("[]") // Array of purpose / mood tags
+  reviews           ProductReview[]
+}
+
+model CartItem {
+  id        Int      @id @default(autoincrement())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  product   Product  @relation(fields: [productId], references: [id])
+  productId Int
+  quantity  Int
+  addedAt   DateTime @default(now())
+
+  @@unique([userId, productId])
+}
+
+model WishlistItem {
+  id        Int      @id @default(autoincrement())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  product   Product  @relation(fields: [productId], references: [id])
+  productId Int
+  addedAt   DateTime @default(now())
+
+  @@unique([userId, productId])
+}
+
+model Order {
+  id          Int    @id @default(autoincrement())
+  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  orderNumber String @unique
+  status      String @default("pending")
+  subtotal    Float
+  tax         Float
+  shippingFee Float
+  discount    Float  @default(0)
+  totalAmount Float
+
+  // ——————— These must always be valid JSON objects. ———————
+  shippingAddress Json
+  billingAddress  Json?
+
+  couponCode      String? // the code they entered
+  discountAmount  Float?  @default(0)
+  discountedTotal Float?  @default(0)
+
+  paymentMethod String
+  paymentStatus String   @default("unpaid")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  orderItems OrderItem[]
+  orderNotes OrderNote[] @relation("OrderNotes")
+}
+
+model OrderItem {
+  id              Int     @id @default(autoincrement())
+  order           Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId         Int
+  product         Product @relation(fields: [productId], references: [id])
+  productId       Int
+  quantity        Int
+  priceAtPurchase Float
+  variantOptions  Json?
+}
+
+model OrderNote {
+  id        Int      @id @default(autoincrement())
+  order     Order    @relation("OrderNotes", fields: [orderId], references: [id])
+  orderId   Int
+  author    User     @relation("AuthorNotes", fields: [authorId], references: [id])
+  authorId  String
+  text      String
+  createdAt DateTime @default(now())
+  User      User?    @relation(fields: [userId], references: [id])
+  userId    String?
+}
+
+model Coupon {
+  id         Int      @id @default(autoincrement())
+  code       String   @unique
+  type       String // "percentage" or "flat"
+  amount     Float
+  expiresAt  DateTime
+  usageLimit Int? // null = unlimited
+  usedCount  Int      @default(0)
+  createdAt  DateTime @default(now())
+}
+
+model Banner {
+  id        Int      @id @default(autoincrement())
+  imageUrl  String
+  linkUrl   String?
+  caption   String?
+  order     Int      @default(0) // display priority
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model FlashSale {
+  id          Int      @id @default(autoincrement())
+  title       String
+  categoryId  Int? // null = site-wide
+  startsAt    DateTime
+  endsAt      DateTime
+  discountPct Float // e.g. 20 = 20% off
+  createdAt   DateTime @default(now())
+}
+model SupportTicket {
+  id          String           @id @default(cuid())
+  name        String
+  email       String
+  subject     String
+  message     String
+  status      String           @default("open")       // open, pending, closed
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  messages    SupportMessage[]                      // relation to replies
+}
+
+model SupportMessage {
+  id         String         @id @default(cuid())
+  ticket     SupportTicket  @relation(fields: [ticketId], references: [id])
+  ticketId   String
+  sender     String         // "customer" or "agent"
+  content    String
+  createdAt  DateTime       @default(now())
+  attachments Json          @default("[]") // array of attachment objects { url, type }
+}
+
+// ── New model for 1-to-5 star ratings ────────────────────────────────
+model ProductReview {
+  id        Int      @id @default(autoincrement())
+  product   Product  @relation(fields: [productId], references: [id])
+  productId Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  rating    Int      // 1-5
+  locale    String   @default("en") // ISO locale of the reviewer
+  comment   String?
+  adminReply    String?
+  adminReaction String?  // e.g. 👍 😊 etc.
+  createdAt DateTime @default(now())
+
+  @@unique([productId, userId])
+}

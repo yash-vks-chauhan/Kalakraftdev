@@ -1,0 +1,77 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { getAuth } from 'firebase-admin/auth';
+import { initializeApp, getApps, cert } from 'firebase-admin/app';
+import jwt from 'jsonwebtoken';
+import prisma from '../../../../lib/prisma';
+
+// Load service account credentials (should be JSON string in env)
+const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY
+  ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)
+  : {
+      projectId: process.env.FIREBASE_PROJECT_ID,
+      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+    };
+
+// Initialize Firebase Admin SDK once
+if (!getApps().length) {
+  initializeApp({
+    credential: cert(serviceAccount as any),
+  });
+}
+
+const adminAuth = getAuth();
+const JWT_SECRET = process.env.JWT_SECRET!;
+
+export async function POST(req: NextRequest) {
+  try {
+    const { idToken } = await req.json();
+
+    if (!idToken) {
+      return NextResponse.json({ error: 'ID token is required' }, { status: 400 });
+    }
+
+    // 1) Verify Firebase ID token
+    const decodedToken = await adminAuth.verifyIdToken(idToken);
+    const uid = decodedToken.uid;
+
+    // 2) Look up or create user in DB
+    let user = await prisma.user.findUnique({
+      where: { email: decodedToken.email || '' },
+    });
+
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          id: uid,
+          email: decodedToken.email!,
+          fullName: decodedToken.name || decodedToken.email!,
+          role: 'user',
+          avatarUrl: decodedToken.picture || null,
+        },
+      });
+    }
+
+    // 3) Create our custom JWT
+    const token = jwt.sign(
+      { userId: user.id, email: user.email, role: user.role },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    // 4) Return response
+    const res = NextResponse.json({ user, token }, { status: 200 });
+    res.cookies.set('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 60 * 60 * 24 * 7,
+    });
+
+    return res;
+  } catch (error: any) {
+    console.error('Firebase login error:', error);
+    return NextResponse.json({ error: 'Invalid ID token' }, { status: 401 });
+  }
+} 

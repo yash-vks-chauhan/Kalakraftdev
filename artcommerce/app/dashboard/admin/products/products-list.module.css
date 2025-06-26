@@ -1,0 +1,324 @@
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 2.5rem;
+  background-color: white;
+  min-height: 100vh;
+}
+
+.header {
+  margin-bottom: 3rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.title {
+  font-size: 1.875rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 0;
+  position: relative;
+  display: inline-block;
+}
+
+.title::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: -2px;
+  left: 0;
+  background: linear-gradient(to right, 
+    rgba(17, 24, 39, 1) 0%,
+    rgba(17, 24, 39, 0.8) 50%,
+    rgba(17, 24, 39, 0.1) 100%
+  );
+  transition: width 0.25s ease-out;
+}
+
+.title:hover::after {
+  width: 100%;
+}
+
+.subtitle {
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.card {
+  background: white;
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+  border: 1px solid #f3f4f6;
+}
+
+.newButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1.75rem;
+  background-color: white;
+  color: #111827;
+  border: 2px solid #111827;
+  border-radius: 0.25rem;
+  font-weight: 500;
+  font-size: 0.9375rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  text-decoration: none;
+  position: relative;
+  margin-left: auto;
+}
+
+.newButton:hover {
+  background-color: #111827;
+  color: white;
+  transform: translateY(-1px);
+}
+
+.arrowIcon {
+  width: 1rem;
+  height: 1rem;
+  opacity: 0;
+  transform: translateX(-10px);
+  transition: all 0.2s ease;
+}
+
+.newButton:hover .arrowIcon {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.newButton:active {
+  transform: translateY(0);
+}
+
+.table {
+  width: 100%;
+  border-spacing: 0;
+  margin-top: 2rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+.tableHeader {
+  background-color: #f9fafb;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.tableHeaderCell {
+  text-align: left;
+  color: #6b7280;
+  font-weight: 500;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.75rem 1.5rem;
+}
+
+.tableRow {
+  transition: all 0.2s ease;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.tableRow:last-child {
+  border-bottom: none;
+}
+
+.tableRow:hover {
+  background-color: #f9fafb;
+}
+
+.tableCell {
+  padding: 1.25rem 1.5rem;
+  color: #111827;
+  font-size: 0.875rem;
+}
+
+.orderNumber {
+  font-weight: 500;
+  color: #111827;
+}
+
+.price {
+  font-family: 'SF Mono', monospace;
+  color: #047857;
+  font-weight: 500;
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.375rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.025em;
+}
+
+.statusPending {
+  composes: status;
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.statusAccepted {
+  composes: status;
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.statusShipped {
+  composes: status;
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.statusActive {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  background-color: #dcfce7;
+  color: #166534;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.statusInactive {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  background-color: #f3f4f6;
+  color: #6b7280;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.actionButtons {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.editButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  background-color: white;
+  color: #111827;
+  border: 1px solid #111827;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  position: relative;
+}
+
+.editButton:hover {
+  background-color: #111827;
+  color: white;
+  transform: translateY(-1px);
+}
+
+.editButton svg:first-child {
+  width: 1rem;
+  height: 1rem;
+}
+
+.deleteButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  background-color: white;
+  color: #dc2626;
+  border: 1px solid #dc2626;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  position: relative;
+}
+
+.deleteButton:hover {
+  background-color: #dc2626;
+  color: white;
+  transform: translateY(-1px);
+}
+
+.deleteButton svg:first-child {
+  width: 1rem;
+  height: 1rem;
+}
+
+.editButton:hover .arrowIcon,
+.deleteButton:hover .arrowIcon {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.showMoreButton {
+  display: block;
+  width: 100%;
+  padding: 0.75rem;
+  text-align: center;
+  color: #4b5563;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  margin-top: 2rem;
+  cursor: pointer;
+}
+
+.showMoreButton:hover {
+  background-color: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 3rem 2rem;
+}
+
+.emptyStateIcon {
+  width: 3rem;
+  height: 3rem;
+  color: #9ca3af;
+  margin: 0 auto 1rem;
+}
+
+.emptyStateText {
+  color: #6b7280;
+  font-size: 0.875rem;
+  margin-bottom: 1.5rem;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  color: #6b7280;
+}
+
+.error {
+  background-color: #fef2f2;
+  color: #dc2626;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin: 1rem 0;
+  text-align: center;
+  font-size: 0.875rem;
+} 

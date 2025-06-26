@@ -1,0 +1,315 @@
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(26, 32, 44, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(26, 32, 44, 0.03) 0%, transparent 50%);
+  opacity: 0.05;
+  z-index: 0;
+  animation: backgroundShift 20s ease-in-out infinite alternate;
+}
+
+@keyframes backgroundShift {
+  0% {
+    transform: scale(1) translate(0, 0);
+  }
+  100% {
+    transform: scale(1.1) translate(-1%, -1%);
+  }
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 3rem;
+  position: relative;
+  z-index: 1;
+}
+
+.title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+  position: relative;
+  display: inline-block;
+}
+
+.title::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: -4px;
+  left: 0;
+  background: linear-gradient(90deg, #111827, transparent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.title:hover::after {
+  transform: scaleX(1);
+  animation: gradientFlow 3s ease-in-out infinite;
+}
+
+.newTicketButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.75rem 2rem;
+  background: transparent;
+  color: #111827;
+  font-weight: 500;
+  font-size: 0.9375rem;
+  text-decoration: none;
+  border: 1.5px solid #111827;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  min-width: 160px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.newTicketButton:hover {
+  background: #111827;
+  color: white;
+}
+
+.buttonIcon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.section {
+  background: white;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  margin-bottom: 2rem;
+  position: relative;
+  z-index: 1;
+  border: 1px solid rgba(229, 231, 235, 0.5);
+}
+
+.sectionHeader {
+  padding: 1.5rem;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.sectionTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.sectionIcon {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: #6B7280;
+}
+
+.ticketGrid {
+  display: grid;
+  gap: 1px;
+  background: #f3f4f6;
+}
+
+.ticketCard {
+  background: white;
+  padding: 1.5rem;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.ticketCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, transparent, rgba(26, 32, 44, 0.02), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ticketCard:hover::before {
+  transform: translateX(100%);
+}
+
+.ticketCard:hover {
+  background: #f9fafb;
+}
+
+.ticketContent {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.ticketSubject {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #111827;
+  margin: 0;
+}
+
+.ticketStatus {
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.open {
+  background: #DCFCE7;
+  color: #166534;
+}
+
+.pending {
+  background: #FEF3C7;
+  color: #92400E;
+}
+
+.closed {
+  background: #F3F4F6;
+  color: #6B7280;
+}
+
+.ticketMeta {
+  margin-top: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.ticketDate {
+  font-size: 0.875rem;
+  color: #6B7280;
+}
+
+.emptyState {
+  padding: 3rem 1.5rem;
+  text-align: center;
+  color: #6B7280;
+  font-size: 0.875rem;
+}
+
+.loadingSpinner {
+  width: 2rem;
+  height: 2rem;
+  border: 2px solid rgba(17, 24, 39, 0.1);
+  border-radius: 50%;
+  border-top-color: #111827;
+  animation: spin 0.8s linear infinite;
+  margin: 3rem auto;
+}
+
+.error {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  background: #FEF2F2;
+  color: #DC2626;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  margin: 3rem auto;
+  max-width: 32rem;
+}
+
+.errorIcon {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes gradientFlow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 1.5rem 1rem;
+  }
+
+  .header {
+    flex-direction: column;
+    gap: 1.5rem;
+    align-items: stretch;
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .title {
+    font-size: 2rem;
+  }
+
+  .newTicketButton {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .section {
+    margin-bottom: 1.5rem;
+  }
+
+  .sectionHeader {
+    padding: 1rem;
+  }
+
+  .ticketCard {
+    padding: 1rem;
+  }
+
+  .ticketContent {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .ticketStatus {
+    align-self: flex-start;
+  }
+} 

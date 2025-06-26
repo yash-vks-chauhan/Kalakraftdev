@@ -1,0 +1,28 @@
+.dashboardContainer {
+  padding-top: calc(70px + 2rem);
+  min-height: 100vh;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+.dashboardContent {
+  background: white;
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+@media (max-width: 768px) {
+  .dashboardContainer {
+    padding-top: calc(70px + 1rem);
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  .dashboardContent {
+    padding: 1.5rem;
+  }
+} 

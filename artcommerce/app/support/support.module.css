@@ -1,0 +1,588 @@
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  position: relative;
+  overflow: hidden;
+  perspective: 1000px;
+}
+
+.container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(26, 32, 44, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(26, 32, 44, 0.03) 0%, transparent 50%);
+  opacity: 0.05;
+  z-index: 0;
+  animation: backgroundShift 20s ease-in-out infinite alternate;
+}
+
+@keyframes backgroundShift {
+  0% {
+    transform: scale(1) translate(0, 0);
+  }
+  100% {
+    transform: scale(1.1) translate(-1%, -1%);
+  }
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 3rem;
+  position: relative;
+  z-index: 1;
+}
+
+.title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  letter-spacing: -0.025em;
+}
+
+.titleIcon {
+  width: 2.25rem;
+  height: 2.25rem;
+  color: #4F46E5;
+}
+
+.subtitle {
+  color: #6B7280;
+  font-size: 1.125rem;
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+.supportCard {
+  background: white;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(229, 231, 235, 0.5);
+  overflow: hidden;
+  backdrop-filter: blur(20px);
+  padding: 2.5rem;
+  position: relative;
+  z-index: 1;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.supportCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.input,
+.textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #D1D5DB;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  color: #111827;
+  background-color: white;
+  transition: all 0.2s ease;
+}
+
+.input:hover,
+.textarea:hover {
+  border-color: #9CA3AF;
+}
+
+.input:focus,
+.textarea:focus {
+  outline: none;
+  border-color: #111827;
+  box-shadow: 0 0 0 2px rgba(17, 24, 39, 0.1);
+  transform: translateY(-1px);
+}
+
+.input:disabled {
+  background-color: #F3F4F6;
+  cursor: not-allowed;
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+.fileUpload {
+  position: relative;
+  width: 100%;
+}
+
+.fileInput {
+  display: none;
+}
+
+.fileLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border: 2px dashed #D1D5DB;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #6B7280;
+  font-size: 0.875rem;
+}
+
+.fileLabel:hover {
+  border-color: #111827;
+  color: #111827;
+}
+
+.uploadIcon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.fileList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.fileItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  background-color: #F3F4F6;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  color: #374151;
+}
+
+.removeFile {
+  background: none;
+  border: none;
+  padding: 0.25rem;
+  cursor: pointer;
+  color: #6B7280;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.removeFile:hover {
+  color: #DC2626;
+  transform: scale(1.1);
+}
+
+.error {
+  padding: 0.75rem 1rem;
+  background-color: #FEF2F2;
+  color: #DC2626;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  animation: slideIn 0.3s ease;
+}
+
+.submitButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1.75rem;
+  background-color: #111827;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  font-size: 0.9375rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.submitButton:hover {
+  background-color: #1F2937;
+  transform: translateY(-1px);
+}
+
+.submitButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.submitIcon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.loadingSpinner {
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 2rem 1rem;
+  }
+
+  .title {
+    font-size: 2rem;
+  }
+
+  .supportCard {
+    padding: 1.5rem;
+  }
+
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .submitButton {
+    width: 100%;
+  }
+}
+
+.ticketList {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background-color: #F3F4F6;
+}
+
+.ticketCard {
+  background: white;
+  padding: 1.5rem;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.ticketCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, transparent, rgba(17, 24, 39, 0.02), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ticketCard:hover {
+  background-color: #F9FAFB;
+}
+
+.ticketCard:hover::before {
+  transform: translateX(100%);
+}
+
+.ticketHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.ticketTitle {
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: #111827;
+}
+
+.ticketStatus {
+  padding: 0.375rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.statusOpen {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: #1E40AF;
+}
+
+.statusPending {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: #92400E;
+}
+
+.statusClosed {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: #065F46;
+}
+
+.ticketDetails {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  position: relative;
+}
+
+.ticketInfo {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.ticketIcon {
+  color: #6B7280;
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-top: 0.25rem;
+}
+
+.ticketLabel {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  color: #6B7280;
+  margin-bottom: 0.25rem;
+}
+
+.ticketValue {
+  color: #111827;
+  font-size: 0.875rem;
+}
+
+.ticketEmail {
+  color: #6B7280;
+  font-size: 0.875rem;
+}
+
+.arrowIcon {
+  margin-left: auto;
+  width: 1.25rem;
+  height: 1.25rem;
+  color: #9CA3AF;
+  transition: transform 0.2s ease;
+}
+
+.ticketCard:hover .arrowIcon {
+  transform: translateX(4px);
+  color: #111827;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+.emptyIcon {
+  width: 3rem;
+  height: 3rem;
+  color: #9CA3AF;
+  margin-bottom: 1.5rem;
+}
+
+.emptyTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 0.5rem;
+}
+
+.emptyText {
+  color: #6B7280;
+  max-width: 24rem;
+  margin: 0 auto;
+}
+
+.messageContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.message {
+  padding: 1rem;
+  border-radius: 8px;
+  position: relative;
+}
+
+.customerMessage {
+  background: #f3f4f6;
+  margin-right: 2rem;
+}
+
+.agentMessage {
+  background: #ede9fe;
+  margin-left: 2rem;
+}
+
+.messageHeader {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.messageSender {
+  font-weight: 500;
+}
+
+.messageTime {
+  color: #6b7280;
+}
+
+.attachmentGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.attachment {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.attachment img, .attachment video {
+  width: 100%;
+  height: 100px;
+  object-fit: cover;
+}
+
+/* ─────────────── NEW SUPPORT ENHANCEMENTS ─────────────── */
+.issueOptions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.issueOption {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid #D1D5DB;
+  border-radius: 0.5rem;
+  background-color: #F9FAFB;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+  font-size: 0.875rem;
+  color: #374151;
+}
+
+.issueOption:hover {
+  background-color: #F3F4F6;
+}
+
+.selectedIssue {
+  border-color: #4F46E5;
+  background-color: #EEF2FF;
+  color: #1E1B4B;
+}
+
+.issueIcon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.productGrid {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 0.25rem;
+}
+
+.productCard {
+  width: 120px;
+  border: 1px solid #E5E7EB;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  background: white;
+}
+
+.productCard img {
+  width: 100%;
+  height: 80px;
+  object-fit: cover;
+}
+
+.productCard span {
+  display: block;
+  padding: 0.5rem;
+  font-size: 0.75rem;
+  text-align: center;
+  color: #374151;
+}
+
+.productCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+.selectedProduct {
+  border-color: #4F46E5;
+  box-shadow: 0 0 0 2px #4F46E5;
+} 

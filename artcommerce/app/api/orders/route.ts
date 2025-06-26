@@ -1,0 +1,375 @@
+// @ts-nocheck
+import { NextResponse } from 'next/server'
+import prisma from '../../../lib/prisma'
+import jwt from 'jsonwebtoken'
+import nodemailer from 'nodemailer'
+import { orderEvents } from '../../../lib/orderEvents'
+import { PrismaClient, Order, OrderItem, Product, User } from '@prisma/client'
+import { sendOrderNotificationEmail } from '../../../lib/notifications/sendinblue'
+import pusher from '../../../lib/pusher'
+import { sendLowStockEmail } from '../../../lib/notifications/lowStock'
+import { sendOutOfStockEmail } from '../../../lib/notifications/outOfStock'
+
+
+const JWT_SECRET = process.env.JWT_SECRET!
+
+function getUserPayload(request: Request): { userId: number; userEmail: string; role: string } | null {
+  const authHeader = request.headers.get('Authorization') || ''
+  const token = authHeader.replace('Bearer ', '').trim()
+  if (!token) return null
+
+  try {
+    const payload = jwt.verify(token, JWT_SECRET) as { userId: number; email: string; role: string}
+    return { userId: payload.userId, userEmail: payload.email, role: payload.role }
+  } catch (err) {
+    console.error('🔍 [order route] JWT verify failed:', err)
+    return null
+  }
+}
+
+export async function GET(request: Request) {
+  try {
+    const payload = getUserPayload(request)
+    if (!payload) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const url = new URL(request.url)
+    const queryUserId = url.searchParams.get('userId')
+
+    let where: any = {}
+
+    // normal users always only see their own
+    if (payload.role !== 'admin') {
+      where.userId = payload.userId
+    }
+    // admins, if they passed a userId, filter by it
+    else if (queryUserId) {
+      where.userId = queryUserId
+    }
+
+    const orders = await prisma.order.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        orderItems: {
+          include: {
+            product: {
+              select: {
+                id: true,
+                name: true,
+                currency: true,
+                imageUrls: true,
+              },
+            },
+          },
+        },
+        user: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+          },
+        },
+      },
+    })
+
+    return NextResponse.json({ orders })
+  } catch (err) {
+    console.error('[orders GET] error:', err)
+    return NextResponse.json({ error: 'Server error' }, { status: 500 })
+  }
+}
+
+export async function POST(request: Request) {
+  console.log('🔍 [order route] Entered POST /api/orders')
+
+  // 1️⃣ Authenticate
+  const payload = getUserPayload(request)
+  if (!payload) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const { userId } = payload
+
+  // 2️⃣ Parse body
+  let body: any
+  try {
+    body = await request.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
+  }
+  const { addressId, billingAddressId, paymentMethod, couponCode } = body
+  if (!addressId) return NextResponse.json({ error: 'Missing addressId' }, { status: 400 })
+
+  // 3️⃣ Load shipping & billing addresses
+  const shippingAddr = await prisma.address.findFirst({ where: { id: addressId, userId } })
+  if (!shippingAddr) return NextResponse.json({ error: 'Shipping address not found' }, { status: 404 })
+
+  let billingAddr = shippingAddr
+  if (billingAddressId) {
+    const found = await prisma.address.findFirst({ where: { id: billingAddressId, userId } })
+    if (!found) return NextResponse.json({ error: 'Billing address not found' }, { status: 404 })
+    billingAddr = found
+  }
+
+  // 4️⃣ Fetch cart items
+  const cartItems = await prisma.cartItem.findMany({
+    where: { userId },
+    include: { product: true },
+  })
+  if (cartItems.length === 0) return NextResponse.json({ error: 'Cart is empty' }, { status: 400 })
+
+  // 5️⃣ Compute totals
+  const subtotal = cartItems.reduce((sum, i) => sum + i.quantity * i.product.price, 0)
+  const tax = parseFloat((subtotal * 0.05).toFixed(2))
+  const shippingFee = parseFloat((subtotal > 100 ? 0 : 10).toFixed(2))
+
+  // Handle coupon discount
+  let discountAmount = 0
+  if (couponCode) {
+    const coupon = await prisma.coupon.findUnique({ where: { code: couponCode } })
+    if (coupon && coupon.expiresAt > new Date() && (coupon.usageLimit == null || coupon.usedCount < coupon.usageLimit)) {
+      if (coupon.type === 'percentage') {
+        // Calculate percentage discount on subtotal + tax + shipping
+        discountAmount = parseFloat(((subtotal + tax + shippingFee) * (coupon.amount / 100)).toFixed(2))
+      } else {
+        // Fixed amount discount
+        discountAmount = coupon.amount
+      }
+      
+      // Update coupon usage count
+      await prisma.coupon.update({
+        where: { id: coupon.id },
+        data: { usedCount: { increment: 1 } }
+      })
+    }
+  }
+
+  const totalAmount = parseFloat((subtotal + tax + shippingFee).toFixed(2))
+  const discountedTotal = Math.max(0, parseFloat((totalAmount - discountAmount).toFixed(2)))
+  const orderNumber = `ORD-${Date.now()}-${Math.floor(Math.random() * 1000)}`
+
+  // 6️⃣ Create order & items
+  let createdOrder: Order & {
+    orderItems: (OrderItem & { product: Product })[];
+    user: Pick<User, 'email' | 'fullName'>;
+  }
+  try {
+    createdOrder = await prisma.order.create({
+      data: {
+        userId,
+        orderNumber,
+        status: 'pending',
+        subtotal,
+        tax,
+        shippingFee,
+        discountAmount,
+        discountedTotal,
+        totalAmount: discountedTotal,
+        couponCode,
+        shippingAddress: {
+          line1: shippingAddr.line1,
+          line2: shippingAddr.line2,
+          city:  shippingAddr.city,
+          postalCode: shippingAddr.postalCode,
+          country: shippingAddr.country,
+        },
+        billingAddress: {
+          line1: billingAddr.line1,
+          line2: billingAddr.line2,
+          city:  billingAddr.city,
+          postalCode: billingAddr.postalCode,
+          country: billingAddr.country,
+        },
+        paymentMethod,
+        paymentStatus: 'unpaid',
+        orderItems: {
+          create: cartItems.map(item => ({
+            productId: item.productId,
+            quantity: item.quantity,
+            priceAtPurchase: item.product.price,
+          })),
+        },
+      },
+      include: { 
+        orderItems: { include: { product: true } },
+        user: { select: { email: true, fullName: true } }
+      },
+    })
+    console.log('✅ [order route] Order created in DB:', createdOrder)
+
+    // Emit Pusher event for real-time admin notification
+    const products = createdOrder.orderItems.map(item => item.product.name)
+    pusher.trigger('admin-channel', 'new-order', {
+      id: createdOrder.id,
+      total: createdOrder.totalAmount,
+      customerName: createdOrder.user.fullName,
+      products, // Array of product names
+    })
+    .then(() => console.log('✅ Pusher event sent'))
+    .catch((err: Error) => console.error('❌ [order route] Pusher error:', err))
+
+    // fire-and-forget: send admin email via Sendinblue
+    const shippingAddress = createdOrder.shippingAddress as {
+      line1: string;
+      city: string;
+      country: string;
+      postalCode: string;
+    } | null;
+
+    sendOrderNotificationEmail({
+      id: createdOrder.id,
+      items: createdOrder.orderItems.map(it => ({
+        productId: String(it.productId),
+        productName: it.product.name,
+        quantity: it.quantity,
+        unitPrice: it.priceAtPurchase,
+      })),
+      total: createdOrder.totalAmount,
+      customer: {
+        name: createdOrder.user.fullName!,
+        email: createdOrder.user.email!,
+        address: {
+          street: shippingAddress?.line1 || '',
+          city: shippingAddress?.city || '',
+          state: shippingAddress?.country || '',
+          zip: shippingAddress?.postalCode || '',
+        },
+      },
+      createdAt: createdOrder.createdAt.toISOString(),
+    })
+    .then(() => console.log('✅ Admin email sent to', process.env.ADMIN_EMAIL))
+    .catch(err => console.error('❌ Failed admin email:', err))
+
+    // ─── 7️⃣ Decrement stock & check for low stock ────────────────────────────────────
+    const LOW_STOCK_THRESHOLD = 5
+
+    for (const item of createdOrder.orderItems) {
+      // atomically decrement stock
+      const updated = await prisma.product.update({
+        where: { id: item.productId },
+        data: { stockQuantity: { decrement: item.quantity } },
+      })
+
+      if (updated.stockQuantity <= 0) {
+        // OUT OF STOCK
+        await sendOutOfStockEmail({
+          productId: updated.id,
+          productName: updated.name,
+        }).catch(console.error)
+
+        pusher.trigger('admin-channel', 'out-of-stock', {
+          productId: updated.id,
+          productName: updated.name,
+        }).catch(console.error)
+
+      } else if (updated.stockQuantity <= LOW_STOCK_THRESHOLD) {
+        // LOW STOCK (but not out)
+        await sendLowStockEmail({
+          productId: updated.id,
+          productName: updated.name,
+          remaining: updated.stockQuantity,
+          threshold: LOW_STOCK_THRESHOLD,
+        }).catch(console.error)
+
+        pusher.trigger('admin-channel', 'low-stock', {
+          productId: updated.id,
+          productName: updated.name,
+          remaining: updated.stockQuantity,
+        }).catch(console.error)
+      }
+    }
+
+    // 7️⃣ Clear cart
+    await prisma.cartItem.deleteMany({ where: { userId } })
+    console.log('✅ [order route] Cleared cart for userId:', userId)
+  } catch (dbErr) {
+    console.error('❌ [order route] Error creating order:', dbErr)
+    return NextResponse.json({ error: 'Order creation failed' }, { status: 500 })
+  }
+
+  // 8️⃣ Send confirmation email
+  const customer = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { email: true, fullName: true },
+  })
+  const toEmail = customer?.email
+  console.log('✉️  [order route] About to send confirmation e-mail to:', toEmail)
+
+  if (toEmail) {
+    try {
+      const transporter = nodemailer.createTransport({
+        host:   process.env.SMTP_HOST!,
+        port:   Number(process.env.SMTP_PORT),
+        secure: process.env.SMTP_PORT === '465',
+        auth:   { user: process.env.SMTP_USER!, pass: process.env.SMTP_PASS! },
+      })
+
+      // build the HTML body
+      const itemsRows = createdOrder.orderItems.map(item => {
+        const unit = item.priceAtPurchase.toFixed(2)
+        const line = (item.quantity * item.priceAtPurchase).toFixed(2)
+        return `
+          <tr>
+            <td style="padding:8px;border:1px solid #ddd;">${item.product.name}</td>
+            <td style="padding:8px;border:1px solid #ddd;text-align:center;">${item.quantity}</td>
+            <td style="padding:8px;border:1px solid #ddd;text-align:right;">${item.product.currency} ${unit}</td>
+            <td style="padding:8px;border:1px solid #ddd;text-align:right;">${item.product.currency} ${line}</td>
+          </tr>
+        `
+      }).join('')
+
+      const htmlBody = `
+        <div style="font-family:Arial,sans-serif;color:#333;">
+          <h2>Thank you for your order!</h2>
+          <p>Order Number: <b>${createdOrder.orderNumber}</b></p>
+          <h3>Order Summary</h3>
+          <table style="width:100%;border-collapse:collapse;">
+            <thead><tr style="background:#f5f5f5;">
+              <th style="padding:12px;border:1px solid #ddd;text-align:left;">Product</th>
+              <th style="padding:12px;border:1px solid #ddd;text-align:center;">Qty</th>
+              <th style="padding:12px;border:1px solid #ddd;text-align:right;">Unit Price</th>
+              <th style="padding:12px;border:1px solid #ddd;text-align:right;">Line Total</th>
+            </tr></thead>
+            <tbody>${itemsRows}</tbody>
+            <tfoot>
+              <tr><td colspan="3" style="padding:8px;border:1px solid #ddd;text-align:right;font-weight:bold;">Subtotal:</td>
+                <td style="padding:8px;border:1px solid #ddd;text-align:right;">${createdOrder.orderItems[0].product.currency} ${createdOrder.subtotal.toFixed(2)}</td>
+              </tr>
+              <tr><td colspan="3" style="padding:8px;border:1px solid #ddd;text-align:right;font-weight:bold;">Tax (5%):</td>
+                <td style="padding:8px;border:1px solid #ddd;text-align:right;">${createdOrder.orderItems[0].product.currency} ${createdOrder.tax.toFixed(2)}</td>
+              </tr>
+              <tr><td colspan="3" style="padding:8px;border:1px solid #ddd;text-align:right;font-weight:bold;">Shipping Fee:</td>
+                <td style="padding:8px;border:1px solid #ddd;text-align:right;">${createdOrder.orderItems[0].product.currency} ${createdOrder.shippingFee.toFixed(2)}</td>
+              </tr>
+              ${(createdOrder.discountAmount ?? 0) > 0 ? `
+              <tr><td colspan="3" style="padding:8px;border:1px solid #ddd;text-align:right;font-weight:bold;">Discount:</td>
+                <td style="padding:8px;border:1px solid #ddd;text-align:right;">${createdOrder.orderItems[0].product.currency} ${(createdOrder.discountAmount ?? 0).toFixed(2)}</td>
+              </tr>
+              ` : ''}
+              <tr style="background:#f5f5f5;">
+                <td colspan="3" style="padding:12px;border:1px solid #ddd;text-align:right;font-weight:bold;">Total:</td>
+                <td style="padding:12px;border:1px solid #ddd;text-align:right;font-size:1.1em;font-weight:bold;">${createdOrder.orderItems[0].product.currency} ${(createdOrder.discountedTotal ?? createdOrder.totalAmount).toFixed(2)}</td>
+              </tr>
+            </tfoot>
+          </table>
+          <p>We'll notify you again once your items ship. Thanks for shopping!</p>
+        </div>
+      `
+
+      await transporter.sendMail({
+        from:    `"Artcommerce" <${process.env.SMTP_USER!}>`,
+        to:      toEmail,
+        subject: `Order Confirmation (#${createdOrder.orderNumber})`,
+        html:    htmlBody,
+      })
+      console.log('✅ [order route] Email sent successfully!')
+    } catch (emailErr) {
+      console.error('❌ [order route] Error sending confirmation email:', emailErr)
+      // we don't block on mail failures
+    }
+  } else {
+    console.warn(`⚠️ [order route] No email for userId ${userId}; skipping send.`)
+  }
+
+  // 🔟 Return the order
+  return NextResponse.json({ order: createdOrder })
+}
