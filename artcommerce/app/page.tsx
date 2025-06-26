@@ -388,6 +388,8 @@ muted
 
 playsInline
 
+preload="auto"
+
 >
 
 <source src="/images/homepage4.mp4" type="video/mp4" />
