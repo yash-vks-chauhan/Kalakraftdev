@@ -1,12 +1,10 @@
-import { Suspense } from 'react'
-import ProductsClient from './ProductsClient'
+import dynamic from 'next/dynamic'
 
-export const dynamic = 'force-dynamic'
+const ProductsClient = dynamic(
+  () => import('./ProductsClient.tsx'),
+  { ssr: false, loading: () => <div>Loading products…</div> }
+)
 
 export default function Page() {
-  return (
-    <Suspense fallback={<div>Loading products…</div>}>
-      <ProductsClient />
-    </Suspense>
-  )
+  return <ProductsClient />
 } 
