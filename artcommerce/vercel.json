@@ -4,7 +4,7 @@
   "buildCommand": "npm run build",
   "outputDirectory": ".next",
   "env": {
-    "DATABASE_URL": "postgres://default:Rnz6jtJDQPER@ep-polished-bush-a4k3wd01-pooler.us-east-1.aws.neon.tech:5432/verceldb?sslmode=require"
+    "DATABASE_URL": "postgresql://neondb_owner:npg_GoQhp2C3DrBf@ep-shiny-frog-a1mpqgkm-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require"
   },
   "routes": [
     {
