@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "postbuild": "prisma migrate deploy",
     "start": "next start"
   },
   "dependencies": {
