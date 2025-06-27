@@ -28,9 +28,14 @@ An e-commerce platform for art products.
    PUSHER_SECRET=your_pusher_secret
    PUSHER_CLUSTER=your_pusher_cluster
 
-   # Email Configuration
+   # Email Configuration (for customer-facing emails)
    EMAIL_SERVER=smtp://username:password@smtp.example.com:587
    EMAIL_FROM=noreply@example.com
+
+   # Sendinblue Configuration (for admin notification emails)
+   SENDINBLUE_API_KEY=your_sendinblue_api_key
+   SENDINBLUE_FROM_EMAIL=your_sender_email@example.com
+   ADMIN_EMAIL=your_admin_email@example.com
    ```
 
 4. Run the development server:

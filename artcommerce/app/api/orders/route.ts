@@ -214,8 +214,8 @@ export async function POST(request: Request) {
       country: string;
       postalCode: string;
     } | null;
-
-    sendOrderNotificationEmail({
+    
+    const orderForEmail = {
       id: createdOrder.id,
       items: createdOrder.orderItems.map(it => ({
         productId: String(it.productId),
@@ -235,7 +235,9 @@ export async function POST(request: Request) {
         },
       },
       createdAt: createdOrder.createdAt.toISOString(),
-    })
+    };
+    
+    sendOrderNotificationEmail(orderForEmail)
     .then(() => console.log('✅ Admin email sent to', process.env.ADMIN_EMAIL))
     .catch(err => console.error('❌ Failed admin email:', err))
 
