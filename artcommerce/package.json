@@ -4,8 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3002",
-    "build": "prisma generate && next build && node scripts/copy-static-files.js",
-    "postbuild": "prisma migrate deploy",
+    "build": "prisma generate && next build",
     "start": "next start -p 3002",
     "lint": "next lint"
   },
@@ -43,7 +42,10 @@
     "recharts": "^2.15.3",
     "tailwind-merge": "^1.14.0",
     "three": "^0.177.0",
-    "uuid": "^11.1.0"
+    "uuid": "^11.1.0",
+    "prisma": "^6.10.1",
+    "tailwindcss": "^3.4.4",
+    "typescript": "^5"
   },
   "devDependencies": {
     "@types/aos": "^3.0.7",
@@ -56,6 +58,5 @@
     "prisma": "^6.10.1",
     "tailwindcss": "^3.4.4",
     "typescript": "^5"
-  },
-  "postinstall": "prisma generate"
+  }
 }
