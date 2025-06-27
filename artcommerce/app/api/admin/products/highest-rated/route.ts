@@ -25,7 +25,7 @@ export async function GET(request: Request) {
      FROM   Product p
      JOIN   ProductReview r ON r.productId = p.id
      GROUP  BY p.id
-     HAVING reviewCount > 0
+     HAVING COUNT(r.id) > 0
      ORDER  BY avgRating DESC
      LIMIT  20;`
   )
