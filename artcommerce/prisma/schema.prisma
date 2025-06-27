@@ -39,7 +39,7 @@ model User {
   cartItems     CartItem[]
   wishlistItems WishlistItem[]
   orders        Order[]
-  orderNotes    OrderNote[]
+  orderNotes    OrderNote[] @relation("CustomerNotes")
   reviews       ProductReview[]
 
   authoredNotes OrderNote[] @relation("AuthorNotes")
@@ -197,7 +197,7 @@ model Order {
   updatedAt     DateTime @updatedAt
 
   orderItems OrderItem[]
-  orderNotes OrderNote[] @relation("OrderNotes")
+  orderNotes OrderNote[] @relation("CustomerNotes")
 }
 
 model OrderItem {
@@ -219,6 +219,8 @@ model OrderNote {
   authorId  String
   text      String
   createdAt DateTime @default(now())
+  customer  User?    @relation("CustomerNotes", fields: [customerId], references: [id])
+  customerId String?
 }
 
 model Coupon {
