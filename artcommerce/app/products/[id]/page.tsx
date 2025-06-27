@@ -105,19 +105,25 @@ export default function ProductDetailsPage() {
           return
         }
         const data = await res.json()
-        // Normalize imageUrls in case they are stored as a JSON string
-        const normalized = Array.isArray(data.product.imageUrls)
-          ? data.product.imageUrls
-          : (() => {
-              try {
-                const parsed = JSON.parse(data.product.imageUrls || '[]')
-                return Array.isArray(parsed) ? parsed : []
-              } catch {
-                return []
-              }
-            })()
-
-        setProduct({ ...data.product, imageUrls: normalized })
+        
+        // Normalize imageUrls and filter out any null/invalid entries
+        let rawImgs: (string | null)[] = [];
+        if (Array.isArray(data.product.imageUrls)) {
+          rawImgs = data.product.imageUrls;
+        } else {
+          try {
+            const parsed = JSON.parse(data.product.imageUrls || '[]');
+            if (Array.isArray(parsed)) {
+              rawImgs = parsed;
+            }
+          } catch {
+            // Fails silently, rawImgs remains []
+          }
+        }
+        
+        const cleanImageUrls = rawImgs.filter((url): url is string => typeof url === 'string' && url.length > 0);
+        
+        setProduct({ ...data.product, imageUrls: cleanImageUrls })
         // fetch similar products
         if (data.product?.category?.slug) {
           fetch(`/api/products?category=${data.product.category.slug}`)

@@ -37,141 +37,150 @@ interface UploadingFile {
   url?: string;
 }
 
+type StylingIdea = { url: string; text: string };
+
 export default function EditProductPage() {
-  const { id } = useParams()
-  const [product, setProduct] = useState<Product | null>(null)
+  const { id } = useParams();
+  const router = useRouter();
+  const [product, setProduct] = useState<Product | null>(null);
 
   // form state
-  const [name, setName] = useState('')
-  const [slug, setSlug] = useState('')
-  const [shortDesc, setShortDesc] = useState('')
-  const [description, setDescription] = useState('')
-  const [specifications, setSpecifications] = useState('')
-  const [careInstructions, setCareInstructions] = useState('')
-  const [stylingIdeas, setStylingIdeas] = useState<StylingIdea[]>([])
-  const [price, setPrice] = useState(0)
-  const [currency, setCurrency] = useState('USD')
-  const [stockQuantity, setStockQuantity] = useState(0)
-  const [isActive, setIsActive] = useState(true)
-  const [categoryId, setCategoryId] = useState<number | null | string>('')
-  const [imageUrls, setImageUrls] = useState<string[]>([])
-  const [usageTagsInput, setUsageTagsInput] = useState('')
+  const [name, setName] = useState('');
+  const [slug, setSlug] = useState('');
+  const [shortDesc, setShortDesc] = useState('');
+  const [description, setDescription] = useState('');
+  const [specifications, setSpecifications] = useState('');
+  const [careInstructions, setCareInstructions] = useState('');
+  const [stylingIdeas, setStylingIdeas] = useState<StylingIdea[]>([]);
+  const [price, setPrice] = useState(0);
+  const [currency, setCurrency] = useState('USD');
+  const [stockQuantity, setStockQuantity] = useState(0);
+  const [isActive, setIsActive] = useState(true);
+  const [categoryId, setCategoryId] = useState<number | null | string>('');
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [usageTagsInput, setUsageTagsInput] = useState('');
 
   // UI state
-  const { user, token } = useAuth()
-  const [isLoading, setIsLoading] = useState(true)
-  const [isSaving, setIsSaving] = useState(false)
-  const [submitting, setSubmitting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [categories, setCategories] = useState<{ id: number; name: string }[]>([])
-  const [showNotification, setShowNotification] = useState(false)
-  const [notificationType, setNotificationType] = useState('success')
-  const [notificationMessage, setNotificationMessage] = useState('')
-  const [showCancelModal, setShowCancelModal] = useState(false)
-  const [uploadingFiles, setUploadingFiles] = useState<Record<string, UploadingFile>>({})
-
-  type StylingIdea = { url: string; text: string }
+  const { user, token } = useAuth();
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
+  const [showNotification, setShowNotification] = useState(false);
+  const [notificationType, setNotificationType] = useState('success');
+  const [notificationMessage, setNotificationMessage] = useState('');
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [uploadingFiles, setUploadingFiles] = useState<Record<string, UploadingFile>>({});
 
   useEffect(() => {
-    if (!token) return
+    if (!token) return;
 
     // Fetch categories
     fetch('/api/categories', { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.json())
-      .then(setCategories)
+      .then(setCategories);
 
     // Fetch product data
     fetch(`/api/admin/products/${id}`, { headers: { Authorization: `Bearer ${token}` } })
       .then(async r => {
-        if (!r.ok) throw new Error(await r.text())
-        return r.json()
+        if (!r.ok) throw new Error(await r.text());
+        return r.json();
       })
       .then(json => {
-        const p = json.product
-        setName(p.name)
-        setSlug(p.slug)
-        setShortDesc(p.shortDesc || '')
-        setDescription(p.description || '')
-        setSpecifications(p.specifications || '')
-        setCareInstructions(p.careInstructions || '')
-        setStylingIdeas(p.stylingIdeaImages || [])
-        setPrice(p.price)
-        setCurrency(p.currency)
-        setStockQuantity(p.stockQuantity)
-        setIsActive(p.isActive)
-        setCategoryId(p.categoryId)
-        setImageUrls(p.imageUrls || [])
-        setUsageTagsInput((p.usageTags || []).join(', '))
-        setProduct(p)
+        const p = json.product;
+        setName(p.name);
+        setSlug(p.slug);
+        setShortDesc(p.shortDesc || '');
+        setDescription(p.description || '');
+        setSpecifications(p.specifications || '');
+        setCareInstructions(p.careInstructions || '');
+
+        // Filter out any null/invalid items before setting state
+        const cleanStylingIdeas = (p.stylingIdeaImages || []).filter((idea: StylingIdea | null): idea is StylingIdea => !!idea);
+        setStylingIdeas(cleanStylingIdeas);
+        
+        setPrice(p.price);
+        setCurrency(p.currency);
+        setStockQuantity(p.stockQuantity);
+        setIsActive(p.isActive);
+        setCategoryId(p.categoryId);
+
+        // Filter out any null/invalid URLs before setting state
+        const cleanImageUrls = (p.imageUrls || []).filter((url: string | null): url is string => !!url);
+        setImageUrls(cleanImageUrls);
+
+        setUsageTagsInput((p.usageTags || []).join(', '));
+        setProduct(p);
       })
       .catch(err => setError(err.message))
-      .finally(() => setIsLoading(false))
-  }, [id, token])
+      .finally(() => setIsLoading(false));
+  }, [id, token]);
 
   const handleRemoveImage = (indexToRemove: number) => {
-    setImageUrls(prev => prev.filter((_, index) => index !== indexToRemove))
-  }
+    setImageUrls(prev => prev.filter((_, index) => index !== indexToRemove));
+  };
 
   const handleRemoveStylingImage = (indexToRemove: number) => {
-    setStylingIdeas(prev => prev.filter((_, index) => index !== indexToRemove))
-  }
+    setStylingIdeas(prev => prev.filter((_, index) => index !== indexToRemove));
+  };
 
   const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes'
-    const k = 1024
-    const sizes = ['Bytes', 'KB', 'MB', 'GB']
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
-  }
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
 
   const handleRemoveUpload = (uploadId: string) => {
     setUploadingFiles(prev => {
-      const newUploading = { ...prev }
-      delete newUploading[uploadId]
-      return newUploading
-    })
-  }
+      const newUploading = { ...prev };
+      delete newUploading[uploadId];
+      return newUploading;
+    });
+  };
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     for (const file of acceptedFiles) {
-      const uploadId = `${file.name}-${file.size}-${Date.now()}`
-      const preview = URL.createObjectURL(file)
+      const uploadId = `${file.name}-${file.size}-${Date.now()}`;
+      const preview = URL.createObjectURL(file);
       
       setUploadingFiles(prev => ({
         ...prev,
         [uploadId]: { id: uploadId, name: file.name, preview, progress: 0, status: 'uploading' }
-      }))
+      }));
 
       try {
-        const xhr = new XMLHttpRequest()
+        const xhr = new XMLHttpRequest();
 
         xhr.upload.onprogress = (event) => {
           if (event.lengthComputable) {
-            const progress = Math.round((event.loaded * 100) / event.total)
+            const progress = Math.round((event.loaded * 100) / event.total);
             setUploadingFiles(prev => ({
               ...prev,
               [uploadId]: {
                 ...prev[uploadId],
                 progress
               }
-            }))
+            }));
           }
-        }
+        };
 
         const uploadPromise = new Promise((resolve, reject) => {
           xhr.onload = async () => {
             if (xhr.status === 200) {
-              const response = JSON.parse(xhr.responseText)
-              resolve(response)
+              const response = JSON.parse(xhr.responseText);
+              resolve(response);
             } else {
-              reject(new Error('Upload failed'))
+              reject(new Error('Upload failed'));
             }
-          }
-          xhr.onerror = () => reject(new Error('Upload failed'))
-        })
+          };
+          xhr.onerror = () => reject(new Error('Upload failed'));
+        });
 
-        xhr.open('POST', `/api/uploads?filename=${file.name}`)
-        xhr.send(file)
+        xhr.open('POST', `/api/uploads?filename=${file.name}`);
+        xhr.send(file);
 
         uploadPromise.then((url: any) => {
           setImageUrls(prev => [...prev, url.url]);
@@ -181,7 +190,7 @@ export default function EditProductPage() {
           }));
         }).catch(() => {
            setUploadingFiles(prev => ({ ...prev, [uploadId]: { ...prev[uploadId], status: 'error' } }));
-        })
+        });
         
       } catch (error) {
         setUploadingFiles(prev => ({
@@ -191,10 +200,10 @@ export default function EditProductPage() {
             status: 'error',
             progress: 0
           }
-        }))
+        }));
       }
     }
-  }, [])
+  }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -202,7 +211,7 @@ export default function EditProductPage() {
       'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.webp']
     },
     maxFiles: 5 - imageUrls.length,
-  })
+  });
 
   const onDropStyling = useCallback(async (acceptedFiles: File[]) => {
     for (const file of acceptedFiles) {
@@ -210,26 +219,26 @@ export default function EditProductPage() {
         const res = await fetch(`/api/uploads?filename=${file.name}`, {
           method: 'POST',
           body: file,
-        })
-        const data = await res.json()
-        setStylingIdeas(prev => [...prev, { url: data.url, text: '' }])
+        });
+        const data = await res.json();
+        setStylingIdeas(prev => [...prev, { url: data.url, text: '' }]);
       } catch (err) {
-        console.error('Upload failed', err)
+        console.error('Upload failed', err);
       }
     }
-  }, [])
+  }, []);
 
   const { getRootProps: getStylingRootProps, getInputProps: getStylingInputProps, isDragActive: isStylingDrag } = useDropzone({
     onDrop: onDropStyling,
     accept: {
       'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.webp']
     },
-  })
+  });
 
   async function handleSubmit(e: FormEvent) {
-    e.preventDefault()
-    setError(null)
-    setSubmitting(true)
+    e.preventDefault();
+    setError(null);
+    setSubmitting(true);
     try {
       const res = await fetch(`/api/admin/products/${id}`, {
         method: 'PATCH',
@@ -256,35 +265,35 @@ export default function EditProductPage() {
             .map((t: string) => t.trim())
             .filter((t: string) => t.length > 0),
         })
-      })
+      });
       if (!res.ok) {
-        const data = await res.json()
-        throw new Error(data.error || 'Update failed')
+        const data = await res.json();
+        throw new Error(data.error || 'Update failed');
       }
-      setNotificationType('success')
-      setNotificationMessage('Product edited successfully')
-      setShowNotification(true)
+      setNotificationType('success');
+      setNotificationMessage('Product edited successfully');
+      setShowNotification(true);
       setTimeout(() => {
-        setIsSaving(true)
-        router.push('/dashboard/admin/products')
-      }, 1500)
+        setIsSaving(true);
+        router.push('/dashboard/admin/products');
+      }, 1500);
     } catch (err: any) {
-      setNotificationType('error')
-      setNotificationMessage(err.message)
-      setShowNotification(true)
+      setNotificationType('error');
+      setNotificationMessage(err.message);
+      setShowNotification(true);
     } finally {
-      setSubmitting(false)
+      setSubmitting(false);
     }
   }
 
   function handleCancelClick(e: React.MouseEvent) {
-    e.preventDefault()
-    setShowCancelModal(true)
+    e.preventDefault();
+    setShowCancelModal(true);
   }
 
-  if (isLoading || isSaving) return <LoadingSpinner />
-  if (error) return <div className={styles.error}>{error}</div>
-  if (!product) return <div className={styles.error}>Product not found</div>
+  if (isLoading || isSaving) return <LoadingSpinner />;
+  if (error) return <div className={styles.error}>{error}</div>;
+  if (!product) return <div className={styles.error}>Product not found</div>;
 
   return (
     <main className={styles.container}>
