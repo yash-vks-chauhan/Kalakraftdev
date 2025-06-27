@@ -43,10 +43,11 @@ model User {
   reviews       ProductReview[]
 
   authoredNotes OrderNote[] @relation("AuthorNotes")
-  repliedToReviews ProductReview[] @relation("AdminReplies")
   notifications Notification[]
   sentSupportMessages SupportMessage[]
   supportTickets SupportTicket[]
+
+  stripeCustomerId String?
 }
 
 model Account {
