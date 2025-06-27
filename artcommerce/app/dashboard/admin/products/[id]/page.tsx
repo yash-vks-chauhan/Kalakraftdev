@@ -6,7 +6,7 @@ import { useEffect, useState, FormEvent, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useAuth } from '../../../../contexts/AuthContext'
 import styles from './edit-product.module.css'
-import { FiBox, FiDollarSign, FiArchive, FiImage, FiTrash2, FiUploadCloud, FiCheck, FiAlertCircle, FiArrowRight } from 'react-icons/fi'
+import { FiBox, FiDollarSign, FiArchive, FiImage, FiTrash2, FiUploadCloud, FiCheck, FiAlertCircle, FiArrowRight, FiUpload, FiX, FiSave } from 'react-icons/fi'
 import { useDropzone } from 'react-dropzone'
 import LoadingSpinner from '../../../../components/LoadingSpinner'
 
@@ -65,7 +65,9 @@ export default function EditProductPage() {
   const [isActive, setIsActive] = useState(true);
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [imageUrls, setImageUrls] = useState<string[]>([]);
-  const [usageTagsInput, setUsageTagsInput] = useState('');
+  const [usageTags, setUsageTags] = useState<string[]>([]);
+  const [availableTags, setAvailableTags] = useState<string[]>([]);
+  const [newTagInput, setNewTagInput] = useState('');
 
   // UI state
   const { user, token } = useAuth();
@@ -75,10 +77,12 @@ export default function EditProductPage() {
   const [error, setError] = useState<string | null>(null);
   const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
   const [showNotification, setShowNotification] = useState(false);
-  const [notificationType, setNotificationType] = useState('success');
+  const [notificationType, setNotificationType] = useState<'success' | 'error'>('success');
   const [notificationMessage, setNotificationMessage] = useState('');
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [uploadingFiles, setUploadingFiles] = useState<Record<string, UploadingFile>>({});
+  const [uploadProgress, setUploadProgress] = useState<{ [key: string]: number }>({});
+  const [uploadErrors, setUploadErrors] = useState<{ [key: string]: string }>({});
 
   // Safe parsing functions
   const safeParseArray = <T,>(value: any, defaultValue: T[] = []): T[] => {
@@ -129,9 +133,19 @@ export default function EditProductPage() {
       .then(data => {
         if (Array.isArray(data)) {
           setCategories(data);
+        } else if (data.categories && Array.isArray(data.categories)) {
+          setCategories(data.categories);
         }
       })
       .catch(() => setError("Failed to load categories."));
+
+    // Fetch available tags
+    fetch('/api/products/usage-tags')
+      .then(r => r.json())
+      .then(json => {
+        if (Array.isArray(json.tags)) setAvailableTags(json.tags);
+      })
+      .catch(console.error);
 
     // Fetch product data
     fetch(`/api/admin/products/${id}`, { 
@@ -158,7 +172,7 @@ export default function EditProductPage() {
         // Handle arrays with safe parsing
         setStylingIdeas(safeParseStylingIdeas(p.stylingIdeaImages));
         setImageUrls(safeParseImageUrls(p.imageUrls));
-        setUsageTagsInput(safeParseUsageTags(p.usageTags).join(', '));
+        setUsageTags(safeParseUsageTags(p.usageTags));
         
         // Handle numeric values
         setPrice(typeof p.price === 'number' ? p.price : 0);
@@ -180,6 +194,10 @@ export default function EditProductPage() {
     setImageUrls(prev => prev.filter((_, index) => index !== indexToRemove));
   };
 
+  const handleRemoveStylingImage = (indexToRemove: number) => {
+    setStylingIdeas(prev => prev.filter((_, index) => index !== indexToRemove));
+  };
+
   const onDrop = useCallback((acceptedFiles: File[]) => {
     for (const file of acceptedFiles) {
       if (!file?.name) continue;
@@ -190,6 +208,8 @@ export default function EditProductPage() {
         ...prev,
         [uploadId]: { id: uploadId, name: file.name, preview, progress: 0, status: 'uploading' }
       }));
+      
+      setUploadProgress(prev => ({ ...prev, [uploadId]: 0 }));
 
       try {
         const xhr = new XMLHttpRequest();
@@ -197,6 +217,7 @@ export default function EditProductPage() {
           if (event.lengthComputable) {
             const progress = Math.round((event.loaded * 100) / event.total);
             setUploadingFiles(prev => ({ ...prev, [uploadId]: { ...prev[uploadId], progress } }));
+            setUploadProgress(prev => ({ ...prev, [uploadId]: progress }));
           }
         };
 
@@ -225,33 +246,68 @@ export default function EditProductPage() {
               ...prev, 
               [uploadId]: { ...prev[uploadId], status: 'completed', progress: 100, url: blob.url } 
             }));
+            
+            // Clear progress and errors for this upload
+            setUploadingFiles(prev => {
+              const newUploading = { ...prev };
+              delete newUploading[uploadId];
+              return newUploading;
+            });
+            setUploadProgress(prev => {
+              const newProgress = { ...prev };
+              delete newProgress[uploadId];
+              return newProgress;
+            });
           } else {
             throw new Error('Invalid blob data');
           }
         }).catch(() => {
           setUploadingFiles(prev => ({ ...prev, [uploadId]: { ...prev[uploadId], status: 'error' } }));
+          setUploadErrors(prev => ({
+            ...prev,
+            [uploadId]: 'Failed to upload image'
+          }));
         });
       } catch (error) {
         setUploadingFiles(prev => ({ ...prev, [uploadId]: { ...prev[uploadId], status: 'error' } }));
+        setUploadErrors(prev => ({
+          ...prev,
+          [uploadId]: 'Failed to upload image'
+        }));
       }
     }
   }, []);
 
-  const { getRootProps, getInputProps } = useDropzone({ 
+  const onDropStyling = useCallback(async (acceptedFiles: File[]) => {
+    for (const file of acceptedFiles) {
+      try {
+        const res = await fetch(`/api/uploads?filename=${file.name}`, {
+          method: 'POST',
+          body: file,
+        });
+        const data = await res.json();
+        setStylingIdeas(prev => [...prev, { url: data.url, text: '' }]);
+      } catch (err) {
+        console.error('Upload failed', err);
+      }
+    }
+  }, []);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({ 
     onDrop, 
-    accept: { 'image/*': ['.jpeg', '.jpg', '.png'] } 
+    accept: { 'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.webp'] },
+    maxFiles: 5 - imageUrls.length,
+  });
+
+  const { getRootProps: getStylingRootProps, getInputProps: getStylingInputProps, isDragActive: isStylingDrag } = useDropzone({
+    onDrop: onDropStyling,
+    accept: { 'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.webp'] },
   });
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setSubmitting(true);
     try {
-      // Prepare usage tags from comma-separated string
-      const usageTags = usageTagsInput
-        .split(',')
-        .map(t => t.trim())
-        .filter(Boolean);
-
       // Prepare data for API
       const productData = {
         name, 
@@ -309,69 +365,233 @@ export default function EditProductPage() {
       )}
       
       <h1 className={styles.title}>Edit Product</h1>
+      <p className={styles.subtitle}>Update product information, pricing, inventory and images</p>
       
       <form onSubmit={handleSubmit}>
         <div className={styles.card}>
           <h2 className={styles.sectionTitle}><FiBox /> Basic Information</h2>
           <div className={styles.formGroup}>
-            <label>Name</label>
+            <label className={styles.label}>Name</label>
             <input 
               type="text" 
               value={name} 
               onChange={e => setName(e.target.value)} 
               className={styles.input} 
               required 
+              placeholder="Enter product name"
             />
           </div>
           <div className={styles.formGroup}>
-            <label>Slug</label>
+            <label className={styles.label}>Slug</label>
             <input 
               type="text" 
               value={slug} 
               onChange={e => setSlug(e.target.value)} 
               className={styles.input} 
               required 
+              placeholder="product-url-slug"
             />
           </div>
           <div className={styles.formGroup}>
-            <label>Short Description</label>
+            <label className={styles.label}>Short Description</label>
             <input 
               type="text" 
               value={shortDesc} 
               onChange={e => setShortDesc(e.target.value)} 
-              className={styles.input} 
+              className={styles.input}
+              placeholder="Brief description for product listings" 
             />
           </div>
           <div className={styles.formGroup}>
-            <label>Full Description</label>
+            <label className={styles.label}>Full Description</label>
             <textarea 
               value={description} 
               onChange={e => setDescription(e.target.value)} 
               className={styles.textarea}
+              placeholder="Detailed product description"
             ></textarea>
+          </div>
+          
+          <div className={styles.formGroup}>
+            <label className={styles.label}>Specifications</label>
+            <textarea
+              value={specifications}
+              onChange={e => setSpecifications(e.target.value)}
+              className={styles.textarea}
+              placeholder="Add specifications (e.g., material, dimensions)"
+            />
+          </div>
+
+          <div className={styles.formGroup}>
+            <label className={styles.label}>Care & Maintenance</label>
+            <textarea
+              value={careInstructions}
+              onChange={e => setCareInstructions(e.target.value)}
+              className={styles.textarea}
+              placeholder="Care and maintenance instructions"
+            />
+          </div>
+          
+          <div className={styles.formGroup}>
+            <label className={styles.label}>Purpose / Mood Tags</label>
+            <div className={styles.tagOptions} style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+              {availableTags.map(tag => (
+                <label key={tag} style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                  <input
+                    type="checkbox"
+                    checked={usageTags.includes(tag)}
+                    onChange={e => {
+                      setUsageTags(prev => e.target.checked ? [...prev, tag] : prev.filter(t => t !== tag))
+                    }}
+                  />
+                  {tag}
+                </label>
+              ))}
+            </div>
+            <input
+              type="text"
+              value={newTagInput}
+              onChange={e => setNewTagInput(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === 'Enter') {
+                  e.preventDefault()
+                  const val = newTagInput.trim()
+                  if (val && !usageTags.includes(val)) {
+                    setUsageTags(prev => [...prev, val])
+                  }
+                  if (val && !availableTags.includes(val)) {
+                    setAvailableTags(prev => [...prev, val])
+                  }
+                  setNewTagInput('')
+                }
+              }}
+              className={styles.input}
+              placeholder="Add new tag and press Enter"
+            />
+            {usageTags.length > 0 && (
+              <div style={{ marginTop: '0.5rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                {usageTags.map(tag => (
+                  <span key={tag} style={{ background: '#eee', padding: '2px 6px', borderRadius: '4px', cursor: 'pointer' }} onClick={() => setUsageTags(prev => prev.filter(t => t !== tag))}>
+                    {tag} ✕
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
         <div className={styles.card}>
           <h2 className={styles.sectionTitle}><FiImage /> Product Images</h2>
-          <div className={styles.imageGrid}>
-            {imageUrls.map((url, index) => (
-              <div key={`${url}-${index}`} className={styles.imagePreview}>
-                <img src={url} alt={`Product image ${index + 1}`} />
-                <button 
-                  type="button" 
-                  onClick={() => handleRemoveImage(index)} 
-                  className={styles.deleteImageButton}
-                >
-                  <FiTrash2 />
-                </button>
-              </div>
+          <div className={styles.formGroup}>
+            <label className={styles.label}>Product Images</label>
+            
+            <div {...getRootProps()} className={`${styles.dropzone} ${isDragActive ? styles.dropzoneDragActive : ''}`}>
+              <input {...getInputProps()} />
+              <FiUpload className={styles.dropzoneIcon} />
+              <p className={styles.dropzoneText}>
+                {isDragActive
+                  ? 'Drop the images here...'
+                  : 'Drag & drop product images here, or click to select files'}
+              </p>
+              <p className={styles.dropzoneText}>
+                {imageUrls.length === 5 
+                  ? 'Maximum number of images reached'
+                  : `${5 - imageUrls.length} images remaining`}
+              </p>
+            </div>
+
+            <div className={styles.imageGrid}>
+              {imageUrls.map((url, i) => (
+                <div key={`${url}-${i}`} className={styles.imagePreviewContainer}>
+                  <img
+                    src={url}
+                    alt={`Product preview ${i + 1}`}
+                    className={styles.imagePreview}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveImage(i)}
+                    className={styles.removeImageButton}
+                    title="Remove image"
+                  >
+                    <FiX />
+                  </button>
+                </div>
+              ))}
+              
+              {/* Show uploading files with progress */}
+              {Object.entries(uploadingFiles).map(([uploadId, file]) => (
+                <div key={uploadId} className={styles.imagePreviewContainer}>
+                  <div className={styles.uploadingOverlay}>
+                    <FiUpload className={styles.uploadingIcon} />
+                    <div className={styles.uploadProgress}>
+                      <div 
+                        className={styles.uploadProgressBar} 
+                        style={{ width: `${uploadProgress[uploadId] || 0}%` }}
+                      />
+                    </div>
+                    <div className={styles.uploadProgressText}>
+                      {uploadProgress[uploadId] || 0}%
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {Object.entries(uploadErrors).map(([uploadId, error]) => (
+              <p key={uploadId} className={styles.uploadError}>
+                {error}
+              </p>
             ))}
           </div>
-          <div {...getRootProps()} className={styles.dropzone}>
-            <input {...getInputProps()} />
-            <FiUploadCloud />
-            <p>Drop images here or click to upload</p>
+        </div>
+        
+        <div className={styles.card}>
+          <h2 className={styles.sectionTitle}><FiImage /> Artful Styling Ideas Images</h2>
+          <div className={styles.formGroup}>
+            <label className={styles.label}>Styling Inspiration Images</label>
+            
+            <div {...getStylingRootProps()} className={`${styles.dropzone} ${isStylingDrag ? styles.dropzoneDragActive : ''}`}>
+              <input {...getStylingInputProps()} />
+              <FiUpload className={styles.dropzoneIcon} />
+              <p className={styles.dropzoneText}>
+                {isStylingDrag
+                  ? 'Drop the images here...'
+                  : 'Drag & drop styling inspiration images here, or click to select files'}
+              </p>
+              <button type="button" className={styles.browseButton}>
+                <FiUpload />
+                Browse Files
+              </button>
+            </div>
+
+            {stylingIdeas.length > 0 && (
+              <div className={styles.imagePreviewGrid}>
+                {stylingIdeas.map((idea, idx) => (
+                  <div key={idea.url} className={styles.previewItem}>
+                    <img src={idea.url} alt="styling idea" className={styles.previewImg} />
+                    <input
+                      type="text"
+                      value={idea.text}
+                      onChange={e => {
+                        const val = e.target.value
+                        setStylingIdeas(prev => prev.map((it,i)=> i===idx ? { ...it, text: val } : it))
+                      }}
+                      placeholder="Add a caption for this styling idea"
+                      className={styles.stylingCaptionInput}
+                    />
+                    <button 
+                      type="button" 
+                      onClick={() => handleRemoveStylingImage(idx)} 
+                      className={styles.removeBtn}
+                    >
+                      <FiX />
+                      Remove Image
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
@@ -379,24 +599,30 @@ export default function EditProductPage() {
           <h2 className={styles.sectionTitle}><FiDollarSign /> Pricing</h2>
           <div className={styles.formRow}>
             <div className={styles.formGroup}>
-              <label>Price</label>
+              <label className={styles.label}>Price</label>
               <input 
                 type="number" 
                 value={price} 
                 onChange={e => setPrice(Number(e.target.value))} 
                 className={styles.input} 
                 required 
+                min="0"
+                step="0.01"
+                placeholder="0.00"
               />
             </div>
             <div className={styles.formGroup}>
-              <label>Currency</label>
-              <input 
-                type="text" 
-                value={currency} 
-                onChange={e => setCurrency(e.target.value)} 
-                className={styles.input} 
-                required 
-              />
+              <label className={styles.label}>Currency</label>
+              <select
+                value={currency}
+                onChange={e => setCurrency(e.target.value)}
+                className={styles.select}
+                required
+              >
+                <option value="INR">INR - Indian Rupee</option>
+                <option value="USD">USD - US Dollar</option>
+                <option value="EUR">EUR - Euro</option>
+              </select>
             </div>
           </div>
         </div>
@@ -405,21 +631,24 @@ export default function EditProductPage() {
           <h2 className={styles.sectionTitle}><FiArchive /> Inventory & Details</h2>
           <div className={styles.formRow}>
             <div className={styles.formGroup}>
-              <label>Stock</label>
+              <label className={styles.label}>Stock</label>
               <input 
                 type="number" 
                 value={stockQuantity} 
                 onChange={e => setStockQuantity(Number(e.target.value))} 
                 className={styles.input} 
                 required 
+                min="0"
+                placeholder="Available quantity"
               />
             </div>
             <div className={styles.formGroup}>
-              <label>Category</label>
+              <label className={styles.label}>Category</label>
               <select 
                 value={categoryId || ''} 
                 onChange={e => setCategoryId(e.target.value ? Number(e.target.value) : null)} 
                 className={styles.select}
+                required
               >
                 <option value="">Select Category</option>
                 {categories.map(c => (
@@ -429,33 +658,38 @@ export default function EditProductPage() {
             </div>
           </div>
           <div className={styles.formGroup}>
-            <label className={styles.label}>Status</label>
-            <div className={styles.checkboxContainer}>
+            <label className={styles.checkbox}>
               <input 
                 type="checkbox" 
                 id="isActive" 
                 checked={isActive} 
                 onChange={e => setIsActive(e.target.checked)} 
+                className={styles.checkboxInput}
               />
-              <label htmlFor="isActive">Product is active and visible</label>
-            </div>
+              <span className={styles.checkboxLabel}>Product is active and visible</span>
+            </label>
           </div>
         </div>
 
-        <div className={styles.formActions}>
-          <button 
-            type="button" 
-            onClick={() => router.back()} 
-            className={styles.cancelButton}
-          >
-            Cancel
-          </button>
+        <div className={styles.buttonGroup}>
           <button 
             type="submit" 
             disabled={submitting} 
             className={styles.saveButton}
           >
-            {submitting ? 'Saving...' : 'Save Changes'} <FiArrowRight />
+            <FiSave />
+            {submitting ? 'Saving...' : 'Save Changes'} 
+            <FiArrowRight className={styles.arrowIcon} />
+          </button>
+          <button 
+            type="button" 
+            onClick={() => router.back()} 
+            className={styles.cancelButton}
+            disabled={submitting}
+          >
+            <FiX />
+            Cancel
+            <FiArrowRight className={styles.arrowIcon} />
           </button>
         </div>
       </form>
