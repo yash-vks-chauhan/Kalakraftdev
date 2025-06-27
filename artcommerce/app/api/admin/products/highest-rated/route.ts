@@ -22,8 +22,8 @@ export async function GET(request: Request) {
     `SELECT p.id, p.name,
             AVG(r.rating)  AS avgRating,
             COUNT(r.id)    AS reviewCount
-     FROM   Product p
-     JOIN   ProductReview r ON r.productId = p.id
+     FROM   "Product" p
+     JOIN   "ProductReview" r ON r.productId = p.id
      GROUP  BY p.id
      HAVING COUNT(r.id) > 0
      ORDER  BY avgRating DESC
