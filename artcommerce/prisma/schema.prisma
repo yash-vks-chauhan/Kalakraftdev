@@ -28,7 +28,7 @@ model User {
   role             String    @default("user")
   addresses        Address[]
   defaultAddressId Int?      @unique
-  defaultAddress   Address?  @relation("DefaultAddress", fields: [defaultAddressId], references: [id])
+  defaultAddress   Address?  @relation("DefaultAddress", fields: [defaultAddressId], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
   emailChangeOtp     String?
   emailChangeNew     String?
@@ -84,7 +84,7 @@ model VerificationToken {
 // ── NEW MODEL ───────────────────────────────────────────────────────────
 model Address {
   id     Int  @id @default(autoincrement())
-  user   User @relation(fields: [userId], references: [id])
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String
 
   label      String // e.g. "Home", "Work"
@@ -104,7 +104,7 @@ model Category {
   name     String
   slug     String     @unique
   parentId Int?
-  parent   Category?  @relation("CategoryToCategory", fields: [parentId], references: [id])
+  parent   Category?  @relation("CategoryToCategory", fields: [parentId], references: [id], onDelete: SetNull, onUpdate: Cascade)
   children Category[] @relation("CategoryToCategory")
   products Product[]
 }
@@ -127,7 +127,7 @@ model Product {
   updatedAt     DateTime @updatedAt
 
   // ← This is the one-to-many relation to Category:
-  category   Category? @relation(fields: [categoryId], references: [id])
+  category   Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull, onUpdate: Cascade)
   categoryId Int?
 
   // Other relations (you already have these):
@@ -148,7 +148,7 @@ model CartItem {
   id        Int      @id @default(autoincrement())
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
-  product   Product  @relation(fields: [productId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId Int
   quantity  Int
   addedAt   DateTime @default(now())
@@ -160,7 +160,7 @@ model WishlistItem {
   id        Int      @id @default(autoincrement())
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
-  product   Product  @relation(fields: [productId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId Int
   addedAt   DateTime @default(now())
 
@@ -200,7 +200,7 @@ model OrderItem {
   id              Int     @id @default(autoincrement())
   order           Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   orderId         Int
-  product         Product @relation(fields: [productId], references: [id])
+  product         Product @relation(fields: [productId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   productId       Int
   quantity        Int
   priceAtPurchase Float
@@ -274,7 +274,7 @@ model SupportMessage {
 // ── New model for 1-to-5 star ratings ────────────────────────────────
 model ProductReview {
   id        Int      @id @default(autoincrement())
-  product   Product  @relation(fields: [productId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId Int
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
