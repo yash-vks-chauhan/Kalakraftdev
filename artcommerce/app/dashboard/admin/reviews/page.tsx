@@ -103,7 +103,7 @@ export default function ReviewsDashboard() {
             {topProducts.map(p => (
               <tr key={p.id}>
                 <td><Link href={`/products/${p.id}`}>{p.name}</Link></td>
-                <td>{p.avgRating.toFixed(1)}</td>
+                <td>{p.avgRating ? p.avgRating.toFixed(1) : 'N/A'}</td>
                 <td>{p.reviewCount}</td>
               </tr>
             ))}

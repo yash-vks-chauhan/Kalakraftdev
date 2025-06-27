@@ -57,7 +57,7 @@ export default function HighestRatedPage() {
             {items.map((p) => (
               <tr key={p.id}>
                 <td>{p.name}</td>
-                <td>{p.avgRating.toFixed(1)}</td>
+                <td>{p.avgRating ? p.avgRating.toFixed(1) : 'N/A'}</td>
                 <td>{p.reviewCount}</td>
               </tr>
             ))}
