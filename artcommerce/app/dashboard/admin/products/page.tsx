@@ -111,7 +111,7 @@ export default function AdminProductsPage() {
               <td className={styles.tableCell}>{p.name}</td>
               <td className={styles.tableCell}>
                 <span className={styles.price}>
-                  {p.currency} {p.price.toFixed(2)}
+                  {p.currency} {typeof p.price === 'number' ? p.price.toFixed(2) : '0.00'}
                 </span>
               </td>
               <td className={styles.tableCell}>{p.stockQuantity}</td>
