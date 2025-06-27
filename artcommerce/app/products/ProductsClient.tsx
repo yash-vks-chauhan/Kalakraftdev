@@ -118,12 +118,14 @@ export default function ProductsClient() {
               rawImgs = []
             }
           }
-          const imgs = rawImgs.map((img: string) => {
-            // If already a URL or absolute path, leave it, otherwise prefix uploads
-            return img.startsWith('http') || img.startsWith('/')
-              ? img
-              : `/uploads/${img}`
-          })
+          const imgs = rawImgs
+            .filter((img: string | null): img is string => typeof img === 'string' && img.length > 0)
+            .map((img: string) => {
+              // If already a URL or absolute path, leave it, otherwise prefix uploads
+              return img.startsWith('http') || img.startsWith('/')
+                ? img
+                : `/uploads/${img}`
+            })
           const tagsArr = Array.isArray(p.usageTags) ? p.usageTags : (() => {
             try {
               const parsed = JSON.parse(p.usageTags || '[]')
