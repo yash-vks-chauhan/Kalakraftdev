@@ -5,9 +5,8 @@ generator client {
 }
 
 datasource db {
-  provider     = "postgresql"
-  url          = env("DATABASE_URL")
-  relationMode = "prisma"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -40,10 +39,14 @@ model User {
   cartItems     CartItem[]
   wishlistItems WishlistItem[]
   orders        Order[]
-  orderNotes    OrderNote[] // ← and add this here
+  orderNotes    OrderNote[]
   reviews       ProductReview[]
 
   authoredNotes OrderNote[] @relation("AuthorNotes")
+  repliedToReviews ProductReview[] @relation("AdminReplies")
+  notifications Notification[]
+  sentSupportMessages SupportMessage[]
+  supportTickets SupportTicket[]
 }
 
 model Account {
@@ -57,7 +60,7 @@ model Account {
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? 
+  id_token          String?
   session_state     String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -104,7 +107,7 @@ model Category {
   name     String
   slug     String     @unique
   parentId Int?
-  parent   Category?  @relation("CategoryToCategory", fields: [parentId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  parent   Category?  @relation("CategoryToCategory", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: Cascade)
   children Category[] @relation("CategoryToCategory")
   products Product[]
 }
@@ -142,6 +145,7 @@ model Product {
   stylingIdeaImages  Json?      @default("[]") // Array of image URLs for Artful Styling Ideas
   usageTags         Json?      @default("[]") // Array of purpose / mood tags
   reviews           ProductReview[]
+  stockAlert    StockAlert?
 }
 
 model CartItem {
@@ -215,8 +219,6 @@ model OrderNote {
   authorId  String
   text      String
   createdAt DateTime @default(now())
-  User      User?    @relation(fields: [userId], references: [id])
-  userId    String?
 }
 
 model Coupon {
@@ -249,41 +251,60 @@ model FlashSale {
   discountPct Float // e.g. 20 = 20% off
   createdAt   DateTime @default(now())
 }
+
 model SupportTicket {
-  id          String           @id @default(cuid())
-  name        String
-  email       String
+  id          Int      @id @default(autoincrement())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
   subject     String
   message     String
-  status      String           @default("open")       // open, pending, closed
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
-  messages    SupportMessage[]                      // relation to replies
+  status      String   @default("open")
+  priority    String   @default("medium")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  messages    SupportMessage[]
 }
 
 model SupportMessage {
-  id         String         @id @default(cuid())
-  ticket     SupportTicket  @relation(fields: [ticketId], references: [id])
-  ticketId   String
-  sender     String         // "customer" or "agent"
-  content    String
-  createdAt  DateTime       @default(now())
-  attachments Json          @default("[]") // array of attachment objects { url, type }
+  id        Int      @id @default(autoincrement())
+  ticket    SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  ticketId  Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  message   String
+  createdAt DateTime @default(now())
 }
 
-// ── New model for 1-to-5 star ratings ────────────────────────────────
 model ProductReview {
   id        Int      @id @default(autoincrement())
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId Int
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
-  rating    Int      // 1-5
-  locale    String   @default("en") // ISO locale of the reviewer
+  rating    Int
   comment   String?
-  adminReply    String?
-  adminReaction String?  // e.g. 👍 😊 etc.
   createdAt DateTime @default(now())
+  reply     String?
+  repliedAt DateTime?
+  repliedBy User?     @relation("AdminReplies", fields: [repliedById], references: [id], onDelete: SetNull)
+  repliedById String?
 
-  @@unique([productId, userId])
+   @@unique([productId, userId])
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  link      String?
+}
+
+model StockAlert {
+  id        Int      @id @default(autoincrement())
+  productId Int      @unique
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  emailSent Boolean  @default(false)
 }
