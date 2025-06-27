@@ -15,7 +15,7 @@ interface Review {
   rating: number
   comment?: string
   createdAt: string
-  reply?: string
+  adminReply?: string
   adminReaction?: string
   product: { id: number; name: string }
   user: { id: string; fullName: string }
@@ -133,7 +133,7 @@ export default function ReviewsDashboard() {
                 <td>{r.user.fullName}</td>
                 <td>{'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}</td>
                 <td>{r.comment || '-'}</td>
-                <td>{r.adminReaction || ''} {r.reply || ''}</td>
+                <td>{r.adminReaction || ''} {r.adminReply || ''}</td>
                 <td>
                   <button onClick={() => handleReaction(r.id, '👍')}>👍</button>{' '}
                   <button onClick={() => handleReaction(r.id, '😊')}>😊</button>{' '}

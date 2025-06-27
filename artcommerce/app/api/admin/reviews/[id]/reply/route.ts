@@ -30,7 +30,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
   const updated = await prisma.productReview.update({
     where: { id: reviewId },
     data: {
-      reply: reply ?? undefined,
+      adminReply: reply ?? undefined,
       adminReaction: reaction ?? undefined,
       repliedAt: reply ? new Date() : undefined,
       repliedById: reply ? userId : undefined

@@ -34,10 +34,14 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
     where: { productId },
     orderBy: { createdAt: 'desc' },
     take: 20,
-    // @ts-ignore - Include repliedBy to get admin info
-    include: {
+    select: {
+      id: true,
+      rating: true,
+      comment: true,
+      createdAt: true,
+      adminReply: true,
+      adminReaction: true,
       user: { select: { fullName: true, avatarUrl: true } },
-      repliedBy: { select: { fullName: true } }
     }
   })
 
