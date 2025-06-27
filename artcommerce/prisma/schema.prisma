@@ -28,7 +28,7 @@ model User {
   role             String    @default("user")
   addresses        Address[]
   defaultAddressId Int?      @unique
-  defaultAddress   Address?  @relation("DefaultAddress", fields: [defaultAddressId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  defaultAddress   Address?  @relation("DefaultAddress", fields: [defaultAddressId], references: [id], onDelete: NoAction, onUpdate: Cascade)
 
   emailChangeOtp     String?
   emailChangeNew     String?
