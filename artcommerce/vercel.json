@@ -5,28 +5,5 @@
   "outputDirectory": ".next",
   "env": {
     "DATABASE_URL": "postgresql://neondb_owner:npg_GoQhp2C3DrBf@ep-shiny-frog-a1mpqgkm-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require"
-  },
-  "routes": [
-    {
-      "src": "/uploads/(.*)",
-      "dest": "/public/uploads/$1"
-    },
-    {
-      "src": "/images/(.*\\.mp4)",
-      "dest": "/public/images/$1",
-      "headers": {
-        "Content-Type": "video/mp4",
-        "Cache-Control": "public, max-age=31536000, immutable",
-        "Accept-Ranges": "bytes"
-      }
-    },
-    {
-      "src": "/images/(.*)",
-      "dest": "/public/images/$1"
-    },
-    {
-      "src": "/avatars/(.*)",
-      "dest": "/public/avatars/$1"
-    }
-  ]
+  }
 } 
