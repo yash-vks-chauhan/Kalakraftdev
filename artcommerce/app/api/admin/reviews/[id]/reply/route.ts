@@ -32,8 +32,6 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     data: {
       adminReply: reply ?? undefined,
       adminReaction: reaction ?? undefined,
-      repliedAt: reply ? new Date() : undefined,
-      repliedById: reply ? userId : undefined
     },
     include: {
       user: { select: { fullName: true, id: true } },
