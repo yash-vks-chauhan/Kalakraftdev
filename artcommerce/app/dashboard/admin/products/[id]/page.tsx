@@ -21,11 +21,15 @@ interface Product {
   stockQuantity: number;
   isActive: boolean;
   categoryId: number | null;
-  imageUrls: (string | null)[] | null;
+  imageUrls: string[] | null;
   specifications: string | null;
   careInstructions: string | null;
-  stylingIdeaImages: (StylingIdea | null)[] | null;
+  stylingIdeaImages: StylingIdea[] | null;
   usageTags: string[] | null;
+  category?: {
+    id: number;
+    name: string;
+  } | null;
 }
 
 interface UploadingFile {
@@ -37,7 +41,10 @@ interface UploadingFile {
   url?: string;
 }
 
-type StylingIdea = { url: string; text: string };
+interface StylingIdea {
+  url: string;
+  text: string;
+}
 
 export default function EditProductPage() {
   const { id } = useParams();
@@ -56,7 +63,7 @@ export default function EditProductPage() {
   const [currency, setCurrency] = useState('USD');
   const [stockQuantity, setStockQuantity] = useState(0);
   const [isActive, setIsActive] = useState(true);
-  const [categoryId, setCategoryId] = useState<number | null | string>('');
+  const [categoryId, setCategoryId] = useState<number | null>(null);
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [usageTagsInput, setUsageTagsInput] = useState('');
 
@@ -73,15 +80,63 @@ export default function EditProductPage() {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [uploadingFiles, setUploadingFiles] = useState<Record<string, UploadingFile>>({});
 
+  // Safe parsing functions
+  const safeParseArray = <T,>(value: any, defaultValue: T[] = []): T[] => {
+    if (Array.isArray(value)) return value;
+    if (typeof value === 'string') {
+      try {
+        const parsed = JSON.parse(value);
+        return Array.isArray(parsed) ? parsed : defaultValue;
+      } catch {
+        return defaultValue;
+      }
+    }
+    return defaultValue;
+  };
+
+  const safeParseImageUrls = (value: any): string[] => {
+    const urls = safeParseArray<string | null>(value, []);
+    return urls
+      .filter((url): url is string => typeof url === 'string' && url.length > 0);
+  };
+
+  const safeParseStylingIdeas = (value: any): StylingIdea[] => {
+    const ideas = safeParseArray<StylingIdea | null>(value, []);
+    return ideas
+      .filter((idea): idea is StylingIdea => 
+        idea !== null && 
+        typeof idea === 'object' && 
+        typeof idea.url === 'string' && 
+        idea.url.length > 0 &&
+        typeof idea.text === 'string'
+      );
+  };
+
+  const safeParseUsageTags = (value: any): string[] => {
+    const tags = safeParseArray<string | null>(value, []);
+    return tags
+      .filter((tag): tag is string => typeof tag === 'string' && tag.length > 0);
+  };
+
   useEffect(() => {
     if (!token) return;
 
-    fetch('/api/categories', { headers: { Authorization: `Bearer ${token}` } })
+    // Fetch categories
+    fetch('/api/categories', { 
+      headers: { Authorization: `Bearer ${token}` } 
+    })
       .then(r => r.json())
-      .then(setCategories)
+      .then(data => {
+        if (Array.isArray(data)) {
+          setCategories(data);
+        }
+      })
       .catch(() => setError("Failed to load categories."));
 
-    fetch(`/api/admin/products/${id}`, { headers: { Authorization: `Bearer ${token}` } })
+    // Fetch product data
+    fetch(`/api/admin/products/${id}`, { 
+      headers: { Authorization: `Bearer ${token}` } 
+    })
       .then(async r => {
         if (!r.ok) throw new Error(await r.text());
         return r.json();
@@ -91,6 +146,8 @@ export default function EditProductPage() {
         if (!p) {
           throw new Error("Product data is null.");
         }
+        
+        // Set basic product info with safe defaults
         setName(p.name || '');
         setSlug(p.slug || '');
         setShortDesc(p.shortDesc || '');
@@ -98,19 +155,21 @@ export default function EditProductPage() {
         setSpecifications(p.specifications || '');
         setCareInstructions(p.careInstructions || '');
         
-        const cleanStylingIdeas = (p.stylingIdeaImages || []).filter((idea: StylingIdea | null): idea is StylingIdea => !!idea && !!idea.url);
-        setStylingIdeas(cleanStylingIdeas);
+        // Handle arrays with safe parsing
+        setStylingIdeas(safeParseStylingIdeas(p.stylingIdeaImages));
+        setImageUrls(safeParseImageUrls(p.imageUrls));
+        setUsageTagsInput(safeParseUsageTags(p.usageTags).join(', '));
         
-        setPrice(p.price || 0);
+        // Handle numeric values
+        setPrice(typeof p.price === 'number' ? p.price : 0);
+        setStockQuantity(typeof p.stockQuantity === 'number' ? p.stockQuantity : 0);
+        
+        // Handle other fields
         setCurrency(p.currency || 'USD');
-        setStockQuantity(p.stockQuantity || 0);
         setIsActive(p.isActive === true);
-        setCategoryId(p.categoryId || '');
-
-        const cleanImageUrls = (p.imageUrls || []).filter((url: string | null): url is string => typeof url === 'string' && url.length > 0);
-        setImageUrls(cleanImageUrls);
-
-        setUsageTagsInput((p.usageTags || []).join(', '));
+        setCategoryId(p.categoryId || null);
+        
+        // Store the full product data
         setProduct(p);
       })
       .catch(err => setError(err.message))
@@ -123,71 +182,114 @@ export default function EditProductPage() {
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     for (const file of acceptedFiles) {
-        if (!file?.name) continue;
-        const uploadId = `${file.name}-${file.size}-${Date.now()}`;
-        const preview = URL.createObjectURL(file);
-        
-        setUploadingFiles(prev => ({
-            ...prev,
-            [uploadId]: { id: uploadId, name: file.name, preview, progress: 0, status: 'uploading' }
-        }));
+      if (!file?.name) continue;
+      const uploadId = `${file.name}-${file.size}-${Date.now()}`;
+      const preview = URL.createObjectURL(file);
+      
+      setUploadingFiles(prev => ({
+        ...prev,
+        [uploadId]: { id: uploadId, name: file.name, preview, progress: 0, status: 'uploading' }
+      }));
 
-        try {
-            const xhr = new XMLHttpRequest();
-            xhr.upload.onprogress = (event) => {
-                if (event.lengthComputable) {
-                    const progress = Math.round((event.loaded * 100) / event.total);
-                    setUploadingFiles(prev => ({ ...prev, [uploadId]: { ...prev[uploadId], progress } }));
-                }
-            };
+      try {
+        const xhr = new XMLHttpRequest();
+        xhr.upload.onprogress = (event) => {
+          if (event.lengthComputable) {
+            const progress = Math.round((event.loaded * 100) / event.total);
+            setUploadingFiles(prev => ({ ...prev, [uploadId]: { ...prev[uploadId], progress } }));
+          }
+        };
 
-            const uploadPromise = new Promise((resolve, reject) => {
-                xhr.onload = () => {
-                    if (xhr.status === 200) resolve(JSON.parse(xhr.responseText));
-                    else reject(new Error('Upload failed'));
-                };
-                xhr.onerror = () => reject(new Error('Network error'));
-            });
+        const uploadPromise = new Promise((resolve, reject) => {
+          xhr.onload = () => {
+            if (xhr.status === 200) {
+              try {
+                resolve(JSON.parse(xhr.responseText));
+              } catch (e) {
+                reject(new Error('Invalid response format'));
+              }
+            } else {
+              reject(new Error('Upload failed'));
+            }
+          };
+          xhr.onerror = () => reject(new Error('Network error'));
+        });
 
-            xhr.open('POST', `/api/uploads?filename=${encodeURIComponent(file.name)}`);
-            xhr.send(file);
+        xhr.open('POST', `/api/uploads?filename=${encodeURIComponent(file.name)}`);
+        xhr.send(file);
 
-            uploadPromise.then((blob: any) => {
-                setImageUrls(prev => [...prev, blob.url]);
-                setUploadingFiles(prev => ({ ...prev, [uploadId]: { ...prev[uploadId], status: 'completed', progress: 100, url: blob.url } }));
-            }).catch(() => {
-                setUploadingFiles(prev => ({ ...prev, [uploadId]: { ...prev[uploadId], status: 'error' } }));
-            });
-        } catch (error) {
-            setUploadingFiles(prev => ({ ...prev, [uploadId]: { ...prev[uploadId], status: 'error' } }));
-        }
+        uploadPromise.then((blob: any) => {
+          if (blob && typeof blob.url === 'string') {
+            setImageUrls(prev => [...prev, blob.url]);
+            setUploadingFiles(prev => ({ 
+              ...prev, 
+              [uploadId]: { ...prev[uploadId], status: 'completed', progress: 100, url: blob.url } 
+            }));
+          } else {
+            throw new Error('Invalid blob data');
+          }
+        }).catch(() => {
+          setUploadingFiles(prev => ({ ...prev, [uploadId]: { ...prev[uploadId], status: 'error' } }));
+        });
+      } catch (error) {
+        setUploadingFiles(prev => ({ ...prev, [uploadId]: { ...prev[uploadId], status: 'error' } }));
+      }
     }
   }, []);
 
-  const { getRootProps, getInputProps } = useDropzone({ onDrop, accept: { 'image/*': ['.jpeg', '.jpg', '.png'] } });
+  const { getRootProps, getInputProps } = useDropzone({ 
+    onDrop, 
+    accept: { 'image/*': ['.jpeg', '.jpg', '.png'] } 
+  });
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setSubmitting(true);
     try {
+      // Prepare usage tags from comma-separated string
+      const usageTags = usageTagsInput
+        .split(',')
+        .map(t => t.trim())
+        .filter(Boolean);
+
+      // Prepare data for API
+      const productData = {
+        name, 
+        slug, 
+        shortDesc, 
+        description, 
+        specifications, 
+        careInstructions,
+        stylingIdeaImages: stylingIdeas, 
+        price, 
+        currency, 
+        stockQuantity, 
+        isActive,
+        categoryId: categoryId,
+        imageUrls,
+        usageTags,
+      };
+
       const res = await fetch(`/api/admin/products/${id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({
-          name, slug, shortDesc, description, specifications, careInstructions,
-          stylingIdeaImages: stylingIdeas, price, currency, stockQuantity, isActive,
-          categoryId: categoryId ? Number(categoryId) : null,
-          imageUrls,
-          usageTags: usageTagsInput.split(',').map(t => t.trim()).filter(Boolean),
-        })
+        headers: { 
+          'Content-Type': 'application/json', 
+          Authorization: `Bearer ${token}` 
+        },
+        body: JSON.stringify(productData)
       });
-      if (!res.ok) throw new Error((await res.json()).error || 'Update failed');
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Update failed');
+      }
+
       setNotificationMessage('Product saved successfully!');
       setNotificationType('success');
       setShowNotification(true);
       setTimeout(() => router.push('/dashboard/admin/products'), 1500);
     } catch (err: any) {
-      setNotificationMessage(err.message);
+      setNotificationMessage(err.message || 'An unknown error occurred');
       setNotificationType('error');
       setShowNotification(true);
     } finally {
@@ -200,95 +302,163 @@ export default function EditProductPage() {
 
   return (
     <main className={styles.container}>
-        {showNotification && (
-            <div className={`${styles.notification} ${styles[notificationType]}`}>
-                <FiCheck /> {notificationMessage}
-            </div>
-        )}
-        <h1 className={styles.title}>Edit Product</h1>
-        <form onSubmit={handleSubmit}>
-            <div className={styles.card}>
-                <h2 className={styles.sectionTitle}><FiBox /> Basic Information</h2>
-                <div className={styles.formGroup}>
-                    <label>Name</label>
-                    <input type="text" value={name} onChange={e => setName(e.target.value)} className={styles.input} required />
-                </div>
-                <div className={styles.formGroup}>
-                    <label>Slug</label>
-                    <input type="text" value={slug} onChange={e => setSlug(e.target.value)} className={styles.input} required />
-                </div>
-                <div className={styles.formGroup}>
-                    <label>Short Description</label>
-                    <input type="text" value={shortDesc} onChange={e => setShortDesc(e.target.value)} className={styles.input} />
-                </div>
-                <div className={styles.formGroup}>
-                    <label>Full Description</label>
-                    <textarea value={description} onChange={e => setDescription(e.target.value)} className={styles.textarea}></textarea>
-                </div>
-            </div>
+      {showNotification && (
+        <div className={`${styles.notification} ${styles[notificationType]}`}>
+          {notificationType === 'success' ? <FiCheck /> : <FiAlertCircle />} {notificationMessage}
+        </div>
+      )}
+      
+      <h1 className={styles.title}>Edit Product</h1>
+      
+      <form onSubmit={handleSubmit}>
+        <div className={styles.card}>
+          <h2 className={styles.sectionTitle}><FiBox /> Basic Information</h2>
+          <div className={styles.formGroup}>
+            <label>Name</label>
+            <input 
+              type="text" 
+              value={name} 
+              onChange={e => setName(e.target.value)} 
+              className={styles.input} 
+              required 
+            />
+          </div>
+          <div className={styles.formGroup}>
+            <label>Slug</label>
+            <input 
+              type="text" 
+              value={slug} 
+              onChange={e => setSlug(e.target.value)} 
+              className={styles.input} 
+              required 
+            />
+          </div>
+          <div className={styles.formGroup}>
+            <label>Short Description</label>
+            <input 
+              type="text" 
+              value={shortDesc} 
+              onChange={e => setShortDesc(e.target.value)} 
+              className={styles.input} 
+            />
+          </div>
+          <div className={styles.formGroup}>
+            <label>Full Description</label>
+            <textarea 
+              value={description} 
+              onChange={e => setDescription(e.target.value)} 
+              className={styles.textarea}
+            ></textarea>
+          </div>
+        </div>
 
-            <div className={styles.card}>
-                <h2 className={styles.sectionTitle}><FiImage /> Product Images</h2>
-                <div className={styles.imageGrid}>
-                    {imageUrls.map((url, index) => (
-                        <div key={url} className={styles.imagePreview}>
-                            <img src={url} alt={`Product image ${index + 1}`} />
-                            <button type="button" onClick={() => handleRemoveImage(index)} className={styles.deleteImageButton}><FiTrash2 /></button>
-                        </div>
-                    ))}
-                </div>
-                <div {...getRootProps()} className={styles.dropzone}>
-                    <input {...getInputProps()} />
-                    <FiUploadCloud />
-                    <p>Drop images here or click to upload</p>
-                </div>
-            </div>
-
-            <div className={styles.card}>
-                <h2 className={styles.sectionTitle}><FiDollarSign /> Pricing</h2>
-                 <div className={styles.formRow}>
-                    <div className={styles.formGroup}>
-                        <label>Price</label>
-                        <input type="number" value={price} onChange={e => setPrice(Number(e.target.value))} className={styles.input} required />
-                    </div>
-                    <div className={styles.formGroup}>
-                        <label>Currency</label>
-                        <input type="text" value={currency} onChange={e => setCurrency(e.target.value)} className={styles.input} required />
-                    </div>
-                </div>
-            </div>
-
-            <div className={styles.card}>
-                <h2 className={styles.sectionTitle}><FiArchive /> Inventory & Details</h2>
-                <div className={styles.formRow}>
-                    <div className={styles.formGroup}>
-                        <label>Stock</label>
-                        <input type="number" value={stockQuantity} onChange={e => setStockQuantity(Number(e.target.value))} className={styles.input} required />
-                    </div>
-                     <div className={styles.formGroup}>
-                        <label>Category</label>
-                        <select value={categoryId || ''} onChange={e => setCategoryId(e.target.value ? Number(e.target.value) : null)} className={styles.select}>
-                            <option value="">Select Category</option>
-                            {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                        </select>
-                    </div>
-                </div>
-                 <div className={styles.formGroup}>
-                    <label className={styles.label}>Status</label>
-                    <div className={styles.checkboxContainer}>
-                        <input type="checkbox" id="isActive" checked={isActive} onChange={e => setIsActive(e.target.checked)} />
-                        <label htmlFor="isActive">Product is active and visible</label>
-                    </div>
-                </div>
-            </div>
-
-            <div className={styles.formActions}>
-                <button type="button" onClick={() => router.back()} className={styles.cancelButton}>Cancel</button>
-                <button type="submit" disabled={submitting} className={styles.saveButton}>
-                    {submitting ? 'Saving...' : 'Save Changes'} <FiArrowRight />
+        <div className={styles.card}>
+          <h2 className={styles.sectionTitle}><FiImage /> Product Images</h2>
+          <div className={styles.imageGrid}>
+            {imageUrls.map((url, index) => (
+              <div key={`${url}-${index}`} className={styles.imagePreview}>
+                <img src={url} alt={`Product image ${index + 1}`} />
+                <button 
+                  type="button" 
+                  onClick={() => handleRemoveImage(index)} 
+                  className={styles.deleteImageButton}
+                >
+                  <FiTrash2 />
                 </button>
+              </div>
+            ))}
+          </div>
+          <div {...getRootProps()} className={styles.dropzone}>
+            <input {...getInputProps()} />
+            <FiUploadCloud />
+            <p>Drop images here or click to upload</p>
+          </div>
+        </div>
+
+        <div className={styles.card}>
+          <h2 className={styles.sectionTitle}><FiDollarSign /> Pricing</h2>
+          <div className={styles.formRow}>
+            <div className={styles.formGroup}>
+              <label>Price</label>
+              <input 
+                type="number" 
+                value={price} 
+                onChange={e => setPrice(Number(e.target.value))} 
+                className={styles.input} 
+                required 
+              />
             </div>
-        </form>
+            <div className={styles.formGroup}>
+              <label>Currency</label>
+              <input 
+                type="text" 
+                value={currency} 
+                onChange={e => setCurrency(e.target.value)} 
+                className={styles.input} 
+                required 
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className={styles.card}>
+          <h2 className={styles.sectionTitle}><FiArchive /> Inventory & Details</h2>
+          <div className={styles.formRow}>
+            <div className={styles.formGroup}>
+              <label>Stock</label>
+              <input 
+                type="number" 
+                value={stockQuantity} 
+                onChange={e => setStockQuantity(Number(e.target.value))} 
+                className={styles.input} 
+                required 
+              />
+            </div>
+            <div className={styles.formGroup}>
+              <label>Category</label>
+              <select 
+                value={categoryId || ''} 
+                onChange={e => setCategoryId(e.target.value ? Number(e.target.value) : null)} 
+                className={styles.select}
+              >
+                <option value="">Select Category</option>
+                {categories.map(c => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div className={styles.formGroup}>
+            <label className={styles.label}>Status</label>
+            <div className={styles.checkboxContainer}>
+              <input 
+                type="checkbox" 
+                id="isActive" 
+                checked={isActive} 
+                onChange={e => setIsActive(e.target.checked)} 
+              />
+              <label htmlFor="isActive">Product is active and visible</label>
+            </div>
+          </div>
+        </div>
+
+        <div className={styles.formActions}>
+          <button 
+            type="button" 
+            onClick={() => router.back()} 
+            className={styles.cancelButton}
+          >
+            Cancel
+          </button>
+          <button 
+            type="submit" 
+            disabled={submitting} 
+            className={styles.saveButton}
+          >
+            {submitting ? 'Saving...' : 'Save Changes'} <FiArrowRight />
+          </button>
+        </div>
+      </form>
     </main>
   );
 }
