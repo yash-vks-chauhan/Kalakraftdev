@@ -8,14 +8,16 @@ const JWT_SECRET = process.env.JWT_SECRET!
 function requireAdmin(request: Request) {
   const auth = request.headers.get('Authorization')?.replace('Bearer ', '') || ''
   try {
-    return (jwt.verify(auth, JWT_SECRET) as any).role === 'admin'
+    const decoded = jwt.verify(auth, JWT_SECRET) as any;
+    return { isAdmin: decoded.role === 'admin', userId: decoded.userId };
   } catch {
-    return false
+    return { isAdmin: false, userId: null };
   }
 }
 
 export async function PATCH(request: Request, { params }: { params: { id: string } }) {
-  if (!requireAdmin(request)) {
+  const { isAdmin, userId } = requireAdmin(request);
+  if (!isAdmin) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   const reviewId = Number(params.id)
@@ -28,8 +30,10 @@ export async function PATCH(request: Request, { params }: { params: { id: string
   const updated = await prisma.productReview.update({
     where: { id: reviewId },
     data: {
-      adminReply: reply ?? undefined,
+      reply: reply ?? undefined,
       adminReaction: reaction ?? undefined,
+      repliedAt: reply ? new Date() : undefined,
+      repliedById: reply ? userId : undefined
     },
     include: {
       user: { select: { fullName: true, id: true } },

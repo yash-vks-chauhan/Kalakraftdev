@@ -24,6 +24,7 @@ export async function GET(request: Request) {
     include: {
       product: { select: { id: true, name: true } },
       user: { select: { id: true, fullName: true } },
+      repliedBy: { select: { id: true, fullName: true } },
     },
     take: 200,
   })

@@ -633,7 +633,7 @@ export default function ProductDetailsPage() {
                 <p style={{margin:'0 0 4px'}}><strong>{rev.user?.fullName||'Anonymous'}</strong> – {[1,2,3,4,5].map(i=>i<=rev.rating?'★':'☆').join('')}</p>
                 {rev.comment && <p style={{margin:0}}>{rev.comment}</p>}
                 {rev.adminReaction && <p style={{margin:'2px 0'}}><span role="img" aria-label="reaction">{rev.adminReaction}</span></p>}
-                {rev.adminReply && <p style={{margin:'2px 0', fontStyle:'italic',color:'#555'}}>Admin: {rev.adminReply}</p>}
+                {rev.reply && <p style={{margin:'2px 0', fontStyle:'italic',color:'#555'}}>Admin: {rev.reply}</p>}
               </li>
             ))}
           </ul>
