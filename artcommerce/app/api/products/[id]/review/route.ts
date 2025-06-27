@@ -34,8 +34,10 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
     where: { productId },
     orderBy: { createdAt: 'desc' },
     take: 20,
+    // @ts-ignore - Include repliedBy to get admin info
     include: {
-      user: { select: { fullName: true, avatarUrl: true } }
+      user: { select: { fullName: true, avatarUrl: true } },
+      repliedBy: { select: { fullName: true } }
     }
   })
 
@@ -49,6 +51,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   // Fallback to Next-Auth session cookie (used when browsing without the custom AuthContext)
   const session = await getServerSession()
 
+  // @ts-ignore - Handle session user ID
   const userId = tokenUserId || session?.user?.id
 
   if (!userId) {
