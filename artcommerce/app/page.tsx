@@ -146,9 +146,21 @@ headers: { Authorization: `Bearer ${idToken}` },
 
 })
 
+if (res.ok) {
+
 const json = await res.json()
 
 setMessage(json.message || json.error)
+
+} else {
+
+console.error('Failed to fetch secure data:', res.status)
+
+// Optional: Set a message to indicate the failure
+
+// setMessage('Could not authenticate with server.');
+
+}
 
 })
 
