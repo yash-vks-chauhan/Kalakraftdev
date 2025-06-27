@@ -106,42 +106,52 @@ export default function AdminProductsPage() {
           </tr>
         </thead>
         <tbody>
-          {products.map(p => (
-            <tr key={p.id} className={styles.tableRow}>
-              <td className={styles.tableCell}>{p.name}</td>
-              <td className={styles.tableCell}>
-                <span className={styles.price}>
-                  {p.currency} {typeof p.price === 'number' ? p.price.toFixed(2) : '0.00'}
-                </span>
-              </td>
-              <td className={styles.tableCell}>{p.stockQuantity}</td>
-              <td className={styles.tableCell}>
-                <span className={p.isActive ? styles.statusActive : styles.statusInactive}>
-                  {p.isActive ? 'Active' : 'Inactive'}
-                </span>
-              </td>
-              <td className={styles.tableCell}>
-                <div className={styles.actionButtons}>
-                  <button
-                    onClick={() => handleEdit(p.id)}
-                    className={styles.editButton}
-                  >
-                    <FiEdit2 />
-                    Edit
-                    <FiArrowRight className={styles.arrowIcon} />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(p.id)}
-                    className={styles.deleteButton}
-                  >
-                    <FiTrash2 />
-                    Delete
-                    <FiArrowRight className={styles.arrowIcon} />
-                  </button>
-                </div>
-              </td>
-            </tr>
-          ))}
+          {products && products.map(p => {
+            if (!p) return null; // Defensively skip rendering if a product object is null
+            
+            const priceDisplay = typeof p.price === 'number' ? p.price.toFixed(2) : '0.00';
+            const currencyDisplay = p.currency || 'N/A';
+            const stockDisplay = typeof p.stockQuantity === 'number' ? p.stockQuantity : 'N/A';
+            const statusClass = p.isActive ? styles.statusActive : styles.statusInactive;
+            const statusText = p.isActive ? 'Active' : 'Inactive';
+
+            return (
+              <tr key={p.id} className={styles.tableRow}>
+                <td className={styles.tableCell}>{p.name || 'No Name'}</td>
+                <td className={styles.tableCell}>
+                  <span className={styles.price}>
+                    {currencyDisplay} {priceDisplay}
+                  </span>
+                </td>
+                <td className={styles.tableCell}>{stockDisplay}</td>
+                <td className={styles.tableCell}>
+                  <span className={statusClass}>
+                    {statusText}
+                  </span>
+                </td>
+                <td className={styles.tableCell}>
+                  <div className={styles.actionButtons}>
+                    <button
+                      onClick={() => handleEdit(p.id)}
+                      className={styles.editButton}
+                    >
+                      <FiEdit2 />
+                      Edit
+                      <FiArrowRight className={styles.arrowIcon} />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(p.id)}
+                      className={styles.deleteButton}
+                    >
+                      <FiTrash2 />
+                      Delete
+                      <FiArrowRight className={styles.arrowIcon} />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            )
+          })}
         </tbody>
       </table>
     </main>
