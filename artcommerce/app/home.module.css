@@ -17,6 +17,7 @@
   height: 100%;
   object-fit: cover;
   z-index: 0;
+  background-color: #222; /* Fallback for video load issues */
 }
 
 .overlay {

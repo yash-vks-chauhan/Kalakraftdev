@@ -404,7 +404,7 @@ preload="auto"
 
 >
 
-<source src="/images/homepage_final.mp4" type="video/mp4" />
+<source src="/images/homepage_video.mp4" type="video/mp4" />
 
 Your browser does not support the video tag.
 

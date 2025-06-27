@@ -22,9 +22,9 @@ console.log('Firebase Admin config loaded:', {
 // Initialize Firebase Admin SDK once
 if (!getApps().length) {
   try {
-    initializeApp({
-      credential: cert(serviceAccount as any),
-    });
+  initializeApp({
+    credential: cert(serviceAccount as any),
+  });
     console.log('Firebase Admin SDK initialized successfully');
   } catch (error) {
     console.error('Error initializing Firebase Admin SDK:', error);
@@ -61,22 +61,22 @@ export async function POST(req: NextRequest) {
       await prisma.$queryRaw`SELECT 1`;
       console.log('Database connection successful');
       
-      let user = await prisma.user.findUnique({
-        where: { email: decodedToken.email || '' },
-      });
+    let user = await prisma.user.findUnique({
+      where: { email: decodedToken.email || '' },
+    });
 
-      if (!user) {
+    if (!user) {
         console.log('Creating new user in database for:', decodedToken.email);
         try {
-          user = await prisma.user.create({
-            data: {
-              id: uid,
-              email: decodedToken.email!,
-              fullName: decodedToken.name || decodedToken.email!,
-              role: 'user',
-              avatarUrl: decodedToken.picture || null,
-            },
-          });
+      user = await prisma.user.create({
+        data: {
+          id: uid,
+          email: decodedToken.email!,
+          fullName: decodedToken.name || decodedToken.email!,
+          role: 'user',
+          avatarUrl: decodedToken.picture || null,
+        },
+      });
           console.log('New user created:', user.id);
         } catch (createError) {
           console.error('Error creating user:', createError);
@@ -87,28 +87,28 @@ export async function POST(req: NextRequest) {
         }
       } else {
         console.log('Existing user found:', user.id);
-      }
+    }
 
-      // 3) Create our custom JWT
-      const token = jwt.sign(
-        { userId: user.id, email: user.email, role: user.role },
-        JWT_SECRET,
-        { expiresIn: '7d' }
-      );
+    // 3) Create our custom JWT
+    const token = jwt.sign(
+      { userId: user.id, email: user.email, role: user.role },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
       console.log('JWT created successfully');
 
-      // 4) Return response
-      const res = NextResponse.json({ user, token }, { status: 200 });
-      res.cookies.set('token', token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        path: '/',
-        maxAge: 60 * 60 * 24 * 7,
-      });
+    // 4) Return response
+    const res = NextResponse.json({ user, token }, { status: 200 });
+    res.cookies.set('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 60 * 60 * 24 * 7,
+    });
       console.log('Login successful, returning response');
 
-      return res;
+    return res;
     } catch (dbError) {
       console.error('Database error:', dbError);
       return NextResponse.json({ 
