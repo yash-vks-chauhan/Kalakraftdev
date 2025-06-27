@@ -31,6 +31,10 @@ export async function PATCH(request: Request, { params }: { params: { id: string
       adminReply: reply ?? undefined,
       adminReaction: reaction ?? undefined,
     },
+    include: {
+      user: { select: { fullName: true, id: true } },
+      product: { select: { name: true, id: true } },
+    },
   })
 
   return NextResponse.json({ review: updated })
