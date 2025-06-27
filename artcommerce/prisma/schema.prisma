@@ -197,7 +197,7 @@ model Order {
   updatedAt     DateTime @updatedAt
 
   orderItems OrderItem[]
-  orderNotes OrderNote[] @relation("CustomerNotes")
+  orderNotes OrderNote[] @relation("OrderNotes")
 }
 
 model OrderItem {
