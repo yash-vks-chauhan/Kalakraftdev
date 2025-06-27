@@ -180,9 +180,6 @@ export default function EditProductPage() {
         }
       }))
 
-      const form = new FormData()
-      form.append('file', file)
-      
       try {
         const xhr = new XMLHttpRequest()
         
@@ -211,11 +208,11 @@ export default function EditProductPage() {
           xhr.onerror = () => reject(new Error('Upload failed'))
         })
 
-        xhr.open('POST', '/api/uploads')
-        xhr.send(form)
+        xhr.open('POST', `/api/uploads?filename=${file.name}`)
+        xhr.send(file)
 
-        const url = await uploadPromise as string
-        setImageUrls(prev => [...prev, url])
+        const url = (await uploadPromise) as any
+        setImageUrls(prev => [...prev, url.url])
         
         // Update status to completed instead of removing
         setUploadingFiles(prev => ({
@@ -255,13 +252,10 @@ export default function EditProductPage() {
 
   const onDropStyling = useCallback(async (acceptedFiles: File[]) => {
     for (const file of acceptedFiles) {
-      const form = new FormData()
-      form.append('file', file)
-
       try {
-        const res = await fetch('/api/uploads', {
+        const res = await fetch(`/api/uploads?filename=${file.name}`, {
           method: 'POST',
-          body: form,
+          body: file,
         })
         const data = await res.json()
         setStylingIdeas(prev => [...prev, { url: data.url, text: '' }])

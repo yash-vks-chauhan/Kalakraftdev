@@ -1,39 +1,33 @@
 // File: app/api/uploads/route.ts
 import { NextResponse } from 'next/server'
-import { writeFile } from 'fs/promises'
-import { v4 as uuidv4 } from 'uuid'
-import path from 'path'
-import { Blob } from 'buffer'
+import { put } from '@vercel/blob'
 
 export const runtime = 'nodejs'
 
-export async function POST(request: Request) {
-  const formData = await request.formData()
-  const file = formData.get('file')
+export async function POST(request: Request): Promise<NextResponse> {
+  const { searchParams } = new URL(request.url)
+  const filename = searchParams.get('filename')
 
-  if (!file || typeof file === 'string') {
-    return NextResponse.json({ error: 'No file provided or file is a string.' }, { status: 400 });
+  if (!filename || !request.body) {
+    return NextResponse.json(
+      { error: 'No filename provided or request body is empty.' },
+      { status: 400 },
+    )
   }
-
-  // The 'file' from formData is a Blob in this environment.
-  // We can get the name from the headers or just create a name.
-  // For simplicity, we'll get the extension from its type.
-  const originalFilename = file.name || 'untitled';
-  const ext = path.extname(originalFilename);
-  const filename = `${uuidv4()}${ext}`;
-
-  // 3) write to public/uploads
-  const uploadDir = path.join(process.cwd(), 'public', 'uploads');
-  const uploadPath = path.join(uploadDir, filename);
 
   try {
-    const buffer = Buffer.from(await file.arrayBuffer());
-    await writeFile(uploadPath, buffer);
-  } catch (error) {
-    console.error('Failed to write file:', error);
-    return NextResponse.json({ error: 'Failed to save file.' }, { status: 500 });
-  }
+    const blob = await put(filename, request.body, {
+      access: 'public',
+    })
 
-  // 4) return the public URL
-  return NextResponse.json({ url: `/uploads/${filename}` })
+    // Return the blob object which includes the URL
+    return NextResponse.json(blob)
+  } catch (error) {
+    console.error('Error uploading to Vercel Blob:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    return NextResponse.json(
+      { message: 'Error uploading file.', error: errorMessage },
+      { status: 500 },
+    )
+  }
 }

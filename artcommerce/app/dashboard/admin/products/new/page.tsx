@@ -103,11 +103,11 @@ export default function NewProductPage() {
           xhr.onerror = () => reject(new Error('Upload failed'))
         })
 
-        xhr.open('POST', '/api/uploads')
-        xhr.send(form)
+        xhr.open('POST', `/api/uploads?filename=${file.name}`)
+        xhr.send(file)
 
         const url = await uploadPromise
-        setImageUrls(prev => [...prev, url as string])
+        setImageUrls(prev => [...prev, (url as any).url])
         
         // Clear progress and errors for this upload
         setUploadingFiles(prev => {
@@ -136,13 +136,10 @@ export default function NewProductPage() {
 
   const onDropStyling = useCallback(async (acceptedFiles: File[]) => {
     for (const file of acceptedFiles) {
-      const form = new FormData()
-      form.append('file', file)
-
       try {
-        const res = await fetch('/api/uploads', {
+        const res = await fetch(`/api/uploads?filename=${file.name}`, {
           method: 'POST',
-          body: form,
+          body: file,
         })
         const data = await res.json()
         setStylingIdeas(prev => [...prev, { url: data.url, text: '' }])
