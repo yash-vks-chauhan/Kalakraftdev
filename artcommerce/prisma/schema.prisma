@@ -289,9 +289,6 @@ model ProductReview {
   createdAt DateTime @default(now())
   adminReply     String?
   adminReaction  String?
-  repliedAt DateTime?
-  repliedBy User?     @relation("AdminReplies", fields: [repliedById], references: [id], onDelete: SetNull)
-  repliedById String?
 
    @@unique([productId, userId])
 }
