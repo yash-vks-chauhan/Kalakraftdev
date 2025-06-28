@@ -1,4 +1,4 @@
-# Artcommerce
+# KalaKraft
 
 An e-commerce platform for art products.
 
