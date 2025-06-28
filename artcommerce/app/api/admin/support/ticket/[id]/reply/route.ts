@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import prisma from "../../../../../../../lib/prisma";
 import pusher from "../../../../../../../lib/pusher";
+import { randomUUID } from 'crypto';
 
 export async function POST(
   request: Request,
@@ -20,7 +21,13 @@ export async function POST(
   // 3) Record the agent's message
   const message = await prisma.supportMessage.create({
     // @ts-ignore keeping until prisma types regenerated
-    data: { ticketId, sender: "agent", content: reply, attachments } as any,
+    data: { 
+      id: randomUUID(),
+      ticketId, 
+      sender: "agent", 
+      content: reply, 
+      attachments 
+    } as any,
   });
 
   // 4) Update the ticket's status

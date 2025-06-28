@@ -1,6 +1,7 @@
 // File: app/api/support/ticket/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '../../../../lib/prisma';
+import { randomUUID } from 'crypto';
 
 export async function POST(request: Request) {
   // Detect if multipart or JSON
@@ -32,7 +33,13 @@ export async function POST(request: Request) {
   // 2) Create the support ticket in the database (store category/product info as part of subject for now)
   const fullSubject = issueCategory ? `[${issueCategory}] ${subject}` : subject;
   const ticket = await prisma.supportTicket.create({
-    data: { name, email, subject: fullSubject, message },
+    data: { 
+      id: randomUUID(),
+      name, 
+      email, 
+      subject: fullSubject, 
+      message 
+    },
   });
 
   // If attachments provided, create a first SupportMessage storing them
@@ -40,6 +47,7 @@ export async function POST(request: Request) {
     // @ts-ignore until prisma types regenerated
     await prisma.supportMessage.create({
       data: {
+        id: randomUUID(),
         ticketId: ticket.id,
         sender: 'customer',
         content: '',

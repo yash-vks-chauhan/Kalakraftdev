@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import prisma from "../../../../../lib/prisma";
 import pusher from "../../../../../lib/pusher";
+import { randomUUID } from 'crypto';
 
 export async function GET(
   request: Request,
@@ -33,7 +34,13 @@ export async function POST(
   // Create the message
   // @ts-ignore – attachments field added after latest Prisma migration
   const message = await prisma.supportMessage.create({
-    data: { ticketId, sender: "customer", content, attachments } as any,
+    data: { 
+      id: randomUUID(),
+      ticketId, 
+      sender: "customer", 
+      content, 
+      attachments 
+    } as any,
   });
 
   // Broadcast via Pusher
