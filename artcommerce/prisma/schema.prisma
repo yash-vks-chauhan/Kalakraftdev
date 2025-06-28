@@ -44,8 +44,6 @@ model User {
 
   authoredNotes OrderNote[] @relation("AuthorNotes")
   notifications Notification[]
-
-  stripeCustomerId String?
 }
 
 model Account {
