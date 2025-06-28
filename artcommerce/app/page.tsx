@@ -382,18 +382,34 @@ easing: 'ease-in-out',
 
 // Add this new useEffect for video loading
 useEffect(() => {
-  // Dynamically load video after component mounts
-  const videoElement = document.querySelector(`.${styles.videoBackground}`) as HTMLVideoElement;
-  if (videoElement) {
-    // Small delay to ensure DOM is ready
-    setTimeout(() => {
-      // Force reload the video source
-      const currentSrc = videoElement.querySelector('source')?.src;
-      if (currentSrc) {
-        videoElement.load();
-      }
-    }, 100);
-  }
+  // Function to handle video loading
+  const handleVideoLoading = () => {
+    const videoElement = document.querySelector(`.${styles.videoBackground}`) as HTMLVideoElement;
+    const fallbackImage = document.getElementById('videoFallback');
+    
+    if (videoElement && fallbackImage) {
+      // Try to load the video
+      videoElement.addEventListener('loadeddata', () => {
+        // Video loaded successfully
+        videoElement.style.display = 'block';
+        fallbackImage.style.display = 'none';
+      });
+      
+      videoElement.addEventListener('error', () => {
+        // Video failed to load
+        videoElement.style.display = 'none';
+        fallbackImage.style.display = 'block';
+      });
+      
+      // Force reload the video
+      videoElement.load();
+    }
+  };
+  
+  // Small delay to ensure DOM is ready
+  const timer = setTimeout(handleVideoLoading, 300);
+  
+  return () => clearTimeout(timer);
 }, []);
 
 
@@ -405,6 +421,17 @@ return (
 <section className="relative overflow-hidden">
 
 <div className={styles.videoContainer}>
+{/* Video with static fallback image */}
+<picture>
+  {/* Fallback image that will be shown if video fails */}
+  <img 
+    src="/images/featured3.JPG" 
+    alt="Handcrafted resin art" 
+    className={styles.videoBackground}
+    style={{ display: 'none' }}
+    id="videoFallback"
+  />
+</picture>
 
 <video
 className={styles.videoBackground}
@@ -415,20 +442,15 @@ playsInline
 preload="metadata"
 poster="/images/loading.png"
 onError={(e) => {
-  // If video fails to load, hide it and show the fallback image
+  // If video fails to load, show the fallback image
   const videoElement = e.currentTarget;
   videoElement.style.display = 'none';
-  const fallbackImage = document.createElement('img');
-  fallbackImage.src = '/images/featured3.JPG';
-  fallbackImage.className = styles.videoBackground;
-  fallbackImage.alt = 'Handcrafted resin art';
-  videoElement.parentNode?.insertBefore(fallbackImage, videoElement);
+  document.getElementById('videoFallback')!.style.display = 'block';
 }}
 >
-<source src="/images/homepage4.mp4" type="video/mp4" />
+<source src="/images/homepage_video.mp4" type="video/mp4" />
 Your browser does not support the video tag.
 </video>
-
 
 <div className={styles.overlay} />
 

@@ -8,12 +8,21 @@
   },
   "headers": [
     {
-      "source": "/images/(.*\\.mp4)",
+      "source": "/images/(.*)",
       "headers": [
         {
           "key": "Cache-Control",
           "value": "public, max-age=31536000, immutable"
         },
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        }
+      ]
+    },
+    {
+      "source": "/images/(.*\\.mp4)",
+      "headers": [
         {
           "key": "Content-Type",
           "value": "video/mp4"
