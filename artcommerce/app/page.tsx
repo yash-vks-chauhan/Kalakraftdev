@@ -388,7 +388,7 @@ useEffect(() => {
     const fallbackImage = document.getElementById('videoFallback');
     
     if (videoElement && fallbackImage) {
-      // Try to load the video
+      // Check if video loaded successfully
       videoElement.addEventListener('loadeddata', () => {
         // Video loaded successfully
         videoElement.style.display = 'block';
@@ -421,38 +421,41 @@ return (
 <section className="relative overflow-hidden">
 
 <div className={styles.videoContainer}>
-{/* Video with static fallback image */}
-<picture>
-  {/* Fallback image that will be shown if video fails */}
-  <img 
-    src="/images/featured3.JPG" 
-    alt="Handcrafted resin art" 
+  {/* Video with fallback image */}
+  <picture>
+    {/* Fallback image that will be shown if video fails */}
+    <img 
+      src="/images/featured3.JPG" 
+      alt="Handcrafted resin art" 
+      className={styles.videoBackground}
+      style={{ display: 'none' }}
+      id="videoFallback"
+    />
+  </picture>
+
+  <video
     className={styles.videoBackground}
-    style={{ display: 'none' }}
-    id="videoFallback"
-  />
-</picture>
+    autoPlay
+    loop
+    muted
+    playsInline
+    preload="metadata"
+    poster="/images/loading.png"
+    onError={(e) => {
+      // If video fails to load, show the fallback image
+      const videoElement = e.currentTarget;
+      videoElement.style.display = 'none';
+      document.getElementById('videoFallback')!.style.display = 'block';
+    }}
+  >
+    <source 
+      src={process.env.NEXT_PUBLIC_CLOUDINARY_VIDEO_URL || '/images/homepage_video.mp4'} 
+      type="video/mp4" 
+    />
+    Your browser does not support the video tag.
+  </video>
 
-<video
-className={styles.videoBackground}
-autoPlay
-loop
-muted
-playsInline
-preload="metadata"
-poster="/images/loading.png"
-onError={(e) => {
-  // If video fails to load, show the fallback image
-  const videoElement = e.currentTarget;
-  videoElement.style.display = 'none';
-  document.getElementById('videoFallback')!.style.display = 'block';
-}}
->
-<source src="/images/homepage_video.mp4" type="video/mp4" />
-Your browser does not support the video tag.
-</video>
-
-<div className={styles.overlay} />
+  <div className={styles.overlay} />
 
 
 <div className={styles.content}>
