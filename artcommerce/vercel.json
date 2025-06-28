@@ -5,5 +5,24 @@
   "outputDirectory": ".next",
   "env": {
     "DATABASE_URL": "postgresql://neondb_owner:npg_GoQhp2C3DrBf@ep-shiny-frog-a1mpqgkm-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require"
-  }
-} 
+  },
+  "headers": [
+    {
+      "source": "/images/(.*\\.mp4)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        },
+        {
+          "key": "Content-Type",
+          "value": "video/mp4"
+        },
+        {
+          "key": "Accept-Ranges",
+          "value": "bytes"
+        }
+      ]
+    }
+  ]
+}

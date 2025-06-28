@@ -380,6 +380,24 @@ easing: 'ease-in-out',
 
 
 
+// Add this new useEffect for video loading
+useEffect(() => {
+  // Dynamically load video after component mounts
+  const videoElement = document.querySelector(`.${styles.videoBackground}`) as HTMLVideoElement;
+  if (videoElement) {
+    // Small delay to ensure DOM is ready
+    setTimeout(() => {
+      // Force reload the video source
+      const currentSrc = videoElement.querySelector('source')?.src;
+      if (currentSrc) {
+        videoElement.load();
+      }
+    }, 100);
+  }
+}, []);
+
+
+
 return (
 
 <main data-page="home" style={{background: '#f8f8f8'}}>
@@ -389,25 +407,26 @@ return (
 <div className={styles.videoContainer}>
 
 <video
-
 className={styles.videoBackground}
-
 autoPlay
-
 loop
-
 muted
-
 playsInline
-
-preload="auto"
-
+preload="metadata"
+poster="/images/loading.png"
+onError={(e) => {
+  // If video fails to load, hide it and show the fallback image
+  const videoElement = e.currentTarget;
+  videoElement.style.display = 'none';
+  const fallbackImage = document.createElement('img');
+  fallbackImage.src = '/images/featured3.JPG';
+  fallbackImage.className = styles.videoBackground;
+  fallbackImage.alt = 'Handcrafted resin art';
+  videoElement.parentNode?.insertBefore(fallbackImage, videoElement);
+}}
 >
-
-<source src="/images/homepage_video.mp4" type="video/mp4" />
-
+<source src="/images/homepage4.mp4" type="video/mp4" />
 Your browser does not support the video tag.
-
 </video>
 
 

@@ -42,6 +42,10 @@ const nextConfig: NextConfig = {
   assetPrefix: process.env.NODE_ENV === 'production' ? undefined : undefined,
   // Copy files from public directory to output
   outputFileTracing: true,
+  // Increase the buffer size for large assets
+  experimental: {
+    largePageDataBytes: 128 * 1000, // 128KB
+  },
 };
 
 export default nextConfig;
