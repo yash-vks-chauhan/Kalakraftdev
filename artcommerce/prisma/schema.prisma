@@ -44,8 +44,7 @@ model User {
 
   authoredNotes OrderNote[] @relation("AuthorNotes")
   notifications Notification[]
-  sentSupportMessages SupportMessage[]
-  supportTickets SupportTicket[]
+  ticketReplies TicketReply[]
 
   stripeCustomerId String?
 }
@@ -257,12 +256,11 @@ model FlashSale {
 
 model SupportTicket {
   id          Int      @id @default(autoincrement())
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId      String
+  name        String
+  email       String
   subject     String
   message     String
   status      String   @default("open")
-  priority    String   @default("medium")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   messages    SupportMessage[]
@@ -272,10 +270,10 @@ model SupportMessage {
   id        Int      @id @default(autoincrement())
   ticket    SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
   ticketId  Int
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String
-  message   String
+  sender    String
+  content   String
   createdAt DateTime @default(now())
+  attachments Json @default("[]")
 }
 
 model ProductReview {
