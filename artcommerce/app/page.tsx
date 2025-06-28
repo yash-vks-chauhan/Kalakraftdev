@@ -692,9 +692,14 @@ onClick={() => handleCarouselNav('next')}
 
 {/* Artistry in Every Layer Section - Redesigned */}
 <section className={styles.artistrySection}>
-  <div className={styles.artistryBackground}>
+  <div 
+    className={styles.artistryBackground}
+    style={{
+      backgroundImage: `linear-gradient(to right, rgba(248, 248, 248, 0.95), rgba(248, 248, 248, 0.8)), url('${getImageUrl('collectionwall.png')}')`
+    }}
+  >
     <img 
-      src="/images/DSC01366.JPG" 
+      src={getImageUrl('DSC01366.JPG')}
       alt="Resin art creation process" 
       className={styles.artistryFeatureImage} 
       data-aos="fade-left"
