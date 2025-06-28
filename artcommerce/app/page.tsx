@@ -11,6 +11,7 @@ import { onAuthStateChanged } from 'firebase/auth'
 import { ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react'
 
 import styles from './home.module.css'
+import { getImageUrl } from '../lib/cloudinaryImages'
 
 
 
@@ -38,7 +39,7 @@ const productCategories = [
 
 {
 
-image: '/images/imagecollection1.png',
+image: getImageUrl('imagecollection1.png'),
 
 title: 'COASTERS',
 
@@ -48,7 +49,7 @@ alt: 'Handcrafted resin coasters'
 
 {
 
-image: '/images/imageclock.png',
+image: getImageUrl('imageclock.png'),
 
 title: 'WALL ART',
 
@@ -58,7 +59,7 @@ alt: 'Resin wall art pieces'
 
 {
 
-image: '/images/imagecollection99.png',
+image: getImageUrl('imagecollection99.png'),
 
 title: 'HOME DECOR',
 
@@ -68,7 +69,7 @@ alt: 'Decorative resin items'
 
 {
 
-image: '/images/collectionwall.png',
+image: getImageUrl('collectionwall.png'),
 
 title: 'CUSTOM PIECES',
 
@@ -78,7 +79,7 @@ alt: 'Custom resin artwork'
 
 {
 
-image: '/images/category1.png',
+image: getImageUrl('category1.png'),
 
 title: 'CLOCKS',
 
@@ -88,7 +89,7 @@ alt: 'Handcrafted resin clocks'
 
 {
 
-image: '/images/trayscollection.png',
+image: getImageUrl('trayscollection.png'),
 
 title: 'JEWELRY TRAYS',
 
@@ -98,7 +99,7 @@ alt: 'Elegant resin jewelry trays'
 
 {
 
-image: '/images/vases.png',
+image: getImageUrl('vases.png'),
 
 title: 'VASES',
 
@@ -108,7 +109,7 @@ alt: 'Decorative resin vases'
 
 {
 
-image: '/images/category4.png',
+image: getImageUrl('category4.png'),
 
 title: 'TRAYS',
 
@@ -425,7 +426,7 @@ return (
   <picture>
     {/* Fallback image that will be shown if video fails */}
     <img 
-      src="/images/featured3.JPG" 
+      src={getImageUrl('featured3.JPG')}
       alt="Handcrafted resin art" 
       className={styles.videoBackground}
       style={{ display: 'none' }}
@@ -466,7 +467,7 @@ return (
 
 <img
 
-src="/images/logo.png"
+src={getImageUrl('logo.png')}
 
 alt="Kalakraft Logo"
 
