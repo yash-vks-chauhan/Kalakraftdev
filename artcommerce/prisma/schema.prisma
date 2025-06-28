@@ -252,7 +252,7 @@ model FlashSale {
 }
 
 model SupportTicket {
-  id          Int      @id @default(autoincrement())
+  id          String    @id
   name        String
   email       String
   subject     String
@@ -264,9 +264,9 @@ model SupportTicket {
 }
 
 model SupportMessage {
-  id        Int      @id @default(autoincrement())
+  id        String    @id
   ticket    SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-  ticketId  Int
+  ticketId  String
   sender    String
   content   String
   createdAt DateTime @default(now())
