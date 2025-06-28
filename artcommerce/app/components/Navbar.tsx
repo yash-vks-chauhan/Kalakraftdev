@@ -12,6 +12,7 @@ import { Search as SearchIcon, Menu, X, User, LogOut, Grid, ShoppingBag, Heart, 
 import SearchModal from './SearchModal'
 import styles from './Navbar.module.css'
 import { useMobileMenu } from '../contexts/MobileMenuContext'
+import { getImageUrl } from '../../lib/cloudinaryImages'
 
 const categories = [
   {
@@ -20,12 +21,12 @@ const categories = [
       {
         name: 'Clocks',
         description: 'Handcrafted timepieces',
-        image: '/images/category1.png'
+        image: 'category1.png'
       },
       {
         name: 'Wall Art',
         description: 'Unique wall decorations',
-        image: '/images/category6.png'
+        image: 'category6.png'
       }
     ]
   },
@@ -35,12 +36,12 @@ const categories = [
       {
         name: 'Rangolis',
         description: 'Traditional floor art',
-        image: '/images/category8.png'
+        image: 'category8.png'
       },
       {
         name: 'Matt Rangoli',
         description: 'Modern matt finish rangolis',
-        image: '/images/category5.png'
+        image: 'category5.png'
       }
     ]
   },
@@ -50,12 +51,12 @@ const categories = [
       {
         name: 'Paintings',
         description: 'Hand-painted artworks',
-        image: '/images/category7.png'
+        image: 'category7.png'
       },
       {
         name: 'Pots & Vases',
         description: 'Handcrafted ceramic pieces',
-        image: '/images/category3.png'
+        image: 'category3.png'
       }
     ]
   },
@@ -65,12 +66,12 @@ const categories = [
       {
         name: 'Jewelry Trays',
         description: 'Elegant organizers for your precious pieces',
-        image: '/images/category2.png'
+        image: 'category2.png'
       },
       {
         name: 'Trays',
         description: 'Beautiful trays for serving in style',
-        image: '/images/category4.png'
+        image: 'category4.png'
       }
     ]
   }
@@ -79,15 +80,15 @@ const categories = [
 const featuredItems = [
   {
     name: 'Antique Clock Collection',
-    image: '/images/featured1.png'
+    image: 'featured1.png'
   },
   {
     name: 'Premium Rangoli Set',
-    image: '/images/featured2.png'
+    image: 'featured2.png'
   },
   {
     name: 'Designer Pottery',
-    image: '/images/featured3.JPG'
+    image: 'featured3.JPG'
   }
 ];
 
@@ -222,7 +223,7 @@ export default function Navbar() {
           </button>
           <Link href="/" className={styles.brand} onClick={closeMobileMenu}>
             <Image
-              src="/images/logo.png"
+              src={getImageUrl('logo.png')}
               alt="Artcommerce Logo"
               width={180}
               height={50}
@@ -263,7 +264,7 @@ export default function Navbar() {
                       onClick={() => setShowMegaMenu(false)}
                     >
                       <Image
-                        src={item.image}
+                        src={getImageUrl(item.image)}
                         alt={item.name}
                         width={50}
                         height={50}
@@ -285,7 +286,7 @@ export default function Navbar() {
                   {featuredItems.map((item, idx) => (
                     <div key={idx} className={styles.featuredItem}>
                       <Image
-                        src={item.image}
+                        src={getImageUrl(item.image)}
                         alt={item.name}
                         width={200}
                         height={200}
