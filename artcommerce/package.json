@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3002",
-    "build": "npm ci && npm run prisma:generate && next build",
+    "build": "npm install --legacy-peer-deps && npx prisma generate && next build",
     "prisma:generate": "prisma generate",
     "start": "next start -p 3002",
     "lint": "next lint"
