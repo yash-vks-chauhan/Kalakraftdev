@@ -42,7 +42,7 @@ export default function MobileCart() {
           </svg>
         </div>
         <h2>Your cart is empty</h2>
-        <p>Looks like you haven't added any items yet</p>
+        <p>Looks like you haven&apos;t added any items yet</p>
         <Link href="/products" className={styles.browseButton}>
           Browse Products
         </Link>
