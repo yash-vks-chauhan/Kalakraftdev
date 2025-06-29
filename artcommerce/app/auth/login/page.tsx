@@ -132,8 +132,6 @@ export default function LoginPage() {
         <form 
           onSubmit={handleSubmit} 
           className={styles.form}
-          method="POST"
-          action="javascript:void(0)"
           noValidate
         >
           <div className={styles.formGroup}>
@@ -147,7 +145,7 @@ export default function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               className={`${styles.formInput} ${error ? styles.inputError : ''}`}
               placeholder="Enter your email"
-              disabled={isFormDisabled}
+              disabled={loading}
               aria-invalid={error ? 'true' : 'false'}
               autoComplete="email"
             />
@@ -164,7 +162,7 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               className={`${styles.formInput} ${error ? styles.inputError : ''}`}
               placeholder="Enter your password"
-              disabled={isFormDisabled}
+              disabled={loading}
               aria-invalid={error ? 'true' : 'false'}
               autoComplete="current-password"
             />
@@ -175,7 +173,7 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            disabled={loading || !email.trim() || !password.trim()}
+            disabled={loading}
             className={styles.submitButton}
           >
             {loading ? 'Signing in...' : 'Sign in'}

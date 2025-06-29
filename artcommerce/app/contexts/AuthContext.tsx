@@ -200,6 +200,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
+        credentials: 'include' // Important for cookie handling
       });
       
       const data = await res.json();
@@ -212,46 +213,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         // Handle different error cases
         if (res.status === 401) {
-          const error = new Error('Invalid email or password');
-          setError(error.message);
-          throw error;
+          throw new Error('Invalid email or password');
         }
         if (res.status === 400) {
-          const error = new Error('Missing fields');
-          setError(error.message);
-          throw error;
+          throw new Error('Missing fields');
         }
         // For network errors
         if (!res.status) {
-          const error = new Error('Network error occurred');
-          setError(error.message);
-          throw error;
+          throw new Error('Network error occurred');
         }
         // For other errors, use the server's error message
-        const error = new Error(data.error || 'Login failed');
-        setError(error.message);
-        throw error;
+        throw new Error(data.error || 'Login failed');
       }
 
-      // Clear any previous errors
-      setError(null);
-
-      // Set auth state on success
+      // Only set auth state if the response was successful
       setToken(data.token);
       localStorage.setItem('token', data.token);
-      await fetchProfile(data.token);
-    } catch (error: any) {
-      // Ensure we're throwing an Error object with the message
-      if (error instanceof Error) {
-        throw error;
-      }
-      const newError = new Error(error.message || 'Login failed');
-      setError(newError.message);
-      throw newError;
+      setUser(data.user);
+      setError(null);
+      
+      // Return the data so the login page can handle success
+      return data;
+    } catch (err: any) {
+      // Set the error message
+      setError(err.message || 'Login failed');
+      // Re-throw the error for the login page to handle
+      throw err;
     } finally {
       setLoading(false);
     }
-  }, [fetchProfile]);
+  }, []);
 
   const loginWithFirebaseToken = useCallback(async (idToken: string) => {
     setLoading(true);
