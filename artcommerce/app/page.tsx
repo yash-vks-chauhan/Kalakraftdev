@@ -3,17 +3,12 @@
 import { useEffect, useState, useRef } from 'react'
 import AOS from 'aos'
 import 'aos/dist/aos.css'
-import dynamic from 'next/dynamic'
-import ErrorBoundary from './components/ErrorBoundary'
-
 import { auth } from '../lib/firebase-client'
-
 import { onAuthStateChanged } from 'firebase/auth'
-
 import { ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react'
-
 import styles from './home.module.css'
 import { getImageUrl } from '../lib/cloudinaryImages'
+import dynamic from 'next/dynamic'
 
 // Import the mobile version
 const MobileHomePage = dynamic(() => import('./components/mobile/MobileHomePage'), {
@@ -36,42 +31,58 @@ const MobileHomePage = dynamic(() => import('./components/mobile/MobileHomePage'
   )
 })
 
-// Import the desktop version
-const DesktopHomePage = dynamic(() => import('./DesktopHomePage'), {
-  loading: () => (
-    <div style={{
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      minHeight: '100vh',
-      backgroundColor: '#fff'
-    }}>
-      <div style={{
-        textAlign: 'center',
-        fontSize: '16px',
-        color: '#666'
-      }}>
-        Loading...
-      </div>
-    </div>
-  )
-})
-
 export default function Home() {
   const [isMobile, setIsMobile] = useState(false)
   const [isClient, setIsClient] = useState(false)
-
   const [message, setMessage] = useState<string|null>(null)
-
   const [rotatingText, setRotatingText] = useState('coasters')
-
   const carouselTrackRef = useRef<HTMLDivElement>(null)
-
   const [isManualNav, setIsManualNav] = useState(false)
-
   const [slidePosition, setSlidePosition] = useState(0)
-
   const resumeTimerRef = useRef<NodeJS.Timeout | null>(null)
+
+  useEffect(() => {
+    setIsClient(true)
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    
+    // Initial check
+    checkMobile()
+    
+    // Listen for resize events
+    window.addEventListener('resize', checkMobile)
+    
+    return () => {
+      window.removeEventListener('resize', checkMobile)
+    }
+  }, [])
+
+  // Show loading state during SSR
+  if (!isClient) {
+    return (
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: '100vh',
+        backgroundColor: '#fff'
+      }}>
+        <div style={{
+          textAlign: 'center',
+          fontSize: '16px',
+          color: '#666'
+        }}>
+          Loading...
+        </div>
+      </div>
+    )
+  }
+
+  // If mobile, render mobile version
+  if (isMobile) {
+    return <MobileHomePage />
+  }
 
   // Product categories for the grid - expanded with more items
   const productCategories = [
@@ -116,44 +127,6 @@ export default function Home() {
       alt: 'Stylish resin serving trays'
     }
   ]
-
-  useEffect(() => {
-    setIsClient(true)
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768)
-    }
-    
-    // Initial check
-    checkMobile()
-    
-    // Listen for resize events
-    window.addEventListener('resize', checkMobile)
-    
-    return () => {
-      window.removeEventListener('resize', checkMobile)
-    }
-  }, [])
-
-  // Show loading state during SSR
-  if (!isClient) {
-    return (
-      <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        minHeight: '100vh',
-        backgroundColor: '#fff'
-      }}>
-        <div style={{
-          textAlign: 'center',
-          fontSize: '16px',
-          color: '#666'
-        }}>
-          Loading...
-        </div>
-      </div>
-    )
-  }
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
@@ -318,8 +291,249 @@ export default function Home() {
   }, []);
 
   return (
-    <ErrorBoundary>
-      {isMobile ? <MobileHomePage /> : <DesktopHomePage />}
-    </ErrorBoundary>
+    <main data-page="home" style={{background: '#f8f8f8'}}>
+      <section className="relative overflow-hidden">
+        <div className={styles.videoContainer}>
+          {/* Video with fallback image */}
+          <picture>
+            {/* Fallback image that will be shown if video fails */}
+            <img 
+              src={getImageUrl('featured3.JPG')}
+              alt="Handcrafted resin art" 
+              className={styles.videoBackground}
+              style={{ display: 'none' }}
+              id="videoFallback"
+            />
+          </picture>
+
+          <video
+            className={styles.videoBackground}
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="metadata"
+            poster="/images/loading.png"
+            onError={(e) => {
+              // If video fails to load, show the fallback image
+              const videoElement = e.currentTarget;
+              videoElement.style.display = 'none';
+              document.getElementById('videoFallback')!.style.display = 'block';
+            }}
+          >
+            <source 
+              src={process.env.NEXT_PUBLIC_CLOUDINARY_VIDEO_URL || '/images/homepage_video.mp4'} 
+              type="video/mp4" 
+            />
+            Your browser does not support the video tag.
+          </video>
+
+          <div className={styles.overlay} />
+
+          <div className={styles.content}>
+            <div className={styles.headerText}>
+              <div className={styles.topText} data-aos="fade-in" data-aos-delay="200">A HANDCRAFTED ART STUDIO</div>
+              <img
+                src={getImageUrl('logo.png')}
+                alt="Kalakraft Logo"
+                className={styles.logo}
+                data-aos="fade-in"
+                data-aos-delay="400"
+              />
+              <h1 className={styles.title} data-aos="fade-up" data-aos-delay="600">
+                Handcrafted resin art for <span id="rotator">{rotatingText}</span>
+              </h1>
+            </div>
+
+            <div
+              className={styles.scrollIndicator}
+              onClick={() => {
+                window.scrollTo({
+                  top: window.innerHeight,
+                  behavior: 'smooth'
+                })
+              }}
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* Product Categories Grid Section */}
+      <section className={styles.productGridSection} data-aos="fade-up">
+        {/* Section Header with description */}
+        <div className={styles.sectionHeader} data-aos="fade-up">
+          <div className={styles.headerLine}></div>
+          <h2 className={styles.sectionTitle}>Our Collections</h2>
+          <div className={styles.headerLine}></div>
+        </div>
+
+        <div className={styles.collectionDescription} data-aos="fade-up" data-aos-delay="100">
+          <p>Discover our handcrafted resin art pieces, each one uniquely created with passion and precision. 
+          Our collections showcase the perfect blend of artistic expression and functional elegance, 
+          bringing the beauty of fluid art into your everyday life.</p>
+        </div>
+
+        <div className={styles.carouselContainer} data-aos="fade-up" data-aos-delay="200">
+          <div 
+            ref={carouselTrackRef}
+            className={`${styles.carouselTrack} ${isManualNav ? styles.manualNav : ''}`}
+            style={isManualNav ? { transform: `translateX(${slidePosition}px)` } : {}}
+          >
+            {/* First set of items */}
+            {productCategories.map((category, index) => (
+              <div
+                key={`original-${index}`}
+                className={styles.productCard}
+                style={{animationDelay: `${index * 0.15}s`}}
+              >
+                <div className={styles.cardInner}>
+                  <img
+                    src={category.image}
+                    alt={category.alt}
+                    className={styles.productImage}
+                    // Add a fallback for broken images
+                    onError={(e) => (e.currentTarget.src = 'https://placehold.co/600x400/f0f0f0/ccc?text=Image+Not+Found')}
+                  />
+                  <div className={styles.cardOverlay}>
+                    <button className={styles.viewAllButton}>Explore Collection</button>
+                  </div>
+                  <h3 className={styles.categoryTitle}>{category.title}</h3>
+                </div>
+              </div>
+            ))}
+
+            {/* Duplicate set for seamless looping */}
+            {productCategories.map((category, index) => (
+              <div
+                key={`duplicate-${index}`}
+                className={styles.productCard}
+                style={{animationDelay: `${index * 0.15}s`}}
+              >
+                <div className={styles.cardInner}>
+                  <img
+                    src={category.image}
+                    alt={category.alt}
+                    className={styles.productImage}
+                    // Add a fallback for broken images
+                    onError={(e) => (e.currentTarget.src = 'https://placehold.co/600x400/f0f0f0/ccc?text=Image+Not+Found')}
+                  />
+                  <div className={styles.cardOverlay}>
+                    <button className={styles.viewAllButton}>Explore Collection</button>
+                  </div>
+                  <h3 className={styles.categoryTitle}>{category.title}</h3>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Navigation arrows */}
+          <div 
+            className={`${styles.carouselNav} ${styles.prevNav}`}
+            onClick={() => handleCarouselNav('prev')}
+          >
+            <ChevronLeft size={24} color="white" />
+          </div>
+          <div 
+            className={`${styles.carouselNav} ${styles.nextNav}`}
+            onClick={() => handleCarouselNav('next')}
+          >
+            <ChevronRight size={24} color="white" />
+          </div>
+        </div>
+
+        <div className={styles.collectionFooter} data-aos="fade-up" data-aos-delay="300">
+          <p>Each piece tells a story through layers of color and texture, inviting you to bring the essence of artistic expression into your home.</p>
+          <button className={styles.exploreAllButton}>View All Collections</button>
+        </div>
+
+        {/* Decorative elements */}
+        <div className={styles.watercolorSplash}></div>
+        <div className={styles.watercolorSplash2}></div>
+        <div className={styles.inkSplash}></div>
+        <div className={styles.lightEffect}></div>
+        <div className={styles.brushAccent}></div>
+      </section>
+
+      {/* Artistry in Every Layer Section - Redesigned */}
+      <section className={styles.artistrySection}>
+        <div 
+          className={styles.artistryBackground}
+          style={{
+            backgroundImage: `linear-gradient(to right, rgba(248, 248, 248, 0.95), rgba(248, 248, 248, 0.8)), url('${getImageUrl('collectionwall.png')}')`
+          }}
+        >
+          <img 
+            src={getImageUrl('DSC01366.JPG')}
+            alt="Resin art creation process" 
+            className={styles.artistryFeatureImage} 
+            data-aos="fade-left"
+          />
+          
+          <div className={styles.artistryContent}>
+            {/* Section Header with description */}
+            <div className={styles.sectionHeader} data-aos="fade-in">
+              <div className={styles.headerLine}></div>
+              <h2 className={styles.sectionTitle}>Artistry in Every Layer</h2>
+              <div className={styles.headerLine}></div>
+            </div>
+            
+            <div className={styles.artistryQuote} data-aos="fade-up">
+              Our resin art combines premium materials with meticulous craftsmanship to create pieces that capture light, color, and imagination in ways that will endure for generations.
+            </div>
+            
+            <div className={styles.artistryCards}>
+              {/* Card 1 */}
+              <div className={styles.artistryCard} data-aos="fade-up" data-aos-delay="100">
+                <div className={styles.artistryIcon}>
+                  <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="rgba(179, 138, 88, 0.8)" strokeWidth="1.5">
+                    <path d="M32 8C32 8 16 24 16 40C16 48.8366 23.1634 56 32 56C40.8366 56 48 48.8366 48 40C48 24 32 8 32 8Z" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M32 44C34.2091 44 36 42.2091 36 40C36 37.7909 32 32 32 32C32 32 28 37.7909 28 40C28 42.2091 29.7909 44 32 44Z" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  <div className={styles.artistryIconRipple}></div>
+                </div>
+                <h3 className={styles.artistryCardTitle}>Museum-Grade Resin</h3>
+                <p className={styles.artistryCardText}>Hand-mixed for crystal clarity and vibrant hues that endure.</p>
+              </div>
+              
+              {/* Card 2 */}
+              <div className={styles.artistryCard} data-aos="fade-up" data-aos-delay="200">
+                <div className={styles.artistryIcon}>
+                  <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="rgba(179, 138, 88, 0.8)" strokeWidth="1.5">
+                    <path d="M8 24L32 32L56 24" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M8 32L32 40L56 32" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M8 40L32 48L56 40" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M32 16L16 22L32 28L48 22L32 16Z" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  <div className={styles.artistryIconRipple}></div>
+                </div>
+                <h3 className={styles.artistryCardTitle}>Precision Pouring</h3>
+                <p className={styles.artistryCardText}>Controlled, bubble-free layers for a seamless, mirror-smooth surface.</p>
+              </div>
+              
+              {/* Card 3 */}
+              <div className={styles.artistryCard} data-aos="fade-up" data-aos-delay="300">
+                <div className={styles.artistryIcon}>
+                  <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="rgba(179, 138, 88, 0.8)" strokeWidth="1.5">
+                    <circle cx="32" cy="32" r="16" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M32 16V8" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M32 56V48" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M16 32H8" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M56 32H48" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M48 16L44 20" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M20 44L16 48" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M48 48L44 44" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M20 20L16 16" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M32 24V32H40" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  <div className={styles.artistryIconRipple}></div>
+                </div>
+                <h3 className={styles.artistryCardTitle}>UV-Resistant Gloss</h3>
+                <p className={styles.artistryCardText}>Anti-yellowing top coat protects color and shine from sun exposure.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
   )
 }
