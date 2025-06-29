@@ -22,7 +22,7 @@ import {
   ArrowRightOnRectangleIcon,
   ClipboardDocumentListIcon,
   UserCircleIcon
-} from '@heroicons/react/outline'
+} from '@heroicons/react/24/solid'
 
 interface MobileLayoutProps {
   children: React.ReactNode
@@ -511,28 +511,28 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
           href="/" 
           className={`${styles.footerNavItem} ${isActivePath('/') ? styles.active : ''}`}
         >
-          <Home size={20} />
+          <HomeIcon className={styles.footerIcon} />
           <span>Home</span>
         </Link>
         <Link 
           href="/products" 
           className={`${styles.footerNavItem} ${isActivePath('/products') ? styles.active : ''}`}
         >
-          <ShoppingBag size={20} />
+          <ShoppingBagIcon className={styles.footerIcon} />
           <span>Products</span>
         </Link>
         <Link 
           href="/dashboard/wishlist" 
           className={`${styles.footerNavItem} ${isActivePath('/dashboard/wishlist') ? styles.active : ''}`}
         >
-          <Heart size={20} />
+          <HeartIcon className={styles.footerIcon} />
           <span>Wishlist</span>
         </Link>
         <button 
           onClick={() => setIsAccountDropdownOpen(!isAccountDropdownOpen)}
           className={`${styles.footerNavItem} ${pathname.startsWith('/dashboard') && pathname !== '/dashboard/wishlist' ? styles.active : ''}`}
         >
-          <User size={20} />
+          <UserIcon className={styles.footerIcon} />
           <span>Account</span>
         </button>
       </nav>
