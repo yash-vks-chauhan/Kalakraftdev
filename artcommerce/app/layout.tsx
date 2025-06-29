@@ -2,6 +2,7 @@ import './globals.css'
 import { Inter } from 'next/font/google'
 import AppRootClient from './AppRootClient'
 import { MobileMenuProvider } from './contexts/MobileMenuContext'
+import MobileLayout from './MobileLayout'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -22,6 +23,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable}`}>
       <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
         <style>{`
           :root {
             --cosmos-z-index: 50;
@@ -36,7 +38,9 @@ export default function RootLayout({
         `}</style>
       </head>
       <MobileMenuProvider>
-        <AppRootClient>{children}</AppRootClient>
+        <MobileLayout>
+          <AppRootClient>{children}</AppRootClient>
+        </MobileLayout>
       </MobileMenuProvider>
     </html>
   )
