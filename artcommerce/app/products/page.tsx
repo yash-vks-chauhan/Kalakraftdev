@@ -1,7 +1,12 @@
-import ProductsWrapper from './ProductsWrapper'
+import { Suspense } from 'react'
+import ProductsClient from './ProductsClient'
 
-export const dynamicConfig = 'force-dynamic'
+export const dynamic = 'force-dynamic'
 
 export default function Page() {
-  return <ProductsWrapper />
+  return (
+    <Suspense fallback={<div>Loading products…</div>}>
+      <ProductsClient />
+    </Suspense>
+  )
 } 
