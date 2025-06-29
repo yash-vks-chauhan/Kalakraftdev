@@ -9,93 +9,58 @@ import styles from '../auth.module.css'
 
 export default function LoginPage() {
   const router = useRouter()
-  const { user: authUser, login, loading: authLoading, loginWithFirebaseToken } = useAuth()
+  const { user: authUser, login, loading: authLoading } = useAuth()
   const { user: firebaseUser, loading: firebaseLoading, loginWithGoogle, loginWithFacebook, error: firebaseError } = useFirebaseAuth()
-
-  console.log('LoginPage: authLoading', authLoading)
-  console.log('LoginPage: firebaseLoading', firebaseLoading)
-  console.log('LoginPage: authUser', authUser)
-  console.log('LoginPage: firebaseUser', firebaseUser)
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
+  const loading = isLoading || authLoading || firebaseLoading
+
   useEffect(() => {
-    // If we have an authenticated user, redirect to home
     if (authUser) {
-      console.log('LoginPage: Redirecting to home because authUser exists')
       router.push('/')
     }
   }, [authUser, router])
 
-  // Update local error state when Firebase error changes
   useEffect(() => {
     if (firebaseError) {
-      setError(firebaseError);
+      setError(firebaseError)
     }
-  }, [firebaseError]);
+  }, [firebaseError])
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    console.log('Form submission started');
-    // Always prevent default form submission behavior first thing
-    e.preventDefault();
-    e.stopPropagation();
+    e.preventDefault()
     
-    // Clear previous error
-    setError('');
+    if (loading) return
 
-    // Validate fields individually
+    // Validate fields
     if (!email.trim() && !password.trim()) {
-      console.log('Both fields empty');
-      setError('Please enter both email and password');
-      return;
+      setError('Please enter both email and password')
+      return
     }
     if (!email.trim()) {
-      console.log('Email empty');
-      setError('Please enter your email');
-      return;
+      setError('Please enter your email')
+      return
     }
     if (!password.trim()) {
-      console.log('Password empty');
-      setError('Please enter your password');
-      return;
+      setError('Please enter your password')
+      return
     }
 
-    // Prevent double submission
-    if (loading) {
-      console.log('Already loading, preventing submission');
-      return;
-    }
-
-    setIsLoading(true);
-    console.log('Starting login attempt');
+    setIsLoading(true)
+    setError('')
 
     try {
-      console.log('Calling login function');
-      await login(email, password);
-      console.log('Login successful');
-      // Only reset form state if login was successful
-      setEmail('');
-      setPassword('');
+      await login(email, password)
     } catch (err: any) {
-      // Keep the form values for correction
-      console.error('Login error:', err);
-      setError(err.message);
-      // Do not reset form state on error
+      setError(err.message || 'Login failed. Please try again.')
     } finally {
-      setIsLoading(false);
-      console.log('Login attempt finished');
+      setIsLoading(false)
     }
-  };
-
-  // Add useEffect to track state changes
-  useEffect(() => {
-    console.log('State update - Error:', error);
-    console.log('State update - Loading:', loading);
-    console.log('State update - Auth User:', authUser);
-  }, [error, loading, authUser]);
+  }
 
   const handleGoogleLogin = async () => {
     setError('')
@@ -118,11 +83,6 @@ export default function LoginPage() {
       // Error is now handled by the FirebaseAuthContext
     }
   }
-
-  const loading = authLoading || firebaseLoading || isLoading
-
-  // Only disable inputs during actual loading, not for empty fields
-  const isFormDisabled = loading
 
   return (
     <div className={styles.authContainer}>
@@ -147,17 +107,7 @@ export default function LoginPage() {
           </div>
         )}
 
-        <form 
-          onSubmit={(e) => {
-            console.log('Form onSubmit triggered');
-            e.preventDefault();
-            e.stopPropagation();
-            handleSubmit(e);
-            return false;
-          }}
-          className={styles.form}
-          noValidate
-        >
+        <form onSubmit={handleSubmit} className={styles.form} noValidate>
           <div className={styles.formGroup}>
             <label htmlFor="email" className={styles.formLabel}>
               Email
@@ -167,10 +117,9 @@ export default function LoginPage() {
               type="email"
               value={email}
               onChange={(e) => {
-                setEmail(e.target.value);
-                // Only clear error if it was an empty field error
+                setEmail(e.target.value)
                 if (error && (error.includes('enter your email') || error.includes('enter both'))) {
-                  setError('');
+                  setError('')
                 }
               }}
               className={`${styles.formInput} ${error && !email.trim() ? styles.inputError : ''}`}
@@ -190,10 +139,9 @@ export default function LoginPage() {
               type="password"
               value={password}
               onChange={(e) => {
-                setPassword(e.target.value);
-                // Only clear error if it was an empty field error
+                setPassword(e.target.value)
                 if (error && (error.includes('enter your password') || error.includes('enter both'))) {
-                  setError('');
+                  setError('')
                 }
               }}
               className={`${styles.formInput} ${error && !password.trim() ? styles.inputError : ''}`}
@@ -208,15 +156,9 @@ export default function LoginPage() {
           </div>
 
           <button
-            type="button" // Change to button type to prevent form submission
+            type="submit"
             disabled={loading}
             className={styles.submitButton}
-            onClick={(e) => {
-              console.log('Button clicked');
-              e.preventDefault();
-              e.stopPropagation();
-              handleSubmit(e as any);
-            }}
           >
             {loading ? 'Signing in...' : 'Sign in'}
           </button>
@@ -263,6 +205,7 @@ export default function LoginPage() {
 
         <button
           onClick={handleFacebookLogin}
+          disabled={loading}
           className={styles.socialButton}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="#1877F2">
