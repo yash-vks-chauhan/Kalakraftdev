@@ -313,36 +313,40 @@
   display: flex;
   align-items: center;
   justify-content: space-around;
-  background-color: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  background-color: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(30px) saturate(250%);
+  -webkit-backdrop-filter: blur(30px) saturate(250%);
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
   height: 64px;
   z-index: 100;
-  transition: transform 0.5s cubic-bezier(0.33, 1, 0.68, 1);
+  transition: all 0.5s cubic-bezier(0.33, 1, 0.68, 1);
   box-shadow: 
-    0 -2px 10px rgba(0, 0, 0, 0.03),
-    0 -1px 4px rgba(0, 0, 0, 0.02);
+    0 -4px 15px rgba(0, 0, 0, 0.08),
+    0 -2px 4px rgba(255, 255, 255, 0.05),
+    inset 0 0 20px rgba(255, 255, 255, 0.2);
+  outline: 1px solid rgba(255, 255, 255, 0.1);
+  outline-offset: -2px;
 }
 
 /* Footer visibility classes */
 .footerVisible {
   transform: translateY(0);
-  animation: footerSlideIn 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: footerSlideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .footerHidden {
   transform: translateY(100%);
+  transition: transform 0.4s cubic-bezier(0.33, 1, 0.68, 1);
 }
 
 @keyframes footerSlideIn {
   0% { transform: translateY(100%); }
-  70% { transform: translateY(-3px); }
-  85% { transform: translateY(1px); }
+  60% { transform: translateY(-2px); }
+  80% { transform: translateY(1px); }
   100% { transform: translateY(0); }
 }
 
@@ -354,22 +358,22 @@
   padding: 8px;
   flex: 1;
   text-decoration: none;
-  color: #666;
+  color: rgba(0, 0, 0, 0.7);
   font-size: 11px;
   position: relative;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .footerNavItem span {
   margin-top: 4px;
   font-weight: 500;
-  letter-spacing: 0.01em;
+  letter-spacing: 0.02em;
   transform: translateY(0);
-  transition: transform 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .footerNavItem svg {
-  transition: transform 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .footerNavItem:active {
@@ -377,7 +381,7 @@
 }
 
 .footerNavItem:active svg {
-  transform: translateY(-2px) scale(1.1);
+  transform: translateY(-3px) scale(1.1);
 }
 
 .footerNavItem:active span {
@@ -397,6 +401,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 2px 4px rgba(244, 67, 54, 0.3);
 }
 
 /* Mobile Menu Panel - slides from right */

@@ -88,13 +88,19 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
 
   // Add scroll event listener for header and footer
   useEffect(() => {
-    // Track scroll direction and velocity
     let prevScrollY = window.scrollY
     let scrollDirection = 0
     let consecutiveScrolls = 0
+    let lastScrollTime = Date.now()
+    let scrollVelocity = 0
     
     const handleScroll = () => {
       const currentScrollY = window.scrollY
+      const currentTime = Date.now()
+      const timeDiff = currentTime - lastScrollTime
+      
+      // Calculate scroll velocity (pixels per millisecond)
+      scrollVelocity = Math.abs(currentScrollY - prevScrollY) / timeDiff
       
       // Header scroll effect
       setIsScrolled(currentScrollY > 10)
@@ -111,26 +117,36 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
         consecutiveScrolls = 1
       }
       
-      // Footer visibility based on scroll direction with improved logic
-      if (currentScrollY < 120) {
+      // Footer visibility based on scroll direction and velocity
+      if (currentScrollY < 100) {
         // Always show footer when near the top
         setIsFooterVisible(true)
-      } else if (scrollDirection > 0 && consecutiveScrolls > 3 && (currentScrollY - prevScrollY > 5)) {
-        // Scrolling down consistently - hide footer
+      } else if (
+        // Hide footer when:
+        (scrollDirection > 0 && // Scrolling down
+        consecutiveScrolls > 2 && // Consistent direction
+        scrollVelocity > 0.1) || // Fast enough scroll
+        currentScrollY > document.documentElement.scrollHeight - window.innerHeight - 100 // Near bottom
+      ) {
         setIsFooterVisible(false)
-      } else if (scrollDirection < 0 && consecutiveScrolls > 2) {
-        // Scrolling up consistently - show footer
+      } else if (
+        // Show footer when:
+        scrollDirection < 0 && // Scrolling up
+        consecutiveScrolls > 1 && // Consistent direction
+        currentScrollY > 100 // Not at the very top
+      ) {
         setIsFooterVisible(true)
       }
       
-      // Update previous scroll position
+      // Update previous values
       prevScrollY = currentScrollY
+      lastScrollTime = currentTime
       setLastScrollY(currentScrollY)
     }
 
     // Throttled scroll handler for smoother performance
     let lastRun = 0
-    const scrollThreshold = 30 // ms between runs
+    const scrollThreshold = 16 // ~60fps
     
     const throttledScroll = () => {
       const now = Date.now()
