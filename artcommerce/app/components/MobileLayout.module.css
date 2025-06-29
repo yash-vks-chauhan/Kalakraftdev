@@ -9,7 +9,7 @@
 /* Mobile Header - Matching desktop navbar styling */
 .mobileHeader {
   width: 100%;
-  height: 60px;
+  height: 70px; /* Increased height */
   padding: 0 12px 0 8px; /* Reduce left padding for logo */
   display: flex;
   justify-content: space-between;
@@ -23,13 +23,8 @@
 
 /* Home page specific header styling */
 .homeMobileHeader {
-  background-color: transparent;
+  background-color: transparent; /* Fully transparent */
   box-shadow: none;
-}
-
-.homeMobileHeader[data-scrolled="true"] {
-  background-color: rgba(255, 255, 255, 0.95);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 /* Non-home page header styling */
@@ -54,21 +49,27 @@
 
 .logo {
   height: auto;
-  max-height: 32px; /* Increased size further */
+  max-height: 36px; /* Increased size further */
   filter: brightness(0); /* Make it black */
 }
 
-/* Home page logo styles - make white only on home page */
+/* Home page logo styles - make white and add stronger shadow */
 .homeMobileHeader .logo {
-  filter: brightness(0) invert(1) drop-shadow(0 1px 3px rgba(0, 0, 0, 0.3));
+  filter: brightness(0) invert(1) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
 }
 
 /* Home page menu button - make white on home page */
 .homeMobileHeader .menuButton {
   color: #fff;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
 }
 
 /* When scrolled on home page, make logo and menu button black */
+.homeMobileHeader[data-scrolled="true"] {
+  background-color: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+}
+
 .homeMobileHeader[data-scrolled="true"] .logo {
   filter: brightness(0); /* Make it black */
 }
@@ -697,6 +698,18 @@
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
 }
 
+/* Add a top gradient overlay for better text visibility */
+.curvedHeroCard:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 80px;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.4), transparent);
+  z-index: 2;
+}
+
 .curvedHeroContent {
   position: relative;
   display: flex;
@@ -710,29 +723,34 @@
   height: calc(100vh - 120px);
 }
 
-.curvedHeroVideo {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  z-index: 1;
-  opacity: 0.85;
+.curvedHeroTopText {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.3em;
+  font-size: 0.8rem;
+  margin-bottom: 1.5rem;
+  color: rgba(255, 255, 255, 0.9);
+  text-transform: uppercase;
 }
 
 .curvedHeroLogo {
-  width: 120px;
+  width: 90px;
   height: auto;
-  margin-bottom: 20px;
-  filter: brightness(0) invert(1);
+  margin-bottom: 1.5rem;
+  filter: brightness(0) invert(1) drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
 }
 
 .curvedHeroTitle {
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin-bottom: 16px;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 500;
+  font-size: 2.2rem;
+  line-height: 1.3;
+  letter-spacing: 0.02em;
+  color: #fff;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  margin: 0;
+  max-width: 85%;
+  font-style: italic;
 }
 
 .curvedHeroSubtitle {
@@ -748,14 +766,14 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.6));
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.2));
   z-index: 1;
 }
 
 /* Container for the curved card */
 .curvedCardContainer {
   padding: 16px;
-  margin-top: 60px; /* Add space for the header */
+  margin-top: 70px; /* Increase space for the header */
   position: relative;
   z-index: 10;
 }
@@ -781,4 +799,15 @@
   60% {
     transform: translateY(-5px) translateX(-50%);
   }
+}
+
+.curvedHeroVideo {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 1;
+  opacity: 0.85;
 }

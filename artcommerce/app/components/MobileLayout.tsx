@@ -217,24 +217,23 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
             </video>
             
             <div className={styles.curvedHeroContent}>
+              {/* Top text - "A HANDCRAFTED ART STUDIO" */}
+              <div className={styles.curvedHeroTopText}>A HANDCRAFTED ART STUDIO</div>
+              
               {/* Logo */}
               <Image
                 src={getImageUrl('logo.png')}
                 alt="Artcommerce Logo"
-                width={120}
-                height={40}
+                width={90}
+                height={30}
                 className={styles.curvedHeroLogo}
                 priority
               />
               
               {/* Hero Text */}
               <h1 className={styles.curvedHeroTitle}>
-                Artistic {rotatingText}
+                Handcrafted resin art for {rotatingText}
               </h1>
-              <p className={styles.curvedHeroSubtitle}>
-                Built to make your home extraordinarily beautiful, 
-                Kalakraft is the best way to decorate with art.
-              </p>
               
               {/* Scroll indicator */}
               <div className={styles.scrollIndicator}>
@@ -255,8 +254,8 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
           <Image
             src={getImageUrl('logo.png')}
             alt="Artcommerce Logo"
-            width={100}
-            height={32}
+            width={110}
+            height={36}
             priority
             style={{ objectFit: 'contain' }}
             className={styles.logo}
