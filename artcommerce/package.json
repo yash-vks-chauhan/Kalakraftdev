@@ -13,7 +13,6 @@
     "@prisma/client": "^6.10.1",
     "@radix-ui/react-slot": "^1.2.3",
     "@sendgrid/mail": "^8.1.5",
-    "@tailwindcss/postcss": "^4.1.11",
     "@types/js-cookie": "^3.0.6",
     "@types/three": "^0.177.0",
     "@vercel/blob": "^1.1.1",
