@@ -30,6 +30,8 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
   const pathname = usePathname()
   const isHomePage = pathname === '/'
   const [isScrolled, setIsScrolled] = useState(false)
+  const [isFooterVisible, setIsFooterVisible] = useState(true)
+  const [lastScrollY, setLastScrollY] = useState(0)
   const [rotatingText, setRotatingText] = useState('coasters')
   const videoRef = useRef<HTMLVideoElement>(null)
   const router = useRouter()
@@ -84,16 +86,44 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
   // For rotating text in the hero section
   const textOptions = ['coasters', 'clocks', 'trays', 'wall art', 'home decor']
 
-  // Add scroll event listener
+  // Add scroll event listener for header and footer
   useEffect(() => {
     const handleScroll = () => {
-      const scrollPosition = window.scrollY
-      setIsScrolled(scrollPosition > 10) // Consider scrolled after minimal movement
+      const currentScrollY = window.scrollY
+      
+      // Header scroll effect
+      setIsScrolled(currentScrollY > 10)
+      
+      // Footer visibility based on scroll direction with threshold
+      if (currentScrollY < 100) {
+        // Always show footer when near the top
+        setIsFooterVisible(true)
+      } else if (currentScrollY > lastScrollY + 10) {
+        // Scrolling down (with threshold) - hide footer
+        setIsFooterVisible(false)
+      } else if (currentScrollY < lastScrollY - 10) {
+        // Scrolling up (with threshold) - show footer
+        setIsFooterVisible(true)
+      }
+      
+      // Update last scroll position
+      setLastScrollY(currentScrollY)
     }
 
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+    // Debounced scroll handler
+    let scrollTimer: NodeJS.Timeout | null = null
+    const debouncedScroll = () => {
+      if (scrollTimer) clearTimeout(scrollTimer)
+      scrollTimer = setTimeout(handleScroll, 10)
+    }
+
+    window.addEventListener('scroll', debouncedScroll, { passive: true })
+    
+    return () => {
+      window.removeEventListener('scroll', debouncedScroll)
+      if (scrollTimer) clearTimeout(scrollTimer)
+    }
+  }, [lastScrollY])
 
   // Rotating text effect
   useEffect(() => {
@@ -376,7 +406,7 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
       </main>
       
       {/* Mobile Footer Navigation */}
-      <footer className={styles.mobileFooter}>
+      <footer className={`${styles.mobileFooter} ${isFooterVisible ? styles.footerVisible : styles.footerHidden}`}>
         <Link href="/" className={styles.footerNavItem}>
           <Home size={20} />
           <span>Home</span>
@@ -492,25 +522,7 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
         </div>
       )}
 
-      {/* Mobile Bottom Navigation */}
-      <nav className={styles.mobileBottomNav}>
-        <Link href="/" className={styles.bottomNavItem}>
-          <Home size={24} />
-          <span>Home</span>
-        </Link>
-        <Link href="/products" className={styles.bottomNavItem}>
-          <ShoppingBag size={24} />
-          <span>Shop</span>
-        </Link>
-        <Link href="/dashboard/wishlist" className={styles.bottomNavItem}>
-          <Heart size={24} />
-          <span>Wishlist</span>
-        </Link>
-        <Link href={user ? '/dashboard/profile' : '/auth/login'} className={styles.bottomNavItem}>
-          <User size={24} />
-          <span>{user ? 'Account' : 'Login'}</span>
-        </Link>
-      </nav>
+      {/* Mobile Bottom Navigation removed as we're using the footer instead */}
     </div>
   )
 } 
