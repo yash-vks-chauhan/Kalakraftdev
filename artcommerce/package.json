@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3002",
-    "build": "rm -rf node_modules/.cache && rm -rf .next && npm install --legacy-peer-deps && npm install --save-dev typescript@5.3.3 @types/react@18.2.61 @types/react-dom@18.2.19 @types/node@20.11.24 && npm ls typescript && npx prisma generate && next build",
+    "build": "npm install --legacy-peer-deps && npx prisma generate && next build",
     "prisma:generate": "prisma generate",
     "start": "next start -p 3002",
     "lint": "next lint",
@@ -63,16 +63,16 @@
     "tailwind-merge": "1.14.0",
     "tailwindcss": "3.4.4",
     "three": "0.177.0",
-    "uuid": "9.0.1"
+    "uuid": "9.0.1",
+    "@types/node": "20.11.24",
+    "@types/react": "18.2.61",
+    "@types/react-dom": "18.2.19",
+    "typescript": "5.3.3"
   },
   "devDependencies": {
     "@types/aos": "3.0.7",
-    "@types/node": "20.11.24",
     "@types/nodemailer": "6.4.17",
-    "@types/react": "18.2.61",
-    "@types/react-dom": "18.2.19",
     "prisma": "6.10.1",
-    "typescript": "5.3.3",
     "eslint": "8.57.0",
     "eslint-config-next": "15.3.3"
   }
