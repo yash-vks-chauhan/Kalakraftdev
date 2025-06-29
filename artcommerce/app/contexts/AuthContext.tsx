@@ -177,9 +177,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(null);
         localStorage.removeItem('token');
         
-        // For 401 unauthorized, show invalid credentials message
+        // For 401 unauthorized, throw specific error
         if (res.status === 401) {
           throw new Error('Invalid email or password');
+        }
+        // For network errors
+        if (!res.status) {
+          throw new Error('Network error occurred');
         }
         // For other errors, use the server's error message
         throw new Error(data.error || 'Login failed');
@@ -190,7 +194,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.setItem('token', data.token);
       await fetchProfile(data.token);
       
-      // Return success without navigation
       return { success: true };
     } catch (error: any) {
       // Ensure we're throwing an Error object with the message

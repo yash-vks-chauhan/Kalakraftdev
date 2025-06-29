@@ -44,13 +44,22 @@ export default function LoginPage() {
 
     try {
       const result = await login(email, password)
-      if (result.success) {
-        console.log('LoginPage: Login successful, redirecting to home')
-        router.push('/')
+      if (!result.success) {
+        setError('Invalid email or password')
+        return
       }
+      console.log('LoginPage: Login successful, redirecting to home')
+      router.push('/')
     } catch (err: any) {
       console.error('LoginPage: Login error', err)
-      setError(err.message || 'Login failed')
+      // Show specific error messages based on the error
+      if (err.message === 'Invalid email or password') {
+        setError('The email or password you entered is incorrect')
+      } else if (err.message.includes('network')) {
+        setError('Network error. Please check your connection and try again')
+      } else {
+        setError(err.message || 'Login failed. Please try again')
+      }
     } finally {
       setIsLoading(false)
     }
