@@ -77,6 +77,9 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
     }
   ];
 
+  // For rotating text in the hero section
+  const textOptions = ['coasters', 'clocks', 'trays', 'wall art', 'home decor']
+
   // Add scroll event listener
   useEffect(() => {
     const handleScroll = () => {
@@ -88,21 +91,16 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  // Rotating text animation for homepage
+  // Rotating text effect
   useEffect(() => {
-    if (!isHomePage) return;
-    
-    const items = ['coasters', 'wall art', 'home decor', 'custom pieces']
     let currentIndex = 0
-
-    const rotateText = () => {
-      currentIndex = (currentIndex + 1) % items.length
-      setRotatingText(items[currentIndex])
-    }
-
-    const interval = setInterval(rotateText, 3000)
+    const interval = setInterval(() => {
+      currentIndex = (currentIndex + 1) % textOptions.length
+      setRotatingText(textOptions[currentIndex])
+    }, 3000)
+    
     return () => clearInterval(interval)
-  }, [isHomePage])
+  }, [])
 
   // Handle video loading
   useEffect(() => {
@@ -141,166 +139,88 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
     setIsMobileMenuOpen(!isMobileMenuOpen)
   }
 
+  // Handle scroll down from hero section
   const handleScrollDown = () => {
     window.scrollTo({
-      top: window.innerHeight,
+      top: window.innerHeight - 60, // Subtract header height
       behavior: 'smooth'
     });
   };
 
+  // When user clicks on scroll indicator
+  useEffect(() => {
+    if (!isHomePage) return;
+    
+    const scrollIndicator = document.querySelector(`.${styles.scrollIndicator}`);
+    if (scrollIndicator) {
+      scrollIndicator.addEventListener('click', handleScrollDown);
+      return () => {
+        scrollIndicator.removeEventListener('click', handleScrollDown);
+      };
+    }
+  }, [isHomePage]);
+
   // Mobile Collections Section component
   const MobileCollectionsSection = () => {
-    return (
-      <section className={styles.mobileCollectionsSection}>
-        {/* Section Header */}
-        <div className={styles.mobileSectionHeader}>
-          <div className={styles.mobileHeaderLine}></div>
-          <h2 className={styles.mobileSectionTitle}>Our Collections</h2>
-          <div className={styles.mobileHeaderLine}></div>
-        </div>
-        
-        {/* Collection Description */}
-        <div className={styles.mobileCollectionDescription}>
-          <p>Discover our handcrafted resin art pieces, each one uniquely created with passion and precision.</p>
-        </div>
-        
-        {/* Mobile Carousel */}
-        <div className={styles.mobileCarouselContainer}>
-          <div className={styles.mobileCarouselTrack}>
-            {/* First set of items */}
-            {productCategories.map((category, index) => (
-              <div
-                key={`original-${index}`}
-                className={styles.mobileProductCard}
-                style={{animationDelay: `${index * 0.15}s`}}
-              >
-                <div className={styles.mobileCardInner}>
-                  <img
-                    src={category.image}
-                    alt={category.alt}
-                    className={styles.mobileProductImage}
-                    onError={(e) => (e.currentTarget.src = 'https://placehold.co/600x400/f0f0f0/ccc?text=Image+Not+Found')}
-                  />
-                  <div className={styles.mobileCardOverlay}>
-                    <button className={styles.mobileViewButton}>Explore</button>
-                  </div>
-                  <h3 className={styles.mobileCategoryTitle}>{category.title}</h3>
-                </div>
-              </div>
-            ))}
-            
-            {/* Duplicate set for seamless looping */}
-            {productCategories.map((category, index) => (
-              <div
-                key={`duplicate-${index}`}
-                className={styles.mobileProductCard}
-                style={{animationDelay: `${index * 0.15}s`}}
-              >
-                <div className={styles.mobileCardInner}>
-                  <img
-                    src={category.image}
-                    alt={category.alt}
-                    className={styles.mobileProductImage}
-                    onError={(e) => (e.currentTarget.src = 'https://placehold.co/600x400/f0f0f0/ccc?text=Image+Not+Found')}
-                  />
-                  <div className={styles.mobileCardOverlay}>
-                    <button className={styles.mobileViewButton}>Explore</button>
-                  </div>
-                  <h3 className={styles.mobileCategoryTitle}>{category.title}</h3>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-        
-        {/* Collection Footer */}
-        <div className={styles.mobileCollectionFooter}>
-          <p>Each piece tells a story through layers of color and texture, inviting you to bring the essence of artistic expression into your home.</p>
-          <Link href="/products">
-            <button className={styles.mobileExploreButton}>View All Collections</button>
-          </Link>
-        </div>
-      </section>
-    );
-  };
+    // This is the duplicate section we want to remove
+    return null; // Return null to not render anything
+  }
 
-  // Render mobile home page content or regular content
+  // Render home page specific content
   const renderContent = () => {
-    if (isHomePage) {
-      return (
-        <>
-          {/* Mobile Home Video Section */}
-          <div className={styles.mobileVideoContainer}>
-            {/* Video with fallback image */}
-            <picture>
-              {/* Fallback image that will be shown if video fails */}
-              <img 
-                src={getImageUrl('featured3.JPG')}
-                alt="Handcrafted resin art" 
-                className={styles.mobileVideoBackground}
-                style={{ display: 'none' }}
-                id="mobileVideoFallback"
-              />
-            </picture>
-
+    if (!isHomePage) return null;
+    
+    return (
+      <>
+        {/* Home page specific content */}
+        <div className={styles.curvedCardContainer}>
+          <div className={styles.curvedHeroCard}>
+            <div className={styles.curvedHeroBackground}></div>
+            
+            {/* Video background */}
             <video
               ref={videoRef}
-              className={styles.mobileVideoBackground}
               autoPlay
-              loop
               muted
+              loop
               playsInline
-              preload="metadata"
-              poster="/images/loading.png"
-              onError={(e) => {
-                // If video fails to load, show the fallback image
-                const videoElement = e.currentTarget;
-                videoElement.style.display = 'none';
-                const fallbackImage = document.getElementById('mobileVideoFallback');
-                if (fallbackImage) fallbackImage.style.display = 'block';
-              }}
+              className={styles.curvedHeroVideo}
+              poster={getImageUrl('loading.png')}
             >
-              <source 
-                src={process.env.NEXT_PUBLIC_CLOUDINARY_VIDEO_URL || '/images/homepage_video.mp4'} 
-                type="video/mp4" 
-              />
-              Your browser does not support the video tag.
+              <source src="/images/homepage_video.mp4" type="video/mp4" />
             </video>
-
-            <div className={styles.mobileVideoOverlay} />
-
-            <div className={styles.mobileVideoContent}>
-              <div className={styles.mobileHeaderText}>
-                <div className={styles.mobileTopText}>A HANDCRAFTED ART STUDIO</div>
-                <img
-                  src={getImageUrl('logo.png')}
-                  alt="Kalakraft Logo"
-                  className={styles.mobileLogo}
-                />
-                <h1 className={styles.mobileTitle}>
-                  Handcrafted resin art for <span id="mobileRotator">{rotatingText}</span>
-                </h1>
+            
+            <div className={styles.curvedHeroContent}>
+              {/* Logo */}
+              <Image
+                src={getImageUrl('logo.png')}
+                alt="Artcommerce Logo"
+                width={120}
+                height={40}
+                className={styles.curvedHeroLogo}
+                priority
+              />
+              
+              {/* Hero Text */}
+              <h1 className={styles.curvedHeroTitle}>
+                Artistic {rotatingText}
+              </h1>
+              <p className={styles.curvedHeroSubtitle}>
+                Built to make your home extraordinarily beautiful, 
+                Kalakraft is the best way to decorate with art.
+              </p>
+              
+              {/* Scroll indicator */}
+              <div className={styles.scrollIndicator}>
+                <ChevronDown size={30} />
               </div>
             </div>
-            
-            {/* Scroll indicator with double arrows */}
-            <div className={styles.mobileScrollIndicator} onClick={handleScrollDown}>
-              <div className={styles.mobileScrollArrow}></div>
-              <div className={styles.mobileScrollArrow}></div>
-            </div>
           </div>
-          
-          {/* Mobile Collections Section */}
-          <MobileCollectionsSection />
-          
-          {/* Rest of the home page content */}
-          {children}
-        </>
-      );
-    }
-    
-    // Regular content for non-home pages
-    return children;
+        </div>
+        
+        {/* We're removing the MobileCollectionsSection from here */}
+      </>
+    );
   };
 
   const toggleViewMode = () => {
@@ -345,9 +265,12 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
         </button>
       </header>
       
-      {/* Mobile Content */}
-      <main className={`${styles.mobileContent} ${isHomePage ? styles.homeContent : ''}`}>
-        {renderContent()}
+      {/* Main Content Area */}
+      <main className={styles.mobileContent}>
+        {children}
+        
+        {/* Render home page content if we're on the home page */}
+        {isHomePage && renderContent()}
       </main>
       
       {/* Mobile Footer Navigation */}
