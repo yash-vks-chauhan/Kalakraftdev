@@ -22,7 +22,7 @@ import {
   ArrowRightOnRectangleIcon,
   ClipboardDocumentListIcon,
   UserCircleIcon
-} from '@heroicons/react/24/outline'
+} from '@heroicons/react/outline'
 
 interface MobileLayoutProps {
   children: React.ReactNode
