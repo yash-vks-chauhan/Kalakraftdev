@@ -39,17 +39,13 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    e.stopPropagation()
     setError('')
     setIsLoading(true)
 
     try {
-      const result = await login(email, password)
-      if (!result.success) {
-        setError('Invalid email or password')
-        return
-      }
-      console.log('LoginPage: Login successful, redirecting to home')
-      router.push('/')
+      await login(email, password)
+      // Don't redirect here - let the useEffect handle it when authUser is set
     } catch (err: any) {
       console.error('LoginPage: Login error', err)
       // Show specific error messages based on the error

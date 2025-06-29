@@ -34,7 +34,7 @@ interface AuthContextValue {
   user: User | null
   token: string | null
   signup: (fullName: string, email: string, password: string) => Promise<void>
-  login: (email: string, password: string) => Promise<{ success: boolean }>
+  login: (email: string, password: string) => Promise<void>
   logout: () => Promise<void>
   fetchProfile: (token?: string | null) => Promise<void>
   loading: boolean
@@ -193,8 +193,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setToken(data.token);
       localStorage.setItem('token', data.token);
       await fetchProfile(data.token);
-      
-      return { success: true };
     } catch (error: any) {
       // Ensure we're throwing an Error object with the message
       if (error instanceof Error) {
