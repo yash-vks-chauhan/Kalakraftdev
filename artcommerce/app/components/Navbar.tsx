@@ -225,8 +225,8 @@ export default function Navbar() {
             <Image
               src={getImageUrl('logo.png')}
               alt="Artcommerce Logo"
-              width={90}
-              height={25}
+              width={70}
+              height={20}
               priority
               style={{ objectFit: 'contain' }}
               className={styles.logo}
