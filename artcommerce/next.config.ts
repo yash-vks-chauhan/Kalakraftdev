@@ -8,7 +8,7 @@ const nextConfig: NextConfig = {
   distDir: '.next',
   output: 'standalone',
   images: {
-    domains: ['localhost', 'firebasestorage.googleapis.com', 'lh3.googleusercontent.com'],
+    domains: ['localhost', 'firebasestorage.googleapis.com', 'lh3.googleusercontent.com', 'res.cloudinary.com'],
     unoptimized: true,
     remotePatterns: [
       {
@@ -31,6 +31,13 @@ const nextConfig: NextConfig = {
         filename: 'static/media/[name].[hash:8][ext]'
       }
     });
+
+    // Configure asset size limits
+    config.performance = {
+      ...config.performance,
+      maxAssetSize: 25 * 1024 * 1024, // 25MB
+      maxEntrypointSize: 25 * 1024 * 1024 // 25MB
+    };
     
     return config;
   },
