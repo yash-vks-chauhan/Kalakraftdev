@@ -12,6 +12,17 @@ import { useMobileMenu } from '../contexts/MobileMenuContext'
 import { getImageUrl } from '../../lib/cloudinaryImages'
 import styles from './MobileLayout.module.css'
 import MobileMenuPanel from './MobileMenuPanel'
+import { useSession } from 'next-auth/react'
+import { signOut } from 'next-auth/react'
+import { 
+  HomeIcon, 
+  ShoppingBagIcon, 
+  HeartIcon, 
+  UserIcon,
+  ArrowRightOnRectangleIcon,
+  ClipboardDocumentListIcon,
+  UserCircleIcon
+} from '@heroicons/react/24/outline'
 
 interface MobileLayoutProps {
   children: React.ReactNode
@@ -35,6 +46,8 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
   const [rotatingText, setRotatingText] = useState('coasters')
   const videoRef = useRef<HTMLVideoElement>(null)
   const router = useRouter()
+  const { data: session } = useSession()
+  const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false)
 
   // For handling the mobile/desktop view toggle
   const [viewMode, setViewMode] = useState<'mobile' | 'desktop'>('mobile')
@@ -354,6 +367,15 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
     return pathname.startsWith(path)
   }
 
+  // Close dropdown when route changes
+  useEffect(() => {
+    setIsAccountDropdownOpen(false);
+  }, [pathname]);
+
+  const handleSignOut = async () => {
+    await signOut({ callbackUrl: '/' });
+  };
+
   return (
     <div className={styles.mobileLayoutContainer}>
       {/* Home page specific content - Put at the top */}
@@ -500,22 +522,19 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
           <span>Products</span>
         </Link>
         <Link 
-          href={user ? '/dashboard/wishlist' : '/auth/login'}
+          href="/dashboard/wishlist" 
           className={`${styles.footerNavItem} ${isActivePath('/dashboard/wishlist') ? styles.active : ''}`}
         >
           <Heart size={20} />
           <span>Wishlist</span>
-          {wishlistItems.length > 0 && (
-            <span className={styles.badge}>{wishlistItems.length}</span>
-          )}
         </Link>
-        <Link 
-          href={user ? '/dashboard/profile' : '/auth/login'} 
-          className={`${styles.footerNavItem} ${isActivePath('/dashboard/profile') || isActivePath('/auth/login') ? styles.active : ''}`}
+        <button 
+          onClick={() => setIsAccountDropdownOpen(!isAccountDropdownOpen)}
+          className={`${styles.footerNavItem} ${pathname.startsWith('/dashboard') && pathname !== '/dashboard/wishlist' ? styles.active : ''}`}
         >
           <User size={20} />
           <span>Account</span>
-        </Link>
+        </button>
       </nav>
       
       {/* Mobile side menu panel */}
@@ -609,7 +628,41 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
         </div>
       )}
 
-      {/* Mobile Bottom Navigation removed as we're using the footer instead */}
+      {/* Account Dropdown Backdrop */}
+      <div 
+        className={`${styles.mobileAccountDropdownBackdrop} ${isAccountDropdownOpen ? styles.open : ''}`}
+        onClick={() => setIsAccountDropdownOpen(false)}
+      />
+
+      {/* Account Dropdown */}
+      <div className={`${styles.mobileAccountDropdown} ${isAccountDropdownOpen ? styles.open : ''}`}>
+        {session?.user && (
+          <>
+            <div className={styles.mobileAccountHeader}>
+              <div className={styles.mobileAccountName}>
+                {session.user.name || 'User'}
+              </div>
+              <div className={styles.mobileAccountEmail}>
+                {session.user.email}
+              </div>
+            </div>
+            <div className={styles.mobileAccountLinks}>
+              <Link href="/dashboard/profile" className={styles.mobileAccountLink}>
+                <UserCircleIcon />
+                Profile
+              </Link>
+              <Link href="/dashboard/orders" className={styles.mobileAccountLink}>
+                <ClipboardDocumentListIcon />
+                Your Orders
+              </Link>
+              <button onClick={handleSignOut} className={styles.mobileSignOutButton}>
+                <ArrowRightOnRectangleIcon />
+                Sign out
+              </button>
+            </div>
+          </>
+        )}
+      </div>
     </div>
   )
 } 
