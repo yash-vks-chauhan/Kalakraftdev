@@ -52,7 +52,7 @@ export default function LoginPage() {
     }
 
     // Prevent double submission
-    if (isLoading) {
+    if (isLoading || loading) {
       return
     }
 
@@ -60,11 +60,13 @@ export default function LoginPage() {
 
     try {
       await login(email, password)
-      // Don't do anything here - let the useEffect handle redirect when authUser is set
+      // Reset form state but don't redirect - let useEffect handle that
+      setEmail('')
+      setPassword('')
     } catch (err: any) {
       console.error('LoginPage: Login error', err)
       // Show specific error messages based on the error
-      if (err.message === 'Invalid email or password') {
+      if (err.message === 'Invalid credentials' || err.message === 'Invalid email or password') {
         setError('The email or password you entered is incorrect')
       } else if (err.message.includes('network')) {
         setError('Network error. Please check your connection and try again')
@@ -73,6 +75,10 @@ export default function LoginPage() {
       } else {
         setError(err.message || 'Login failed. Please try again')
       }
+      // Keep the form values for correction
+      e.preventDefault()
+      e.stopPropagation()
+      return false
     } finally {
       setIsLoading(false)
     }
@@ -102,6 +108,9 @@ export default function LoginPage() {
 
   const loading = authLoading || firebaseLoading || isLoading
 
+  // Prevent form submission while loading
+  const isFormDisabled = loading || isLoading || !email.trim() || !password.trim()
+
   return (
     <div className={styles.authContainer}>
       <div className={styles.authCard}>
@@ -130,6 +139,7 @@ export default function LoginPage() {
           className={styles.form}
           method="POST"
           action="javascript:void(0)"
+          noValidate
         >
           <div className={styles.formGroup}>
             <label htmlFor="email" className={styles.formLabel}>
@@ -138,13 +148,13 @@ export default function LoginPage() {
             <input
               id="email"
               type="email"
-              required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className={styles.formInput}
+              className={`${styles.formInput} ${error ? styles.inputError : ''}`}
               placeholder="Enter your email"
-              disabled={loading}
+              disabled={isFormDisabled}
               aria-invalid={error ? 'true' : 'false'}
+              autoComplete="email"
             />
           </div>
 
@@ -155,13 +165,13 @@ export default function LoginPage() {
             <input
               id="password"
               type="password"
-              required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className={styles.formInput}
+              className={`${styles.formInput} ${error ? styles.inputError : ''}`}
               placeholder="Enter your password"
-              disabled={loading}
+              disabled={isFormDisabled}
               aria-invalid={error ? 'true' : 'false'}
+              autoComplete="current-password"
             />
             <Link href="/auth/forgot-password" className={styles.forgotPassword}>
               Forgot password?
@@ -170,10 +180,10 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            disabled={loading || !email.trim() || !password.trim()}
+            disabled={isFormDisabled}
             className={styles.submitButton}
           >
-            {loading ? 'Signing in...' : 'Sign in'}
+            {loading || isLoading ? 'Signing in...' : 'Sign in'}
           </button>
         </form>
 
