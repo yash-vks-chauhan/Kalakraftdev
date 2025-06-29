@@ -38,6 +38,7 @@ export default function LoginPage() {
   }, [firebaseError]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    console.log('Form submission started');
     // Always prevent default form submission behavior first thing
     e.preventDefault();
     e.stopPropagation();
@@ -47,39 +48,54 @@ export default function LoginPage() {
 
     // Validate fields individually
     if (!email.trim() && !password.trim()) {
+      console.log('Both fields empty');
       setError('Please enter both email and password');
       return;
     }
     if (!email.trim()) {
+      console.log('Email empty');
       setError('Please enter your email');
       return;
     }
     if (!password.trim()) {
+      console.log('Password empty');
       setError('Please enter your password');
       return;
     }
 
     // Prevent double submission
     if (loading) {
+      console.log('Already loading, preventing submission');
       return;
     }
 
     setIsLoading(true);
+    console.log('Starting login attempt');
 
     try {
+      console.log('Calling login function');
       await login(email, password);
+      console.log('Login successful');
       // Only reset form state if login was successful
       setEmail('');
       setPassword('');
     } catch (err: any) {
       // Keep the form values for correction
-      console.error('LoginPage: Login error', err);
+      console.error('Login error:', err);
       setError(err.message);
       // Do not reset form state on error
     } finally {
       setIsLoading(false);
+      console.log('Login attempt finished');
     }
   };
+
+  // Add useEffect to track state changes
+  useEffect(() => {
+    console.log('State update - Error:', error);
+    console.log('State update - Loading:', loading);
+    console.log('State update - Auth User:', authUser);
+  }, [error, loading, authUser]);
 
   const handleGoogleLogin = async () => {
     setError('')
@@ -133,8 +149,10 @@ export default function LoginPage() {
 
         <form 
           onSubmit={(e) => {
+            console.log('Form onSubmit triggered');
+            e.preventDefault();
+            e.stopPropagation();
             handleSubmit(e);
-            // Ensure the form doesn't submit normally
             return false;
           }}
           className={styles.form}
@@ -190,14 +208,14 @@ export default function LoginPage() {
           </div>
 
           <button
-            type="submit"
+            type="button" // Change to button type to prevent form submission
             disabled={loading}
             className={styles.submitButton}
             onClick={(e) => {
-              // Extra prevention of form submission
+              console.log('Button clicked');
               e.preventDefault();
+              e.stopPropagation();
               handleSubmit(e as any);
-              return false;
             }}
           >
             {loading ? 'Signing in...' : 'Sign in'}

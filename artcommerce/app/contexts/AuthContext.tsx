@@ -192,10 +192,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [router, fetchProfile]);
 
   const login = useCallback(async (email: string, password: string) => {
+    console.log('AuthContext: Login attempt started');
     setLoading(true);
     setError(null);
     
     try {
+      console.log('AuthContext: Making login request');
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -206,11 +208,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       let data;
       try {
         data = await res.json();
+        console.log('AuthContext: Received response', { status: res.status, ok: res.ok });
       } catch (err) {
+        console.error('AuthContext: Failed to parse response', err);
         throw new Error('Server error: Invalid response');
       }
       
       if (!res.ok) {
+        console.log('AuthContext: Request not OK', { status: res.status, error: data.error });
         // Handle different error cases
         if (res.status === 401) {
           throw new Error('The email or password you entered is incorrect');
@@ -229,6 +234,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error(data.error || 'Login failed. Please try again');
       }
 
+      console.log('AuthContext: Login successful, setting state');
       // Only set auth state if the response was successful
       setToken(data.token);
       localStorage.setItem('token', data.token);
@@ -238,6 +244,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Return the data so the login page can handle success
       return data;
     } catch (err: any) {
+      console.error('AuthContext: Login error', err);
       // Set the error message
       const errorMessage = err.message || 'Login failed. Please try again';
       setError(errorMessage);
@@ -245,6 +252,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       throw new Error(errorMessage);
     } finally {
       setLoading(false);
+      console.log('AuthContext: Login attempt finished');
     }
   }, []);
 
@@ -281,6 +289,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     refreshToken,
     error,
   }), [user, token, signup, login, logout, fetchProfile, loading, loginWithFirebaseToken, refreshToken, error]);
+
+  // Add useEffect to track auth state changes
+  useEffect(() => {
+    console.log('AuthContext: State update', {
+      hasUser: !!user,
+      hasToken: !!token,
+      loading,
+      error
+    });
+  }, [user, token, loading, error]);
 
   return (
     <AuthContext.Provider value={contextValue}>
