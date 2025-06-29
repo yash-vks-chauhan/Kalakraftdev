@@ -54,31 +54,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(async () => {
     try {
-      // Call logout API to clear the cookie
+      // First clear all local state
+      setToken(null);
+      setUser(null);
+      localStorage.removeItem('token');
+      sessionStorage.clear(); // Clear any session storage
+      
+      // Then call logout API to clear the cookie
       await fetch('/api/auth/logout', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include' // Important for cookie handling
       });
-
-      // Clear local state
-      setToken(null);
-      setUser(null);
-      localStorage.removeItem('token');
       
-      // Navigate to home page
-      router.push('/');
+      // Navigate to login page instead of home
+      router.replace('/auth/login');
       
-      // Force a hard reload after a short delay to ensure all state is cleared
-      setTimeout(() => {
-        window.location.reload();
-      }, 100);
+      // No need for reload, just ensure loading is false
+      setLoading(false);
     } catch (err) {
       console.error('Logout error:', err);
-      // Still clear local state even if API call fails
+      // Still ensure state is cleared
       setToken(null);
       setUser(null);
       localStorage.removeItem('token');
-      router.push('/');
+      sessionStorage.clear();
+      setLoading(false);
+      router.replace('/auth/login');
     }
   }, [router]);
 
@@ -155,8 +157,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const savedToken = localStorage.getItem('token');
     if (savedToken) {
-      fetchProfile(savedToken).catch(() => {
-        // Errors are handled in fetchProfile, just ensure loading is off
+      fetchProfile(savedToken).catch((err) => {
+        console.error('Profile fetch error:', err);
+        // Clear everything if profile fetch fails
+        setToken(null);
+        setUser(null);
+        localStorage.removeItem('token');
+        sessionStorage.clear();
         setLoading(false);
       });
     } else {
