@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3002",
-    "build": "npm install --legacy-peer-deps && npm install --platform=linux --arch=x64 sharp && npm install -D tailwindcss@latest postcss@latest autoprefixer@latest postcss-nesting@latest && npx prisma generate && next build",
+    "build": "npm install --legacy-peer-deps && npm install --platform=linux --arch=x64 sharp && npm install tailwindcss@3.4.4 postcss@8.4.35 autoprefixer@10.4.16 && npx prisma generate && next build",
     "start": "next start -p 3002",
     "lint": "next lint"
   },
@@ -17,6 +17,7 @@
     "@types/three": "^0.177.0",
     "@vercel/blob": "^1.1.1",
     "aos": "^2.3.4",
+    "autoprefixer": "10.4.16",
     "bcryptjs": "^3.0.2",
     "class-variance-authority": "^0.7.1",
     "cloudinary": "^2.7.0",
@@ -34,6 +35,7 @@
     "next": "15.3.3",
     "next-auth": "^4.24.11",
     "nodemailer": "^6.9.10",
+    "postcss": "8.4.35",
     "pusher": "^5.2.0",
     "pusher-js": "^8.4.0",
     "react": "^19.0.0",
@@ -43,6 +45,7 @@
     "recharts": "^2.15.3",
     "sharp": "^0.34.2",
     "tailwind-merge": "^1.14.0",
+    "tailwindcss": "3.4.4",
     "three": "^0.177.0",
     "typescript": "^5",
     "uuid": "^11.1.0"
@@ -53,10 +56,6 @@
     "@types/nodemailer": "^6.4.17",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "autoprefixer": "^10.4.16",
-    "postcss": "^8.4.35",
-    "postcss-nesting": "^12.0.2",
-    "prisma": "^6.10.1",
-    "tailwindcss": "^3.4.4"
+    "prisma": "^6.10.1"
   }
 }
