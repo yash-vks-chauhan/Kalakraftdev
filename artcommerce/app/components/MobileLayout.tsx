@@ -7,22 +7,11 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '../contexts/AuthContext'
 import { useCart } from '../contexts/CartContext'
 import { useWishlist } from '../contexts/WishlistContext'
-import { Search, Home, ShoppingBag, User, Menu, X, Heart, ShoppingCart, Monitor, ChevronDown, LogOut, ClipboardList, UserCircle } from 'lucide-react'
+import { Search, Home, ShoppingBag, User, Menu, X, Heart, ShoppingCart, Monitor, ChevronDown } from 'lucide-react'
 import { useMobileMenu } from '../contexts/MobileMenuContext'
 import { getImageUrl } from '../../lib/cloudinaryImages'
 import styles from './MobileLayout.module.css'
 import MobileMenuPanel from './MobileMenuPanel'
-import { useSession } from 'next-auth/react'
-import { signOut } from 'next-auth/react'
-import { 
-  HomeIcon, 
-  ShoppingBagIcon, 
-  HeartIcon, 
-  UserIcon,
-  ArrowRightOnRectangleIcon,
-  ClipboardDocumentListIcon,
-  UserCircleIcon
-} from '@heroicons/react/24/solid'
 
 interface MobileLayoutProps {
   children: React.ReactNode
@@ -46,8 +35,6 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
   const [rotatingText, setRotatingText] = useState('coasters')
   const videoRef = useRef<HTMLVideoElement>(null)
   const router = useRouter()
-  const { data: session } = useSession()
-  const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false)
 
   // For handling the mobile/desktop view toggle
   const [viewMode, setViewMode] = useState<'mobile' | 'desktop'>('mobile')
@@ -367,15 +354,6 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
     return pathname.startsWith(path)
   }
 
-  // Close dropdown when route changes
-  useEffect(() => {
-    setIsAccountDropdownOpen(false);
-  }, [pathname]);
-
-  const handleSignOut = async () => {
-    await signOut({ callbackUrl: '/' });
-  };
-
   return (
     <div className={styles.mobileLayoutContainer}>
       {/* Home page specific content - Put at the top */}
@@ -511,30 +489,33 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
           href="/" 
           className={`${styles.footerNavItem} ${isActivePath('/') ? styles.active : ''}`}
         >
-          <HomeIcon className={styles.footerIcon} />
+          <Home size={20} />
           <span>Home</span>
         </Link>
         <Link 
           href="/products" 
           className={`${styles.footerNavItem} ${isActivePath('/products') ? styles.active : ''}`}
         >
-          <ShoppingBagIcon className={styles.footerIcon} />
+          <ShoppingBag size={20} />
           <span>Products</span>
         </Link>
         <Link 
-          href="/dashboard/wishlist" 
+          href={user ? '/dashboard/wishlist' : '/auth/login'}
           className={`${styles.footerNavItem} ${isActivePath('/dashboard/wishlist') ? styles.active : ''}`}
         >
-          <HeartIcon className={styles.footerIcon} />
+          <Heart size={20} />
           <span>Wishlist</span>
+          {wishlistItems.length > 0 && (
+            <span className={styles.badge}>{wishlistItems.length}</span>
+          )}
         </Link>
-        <button 
-          onClick={() => setIsAccountDropdownOpen(!isAccountDropdownOpen)}
-          className={`${styles.footerNavItem} ${pathname.startsWith('/dashboard') && pathname !== '/dashboard/wishlist' ? styles.active : ''}`}
+        <Link 
+          href={user ? '/dashboard/profile' : '/auth/login'} 
+          className={`${styles.footerNavItem} ${isActivePath('/dashboard/profile') || isActivePath('/auth/login') ? styles.active : ''}`}
         >
-          <UserIcon className={styles.footerIcon} />
+          <User size={20} />
           <span>Account</span>
-        </button>
+        </Link>
       </nav>
       
       {/* Mobile side menu panel */}
@@ -628,41 +609,7 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
         </div>
       )}
 
-      {/* Account Dropdown Backdrop */}
-      <div 
-        className={`${styles.mobileAccountDropdownBackdrop} ${isAccountDropdownOpen ? styles.open : ''}`}
-        onClick={() => setIsAccountDropdownOpen(false)}
-      />
-
-      {/* Account Dropdown */}
-      <div className={`${styles.mobileAccountDropdown} ${isAccountDropdownOpen ? styles.open : ''}`}>
-        {session?.user && (
-          <>
-            <div className={styles.mobileAccountHeader}>
-              <div className={styles.mobileAccountName}>
-                {session.user.name || 'User'}
-              </div>
-              <div className={styles.mobileAccountEmail}>
-                {session.user.email}
-              </div>
-            </div>
-            <div className={styles.mobileAccountLinks}>
-              <Link href="/dashboard/profile" className={styles.mobileAccountLink}>
-                <UserCircle className={styles.linkIcon} />
-                Profile
-              </Link>
-              <Link href="/dashboard/orders" className={styles.mobileAccountLink}>
-                <ClipboardList className={styles.linkIcon} />
-                Your Orders
-              </Link>
-              <button onClick={handleSignOut} className={styles.mobileSignOutButton}>
-                <LogOut className={styles.signOutIcon} />
-                Sign out
-              </button>
-            </div>
-          </>
-        )}
-      </div>
+      {/* Mobile Bottom Navigation removed as we're using the footer instead */}
     </div>
   )
 } 

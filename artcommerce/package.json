@@ -28,6 +28,9 @@
     "@radix-ui/react-slot": "1.2.3",
     "@sendgrid/mail": "8.1.5",
     "@types/js-cookie": "3.0.6",
+    "@types/node": "20.11.24",
+    "@types/react": "18.2.61",
+    "@types/react-dom": "18.2.19",
     "@types/three": "0.177.0",
     "@vercel/blob": "1.1.1",
     "aos": "2.3.4",
@@ -63,20 +66,17 @@
     "tailwind-merge": "1.14.0",
     "tailwindcss": "3.4.4",
     "three": "0.177.0",
-    "uuid": "9.0.1",
-    "@types/node": "20.11.24",
-    "@types/react": "18.2.61",
-    "@types/react-dom": "18.2.19",
-    "typescript": "5.3.3"
+    "typescript": "5.3.3",
+    "uuid": "9.0.1"
   },
   "devDependencies": {
     "@types/aos": "3.0.7",
     "@types/nodemailer": "6.4.17",
-    "prisma": "6.10.1",
-    "@typescript-eslint/parser": "7.2.0",
     "@typescript-eslint/eslint-plugin": "7.2.0",
+    "@typescript-eslint/parser": "7.2.0",
     "eslint": "8.57.0",
-    "eslint-config-next": "15.3.3"
+    "eslint-config-next": "15.3.3",
+    "prisma": "6.10.1"
   },
   "overrides": {
     "glob": "10.3.10",

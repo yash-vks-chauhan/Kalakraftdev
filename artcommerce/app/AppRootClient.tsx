@@ -85,23 +85,23 @@ export default function AppRootClient({ children }: { children: React.ReactNode 
           // Desktop Layout
           <>
             {/* Background blur layer for mobile menu */}
-            {isMobileMenuOpen && <div className={`${styles.mobileBackgroundBlur} ${styles.active}`}></div>}
+        {isMobileMenuOpen && <div className={`${styles.mobileBackgroundBlur} ${styles.active}`}></div>}
 
             {/* Main content wrapper */}
-            <div className={isMobileMenuOpen ? styles.mainContentBlurred : ''}>
-              <Navbar />
-              <NotificationContainer />
-              <AdminNotifications />
-              {children}
-            </div>
+        <div className={isMobileMenuOpen ? styles.mainContentBlurred : ''}>
+          <Navbar />
+          <NotificationContainer />
+          <AdminNotifications />
+          {children}
+        </div>
 
             {/* Mobile Menu Overlay */}
-            <div 
-              className={`${styles.mobileMenuOverlay} ${isMobileMenuOpen ? styles.active : ''}`}
-              onClick={() => setIsMobileMenuOpen(false)}
-              onTouchStart={handleTouchStart}
-              onTouchEnd={handleTouchEnd}
-            ></div>
+        <div 
+          className={`${styles.mobileMenuOverlay} ${isMobileMenuOpen ? styles.active : ''}`}
+          onClick={() => setIsMobileMenuOpen(false)}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        ></div>
 
             {/* Mobile Menu Panel - Only used when in desktop mode but showing mobile menu */}
             <MobileMenuPanel 

@@ -104,7 +104,7 @@ const MobileMenuPanel: React.FC<MobileMenuPanelProps> = ({ isOpen, onClose, togg
             ))
           ))}
           
-          {user && (
+        {user && (
             <button 
               onClick={handleLogout}
               className={styles.mobileNavLink}

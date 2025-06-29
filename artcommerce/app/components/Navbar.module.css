@@ -1599,7 +1599,7 @@
   .megaMenu {
     grid-template-columns: 1fr;
   }
-}
+} 
 
 /* Mobile View Switch Button */
 .switchToMobileButton {
