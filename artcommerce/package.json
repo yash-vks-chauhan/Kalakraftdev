@@ -8,6 +8,11 @@
     "start": "next start -p 3002",
     "lint": "next lint"
   },
+  "browserslist": [
+    "defaults",
+    "not IE 11",
+    "maintained node versions"
+  ],
   "dependencies": {
     "@getbrevo/brevo": "^2.2.0",
     "@prisma/client": "^6.10.1",
