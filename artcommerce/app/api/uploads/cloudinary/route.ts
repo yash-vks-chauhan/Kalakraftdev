@@ -1,11 +1,10 @@
 import { NextResponse } from 'next/server'
 import cloudinary from '../../../../lib/cloudinary'
 import { Readable } from 'stream'
+import { optimizeImageIfNeeded, MAX_FILE_SIZE } from '../../../../lib/imageOptimizer'
 
 export const runtime = 'nodejs'
-
-// 10MB in bytes
-const MAX_FILE_SIZE = 10 * 1024 * 1024;
+export const maxDuration = 60; // Extend timeout to 60 seconds for large image processing
 
 export async function POST(request: Request): Promise<NextResponse> {
   const { searchParams } = new URL(request.url)
@@ -27,37 +26,55 @@ export async function POST(request: Request): Promise<NextResponse> {
   }
 
   try {
-    // Check content length if available
-    const contentLength = request.headers.get('content-length');
-    if (contentLength && parseInt(contentLength) > MAX_FILE_SIZE) {
-      const sizeMB = (parseInt(contentLength) / (1024 * 1024)).toFixed(2);
+    // Convert request body to buffer
+    const buffer = await request.arrayBuffer();
+    const originalSize = buffer.byteLength;
+    
+    // Check if the file is an image by checking the first few bytes (magic numbers)
+    const isImage = isImageBuffer(Buffer.from(buffer.slice(0, 4)));
+    if (!isImage) {
+      return NextResponse.json(
+        { error: 'The uploaded file is not a valid image.' },
+        { status: 400 },
+      )
+    }
+    
+    // Optimize the image if needed
+    const { 
+      buffer: processedBuffer, 
+      optimized,
+      originalSize: origSize,
+      optimizedSize
+    } = await optimizeImageIfNeeded(buffer, filename);
+    
+    // If the image is still too large after optimization
+    if (processedBuffer.byteLength > MAX_FILE_SIZE) {
       return NextResponse.json(
         { 
-          error: `File size exceeds the 10MB limit. Received: ${sizeMB}MB`,
+          error: `Image is still too large after optimization. Maximum size is 10MB, got ${(processedBuffer.byteLength / (1024 * 1024)).toFixed(2)}MB.`,
           details: {
-            receivedSize: parseInt(contentLength),
+            originalSize: origSize,
+            optimizedSize: optimizedSize,
             maxSize: MAX_FILE_SIZE,
-            receivedSizeMB: sizeMB,
+            originalSizeMB: (origSize / (1024 * 1024)).toFixed(2) + 'MB',
+            optimizedSizeMB: (optimizedSize / (1024 * 1024)).toFixed(2) + 'MB',
             maxSizeMB: '10MB'
           }
         },
         { status: 413 }, // Payload Too Large
       )
     }
-
-    // Generate a unique public ID for the file
-    const uniquePublicId = `${folder}/${Date.now()}-${filename.replace(/\.[^/.]+$/, "")}`
-
-    // Convert request body to buffer
-    const buffer = await request.arrayBuffer();
     
     // Create a readable stream from the buffer
     const readable = new Readable({
       read() {
-        this.push(Buffer.from(buffer));
+        this.push(processedBuffer);
         this.push(null);
       }
     });
+
+    // Generate a unique public ID for the file
+    const uniquePublicId = `${folder}/${Date.now()}-${filename.replace(/\.[^/.]+$/, "")}`
 
     // Upload to Cloudinary using stream
     const uploadPromise = new Promise((resolve, reject) => {
@@ -84,7 +101,12 @@ export async function POST(request: Request): Promise<NextResponse> {
 
     const result = await uploadPromise as any;
     
-    console.log('Successfully uploaded file to Cloudinary:', result.secure_url);
+    // Log upload details
+    const optimizationInfo = optimized 
+      ? `Image was optimized: ${(originalSize / (1024 * 1024)).toFixed(2)}MB → ${(processedBuffer.byteLength / (1024 * 1024)).toFixed(2)}MB (${Math.round((1 - processedBuffer.byteLength / originalSize) * 100)}% reduction)`
+      : 'Image was under size limit, no optimization needed';
+      
+    console.log(`Successfully uploaded to Cloudinary: ${result.secure_url} - ${optimizationInfo}`);
 
     // Return the result which includes the URL
     return NextResponse.json({
@@ -94,6 +116,9 @@ export async function POST(request: Request): Promise<NextResponse> {
       height: result.height,
       format: result.format,
       resource_type: result.resource_type,
+      originalSize: originalSize,
+      uploadedSize: processedBuffer.byteLength,
+      wasOptimized: optimized
     })
   } catch (error) {
     console.error('Error uploading to Cloudinary:', error)
@@ -110,4 +135,37 @@ export async function POST(request: Request): Promise<NextResponse> {
       { status: 500 },
     )
   }
+}
+
+/**
+ * Check if a buffer is an image by examining the magic numbers
+ * @param buffer The buffer to check (just the first few bytes)
+ * @returns Whether the buffer appears to be an image
+ */
+function isImageBuffer(buffer: Buffer): boolean {
+  // Check for common image formats by their magic numbers
+  if (buffer.length < 4) return false;
+  
+  // JPEG: starts with FF D8 FF
+  if (buffer[0] === 0xFF && buffer[1] === 0xD8 && buffer[2] === 0xFF) {
+    return true;
+  }
+  
+  // PNG: starts with 89 50 4E 47 (89 P N G)
+  if (buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4E && buffer[3] === 0x47) {
+    return true;
+  }
+  
+  // GIF: starts with 47 49 46 38 (G I F 8)
+  if (buffer[0] === 0x47 && buffer[1] === 0x49 && buffer[2] === 0x46 && buffer[3] === 0x38) {
+    return true;
+  }
+  
+  // WebP: starts with 52 49 46 46 (R I F F) and has "WEBP" at offset 8
+  if (buffer[0] === 0x52 && buffer[1] === 0x49 && buffer[2] === 0x46 && buffer[3] === 0x46) {
+    // We'd need more bytes to check for WEBP at offset 8, but this is a good start
+    return true;
+  }
+  
+  return false;
 } 
