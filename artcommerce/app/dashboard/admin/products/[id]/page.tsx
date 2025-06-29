@@ -198,7 +198,7 @@ export default function EditProductPage() {
     setStylingIdeas(prev => prev.filter((_, index) => index !== indexToRemove));
   };
 
-  const onDrop = useCallback((acceptedFiles: File[]) => {
+  const onDrop = useCallback(async (acceptedFiles: File[]) => {
     // Check if adding these files would exceed the maximum of 5 images
     if (imageUrls.length + acceptedFiles.length > 5) {
       const overLimit = imageUrls.length + acceptedFiles.length - 5;
@@ -223,16 +223,16 @@ export default function EditProductPage() {
     for (const file of acceptedFiles) {
       if (!file?.name) continue;
       
-      // Check file size - 5MB limit
-      if (file.size > 5 * 1024 * 1024) {
+      // Check file size - 10MB limit
+      if (file.size > 10 * 1024 * 1024) {
         const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
         setUploadErrors(prev => ({
           ...prev,
-          [`${file.name}-size`]: `File ${file.name} exceeds the 5MB size limit (size: ${fileSizeMB}MB)`
+          [`${file.name}-size`]: `File ${file.name} exceeds the 10MB size limit (size: ${fileSizeMB}MB)`
         }));
         
         // Show error notification
-        setNotificationMessage(`File ${file.name} exceeds the 5MB size limit (size: ${fileSizeMB}MB)`);
+        setNotificationMessage(`File ${file.name} exceeds the 10MB size limit (size: ${fileSizeMB}MB)`);
         setNotificationType('error');
         setShowNotification(true);
         
@@ -264,99 +264,95 @@ export default function EditProductPage() {
           }
         };
 
-        const uploadPromise = new Promise((resolve, reject) => {
+        const uploadPromise = new Promise<{ url: string }>((resolve, reject) => {
+          xhr.open('POST', `/api/uploads/cloudinary?filename=${encodeURIComponent(file.name)}&folder=products`, true);
+          
           xhr.onload = () => {
-            if (xhr.status === 200) {
+            if (xhr.status >= 200 && xhr.status < 300) {
               try {
                 const response = JSON.parse(xhr.responseText);
-                if (response && response.url) {
-                  resolve(response);
-                } else {
-                  reject(new Error('Invalid response format - missing URL'));
-                }
-              } catch (e) {
+                resolve(response);
+              } catch (error) {
                 reject(new Error('Invalid response format'));
               }
             } else {
-              reject(new Error(`Upload failed with status ${xhr.status}`));
+              try {
+                const errorResponse = JSON.parse(xhr.responseText);
+                reject(new Error(errorResponse.error || `Upload failed with status ${xhr.status}`));
+              } catch (e) {
+                reject(new Error(`Upload failed with status ${xhr.status}`));
+              }
             }
           };
+          
           xhr.onerror = () => reject(new Error('Network error during upload'));
           xhr.ontimeout = () => reject(new Error('Upload timed out'));
+          
+          xhr.send(file);
         });
 
-        xhr.open('POST', `/api/uploads?filename=${encodeURIComponent(file.name)}`);
-        xhr.send(file);
-
-        uploadPromise.then((response: any) => {
-          if (response && typeof response.url === 'string') {
-            setImageUrls(prev => [...prev, response.url]);
-            setUploadingFiles(prev => ({ 
-              ...prev, 
-              [uploadId]: { ...prev[uploadId], status: 'completed', progress: 100, url: response.url } 
-            }));
-            
-            // Show success notification
-            setNotificationMessage(`Image ${file.name} uploaded successfully`);
-            setNotificationType('success');
-            setShowNotification(true);
-            
-            // Auto-hide notification after 3 seconds
-            setTimeout(() => {
-              setShowNotification(false);
-            }, 3000);
-            
-            // Clear progress for this upload
-            setTimeout(() => {
-              setUploadingFiles(prev => {
-                const newUploading = { ...prev };
-                delete newUploading[uploadId];
-                return newUploading;
-              });
-              setUploadProgress(prev => {
-                const newProgress = { ...prev };
-                delete newProgress[uploadId];
-                return newProgress;
-              });
-            }, 1500);
-          } else {
-            throw new Error('Invalid response data');
-          }
-        }).catch((error) => {
-          console.error('Upload error:', error);
-          setUploadingFiles(prev => ({ ...prev, [uploadId]: { ...prev[uploadId], status: 'error' } }));
-          setUploadErrors(prev => ({
-            ...prev,
-            [uploadId]: `Failed to upload ${file.name}: ${error.message}`
-          }));
-          
-          // Show error notification
-          setNotificationMessage(`Failed to upload ${file.name}`);
-          setNotificationType('error');
-          setShowNotification(true);
-          
-          // Auto-hide notification after 3 seconds
-          setTimeout(() => {
-            setShowNotification(false);
-          }, 3000);
+        const result = await uploadPromise;
+        
+        // Update the UI with the new image
+        setImageUrls(prev => [...prev, result.url]);
+        
+        // Remove from uploading files
+        setUploadingFiles(prev => {
+          const newState = { ...prev };
+          delete newState[uploadId];
+          return newState;
         });
+        
+        // Show success notification
+        setNotificationMessage(`Image ${file.name} uploaded successfully`);
+        setNotificationType('success');
+        setShowNotification(true);
+        
+        // Auto-hide notification after 3 seconds
+        setTimeout(() => {
+          setShowNotification(false);
+        }, 3000);
+        
+        // Release the object URL
+        URL.revokeObjectURL(preview);
       } catch (error: any) {
-        console.error('Upload setup error:', error);
-        setUploadingFiles(prev => ({ ...prev, [uploadId]: { ...prev[uploadId], status: 'error' } }));
+        console.error('Upload error:', error);
+        
+        // Add to upload errors
         setUploadErrors(prev => ({
           ...prev,
-          [uploadId]: `Error setting up upload for ${file.name}: ${error.message || 'Unknown error'}`
+          [uploadId]: `Failed to upload ${file.name}: ${error.message}`
         }));
+        
+        // Remove from uploading files
+        setUploadingFiles(prev => {
+          const newState = { ...prev };
+          delete newState[uploadId];
+          return newState;
+        });
+        
+        // Show error notification
+        setNotificationMessage(`Failed to upload ${file.name}: ${error.message}`);
+        setNotificationType('error');
+        setShowNotification(true);
+        
+        // Auto-hide notification after 5 seconds
+        setTimeout(() => {
+          setShowNotification(false);
+        }, 5000);
+        
+        // Release the object URL
+        URL.revokeObjectURL(preview);
       }
     }
   }, [imageUrls.length, setNotificationMessage, setNotificationType, setShowNotification]);
 
   const onDropStyling = useCallback(async (acceptedFiles: File[]) => {
     for (const file of acceptedFiles) {
-      // Check file size - 5MB limit
-      if (file.size > 5 * 1024 * 1024) {
+      // Check file size - 10MB limit
+      if (file.size > 10 * 1024 * 1024) {
         const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
-        setNotificationMessage(`File ${file.name} exceeds the 5MB size limit (size: ${fileSizeMB}MB)`);
+        setNotificationMessage(`File ${file.name} exceeds the 10MB size limit (size: ${fileSizeMB}MB)`);
         setNotificationType('error');
         setShowNotification(true);
         
@@ -375,25 +371,40 @@ export default function EditProductPage() {
       setShowNotification(true);
       
       try {
-        const formData = new FormData();
-        formData.append('file', file);
+        // Use XMLHttpRequest to track upload progress
+        const xhr = new XMLHttpRequest();
         
-        const res = await fetch(`/api/uploads?filename=${encodeURIComponent(file.name)}`, {
-          method: 'POST',
-          body: file,
+        const uploadPromise = new Promise<{ url: string }>((resolve, reject) => {
+          xhr.open('POST', `/api/uploads/cloudinary?filename=${encodeURIComponent(file.name)}&folder=styling`, true);
+          
+          xhr.onload = () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              try {
+                const response = JSON.parse(xhr.responseText);
+                resolve(response);
+              } catch (error) {
+                reject(new Error('Invalid response format'));
+              }
+            } else {
+              try {
+                const errorResponse = JSON.parse(xhr.responseText);
+                reject(new Error(errorResponse.error || `Upload failed with status ${xhr.status}`));
+              } catch (e) {
+                reject(new Error(`Upload failed with status ${xhr.status}`));
+              }
+            }
+          };
+          
+          xhr.onerror = () => reject(new Error('Network error during upload'));
+          xhr.ontimeout = () => reject(new Error('Upload timed out'));
+          
+          xhr.send(file);
         });
         
-        if (!res.ok) {
-          throw new Error(`Upload failed with status ${res.status}`);
-        }
+        const result = await uploadPromise;
         
-        const data = await res.json();
-        
-        if (!data || !data.url) {
-          throw new Error('Invalid response data - missing URL');
-        }
-        
-        setStylingIdeas(prev => [...prev, { url: data.url, text: '' }]);
+        // Add the styling image to the state
+        setStylingIdeas(prev => [...prev, { url: result.url, text: '' }]);
         
         // Show success notification
         setNotificationMessage(`Styling image ${file.name} uploaded successfully`);
@@ -404,18 +415,18 @@ export default function EditProductPage() {
         setTimeout(() => {
           setShowNotification(false);
         }, 3000);
-      } catch (err: any) {
-        console.error('Styling image upload failed:', err);
+      } catch (error: any) {
+        console.error('Styling image upload failed:', error);
         
         // Show error notification
-        setNotificationMessage(`Failed to upload styling image: ${err.message || 'Unknown error'}`);
+        setNotificationMessage(`Failed to upload styling image: ${error.message || 'Unknown error'}`);
         setNotificationType('error');
         setShowNotification(true);
         
-        // Auto-hide notification after 3 seconds
+        // Auto-hide notification after 5 seconds
         setTimeout(() => {
           setShowNotification(false);
-        }, 3000);
+        }, 5000);
       }
     }
   }, [setNotificationMessage, setNotificationType, setShowNotification]);
@@ -424,14 +435,14 @@ export default function EditProductPage() {
     onDrop, 
     accept: { 'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.webp'] },
     maxFiles: 5 - imageUrls.length,
-    maxSize: 5 * 1024 * 1024, // 5MB in bytes
+    maxSize: 10 * 1024 * 1024, // 10MB in bytes
     multiple: true,
   });
 
   const { getRootProps: getStylingRootProps, getInputProps: getStylingInputProps, isDragActive: isStylingDrag } = useDropzone({
     onDrop: onDropStyling,
     accept: { 'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.webp'] },
-    maxSize: 5 * 1024 * 1024, // 5MB in bytes
+    maxSize: 10 * 1024 * 1024, // 10MB in bytes
     multiple: true,
   });
 
@@ -442,7 +453,7 @@ export default function EditProductPage() {
         errors.forEach(error => {
           if (error.code === 'file-too-large') {
             const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
-            setNotificationMessage(`File ${file.name} exceeds the 5MB size limit (size: ${fileSizeMB}MB)`);
+            setNotificationMessage(`File ${file.name} exceeds the 10MB size limit (size: ${fileSizeMB}MB)`);
             setNotificationType('error');
             setShowNotification(true);
           } else if (error.code === 'too-many-files') {
@@ -656,7 +667,7 @@ export default function EditProductPage() {
               <p className={styles.dropzoneText}>
                 {imageUrls.length === 5 
                   ? 'Maximum number of images reached'
-                  : `${5 - imageUrls.length} images remaining (max 5MB per image)`}
+                  : `${5 - imageUrls.length} images remaining (max 10MB per image)`}
               </p>
             </div>
 
@@ -722,7 +733,7 @@ export default function EditProductPage() {
               <p className={styles.dropzoneText}>
                 {isStylingDrag
                   ? 'Drop the images here...'
-                  : 'Drag & drop styling inspiration images here, or click to select files (max 5MB per image)'}
+                  : 'Drag & drop styling inspiration images here, or click to select files (max 10MB per image)'}
               </p>
               <button type="button" className={styles.browseButton}>
                 <FiUpload />
