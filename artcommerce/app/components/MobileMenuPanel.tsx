@@ -6,7 +6,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { useMobileMenu } from '../contexts/MobileMenuContext'
 import styles from './MobileLayout.module.css'
 import { useRouter } from 'next/navigation'
-import { isMobileDevice } from '../lib/utils'
+import { isMobileDevice } from '../../lib/utils'
 import { X, User, ShoppingBag, Heart, MessageCircle, Settings, Info, LogOut, Monitor, Smartphone } from 'lucide-react'
 
 interface MobileMenuPanelProps {
