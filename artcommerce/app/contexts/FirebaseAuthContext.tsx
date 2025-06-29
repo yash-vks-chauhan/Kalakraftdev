@@ -51,12 +51,17 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
             throw new Error(data.message || 'Failed to authenticate with server')
           }
 
-          setUser(firebaseUser)
-          router.push('/')
+          const data = await response.json()
+          setUser(data.user)
+          
+          if (data.user) {
+            router.push('/')
+          }
         } catch (err: any) {
           console.error('Firebase auth error:', err)
           setError(err.message || 'Authentication failed')
           await signOut(auth)
+          setUser(null)
         }
       } else {
         setUser(null)
@@ -113,6 +118,7 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
   const handleSignOut = async () => {
     try {
       await signOut(auth)
+      setUser(null)
       router.push('/auth/login')
     } catch (error: any) {
       setError(error.message || 'Failed to sign out')
