@@ -48,19 +48,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter()
 
   useEffect(() => {
+    console.log('AuthProvider: Checking auth status')
     checkAuth()
   }, [])
 
   const checkAuth = async () => {
     try {
+      console.log('AuthProvider: Fetching user data')
       const response = await fetch('/api/auth/me')
+      console.log('AuthProvider: /me response status:', response.status)
+      
       if (response.ok) {
         const data = await response.json()
+        console.log('AuthProvider: User data received:', data)
         setUser(data)
       } else {
+        console.log('AuthProvider: No authenticated user')
         setUser(null)
       }
     } catch (err) {
+      console.error('AuthProvider: Error checking auth:', err)
       setUser(null)
     } finally {
       setLoading(false)
@@ -68,10 +75,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const login = async (email: string, password: string) => {
+    console.log('AuthProvider: Starting login')
     setLoading(true)
     setError(null)
 
     try {
+      console.log('AuthProvider: Sending login request')
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
@@ -81,14 +90,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       })
 
       const data = await response.json()
+      console.log('AuthProvider: Login response:', { status: response.status, data })
 
       if (!response.ok) {
         throw new Error(data.message || 'Login failed')
       }
 
-      await checkAuth()
+      // Update user state with the response data
+      setUser(data)
+      
+      console.log('AuthProvider: Login successful, redirecting')
       router.push('/')
     } catch (err: any) {
+      console.error('AuthProvider: Login error:', err)
       setError(err.message || 'An error occurred during login')
       throw err
     } finally {
@@ -97,6 +111,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const logout = async () => {
+    console.log('AuthProvider: Starting logout')
     setLoading(true)
     try {
       const response = await fetch('/api/auth/logout', {
@@ -108,8 +123,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       setUser(null)
+      console.log('AuthProvider: Logout successful, redirecting')
       router.push('/auth/login')
     } catch (err: any) {
+      console.error('AuthProvider: Logout error:', err)
       setError(err.message)
     } finally {
       setLoading(false)

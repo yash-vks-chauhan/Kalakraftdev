@@ -34,10 +34,16 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
   const router = useRouter()
 
   useEffect(() => {
+    console.log('Setting up Firebase auth listener')
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      console.log('Firebase auth state changed:', firebaseUser?.email)
+      
       if (firebaseUser) {
         try {
+          console.log('Getting Firebase ID token...')
           const idToken = await firebaseUser.getIdToken()
+          
+          console.log('Sending token to backend...')
           const response = await fetch('/api/auth/firebase-login', {
             method: 'POST',
             headers: {
@@ -46,17 +52,18 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
             body: JSON.stringify({ idToken }),
           })
 
+          const data = await response.json()
+          console.log('Backend response:', { ok: response.ok, data })
+
           if (!response.ok) {
-            const data = await response.json()
             throw new Error(data.message || 'Failed to authenticate with server')
           }
 
-          const data = await response.json()
+          console.log('Setting user state:', data.user)
           setUser(data.user)
           
-          if (data.user) {
-            router.push('/')
-          }
+          console.log('Redirecting to home...')
+          router.push('/')
         } catch (err: any) {
           console.error('Firebase auth error:', err)
           setError(err.message || 'Authentication failed')
@@ -64,15 +71,20 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
           setUser(null)
         }
       } else {
+        console.log('No Firebase user, clearing state')
         setUser(null)
       }
       setLoading(false)
     })
 
-    return () => unsubscribe()
+    return () => {
+      console.log('Cleaning up Firebase auth listener')
+      unsubscribe()
+    }
   }, [router])
 
   const loginWithGoogle = async () => {
+    console.log('Starting Google login...')
     setLoading(true)
     setError(null)
     try {
@@ -80,10 +92,12 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
       provider.setCustomParameters({
         prompt: 'select_account'
       })
-      await signInWithPopup(auth, provider)
-      // The rest is handled by onAuthStateChanged
+      console.log('Opening Google popup...')
+      const result = await signInWithPopup(auth, provider)
+      console.log('Google login successful:', result.user.email)
+      // Auth state change listener will handle the rest
     } catch (error: any) {
-      console.error("Firebase Google login error:", error)
+      console.error("Google login error:", error)
       if (error.code === 'auth/popup-closed-by-user') {
         setError('Login was cancelled')
       } else if (error.code === 'auth/unauthorized-domain') {
@@ -96,14 +110,17 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
   }
 
   const loginWithFacebook = async () => {
+    console.log('Starting Facebook login...')
     setLoading(true)
     setError(null)
     try {
       const provider = new FacebookAuthProvider()
-      await signInWithPopup(auth, provider)
-      // The rest is handled by onAuthStateChanged
+      console.log('Opening Facebook popup...')
+      const result = await signInWithPopup(auth, provider)
+      console.log('Facebook login successful:', result.user.email)
+      // Auth state change listener will handle the rest
     } catch (error: any) {
-      console.error("Firebase Facebook login error:", error)
+      console.error("Facebook login error:", error)
       if (error.code === 'auth/popup-closed-by-user') {
         setError('Login was cancelled')
       } else if (error.code === 'auth/unauthorized-domain') {
@@ -116,6 +133,7 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
   }
 
   const handleSignOut = async () => {
+    console.log('Signing out...')
     try {
       await signOut(auth)
       setUser(null)
