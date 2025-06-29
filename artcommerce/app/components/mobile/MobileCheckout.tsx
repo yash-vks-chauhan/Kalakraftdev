@@ -537,4 +537,3 @@ export default function MobileCheckout() {
     </div>
   )
 }
-</rewritten_file>
