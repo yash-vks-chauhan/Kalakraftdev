@@ -9,12 +9,16 @@ import prisma from '../../../../lib/prisma'; // Import prisma
 // For development, you might load it directly or use a base64 encoded string.
 // DO NOT expose your private key in client-side code.
 
-const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY || '{}');
-
 // Initialize Firebase Admin SDK if not already initialized
 if (!getApps().length) {
+  const config = {
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+    privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+  };
+
   initializeApp({
-    credential: cert(serviceAccount)
+    credential: cert(config)
   });
 }
 
