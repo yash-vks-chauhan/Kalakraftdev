@@ -39,50 +39,45 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     // Prevent default form submission behavior
-    e.preventDefault()
-    e.stopPropagation()
-
+    e.preventDefault();
+    
     // Clear previous error
-    setError('')
+    setError('');
 
     // Validate empty fields
     if (!email.trim() || !password.trim()) {
-      setError('Please enter both email and password')
-      return
+      setError('Please enter both email and password');
+      return;
     }
 
     // Prevent double submission
-    if (isLoading || loading) {
-      return
+    if (isLoading || authLoading || firebaseLoading) {
+      return;
     }
 
-    setIsLoading(true)
+    setIsLoading(true);
 
     try {
-      await login(email, password)
+      await login(email, password);
       // Reset form state but don't redirect - let useEffect handle that
-      setEmail('')
-      setPassword('')
+      setEmail('');
+      setPassword('');
     } catch (err: any) {
-      console.error('LoginPage: Login error', err)
+      console.error('LoginPage: Login error', err);
       // Show specific error messages based on the error
       if (err.message === 'Invalid credentials' || err.message === 'Invalid email or password') {
-        setError('The email or password you entered is incorrect')
+        setError('The email or password you entered is incorrect');
       } else if (err.message.includes('network')) {
-        setError('Network error. Please check your connection and try again')
+        setError('Network error. Please check your connection and try again');
       } else if (err.message === 'Missing fields') {
-        setError('Please enter both email and password')
+        setError('Please enter both email and password');
       } else {
-        setError(err.message || 'Login failed. Please try again')
+        setError(err.message || 'Login failed. Please try again');
       }
-      // Keep the form values for correction
-      e.preventDefault()
-      e.stopPropagation()
-      return false
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleGoogleLogin = async () => {
     setError('')
@@ -108,8 +103,8 @@ export default function LoginPage() {
 
   const loading = authLoading || firebaseLoading || isLoading
 
-  // Prevent form submission while loading
-  const isFormDisabled = loading || isLoading || !email.trim() || !password.trim()
+  // Only disable inputs during actual loading, not for empty fields
+  const isFormDisabled = loading
 
   return (
     <div className={styles.authContainer}>
@@ -180,10 +175,10 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            disabled={isFormDisabled}
+            disabled={loading || !email.trim() || !password.trim()}
             className={styles.submitButton}
           >
-            {loading || isLoading ? 'Signing in...' : 'Sign in'}
+            {loading ? 'Signing in...' : 'Sign in'}
           </button>
         </form>
 

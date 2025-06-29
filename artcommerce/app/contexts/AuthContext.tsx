@@ -53,10 +53,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null)
 
   const logout = useCallback(async () => {
-    setToken(null);
-    setUser(null);
-    localStorage.removeItem('token');
-  }, []);
+    try {
+      // Call logout API to clear the cookie
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      // Clear local state
+      setToken(null);
+      setUser(null);
+      localStorage.removeItem('token');
+      
+      // Navigate to home page
+      router.push('/');
+      
+      // Force a hard reload after a short delay to ensure all state is cleared
+      setTimeout(() => {
+        window.location.reload();
+      }, 100);
+    } catch (err) {
+      console.error('Logout error:', err);
+      // Still clear local state even if API call fails
+      setToken(null);
+      setUser(null);
+      localStorage.removeItem('token');
+      router.push('/');
+    }
+  }, [router]);
 
   const refreshToken = useCallback(async (): Promise<string | null> => {
     try {
@@ -162,6 +186,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(async (email: string, password: string) => {
     setLoading(true);
+    setError(null);
+    
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
@@ -177,17 +203,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(null);
         localStorage.removeItem('token');
         
-        // For 401 unauthorized, throw specific error
+        // Handle different error cases
         if (res.status === 401) {
-          throw new Error('Invalid email or password');
+          const error = new Error('Invalid email or password');
+          setError(error.message);
+          throw error;
+        }
+        if (res.status === 400) {
+          const error = new Error('Missing fields');
+          setError(error.message);
+          throw error;
         }
         // For network errors
         if (!res.status) {
-          throw new Error('Network error occurred');
+          const error = new Error('Network error occurred');
+          setError(error.message);
+          throw error;
         }
         // For other errors, use the server's error message
-        throw new Error(data.error || 'Login failed');
+        const error = new Error(data.error || 'Login failed');
+        setError(error.message);
+        throw error;
       }
+
+      // Clear any previous errors
+      setError(null);
 
       // Set auth state on success
       setToken(data.token);
@@ -198,7 +238,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (error instanceof Error) {
         throw error;
       }
-      throw new Error(error.message || 'Login failed');
+      const newError = new Error(error.message || 'Login failed');
+      setError(newError.message);
+      throw newError;
     } finally {
       setLoading(false);
     }
