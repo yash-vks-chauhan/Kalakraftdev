@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '../contexts/AuthContext'
 import { useCart } from '../contexts/CartContext'
 import { useWishlist } from '../contexts/WishlistContext'
@@ -29,6 +29,7 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
   const [isScrolled, setIsScrolled] = useState(false)
   const [rotatingText, setRotatingText] = useState('coasters')
   const videoRef = useRef<HTMLVideoElement>(null)
+  const router = useRouter()
 
   // For handling the mobile/desktop view toggle
   const [viewMode, setViewMode] = useState<'mobile' | 'desktop'>('mobile')
@@ -137,6 +138,18 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen)
+  }
+
+  const handleCartClick = () => {
+    router.push('/dashboard/cart');
+    // Close mobile menu if it's open
+    if (isMobileMenuOpen) {
+      setIsMobileMenuOpen(false);
+    }
+  }
+
+  const toggleSearch = () => {
+    setIsSearchOpen(!isSearchOpen)
   }
 
   // Handle scroll down from hero section
@@ -265,7 +278,31 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
         {/* Center - Empty spacer */}
         <div className={styles.headerSpacer}></div>
         
-        {/* Right side - Burger menu */}
+        {/* Right side - Icons and burger menu */}
+        <div className={styles.headerIcons}>
+          {/* Search Icon */}
+          <button 
+            onClick={toggleSearch}
+            className={styles.headerIconButton}
+            aria-label="Search"
+          >
+            <Search size={20} strokeWidth={2} />
+          </button>
+          
+          {/* Cart Icon */}
+          <button 
+            onClick={handleCartClick}
+            className={styles.headerIconButton}
+            aria-label="Cart"
+          >
+            <ShoppingCart size={20} strokeWidth={2} />
+            {cartItems.length > 0 && (
+              <span className={styles.cartBadge}>{cartItems.length}</span>
+            )}
+          </button>
+        </div>
+        
+        {/* Burger menu */}
         <button 
           onClick={toggleMobileMenu}
           className={styles.menuButton}
@@ -334,14 +371,26 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
               >
                 <X size={24} />
               </button>
-              <h3>Search</h3>
+              <h3>Search Products</h3>
             </div>
-            <input 
-              type="text" 
-              placeholder="Search products..." 
-              className={styles.searchInput}
-              autoFocus
-            />
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              const searchInput = e.currentTarget.querySelector('input');
+              if (searchInput && searchInput.value) {
+                router.push(`/products?search=${encodeURIComponent(searchInput.value)}`);
+                setIsSearchOpen(false);
+              }
+            }}>
+              <input 
+                type="text" 
+                placeholder="Search products..." 
+                className={styles.searchInput}
+                autoFocus
+              />
+            </form>
+            <div className={styles.searchResults}>
+              {/* Search results would appear here */}
+            </div>
           </div>
         </div>
       )}
