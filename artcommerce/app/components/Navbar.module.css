@@ -97,6 +97,7 @@
 .brand {
   transform: scale(0.95);
   transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  margin-left: 0.5rem;
 }
 
 .link {
@@ -178,6 +179,7 @@
 .logo {
   filter: none;
   transition: filter 0.3s ease;
+  margin-left: 1.5rem;
 }
 
 /* Home page logo styles - inverted to white */
