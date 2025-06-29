@@ -183,7 +183,17 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
           <div className={styles.curvedHeroCard}>
             <div className={styles.curvedHeroBackground}></div>
             
-            {/* Video background */}
+            {/* Video background with fallback */}
+            <picture>
+              {/* Fallback image that will be shown if video fails */}
+              <img 
+                src={getImageUrl('featured3.JPG')}
+                alt="Handcrafted resin art" 
+                className={styles.curvedHeroVideo}
+                style={{ display: 'none' }}
+                id="mobileVideoFallback"
+              />
+            </picture>
             <video
               ref={videoRef}
               autoPlay
@@ -191,9 +201,19 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
               loop
               playsInline
               className={styles.curvedHeroVideo}
-              poster={getImageUrl('loading.png')}
+              poster="/images/loading.png"
+              preload="metadata"
+              onError={(e) => {
+                // If video fails to load, show the fallback image
+                const videoElement = e.currentTarget;
+                videoElement.style.display = 'none';
+                document.getElementById('mobileVideoFallback')!.style.display = 'block';
+              }}
             >
-              <source src="/images/homepage_video.mp4" type="video/mp4" />
+              <source 
+                src={process.env.NEXT_PUBLIC_CLOUDINARY_VIDEO_URL || '/images/homepage_video.mp4'} 
+                type="video/mp4" 
+              />
             </video>
             
             <div className={styles.curvedHeroContent}>

@@ -14,7 +14,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   z-index: 200;
@@ -91,8 +91,7 @@
 /* Mobile Content */
 .mobileContent {
   flex: 1;
-  padding-top: 0;
-  padding-bottom: 70px; /* Space for bottom nav */
+  padding: 0 16px 70px 16px; /* Add horizontal padding, keep bottom padding for nav */
 }
 
 /* Home page specific content styles */
@@ -755,7 +754,7 @@
 /* Container for the curved card */
 .curvedCardContainer {
   padding: 16px;
-  margin-top: 0;
+  margin-top: 60px; /* Add space for the header */
   position: relative;
   z-index: 10;
 }
