@@ -203,7 +203,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         credentials: 'include' // Important for cookie handling
       });
       
-      const data = await res.json();
+      let data;
+      try {
+        data = await res.json();
+      } catch (err) {
+        throw new Error('Server error: Invalid response');
+      }
       
       if (!res.ok) {
         // Clear any existing auth state
@@ -213,17 +218,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         // Handle different error cases
         if (res.status === 401) {
-          throw new Error('Invalid email or password');
+          throw new Error('The email or password you entered is incorrect');
         }
         if (res.status === 400) {
-          throw new Error('Missing fields');
+          if (data.error === 'Missing fields') {
+            throw new Error('Please enter both email and password');
+          }
+          throw new Error(data.error || 'Invalid request');
         }
         // For network errors
         if (!res.status) {
-          throw new Error('Network error occurred');
+          throw new Error('Network error. Please check your connection and try again');
         }
         // For other errors, use the server's error message
-        throw new Error(data.error || 'Login failed');
+        throw new Error(data.error || 'Login failed. Please try again');
       }
 
       // Only set auth state if the response was successful
@@ -236,9 +244,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return data;
     } catch (err: any) {
       // Set the error message
-      setError(err.message || 'Login failed');
+      const errorMessage = err.message || 'Login failed. Please try again';
+      setError(errorMessage);
       // Re-throw the error for the login page to handle
-      throw err;
+      throw new Error(errorMessage);
     } finally {
       setLoading(false);
     }

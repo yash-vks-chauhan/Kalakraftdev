@@ -9,12 +9,28 @@ const JWT_SECRET = process.env.JWT_SECRET! // ensure this is set in your .env
 
 export async function POST(request: Request) {
   try {
-    const { email, password } = await request.json()
-    if (!email || !password) {
-      return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
+    // Parse request body
+    let email, password;
+    try {
+      const body = await request.json();
+      email = body.email;
+      password = body.password;
+    } catch (err) {
+      return NextResponse.json({ error: 'Invalid request format' }, { status: 400 });
     }
 
-    // 1️⃣ Look up the user, including their role
+    // Validate required fields
+    if (!email && !password) {
+      return NextResponse.json({ error: 'Please enter both email and password' }, { status: 400 });
+    }
+    if (!email) {
+      return NextResponse.json({ error: 'Please enter your email' }, { status: 400 });
+    }
+    if (!password) {
+      return NextResponse.json({ error: 'Please enter your password' }, { status: 400 });
+    }
+
+    // Look up the user
     const user = await prisma.user.findUnique({
       where: { email },
       select: {
@@ -22,50 +38,54 @@ export async function POST(request: Request) {
         fullName: true,
         email: true,
         avatarUrl: true,
-        role: true,         // ← grab role
+        role: true,
         passwordHash: true,
       },
-    })
+    });
+
+    // User not found - but we don't want to reveal this information
     if (!user) {
-      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
+      return NextResponse.json({ error: 'The email or password you entered is incorrect' }, { status: 401 });
     }
 
-    // 2️⃣ Check password
-    // Check if passwordHash is null or not a string
+    // Check password hash exists
     if (!user.passwordHash || typeof user.passwordHash !== 'string') {
-      return NextResponse.json({ error: 'Account not properly configured' }, { status: 401 })
+      return NextResponse.json({ error: 'Account not properly configured. Please reset your password.' }, { status: 401 });
     }
 
+    // Verify password
+    let isValid = false;
     try {
-    const isValid = await bcrypt.compare(password, user.passwordHash)
-    if (!isValid) {
-      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
-      }
+      isValid = await bcrypt.compare(password, user.passwordHash);
     } catch (err) {
-      console.error('Password comparison error:', err)
-      return NextResponse.json({ error: 'Authentication error' }, { status: 401 })
+      console.error('Password comparison error:', err);
+      return NextResponse.json({ error: 'Authentication error occurred' }, { status: 401 });
     }
 
-    // 3️⃣ Sign JWT including userId, email, and role
+    if (!isValid) {
+      return NextResponse.json({ error: 'The email or password you entered is incorrect' }, { status: 401 });
+    }
+
+    // Generate JWT
     const token = jwt.sign(
       { userId: user.id, email: user.email, role: user.role },
       JWT_SECRET,
       { expiresIn: '7d' }
-    )
+    );
 
-    // 4️⃣ Build the JSON response
+    // Create response
     const response = NextResponse.json({
       user: {
         id: user.id,
         fullName: user.fullName,
         email: user.email,
         avatarUrl: user.avatarUrl,
-        role: user.role,  // ← return role to client
+        role: user.role,
       },
       token,
-    })
+    });
 
-    // 5️⃣ Set the JWT as an HTTP-only cookie
+    // Set cookie
     response.cookies.set({
       name: 'token',
       value: token,
@@ -74,11 +94,11 @@ export async function POST(request: Request) {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 7, // 7 days
-    })
+    });
 
-    return response
+    return response;
   } catch (err) {
-    console.error('POST /api/auth/login error:', err)
-    return NextResponse.json({ error: 'Server error' }, { status: 500 })
+    console.error('POST /api/auth/login error:', err);
+    return NextResponse.json({ error: 'An unexpected error occurred. Please try again.' }, { status: 500 });
   }
 }

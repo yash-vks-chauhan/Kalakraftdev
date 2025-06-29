@@ -40,19 +40,28 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     // Prevent default form submission behavior
     e.preventDefault();
+    e.stopPropagation();
     
     // Clear previous error
     setError('');
 
-    // Validate empty fields
-    if (!email.trim() || !password.trim()) {
+    // Validate fields individually
+    if (!email.trim() && !password.trim()) {
       setError('Please enter both email and password');
-      return;
+      return false;
+    }
+    if (!email.trim()) {
+      setError('Please enter your email');
+      return false;
+    }
+    if (!password.trim()) {
+      setError('Please enter your password');
+      return false;
     }
 
     // Prevent double submission
-    if (isLoading || authLoading || firebaseLoading) {
-      return;
+    if (loading) {
+      return false;
     }
 
     setIsLoading(true);
@@ -64,19 +73,14 @@ export default function LoginPage() {
       setPassword('');
     } catch (err: any) {
       console.error('LoginPage: Login error', err);
-      // Show specific error messages based on the error
-      if (err.message === 'Invalid credentials' || err.message === 'Invalid email or password') {
-        setError('The email or password you entered is incorrect');
-      } else if (err.message.includes('network')) {
-        setError('Network error. Please check your connection and try again');
-      } else if (err.message === 'Missing fields') {
-        setError('Please enter both email and password');
-      } else {
-        setError(err.message || 'Login failed. Please try again');
-      }
+      // Keep the error message from the server
+      setError(err.message);
     } finally {
       setIsLoading(false);
     }
+
+    // Prevent form submission
+    return false;
   };
 
   const handleGoogleLogin = async () => {
@@ -130,7 +134,7 @@ export default function LoginPage() {
         )}
 
         <form 
-          onSubmit={handleSubmit} 
+          onSubmit={handleSubmit}
           className={styles.form}
           noValidate
         >
@@ -142,11 +146,14 @@ export default function LoginPage() {
               id="email"
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className={`${styles.formInput} ${error ? styles.inputError : ''}`}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setError(''); // Clear error when user types
+              }}
+              className={`${styles.formInput} ${error && !email.trim() ? styles.inputError : ''}`}
               placeholder="Enter your email"
               disabled={loading}
-              aria-invalid={error ? 'true' : 'false'}
+              aria-invalid={error && !email.trim() ? 'true' : 'false'}
               autoComplete="email"
             />
           </div>
@@ -159,11 +166,14 @@ export default function LoginPage() {
               id="password"
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className={`${styles.formInput} ${error ? styles.inputError : ''}`}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                setError(''); // Clear error when user types
+              }}
+              className={`${styles.formInput} ${error && !password.trim() ? styles.inputError : ''}`}
               placeholder="Enter your password"
               disabled={loading}
-              aria-invalid={error ? 'true' : 'false'}
+              aria-invalid={error && !password.trim() ? 'true' : 'false'}
               autoComplete="current-password"
             />
             <Link href="/auth/forgot-password" className={styles.forgotPassword}>
