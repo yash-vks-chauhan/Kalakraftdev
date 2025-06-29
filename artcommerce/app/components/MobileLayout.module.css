@@ -23,15 +23,28 @@
 
 /* Home page specific header styling */
 .homeMobileHeader {
-  background-color: rgba(255, 255, 255, 0.2); /* Semi-transparent white background */
-  backdrop-filter: blur(5px); /* Blur effect for better readability */
-  box-shadow: none; /* Remove box shadow */
+  background-color: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
+}
+
+/* When scrolled on home page, increase opacity of background */
+.homeMobileHeader[data-scrolled="true"] {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px) saturate(180%);
+  -webkit-backdrop-filter: blur(8px) saturate(180%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: none;
 }
 
 /* Non-home page header styling */
 .mobileHeader:not(.homeMobileHeader) {
-  background-color: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(8px) saturate(180%);
+  -webkit-backdrop-filter: blur(8px) saturate(180%);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* Header spacer for balance */
@@ -58,6 +71,22 @@
   align-items: center;
   justify-content: center;
   position: relative;
+}
+
+/* Home page header icons - make white */
+.homeMobileHeader .headerIconButton {
+  color: rgba(255, 255, 255, 0.9);
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+}
+
+.homeMobileHeader .headerIconButton:hover {
+  color: rgba(255, 255, 255, 1);
+}
+
+/* When scrolled, make icons black */
+.homeMobileHeader[data-scrolled="true"] .headerIconButton {
+  color: #000;
+  filter: none;
 }
 
 /* Cart badge */
@@ -91,22 +120,18 @@
   filter: brightness(0); /* Make it black */
 }
 
-/* Home page logo styles - make black */
+/* Home page logo styles - make white like desktop */
 .homeMobileHeader .logo {
-  filter: brightness(0); /* Keep it black */
+  filter: brightness(0) invert(1) drop-shadow(0 1px 3px rgba(0, 0, 0, 0.3));
 }
 
-/* Home page menu button - make black on home page */
+/* Home page menu button - make white on home page */
 .homeMobileHeader .menuButton {
-  color: #000;
+  color: #fff;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
 }
 
-/* When scrolled on home page, increase opacity of background */
-.homeMobileHeader[data-scrolled="true"] {
-  background-color: rgba(255, 255, 255, 0.95);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
-}
-
+/* Home page specific header styling - logo and menu button */
 .homeMobileHeader[data-scrolled="true"] .logo {
   filter: brightness(0); /* Keep it black */
 }
@@ -350,13 +375,16 @@
   width: 80%;
   max-width: 300px;
   height: 100vh;
-  background-color: white;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(25px) saturate(200%);
+  -webkit-backdrop-filter: blur(25px) saturate(200%);
   z-index: 2000;
   transition: right 0.3s ease;
   box-shadow: -4px 0 15px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+  border-left: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .mobileMenu.open {
@@ -714,7 +742,9 @@
   left: 0;
   width: 100%;
   height: 100vh;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
   z-index: 1900;
   animation: fadeIn 0.3s ease;
 }
@@ -726,49 +756,128 @@
   left: 0;
   width: 100%;
   height: 100vh;
-  background-color: white;
+  background-color: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   z-index: 2100;
   display: flex;
   flex-direction: column;
-  padding-top: 20px;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
   animation: slideInDown 0.3s ease;
+}
+
+.searchOverlayClosing {
+  opacity: 0;
+  transform: translateY(-10px);
+  pointer-events: none;
 }
 
 @keyframes slideInDown {
   from {
     transform: translateY(-100%);
+    opacity: 0;
   }
   to {
     transform: translateY(0);
+    opacity: 1;
   }
 }
 
 .searchContainer {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
   padding: 0 20px;
 }
 
 .searchHeader {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  padding: 1.5rem 1rem;
+  border-bottom: 2px solid #000000;
 }
 
 .closeButton {
-  background: none;
-  border: none;
-  padding: 8px;
-  margin-right: 15px;
+  width: 40px;
+  height: 40px;
+  border-radius: 0;
+  border: 2px solid #000000;
+  background-color: #ffffff;
+  color: #000000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  color: #333;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.closeButton:hover {
+  background-color: #000000;
+  color: #ffffff;
+}
+
+.searchInputContainer {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  border: 2px solid #000000;
+  border-radius: 0;
+  padding: 0.75rem 1.25rem;
+  background-color: #ffffff;
+  transition: all 0.2s ease;
+  box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.8);
+  margin: 1.5rem 0;
+}
+
+.searchInputContainer:focus-within {
+  box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.8);
+  transform: translate(-3px, -3px);
+}
+
+.searchIcon {
+  color: #000000;
+  margin-right: 0.75rem;
 }
 
 .searchInput {
-  width: 100%;
-  padding: 12px 15px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 16px;
-  margin-bottom: 16px;
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 1.125rem;
+  color: #000000;
+  background: transparent;
+  padding: 0.5rem 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-weight: 500;
+}
+
+.searchInput::placeholder {
+  color: #9e9e9e;
+  font-weight: 400;
+}
+
+.clearButton {
+  background-color: #000000;
+  color: #fff;
+  border: none;
+  border-radius: 0;
+  padding: 0.6rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-left: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.clearButton:hover {
+  transform: translateY(-2px);
 }
 
 .searchResults {
@@ -777,9 +886,28 @@
   flex: 1;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+/* Categories section */
+.categoriesContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  padding: 0 1rem;
+}
+
+.categoryPill {
+  padding: 0.5rem 1rem;
+  border: 1px solid #000;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background-color: #fff;
+}
+
+.categoryPill:hover, .categoryPillActive {
+  background-color: #000;
+  color: #fff;
 }
 
 /* Curved Hero Card for Mobile */
