@@ -4,8 +4,8 @@ import { put } from '@vercel/blob'
 
 export const runtime = 'nodejs'
 
-// 2MB in bytes
-const MAX_FILE_SIZE = 2 * 1024 * 1024;
+// 5MB in bytes
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
 export async function POST(request: Request): Promise<NextResponse> {
   const { searchParams } = new URL(request.url)
@@ -23,7 +23,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     const contentLength = request.headers.get('content-length');
     if (contentLength && parseInt(contentLength) > MAX_FILE_SIZE) {
       return NextResponse.json(
-        { error: `File size exceeds the 2MB limit. Received: ${Math.round(parseInt(contentLength) / 1024 / 1024 * 100) / 100}MB` },
+        { error: `File size exceeds the 5MB limit. Received: ${Math.round(parseInt(contentLength) / 1024 / 1024 * 100) / 100}MB` },
         { status: 413 }, // Payload Too Large
       )
     }

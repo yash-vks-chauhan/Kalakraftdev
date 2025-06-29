@@ -202,11 +202,11 @@ export default function EditProductPage() {
     for (const file of acceptedFiles) {
       if (!file?.name) continue;
       
-      // Check file size - 2MB limit
-      if (file.size > 2 * 1024 * 1024) {
+      // Check file size - 5MB limit
+      if (file.size > 5 * 1024 * 1024) {
         setUploadErrors(prev => ({
           ...prev,
-          [`${file.name}-size`]: `File ${file.name} exceeds the 2MB size limit`
+          [`${file.name}-size`]: `File ${file.name} exceeds the 5MB size limit`
         }));
         continue;
       }
@@ -320,9 +320,9 @@ export default function EditProductPage() {
 
   const onDropStyling = useCallback(async (acceptedFiles: File[]) => {
     for (const file of acceptedFiles) {
-      // Check file size - 2MB limit
-      if (file.size > 2 * 1024 * 1024) {
-        setNotificationMessage(`File ${file.name} exceeds the 2MB size limit`);
+      // Check file size - 5MB limit
+      if (file.size > 5 * 1024 * 1024) {
+        setNotificationMessage(`File ${file.name} exceeds the 5MB size limit`);
         setNotificationType('error');
         setShowNotification(true);
         
@@ -390,14 +390,14 @@ export default function EditProductPage() {
     onDrop, 
     accept: { 'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.webp'] },
     maxFiles: 5 - imageUrls.length,
-    maxSize: 2 * 1024 * 1024, // 2MB in bytes
+    maxSize: 5 * 1024 * 1024, // 5MB in bytes
     multiple: true,
   });
 
   const { getRootProps: getStylingRootProps, getInputProps: getStylingInputProps, isDragActive: isStylingDrag } = useDropzone({
     onDrop: onDropStyling,
     accept: { 'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.webp'] },
-    maxSize: 2 * 1024 * 1024, // 2MB in bytes
+    maxSize: 5 * 1024 * 1024, // 5MB in bytes
     multiple: true,
   });
 
@@ -593,7 +593,7 @@ export default function EditProductPage() {
               <p className={styles.dropzoneText}>
                 {imageUrls.length === 5 
                   ? 'Maximum number of images reached'
-                  : `${5 - imageUrls.length} images remaining (max 2MB per image)`}
+                  : `${5 - imageUrls.length} images remaining (max 5MB per image)`}
               </p>
             </div>
 
@@ -654,7 +654,7 @@ export default function EditProductPage() {
               <p className={styles.dropzoneText}>
                 {isStylingDrag
                   ? 'Drop the images here...'
-                  : 'Drag & drop styling inspiration images here, or click to select files (max 2MB per image)'}
+                  : 'Drag & drop styling inspiration images here, or click to select files (max 5MB per image)'}
               </p>
               <button type="button" className={styles.browseButton}>
                 <FiUpload />
