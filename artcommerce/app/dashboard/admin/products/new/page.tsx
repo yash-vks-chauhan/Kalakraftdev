@@ -72,23 +72,45 @@ export default function NewProductPage() {
   }
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
+    // Check if adding these files would exceed the maximum of 5 images
+    if (imageUrls.length + acceptedFiles.length > 5) {
+      const overLimit = imageUrls.length + acceptedFiles.length - 5;
+      setUploadErrors(prev => ({
+        ...prev,
+        'image-limit': `Cannot upload ${acceptedFiles.length} images. Maximum limit is 5 images (${overLimit} too many)`
+      }));
+      
+      // Show error notification
+      setNotificationMessage(`Cannot upload ${acceptedFiles.length} images. Maximum limit is 5 images (${overLimit} too many)`);
+      setNotificationType('error');
+      setShowNotification(true);
+      
+      // Auto-hide notification after 5 seconds
+      setTimeout(() => {
+        setShowNotification(false);
+      }, 5000);
+      
+      return;
+    }
+    
     for (const file of acceptedFiles) {
       // Check file size - 5MB limit
       if (file.size > 5 * 1024 * 1024) {
+        const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
         setUploadErrors(prev => ({
           ...prev,
-          [`${file.name}-size`]: `File ${file.name} exceeds the 5MB size limit`
+          [`${file.name}-size`]: `File ${file.name} exceeds the 5MB size limit (size: ${fileSizeMB}MB)`
         }));
         
         // Show error notification
-        setNotificationMessage(`File ${file.name} exceeds the 5MB size limit`);
+        setNotificationMessage(`File ${file.name} exceeds the 5MB size limit (size: ${fileSizeMB}MB)`);
         setNotificationType('error');
         setShowNotification(true);
         
-        // Auto-hide notification after 3 seconds
+        // Auto-hide notification after 5 seconds
         setTimeout(() => {
           setShowNotification(false);
-        }, 3000);
+        }, 5000);
         
         continue;
       }
@@ -179,20 +201,21 @@ export default function NewProductPage() {
         }, 3000);
       }
     }
-  }, [])
+  }, [imageUrls.length, setNotificationMessage, setNotificationType, setShowNotification])
 
   const onDropStyling = useCallback(async (acceptedFiles: File[]) => {
     for (const file of acceptedFiles) {
       // Check file size - 5MB limit
       if (file.size > 5 * 1024 * 1024) {
-        setNotificationMessage(`File ${file.name} exceeds the 5MB size limit`);
+        const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+        setNotificationMessage(`File ${file.name} exceeds the 5MB size limit (size: ${fileSizeMB}MB)`);
         setNotificationType('error');
         setShowNotification(true);
         
-        // Auto-hide notification after 3 seconds
+        // Auto-hide notification after 5 seconds
         setTimeout(() => {
           setShowNotification(false);
-        }, 3000);
+        }, 5000);
         continue;
       }
       
@@ -245,9 +268,9 @@ export default function NewProductPage() {
         }, 3000);
       }
     }
-  }, [])
+  }, [setNotificationMessage, setNotificationType, setShowNotification])
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+  const { getRootProps, getInputProps, isDragActive, fileRejections } = useDropzone({
     onDrop,
     accept: {
       'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.webp']
@@ -265,6 +288,35 @@ export default function NewProductPage() {
     maxSize: 5 * 1024 * 1024, // 5MB in bytes
     multiple: true,
   })
+
+  // Handle file rejections from dropzone
+  useEffect(() => {
+    if (fileRejections.length > 0) {
+      fileRejections.forEach(({ file, errors }) => {
+        errors.forEach(error => {
+          if (error.code === 'file-too-large') {
+            const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+            setNotificationMessage(`File ${file.name} exceeds the 5MB size limit (size: ${fileSizeMB}MB)`);
+            setNotificationType('error');
+            setShowNotification(true);
+          } else if (error.code === 'too-many-files') {
+            setNotificationMessage(`Too many files selected. You can upload a maximum of ${5 - imageUrls.length} more images.`);
+            setNotificationType('error');
+            setShowNotification(true);
+          } else {
+            setNotificationMessage(`Error with file ${file.name}: ${error.message}`);
+            setNotificationType('error');
+            setShowNotification(true);
+          }
+        });
+      });
+      
+      // Auto-hide notification after 5 seconds
+      setTimeout(() => {
+        setShowNotification(false);
+      }, 5000);
+    }
+  }, [fileRejections, imageUrls.length, setNotificationMessage, setNotificationType, setShowNotification]);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -601,6 +653,11 @@ export default function NewProductPage() {
 
             {Object.entries(uploadErrors).map(([uploadId, error]) => (
               <p key={uploadId} className={styles.uploadError}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
                 {error}
               </p>
             ))}
