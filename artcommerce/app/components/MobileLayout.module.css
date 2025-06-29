@@ -73,20 +73,13 @@
   position: relative;
 }
 
-/* Home page header icons - make white */
+/* Home page header icons - make black */
 .homeMobileHeader .headerIconButton {
-  color: rgba(255, 255, 255, 0.9);
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+  color: #000;
 }
 
 .homeMobileHeader .headerIconButton:hover {
-  color: rgba(255, 255, 255, 1);
-}
-
-/* When scrolled, make icons black */
-.homeMobileHeader[data-scrolled="true"] .headerIconButton {
-  color: #000;
-  filter: none;
+  color: rgba(0, 0, 0, 0.7);
 }
 
 /* Cart badge */
@@ -120,15 +113,14 @@
   filter: brightness(0); /* Make it black */
 }
 
-/* Home page logo styles - make white like desktop */
+/* Home page logo styles - make black */
 .homeMobileHeader .logo {
-  filter: brightness(0) invert(1) drop-shadow(0 1px 3px rgba(0, 0, 0, 0.3));
+  filter: brightness(0); /* Keep it black */
 }
 
-/* Home page menu button - make white on home page */
+/* Home page menu button - make black on home page */
 .homeMobileHeader .menuButton {
-  color: #fff;
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+  color: #000;
 }
 
 /* Home page specific header styling - logo and menu button */
@@ -375,16 +367,21 @@
   width: 80%;
   max-width: 300px;
   height: 100vh;
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(25px) saturate(200%);
-  -webkit-backdrop-filter: blur(25px) saturate(200%);
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(30px) saturate(250%);
+  -webkit-backdrop-filter: blur(30px) saturate(250%);
   z-index: 2000;
   transition: right 0.3s ease;
-  box-shadow: -4px 0 15px rgba(0, 0, 0, 0.1);
+  box-shadow: 
+    -4px 0 15px rgba(0, 0, 0, 0.08),
+    0 2px 4px rgba(255, 255, 255, 0.05),
+    inset 0 0 20px rgba(255, 255, 255, 0.2);
   display: flex;
   flex-direction: column;
   overflow-y: auto;
   border-left: 1px solid rgba(255, 255, 255, 0.3);
+  outline: 1px solid rgba(255, 255, 255, 0.1);
+  outline-offset: -2px;
 }
 
 .mobileMenu.open {
@@ -395,7 +392,10 @@
   display: flex;
   justify-content: flex-end;
   padding: 20px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(15px) saturate(200%);
+  -webkit-backdrop-filter: blur(15px) saturate(200%);
 }
 
 .closeMenuButton {
@@ -433,12 +433,30 @@
   color: #333;
   cursor: pointer;
   text-align: left;
-  transition: background-color 0.2s;
+  transition: all 0.3s ease;
   width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.mobileNavLink::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 0;
+  height: 2px;
+  background-color: #000;
+  transition: width 0.3s ease;
 }
 
 .mobileNavLink:hover, .mobileNavLink:active {
-  background-color: rgba(0, 0, 0, 0.05);
+  background-color: rgba(0, 0, 0, 0.03);
+  color: #000;
+}
+
+.mobileNavLink:hover::before {
+  width: 100%;
 }
 
 /* Media query for larger mobile devices */
@@ -742,11 +760,12 @@
   left: 0;
   width: 100%;
   height: 100vh;
-  background-color: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
+  background-color: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px) saturate(180%);
+  -webkit-backdrop-filter: blur(10px) saturate(180%);
   z-index: 1900;
   animation: fadeIn 0.3s ease;
+  transition: all 0.3s ease;
 }
 
 /* Search Overlay */
@@ -757,8 +776,8 @@
   width: 100%;
   height: 100vh;
   background-color: rgba(255, 255, 255, 0.98);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px) saturate(180%);
+  -webkit-backdrop-filter: blur(8px) saturate(180%);
   z-index: 2100;
   display: flex;
   flex-direction: column;
@@ -787,17 +806,29 @@
 
 .searchContainer {
   width: 100%;
-  max-width: 800px;
+  height: 100%;
+  max-width: 100%;
   margin: 0 auto;
-  padding: 0 20px;
+  display: flex;
+  flex-direction: column;
 }
 
 .searchHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.5rem 1rem;
+  padding: 1rem;
   border-bottom: 2px solid #000000;
+}
+
+.logoContainer {
+  display: flex;
+  align-items: center;
+}
+
+.logoImage {
+  height: auto;
+  object-fit: contain;
 }
 
 .closeButton {
@@ -820,6 +851,20 @@
   color: #ffffff;
 }
 
+.searchContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0 1rem;
+}
+
+.searchForm {
+  padding: 1.5rem 0 1rem;
+  width: 100%;
+  margin: 0 auto;
+}
+
 .searchInputContainer {
   position: relative;
   width: 100%;
@@ -831,7 +876,7 @@
   background-color: #ffffff;
   transition: all 0.2s ease;
   box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.8);
-  margin: 1.5rem 0;
+  margin: 0;
 }
 
 .searchInputContainer:focus-within {
@@ -881,7 +926,7 @@
 }
 
 .searchResults {
-  padding: 0 20px;
+  padding: 0 0.5rem;
   overflow-y: auto;
   flex: 1;
 }
@@ -892,7 +937,7 @@
   flex-wrap: wrap;
   gap: 0.5rem;
   margin-bottom: 1.5rem;
-  padding: 0 1rem;
+  padding: 0.5rem 0;
 }
 
 .categoryPill {
@@ -908,6 +953,29 @@
 .categoryPill:hover, .categoryPillActive {
   background-color: #000;
   color: #fff;
+}
+
+/* Quick filters */
+.quickFilters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  padding: 0 0.5rem;
+}
+
+.quickFilterButton {
+  padding: 0.5rem 1rem;
+  border: none;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.quickFilterButton:hover, .quickFilterActive {
+  background-color: #e0e0e0;
 }
 
 /* Curved Hero Card for Mobile */

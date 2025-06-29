@@ -24,6 +24,9 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
   const { wishlistItems } = useWishlist()
   const { isMobileMenuOpen, setIsMobileMenuOpen } = useMobileMenu()
   const [isSearchOpen, setIsSearchOpen] = React.useState(false)
+  const [isSearchClosing, setIsSearchClosing] = useState(false)
+  const searchCloseTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
   const pathname = usePathname()
   const isHomePage = pathname === '/'
   const [isScrolled, setIsScrolled] = useState(false)
@@ -149,8 +152,63 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
   }
 
   const toggleSearch = () => {
-    setIsSearchOpen(!isSearchOpen)
+    if (isSearchOpen) {
+      closeSearch()
+    } else {
+      setIsSearchOpen(true)
+      setIsSearchClosing(false)
+      if (searchCloseTimeoutRef.current) {
+        clearTimeout(searchCloseTimeoutRef.current)
+      }
+    }
   }
+
+  const closeSearch = () => {
+    setIsSearchClosing(true)
+    
+    if (searchCloseTimeoutRef.current) {
+      clearTimeout(searchCloseTimeoutRef.current)
+    }
+    
+    searchCloseTimeoutRef.current = setTimeout(() => {
+      setIsSearchOpen(false)
+      setIsSearchClosing(false)
+    }, 300)
+  }
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (searchQuery.trim()) {
+      router.push(`/products?search=${encodeURIComponent(searchQuery.trim())}`)
+      closeSearch()
+    }
+  }
+
+  // Handle escape key to close search
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isSearchOpen) {
+        closeSearch()
+      }
+    }
+    
+    if (isSearchOpen) {
+      window.addEventListener('keydown', handleKeyDown)
+    }
+    
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isSearchOpen])
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (searchCloseTimeoutRef.current) {
+        clearTimeout(searchCloseTimeoutRef.current)
+      }
+    }
+  }, [])
 
   // Handle scroll down from hero section
   const handleScrollDown = () => {
@@ -362,34 +420,73 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
       
       {/* Search Overlay */}
       {isSearchOpen && (
-        <div className={styles.searchOverlay}>
+        <div className={`${styles.searchOverlay} ${isSearchClosing ? styles.searchOverlayClosing : ''}`}>
           <div className={styles.searchContainer}>
             <div className={styles.searchHeader}>
+              <div className={styles.logoContainer}>
+                <Image 
+                  src={getImageUrl('logo.png')}
+                  alt="Kalakraft"
+                  width={120}
+                  height={32}
+                  className={styles.logoImage}
+                />
+              </div>
               <button 
-                onClick={() => setIsSearchOpen(false)}
+                onClick={closeSearch}
                 className={styles.closeButton}
+                aria-label="Close search"
               >
-                <X size={24} />
+                <X size={20} />
               </button>
-              <h3>Search Products</h3>
             </div>
-            <form onSubmit={(e) => {
-              e.preventDefault();
-              const searchInput = e.currentTarget.querySelector('input');
-              if (searchInput && searchInput.value) {
-                router.push(`/products?search=${encodeURIComponent(searchInput.value)}`);
-                setIsSearchOpen(false);
-              }
-            }}>
-              <input 
-                type="text" 
-                placeholder="Search products..." 
-                className={styles.searchInput}
-                autoFocus
-              />
-            </form>
-            <div className={styles.searchResults}>
-              {/* Search results would appear here */}
+            
+            <div className={styles.searchContent}>
+              <form onSubmit={handleSearchSubmit} className={styles.searchForm}>
+                <div className={styles.searchInputContainer}>
+                  <Search size={20} className={styles.searchIcon} />
+                  <input 
+                    type="text" 
+                    placeholder="SEARCH PRODUCTS..." 
+                    className={styles.searchInput}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    autoFocus
+                    autoComplete="off"
+                  />
+                  {searchQuery && (
+                    <button 
+                      type="button"
+                      className={styles.clearButton}
+                      onClick={() => setSearchQuery('')}
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+              </form>
+              
+              <div className={styles.categoriesContainer}>
+                <button className={`${styles.categoryPill}`}>CLOCK</button>
+                <button className={styles.categoryPill}>POTS</button>
+                <button className={styles.categoryPill}>TRAYS</button>
+                <button className={styles.categoryPill}>JEWELERY TRAYS</button>
+                <button className={styles.categoryPill}>RANGOLI</button>
+                <button className={styles.categoryPill}>WALL DECOR</button>
+                <button className={styles.categoryPill}>MATT RANGOLI</button>
+                <button className={styles.categoryPill}>MIRROR WORK</button>
+              </div>
+              
+              <div className={styles.quickFilters}>
+                <button className={styles.quickFilterButton}>New Arrivals</button>
+                <button className={styles.quickFilterButton}>Trending</button>
+                <button className={styles.quickFilterButton}>Popular</button>
+                <button className={styles.quickFilterButton}>On Sale</button>
+              </div>
+              
+              <div className={styles.searchResults}>
+                {/* Search results would appear here */}
+              </div>
             </div>
           </div>
         </div>
