@@ -7,7 +7,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '../contexts/AuthContext'
 import { useCart } from '../contexts/CartContext'
 import { useWishlist } from '../contexts/WishlistContext'
-import { Search, Home, ShoppingBag, User, Menu, X, Heart, ShoppingCart, Monitor, ChevronDown } from 'lucide-react'
+import { Search, Home, ShoppingBag, User, Menu, X, Heart, ShoppingCart, Monitor, ChevronDown, LogOut, ClipboardList, UserCircle } from 'lucide-react'
 import { useMobileMenu } from '../contexts/MobileMenuContext'
 import { getImageUrl } from '../../lib/cloudinaryImages'
 import styles from './MobileLayout.module.css'
@@ -648,15 +648,15 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
             </div>
             <div className={styles.mobileAccountLinks}>
               <Link href="/dashboard/profile" className={styles.mobileAccountLink}>
-                <UserCircleIcon className={styles.linkIcon} />
+                <UserCircle className={styles.linkIcon} />
                 Profile
               </Link>
               <Link href="/dashboard/orders" className={styles.mobileAccountLink}>
-                <ClipboardDocumentListIcon className={styles.linkIcon} />
+                <ClipboardList className={styles.linkIcon} />
                 Your Orders
               </Link>
               <button onClick={handleSignOut} className={styles.mobileSignOutButton}>
-                <ArrowRightOnRectangleIcon className={styles.signOutIcon} />
+                <LogOut className={styles.signOutIcon} />
                 Sign out
               </button>
             </div>
