@@ -9,96 +9,106 @@ import styles from '../auth.module.css'
 
 export default function LoginPage() {
   const router = useRouter()
-  const { user: authUser, login, loading: authLoading } = useAuth()
+  const { user: authUser, login, loading: authLoading, loginWithFirebaseToken } = useAuth()
   const { user: firebaseUser, loading: firebaseLoading, loginWithGoogle, loginWithFacebook, error: firebaseError } = useFirebaseAuth()
+
+  console.log('LoginPage: authLoading', authLoading)
+  console.log('LoginPage: firebaseLoading', firebaseLoading)
+  console.log('LoginPage: authUser', authUser)
+  console.log('LoginPage: firebaseUser', firebaseUser)
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
-  const loading = isLoading || authLoading || firebaseLoading
-
   useEffect(() => {
+    // If we have an authenticated user, redirect to home
     if (authUser) {
-      console.log('LoginPage: User authenticated, redirecting to home')
+      console.log('LoginPage: Redirecting to home because authUser exists')
       router.push('/')
     }
   }, [authUser, router])
 
+  // Update local error state when Firebase error changes
   useEffect(() => {
     if (firebaseError) {
-      console.log('LoginPage: Firebase error received:', firebaseError)
-      setError(firebaseError)
+      setError(firebaseError);
     }
-  }, [firebaseError])
+  }, [firebaseError]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    console.log('LoginPage: Form submission started')
+    // Prevent default form submission behavior
+    e.preventDefault();
+    e.stopPropagation();
     
-    if (loading) {
-      console.log('LoginPage: Already loading, preventing submission')
-      return
-    }
+    // Clear previous error
+    setError('');
 
-    // Validate fields
+    // Validate fields individually
     if (!email.trim() && !password.trim()) {
-      console.log('LoginPage: Both fields empty')
-      setError('Please enter both email and password')
-      return
+      setError('Please enter both email and password');
+      return false;
     }
     if (!email.trim()) {
-      console.log('LoginPage: Email empty')
-      setError('Please enter your email')
-      return
+      setError('Please enter your email');
+      return false;
     }
     if (!password.trim()) {
-      console.log('LoginPage: Password empty')
-      setError('Please enter your password')
-      return
+      setError('Please enter your password');
+      return false;
     }
 
-    setIsLoading(true)
-    setError('')
+    // Prevent double submission
+    if (loading) {
+      return false;
+    }
+
+    setIsLoading(true);
 
     try {
-      console.log('LoginPage: Attempting login')
-      await login(email, password)
-      console.log('LoginPage: Login successful')
+      await login(email, password);
+      // Reset form state but don't redirect - let useEffect handle that
+      setEmail('');
+      setPassword('');
     } catch (err: any) {
-      console.error('LoginPage: Login error:', err)
-      setError(err.message || 'Login failed. Please try again.')
+      console.error('LoginPage: Login error', err);
+      // Keep the error message from the server
+      setError(err.message);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+
+    // Prevent form submission
+    return false;
+  };
 
   const handleGoogleLogin = async () => {
-    if (loading) return
-    console.log('LoginPage: Starting Google login')
     setError('')
     try {
       await loginWithGoogle()
-      console.log('LoginPage: Google login initiated')
-    } catch (err) {
-      console.error('LoginPage: Google login error:', err)
-      // Firebase errors will be handled by the useEffect above
+      // No need to redirect here, it's handled by the useEffect when authUser is set
+    } catch (err: any) {
+      console.error('LoginPage: Google login error', err)
+      // Error is now handled by the FirebaseAuthContext
     }
   }
 
   const handleFacebookLogin = async () => {
-    if (loading) return
-    console.log('LoginPage: Starting Facebook login')
     setError('')
     try {
       await loginWithFacebook()
-      console.log('LoginPage: Facebook login initiated')
-    } catch (err) {
-      console.error('LoginPage: Facebook login error:', err)
-      // Firebase errors will be handled by the useEffect above
+      // No need to redirect here, it's handled by the useEffect when authUser is set
+    } catch (err: any) {
+      console.error('LoginPage: Facebook login error', err)
+      // Error is now handled by the FirebaseAuthContext
     }
   }
+
+  const loading = authLoading || firebaseLoading || isLoading
+
+  // Only disable inputs during actual loading, not for empty fields
+  const isFormDisabled = loading
 
   return (
     <div className={styles.authContainer}>
@@ -123,7 +133,11 @@ export default function LoginPage() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className={styles.form} noValidate>
+        <form 
+          onSubmit={handleSubmit}
+          className={styles.form}
+          noValidate
+        >
           <div className={styles.formGroup}>
             <label htmlFor="email" className={styles.formLabel}>
               Email
@@ -133,10 +147,8 @@ export default function LoginPage() {
               type="email"
               value={email}
               onChange={(e) => {
-                setEmail(e.target.value)
-                if (error && (error.includes('enter your email') || error.includes('enter both'))) {
-                  setError('')
-                }
+                setEmail(e.target.value);
+                setError(''); // Clear error when user types
               }}
               className={`${styles.formInput} ${error && !email.trim() ? styles.inputError : ''}`}
               placeholder="Enter your email"
@@ -155,10 +167,8 @@ export default function LoginPage() {
               type="password"
               value={password}
               onChange={(e) => {
-                setPassword(e.target.value)
-                if (error && (error.includes('enter your password') || error.includes('enter both'))) {
-                  setError('')
-                }
+                setPassword(e.target.value);
+                setError(''); // Clear error when user types
               }}
               className={`${styles.formInput} ${error && !password.trim() ? styles.inputError : ''}`}
               placeholder="Enter your password"
@@ -221,7 +231,6 @@ export default function LoginPage() {
 
         <button
           onClick={handleFacebookLogin}
-          disabled={loading}
           className={styles.socialButton}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="#1877F2">

@@ -1,90 +1,104 @@
 // File: app/api/auth/login/route.ts
 
 import { NextResponse } from 'next/server'
-import prisma from '@/lib/prisma'
+import prisma from '../../../../lib/prisma'
 import bcrypt from 'bcryptjs'
-import { sign } from 'jsonwebtoken'
-import { cookies } from 'next/headers'
+import jwt from 'jsonwebtoken'
+
+const JWT_SECRET = process.env.JWT_SECRET! // ensure this is set in your .env
 
 export async function POST(request: Request) {
-  console.log('POST /api/auth/login: Starting login process')
   try {
-    const body = await request.json()
-    const { email, password } = body
-
-    console.log('POST /api/auth/login: Validating input', { hasEmail: !!email, hasPassword: !!password })
-    if (!email || !password) {
-      console.log('POST /api/auth/login: Missing credentials')
-      return NextResponse.json(
-        { message: 'Email and password are required' },
-        { status: 400 }
-      )
+    // Parse request body
+    let email, password;
+    try {
+      const body = await request.json();
+      email = body.email;
+      password = body.password;
+    } catch (err) {
+      return NextResponse.json({ error: 'Invalid request format' }, { status: 400 });
     }
 
-    console.log('POST /api/auth/login: Looking up user')
+    // Validate required fields
+    if (!email && !password) {
+      return NextResponse.json({ error: 'Please enter both email and password' }, { status: 400 });
+    }
+    if (!email) {
+      return NextResponse.json({ error: 'Please enter your email' }, { status: 400 });
+    }
+    if (!password) {
+      return NextResponse.json({ error: 'Please enter your password' }, { status: 400 });
+    }
+
+    // Look up the user
     const user = await prisma.user.findUnique({
-      where: { email: email.toLowerCase() },
+      where: { email },
       select: {
         id: true,
+        fullName: true,
         email: true,
-        password: true,
-        name: true,
+        avatarUrl: true,
         role: true,
+        passwordHash: true,
       },
-    })
+    });
 
-    if (!user || !user.password) {
-      console.log('POST /api/auth/login: User not found or no password set')
-      return NextResponse.json(
-        { message: 'Invalid email or password' },
-        { status: 401 }
-      )
+    // User not found - but we don't want to reveal this information
+    if (!user) {
+      return NextResponse.json({ error: 'The email or password you entered is incorrect' }, { status: 401 });
     }
 
-    console.log('POST /api/auth/login: Verifying password')
-    const isValidPassword = await bcrypt.compare(password, user.password)
-
-    if (!isValidPassword) {
-      console.log('POST /api/auth/login: Invalid password')
-      return NextResponse.json(
-        { message: 'Invalid email or password' },
-        { status: 401 }
-      )
+    // Check password hash exists
+    if (!user.passwordHash || typeof user.passwordHash !== 'string') {
+      return NextResponse.json({ error: 'Account not properly configured. Please reset your password.' }, { status: 401 });
     }
 
-    console.log('POST /api/auth/login: Creating session token')
-    // Create session token
-    const token = sign(
-      { userId: user.id },
-      process.env.JWT_SECRET || 'default-secret',
+    // Verify password
+    let isValid = false;
+    try {
+      isValid = await bcrypt.compare(password, user.passwordHash);
+    } catch (err) {
+      console.error('Password comparison error:', err);
+      return NextResponse.json({ error: 'Authentication error occurred' }, { status: 401 });
+    }
+
+    if (!isValid) {
+      return NextResponse.json({ error: 'The email or password you entered is incorrect' }, { status: 401 });
+    }
+
+    // Generate JWT
+    const token = jwt.sign(
+      { userId: user.id, email: user.email, role: user.role },
+      JWT_SECRET,
       { expiresIn: '7d' }
-    )
-
-    // Create response with user data (excluding password)
-    const { password: _, ...userWithoutPassword } = user
-    console.log('POST /api/auth/login: Preparing response with user data')
+    );
 
     // Create response
-    const response = NextResponse.json(userWithoutPassword)
+    const response = NextResponse.json({
+      user: {
+        id: user.id,
+        fullName: user.fullName,
+        email: user.email,
+        avatarUrl: user.avatarUrl,
+        role: user.role,
+      },
+      token,
+    });
 
     // Set cookie
-    console.log('POST /api/auth/login: Setting auth cookie')
-    response.cookies.set('auth-token', token, {
+    response.cookies.set({
+      name: 'token',
+      value: token,
       httpOnly: true,
+      path: '/',
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      path: '/',
-      maxAge: 7 * 24 * 60 * 60, // 7 days
-    })
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+    });
 
-    console.log('POST /api/auth/login: Login successful')
-    return response
-
-  } catch (error) {
-    console.error('POST /api/auth/login: Error during login:', error)
-    return NextResponse.json(
-      { message: 'An error occurred during login. Please try again.' },
-      { status: 500 }
-    )
+    return response;
+  } catch (err) {
+    console.error('POST /api/auth/login error:', err);
+    return NextResponse.json({ error: 'An unexpected error occurred. Please try again.' }, { status: 500 });
   }
 }

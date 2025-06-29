@@ -2,26 +2,32 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAuth } from 'firebase-admin/auth';
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import jwt from 'jsonwebtoken';
-import prisma from '@/lib/prisma';
-import { auth } from '@/lib/firebase-admin';
-import { sign } from 'jsonwebtoken';
+import prisma from '../../../../lib/prisma';
 
-// Initialize Firebase Admin SDK if not already initialized
+// Load service account credentials (should be JSON string in env)
+const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY
+  ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)
+  : {
+      projectId: process.env.FIREBASE_PROJECT_ID,
+      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+    };
+
+console.log('Firebase Admin config loaded:', {
+  projectIdPresent: !!serviceAccount.projectId,
+  clientEmailPresent: !!serviceAccount.clientEmail,
+  privateKeyPresent: !!serviceAccount.privateKey,
+});
+
+// Initialize Firebase Admin SDK once
 if (!getApps().length) {
   try {
-    const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY
-      ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)
-      : {
-          projectId: process.env.FIREBASE_PROJECT_ID,
-          clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-          privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-        };
-
-    initializeApp({
-      credential: cert(serviceAccount as any),
-    });
+  initializeApp({
+    credential: cert(serviceAccount as any),
+  });
+    console.log('Firebase Admin SDK initialized successfully');
   } catch (error) {
-    console.error('Error initializing Firebase Admin:', error);
+    console.error('Error initializing Firebase Admin SDK:', error);
   }
 }
 
@@ -33,89 +39,88 @@ if (!JWT_SECRET) {
   console.error('JWT_SECRET environment variable is not set!');
 }
 
-export async function POST(request: Request) {
-  console.log('POST /api/auth/firebase-login: Starting Firebase login process');
+export async function POST(req: NextRequest) {
+  console.log('Firebase login endpoint called');
   try {
-    const body = await request.json();
-    const { token } = body;
+    const { idToken } = await req.json();
 
-    if (!token) {
-      console.log('POST /api/auth/firebase-login: No token provided');
-      return NextResponse.json(
-        { message: 'No token provided' },
-        { status: 400 }
-      );
+    if (!idToken) {
+      console.log('No ID token provided');
+      return NextResponse.json({ error: 'ID token is required' }, { status: 400 });
     }
 
-    console.log('POST /api/auth/firebase-login: Verifying Firebase token');
-    const decodedToken = await auth.verifyIdToken(token);
-    const { email, uid, name } = decodedToken;
+    console.log('Verifying Firebase ID token...');
+    // 1) Verify Firebase ID token
+    const decodedToken = await adminAuth.verifyIdToken(idToken);
+    const uid = decodedToken.uid;
+    console.log('Firebase token verified for user:', decodedToken.email);
 
-    console.log('POST /api/auth/firebase-login: Looking up or creating user');
-    // Find or create user in your database
+    // 2) Look up or create user in DB
+    try {
+      // Test database connection first
+      await prisma.$queryRaw`SELECT 1`;
+      console.log('Database connection successful');
+      
     let user = await prisma.user.findUnique({
-      where: { email: email?.toLowerCase() },
+      where: { email: decodedToken.email || '' },
     });
-
-    if (!user && email) {
-      console.log('POST /api/auth/firebase-login: Creating new user');
-      user = await prisma.user.create({
-        data: {
-          email: email.toLowerCase(),
-          firebaseUid: uid,
-          name: name || email.split('@')[0],
-          role: 'USER',
-        },
-      });
-    } else if (user && !user.firebaseUid) {
-      console.log('POST /api/auth/firebase-login: Linking existing user with Firebase');
-      user = await prisma.user.update({
-        where: { id: user.id },
-        data: { firebaseUid: uid },
-      });
-    }
 
     if (!user) {
-      console.error('POST /api/auth/firebase-login: Failed to create/update user');
-      return NextResponse.json(
-        { message: 'Failed to create user' },
-        { status: 500 }
-      );
+        console.log('Creating new user in database for:', decodedToken.email);
+        try {
+      user = await prisma.user.create({
+        data: {
+          id: uid,
+          email: decodedToken.email!,
+          fullName: decodedToken.name || decodedToken.email!,
+          role: 'user',
+          avatarUrl: decodedToken.picture || null,
+        },
+      });
+          console.log('New user created:', user.id);
+        } catch (createError) {
+          console.error('Error creating user:', createError);
+          return NextResponse.json({ 
+            error: 'Failed to create user account', 
+            details: createError.message 
+          }, { status: 500 });
+        }
+      } else {
+        console.log('Existing user found:', user.id);
     }
 
-    console.log('POST /api/auth/firebase-login: Creating session token');
-    // Create session token
-    const sessionToken = sign(
-      { userId: user.id },
-      process.env.JWT_SECRET || 'default-secret',
+    // 3) Create our custom JWT
+    const token = jwt.sign(
+      { userId: user.id, email: user.email, role: user.role },
+      JWT_SECRET,
       { expiresIn: '7d' }
     );
+      console.log('JWT created successfully');
 
-    // Create response
-    const response = NextResponse.json({
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      role: user.role,
-    });
-
-    // Set cookie
-    console.log('POST /api/auth/firebase-login: Setting auth cookie');
-    response.cookies.set('auth-token', sessionToken, {
+    // 4) Return response
+    const res = NextResponse.json({ user, token }, { status: 200 });
+    res.cookies.set('token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       path: '/',
-      maxAge: 7 * 24 * 60 * 60, // 7 days
+      maxAge: 60 * 60 * 24 * 7,
     });
+      console.log('Login successful, returning response');
 
-    console.log('POST /api/auth/firebase-login: Login successful');
-    return response;
+    return res;
+    } catch (dbError) {
+      console.error('Database error:', dbError);
+      return NextResponse.json({ 
+        error: 'Database connection failed', 
+        details: dbError.message 
+      }, { status: 500 });
+    }
   } catch (error: any) {
-    console.error('POST /api/auth/firebase-login: Error during login:', error);
-    return NextResponse.json(
-      { message: error.message || 'Authentication failed' },
-      { status: 401 }
-    );
+    console.error('Firebase login error:', error);
+    return NextResponse.json({ 
+      error: 'Invalid ID token', 
+      details: error.message || 'Unknown error' 
+    }, { status: 401 });
   }
 } 
