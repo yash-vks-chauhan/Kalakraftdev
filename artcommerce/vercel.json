@@ -6,6 +6,7 @@
   "env": {
     "DATABASE_URL": "postgresql://neondb_owner:npg_GoQhp2C3DrBf@ep-shiny-frog-a1mpqgkm-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require"
   },
+  "installCommand": "npm install --legacy-peer-deps",
   "headers": [
     {
       "source": "/images/(.*)",
