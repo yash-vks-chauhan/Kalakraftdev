@@ -225,6 +225,14 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
     }
   }
 
+  const handleWishlistClick = () => {
+    router.push('/dashboard/wishlist');
+    // Close mobile menu if it's open
+    if (isMobileMenuOpen) {
+      setIsMobileMenuOpen(false);
+    }
+  }
+
   const toggleSearch = () => {
     if (isSearchOpen) {
       closeSearch()
@@ -318,6 +326,14 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
     if (newMode === 'desktop') {
       onSwitchToDesktop()
     }
+  }
+
+  // Function to determine if a path is active
+  const isActivePath = (path: string) => {
+    if (path === '/') {
+      return pathname === '/'
+    }
+    return pathname.startsWith(path)
   }
 
   return (
@@ -450,30 +466,42 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
       </main>
       
       {/* Mobile Footer Navigation */}
-      <footer className={`${styles.mobileFooter} ${isFooterVisible ? styles.footerVisible : styles.footerHidden}`}>
-        <Link href="/" className={styles.footerNavItem}>
-          <Home size={20} />
+      <nav className={`${styles.mobileFooter} ${isFooterVisible ? styles.footerVisible : styles.footerHidden}`}>
+        <Link 
+          href="/" 
+          className={`${styles.footerNavItem} ${isActivePath('/') ? styles.active : ''}`}
+        >
+          <Home size={24} />
           <span>Home</span>
         </Link>
-        
-        <Link href="/products" className={styles.footerNavItem}>
-          <ShoppingBag size={20} />
-          <span>Shop</span>
-        </Link>
-        
-        <Link href="/wishlist" className={styles.footerNavItem}>
-          <Heart size={20} />
+        <button 
+          onClick={handleCartClick} 
+          className={`${styles.footerNavItem} ${isActivePath('/dashboard/cart') ? styles.active : ''}`}
+        >
+          <ShoppingBag size={24} />
+          <span>Cart</span>
+          {cartItems.length > 0 && (
+            <span className={styles.badge}>{cartItems.length}</span>
+          )}
+        </button>
+        <button 
+          onClick={handleWishlistClick} 
+          className={`${styles.footerNavItem} ${isActivePath('/dashboard/wishlist') ? styles.active : ''}`}
+        >
+          <Heart size={24} />
           <span>Wishlist</span>
           {wishlistItems.length > 0 && (
             <span className={styles.badge}>{wishlistItems.length}</span>
           )}
+        </button>
+        <Link 
+          href={user ? '/dashboard/profile' : '/auth/login'} 
+          className={`${styles.footerNavItem} ${isActivePath('/dashboard/profile') || isActivePath('/auth/login') ? styles.active : ''}`}
+        >
+          <User size={24} />
+          <span>Account</span>
         </Link>
-        
-        <Link href={user ? "/dashboard" : "/auth/login"} className={styles.footerNavItem}>
-          <User size={20} />
-          <span>{user ? "Account" : "Login"}</span>
-        </Link>
-      </footer>
+      </nav>
       
       {/* Mobile side menu panel */}
       <MobileMenuPanel 
