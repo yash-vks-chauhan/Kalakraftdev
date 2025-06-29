@@ -14,7 +14,7 @@ const ResponsiveProductsPage = dynamic(
   { ssr: false }
 )
 
-export const dynamic = 'force-dynamic'
+export const dynamicConfig = 'force-dynamic'
 
 export default function Page() {
   return (
