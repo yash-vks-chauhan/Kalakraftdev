@@ -37,15 +37,30 @@ export default function LoginPage() {
     }
   }, [firebaseError]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    // Prevent default form submission behavior
     e.preventDefault()
     e.stopPropagation()
+
+    // Clear previous error
     setError('')
+
+    // Validate empty fields
+    if (!email.trim() || !password.trim()) {
+      setError('Please enter both email and password')
+      return
+    }
+
+    // Prevent double submission
+    if (isLoading) {
+      return
+    }
+
     setIsLoading(true)
 
     try {
       await login(email, password)
-      // Don't redirect here - let the useEffect handle it when authUser is set
+      // Don't do anything here - let the useEffect handle redirect when authUser is set
     } catch (err: any) {
       console.error('LoginPage: Login error', err)
       // Show specific error messages based on the error
@@ -53,6 +68,8 @@ export default function LoginPage() {
         setError('The email or password you entered is incorrect')
       } else if (err.message.includes('network')) {
         setError('Network error. Please check your connection and try again')
+      } else if (err.message === 'Missing fields') {
+        setError('Please enter both email and password')
       } else {
         setError(err.message || 'Login failed. Please try again')
       }
@@ -108,7 +125,12 @@ export default function LoginPage() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} noValidate>
+        <form 
+          onSubmit={handleSubmit} 
+          className={styles.form}
+          method="POST"
+          action="javascript:void(0)"
+        >
           <div className={styles.formGroup}>
             <label htmlFor="email" className={styles.formLabel}>
               Email
@@ -122,6 +144,7 @@ export default function LoginPage() {
               className={styles.formInput}
               placeholder="Enter your email"
               disabled={loading}
+              aria-invalid={error ? 'true' : 'false'}
             />
           </div>
 
@@ -138,6 +161,7 @@ export default function LoginPage() {
               className={styles.formInput}
               placeholder="Enter your password"
               disabled={loading}
+              aria-invalid={error ? 'true' : 'false'}
             />
             <Link href="/auth/forgot-password" className={styles.forgotPassword}>
               Forgot password?
@@ -146,7 +170,7 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || !email.trim() || !password.trim()}
             className={styles.submitButton}
           >
             {loading ? 'Signing in...' : 'Sign in'}
