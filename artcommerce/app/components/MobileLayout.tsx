@@ -88,40 +88,62 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
 
   // Add scroll event listener for header and footer
   useEffect(() => {
+    // Track scroll direction and velocity
+    let prevScrollY = window.scrollY
+    let scrollDirection = 0
+    let consecutiveScrolls = 0
+    
     const handleScroll = () => {
       const currentScrollY = window.scrollY
       
       // Header scroll effect
       setIsScrolled(currentScrollY > 10)
       
-      // Footer visibility based on scroll direction with threshold
-      if (currentScrollY < 100) {
+      // Determine scroll direction
+      const currentDirection = currentScrollY > prevScrollY ? 1 : -1
+      
+      // If direction is the same as previous, increment counter
+      if (currentDirection === scrollDirection) {
+        consecutiveScrolls++
+      } else {
+        // Direction changed, reset counter
+        scrollDirection = currentDirection
+        consecutiveScrolls = 1
+      }
+      
+      // Footer visibility based on scroll direction with improved logic
+      if (currentScrollY < 120) {
         // Always show footer when near the top
         setIsFooterVisible(true)
-      } else if (currentScrollY > lastScrollY + 10) {
-        // Scrolling down (with threshold) - hide footer
+      } else if (scrollDirection > 0 && consecutiveScrolls > 3 && (currentScrollY - prevScrollY > 5)) {
+        // Scrolling down consistently - hide footer
         setIsFooterVisible(false)
-      } else if (currentScrollY < lastScrollY - 10) {
-        // Scrolling up (with threshold) - show footer
+      } else if (scrollDirection < 0 && consecutiveScrolls > 2) {
+        // Scrolling up consistently - show footer
         setIsFooterVisible(true)
       }
       
-      // Update last scroll position
+      // Update previous scroll position
+      prevScrollY = currentScrollY
       setLastScrollY(currentScrollY)
     }
 
-    // Debounced scroll handler
-    let scrollTimer: NodeJS.Timeout | null = null
-    const debouncedScroll = () => {
-      if (scrollTimer) clearTimeout(scrollTimer)
-      scrollTimer = setTimeout(handleScroll, 10)
+    // Throttled scroll handler for smoother performance
+    let lastRun = 0
+    const scrollThreshold = 30 // ms between runs
+    
+    const throttledScroll = () => {
+      const now = Date.now()
+      if (now - lastRun >= scrollThreshold) {
+        lastRun = now
+        handleScroll()
+      }
     }
 
-    window.addEventListener('scroll', debouncedScroll, { passive: true })
+    window.addEventListener('scroll', throttledScroll, { passive: true })
     
     return () => {
-      window.removeEventListener('scroll', debouncedScroll)
-      if (scrollTimer) clearTimeout(scrollTimer)
+      window.removeEventListener('scroll', throttledScroll)
     }
   }, [lastScrollY])
 
