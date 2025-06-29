@@ -17,8 +17,11 @@ if (!admin.apps.length) {
 
   try {
     admin.initializeApp({
-      credential: admin.credential.cert(config),
-      databaseURL: process.env.FIREBASE_DATABASE_URL,
+      credential: admin.credential.cert({
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+      })
     })
     console.log('Firebase Admin initialized successfully');
   } catch (error) {
@@ -27,7 +30,6 @@ if (!admin.apps.length) {
       projectId: config.projectId || 'missing',
       clientEmail: config.clientEmail ? 'present' : 'missing',
       privateKey: config.privateKey ? 'present (length: ' + config.privateKey.length + ')' : 'missing',
-      databaseURL: process.env.FIREBASE_DATABASE_URL || 'missing'
     });
   }
 }
