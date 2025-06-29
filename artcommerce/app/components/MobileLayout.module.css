@@ -10,7 +10,7 @@
 .mobileHeader {
   width: 100%;
   height: 60px;
-  padding: 0 16px;
+  padding: 0 12px 0 8px; /* Reduce left padding for logo */
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -49,23 +49,32 @@
   align-items: center;
   justify-content: flex-start;
   position: relative;
-  margin-left: 16px;
+  margin-left: 8px; /* Reduce margin to move more left */
 }
 
 .logo {
   height: auto;
-  max-height: 28px; /* Increased size */
+  max-height: 32px; /* Increased size further */
   filter: brightness(0); /* Make it black */
 }
 
-/* Home page logo styles */
+/* Home page logo styles - make white only on home page */
 .homeMobileHeader .logo {
   filter: brightness(0) invert(1) drop-shadow(0 1px 3px rgba(0, 0, 0, 0.3));
 }
 
-/* When scrolled on home page, make logo black */
+/* Home page menu button - make white on home page */
+.homeMobileHeader .menuButton {
+  color: #fff;
+}
+
+/* When scrolled on home page, make logo and menu button black */
 .homeMobileHeader[data-scrolled="true"] .logo {
   filter: brightness(0); /* Make it black */
+}
+
+.homeMobileHeader[data-scrolled="true"] .menuButton {
+  color: #000;
 }
 
 /* Menu button */
@@ -74,18 +83,10 @@
   border: none;
   padding: 8px;
   cursor: pointer;
+  color: #000; /* Ensure black color */
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #333;
-  width: 40px;
-  height: 40px;
-  z-index: 1001;
-}
-
-.homeMobileHeader .menuButton {
-  color: white;
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
 }
 
 /* Mobile Content */

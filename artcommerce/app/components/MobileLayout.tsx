@@ -255,8 +255,8 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
           <Image
             src={getImageUrl('logo.png')}
             alt="Artcommerce Logo"
-            width={90}
-            height={28}
+            width={100}
+            height={32}
             priority
             style={{ objectFit: 'contain' }}
             className={styles.logo}
@@ -272,7 +272,7 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
           className={styles.menuButton}
           aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
         >
-          <Menu size={24} />
+          <Menu size={24} strokeWidth={2.5} />
         </button>
       </header>
       
