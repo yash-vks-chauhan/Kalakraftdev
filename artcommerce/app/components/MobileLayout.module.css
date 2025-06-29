@@ -14,10 +14,10 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  position: fixed;
+  position: absolute;
   top: 0;
   left: 0;
-  z-index: 100;
+  z-index: 200;
   transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
@@ -91,10 +91,8 @@
 /* Mobile Content */
 .mobileContent {
   flex: 1;
-  padding: 16px;
-  overflow-y: auto;
-  padding-bottom: 80px; /* Space for footer */
-  margin-top: 60px; /* Space for header */
+  padding-top: 0;
+  padding-bottom: 70px; /* Space for bottom nav */
 }
 
 /* Home page specific content styles */
@@ -692,7 +690,7 @@
 .curvedHeroCard {
   position: relative;
   width: 100%;
-  margin-top: 60px;
+  margin-top: 0;
   border-radius: 20px;
   overflow: hidden;
   background: linear-gradient(135deg, #d68c45 0%, #4a8c2f 100%);
@@ -757,7 +755,7 @@
 /* Container for the curved card */
 .curvedCardContainer {
   padding: 16px;
-  margin-top: -20px;
+  margin-top: 0;
   position: relative;
   z-index: 10;
 }

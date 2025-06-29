@@ -166,13 +166,19 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
     return null; // Return null to not render anything
   }
 
-  // Render home page specific content
-  const renderContent = () => {
-    if (!isHomePage) return null;
+  const toggleViewMode = () => {
+    const newMode = viewMode === 'mobile' ? 'desktop' : 'mobile'
+    setViewMode(newMode)
     
-    return (
-      <>
-        {/* Home page specific content */}
+    if (newMode === 'desktop') {
+      onSwitchToDesktop()
+    }
+  }
+
+  return (
+    <div className={styles.mobileLayoutContainer}>
+      {/* Home page specific content - Put at the top */}
+      {isHomePage && (
         <div className={styles.curvedCardContainer}>
           <div className={styles.curvedHeroCard}>
             <div className={styles.curvedHeroBackground}></div>
@@ -217,23 +223,8 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
             </div>
           </div>
         </div>
-        
-        {/* We're removing the MobileCollectionsSection from here */}
-      </>
-    );
-  };
+      )}
 
-  const toggleViewMode = () => {
-    const newMode = viewMode === 'mobile' ? 'desktop' : 'mobile'
-    setViewMode(newMode)
-    
-    if (newMode === 'desktop') {
-      onSwitchToDesktop()
-    }
-  }
-
-  return (
-    <div className={styles.mobileLayoutContainer}>
       {/* Mobile Header */}
       <header 
         className={`${styles.mobileHeader} ${isHomePage ? styles.homeMobileHeader : ''}`}
@@ -268,9 +259,6 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
       {/* Main Content Area */}
       <main className={styles.mobileContent}>
         {children}
-        
-        {/* Render home page content if we're on the home page */}
-        {isHomePage && renderContent()}
       </main>
       
       {/* Mobile Footer Navigation */}
@@ -338,6 +326,26 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
           </div>
         </div>
       )}
+
+      {/* Mobile Bottom Navigation */}
+      <nav className={styles.mobileBottomNav}>
+        <Link href="/" className={styles.bottomNavItem}>
+          <Home size={24} />
+          <span>Home</span>
+        </Link>
+        <Link href="/products" className={styles.bottomNavItem}>
+          <ShoppingBag size={24} />
+          <span>Shop</span>
+        </Link>
+        <Link href="/dashboard/wishlist" className={styles.bottomNavItem}>
+          <Heart size={24} />
+          <span>Wishlist</span>
+        </Link>
+        <Link href={user ? '/dashboard/profile' : '/auth/login'} className={styles.bottomNavItem}>
+          <User size={24} />
+          <span>{user ? 'Account' : 'Login'}</span>
+        </Link>
+      </nav>
     </div>
   )
 } 
