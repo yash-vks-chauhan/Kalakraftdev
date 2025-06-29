@@ -2,32 +2,24 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAuth } from 'firebase-admin/auth';
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import jwt from 'jsonwebtoken';
-import prisma from '../../../../lib/prisma';
+import prisma from '@/lib/prisma';
 
-// Load service account credentials (should be JSON string in env)
-const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY
-  ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)
-  : {
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-    };
-
-console.log('Firebase Admin config loaded:', {
-  projectIdPresent: !!serviceAccount.projectId,
-  clientEmailPresent: !!serviceAccount.clientEmail,
-  privateKeyPresent: !!serviceAccount.privateKey,
-});
-
-// Initialize Firebase Admin SDK once
+// Initialize Firebase Admin SDK if not already initialized
 if (!getApps().length) {
   try {
-  initializeApp({
-    credential: cert(serviceAccount as any),
-  });
-    console.log('Firebase Admin SDK initialized successfully');
+    const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY
+      ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)
+      : {
+          projectId: process.env.FIREBASE_PROJECT_ID,
+          clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+          privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+        };
+
+    initializeApp({
+      credential: cert(serviceAccount as any),
+    });
   } catch (error) {
-    console.error('Error initializing Firebase Admin SDK:', error);
+    console.error('Error initializing Firebase Admin:', error);
   }
 }
 
@@ -46,14 +38,17 @@ export async function POST(req: NextRequest) {
 
     if (!idToken) {
       console.log('No ID token provided');
-      return NextResponse.json({ error: 'ID token is required' }, { status: 400 });
+      return NextResponse.json({ message: 'ID token is required' }, { status: 400 });
     }
 
     console.log('Verifying Firebase ID token...');
     // 1) Verify Firebase ID token
     const decodedToken = await adminAuth.verifyIdToken(idToken);
-    const uid = decodedToken.uid;
-    console.log('Firebase token verified for user:', decodedToken.email);
+    
+    if (!decodedToken.email) {
+      console.log('No email associated with this account');
+      return NextResponse.json({ message: 'No email associated with this account' }, { status: 400 });
+    }
 
     // 2) Look up or create user in DB
     try {
@@ -61,22 +56,20 @@ export async function POST(req: NextRequest) {
       await prisma.$queryRaw`SELECT 1`;
       console.log('Database connection successful');
       
-    let user = await prisma.user.findUnique({
-      where: { email: decodedToken.email || '' },
-    });
+      let user = await prisma.user.findUnique({
+        where: { email: decodedToken.email },
+      });
 
-    if (!user) {
+      if (!user) {
         console.log('Creating new user in database for:', decodedToken.email);
         try {
-      user = await prisma.user.create({
-        data: {
-          id: uid,
-          email: decodedToken.email!,
-          fullName: decodedToken.name || decodedToken.email!,
-          role: 'user',
-          avatarUrl: decodedToken.picture || null,
-        },
-      });
+          user = await prisma.user.create({
+            data: {
+              email: decodedToken.email,
+              name: decodedToken.name || decodedToken.email.split('@')[0],
+              role: 'user',
+            },
+          });
           console.log('New user created:', user.id);
         } catch (createError) {
           console.error('Error creating user:', createError);
@@ -87,28 +80,37 @@ export async function POST(req: NextRequest) {
         }
       } else {
         console.log('Existing user found:', user.id);
-    }
+      }
 
-    // 3) Create our custom JWT
-    const token = jwt.sign(
-      { userId: user.id, email: user.email, role: user.role },
-      JWT_SECRET,
-      { expiresIn: '7d' }
-    );
+      // 3) Create our custom JWT
+      const token = jwt.sign(
+        { userId: user.id, email: user.email, role: user.role },
+        JWT_SECRET,
+        { expiresIn: '7d' }
+      );
       console.log('JWT created successfully');
 
-    // 4) Return response
-    const res = NextResponse.json({ user, token }, { status: 200 });
-    res.cookies.set('token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 60 * 60 * 24 * 7,
-    });
+      // 4) Return response
+      const res = NextResponse.json({
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: user.role,
+        },
+      }, { status: 200 });
+
+      // Set auth cookie
+      res.cookies.set('auth-token', idToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 7 * 24 * 60 * 60, // 7 days
+      });
       console.log('Login successful, returning response');
 
-    return res;
+      return res;
     } catch (dbError) {
       console.error('Database error:', dbError);
       return NextResponse.json({ 
@@ -119,8 +121,7 @@ export async function POST(req: NextRequest) {
   } catch (error: any) {
     console.error('Firebase login error:', error);
     return NextResponse.json({ 
-      error: 'Invalid ID token', 
-      details: error.message || 'Unknown error' 
+      message: error.message || 'Authentication failed' 
     }, { status: 401 });
   }
 } 

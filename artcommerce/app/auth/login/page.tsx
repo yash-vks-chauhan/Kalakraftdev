@@ -25,11 +25,12 @@ export default function LoginPage() {
     }
   }, [authUser, router])
 
+  // Only set Firebase errors for social login errors
   useEffect(() => {
-    if (firebaseError) {
+    if (firebaseError && !email && !password) {
       setError(firebaseError)
     }
-  }, [firebaseError])
+  }, [firebaseError, email, password])
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -63,24 +64,22 @@ export default function LoginPage() {
   }
 
   const handleGoogleLogin = async () => {
+    if (loading) return
     setError('')
     try {
       await loginWithGoogle()
-      // No need to redirect here, it's handled by the useEffect when authUser is set
-    } catch (err: any) {
-      console.error('LoginPage: Google login error', err)
-      // Error is now handled by the FirebaseAuthContext
+    } catch (err) {
+      // Firebase errors will be handled by the useEffect above
     }
   }
 
   const handleFacebookLogin = async () => {
+    if (loading) return
     setError('')
     try {
       await loginWithFacebook()
-      // No need to redirect here, it's handled by the useEffect when authUser is set
-    } catch (err: any) {
-      console.error('LoginPage: Facebook login error', err)
-      // Error is now handled by the FirebaseAuthContext
+    } catch (err) {
+      // Firebase errors will be handled by the useEffect above
     }
   }
 
