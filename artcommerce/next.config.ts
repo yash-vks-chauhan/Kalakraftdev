@@ -26,22 +26,16 @@ const nextConfig: NextConfig = {
     // Add specific handling for media files
     config.module.rules.push({
       test: /\.(mp4|webm|ogg|mp3|wav|flac|aac)(\?.*)?$/,
-      use: {
-        loader: 'file-loader',
-        options: {
-          publicPath: '/_next/static/media/',
-          outputPath: 'static/media/',
-          name: '[name].[hash:8].[ext]',
-        },
-      },
+      type: 'asset/resource',
+      generator: {
+        filename: 'static/media/[name].[hash:8][ext]'
+      }
     });
     
     return config;
   },
   // Ensure public directory is copied to the output
   assetPrefix: process.env.NODE_ENV === 'production' ? undefined : undefined,
-  // Copy files from public directory to output
-  outputFileTracing: true,
   // Increase the buffer size for large assets
   experimental: {
     largePageDataBytes: 128 * 1000, // 128KB
