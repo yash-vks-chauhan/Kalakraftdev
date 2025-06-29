@@ -32,9 +32,25 @@ export default function ResponsiveProductsPage({
     }
   }, [])
 
-  // During SSR or before hydration, render a placeholder or the desktop version
+  // Show a loading state during SSR and initial client-side render
   if (!isClient) {
-    return null
+    return (
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: '100vh',
+        padding: '20px'
+      }}>
+        <div style={{
+          textAlign: 'center',
+          fontSize: '16px',
+          color: '#666'
+        }}>
+          Loading...
+        </div>
+      </div>
+    )
   }
 
   // After hydration, render the appropriate component based on screen size
