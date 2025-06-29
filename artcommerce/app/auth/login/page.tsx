@@ -38,7 +38,7 @@ export default function LoginPage() {
   }, [firebaseError]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    // Prevent default form submission behavior
+    // Always prevent default form submission behavior first thing
     e.preventDefault();
     e.stopPropagation();
     
@@ -48,39 +48,37 @@ export default function LoginPage() {
     // Validate fields individually
     if (!email.trim() && !password.trim()) {
       setError('Please enter both email and password');
-      return false;
+      return;
     }
     if (!email.trim()) {
       setError('Please enter your email');
-      return false;
+      return;
     }
     if (!password.trim()) {
       setError('Please enter your password');
-      return false;
+      return;
     }
 
     // Prevent double submission
     if (loading) {
-      return false;
+      return;
     }
 
     setIsLoading(true);
 
     try {
       await login(email, password);
-      // Reset form state but don't redirect - let useEffect handle that
+      // Only reset form state if login was successful
       setEmail('');
       setPassword('');
     } catch (err: any) {
+      // Keep the form values for correction
       console.error('LoginPage: Login error', err);
-      // Keep the error message from the server
       setError(err.message);
+      // Do not reset form state on error
     } finally {
       setIsLoading(false);
     }
-
-    // Prevent form submission
-    return false;
   };
 
   const handleGoogleLogin = async () => {
@@ -134,7 +132,11 @@ export default function LoginPage() {
         )}
 
         <form 
-          onSubmit={handleSubmit}
+          onSubmit={(e) => {
+            handleSubmit(e);
+            // Ensure the form doesn't submit normally
+            return false;
+          }}
           className={styles.form}
           noValidate
         >
@@ -148,7 +150,10 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => {
                 setEmail(e.target.value);
-                setError(''); // Clear error when user types
+                // Only clear error if it was an empty field error
+                if (error && (error.includes('enter your email') || error.includes('enter both'))) {
+                  setError('');
+                }
               }}
               className={`${styles.formInput} ${error && !email.trim() ? styles.inputError : ''}`}
               placeholder="Enter your email"
@@ -168,7 +173,10 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => {
                 setPassword(e.target.value);
-                setError(''); // Clear error when user types
+                // Only clear error if it was an empty field error
+                if (error && (error.includes('enter your password') || error.includes('enter both'))) {
+                  setError('');
+                }
               }}
               className={`${styles.formInput} ${error && !password.trim() ? styles.inputError : ''}`}
               placeholder="Enter your password"
@@ -185,6 +193,12 @@ export default function LoginPage() {
             type="submit"
             disabled={loading}
             className={styles.submitButton}
+            onClick={(e) => {
+              // Extra prevention of form submission
+              e.preventDefault();
+              handleSubmit(e as any);
+              return false;
+            }}
           >
             {loading ? 'Signing in...' : 'Sign in'}
           </button>

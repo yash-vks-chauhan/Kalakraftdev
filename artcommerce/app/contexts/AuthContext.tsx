@@ -211,11 +211,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       
       if (!res.ok) {
-        // Clear any existing auth state
-        setToken(null);
-        setUser(null);
-        localStorage.removeItem('token');
-        
         // Handle different error cases
         if (res.status === 401) {
           throw new Error('The email or password you entered is incorrect');
