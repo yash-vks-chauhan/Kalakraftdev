@@ -8,5 +8,9 @@
     "start": "cd artcommerce && npm run start",
     "install": "cd artcommerce && npm install",
     "postinstall": "cd artcommerce && npx prisma generate"
+  },
+  "dependencies": {
+    "cloudinary": "^2.7.0",
+    "sharp": "^0.34.2"
   }
-} 
+}
