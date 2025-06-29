@@ -1181,7 +1181,7 @@
   background-color: rgba(0, 0, 0, 0.05);
 }
 
-.mobileAccountLink svg {
+.linkIcon {
   width: 1.25rem;
   height: 1.25rem;
   color: #6b7280;
@@ -1208,7 +1208,7 @@
   background-color: rgba(239, 68, 68, 0.1);
 }
 
-.mobileSignOutButton svg {
+.signOutIcon {
   width: 1.25rem;
   height: 1.25rem;
   color: #EF4444;

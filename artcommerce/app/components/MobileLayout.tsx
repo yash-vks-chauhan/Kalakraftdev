@@ -648,15 +648,15 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
             </div>
             <div className={styles.mobileAccountLinks}>
               <Link href="/dashboard/profile" className={styles.mobileAccountLink}>
-                <UserCircleIcon />
+                <UserCircleIcon className={styles.linkIcon} />
                 Profile
               </Link>
               <Link href="/dashboard/orders" className={styles.mobileAccountLink}>
-                <ClipboardDocumentListIcon />
+                <ClipboardDocumentListIcon className={styles.linkIcon} />
                 Your Orders
               </Link>
               <button onClick={handleSignOut} className={styles.mobileSignOutButton}>
-                <ArrowRightOnRectangleIcon />
+                <ArrowRightOnRectangleIcon className={styles.signOutIcon} />
                 Sign out
               </button>
             </div>
