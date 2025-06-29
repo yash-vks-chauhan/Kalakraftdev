@@ -10,6 +10,7 @@ import { useMobileMenu } from './contexts/MobileMenuContext'
 import MobileMenuPanel from './components/MobileMenuPanel'
 import MobileLayout from './components/MobileLayout'
 import styles from './components/Navbar.module.css'
+import { isMobileDevice } from '../lib/utils'
 
 export default function AppRootClient({ children }: { children: React.ReactNode }) {
   const { isMobileMenuOpen, setIsMobileMenuOpen } = useMobileMenu();
@@ -28,10 +29,8 @@ export default function AppRootClient({ children }: { children: React.ReactNode 
         return;
       }
       
-      const userAgent = window.navigator.userAgent.toLowerCase();
-      const mobileRegex = /android|webos|iphone|ipad|ipod|blackberry|windows phone/i;
-      const isMobileWidth = window.innerWidth <= 768;
-      setIsMobile(mobileRegex.test(userAgent) || isMobileWidth);
+      // Use the utility function for mobile detection
+      setIsMobile(isMobileDevice());
       setIsSmallScreen(window.innerWidth <= 768);
     };
     
@@ -104,8 +103,13 @@ export default function AppRootClient({ children }: { children: React.ReactNode 
               onTouchEnd={handleTouchEnd}
             ></div>
 
-            {/* Mobile Menu Panel */}
-            <MobileMenuPanel />
+            {/* Mobile Menu Panel - Only used when in desktop mode but showing mobile menu */}
+            <MobileMenuPanel 
+              isOpen={isMobileMenuOpen}
+              onClose={() => setIsMobileMenuOpen(false)}
+              toggleViewMode={switchToMobileView}
+              viewMode="desktop"
+            />
             
             {/* Mobile View Switch Button (only show on small screens) */}
             {isSmallScreen && (

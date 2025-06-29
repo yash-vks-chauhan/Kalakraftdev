@@ -11,6 +11,7 @@ import { Search, Home, ShoppingBag, User, Menu, X, Heart, ShoppingCart, Monitor,
 import { useMobileMenu } from '../contexts/MobileMenuContext'
 import { getImageUrl } from '../../lib/cloudinaryImages'
 import styles from './MobileLayout.module.css'
+import MobileMenuPanel from './MobileMenuPanel'
 
 interface MobileLayoutProps {
   children: React.ReactNode
@@ -28,6 +29,9 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
   const [isScrolled, setIsScrolled] = useState(false)
   const [rotatingText, setRotatingText] = useState('coasters')
   const videoRef = useRef<HTMLVideoElement>(null)
+
+  // For handling the mobile/desktop view toggle
+  const [viewMode, setViewMode] = useState<'mobile' | 'desktop'>('mobile')
 
   // Product categories for the grid - expanded with more items
   const productCategories = [
@@ -299,28 +303,37 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
     return children;
   };
 
+  const toggleViewMode = () => {
+    const newMode = viewMode === 'mobile' ? 'desktop' : 'mobile'
+    setViewMode(newMode)
+    
+    if (newMode === 'desktop') {
+      onSwitchToDesktop()
+    }
+  }
+
   return (
     <div className={styles.mobileLayoutContainer}>
-      {/* Mobile Header - Updated to match image */}
+      {/* Mobile Header */}
       <header 
         className={`${styles.mobileHeader} ${isHomePage ? styles.homeMobileHeader : ''}`}
         data-scrolled={isScrolled ? 'true' : 'false'}
       >
-        {/* Left side - empty for balance */}
-        <div className={styles.headerSpacer}></div>
-        
-        {/* Center - Logo */}
+        {/* Left side - Logo */}
         <Link href="/" className={styles.logoContainer}>
           <Image
             src={getImageUrl('logo.png')}
             alt="Artcommerce Logo"
-            width={60}
-            height={17}
+            width={90}
+            height={28}
             priority
             style={{ objectFit: 'contain' }}
             className={styles.logo}
           />
         </Link>
+        
+        {/* Center - Empty spacer */}
+        <div className={styles.headerSpacer}></div>
         
         {/* Right side - Burger menu */}
         <button 
@@ -363,55 +376,21 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
         </Link>
       </footer>
       
-      {/* Mobile Side Menu - Slides from right */}
-      <div className={`${styles.mobileSideMenu} ${isMobileMenuOpen ? styles.mobileSideMenuOpen : ''}`}>
-        <div className={styles.sideMenuHeader}>
-          <button 
-            onClick={() => setIsMobileMenuOpen(false)}
-            className={styles.closeButton}
-            aria-label="Close menu"
-          >
-            <X size={24} />
-          </button>
-        </div>
-        
-        <div className={styles.sideMenuContent}>
-          <Link href="/" className={styles.sideMenuItem} onClick={() => setIsMobileMenuOpen(false)}>
-            <Home size={20} />
-            <span>Home</span>
-          </Link>
-          
-          <Link href="/products" className={styles.sideMenuItem} onClick={() => setIsMobileMenuOpen(false)}>
-            <ShoppingBag size={20} />
-            <span>Categories</span>
-          </Link>
-          
-          <Link href="/dashboard" className={styles.sideMenuItem} onClick={() => setIsMobileMenuOpen(false)}>
-            <User size={20} />
-            <span>Dashboard</span>
-          </Link>
-          
-          <button className={styles.sideMenuItem} onClick={() => {
-            setIsSearchOpen(true);
-            setIsMobileMenuOpen(false);
-          }}>
-            <Search size={20} />
-            <span>Search</span>
-          </button>
-          
-          <button className={styles.sideMenuItem} onClick={() => {
-            onSwitchToDesktop();
-            setIsMobileMenuOpen(false);
-          }}>
-            <Monitor size={20} />
-            <span>Desktop View</span>
-          </button>
-        </div>
-      </div>
+      {/* Mobile side menu panel */}
+      <MobileMenuPanel 
+        isOpen={isMobileMenuOpen}
+        onClose={() => setIsMobileMenuOpen(false)}
+        toggleViewMode={toggleViewMode}
+        viewMode={viewMode}
+      />
       
       {/* Overlay for when side menu is open */}
       {isMobileMenuOpen && (
-        <div className={styles.menuOverlay} onClick={() => setIsMobileMenuOpen(false)} />
+        <div 
+          className={styles.menuOverlay} 
+          onClick={() => setIsMobileMenuOpen(false)} 
+          aria-hidden="true"
+        />
       )}
       
       {/* Search Overlay */}

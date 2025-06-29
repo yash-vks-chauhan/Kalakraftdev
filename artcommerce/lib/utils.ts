@@ -1,16 +1,23 @@
 import React from 'react';
 
+/**
+ * Checks if the current device is a mobile device based on user agent
+ * @returns boolean - true if the current device is mobile
+ */
 export function isMobileDevice(): boolean {
-  if (typeof window === 'undefined') return false;
+  // Only run on client-side
+  if (typeof window === 'undefined') {
+    return false;
+  }
   
-  // Check if the user agent indicates a mobile device
+  // Check user agent for common mobile device identifiers
   const userAgent = window.navigator.userAgent.toLowerCase();
-  const mobileRegex = /android|webos|iphone|ipad|ipod|blackberry|windows phone/i;
   
-  // Check if the screen width is typical for mobile devices
-  const isMobileWidth = window.innerWidth <= 768;
-  
-  return mobileRegex.test(userAgent) || isMobileWidth;
+  return (
+    /android|webos|iphone|ipad|ipod|blackberry|windows phone/.test(userAgent) ||
+    // Additional check for mobile screen width
+    window.innerWidth < 768
+  );
 }
 
 export function useIsMobile(): boolean {
