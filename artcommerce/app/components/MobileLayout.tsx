@@ -90,9 +90,9 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
   useEffect(() => {
     let prevScrollY = window.scrollY
     let scrollDirection = 0
-    let consecutiveScrolls = 0
     let lastScrollTime = Date.now()
     let scrollVelocity = 0
+    let scrollTimer: NodeJS.Timeout | null = null
     
     const handleScroll = () => {
       const currentScrollY = window.scrollY
@@ -100,45 +100,48 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
       const timeDiff = currentTime - lastScrollTime
       
       // Calculate scroll velocity (pixels per millisecond)
-      scrollVelocity = Math.abs(currentScrollY - prevScrollY) / timeDiff
+      scrollVelocity = Math.abs(currentScrollY - prevScrollY) / Math.max(timeDiff, 1)
       
       // Header scroll effect
       setIsScrolled(currentScrollY > 10)
       
-      // Determine scroll direction
+      // Determine scroll direction (1 for down, -1 for up)
       const currentDirection = currentScrollY > prevScrollY ? 1 : -1
       
-      // If direction is the same as previous, increment counter
-      if (currentDirection === scrollDirection) {
-        consecutiveScrolls++
-      } else {
-        // Direction changed, reset counter
+      // Update scroll direction only if it changed
+      if (currentDirection !== scrollDirection) {
         scrollDirection = currentDirection
-        consecutiveScrolls = 1
       }
       
-      // Footer visibility based on scroll direction and velocity
-      if (currentScrollY < 100) {
+      // Clear any existing timer
+      if (scrollTimer) {
+        clearTimeout(scrollTimer)
+      }
+      
+      // Footer visibility logic
+      if (currentScrollY < 50) {
         // Always show footer when near the top
         setIsFooterVisible(true)
       } else if (
-        // Hide footer when:
-        (scrollDirection > 0 && // Scrolling down
-        consecutiveScrolls > 2 && // Consistent direction
-        scrollVelocity > 0.1) || // Fast enough scroll
-        currentScrollY > document.documentElement.scrollHeight - window.innerHeight - 100 // Near bottom
-      ) {
-        setIsFooterVisible(false)
-      } else if (
-        // Show footer when:
-        scrollDirection < 0 && // Scrolling up
-        consecutiveScrolls > 1 && // Consistent direction
+        scrollDirection > 0 && // Scrolling down
+        scrollVelocity > 0.3 && // Fast scroll
         currentScrollY > 100 // Not at the very top
       ) {
+        // Hide footer when scrolling down quickly
+        setIsFooterVisible(false)
+      } else if (scrollDirection < 0) { // Scrolling up
+        // Show footer immediately when scrolling up
         setIsFooterVisible(true)
       }
       
-      // Update previous values
+      // Set a timer to show footer after scrolling stops
+      scrollTimer = setTimeout(() => {
+        if (currentScrollY > 50) {
+          setIsFooterVisible(true)
+        }
+      }, 150) // Show after 150ms of no scrolling
+      
+      // Update values for next iteration
       prevScrollY = currentScrollY
       lastScrollTime = currentTime
       setLastScrollY(currentScrollY)
@@ -160,6 +163,9 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
     
     return () => {
       window.removeEventListener('scroll', throttledScroll)
+      if (scrollTimer) {
+        clearTimeout(scrollTimer)
+      }
     }
   }, [lastScrollY])
 
