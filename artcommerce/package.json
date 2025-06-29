@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3002",
-    "build": "npm install --platform=linux --arch=x64 sharp && prisma generate && next build",
+    "build": "npm install --platform=linux --arch=x64 sharp && npm install tailwindcss postcss autoprefixer && prisma generate && next build",
     "start": "next start -p 3002",
     "lint": "next lint"
   },
