@@ -225,6 +225,14 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
     }
   }
 
+  const handleCartClick = () => {
+    router.push('/dashboard/cart');
+    // Close mobile menu if it's open
+    if (isMobileMenuOpen) {
+      setIsMobileMenuOpen(false);
+    }
+  }
+
   const handleWishlistClick = () => {
     router.push('/dashboard/wishlist');
     // Close mobile menu if it's open
@@ -337,6 +345,12 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
       // Match /products and any subpaths like /products?category=clocks
       return pathname.startsWith('/products')
     }
+    if (path === '/dashboard/cart') {
+      return pathname.startsWith('/dashboard/cart')
+    }
+    if (path === '/dashboard/wishlist') {
+      return pathname.startsWith('/dashboard/wishlist')
+    }
     return pathname.startsWith(path)
   }
 
@@ -443,11 +457,11 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
           
           {/* Cart Icon */}
           <button 
-            onClick={handleProductsClick}
+            onClick={handleCartClick}
             className={styles.headerIconButton}
             aria-label="Cart"
           >
-            <ShoppingCart size={20} strokeWidth={2} />
+            <ShoppingCart size={20} />
             {cartItems.length > 0 && (
               <span className={styles.cartBadge}>{cartItems.length}</span>
             )}
@@ -485,8 +499,8 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
           <ShoppingBag size={20} />
           <span>Products</span>
         </Link>
-        <button 
-          onClick={handleWishlistClick} 
+        <Link 
+          href={user ? '/dashboard/wishlist' : '/auth/login'}
           className={`${styles.footerNavItem} ${isActivePath('/dashboard/wishlist') ? styles.active : ''}`}
         >
           <Heart size={20} />
@@ -494,7 +508,7 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
           {wishlistItems.length > 0 && (
             <span className={styles.badge}>{wishlistItems.length}</span>
           )}
-        </button>
+        </Link>
         <Link 
           href={user ? '/dashboard/profile' : '/auth/login'} 
           className={`${styles.footerNavItem} ${isActivePath('/dashboard/profile') || isActivePath('/auth/login') ? styles.active : ''}`}

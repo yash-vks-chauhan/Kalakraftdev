@@ -359,25 +359,26 @@
   cursor: pointer;
 }
 
-.footerNavItem::after {
+.footerNavItem::before {
   content: '';
   position: absolute;
-  bottom: -8px;
-  left: 25%;
-  width: 50%;
+  top: -1px;
+  left: 50%;
+  width: 0;
   height: 2px;
-  background-color: #111827;
-  transform: scaleX(0);
-  transition: transform 0.3s ease;
-  transform-origin: center;
+  background: linear-gradient(90deg, transparent, #111827, transparent);
+  transform: translateX(-50%);
+  transition: width 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  opacity: 0;
 }
 
 .footerNavItem.active {
   color: #111827;
 }
 
-.footerNavItem.active::after {
-  transform: scaleX(1);
+.footerNavItem.active::before {
+  width: 100%;
+  opacity: 1;
 }
 
 .footerNavItem span {
@@ -389,11 +390,11 @@
 }
 
 .footerNavItem svg {
-  transition: transform 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+  transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
 }
 
 .footerNavItem:active {
-  color: #000;
+  color: #111827;
 }
 
 .footerNavItem:active svg {
@@ -402,6 +403,11 @@
 
 .footerNavItem:active span {
   transform: translateY(-1px);
+}
+
+.footerNavItem.active svg {
+  transform: scale(1.1);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 }
 
 .badge {
