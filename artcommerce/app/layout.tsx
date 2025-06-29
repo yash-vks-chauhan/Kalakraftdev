@@ -34,6 +34,7 @@ export default function RootLayout({
             z-index: var(--cosmos-z-index);
           }
         `}</style>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
       </head>
       <MobileMenuProvider>
         <AppRootClient>{children}</AppRootClient>

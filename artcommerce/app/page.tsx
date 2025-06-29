@@ -13,9 +13,11 @@ import { ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react'
 import styles from './home.module.css'
 import { getImageUrl } from '../lib/cloudinaryImages'
 
-
-
-
+// Add this to detect mobile view
+const isMobileView = () => {
+  if (typeof window === 'undefined') return false;
+  return window.innerWidth <= 768;
+};
 
 export default function Home() {
 
@@ -419,7 +421,7 @@ return (
 
 <main data-page="home" style={{background: '#f8f8f8'}}>
 
-<section className="relative overflow-hidden">
+<section className={`relative overflow-hidden ${styles.desktopOnly}`}>
 
 <div className={styles.videoContainer}>
   {/* Video with fallback image */}

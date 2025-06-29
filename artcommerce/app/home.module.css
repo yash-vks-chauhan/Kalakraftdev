@@ -1578,3 +1578,14 @@
   opacity: 1;
   transform: translateY(0);
 }
+
+/* Desktop/Mobile visibility classes */
+.desktopOnly {
+  display: block;
+}
+
+@media (max-width: 768px) {
+  .desktopOnly {
+    display: none;
+  }
+}
