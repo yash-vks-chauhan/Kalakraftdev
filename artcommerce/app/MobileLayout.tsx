@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import MobileNavbar from './components/mobile/MobileNavbar'
 import MobileFooter from './components/mobile/MobileFooter'
+import ErrorBoundary from './components/ErrorBoundary'
 
 interface MobileLayoutProps {
   children: React.ReactNode
@@ -11,10 +12,12 @@ interface MobileLayoutProps {
 
 export default function MobileLayout({ children }: MobileLayoutProps) {
   const [isMobile, setIsMobile] = useState(false)
+  const [isClient, setIsClient] = useState(false)
   const pathname = usePathname()
 
-  // Detect mobile device on client side
+  // Handle client-side initialization
   useEffect(() => {
+    setIsClient(true)
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768)
     }
@@ -30,18 +33,43 @@ export default function MobileLayout({ children }: MobileLayoutProps) {
     }
   }, [])
 
+  // Show a loading state during SSR
+  if (!isClient) {
+    return (
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: '100vh',
+        backgroundColor: '#fff'
+      }}>
+        <div style={{
+          textAlign: 'center',
+          fontSize: '16px',
+          color: '#666'
+        }}>
+          Loading...
+        </div>
+      </div>
+    )
+  }
+
   // If not mobile, just render children without mobile-specific components
   if (!isMobile) {
-    return <>{children}</>
+    return <ErrorBoundary>{children}</ErrorBoundary>
   }
 
   return (
-    <div className="mobile-layout">
-      <MobileNavbar />
-      <main className="mobile-content">
-        {children}
-      </main>
-      <MobileFooter />
-    </div>
+    <ErrorBoundary>
+      <div className="mobile-layout">
+        <MobileNavbar />
+        <main className="mobile-content">
+          <ErrorBoundary>
+            {children}
+          </ErrorBoundary>
+        </main>
+        <MobileFooter />
+      </div>
+    </ErrorBoundary>
   )
 } 

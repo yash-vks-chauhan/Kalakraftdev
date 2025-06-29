@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import Navbar from './components/Navbar'
 import NotificationContainer from './components/NotificationContainer'
@@ -8,11 +8,18 @@ import AdminNotifications from './components/AdminNotifications'
 import Providers from './Providers'
 import { useMobileMenu } from './contexts/MobileMenuContext'
 import MobileMenuPanel from './components/MobileMenuPanel'
+import ErrorBoundary from './components/ErrorBoundary'
 import styles from './components/Navbar.module.css'
 
 export default function AppRootClient({ children }: { children: React.ReactNode }) {
   const { isMobileMenuOpen, setIsMobileMenuOpen } = useMobileMenu();
   const pathname = usePathname()
+  const [isClient, setIsClient] = useState(false)
+
+  // Handle client-side initialization
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
 
   // Scroll to top on route change
   useEffect(() => {
@@ -33,31 +40,58 @@ export default function AppRootClient({ children }: { children: React.ReactNode 
     }
   };
 
+  // Show a loading state during SSR
+  if (!isClient) {
+    return (
+      <body suppressHydrationWarning>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          minHeight: '100vh',
+          backgroundColor: '#fff'
+        }}>
+          <div style={{
+            textAlign: 'center',
+            fontSize: '16px',
+            color: '#666'
+          }}>
+            Loading...
+          </div>
+        </div>
+      </body>
+    )
+  }
+
   return (
     <body suppressHydrationWarning>
-      <Providers>
-        {/* New dedicated background blur layer, now inside Providers but sibling to content */}
-        {isMobileMenuOpen && <div className={`${styles.mobileBackgroundBlur} ${styles.active}`}></div>}
+      <ErrorBoundary>
+        <Providers>
+          {/* New dedicated background blur layer, now inside Providers but sibling to content */}
+          {isMobileMenuOpen && <div className={`${styles.mobileBackgroundBlur} ${styles.active}`}></div>}
 
-        {/* Main content wrapper - now correctly blurred */}
-        <div className={isMobileMenuOpen ? styles.mainContentBlurred : ''}>
-          <Navbar />
-          <NotificationContainer />
-          <AdminNotifications />
-          {children}
-        </div>
+          {/* Main content wrapper - now correctly blurred */}
+          <div className={isMobileMenuOpen ? styles.mainContentBlurred : ''}>
+            <Navbar />
+            <NotificationContainer />
+            <AdminNotifications />
+            <ErrorBoundary>
+              {children}
+            </ErrorBoundary>
+          </div>
 
-        {/* Mobile Menu Overlay - rendered as sibling to content */}
-        <div 
-          className={`${styles.mobileMenuOverlay} ${isMobileMenuOpen ? styles.active : ''}`}
-          onClick={() => setIsMobileMenuOpen(false)}
-          onTouchStart={handleTouchStart}
-          onTouchEnd={handleTouchEnd}
-        ></div>
+          {/* Mobile Menu Overlay - rendered as sibling to content */}
+          <div 
+            className={`${styles.mobileMenuOverlay} ${isMobileMenuOpen ? styles.active : ''}`}
+            onClick={() => setIsMobileMenuOpen(false)}
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+          ></div>
 
-        {/* Mobile Menu Panel - rendered as sibling to content */}
-        <MobileMenuPanel />
-      </Providers>
+          {/* Mobile Menu Panel - rendered as sibling to content */}
+          <MobileMenuPanel />
+        </Providers>
+      </ErrorBoundary>
     </body>
   );
 } 
