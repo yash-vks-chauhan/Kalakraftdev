@@ -21,32 +21,40 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (authUser) {
+      console.log('LoginPage: User authenticated, redirecting to home')
       router.push('/')
     }
   }, [authUser, router])
 
-  // Only set Firebase errors for social login errors
   useEffect(() => {
-    if (firebaseError && !email && !password) {
+    if (firebaseError) {
+      console.log('LoginPage: Firebase error received:', firebaseError)
       setError(firebaseError)
     }
-  }, [firebaseError, email, password])
+  }, [firebaseError])
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    console.log('LoginPage: Form submission started')
     
-    if (loading) return
+    if (loading) {
+      console.log('LoginPage: Already loading, preventing submission')
+      return
+    }
 
     // Validate fields
     if (!email.trim() && !password.trim()) {
+      console.log('LoginPage: Both fields empty')
       setError('Please enter both email and password')
       return
     }
     if (!email.trim()) {
+      console.log('LoginPage: Email empty')
       setError('Please enter your email')
       return
     }
     if (!password.trim()) {
+      console.log('LoginPage: Password empty')
       setError('Please enter your password')
       return
     }
@@ -55,8 +63,11 @@ export default function LoginPage() {
     setError('')
 
     try {
+      console.log('LoginPage: Attempting login')
       await login(email, password)
+      console.log('LoginPage: Login successful')
     } catch (err: any) {
+      console.error('LoginPage: Login error:', err)
       setError(err.message || 'Login failed. Please try again.')
     } finally {
       setIsLoading(false)
@@ -65,20 +76,26 @@ export default function LoginPage() {
 
   const handleGoogleLogin = async () => {
     if (loading) return
+    console.log('LoginPage: Starting Google login')
     setError('')
     try {
       await loginWithGoogle()
+      console.log('LoginPage: Google login initiated')
     } catch (err) {
+      console.error('LoginPage: Google login error:', err)
       // Firebase errors will be handled by the useEffect above
     }
   }
 
   const handleFacebookLogin = async () => {
     if (loading) return
+    console.log('LoginPage: Starting Facebook login')
     setError('')
     try {
       await loginWithFacebook()
+      console.log('LoginPage: Facebook login initiated')
     } catch (err) {
+      console.error('LoginPage: Facebook login error:', err)
       // Firebase errors will be handled by the useEffect above
     }
   }

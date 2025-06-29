@@ -11,156 +11,152 @@ import {
   signOut,
   GoogleAuthProvider,
   FacebookAuthProvider,
-  UserCredential,
+  User as FirebaseUser,
 } from "firebase/auth"
-import { auth } from "../firebase/client"
+import { getAuth } from "firebase/auth"
 import { useRouter } from 'next/navigation'
+import { initializeApp, getApps } from 'firebase/app'
 
-interface AuthContextType {
-  user: any | null
-  loading: boolean
-  loginWithGoogle: () => Promise<void>
-  loginWithFacebook: () => Promise<void>
-  signOut: () => Promise<void>
-  error: string | null
+// Initialize Firebase if not already initialized
+const firebaseConfig = {
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+if (!getApps().length) {
+  initializeApp(firebaseConfig)
+}
+
+const auth = getAuth()
+const googleProvider = new GoogleAuthProvider()
+const facebookProvider = new FacebookAuthProvider()
+
+// Configure providers
+googleProvider.setCustomParameters({
+  prompt: 'select_account',
+  // Add cross-origin isolation settings
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+})
+
+interface FirebaseAuthContextType {
+  user: FirebaseUser | null
+  loading: boolean
+  error: string | null
+  loginWithGoogle: () => Promise<void>
+  loginWithFacebook: () => Promise<void>
+  logout: () => Promise<void>
+}
+
+const FirebaseAuthContext = createContext<FirebaseAuthContextType | undefined>(undefined)
 
 export function FirebaseAuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<any | null>(null)
+  const [user, setUser] = useState<FirebaseUser | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
 
   useEffect(() => {
-    console.log('Setting up Firebase auth listener')
+    console.log('FirebaseAuthProvider: Setting up auth state listener')
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      console.log('Firebase auth state changed:', firebaseUser?.email)
+      console.log('FirebaseAuthProvider: Auth state changed', { 
+        isAuthenticated: !!firebaseUser,
+        email: firebaseUser?.email 
+      })
       
       if (firebaseUser) {
         try {
-          console.log('Getting Firebase ID token...')
+          // Get the ID token
           const idToken = await firebaseUser.getIdToken()
           
-          console.log('Sending token to backend...')
+          // Call your backend to set up the session
           const response = await fetch('/api/auth/firebase-login', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ idToken }),
+            body: JSON.stringify({ token: idToken }),
+            credentials: 'include', // Important for cookie handling
           })
 
-          const data = await response.json()
-          console.log('Backend response:', { ok: response.ok, data })
-
           if (!response.ok) {
-            throw new Error(data.message || 'Failed to authenticate with server')
+            console.error('FirebaseAuthProvider: Backend session setup failed')
+            throw new Error('Failed to set up session')
           }
 
-          console.log('Setting user state:', data.user)
-          setUser(data.user)
-          
-          console.log('Redirecting to home...')
+          console.log('FirebaseAuthProvider: Backend session established')
+          setUser(firebaseUser)
           router.push('/')
-        } catch (err: any) {
-          console.error('Firebase auth error:', err)
-          setError(err.message || 'Authentication failed')
+        } catch (err) {
+          console.error('FirebaseAuthProvider: Session setup error:', err)
+          setError('Failed to complete authentication')
           await signOut(auth)
-          setUser(null)
         }
       } else {
-        console.log('No Firebase user, clearing state')
         setUser(null)
       }
       setLoading(false)
     })
 
-    return () => {
-      console.log('Cleaning up Firebase auth listener')
-      unsubscribe()
-    }
+    return () => unsubscribe()
   }, [router])
 
-  const loginWithGoogle = async () => {
-    console.log('Starting Google login...')
-    setLoading(true)
-    setError(null)
+  const handleSocialLogin = async (provider: GoogleAuthProvider | FacebookAuthProvider) => {
     try {
-      const provider = new GoogleAuthProvider()
-      provider.setCustomParameters({
-        prompt: 'select_account'
+      setError(null)
+      setLoading(true)
+      console.log(`FirebaseAuthProvider: Starting ${provider instanceof GoogleAuthProvider ? 'Google' : 'Facebook'} login`)
+      
+      // Configure popup settings
+      const result = await signInWithPopup(auth, provider)
+      console.log('FirebaseAuthProvider: Social login successful', {
+        email: result.user.email
       })
-      console.log('Opening Google popup...')
-      const result = await signInWithPopup(auth, provider)
-      console.log('Google login successful:', result.user.email)
-      // Auth state change listener will handle the rest
-    } catch (error: any) {
-      console.error("Google login error:", error)
-      if (error.code === 'auth/popup-closed-by-user') {
-        setError('Login was cancelled')
-      } else if (error.code === 'auth/unauthorized-domain') {
-        setError('This domain is not authorized for login. Please add it in Firebase console.')
-      } else {
-        setError(error.message || 'Failed to sign in with Google')
-      }
+      
+      // The session setup will be handled by the onAuthStateChanged listener
+    } catch (err: any) {
+      console.error('FirebaseAuthProvider: Social login error:', err)
+      setError(err.message || 'Failed to authenticate')
       setLoading(false)
     }
   }
 
-  const loginWithFacebook = async () => {
-    console.log('Starting Facebook login...')
-    setLoading(true)
-    setError(null)
-    try {
-      const provider = new FacebookAuthProvider()
-      console.log('Opening Facebook popup...')
-      const result = await signInWithPopup(auth, provider)
-      console.log('Facebook login successful:', result.user.email)
-      // Auth state change listener will handle the rest
-    } catch (error: any) {
-      console.error("Facebook login error:", error)
-      if (error.code === 'auth/popup-closed-by-user') {
-        setError('Login was cancelled')
-      } else if (error.code === 'auth/unauthorized-domain') {
-        setError('This domain is not authorized for login. Please add it in Firebase console.')
-      } else {
-        setError(error.message || 'Failed to sign in with Facebook')
-      }
-      setLoading(false)
-    }
-  }
+  const loginWithGoogle = () => handleSocialLogin(googleProvider)
+  const loginWithFacebook = () => handleSocialLogin(facebookProvider)
 
-  const handleSignOut = async () => {
-    console.log('Signing out...')
+  const logout = async () => {
     try {
+      console.log('FirebaseAuthProvider: Starting logout')
       await signOut(auth)
-      setUser(null)
+      console.log('FirebaseAuthProvider: Logout successful')
       router.push('/auth/login')
-    } catch (error: any) {
-      setError(error.message || 'Failed to sign out')
+    } catch (err: any) {
+      console.error('FirebaseAuthProvider: Logout error:', err)
+      setError(err.message || 'Failed to logout')
     }
   }
 
   return (
-    <AuthContext.Provider
+    <FirebaseAuthContext.Provider
       value={{
         user,
         loading,
+        error,
         loginWithGoogle,
         loginWithFacebook,
-        signOut: handleSignOut,
-        error,
+        logout,
       }}
     >
       {children}
-    </AuthContext.Provider>
+    </FirebaseAuthContext.Provider>
   )
 }
 
 export function useFirebaseAuth() {
-  const context = useContext(AuthContext)
+  const context = useContext(FirebaseAuthContext)
   if (context === undefined) {
     throw new Error('useFirebaseAuth must be used within a FirebaseAuthProvider')
   }

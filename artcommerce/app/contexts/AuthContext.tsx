@@ -36,6 +36,7 @@ interface AuthContextType {
   error: string | null
   login: (email: string, password: string) => Promise<void>
   logout: () => Promise<void>
+  signup: (email: string, password: string, name: string) => Promise<void>
   clearError: () => void
 }
 
@@ -48,22 +49,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter()
 
   useEffect(() => {
-    console.log('AuthProvider: Checking auth status')
+    console.log('AuthProvider: Checking initial auth state')
     checkAuth()
   }, [])
 
   const checkAuth = async () => {
     try {
-      console.log('AuthProvider: Fetching user data')
+      console.log('AuthProvider: Fetching current user')
       const response = await fetch('/api/auth/me')
-      console.log('AuthProvider: /me response status:', response.status)
-      
       if (response.ok) {
-        const data = await response.json()
-        console.log('AuthProvider: User data received:', data)
-        setUser(data)
+        const userData = await response.json()
+        console.log('AuthProvider: User data received:', { hasData: !!userData })
+        setUser(userData)
       } else {
-        console.log('AuthProvider: No authenticated user')
+        console.log('AuthProvider: No authenticated user found')
         setUser(null)
       }
     } catch (err) {
@@ -75,12 +74,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const login = async (email: string, password: string) => {
-    console.log('AuthProvider: Starting login')
+    console.log('AuthProvider: Starting login process')
     setLoading(true)
     setError(null)
 
     try {
-      console.log('AuthProvider: Sending login request')
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
@@ -89,17 +87,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify({ email, password }),
       })
 
+      console.log('AuthProvider: Login response received:', { status: response.status })
       const data = await response.json()
-      console.log('AuthProvider: Login response:', { status: response.status, data })
 
       if (!response.ok) {
-        throw new Error(data.message || 'Login failed')
+        console.error('AuthProvider: Login failed:', data.message)
+        throw new Error(data.message || 'An error occurred during login')
       }
 
-      // Update user state with the response data
+      console.log('AuthProvider: Login successful, setting user data')
       setUser(data)
-      
-      console.log('AuthProvider: Login successful, redirecting')
       router.push('/')
     } catch (err: any) {
       console.error('AuthProvider: Login error:', err)
@@ -110,8 +107,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  const signup = async (email: string, password: string, name: string) => {
+    console.log('AuthProvider: Starting signup process')
+    setLoading(true)
+    setError(null)
+
+    try {
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password, name }),
+      })
+
+      console.log('AuthProvider: Signup response received:', { status: response.status })
+      const data = await response.json()
+
+      if (!response.ok) {
+        console.error('AuthProvider: Signup failed:', data.message)
+        throw new Error(data.message || 'An error occurred during signup')
+      }
+
+      console.log('AuthProvider: Signup successful, setting user data')
+      setUser(data)
+      router.push('/')
+    } catch (err: any) {
+      console.error('AuthProvider: Signup error:', err)
+      setError(err.message || 'An error occurred during signup')
+      throw err
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const logout = async () => {
-    console.log('AuthProvider: Starting logout')
+    console.log('AuthProvider: Starting logout process')
     setLoading(true)
     try {
       const response = await fetch('/api/auth/logout', {
@@ -119,36 +150,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       })
 
       if (!response.ok) {
+        console.error('AuthProvider: Logout failed')
         throw new Error('Logout failed')
       }
 
+      console.log('AuthProvider: Logout successful')
       setUser(null)
-      console.log('AuthProvider: Logout successful, redirecting')
       router.push('/auth/login')
     } catch (err: any) {
       console.error('AuthProvider: Logout error:', err)
-      setError(err.message)
+      setError(err.message || 'An error occurred during logout')
+      throw err
     } finally {
       setLoading(false)
     }
   }
 
-  const clearError = () => setError(null)
+  const clearError = () => {
+    setError(null)
+  }
 
-  return (
-    <AuthContext.Provider
-      value={{
-        user,
-        loading,
-        error,
-        login,
-        logout,
-        clearError,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
-  )
+  const value = {
+    user,
+    loading,
+    error,
+    login,
+    logout,
+    signup,
+    clearError,
+  }
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
 export function useAuth() {

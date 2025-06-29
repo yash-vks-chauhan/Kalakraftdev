@@ -3,6 +3,8 @@ import { getAuth } from 'firebase-admin/auth';
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import jwt from 'jsonwebtoken';
 import prisma from '@/lib/prisma';
+import { auth } from '@/lib/firebase-admin';
+import { sign } from 'jsonwebtoken';
 
 // Initialize Firebase Admin SDK if not already initialized
 if (!getApps().length) {
@@ -31,97 +33,89 @@ if (!JWT_SECRET) {
   console.error('JWT_SECRET environment variable is not set!');
 }
 
-export async function POST(req: NextRequest) {
-  console.log('Firebase login endpoint called');
+export async function POST(request: Request) {
+  console.log('POST /api/auth/firebase-login: Starting Firebase login process');
   try {
-    const { idToken } = await req.json();
+    const body = await request.json();
+    const { token } = body;
 
-    if (!idToken) {
-      console.log('No ID token provided');
-      return NextResponse.json({ message: 'ID token is required' }, { status: 400 });
-    }
-
-    console.log('Verifying Firebase ID token...');
-    // 1) Verify Firebase ID token
-    const decodedToken = await adminAuth.verifyIdToken(idToken);
-    
-    if (!decodedToken.email) {
-      console.log('No email associated with this account');
-      return NextResponse.json({ message: 'No email associated with this account' }, { status: 400 });
-    }
-
-    // 2) Look up or create user in DB
-    try {
-      // Test database connection first
-      await prisma.$queryRaw`SELECT 1`;
-      console.log('Database connection successful');
-      
-      let user = await prisma.user.findUnique({
-        where: { email: decodedToken.email },
-      });
-
-      if (!user) {
-        console.log('Creating new user in database for:', decodedToken.email);
-        try {
-          user = await prisma.user.create({
-            data: {
-              email: decodedToken.email,
-              name: decodedToken.name || decodedToken.email.split('@')[0],
-              role: 'user',
-            },
-          });
-          console.log('New user created:', user.id);
-        } catch (createError) {
-          console.error('Error creating user:', createError);
-          return NextResponse.json({ 
-            error: 'Failed to create user account', 
-            details: createError.message 
-          }, { status: 500 });
-        }
-      } else {
-        console.log('Existing user found:', user.id);
-      }
-
-      // 3) Create our custom JWT
-      const token = jwt.sign(
-        { userId: user.id, email: user.email, role: user.role },
-        JWT_SECRET,
-        { expiresIn: '7d' }
+    if (!token) {
+      console.log('POST /api/auth/firebase-login: No token provided');
+      return NextResponse.json(
+        { message: 'No token provided' },
+        { status: 400 }
       );
-      console.log('JWT created successfully');
-
-      // 4) Return response
-      const res = NextResponse.json({
-        user: {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role,
-        },
-      }, { status: 200 });
-
-      // Set auth cookie
-      res.cookies.set('auth-token', idToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        path: '/',
-        maxAge: 7 * 24 * 60 * 60, // 7 days
-      });
-      console.log('Login successful, returning response');
-
-      return res;
-    } catch (dbError) {
-      console.error('Database error:', dbError);
-      return NextResponse.json({ 
-        error: 'Database connection failed', 
-        details: dbError.message 
-      }, { status: 500 });
     }
+
+    console.log('POST /api/auth/firebase-login: Verifying Firebase token');
+    const decodedToken = await auth.verifyIdToken(token);
+    const { email, uid, name } = decodedToken;
+
+    console.log('POST /api/auth/firebase-login: Looking up or creating user');
+    // Find or create user in your database
+    let user = await prisma.user.findUnique({
+      where: { email: email?.toLowerCase() },
+    });
+
+    if (!user && email) {
+      console.log('POST /api/auth/firebase-login: Creating new user');
+      user = await prisma.user.create({
+        data: {
+          email: email.toLowerCase(),
+          firebaseUid: uid,
+          name: name || email.split('@')[0],
+          role: 'USER',
+        },
+      });
+    } else if (user && !user.firebaseUid) {
+      console.log('POST /api/auth/firebase-login: Linking existing user with Firebase');
+      user = await prisma.user.update({
+        where: { id: user.id },
+        data: { firebaseUid: uid },
+      });
+    }
+
+    if (!user) {
+      console.error('POST /api/auth/firebase-login: Failed to create/update user');
+      return NextResponse.json(
+        { message: 'Failed to create user' },
+        { status: 500 }
+      );
+    }
+
+    console.log('POST /api/auth/firebase-login: Creating session token');
+    // Create session token
+    const sessionToken = sign(
+      { userId: user.id },
+      process.env.JWT_SECRET || 'default-secret',
+      { expiresIn: '7d' }
+    );
+
+    // Create response
+    const response = NextResponse.json({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+    });
+
+    // Set cookie
+    console.log('POST /api/auth/firebase-login: Setting auth cookie');
+    response.cookies.set('auth-token', sessionToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 7 * 24 * 60 * 60, // 7 days
+    });
+
+    console.log('POST /api/auth/firebase-login: Login successful');
+    return response;
   } catch (error: any) {
-    console.error('Firebase login error:', error);
-    return NextResponse.json({ 
-      message: error.message || 'Authentication failed' 
-    }, { status: 401 });
+    console.error('POST /api/auth/firebase-login: Error during login:', error);
+    return NextResponse.json(
+      { message: error.message || 'Authentication failed' },
+      { status: 401 }
+    );
   }
 } 
