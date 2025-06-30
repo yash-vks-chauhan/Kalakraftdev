@@ -547,45 +547,43 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
             <span>Account</span>
           </button>
           
-          {isAccountDropdownOpen && (
-            <div className={styles.accountDropdown}>
-              {user?.fullName && (
-                <div className={styles.userInfo}>
-                  <div className={styles.userName}>{user.fullName}</div>
-                  {user.email && <div className={styles.userEmail}>{user.email}</div>}
-                </div>
-              )}
-              
-              <Link href="/dashboard/profile" className={styles.dropdownItem} onClick={() => setIsAccountDropdownOpen(false)}>
-                <User size={18} />
-                Profile
-              </Link>
-              <Link href="/dashboard" className={styles.dropdownItem} onClick={() => setIsAccountDropdownOpen(false)}>
-                <Grid size={18} />
-                Dashboard
-              </Link>
-              <Link href="/dashboard/orders" className={styles.dropdownItem} onClick={() => setIsAccountDropdownOpen(false)}>
-                <ShoppingBag size={18} />
-                Orders
-              </Link>
-              <Link href="/dashboard/support" className={styles.dropdownItem} onClick={() => setIsAccountDropdownOpen(false)}>
-                <HelpCircle size={18} />
-                Contact Support
-              </Link>
-              {user && (
-                <>
-                  <div className={styles.dropdownDivider} />
-                  <button
-                    onClick={handleLogout}
-                    className={styles.dropdownItem}
-                  >
-                    <LogOut size={18} />
-                    Sign out
-                  </button>
-                </>
-              )}
-            </div>
-          )}
+          <div className={`${styles.accountDropdown} ${isAccountDropdownOpen ? styles.accountDropdownOpen : ''}`}>
+            {user?.fullName && (
+              <div className={styles.userInfo}>
+                <div className={styles.userName}>{user.fullName}</div>
+                {user.email && <div className={styles.userEmail}>{user.email}</div>}
+              </div>
+            )}
+            
+            <Link href="/dashboard/profile" className={styles.dropdownItem} onClick={() => setIsAccountDropdownOpen(false)}>
+              <User size={18} />
+              Profile
+            </Link>
+            <Link href="/dashboard" className={styles.dropdownItem} onClick={() => setIsAccountDropdownOpen(false)}>
+              <Grid size={18} />
+              Dashboard
+            </Link>
+            <Link href="/dashboard/orders" className={styles.dropdownItem} onClick={() => setIsAccountDropdownOpen(false)}>
+              <ShoppingBag size={18} />
+              Orders
+            </Link>
+            <Link href="/dashboard/support" className={styles.dropdownItem} onClick={() => setIsAccountDropdownOpen(false)}>
+              <HelpCircle size={18} />
+              Contact Support
+            </Link>
+            {user && (
+              <>
+                <div className={styles.dropdownDivider} />
+                <button
+                  onClick={handleLogout}
+                  className={styles.dropdownItem}
+                >
+                  <LogOut size={18} />
+                  Sign out
+                </button>
+              </>
+            )}
+          </div>
         </div>
       </nav>
       
@@ -607,13 +605,11 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
       )}
       
       {/* Account dropdown backdrop */}
-      {isAccountDropdownOpen && (
-        <div 
-          className={styles.accountDropdownBackdrop} 
-          onClick={() => setIsAccountDropdownOpen(false)} 
-          aria-hidden="true"
-        />
-      )}
+      <div 
+        className={styles.accountDropdownBackdrop} 
+        onClick={() => setIsAccountDropdownOpen(false)} 
+        aria-hidden={isAccountDropdownOpen ? "false" : "true"}
+      />
       
       {/* Search Overlay */}
       {isSearchOpen && (

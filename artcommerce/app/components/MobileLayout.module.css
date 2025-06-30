@@ -1184,7 +1184,7 @@
 .accountDropdown {
   position: absolute;
   bottom: calc(100% + 10px);
-  left: 35%;
+  left: 20%;
   transform: translateX(-50%);
   width: 260px;
   background: rgba(255, 255, 255, 0.65);
@@ -1196,7 +1196,6 @@
     0 8px 32px rgba(0, 0, 0, 0.12),
     0 4px 16px rgba(255, 255, 255, 0.15),
     inset 0 0 60px rgba(255, 255, 255, 0.2);
-  animation: slideUp 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
   z-index: 1000;
   border: 1px solid rgba(255, 255, 255, 0.25);
   max-height: 80vh;
@@ -1206,6 +1205,18 @@
   transform-style: preserve-3d;
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
+  animation: none;
+  opacity: 0;
+  transform: translateX(-50%) translateY(10px);
+  transition: 
+    opacity 0.3s cubic-bezier(0.4, 0.0, 0.2, 1),
+    transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Account dropdown open state */
+.accountDropdownOpen {
+  opacity: 1 !important;
+  transform: translateX(-50%) translateY(0) !important;
 }
 
 .accountDropdown::before {
@@ -1232,10 +1243,21 @@
   background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(8px) saturate(180%);
   -webkit-backdrop-filter: blur(8px) saturate(180%);
+  opacity: 0;
+  visibility: hidden;
+  transition: 
+    opacity 0.3s cubic-bezier(0.4, 0.0, 0.2, 1),
+    backdrop-filter 0.3s cubic-bezier(0.4, 0.0, 0.2, 1),
+    visibility 0s linear 0.3s;
+}
+
+.accountDropdownBackdrop[aria-hidden="false"] {
   opacity: 1;
   visibility: visible;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  animation: fadeIn 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+  transition: 
+    opacity 0.3s cubic-bezier(0.4, 0.0, 0.2, 1),
+    backdrop-filter 0.3s cubic-bezier(0.4, 0.0, 0.2, 1),
+    visibility 0s linear;
 }
 
 /* User info in dropdown */
