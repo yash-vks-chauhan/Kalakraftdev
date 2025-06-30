@@ -261,6 +261,14 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
 
   const handleAccountClick = (e: React.MouseEvent) => {
     e.preventDefault();
+    
+    // Add subtle feedback animation when clicked
+    const target = e.currentTarget;
+    target.classList.add(styles.buttonPulse);
+    setTimeout(() => {
+      target.classList.remove(styles.buttonPulse);
+    }, 300);
+    
     setIsAccountDropdownOpen(!isAccountDropdownOpen);
   }
 
