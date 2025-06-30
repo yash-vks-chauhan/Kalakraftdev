@@ -12,7 +12,6 @@ import { useMobileMenu } from '../contexts/MobileMenuContext'
 import { getImageUrl } from '../../lib/cloudinaryImages'
 import styles from './MobileLayout.module.css'
 import MobileMenuPanel from './MobileMenuPanel'
-import { RiDashboardLine, RiShoppingBag3Line, RiHeartLine, RiLogoutBoxLine } from 'react-icons/ri'
 
 interface MobileLayoutProps {
   children: React.ReactNode
@@ -96,16 +95,9 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
         setIsAccountDropdownOpen(false)
       }
     }
-    
-    // Only add listener when dropdown is open
-    if (isAccountDropdownOpen) {
-      document.addEventListener('mousedown', handleClickOutside)
-    }
-    
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [isAccountDropdownOpen, accountDropdownRef])
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   // Reset account dropdown when auth state changes
   useEffect(() => {
@@ -268,19 +260,14 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
   }
 
   const handleAccountClick = (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setIsAccountDropdownOpen(prev => !prev)
+    e.preventDefault();
+    setIsAccountDropdownOpen(!isAccountDropdownOpen);
   }
 
   const handleLogout = async () => {
-    try {
-      await logout()
-      setIsAccountDropdownOpen(false)
-      router.push('/')
-    } catch (error) {
-      console.error('Logout failed:', error)
-    }
+    await logout();
+    setIsAccountDropdownOpen(false);
+    router.push('/');
   }
 
   const toggleSearch = () => {
@@ -365,111 +352,8 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
 
   // Mobile Collections Section component
   const MobileCollectionsSection = () => {
-    const [isDragging, setIsDragging] = useState(false)
-    const [startX, setStartX] = useState(0)
-    const [scrollLeft, setScrollLeft] = useState(0)
-    const carouselRef = useRef<HTMLDivElement>(null)
-
-    const handleMouseDown = (e: React.MouseEvent) => {
-      setIsDragging(true)
-      setStartX(e.pageX - (carouselRef.current?.offsetLeft || 0))
-      setScrollLeft(carouselRef.current?.scrollLeft || 0)
-    }
-
-    const handleMouseLeave = () => {
-      setIsDragging(false)
-    }
-
-    const handleMouseUp = () => {
-      setIsDragging(false)
-    }
-
-    const handleMouseMove = (e: React.MouseEvent) => {
-      if (!isDragging) return
-      e.preventDefault()
-      const x = e.pageX - (carouselRef.current?.offsetLeft || 0)
-      const walk = (x - startX) * 2
-      if (carouselRef.current) {
-        carouselRef.current.scrollLeft = scrollLeft - walk
-      }
-    }
-
-    const handleTouchStart = (e: React.TouchEvent) => {
-      setIsDragging(true)
-      setStartX(e.touches[0].pageX - (carouselRef.current?.offsetLeft || 0))
-      setScrollLeft(carouselRef.current?.scrollLeft || 0)
-    }
-
-    const handleTouchMove = (e: React.TouchEvent) => {
-      if (!isDragging) return
-      const x = e.touches[0].pageX - (carouselRef.current?.offsetLeft || 0)
-      const walk = (x - startX) * 2
-      if (carouselRef.current) {
-        carouselRef.current.scrollLeft = scrollLeft - walk
-      }
-    }
-
-    const handleTouchEnd = () => {
-      setIsDragging(false)
-    }
-
-    return (
-      <section className={styles.mobileCollectionsSection}>
-        <div className={styles.mobileSectionHeader}>
-          <div className={styles.mobileHeaderLine} />
-          <h2 className={styles.mobileSectionTitle}>Our Collections</h2>
-          <div className={styles.mobileHeaderLine} />
-        </div>
-
-        <div className={styles.mobileCollectionDescription}>
-          <p>Discover our handcrafted pieces, each telling a unique story through artistry and innovation</p>
-        </div>
-
-        <div className={styles.mobileCarouselContainer}>
-          <div
-            ref={carouselRef}
-            className={styles.mobileCarouselTrack}
-            onMouseDown={handleMouseDown}
-            onMouseLeave={handleMouseLeave}
-            onMouseUp={handleMouseUp}
-            onMouseMove={handleMouseMove}
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-          >
-            {productCategories.map((category, index) => (
-              <div key={index} className={styles.mobileProductCard}>
-                <div className={styles.mobileCardInner}>
-                  <Image
-                    src={category.image}
-                    alt={category.alt}
-                    className={styles.mobileProductImage}
-                    fill
-                    sizes="(max-width: 768px) 75vw, 33vw"
-                    priority={index < 2}
-                  />
-                  <div className={styles.mobileCategoryTitle}>
-                    {category.title}
-                  </div>
-                  <div className={styles.mobileCardOverlay}>
-                    <button className={styles.mobileViewButton}>
-                      View Collection
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className={styles.mobileCollectionFooter}>
-          <p>Explore our complete collection of handcrafted pieces</p>
-          <Link href="/products" className={styles.mobileExploreButton}>
-            View All Collections
-          </Link>
-        </div>
-      </section>
-    )
+    // This is the duplicate section we want to remove
+    return null; // Return null to not render anything
   }
 
   const toggleViewMode = () => {
@@ -500,7 +384,7 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
   }
 
   return (
-    <div className={styles.mobileLayoutContainer} data-dropdown-open={isAccountDropdownOpen}>
+    <div className={styles.mobileLayoutContainer}>
       {/* Home page specific content - Put at the top */}
       {isHomePage && (
         <div className={styles.curvedCardContainer}>
@@ -663,46 +547,44 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
             <span>Account</span>
           </button>
           
-          {/* Account Dropdown */}
-          {user && (
-            <>
-              <div 
-                className={`${styles.accountDropdownBackdrop}`}
-                aria-hidden={!isAccountDropdownOpen}
-                onClick={() => setIsAccountDropdownOpen(false)}
-              />
-              <div
-                ref={accountDropdownRef}
-                className={`${styles.accountDropdown} ${isAccountDropdownOpen ? styles.accountDropdownOpen : ''}`}
-              >
+          {isAccountDropdownOpen && (
+            <div className={styles.accountDropdown}>
+              {user?.fullName && (
                 <div className={styles.userInfo}>
-                  <div className={styles.userName}>{user.fullName || 'User'}</div>
-                  <div className={styles.userEmail}>{user.email}</div>
+                  <div className={styles.userName}>{user.fullName}</div>
+                  {user.email && <div className={styles.userEmail}>{user.email}</div>}
                 </div>
-                
-                <Link href="/dashboard" className={styles.dropdownItem} onClick={() => setIsAccountDropdownOpen(false)}>
-                  <RiDashboardLine size={20} />
-                  Dashboard
-                </Link>
-                
-                <Link href="/dashboard/orders" className={styles.dropdownItem} onClick={() => setIsAccountDropdownOpen(false)}>
-                  <RiShoppingBag3Line size={20} />
-                  Orders
-                </Link>
-                
-                <Link href="/dashboard/wishlist" className={styles.dropdownItem} onClick={() => setIsAccountDropdownOpen(false)}>
-                  <RiHeartLine size={20} />
-                  Wishlist
-                </Link>
-                
-                <div className={styles.dropdownDivider} />
-                
-                <button onClick={handleLogout} className={styles.dropdownItem}>
-                  <RiLogoutBoxLine size={20} />
-                  Sign Out
-                </button>
-              </div>
-            </>
+              )}
+              
+              <Link href="/dashboard/profile" className={styles.dropdownItem} onClick={() => setIsAccountDropdownOpen(false)}>
+                <User size={18} />
+                Profile
+              </Link>
+              <Link href="/dashboard" className={styles.dropdownItem} onClick={() => setIsAccountDropdownOpen(false)}>
+                <Grid size={18} />
+                Dashboard
+              </Link>
+              <Link href="/dashboard/orders" className={styles.dropdownItem} onClick={() => setIsAccountDropdownOpen(false)}>
+                <ShoppingBag size={18} />
+                Orders
+              </Link>
+              <Link href="/dashboard/support" className={styles.dropdownItem} onClick={() => setIsAccountDropdownOpen(false)}>
+                <HelpCircle size={18} />
+                Contact Support
+              </Link>
+              {user && (
+                <>
+                  <div className={styles.dropdownDivider} />
+                  <button
+                    onClick={handleLogout}
+                    className={styles.dropdownItem}
+                  >
+                    <LogOut size={18} />
+                    Sign out
+                  </button>
+                </>
+              )}
+            </div>
           )}
         </div>
       </nav>
@@ -720,6 +602,15 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
         <div 
           className={styles.menuOverlay} 
           onClick={() => setIsMobileMenuOpen(false)} 
+          aria-hidden="true"
+        />
+      )}
+      
+      {/* Account dropdown backdrop */}
+      {isAccountDropdownOpen && (
+        <div 
+          className={styles.accountDropdownBackdrop} 
+          onClick={() => setIsAccountDropdownOpen(false)} 
           aria-hidden="true"
         />
       )}
