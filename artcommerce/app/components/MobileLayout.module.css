@@ -1184,22 +1184,28 @@
 .accountDropdown {
   position: absolute;
   bottom: calc(100% + 10px);
-  left: 50%;
+  left: 35%;
   transform: translateX(-50%);
   width: 260px;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(30px) saturate(180%);
-  -webkit-backdrop-filter: blur(30px) saturate(180%);
-  border-radius: 12px;
-  padding: 16px 8px;
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(120px) saturate(150%);
+  -webkit-backdrop-filter: blur(120px) saturate(150%);
+  border-radius: 1rem;
+  padding: 0.75rem 0.5rem;
   box-shadow: 
-    0 8px 30px rgba(0, 0, 0, 0.12),
-    0 4px 8px rgba(0, 0, 0, 0.06);
+    0 8px 32px rgba(0, 0, 0, 0.12),
+    0 4px 16px rgba(255, 255, 255, 0.15),
+    inset 0 0 60px rgba(255, 255, 255, 0.2);
   animation: slideUp 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
   z-index: 1000;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.25);
   max-height: 80vh;
   overflow-y: auto;
+  will-change: transform, opacity, backdrop-filter;
+  -webkit-transform-style: preserve-3d;
+  transform-style: preserve-3d;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
 .accountDropdown::before {
@@ -1210,7 +1216,7 @@
   transform: translateX(-50%) rotate(45deg);
   width: 16px;
   height: 16px;
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.5);
   box-shadow: 4px 4px 7px -3px rgba(0, 0, 0, 0.1);
   border-radius: 2px;
   z-index: -1;
@@ -1223,9 +1229,12 @@
   width: 100%;
   height: 100%;
   z-index: 99;
-  background-color: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  opacity: 0;
+  visibility: visible;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   animation: fadeIn 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
 }
 
@@ -1252,12 +1261,12 @@
 .dropdownItem {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  color: rgba(0, 0, 0, 0.8);
-  font-size: 14px;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  color: rgba(0, 0, 0, 0.7);
+  font-size: 0.9375rem;
   text-decoration: none;
-  border-radius: 8px;
+  border-radius: 0.75rem;
   transition: all 0.2s ease;
   margin: 2px 0;
   width: 100%;
@@ -1265,10 +1274,15 @@
   background: none;
   border: none;
   cursor: pointer;
+  position: relative;
+  z-index: 1;
 }
 
 .dropdownItem:active {
-  background-color: rgba(0, 0, 0, 0.05);
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(80px) saturate(180%);
+  -webkit-backdrop-filter: blur(80px) saturate(180%);
+  color: rgba(0, 0, 0, 0.9);
 }
 
 /* Divider */
