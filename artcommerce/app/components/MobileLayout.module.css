@@ -4,6 +4,12 @@
   min-height: 100vh;
   width: 100%;
   position: relative;
+  transition: filter 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mobileLayoutContainer[data-dropdown-open="true"] {
+  filter: blur(8px);
+  pointer-events: none;
 }
 
 /* Mobile Header - Matching desktop navbar styling */
@@ -1171,7 +1177,8 @@
   transition: 
     opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1),
     transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-    visibility 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    visibility 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    backdrop-filter 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   will-change: transform, opacity, visibility, backdrop-filter;
   -webkit-transform-style: preserve-3d;
   transform-style: preserve-3d;
@@ -1211,7 +1218,10 @@
   -webkit-backdrop-filter: blur(16px) saturate(180%);
   opacity: 0;
   visibility: hidden;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: 
+    opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    visibility 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    backdrop-filter 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 999;
   pointer-events: none;
 }
@@ -1223,20 +1233,20 @@
 }
 
 .userInfo {
-  padding: 8px 12px;
-  margin-bottom: 6px;
+  padding: 1rem;
+  margin-bottom: 0.5rem;
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .userName {
   font-weight: 600;
-  font-size: 14px;
-  color: #000;
-  margin-bottom: 3px;
+  font-size: 0.9375rem;
+  color: rgba(0, 0, 0, 0.9);
+  margin-bottom: 0.25rem;
 }
 
 .userEmail {
-  font-size: 12px;
+  font-size: 0.875rem;
   color: rgba(0, 0, 0, 0.6);
 }
 
@@ -1268,49 +1278,16 @@
 
 .dropdownDivider {
   height: 1px;
-  background-color: rgba(0, 0, 0, 0.1);
-  margin: 8px 0;
+  background-color: rgba(0, 0, 0, 0.05);
+  margin: 0.5rem 0;
 }
 
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-    visibility: hidden;
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-    visibility: visible;
-  }
+/* Main content blur when dropdown is open */
+.mobileLayoutContainer {
+  transition: filter 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-@keyframes slideDown {
-  from {
-    opacity: 1;
-    transform: translateY(0);
-    visibility: visible;
-  }
-  to {
-    opacity: 0;
-    transform: translateY(10px);
-    visibility: hidden;
-  }
-}
-
-/* Button pulse animation for feedback */
-.buttonPulse {
-  animation: buttonPulse 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-@keyframes buttonPulse {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(0.95);
-  }
-  100% {
-    transform: scale(1);
-  }
+.mobileLayoutContainer[data-dropdown-open="true"] {
+  filter: blur(8px);
+  pointer-events: none;
 }

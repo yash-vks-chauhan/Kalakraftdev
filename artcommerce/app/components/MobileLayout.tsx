@@ -12,6 +12,7 @@ import { useMobileMenu } from '../contexts/MobileMenuContext'
 import { getImageUrl } from '../../lib/cloudinaryImages'
 import styles from './MobileLayout.module.css'
 import MobileMenuPanel from './MobileMenuPanel'
+import { RiDashboardLine, RiShoppingBag3Line, RiHeartLine, RiLogoutBoxLine } from 'react-icons/ri'
 
 interface MobileLayoutProps {
   children: React.ReactNode
@@ -499,7 +500,7 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
   }
 
   return (
-    <div className={styles.mobileLayoutContainer}>
+    <div className={styles.mobileLayoutContainer} data-dropdown-open={isAccountDropdownOpen}>
       {/* Home page specific content - Put at the top */}
       {isHomePage && (
         <div className={styles.curvedCardContainer}>
@@ -673,40 +674,32 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
               <div
                 ref={accountDropdownRef}
                 className={`${styles.accountDropdown} ${isAccountDropdownOpen ? styles.accountDropdownOpen : ''}`}
-                style={{ 
-                  animation: isAccountDropdownOpen ? `${styles.slideUp} 0.2s ease forwards` : 'none'
-                }}
               >
                 <div className={styles.userInfo}>
                   <div className={styles.userName}>{user.fullName || 'User'}</div>
                   <div className={styles.userEmail}>{user.email}</div>
                 </div>
                 
-                <Link href="/dashboard/profile" className={styles.dropdownItem} onClick={() => setIsAccountDropdownOpen(false)}>
-                  <User size={20} />
-                  Profile
-                </Link>
-                
                 <Link href="/dashboard" className={styles.dropdownItem} onClick={() => setIsAccountDropdownOpen(false)}>
-                  <Grid size={20} />
+                  <RiDashboardLine size={20} />
                   Dashboard
                 </Link>
                 
                 <Link href="/dashboard/orders" className={styles.dropdownItem} onClick={() => setIsAccountDropdownOpen(false)}>
-                  <ShoppingBag size={20} />
+                  <RiShoppingBag3Line size={20} />
                   Orders
                 </Link>
                 
-                <Link href="/support" className={styles.dropdownItem} onClick={() => setIsAccountDropdownOpen(false)}>
-                  <HelpCircle size={20} />
-                  Support
+                <Link href="/dashboard/wishlist" className={styles.dropdownItem} onClick={() => setIsAccountDropdownOpen(false)}>
+                  <RiHeartLine size={20} />
+                  Wishlist
                 </Link>
                 
                 <div className={styles.dropdownDivider} />
                 
                 <button onClick={handleLogout} className={styles.dropdownItem}>
-                  <LogOut size={20} />
-                  Sign out
+                  <RiLogoutBoxLine size={20} />
+                  Sign Out
                 </button>
               </div>
             </>
