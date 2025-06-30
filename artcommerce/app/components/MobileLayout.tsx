@@ -364,8 +364,111 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
 
   // Mobile Collections Section component
   const MobileCollectionsSection = () => {
-    // This is the duplicate section we want to remove
-    return null; // Return null to not render anything
+    const [isDragging, setIsDragging] = useState(false)
+    const [startX, setStartX] = useState(0)
+    const [scrollLeft, setScrollLeft] = useState(0)
+    const carouselRef = useRef<HTMLDivElement>(null)
+
+    const handleMouseDown = (e: React.MouseEvent) => {
+      setIsDragging(true)
+      setStartX(e.pageX - (carouselRef.current?.offsetLeft || 0))
+      setScrollLeft(carouselRef.current?.scrollLeft || 0)
+    }
+
+    const handleMouseLeave = () => {
+      setIsDragging(false)
+    }
+
+    const handleMouseUp = () => {
+      setIsDragging(false)
+    }
+
+    const handleMouseMove = (e: React.MouseEvent) => {
+      if (!isDragging) return
+      e.preventDefault()
+      const x = e.pageX - (carouselRef.current?.offsetLeft || 0)
+      const walk = (x - startX) * 2
+      if (carouselRef.current) {
+        carouselRef.current.scrollLeft = scrollLeft - walk
+      }
+    }
+
+    const handleTouchStart = (e: React.TouchEvent) => {
+      setIsDragging(true)
+      setStartX(e.touches[0].pageX - (carouselRef.current?.offsetLeft || 0))
+      setScrollLeft(carouselRef.current?.scrollLeft || 0)
+    }
+
+    const handleTouchMove = (e: React.TouchEvent) => {
+      if (!isDragging) return
+      const x = e.touches[0].pageX - (carouselRef.current?.offsetLeft || 0)
+      const walk = (x - startX) * 2
+      if (carouselRef.current) {
+        carouselRef.current.scrollLeft = scrollLeft - walk
+      }
+    }
+
+    const handleTouchEnd = () => {
+      setIsDragging(false)
+    }
+
+    return (
+      <section className={styles.mobileCollectionsSection}>
+        <div className={styles.mobileSectionHeader}>
+          <div className={styles.mobileHeaderLine} />
+          <h2 className={styles.mobileSectionTitle}>Our Collections</h2>
+          <div className={styles.mobileHeaderLine} />
+        </div>
+
+        <div className={styles.mobileCollectionDescription}>
+          <p>Discover our handcrafted pieces, each telling a unique story through artistry and innovation</p>
+        </div>
+
+        <div className={styles.mobileCarouselContainer}>
+          <div
+            ref={carouselRef}
+            className={styles.mobileCarouselTrack}
+            onMouseDown={handleMouseDown}
+            onMouseLeave={handleMouseLeave}
+            onMouseUp={handleMouseUp}
+            onMouseMove={handleMouseMove}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+          >
+            {productCategories.map((category, index) => (
+              <div key={index} className={styles.mobileProductCard}>
+                <div className={styles.mobileCardInner}>
+                  <Image
+                    src={category.image}
+                    alt={category.alt}
+                    className={styles.mobileProductImage}
+                    fill
+                    sizes="(max-width: 768px) 75vw, 33vw"
+                    priority={index < 2}
+                  />
+                  <div className={styles.mobileCategoryTitle}>
+                    {category.title}
+                  </div>
+                  <div className={styles.mobileCardOverlay}>
+                    <button className={styles.mobileViewButton}>
+                      View Collection
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className={styles.mobileCollectionFooter}>
+          <p>Explore our complete collection of handcrafted pieces</p>
+          <Link href="/products" className={styles.mobileExploreButton}>
+            View All Collections
+          </Link>
+        </div>
+      </section>
+    )
   }
 
   const toggleViewMode = () => {
