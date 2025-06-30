@@ -267,22 +267,19 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
   }
 
   const handleAccountClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    
-    // Add subtle feedback animation when clicked
-    const target = e.currentTarget;
-    target.classList.add(styles.buttonPulse);
-    setTimeout(() => {
-      target.classList.remove(styles.buttonPulse);
-    }, 300);
-    
-    setIsAccountDropdownOpen(prev => !prev);
+    e.preventDefault()
+    e.stopPropagation()
+    setIsAccountDropdownOpen(prev => !prev)
   }
 
   const handleLogout = async () => {
-    await logout();
-    setIsAccountDropdownOpen(false);
-    router.push('/');
+    try {
+      await logout()
+      setIsAccountDropdownOpen(false)
+      router.push('/')
+    } catch (error) {
+      console.error('Logout failed:', error)
+    }
   }
 
   const toggleSearch = () => {
@@ -562,43 +559,55 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
             <span>Account</span>
           </button>
           
-          <div className={`${styles.accountDropdown} ${isAccountDropdownOpen ? styles.accountDropdownOpen : ''}`}>
-            {user?.fullName && (
-              <div className={styles.userInfo}>
-                <div className={styles.userName}>{user.fullName}</div>
-                {user.email && <div className={styles.userEmail}>{user.email}</div>}
-              </div>
-            )}
-            
-            <Link href="/dashboard/profile" className={styles.dropdownItem} onClick={() => setIsAccountDropdownOpen(false)}>
-              <User size={18} />
-              Profile
-            </Link>
-            <Link href="/dashboard" className={styles.dropdownItem} onClick={() => setIsAccountDropdownOpen(false)}>
-              <Grid size={18} />
-              Dashboard
-            </Link>
-            <Link href="/dashboard/orders" className={styles.dropdownItem} onClick={() => setIsAccountDropdownOpen(false)}>
-              <ShoppingBag size={18} />
-              Orders
-            </Link>
-            <Link href="/dashboard/support" className={styles.dropdownItem} onClick={() => setIsAccountDropdownOpen(false)}>
-              <HelpCircle size={18} />
-              Contact Support
-            </Link>
-            {user && (
-              <>
+          {/* Account Dropdown */}
+          {user && (
+            <>
+              <div 
+                className={`${styles.accountDropdownBackdrop}`}
+                aria-hidden={!isAccountDropdownOpen}
+                onClick={() => setIsAccountDropdownOpen(false)}
+              />
+              <div
+                ref={accountDropdownRef}
+                className={`${styles.accountDropdown} ${isAccountDropdownOpen ? styles.accountDropdownOpen : ''}`}
+                style={{ 
+                  animation: isAccountDropdownOpen ? `${styles.slideUp} 0.2s ease forwards` : 'none'
+                }}
+              >
+                <div className={styles.userInfo}>
+                  <div className={styles.userName}>{user.fullName || 'User'}</div>
+                  <div className={styles.userEmail}>{user.email}</div>
+                </div>
+                
+                <Link href="/dashboard/profile" className={styles.dropdownItem} onClick={() => setIsAccountDropdownOpen(false)}>
+                  <User size={20} />
+                  Profile
+                </Link>
+                
+                <Link href="/dashboard" className={styles.dropdownItem} onClick={() => setIsAccountDropdownOpen(false)}>
+                  <Grid size={20} />
+                  Dashboard
+                </Link>
+                
+                <Link href="/dashboard/orders" className={styles.dropdownItem} onClick={() => setIsAccountDropdownOpen(false)}>
+                  <ShoppingBag size={20} />
+                  Orders
+                </Link>
+                
+                <Link href="/support" className={styles.dropdownItem} onClick={() => setIsAccountDropdownOpen(false)}>
+                  <HelpCircle size={20} />
+                  Support
+                </Link>
+                
                 <div className={styles.dropdownDivider} />
-                <button
-                  onClick={handleLogout}
-                  className={styles.dropdownItem}
-                >
-                  <LogOut size={18} />
+                
+                <button onClick={handleLogout} className={styles.dropdownItem}>
+                  <LogOut size={20} />
                   Sign out
                 </button>
-              </>
-            )}
-          </div>
+              </div>
+            </>
+          )}
         </div>
       </nav>
       
@@ -618,13 +627,6 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
           aria-hidden="true"
         />
       )}
-      
-      {/* Account dropdown backdrop */}
-      <div 
-        className={styles.accountDropdownBackdrop} 
-        onClick={() => setIsAccountDropdownOpen(false)} 
-        aria-hidden={isAccountDropdownOpen ? "false" : "true"}
-      />
       
       {/* Search Overlay */}
       {isSearchOpen && (

@@ -1182,143 +1182,98 @@
 
 /* Account Dropdown */
 .accountDropdown {
-  position: absolute;
-  bottom: calc(100% + 8px);
-  left: 15%;
-  transform: translateX(-50%);
-  width: 220px;
-  background: rgba(255, 255, 255, 0.65);
-  backdrop-filter: blur(25px) saturate(180%);
-  -webkit-backdrop-filter: blur(25px) saturate(180%);
-  border-radius: 0.75rem;
-  padding: 0.6rem 0.4rem;
-  box-shadow: 
-    0 8px 24px rgba(0, 0, 0, 0.12),
-    0 4px 8px rgba(255, 255, 255, 0.15),
-    inset 0 0 40px rgba(255, 255, 255, 0.2);
-  z-index: 1000;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  max-height: 70vh;
-  overflow-y: auto;
-  will-change: transform, opacity, backdrop-filter;
-  -webkit-transform-style: preserve-3d;
-  transform-style: preserve-3d;
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
+  position: fixed;
+  bottom: 70px;
+  right: 16px;
+  width: 280px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(8px) saturate(180%);
+  -webkit-backdrop-filter: blur(8px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 100;
   opacity: 0;
-  visibility: hidden;
-  transform: translateX(-50%) translateY(10px);
-  transition: 
-    opacity 0.25s ease-out, 
-    transform 0.25s ease-out,
-    visibility 0s linear 0.25s;
+  transform: translateY(20px);
   pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
-/* Account dropdown open state */
 .accountDropdownOpen {
   opacity: 1;
-  visibility: visible;
-  transform: translateX(-50%) translateY(0);
-  transition: 
-    opacity 0.25s ease-out, 
-    transform 0.25s ease-out,
-    visibility 0s linear;
+  transform: translateY(0);
   pointer-events: auto;
 }
 
-/* Account dropdown arrow */
 .accountDropdown::before {
   content: '';
   position: absolute;
-  bottom: -6px;
-  left: 30%;
-  transform: translateX(-50%) rotate(45deg);
-  width: 12px;
-  height: 12px;
-  background: rgba(255, 255, 255, 0.65);
-  box-shadow: 4px 4px 7px -3px rgba(0, 0, 0, 0.1);
-  border-radius: 2px;
-  z-index: -1;
+  bottom: -8px;
+  right: 24px;
+  width: 16px;
+  height: 16px;
+  background: inherit;
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  transform: rotate(45deg);
+  backdrop-filter: blur(8px) saturate(180%);
+  -webkit-backdrop-filter: blur(8px) saturate(180%);
 }
 
 .accountDropdownBackdrop {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 99;
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(8px) saturate(180%);
-  -webkit-backdrop-filter: blur(8px) saturate(180%);
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
   opacity: 0;
-  visibility: hidden;
-  transition: 
-    opacity 0.25s ease-out,
-    backdrop-filter 0.25s ease-out,
-    visibility 0s linear 0.25s;
   pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 99;
 }
 
 .accountDropdownBackdrop[aria-hidden="false"] {
   opacity: 1;
-  visibility: visible;
-  transition: 
-    opacity 0.25s ease-out,
-    backdrop-filter 0.25s ease-out,
-    visibility 0s linear;
   pointer-events: auto;
 }
 
-/* User info in dropdown */
 .userInfo {
-  padding: 8px 12px;
-  margin-bottom: 6px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .userName {
+  font-size: 1rem;
   font-weight: 600;
-  font-size: 14px;
   color: #000;
-  margin-bottom: 3px;
+  margin-bottom: 4px;
 }
 
 .userEmail {
-  font-size: 12px;
+  font-size: 0.875rem;
   color: rgba(0, 0, 0, 0.6);
 }
 
-/* Account dropdown items */
 .dropdownItem {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  padding: 0.6rem 0.8rem;
-  color: rgba(0, 0, 0, 0.7);
-  font-size: 0.875rem;
+  gap: 12px;
+  padding: 12px;
+  color: #000;
   text-decoration: none;
-  border-radius: 0.6rem;
-  transition: all 0.2s ease;
-  margin: 1px 0;
-  width: 100%;
-  text-align: left;
-  background: none;
-  border: none;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+  font-size: 0.9375rem;
   cursor: pointer;
-  position: relative;
-  z-index: 1;
 }
 
 .dropdownItem:active {
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(15px) saturate(180%);
-  -webkit-backdrop-filter: blur(15px) saturate(180%);
-  color: rgba(0, 0, 0, 0.9);
+  background-color: rgba(0, 0, 0, 0.05);
 }
 
-/* Divider */
 .dropdownDivider {
   height: 1px;
   background-color: rgba(0, 0, 0, 0.1);
@@ -1328,12 +1283,28 @@
 @keyframes slideUp {
   from {
     opacity: 0;
-    transform: translateX(-50%) translateY(10px);
+    transform: translateY(20px);
   }
   to {
     opacity: 1;
-    transform: translateX(-50%) translateY(0);
+    transform: translateY(0);
   }
+}
+
+.footerNavItem.active::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  background-color: currentColor;
+  border-radius: 50%;
+}
+
+.footerNavItem.active svg {
+  transform: scale(1.1);
 }
 
 /* Button pulse animation for feedback */
