@@ -1184,8 +1184,8 @@
 .accountDropdown {
   position: absolute;
   bottom: calc(100% + 8px);
-  left: 15%;
-  transform: translateX(-50%);
+  left: -20px;
+  transform: translateX(0);
   width: 220px;
   background: rgba(255, 255, 255, 0.65);
   backdrop-filter: blur(25px) saturate(180%);
@@ -1207,7 +1207,7 @@
   backface-visibility: hidden;
   opacity: 0;
   visibility: hidden;
-  transform: translateX(-50%) translateY(10px);
+  transform: translateY(10px);
   transition: 
     opacity 0.25s ease-out, 
     transform 0.25s ease-out,
@@ -1219,7 +1219,7 @@
 .accountDropdownOpen {
   opacity: 1;
   visibility: visible;
-  transform: translateX(-50%) translateY(0);
+  transform: translateY(0);
   transition: 
     opacity 0.25s ease-out, 
     transform 0.25s ease-out,
@@ -1232,7 +1232,7 @@
   content: '';
   position: absolute;
   bottom: -6px;
-  left: 30%;
+  left: 50px;
   transform: translateX(-50%) rotate(45deg);
   width: 12px;
   height: 12px;
