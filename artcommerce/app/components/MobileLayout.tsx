@@ -95,9 +95,16 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
         setIsAccountDropdownOpen(false)
       }
     }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+    
+    // Only add listener when dropdown is open
+    if (isAccountDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+    
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isAccountDropdownOpen, accountDropdownRef])
 
   // Reset account dropdown when auth state changes
   useEffect(() => {
@@ -269,7 +276,7 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
       target.classList.remove(styles.buttonPulse);
     }, 300);
     
-    setIsAccountDropdownOpen(!isAccountDropdownOpen);
+    setIsAccountDropdownOpen(prev => !prev);
   }
 
   const handleLogout = async () => {
