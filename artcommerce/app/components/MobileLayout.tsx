@@ -7,7 +7,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '../contexts/AuthContext'
 import { useCart } from '../contexts/CartContext'
 import { useWishlist } from '../contexts/WishlistContext'
-import { Search, Home, ShoppingBag, User, Menu, X, Heart, ShoppingCart, Monitor, ChevronDown } from 'lucide-react'
+import { Search, Home, ShoppingBag, User, Menu, X, Heart, ShoppingCart, Monitor, ChevronDown, Grid, HelpCircle, LogOut } from 'lucide-react'
 import { useMobileMenu } from '../contexts/MobileMenuContext'
 import { getImageUrl } from '../../lib/cloudinaryImages'
 import styles from './MobileLayout.module.css'
@@ -19,7 +19,7 @@ interface MobileLayoutProps {
 }
 
 export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayoutProps) {
-  const { user } = useAuth()
+  const { user, logout } = useAuth()
   const { cartItems } = useCart()
   const { wishlistItems } = useWishlist()
   const { isMobileMenuOpen, setIsMobileMenuOpen } = useMobileMenu()
@@ -35,6 +35,8 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
   const [rotatingText, setRotatingText] = useState('coasters')
   const videoRef = useRef<HTMLVideoElement>(null)
   const router = useRouter()
+  const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false)
+  const accountDropdownRef = useRef<HTMLDivElement>(null)
 
   // For handling the mobile/desktop view toggle
   const [viewMode, setViewMode] = useState<'mobile' | 'desktop'>('mobile')
@@ -85,6 +87,22 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
 
   // For rotating text in the hero section
   const textOptions = ['coasters', 'clocks', 'trays', 'wall art', 'home decor']
+
+  // Close account dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (accountDropdownRef.current && !accountDropdownRef.current.contains(event.target as Node)) {
+        setIsAccountDropdownOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  // Reset account dropdown when auth state changes
+  useEffect(() => {
+    setIsAccountDropdownOpen(false)
+  }, [user])
 
   // Add scroll event listener for header and footer
   useEffect(() => {
@@ -239,6 +257,17 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
     if (isMobileMenuOpen) {
       setIsMobileMenuOpen(false);
     }
+  }
+
+  const handleAccountClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsAccountDropdownOpen(!isAccountDropdownOpen);
+  }
+
+  const handleLogout = async () => {
+    await logout();
+    setIsAccountDropdownOpen(false);
+    router.push('/');
   }
 
   const toggleSearch = () => {
@@ -509,13 +538,55 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
             <span className={styles.badge}>{wishlistItems.length}</span>
           )}
         </Link>
-        <Link 
-          href={user ? '/dashboard/profile' : '/auth/login'} 
-          className={`${styles.footerNavItem} ${isActivePath('/dashboard/profile') || isActivePath('/auth/login') ? styles.active : ''}`}
-        >
-          <User size={20} />
-          <span>Account</span>
-        </Link>
+        <div className={styles.footerNavItemContainer} ref={accountDropdownRef}>
+          <button 
+            onClick={handleAccountClick}
+            className={`${styles.footerNavItem} ${isActivePath('/dashboard/profile') || isActivePath('/auth/login') ? styles.active : ''}`}
+          >
+            <User size={20} />
+            <span>Account</span>
+          </button>
+          
+          {isAccountDropdownOpen && (
+            <div className={styles.accountDropdown}>
+              {user?.fullName && (
+                <div className={styles.userInfo}>
+                  <div className={styles.userName}>{user.fullName}</div>
+                  {user.email && <div className={styles.userEmail}>{user.email}</div>}
+                </div>
+              )}
+              
+              <Link href="/dashboard/profile" className={styles.dropdownItem} onClick={() => setIsAccountDropdownOpen(false)}>
+                <User size={18} />
+                Profile
+              </Link>
+              <Link href="/dashboard" className={styles.dropdownItem} onClick={() => setIsAccountDropdownOpen(false)}>
+                <Grid size={18} />
+                Dashboard
+              </Link>
+              <Link href="/dashboard/orders" className={styles.dropdownItem} onClick={() => setIsAccountDropdownOpen(false)}>
+                <ShoppingBag size={18} />
+                Orders
+              </Link>
+              <Link href="/dashboard/support" className={styles.dropdownItem} onClick={() => setIsAccountDropdownOpen(false)}>
+                <HelpCircle size={18} />
+                Contact Support
+              </Link>
+              {user && (
+                <>
+                  <div className={styles.dropdownDivider} />
+                  <button
+                    onClick={handleLogout}
+                    className={styles.dropdownItem}
+                  >
+                    <LogOut size={18} />
+                    Sign out
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+        </div>
       </nav>
       
       {/* Mobile side menu panel */}
@@ -531,6 +602,15 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
         <div 
           className={styles.menuOverlay} 
           onClick={() => setIsMobileMenuOpen(false)} 
+          aria-hidden="true"
+        />
+      )}
+      
+      {/* Account dropdown backdrop */}
+      {isAccountDropdownOpen && (
+        <div 
+          className={styles.accountDropdownBackdrop} 
+          onClick={() => setIsAccountDropdownOpen(false)} 
           aria-hidden="true"
         />
       )}

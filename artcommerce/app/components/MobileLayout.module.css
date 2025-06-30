@@ -342,6 +342,15 @@
   transform: translateY(100%);
 }
 
+/* Footer nav item container for dropdown */
+.footerNavItemContainer {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+
 .footerNavItem {
   position: relative;
   display: flex;
@@ -357,6 +366,7 @@
   background: none;
   border: none;
   cursor: pointer;
+  width: 100%;
 }
 
 .footerNavItem::before {
@@ -1168,4 +1178,113 @@
   object-fit: cover;
   z-index: 1;
   opacity: 0.85;
+}
+
+/* Account Dropdown */
+.accountDropdown {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 260px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(30px) saturate(180%);
+  -webkit-backdrop-filter: blur(30px) saturate(180%);
+  border-radius: 12px;
+  padding: 16px 8px;
+  box-shadow: 
+    0 8px 30px rgba(0, 0, 0, 0.12),
+    0 4px 8px rgba(0, 0, 0, 0.06);
+  animation: slideUp 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  z-index: 1000;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.accountDropdown::before {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 16px;
+  height: 16px;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 4px 4px 7px -3px rgba(0, 0, 0, 0.1);
+  border-radius: 2px;
+  z-index: -1;
+}
+
+.accountDropdownBackdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 99;
+  background-color: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  animation: fadeIn 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+/* User info in dropdown */
+.userInfo {
+  padding: 12px 16px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.userName {
+  font-weight: 600;
+  font-size: 16px;
+  color: #000;
+  margin-bottom: 4px;
+}
+
+.userEmail {
+  font-size: 13px;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+/* Account dropdown items */
+.dropdownItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  color: rgba(0, 0, 0, 0.8);
+  font-size: 14px;
+  text-decoration: none;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  margin: 2px 0;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.dropdownItem:active {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Divider */
+.dropdownDivider {
+  height: 1px;
+  background-color: rgba(0, 0, 0, 0.1);
+  margin: 8px 0;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
 }
