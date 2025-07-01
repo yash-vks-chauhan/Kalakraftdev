@@ -4,6 +4,12 @@
   min-height: 100vh;
   width: 100%;
   position: relative;
+  transition: filter 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mobileLayoutContainer[data-dropdown-open="true"] {
+  filter: blur(8px);
+  pointer-events: none;
 }
 
 /* Mobile Header - Matching desktop navbar styling */
@@ -322,7 +328,7 @@
   justify-content: space-around;
   align-items: center;
   border-top: 1px solid rgba(255, 255, 255, 0.3);
-  z-index: 100;
+  z-index: 1001;
   transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
   box-shadow: 
     0 -4px 15px rgba(0, 0, 0, 0.08),
@@ -360,64 +366,69 @@
   padding: 8px;
   flex: 1;
   text-decoration: none;
-  color: rgba(0, 0, 0, 0.7);
+  color: rgba(0, 0, 0, 0.5);
   font-size: 11px;
   transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
   background: none;
   border: none;
   cursor: pointer;
   width: 100%;
-}
-
-.footerNavItem::before {
-  content: '';
-  position: absolute;
-  top: -1px;
-  left: 50%;
-  width: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, #111827, transparent);
-  transform: translateX(-50%);
-  transition: width 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
-  opacity: 0;
-}
-
-.footerNavItem.active {
-  color: #111827;
-}
-
-.footerNavItem.active::before {
-  width: 100%;
-  opacity: 1;
+  gap: 4px;
 }
 
 .footerNavItem span {
-  margin-top: 4px;
   font-weight: 500;
   letter-spacing: 0.02em;
   transform: translateY(0);
-  transition: transform 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+  transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+  opacity: 0.7;
 }
 
 .footerNavItem svg {
   transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+  opacity: 0.7;
 }
 
-.footerNavItem:active {
-  color: #111827;
+.footerNavItem.active {
+  color: #000;
 }
 
-.footerNavItem:active svg {
-  transform: translateY(-2px) scale(1.1);
-}
-
-.footerNavItem:active span {
-  transform: translateY(-1px);
+.footerNavItem.active span {
+  opacity: 1;
+  transform: translateY(-2px);
 }
 
 .footerNavItem.active svg {
-  transform: scale(1.1);
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+  transform: translateY(-2px);
+  opacity: 1;
+}
+
+.footerNavItem:active {
+  transform: scale(0.95);
+}
+
+/* Remove the dot indicator */
+.footerNavItem::before {
+  display: none;
+}
+
+/* Add a subtle line indicator for active state */
+.footerNavItemContainer::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 20px;
+  height: 2px;
+  background: #000;
+  transform: translateX(-50%) scaleX(0);
+  transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  opacity: 0;
+}
+
+.footerNavItemContainer:has(.active)::after {
+  transform: translateX(-50%) scaleX(1);
+  opacity: 1;
 }
 
 .badge {
@@ -583,154 +594,110 @@
 
 /* Mobile Collections Section Styles - Used by main collections section */
 .mobileCollectionsSection {
-  padding: 40px 16px;
-  text-align: center;
+  padding: 2rem 1rem;
+  background: #fff;
+  position: relative;
+  overflow: hidden;
 }
 
-/* Keep these styles for the main collections section */
-
 .mobileSectionHeader {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  text-align: center;
   margin-bottom: 2rem;
-  gap: 1rem;
   position: relative;
-  z-index: 2;
 }
 
 .mobileHeaderLine {
-  width: 100%;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(0,0,0,0.1), transparent);
-  position: relative;
+  width: 40px;
+  height: 2px;
+  background: #000;
+  margin: 0.5rem auto;
 }
 
 .mobileSectionTitle {
   font-family: 'Cormorant Garamond', serif;
-  font-size: 1.8rem;
-  font-weight: 400;
-  color: #333;
-  text-align: center;
-  white-space: nowrap;
-  position: relative;
-  letter-spacing: 0.05em;
+  font-size: 1.75rem;
+  font-weight: 500;
+  color: #000;
+  margin: 0;
+  letter-spacing: 0.02em;
+  font-style: italic;
 }
 
 .mobileCollectionDescription {
   text-align: center;
-  margin: 0 auto 2rem;
-  max-width: 90%;
-  font-size: 0.9rem;
+  max-width: 300px;
+  margin: 1rem auto 2rem;
+  font-size: 0.875rem;
   line-height: 1.6;
-  color: #555;
+  color: rgba(0, 0, 0, 0.7);
 }
 
-.mobileCollectionDescription p {
-  position: relative;
-  padding: 0 1rem;
-}
-
-/* Mobile Carousel */
 .mobileCarouselContainer {
+  position: relative;
   width: 100%;
   overflow: hidden;
-  position: relative;
-  margin: 1.5rem 0;
   padding: 0.5rem 0;
+  margin: 0 -1rem;
 }
 
 .mobileCarouselTrack {
   display: flex;
   gap: 1rem;
-  animation: mobileScrollCarousel 30s linear infinite;
-  width: fit-content;
-  padding: 0.5rem 0;
+  padding: 0 1rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
-@keyframes mobileScrollCarousel {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(calc(-100% / 2));
-  }
+.mobileCarouselTrack::-webkit-scrollbar {
+  display: none;
 }
 
-/* Gradient overlay on the sides */
-.mobileCarouselContainer::before,
-.mobileCarouselContainer::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  width: 40px;
-  height: 100%;
-  z-index: 2;
-  pointer-events: none;
-}
-
-.mobileCarouselContainer::before {
-  left: 0;
-  background: linear-gradient(to right, rgba(248, 248, 248, 1), rgba(248, 248, 248, 0));
-}
-
-.mobileCarouselContainer::after {
-  right: 0;
-  background: linear-gradient(to left, rgba(248, 248, 248, 1), rgba(248, 248, 248, 0));
-}
-
-/* Product Card */
 .mobileProductCard {
+  flex: 0 0 75%;
+  scroll-snap-align: center;
   position: relative;
-  min-width: 200px;
-  max-width: 200px;
-  border-radius: 8px;
+  border-radius: 12px;
   overflow: hidden;
+  background: #fff;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  background-color: white;
-  transition: all 0.3s ease;
-  transform: translateY(0);
-  animation: mobileFadeIn 0.5s ease forwards;
   opacity: 0;
-}
-
-@keyframes mobileFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  transform: translateY(10px);
+  animation: mobileFadeIn 0.5s ease forwards;
 }
 
 .mobileCardInner {
   position: relative;
   width: 100%;
-  height: 100%;
+  padding-bottom: 100%;
 }
 
 .mobileProductImage {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
-  height: 180px;
+  height: 100%;
   object-fit: cover;
-  transition: transform 0.5s ease;
+  transition: transform 0.3s ease;
 }
 
 .mobileCategoryTitle {
   position: absolute;
   bottom: 0;
   left: 0;
-  width: 100%;
-  padding: 1rem 0.75rem;
-  font-family: 'Inter', sans-serif;
-  font-size: 0.9rem;
+  right: 0;
+  padding: 1rem;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0));
+  color: #fff;
+  font-size: 1rem;
   font-weight: 500;
-  color: #333;
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(4px);
   text-align: center;
+  letter-spacing: 0.05em;
+  opacity: 0;
+  transform: translateY(10px);
   transition: all 0.3s ease;
 }
 
@@ -738,30 +705,29 @@
   position: absolute;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.1));
-  opacity: 0;
-  transition: opacity 0.3s ease;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
 .mobileViewButton {
-  background-color: white;
-  color: #333;
+  padding: 0.75rem 1.5rem;
+  background: #fff;
+  color: #000;
   border: none;
-  padding: 0.5rem 1rem;
-  font-size: 0.8rem;
-  border-radius: 4px;
-  cursor: pointer;
-  transform: translateY(20px);
+  border-radius: 25px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  transform: translateY(10px);
   opacity: 0;
   transition: all 0.3s ease;
-  font-family: 'Inter', sans-serif;
-  letter-spacing: 0.05em;
-  font-weight: 500;
+  cursor: pointer;
 }
 
 .mobileProductCard:active .mobileCardOverlay {
@@ -774,53 +740,61 @@
 }
 
 .mobileCollectionFooter {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  text-align: center;
   margin-top: 2rem;
   padding: 0 1rem;
 }
 
 .mobileCollectionFooter p {
-  font-size: 0.85rem;
-  color: #555;
-  text-align: center;
-  margin-bottom: 1.5rem;
+  font-size: 0.875rem;
+  color: rgba(0, 0, 0, 0.7);
+  margin-bottom: 1rem;
   line-height: 1.6;
 }
 
 .mobileExploreButton {
-  background-color: transparent;
-  color: #333;
-  border: 1px solid #333;
-  padding: 0.75rem 2rem;
-  font-size: 0.9rem;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-family: 'Inter', sans-serif;
-  letter-spacing: 0.05em;
+  display: inline-block;
+  padding: 0.875rem 2rem;
+  background: #000;
+  color: #fff;
+  border: none;
+  border-radius: 25px;
+  font-size: 0.875rem;
   font-weight: 500;
+  letter-spacing: 0.05em;
+  text-decoration: none;
   position: relative;
   overflow: hidden;
+  transition: transform 0.3s ease;
 }
 
 .mobileExploreButton::before {
   content: '';
   position: absolute;
   top: 0;
-  left: -100%;
+  left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
 }
 
 .mobileExploreButton:active::before {
-  left: 0;
+  transform: translateX(100%);
 }
 
-/* Add animation delays for product cards */
+@keyframes mobileFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .mobileProductCard:nth-child(1) { animation-delay: 0.1s; }
 .mobileProductCard:nth-child(2) { animation-delay: 0.2s; }
 .mobileProductCard:nth-child(3) { animation-delay: 0.3s; }
@@ -1182,93 +1156,110 @@
 
 /* Account Dropdown */
 .accountDropdown {
-  position: absolute;
-  bottom: calc(100% + 10px);
-  left: 35%;
-  transform: translateX(-50%);
-  width: 260px;
-  background: rgba(255, 255, 255, 0.65);
-  backdrop-filter: blur(25px) saturate(180%);
-  -webkit-backdrop-filter: blur(25px) saturate(180%);
+  position: fixed;
+  bottom: 70px;
+  right: 16px;
+  width: 220px;
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(120px) saturate(150%);
+  -webkit-backdrop-filter: blur(120px) saturate(150%);
   border-radius: 1rem;
   padding: 0.75rem 0.5rem;
   box-shadow: 
     0 8px 32px rgba(0, 0, 0, 0.12),
     0 4px 16px rgba(255, 255, 255, 0.15),
     inset 0 0 60px rgba(255, 255, 255, 0.2);
-  animation: slideUp 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
-  z-index: 1000;
   border: 1px solid rgba(255, 255, 255, 0.25);
-  max-height: 80vh;
-  overflow-y: auto;
-  will-change: transform, opacity, backdrop-filter;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: 
+    opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    visibility 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    backdrop-filter 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, opacity, visibility, backdrop-filter;
   -webkit-transform-style: preserve-3d;
   transform-style: preserve-3d;
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
 }
 
+.accountDropdownOpen {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
 .accountDropdown::before {
   content: '';
   position: absolute;
   bottom: -8px;
-  left: 50%;
-  transform: translateX(-50%) rotate(45deg);
+  right: 24px;
   width: 16px;
   height: 16px;
-  background: rgba(255, 255, 255, 0.65);
-  box-shadow: 4px 4px 7px -3px rgba(0, 0, 0, 0.1);
-  border-radius: 2px;
-  z-index: -1;
+  background: inherit;
+  border-right: 1px solid rgba(255, 255, 255, 0.25);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+  transform: rotate(45deg);
+  backdrop-filter: blur(120px) saturate(150%);
+  -webkit-backdrop-filter: blur(120px) saturate(150%);
 }
 
 .accountDropdownBackdrop {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 99;
+  right: 0;
+  bottom: 64px;
   background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(8px) saturate(180%);
-  -webkit-backdrop-filter: blur(8px) saturate(180%);
-  opacity: 1;
-  visibility: visible;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  animation: fadeIn 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  opacity: 0;
+  visibility: hidden;
+  transition: 
+    opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    visibility 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    backdrop-filter 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 999;
+  pointer-events: none;
 }
 
-/* User info in dropdown */
+.accountDropdownBackdrop[aria-hidden="false"] {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
 .userInfo {
-  padding: 12px 16px;
-  margin-bottom: 8px;
+  padding: 1rem;
+  margin-bottom: 0.5rem;
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .userName {
   font-weight: 600;
-  font-size: 16px;
-  color: #000;
-  margin-bottom: 4px;
+  font-size: 0.9375rem;
+  color: rgba(0, 0, 0, 0.9);
+  margin-bottom: 0.25rem;
 }
 
 .userEmail {
-  font-size: 13px;
+  font-size: 0.875rem;
   color: rgba(0, 0, 0, 0.6);
 }
 
-/* Account dropdown items */
 .dropdownItem {
   display: flex;
   align-items: center;
   gap: 0.75rem;
   padding: 0.75rem 1rem;
   color: rgba(0, 0, 0, 0.7);
-  font-size: 0.9375rem;
   text-decoration: none;
   border-radius: 0.75rem;
   transition: all 0.2s ease;
-  margin: 2px 0;
+  font-size: 0.9375rem;
   width: 100%;
   text-align: left;
   background: none;
@@ -1278,27 +1269,103 @@
   z-index: 1;
 }
 
-.dropdownItem:active {
+.dropdownItem:hover {
   background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(15px) saturate(180%);
-  -webkit-backdrop-filter: blur(15px) saturate(180%);
+  backdrop-filter: blur(80px) saturate(180%);
+  -webkit-backdrop-filter: blur(80px) saturate(180%);
   color: rgba(0, 0, 0, 0.9);
 }
 
-/* Divider */
 .dropdownDivider {
   height: 1px;
-  background-color: rgba(0, 0, 0, 0.1);
-  margin: 8px 0;
+  background-color: rgba(0, 0, 0, 0.05);
+  margin: 0.5rem 0;
 }
 
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateX(-50%) translateY(10px);
+/* Main content blur when dropdown is open */
+.mobileLayoutContainer {
+  transition: filter 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mobileLayoutContainer[data-dropdown-open="true"] {
+  filter: blur(8px);
+  pointer-events: none;
+}
+
+/* Dashboard specific styles */
+.dashboardLayout {
+  background: #f8f9fa;
+}
+
+.dashboardLayout .mobileContent {
+  padding: 16px;
+  padding-bottom: calc(64px + 56px); /* Account for both footers */
+}
+
+.dashboardFooter {
+  background: rgba(255, 255, 255, 0.9) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 8px 16px;
+  height: 56px !important;
+}
+
+.dashboardFooter .footerNavItemContainer {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  gap: 8px;
+}
+
+.dashboardFooter .footerNavItem {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: rgba(0, 0, 0, 0.6);
+  text-decoration: none;
+  font-size: 0.75rem;
+  padding: 4px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.dashboardFooter .footerNavItem.active {
+  color: #000;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.dashboardFooter .footerNavItem:active {
+  transform: scale(0.95);
+}
+
+.dashboardFooter .footerNavItem span {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+/* Ensure dashboard content doesn't get blurred when account dropdown is open */
+.dashboardLayout[data-dropdown-open="true"] {
+  filter: none;
+  pointer-events: auto;
+}
+
+/* Adjust mobile content padding for dashboard */
+@media (max-width: 768px) {
+  .dashboardLayout .mobileContent {
+    padding: 16px;
+    padding-top: 16px; /* Remove extra padding since we don't have header */
+    padding-bottom: calc(64px + 56px); /* Account for both footers */
   }
-  to {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
+  
+  .dashboardFooter {
+    bottom: 64px; /* Position above the main mobile footer */
   }
 }

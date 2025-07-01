@@ -12,6 +12,7 @@ import { useMobileMenu } from '../contexts/MobileMenuContext'
 import { getImageUrl } from '../../lib/cloudinaryImages'
 import styles from './MobileLayout.module.css'
 import MobileMenuPanel from './MobileMenuPanel'
+import { RiDashboardLine, RiShoppingBag3Line, RiHeartLine, RiLogoutBoxLine } from 'react-icons/ri'
 
 interface MobileLayoutProps {
   children: React.ReactNode
@@ -95,9 +96,16 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
         setIsAccountDropdownOpen(false)
       }
     }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+    
+    // Only add listener when dropdown is open
+    if (isAccountDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+    
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isAccountDropdownOpen, accountDropdownRef])
 
   // Reset account dropdown when auth state changes
   useEffect(() => {
@@ -260,14 +268,19 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
   }
 
   const handleAccountClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    setIsAccountDropdownOpen(!isAccountDropdownOpen);
+    e.preventDefault()
+    e.stopPropagation()
+    setIsAccountDropdownOpen(prev => !prev)
   }
 
   const handleLogout = async () => {
-    await logout();
-    setIsAccountDropdownOpen(false);
-    router.push('/');
+    try {
+      await logout()
+      setIsAccountDropdownOpen(false)
+      router.push('/')
+    } catch (error) {
+      console.error('Logout failed:', error)
+    }
   }
 
   const toggleSearch = () => {
@@ -352,8 +365,111 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
 
   // Mobile Collections Section component
   const MobileCollectionsSection = () => {
-    // This is the duplicate section we want to remove
-    return null; // Return null to not render anything
+    const [isDragging, setIsDragging] = useState(false)
+    const [startX, setStartX] = useState(0)
+    const [scrollLeft, setScrollLeft] = useState(0)
+    const carouselRef = useRef<HTMLDivElement>(null)
+
+    const handleMouseDown = (e: React.MouseEvent) => {
+      setIsDragging(true)
+      setStartX(e.pageX - (carouselRef.current?.offsetLeft || 0))
+      setScrollLeft(carouselRef.current?.scrollLeft || 0)
+    }
+
+    const handleMouseLeave = () => {
+      setIsDragging(false)
+    }
+
+    const handleMouseUp = () => {
+      setIsDragging(false)
+    }
+
+    const handleMouseMove = (e: React.MouseEvent) => {
+      if (!isDragging) return
+      e.preventDefault()
+      const x = e.pageX - (carouselRef.current?.offsetLeft || 0)
+      const walk = (x - startX) * 2
+      if (carouselRef.current) {
+        carouselRef.current.scrollLeft = scrollLeft - walk
+      }
+    }
+
+    const handleTouchStart = (e: React.TouchEvent) => {
+      setIsDragging(true)
+      setStartX(e.touches[0].pageX - (carouselRef.current?.offsetLeft || 0))
+      setScrollLeft(carouselRef.current?.scrollLeft || 0)
+    }
+
+    const handleTouchMove = (e: React.TouchEvent) => {
+      if (!isDragging) return
+      const x = e.touches[0].pageX - (carouselRef.current?.offsetLeft || 0)
+      const walk = (x - startX) * 2
+      if (carouselRef.current) {
+        carouselRef.current.scrollLeft = scrollLeft - walk
+      }
+    }
+
+    const handleTouchEnd = () => {
+      setIsDragging(false)
+    }
+
+    return (
+      <section className={styles.mobileCollectionsSection}>
+        <div className={styles.mobileSectionHeader}>
+          <div className={styles.mobileHeaderLine} />
+          <h2 className={styles.mobileSectionTitle}>Our Collections</h2>
+          <div className={styles.mobileHeaderLine} />
+        </div>
+
+        <div className={styles.mobileCollectionDescription}>
+          <p>Discover our handcrafted pieces, each telling a unique story through artistry and innovation</p>
+        </div>
+
+        <div className={styles.mobileCarouselContainer}>
+          <div
+            ref={carouselRef}
+            className={styles.mobileCarouselTrack}
+            onMouseDown={handleMouseDown}
+            onMouseLeave={handleMouseLeave}
+            onMouseUp={handleMouseUp}
+            onMouseMove={handleMouseMove}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+          >
+            {productCategories.map((category, index) => (
+              <div key={index} className={styles.mobileProductCard}>
+                <div className={styles.mobileCardInner}>
+                  <Image
+                    src={category.image}
+                    alt={category.alt}
+                    className={styles.mobileProductImage}
+                    fill
+                    sizes="(max-width: 768px) 75vw, 33vw"
+                    priority={index < 2}
+                  />
+                  <div className={styles.mobileCategoryTitle}>
+                    {category.title}
+                  </div>
+                  <div className={styles.mobileCardOverlay}>
+                    <button className={styles.mobileViewButton}>
+                      View Collection
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className={styles.mobileCollectionFooter}>
+          <p>Explore our complete collection of handcrafted pieces</p>
+          <Link href="/products" className={styles.mobileExploreButton}>
+            View All Collections
+          </Link>
+        </div>
+      </section>
+    )
   }
 
   const toggleViewMode = () => {
@@ -383,8 +499,11 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
     return pathname.startsWith(path)
   }
 
+  // Check if current path is a dashboard route
+  const isDashboardRoute = pathname.startsWith('/dashboard')
+
   return (
-    <div className={styles.mobileLayoutContainer}>
+    <div className={`${styles.mobileLayoutContainer} ${isDashboardRoute ? styles.dashboardLayout : ''}`} data-dropdown-open={isAccountDropdownOpen}>
       {/* Home page specific content - Put at the top */}
       {isHomePage && (
         <div className={styles.curvedCardContainer}>
@@ -452,142 +571,170 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
         </div>
       )}
 
-      {/* Mobile Header */}
-      <header 
-        className={`${styles.mobileHeader} ${isHomePage ? styles.homeMobileHeader : ''}`}
-        data-scrolled={isScrolled ? 'true' : 'false'}
-      >
-        {/* Left side - Logo */}
-        <Link href="/" className={styles.logoContainer}>
-          <Image
-            src={getImageUrl('logo.png')}
-            alt="Artcommerce Logo"
-            width={110}
-            height={36}
-            priority
-            style={{ objectFit: 'contain' }}
-            className={styles.logo}
-          />
-        </Link>
-        
-        {/* Center - Empty spacer */}
-        <div className={styles.headerSpacer}></div>
-        
-        {/* Right side - Icons and burger menu */}
-        <div className={styles.headerIcons}>
-          {/* Search Icon */}
-          <button 
-            onClick={toggleSearch}
-            className={styles.headerIconButton}
-            aria-label="Search"
-          >
-            <Search size={20} strokeWidth={2} />
-          </button>
+      {/* Header - Hide on dashboard routes */}
+      {!isDashboardRoute && (
+        <header className={`${styles.mobileHeader} ${isHomePage ? styles.homeMobileHeader : ''}`} data-scrolled={isScrolled}>
+          {/* Left side - Logo */}
+          <Link href="/" className={styles.logoContainer}>
+            <Image
+              src={getImageUrl('logo.png')}
+              alt="Artcommerce Logo"
+              width={110}
+              height={36}
+              priority
+              style={{ objectFit: 'contain' }}
+              className={styles.logo}
+            />
+          </Link>
           
-          {/* Cart Icon */}
+          {/* Center - Empty spacer */}
+          <div className={styles.headerSpacer}></div>
+          
+          {/* Right side - Icons and burger menu */}
+          <div className={styles.headerIcons}>
+            {/* Search Icon */}
+            <button 
+              onClick={toggleSearch}
+              className={styles.headerIconButton}
+              aria-label="Search"
+            >
+              <Search size={20} strokeWidth={2} />
+            </button>
+            
+            {/* Cart Icon */}
+            <button 
+              onClick={handleCartClick}
+              className={styles.headerIconButton}
+              aria-label="Cart"
+            >
+              <ShoppingCart size={20} />
+              {cartItems.length > 0 && (
+                <span className={styles.cartBadge}>{cartItems.length}</span>
+              )}
+            </button>
+          </div>
+          
+          {/* Burger menu */}
           <button 
-            onClick={handleCartClick}
-            className={styles.headerIconButton}
-            aria-label="Cart"
+            onClick={toggleMobileMenu}
+            className={styles.menuButton}
+            aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
           >
-            <ShoppingCart size={20} />
-            {cartItems.length > 0 && (
-              <span className={styles.cartBadge}>{cartItems.length}</span>
-            )}
+            <Menu size={24} strokeWidth={2.5} />
           </button>
-        </div>
-        
-        {/* Burger menu */}
-        <button 
-          onClick={toggleMobileMenu}
-          className={styles.menuButton}
-          aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
-        >
-          <Menu size={24} strokeWidth={2.5} />
-        </button>
-      </header>
+        </header>
+      )}
       
-      {/* Main Content Area */}
-      <main className={styles.mobileContent}>
+      {/* Content */}
+      <main className={`${styles.mobileContent} ${isHomePage ? styles.homeContent : ''} ${isDashboardRoute ? styles.dashboardContent : ''}`}>
         {children}
       </main>
       
-      {/* Mobile Footer Navigation */}
-      <nav className={`${styles.mobileFooter} ${isFooterVisible ? styles.footerVisible : styles.footerHidden}`}>
-        <Link 
-          href="/" 
-          className={`${styles.footerNavItem} ${isActivePath('/') ? styles.active : ''}`}
-        >
-          <Home size={20} />
-          <span>Home</span>
-        </Link>
-        <Link 
-          href="/products" 
-          className={`${styles.footerNavItem} ${isActivePath('/products') ? styles.active : ''}`}
-        >
-          <ShoppingBag size={20} />
-          <span>Products</span>
-        </Link>
-        <Link 
-          href={user ? '/dashboard/wishlist' : '/auth/login'}
-          className={`${styles.footerNavItem} ${isActivePath('/dashboard/wishlist') ? styles.active : ''}`}
-        >
-          <Heart size={20} />
-          <span>Wishlist</span>
-          {wishlistItems.length > 0 && (
-            <span className={styles.badge}>{wishlistItems.length}</span>
-          )}
-        </Link>
-        <div className={styles.footerNavItemContainer} ref={accountDropdownRef}>
-          <button 
-            onClick={handleAccountClick}
-            className={`${styles.footerNavItem} ${isActivePath('/dashboard/profile') || isActivePath('/auth/login') ? styles.active : ''}`}
-          >
-            <User size={20} />
-            <span>Account</span>
-          </button>
-          
-          {isAccountDropdownOpen && (
-            <div className={styles.accountDropdown}>
-              {user?.fullName && (
-                <div className={styles.userInfo}>
-                  <div className={styles.userName}>{user.fullName}</div>
-                  {user.email && <div className={styles.userEmail}>{user.email}</div>}
-                </div>
+      {/* Footer - Modify visibility for dashboard */}
+      <footer className={`${styles.mobileFooter} ${isFooterVisible ? styles.footerVisible : styles.footerHidden} ${isDashboardRoute ? styles.dashboardFooter : ''}`}>
+        {isDashboardRoute ? (
+          <div className={styles.footerNavItemContainer}>
+            <Link href="/dashboard" className={`${styles.footerNavItem} ${isActivePath('/dashboard') ? styles.active : ''}`}>
+              <RiDashboardLine size={20} />
+              <span>Dashboard</span>
+            </Link>
+            <Link href="/dashboard/orders" className={`${styles.footerNavItem} ${isActivePath('/dashboard/orders') ? styles.active : ''}`}>
+              <RiShoppingBag3Line size={20} />
+              <span>Orders</span>
+            </Link>
+            <Link href="/dashboard/profile" className={`${styles.footerNavItem} ${isActivePath('/dashboard/profile') ? styles.active : ''}`}>
+              <User size={20} />
+              <span>Profile</span>
+            </Link>
+            <Link href="/dashboard/support" className={`${styles.footerNavItem} ${isActivePath('/dashboard/support') ? styles.active : ''}`}>
+              <HelpCircle size={20} />
+              <span>Support</span>
+            </Link>
+            <button onClick={handleLogout} className={styles.footerNavItem}>
+              <RiLogoutBoxLine size={20} />
+              <span>Logout</span>
+            </button>
+          </div>
+        ) : (
+          <nav className={`${styles.mobileFooter} ${isFooterVisible ? styles.footerVisible : styles.footerHidden}`}>
+            <Link 
+              href="/" 
+              className={`${styles.footerNavItem} ${isActivePath('/') ? styles.active : ''}`}
+            >
+              <Home size={20} />
+              <span>Home</span>
+            </Link>
+            <Link 
+              href="/products" 
+              className={`${styles.footerNavItem} ${isActivePath('/products') ? styles.active : ''}`}
+            >
+              <ShoppingBag size={20} />
+              <span>Products</span>
+            </Link>
+            <Link 
+              href={user ? '/dashboard/wishlist' : '/auth/login'}
+              className={`${styles.footerNavItem} ${isActivePath('/dashboard/wishlist') ? styles.active : ''}`}
+            >
+              <Heart size={20} />
+              <span>Wishlist</span>
+              {wishlistItems.length > 0 && (
+                <span className={styles.badge}>{wishlistItems.length}</span>
               )}
+            </Link>
+            <div className={styles.footerNavItemContainer} ref={accountDropdownRef}>
+              <button 
+                onClick={handleAccountClick}
+                className={`${styles.footerNavItem} ${isActivePath('/dashboard/profile') || isActivePath('/auth/login') ? styles.active : ''}`}
+              >
+                <User size={20} />
+                <span>Account</span>
+              </button>
               
-              <Link href="/dashboard/profile" className={styles.dropdownItem} onClick={() => setIsAccountDropdownOpen(false)}>
-                <User size={18} />
-                Profile
-              </Link>
-              <Link href="/dashboard" className={styles.dropdownItem} onClick={() => setIsAccountDropdownOpen(false)}>
-                <Grid size={18} />
-                Dashboard
-              </Link>
-              <Link href="/dashboard/orders" className={styles.dropdownItem} onClick={() => setIsAccountDropdownOpen(false)}>
-                <ShoppingBag size={18} />
-                Orders
-              </Link>
-              <Link href="/dashboard/support" className={styles.dropdownItem} onClick={() => setIsAccountDropdownOpen(false)}>
-                <HelpCircle size={18} />
-                Contact Support
-              </Link>
+              {/* Account Dropdown */}
               {user && (
                 <>
-                  <div className={styles.dropdownDivider} />
-                  <button
-                    onClick={handleLogout}
-                    className={styles.dropdownItem}
+                  <div 
+                    className={`${styles.accountDropdownBackdrop}`}
+                    aria-hidden={!isAccountDropdownOpen}
+                    onClick={() => setIsAccountDropdownOpen(false)}
+                  />
+                  <div
+                    ref={accountDropdownRef}
+                    className={`${styles.accountDropdown} ${isAccountDropdownOpen ? styles.accountDropdownOpen : ''}`}
                   >
-                    <LogOut size={18} />
-                    Sign out
-                  </button>
+                    <div className={styles.userInfo}>
+                      <div className={styles.userName}>{user.fullName || 'User'}</div>
+                      <div className={styles.userEmail}>{user.email}</div>
+                    </div>
+                    
+                    <Link href="/dashboard" className={styles.dropdownItem} onClick={() => setIsAccountDropdownOpen(false)}>
+                      <RiDashboardLine size={20} />
+                      Dashboard
+                    </Link>
+                    
+                    <Link href="/dashboard/orders" className={styles.dropdownItem} onClick={() => setIsAccountDropdownOpen(false)}>
+                      <RiShoppingBag3Line size={20} />
+                      Orders
+                    </Link>
+                    
+                    <Link href="/dashboard/wishlist" className={styles.dropdownItem} onClick={() => setIsAccountDropdownOpen(false)}>
+                      <RiHeartLine size={20} />
+                      Wishlist
+                    </Link>
+                    
+                    <div className={styles.dropdownDivider} />
+                    
+                    <button onClick={handleLogout} className={styles.dropdownItem}>
+                      <RiLogoutBoxLine size={20} />
+                      Sign Out
+                    </button>
+                  </div>
                 </>
               )}
             </div>
-          )}
-        </div>
-      </nav>
+          </nav>
+        )}
+      </footer>
       
       {/* Mobile side menu panel */}
       <MobileMenuPanel 
@@ -602,15 +749,6 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
         <div 
           className={styles.menuOverlay} 
           onClick={() => setIsMobileMenuOpen(false)} 
-          aria-hidden="true"
-        />
-      )}
-      
-      {/* Account dropdown backdrop */}
-      {isAccountDropdownOpen && (
-        <div 
-          className={styles.accountDropdownBackdrop} 
-          onClick={() => setIsAccountDropdownOpen(false)} 
           aria-hidden="true"
         />
       )}
@@ -688,8 +826,6 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
           </div>
         </div>
       )}
-
-      {/* Mobile Bottom Navigation removed as we're using the footer instead */}
     </div>
   )
 } 
