@@ -6,6 +6,7 @@
   margin: 0 auto;
   padding-left: 1.5rem;
   padding-right: 1.5rem;
+  position: relative;
 }
 
 .dashboardContent {
@@ -13,6 +14,7 @@
   border-radius: 1rem;
   padding: 2rem;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  min-height: calc(100vh - 70px - 4rem);
 }
 
 @media (max-width: 768px) {
@@ -20,9 +22,13 @@
     padding-top: calc(70px + 1rem);
     padding-left: 1rem;
     padding-right: 1rem;
+    padding-bottom: calc(64px + 56px); /* Account for mobile footer and dashboard nav */
   }
   
   .dashboardContent {
-    padding: 1.5rem;
+    padding: 1.25rem;
+    border-radius: 0.75rem;
+    min-height: calc(100vh - 70px - 2rem - 64px - 56px); /* Adjust for mobile header, padding, footer, and dashboard nav */
+    margin-bottom: 1rem;
   }
 } 
