@@ -12,7 +12,6 @@ import { useMobileMenu } from '../contexts/MobileMenuContext'
 import { getImageUrl } from '../../lib/cloudinaryImages'
 import styles from './MobileLayout.module.css'
 import MobileMenuPanel from './MobileMenuPanel'
-import { RiDashboardLine, RiShoppingBag3Line, RiHeartLine, RiLogoutBoxLine } from 'react-icons/ri'
 
 interface MobileLayoutProps {
   children: React.ReactNode
@@ -30,9 +29,8 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
   const [searchQuery, setSearchQuery] = useState('')
   const pathname = usePathname()
   const isHomePage = pathname === '/'
-  const isDashboardPage = pathname.startsWith('/dashboard')
   const [isScrolled, setIsScrolled] = useState(false)
-  const [isFooterVisible, setIsFooterVisible] = useState(!isDashboardPage)
+  const [isFooterVisible, setIsFooterVisible] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
   const [rotatingText, setRotatingText] = useState('coasters')
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -145,30 +143,28 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
         clearTimeout(scrollTimer)
       }
       
-      // Footer visibility logic - only apply if not on dashboard
-      if (!isDashboardPage) {
-        if (currentScrollY < 50) {
-          // Always show footer when near the top
-          setIsFooterVisible(true)
-        } else if (
-          scrollDirection > 0 && // Scrolling down
-          scrollVelocity > 0.3 && // Fast scroll
-          currentScrollY > 100 // Not at the very top
-        ) {
-          // Hide footer when scrolling down quickly
-          setIsFooterVisible(false)
-        } else if (scrollDirection < 0) { // Scrolling up
-          // Show footer immediately when scrolling up
+      // Footer visibility logic
+      if (currentScrollY < 50) {
+        // Always show footer when near the top
+        setIsFooterVisible(true)
+      } else if (
+        scrollDirection > 0 && // Scrolling down
+        scrollVelocity > 0.3 && // Fast scroll
+        currentScrollY > 100 // Not at the very top
+      ) {
+        // Hide footer when scrolling down quickly
+        setIsFooterVisible(false)
+      } else if (scrollDirection < 0) { // Scrolling up
+        // Show footer immediately when scrolling up
+        setIsFooterVisible(true)
+      }
+      
+      // Set a timer to show footer after scrolling stops
+      scrollTimer = setTimeout(() => {
+        if (currentScrollY > 50) {
           setIsFooterVisible(true)
         }
-        
-        // Set a timer to show footer after scrolling stops
-        scrollTimer = setTimeout(() => {
-          if (currentScrollY > 50) {
-            setIsFooterVisible(true)
-          }
-        }, 150) // Show after 150ms of no scrolling
-      }
+      }, 150) // Show after 150ms of no scrolling
       
       // Update values for next iteration
       prevScrollY = currentScrollY
@@ -503,7 +499,7 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
   }
 
   return (
-    <div className={styles.mobileLayoutContainer} data-dropdown-open={isAccountDropdownOpen}>
+    <div className={styles.mobileLayoutContainer}>
       {/* Home page specific content - Put at the top */}
       {isHomePage && (
         <div className={styles.curvedCardContainer}>
@@ -677,32 +673,40 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
               <div
                 ref={accountDropdownRef}
                 className={`${styles.accountDropdown} ${isAccountDropdownOpen ? styles.accountDropdownOpen : ''}`}
+                style={{ 
+                  animation: isAccountDropdownOpen ? `${styles.slideUp} 0.2s ease forwards` : 'none'
+                }}
               >
                 <div className={styles.userInfo}>
                   <div className={styles.userName}>{user.fullName || 'User'}</div>
                   <div className={styles.userEmail}>{user.email}</div>
                 </div>
                 
+                <Link href="/dashboard/profile" className={styles.dropdownItem} onClick={() => setIsAccountDropdownOpen(false)}>
+                  <User size={20} />
+                  Profile
+                </Link>
+                
                 <Link href="/dashboard" className={styles.dropdownItem} onClick={() => setIsAccountDropdownOpen(false)}>
-                  <RiDashboardLine size={20} />
+                  <Grid size={20} />
                   Dashboard
                 </Link>
                 
                 <Link href="/dashboard/orders" className={styles.dropdownItem} onClick={() => setIsAccountDropdownOpen(false)}>
-                  <RiShoppingBag3Line size={20} />
+                  <ShoppingBag size={20} />
                   Orders
                 </Link>
                 
-                <Link href="/dashboard/wishlist" className={styles.dropdownItem} onClick={() => setIsAccountDropdownOpen(false)}>
-                  <RiHeartLine size={20} />
-                  Wishlist
+                <Link href="/support" className={styles.dropdownItem} onClick={() => setIsAccountDropdownOpen(false)}>
+                  <HelpCircle size={20} />
+                  Support
                 </Link>
                 
                 <div className={styles.dropdownDivider} />
                 
                 <button onClick={handleLogout} className={styles.dropdownItem}>
-                  <RiLogoutBoxLine size={20} />
-                  Sign Out
+                  <LogOut size={20} />
+                  Sign out
                 </button>
               </div>
             </>

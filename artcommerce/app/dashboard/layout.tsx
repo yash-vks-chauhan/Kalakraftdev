@@ -22,7 +22,7 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className={`${styles.dashboardContainer} ${navStyles.mainContent}`} data-dashboard="true">
+    <div className={`${styles.dashboardContainer} ${navStyles.mainContent}`}>
       <div className={styles.dashboardContent}>
         {children}
       </div>
