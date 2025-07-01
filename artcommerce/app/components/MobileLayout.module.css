@@ -329,14 +329,12 @@
   transform: translateY(0);
   transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
   opacity: 1;
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
+  display: none; /* Hide by default */
 }
 
 /* Footer visibility classes */
 .footerVisible {
-  display: flex; /* Show when visible class is applied */
+  display: block; /* Show when visible class is applied */
   transform: translateY(0);
   opacity: 1;
 }
@@ -347,13 +345,7 @@
 }
 
 /* Hide footer in dashboard */
-[data-dashboard="true"] ~ .mobileFooter,
 [data-dashboard="true"] .mobileFooter {
-  display: none !important;
-}
-
-/* Hide footer in dashboard pages */
-body[data-page^="/dashboard"] .mobileFooter {
   display: none !important;
 }
 
