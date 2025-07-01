@@ -515,166 +515,47 @@
 
 @media (max-width: 768px) {
   .dashboardContainer {
-    padding: 1rem;
-    min-height: calc(100vh - 64px); /* Account for mobile footer */
-    margin-bottom: 64px; /* Space for mobile footer */
+    padding: 1.5rem;
   }
 
   .header {
-    margin-bottom: 2rem;
-    padding-bottom: 1rem;
     flex-direction: column;
-    gap: 1rem;
-    text-align: center;
+    gap: 1.5rem;
+    align-items: flex-start;
+    margin-bottom: 3rem;
   }
 
   .userInfo {
     flex-direction: column;
+    align-items: flex-start;
     gap: 1rem;
-    width: 100%;
   }
 
   .avatar {
-    width: 60px;
-    height: 60px;
+    width: 64px;
+    height: 64px;
   }
 
   .welcomeText {
     font-size: 1.75rem;
-    text-align: center;
-    width: 100%;
-  }
-
-  .logoutButton {
-    width: 100%;
-    max-width: 200px;
-    margin: 0 auto;
   }
 
   .metricsGrid {
     grid-template-columns: 1fr;
-    gap: 1rem;
-    margin-bottom: 2rem;
+    gap: 1.5rem;
   }
 
   .dashboardGrid {
     grid-template-columns: 1fr;
-    gap: 1rem;
+    gap: 1.5rem;
   }
 
   .metricCard,
   .dashboardCard {
-    padding: 1.25rem;
-    border-radius: 12px;
+    padding: 1.5rem;
   }
 
   .cardTitle {
     font-size: 1.25rem;
-    margin-bottom: 0.75rem;
-  }
-
-  .cardDescription {
-    font-size: 0.875rem;
-    margin-bottom: 1rem;
-  }
-
-  .metricValue {
-    font-size: 1.5rem;
-  }
-
-  .periodSelector {
-    flex-direction: column;
-    gap: 0.75rem;
-    margin-bottom: 1.5rem;
-  }
-
-  .periodLabel {
-    font-size: 0.875rem;
-  }
-
-  .periodSelect {
-    width: 100%;
-    max-width: none;
-  }
-
-  /* Mobile-specific enhancements */
-  .metricCard,
-  .dashboardCard {
-    transform: none !important; /* Disable 3D transforms on mobile */
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-  }
-
-  .metricCard:active,
-  .dashboardCard:active {
-    transform: scale(0.98) !important;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
-
-  /* Optimize gradients and animations for mobile */
-  .dashboardContainer::before {
-    animation: none; /* Disable background animation on mobile */
-  }
-
-  .header::after {
-    animation: none; /* Disable gradient animation on mobile */
-  }
-
-  /* Add pull-to-refresh styling */
-  .dashboardContainer {
-    overscroll-behavior-y: contain;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  /* Optimize touch targets */
-  .metricCard,
-  .dashboardCard,
-  .periodSelect,
-  .logoutButton {
-    min-height: 44px; /* Minimum touch target size */
-  }
-}
-
-/* Add styles for mobile menu panel integration */
-.mobileDashboardNav {
-  display: none;
-}
-
-@media (max-width: 768px) {
-  .mobileDashboardNav {
-    display: flex;
-    position: fixed;
-    bottom: 64px; /* Above the mobile footer */
-    left: 0;
-    right: 0;
-    background: rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    padding: 0.75rem;
-    border-top: 1px solid rgba(0, 0, 0, 0.1);
-    z-index: 100;
-    justify-content: space-around;
-    gap: 0.5rem;
-  }
-
-  .mobileNavItem {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.25rem;
-    padding: 0.5rem;
-    color: rgba(0, 0, 0, 0.6);
-    text-decoration: none;
-    font-size: 0.75rem;
-    border-radius: 8px;
-    transition: all 0.2s ease;
-  }
-
-  .mobileNavItem.active {
-    color: #000;
-    background: rgba(0, 0, 0, 0.05);
-  }
-
-  .mobileNavItem:active {
-    transform: scale(0.95);
   }
 } 
