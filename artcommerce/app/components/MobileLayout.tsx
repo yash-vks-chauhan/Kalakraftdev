@@ -269,6 +269,14 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
   const handleAccountClick = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
+    
+    // Add button pulse animation
+    const target = e.currentTarget;
+    target.classList.add(styles.buttonPulse);
+    setTimeout(() => {
+      target.classList.remove(styles.buttonPulse);
+    }, 300);
+    
     setIsAccountDropdownOpen(prev => !prev)
   }
 
@@ -666,7 +674,7 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
           {user && (
             <>
               <div 
-                className={`${styles.accountDropdownBackdrop}`}
+                className={`${styles.accountDropdownBackdrop} ${isAccountDropdownOpen ? styles.profileDropdownBackdropVisible : ''}`}
                 aria-hidden={!isAccountDropdownOpen}
                 onClick={() => setIsAccountDropdownOpen(false)}
               />
@@ -674,7 +682,8 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
                 ref={accountDropdownRef}
                 className={`${styles.accountDropdown} ${isAccountDropdownOpen ? styles.accountDropdownOpen : ''}`}
                 style={{ 
-                  animation: isAccountDropdownOpen ? `${styles.slideUp} 0.2s ease forwards` : 'none'
+                  animation: isAccountDropdownOpen ? `${styles.slideUp} 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards` : 
+                    `${styles.slideDown} 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards`
                 }}
               >
                 <div className={styles.userInfo}>

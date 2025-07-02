@@ -308,6 +308,32 @@
   }
 }
 
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+    visibility: hidden;
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    visibility: visible;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+    visibility: visible;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(10px);
+    visibility: hidden;
+  }
+}
+
 /* Mobile Footer Navigation */
 .mobileFooter {
   position: fixed;
@@ -1149,10 +1175,11 @@
   bottom: 70px;
   right: 16px;
   width: 220px;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(12px) saturate(180%);
-  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px) saturate(180%);
+  -webkit-backdrop-filter: blur(8px) saturate(180%);
   border-radius: 1rem;
+  min-width: 220px;
   padding: 0.75rem 0.5rem;
   opacity: 0;
   visibility: hidden;
@@ -1163,7 +1190,11 @@
     0 4px 16px rgba(255, 255, 255, 0.15),
     inset 0 0 60px rgba(255, 255, 255, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.25);
-  will-change: transform, opacity, visibility;
+  will-change: transform, opacity, visibility, backdrop-filter;
+  -webkit-transform-style: preserve-3d;
+  transform-style: preserve-3d;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
   z-index: 1000;
 }
 
@@ -1178,8 +1209,8 @@
   border-right: 1px solid rgba(255, 255, 255, 0.25);
   border-bottom: 1px solid rgba(255, 255, 255, 0.25);
   transform: rotate(45deg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .accountDropdownOpen {
@@ -1194,13 +1225,13 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.2);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
   opacity: 0;
   visibility: hidden;
-  transition: all 0.3s ease;
-  z-index: 900;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 999;
   pointer-events: none;
 }
 
@@ -1208,6 +1239,12 @@
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
+}
+
+.profileDropdownBackdropVisible {
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
 }
 
 .userInfo {
