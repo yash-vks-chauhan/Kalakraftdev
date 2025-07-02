@@ -2,13 +2,12 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
-  min-height: calc(100vh - 64px);
 }
 
 .title {
   font-size: 2rem;
   font-weight: 700;
-  color: #111827;
+  color: #1a202c;
   margin-bottom: 2rem;
 }
 
@@ -212,48 +211,170 @@
 
 @media (max-width: 768px) {
   .container {
-    padding: 1rem;
-    padding-bottom: 80px;
+    padding: 0;
+    background: #f8fafc;
+  }
+
+  .header {
+    padding: 1.25rem 1rem;
+    background: white;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    margin: 0;
   }
 
   .title {
-    font-size: 1.5rem;
-    margin-bottom: 1.5rem;
-    text-align: center;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1a202c;
+    margin: 0;
+  }
+
+  .userList {
+    padding: 0.75rem;
+    gap: 0.75rem;
   }
 
   .userCard {
+    background: white;
+    border-radius: 1rem;
+    overflow: hidden;
+    border: 1px solid rgba(0, 0, 0, 0.03);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+  }
+
+  .userHeader {
     padding: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .userAvatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #64748b;
+    font-weight: 600;
+    font-size: 1rem;
+  }
+
+  .userInfo {
+    flex: 1;
   }
 
   .userName {
     font-size: 1rem;
+    font-weight: 600;
+    color: #1a202c;
+    margin-bottom: 0.25rem;
   }
 
   .userEmail {
-    font-size: 0.8125rem;
+    font-size: 0.875rem;
+    color: #64748b;
   }
 
-  .label {
-    font-size: 0.8125rem;
+  .userMeta {
+    padding: 0.75rem 1rem;
+    background: #f8fafc;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.875rem;
+    color: #64748b;
   }
 
-  .select {
-    font-size: 0.8125rem;
+  .userRole {
     padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
   }
 
-  .cartInfo {
-    padding: 0.5rem 0.75rem;
-    flex-wrap: wrap;
+  .adminRole {
+    background: #fee2e2;
+    color: #991b1b;
   }
 
-  .actionButtons {
-    flex-direction: column;
+  .userRole {
+    background: #e0f2fe;
+    color: #0369a1;
   }
 
-  .viewOrdersButton,
+  .userActions {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    border-top: 1px solid #f1f5f9;
+  }
+
+  .actionButton {
+    flex: 1;
+    padding: 0.5rem;
+    font-size: 0.875rem;
+    border-radius: 0.5rem;
+    background: #f8fafc;
+    color: #64748b;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+  }
+
+  .actionButton:active {
+    background: #f1f5f9;
+    color: #1a202c;
+  }
+
+  .editButton {
+    background: #f1f5f9;
+    color: #1a202c;
+  }
+
   .deleteButton {
-    width: 100%;
+    background: #fee2e2;
+    color: #991b1b;
+  }
+
+  .emptyState {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: #64748b;
+  }
+
+  .filterBar {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    background: white;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  .filterBar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .filterButton {
+    flex: 0 0 auto;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    border-radius: 0.5rem;
+    background: #f1f5f9;
+    color: #64748b;
+    border: none;
+    white-space: nowrap;
+  }
+
+  .filterButton.active {
+    background: #1a202c;
+    color: white;
   }
 } 
