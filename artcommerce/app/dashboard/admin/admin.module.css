@@ -1,0 +1,90 @@
+.adminContainer {
+  display: flex;
+  min-height: calc(100vh - 70px);
+  position: relative;
+}
+
+.adminNav {
+  width: 240px;
+  padding: 1.5rem;
+  border-right: 1px solid rgba(226, 232, 240, 0.8);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.adminNavLinks {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.adminNavLink {
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  color: rgba(0, 0, 0, 0.7);
+  text-decoration: none;
+  transition: all 0.2s ease;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.adminNavLink:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: rgba(0, 0, 0, 0.9);
+}
+
+.adminNavLink.active {
+  background: rgba(0, 0, 0, 0.1);
+  color: rgba(0, 0, 0, 0.9);
+  font-weight: 600;
+}
+
+.adminContent {
+  flex: 1;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+@media (max-width: 768px) {
+  .adminContainer {
+    flex-direction: column;
+    min-height: calc(100vh - 64px); /* Account for mobile footer */
+    padding-bottom: 80px;
+  }
+
+  .adminNav {
+    width: 100%;
+    padding: 1rem 0.75rem;
+    border-right: none;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+    position: sticky;
+    top: 70px;
+    z-index: 10;
+  }
+
+  .adminNavLinks {
+    flex-direction: row;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .adminNavLinks::-webkit-scrollbar {
+    display: none;
+  }
+
+  .adminNavLink {
+    padding: 0.5rem 0.75rem;
+    white-space: nowrap;
+    font-size: 0.875rem;
+  }
+
+  .adminContent {
+    padding: 1rem 0.75rem;
+  }
+} 

@@ -18,11 +18,17 @@
 @media (max-width: 768px) {
   .dashboardContainer {
     padding-top: calc(70px + 1rem);
-    padding-left: 1rem;
-    padding-right: 1rem;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+    padding-bottom: 80px; /* Account for mobile footer */
   }
   
   .dashboardContent {
-    padding: 1.5rem;
+    padding: 1rem;
+    border-radius: 0.75rem;
+    margin-bottom: 1rem;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
   }
 } 

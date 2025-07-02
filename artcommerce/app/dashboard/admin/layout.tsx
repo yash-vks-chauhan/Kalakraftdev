@@ -2,6 +2,7 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import styles from './admin.module.css';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const path = usePathname();
@@ -14,44 +15,44 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   if (hideNav) {
     return (
-      <main className="p-6">{children}</main>
+      <main className={styles.adminContent}>{children}</main>
     );
   }
 
   return (
-    <div className="admin-container flex">
-      <aside className="admin-nav w-60 p-4 border-r">
-        <nav className="space-y-2">
-          <Link href="/dashboard/admin" className={path === '/dashboard/admin' ? 'font-bold' : ''}>
+    <div className={styles.adminContainer}>
+      <aside className={styles.adminNav}>
+        <nav className={styles.adminNavLinks}>
+          <Link href="/dashboard/admin" className={`${styles.adminNavLink} ${path === '/dashboard/admin' ? styles.active : ''}`}>
             Home
           </Link>
           <Link
             href="/dashboard/admin/orders"
-            className={path.startsWith('/dashboard/admin/orders') ? 'font-bold' : ''}
+            className={`${styles.adminNavLink} ${path.startsWith('/dashboard/admin/orders') ? styles.active : ''}`}
           >
             Orders
           </Link>
           <Link
             href="/dashboard/admin/wishlist"
-            className={path.startsWith('/dashboard/admin/wishlist') ? 'font-bold' : ''}
+            className={`${styles.adminNavLink} ${path.startsWith('/dashboard/admin/wishlist') ? styles.active : ''}`}
           >
             Wishlist
           </Link>
           <Link
             href="/dashboard/admin/support"
-            className={path.startsWith('/dashboard/admin/support') ? 'font-bold' : ''}
+            className={`${styles.adminNavLink} ${path.startsWith('/dashboard/admin/support') ? styles.active : ''}`}
           >
             Support
           </Link>
           <Link
             href="/dashboard/admin/reviews"
-            className={path.startsWith('/dashboard/admin/reviews') ? 'font-bold' : ''}
+            className={`${styles.adminNavLink} ${path.startsWith('/dashboard/admin/reviews') ? styles.active : ''}`}
           >
             Reviews
           </Link>
         </nav>
       </aside>
-      <main className="admin-content flex-1 p-6">
+      <main className={styles.adminContent}>
         {children}
       </main>
     </div>
