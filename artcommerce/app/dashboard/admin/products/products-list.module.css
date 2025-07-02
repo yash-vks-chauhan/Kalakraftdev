@@ -321,4 +321,111 @@
   margin: 1rem 0;
   text-align: center;
   font-size: 0.875rem;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+    min-height: calc(100vh - 64px);
+    padding-bottom: 80px;
+  }
+
+  .header {
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .title {
+    font-size: 1.5rem;
+    text-align: center;
+    width: 100%;
+  }
+
+  .newButton {
+    width: 100%;
+    justify-content: center;
+    margin-left: 0;
+  }
+
+  .table {
+    display: block;
+    border: none;
+    margin-top: 1rem;
+  }
+
+  .tableHeader {
+    display: none;
+  }
+
+  .tableRow {
+    display: block;
+    background: white;
+    padding: 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.75rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .tableCell {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f3f4f6;
+  }
+
+  .tableCell:last-child {
+    border-bottom: none;
+  }
+
+  .tableCell::before {
+    content: attr(data-label);
+    font-weight: 500;
+    color: #6b7280;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+  }
+
+  .actionButtons {
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  .editButton,
+  .deleteButton {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .price {
+    font-size: 1rem;
+  }
+
+  .statusActive,
+  .statusInactive {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .showMoreButton {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    font-size: 0.875rem;
+  }
+
+  .emptyState {
+    padding: 2rem 1rem;
+  }
+
+  .emptyStateIcon {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+
+  .emptyStateText {
+    font-size: 0.875rem;
+  }
 } 

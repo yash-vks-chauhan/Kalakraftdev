@@ -1,0 +1,259 @@
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  min-height: calc(100vh - 64px);
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 2rem;
+}
+
+.userList {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.userCard {
+  background: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+}
+
+.userInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.nameEmail {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.userName {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.userEmail {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.roleDate {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.roleSelect {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+.select {
+  padding: 0.375rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  color: #111827;
+  background-color: white;
+}
+
+.joinDate {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.userActions {
+  margin-top: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.cartInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: #f9fafb;
+  border-radius: 0.5rem;
+}
+
+.cartCount {
+  font-weight: 600;
+  color: #111827;
+}
+
+.remindButton {
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  background-color: #059669;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.remindButton:hover {
+  background-color: #047857;
+}
+
+.remindButton.disabled {
+  background-color: #e5e7eb;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.actionButtons {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.viewOrdersButton,
+.deleteButton {
+  flex: 1;
+  padding: 0.625rem 1rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.viewOrdersButton {
+  background-color: #1d4ed8;
+  color: white;
+  text-decoration: none;
+}
+
+.viewOrdersButton:hover {
+  background-color: #1e40af;
+}
+
+.deleteButton {
+  background-color: #dc2626;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.deleteButton:hover {
+  background-color: #b91c1c;
+}
+
+.unauthorized {
+  padding: 2rem;
+  text-align: center;
+  color: #dc2626;
+  font-weight: 500;
+}
+
+.loading {
+  padding: 2rem;
+  text-align: center;
+  color: #6b7280;
+}
+
+@media (min-width: 768px) {
+  .userCard {
+    padding: 2rem;
+  }
+
+  .userInfo {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .roleDate {
+    flex-direction: row;
+    align-items: center;
+    gap: 2rem;
+  }
+
+  .userActions {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .actionButtons {
+    flex: none;
+  }
+
+  .viewOrdersButton,
+  .deleteButton {
+    flex: none;
+    min-width: 120px;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+    padding-bottom: 80px;
+  }
+
+  .title {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+  }
+
+  .userCard {
+    padding: 1rem;
+  }
+
+  .userName {
+    font-size: 1rem;
+  }
+
+  .userEmail {
+    font-size: 0.8125rem;
+  }
+
+  .label {
+    font-size: 0.8125rem;
+  }
+
+  .select {
+    font-size: 0.8125rem;
+    padding: 0.25rem 0.5rem;
+  }
+
+  .cartInfo {
+    padding: 0.5rem 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .actionButtons {
+    flex-direction: column;
+  }
+
+  .viewOrdersButton,
+  .deleteButton {
+    width: 100%;
+  }
+} 

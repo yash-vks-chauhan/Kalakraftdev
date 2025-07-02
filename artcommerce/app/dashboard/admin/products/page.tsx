@@ -117,19 +117,19 @@ export default function AdminProductsPage() {
 
             return (
               <tr key={p.id} className={styles.tableRow}>
-                <td className={styles.tableCell}>{p.name || 'No Name'}</td>
-                <td className={styles.tableCell}>
+                <td className={styles.tableCell} data-label="Product Name">{p.name || 'No Name'}</td>
+                <td className={styles.tableCell} data-label="Price">
                   <span className={styles.price}>
                     {currencyDisplay} {priceDisplay}
                   </span>
                 </td>
-                <td className={styles.tableCell}>{stockDisplay}</td>
-                <td className={styles.tableCell}>
+                <td className={styles.tableCell} data-label="Stock">{stockDisplay}</td>
+                <td className={styles.tableCell} data-label="Status">
                   <span className={statusClass}>
                     {statusText}
                   </span>
                 </td>
-                <td className={styles.tableCell}>
+                <td className={styles.tableCell} data-label="Actions">
                   <div className={styles.actionButtons}>
                     <button
                       onClick={() => handleEdit(p.id)}
