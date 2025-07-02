@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../../contexts/AuthContext'
 import Link from 'next/link'
-import styles from './users.module.css'
 
 interface UserRow {
   id: number
@@ -30,9 +29,9 @@ export default function AdminUsersPage() {
   }, [token, user])
 
   if (user?.role !== 'admin') {
-    return <p className={styles.unauthorized}>Unauthorized</p>
+    return <p className="p-8">Unauthorized</p>
   }
-  if (loading) return <p className={styles.loading}>Loading users…</p>
+  if (loading) return <p className="p-8">Loading users…</p>
 
   async function onRoleChange(id: number, newRole: string) {
     const res = await fetch('/api/admin/users', {
@@ -52,61 +51,34 @@ export default function AdminUsersPage() {
   }
 
   return (
-    <main className={styles.container}>
-      <h1 className={styles.title}>User Management</h1>
-      <div className={styles.userList}>
-        {users.map(u => (
-          <div key={u.id} className={styles.userCard}>
-            <div className={styles.userInfo}>
-              <div className={styles.nameEmail}>
-                <h3 className={styles.userName}>{u.fullName}</h3>
-                <p className={styles.userEmail}>{u.email}</p>
-              </div>
-              <div className={styles.roleDate}>
-                <div className={styles.roleSelect}>
-                  <label className={styles.label}>Role:</label>
-                  <select
-                    value={u.role}
-                    onChange={e => onRoleChange(u.id, e.target.value)}
-                    className={styles.select}
-                  >
-                    <option value="user">User</option>
-                    <option value="admin">Admin</option>
-                  </select>
-                </div>
-                <p className={styles.joinDate}>
-                  <span className={styles.label}>Joined:</span>
-                  {new Date(u.createdAt).toLocaleDateString()}
-                </p>
-              </div>
-            </div>
-            <div className={styles.userActions}>
-              <div className={styles.cartInfo}>
-                <span className={styles.label}>Abandoned Cart:</span>
-                <span className={styles.cartCount}>{u.abandonedCartCount}</span>
-                <button
-                  disabled={u.abandonedCartCount === 0}
-                  onClick={() =>
-                    fetch(`/api/admin/users/${u.id}/remind-cart`, {
-                      method: 'POST',
-                      headers: { Authorization: `Bearer ${token}` }
-                    }).then(() => alert('Reminder sent!'))
-                  }
-                  className={`${styles.remindButton} ${u.abandonedCartCount === 0 ? styles.disabled : ''}`}
+    <main className="container mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold mb-6">User Management</h1>
+      <table className="w-full border-collapse">
+        <thead>
+          <tr className="bg-gray-100">
+            {['Name','Email','Role','Actions','Joined','View Orders','Abandoned Cart','Remind'].map(h => (
+              <th key={h} className="border px-4 py-2 text-left">{h}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {users.map(u => (
+            <tr key={u.id} className="hover:bg-gray-50">
+              <td className="border px-4 py-2">{u.fullName}</td>
+              <td className="border px-4 py-2">{u.email}</td>
+              <td className="border px-4 py-2 capitalize">{u.role}</td>
+              <td className="border px-4 py-2">
+                <select
+                  value={u.role}
+                  onChange={e => onRoleChange(u.id, e.target.value)}
+                  className="border rounded px-2 py-1"
                 >
-                  Remind
-                </button>
-              </div>
-              <div className={styles.actionButtons}>
-                <Link
-                  href={`/dashboard/admin/orders?userId=${u.id}`}
-                  className={styles.viewOrdersButton}
-                >
-                  View Orders
-                </Link>
+                  <option value="user">User</option>
+                  <option value="admin">Admin</option>
+                </select>
                 <button
                   type="button"
-                  className={styles.deleteButton}
+                  className="ml-2 text-red-600 hover:underline"
                   onClick={async () => {
                     if (!confirm(`Delete ${u.fullName}?`)) return;
                     const res = await fetch(`/api/admin/users/${u.id}`, {
@@ -122,11 +94,43 @@ export default function AdminUsersPage() {
                 >
                   Delete
                 </button>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+              </td>
+              <td className="border px-4 py-2">
+                {new Date(u.createdAt).toLocaleDateString()}
+              </td>
+              <td className="border px-4 py-2">
+                <Link
+                  href={`/dashboard/admin/orders?userId=${u.id}`}
+                  className="text-blue-600 hover:underline text-sm"
+                >
+                  View Orders
+                </Link>
+              </td>
+              <td className="border px-4 py-2">
+                {u.abandonedCartCount}
+              </td>
+              <td className="border px-4 py-2">
+                <button
+                  disabled={u.abandonedCartCount === 0}
+                  onClick={() =>
+                    fetch(`/api/admin/users/${u.id}/remind-cart`, {
+                      method: 'POST',
+                      headers: { Authorization: `Bearer ${token}` }
+                    }).then(() => alert('Reminder sent!'))
+                  }
+                  className={`px-2 py-1 rounded ${
+                    u.abandonedCartCount > 0
+                      ? 'bg-green-600 text-white'
+                      : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                  }`}
+                >
+                  Remind
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </main>
   )
 }
