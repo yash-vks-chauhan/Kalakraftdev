@@ -1149,9 +1149,9 @@
   bottom: 70px;
   right: 16px;
   width: 220px;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(30px) saturate(250%);
-  -webkit-backdrop-filter: blur(30px) saturate(250%);
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
   border-radius: 1rem;
   padding: 0.75rem 0.5rem;
   box-shadow: 
@@ -1174,12 +1174,6 @@
   backface-visibility: hidden;
 }
 
-.accountDropdownOpen {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
-}
-
 .accountDropdown::before {
   content: '';
   position: absolute;
@@ -1191,8 +1185,14 @@
   border-right: 1px solid rgba(255, 255, 255, 0.25);
   border-bottom: 1px solid rgba(255, 255, 255, 0.25);
   transform: rotate(45deg);
-  backdrop-filter: blur(30px) saturate(250%);
-  -webkit-backdrop-filter: blur(30px) saturate(250%);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+}
+
+.accountDropdownOpen {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
 }
 
 .accountDropdownBackdrop {
@@ -1201,9 +1201,9 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(8px) saturate(180%);
-  -webkit-backdrop-filter: blur(8px) saturate(180%);
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
   opacity: 0;
   visibility: hidden;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
