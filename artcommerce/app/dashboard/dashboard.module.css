@@ -516,183 +516,240 @@
 @media (max-width: 768px) {
   .dashboardContainer {
     padding: 0;
-    min-height: calc(100vh - 64px);
-    padding-bottom: 80px;
-    background: #f8fafc;
+    min-height: 100vh;
+    width: 100%;
+    background: #ffffff;
   }
 
   .header {
     flex-direction: column;
-    gap: 1rem;
-    align-items: center;
-    text-align: center;
-    margin-bottom: 1.5rem;
-    padding: 1.5rem 1rem;
-    background: white;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    align-items: stretch;
+    padding: 1.25rem;
+    background: linear-gradient(to bottom, #1a202c, #2d3748);
+    color: white;
+    margin: 0;
+    border-radius: 0 0 1.5rem 1.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
 
   .userInfo {
-    flex-direction: column;
-    gap: 0.75rem;
+    display: flex;
     align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
   }
 
   .avatar {
-    width: 64px;
-    height: 64px;
-    border: 2px solid white;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    width: 56px;
+    height: 56px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   }
 
   .welcomeText {
-    font-size: 1.25rem;
-    color: #1a202c;
-    font-weight: 600;
+    font-size: 1.5rem;
+    color: white;
     margin: 0;
+    font-weight: 600;
   }
 
   .userEmail {
     font-size: 0.875rem;
-    color: #64748b;
+    color: rgba(255, 255, 255, 0.8);
     margin: 0;
-  }
-
-  .logoutButton {
-    width: auto;
-    padding: 0.5rem 1rem;
-    font-size: 0.875rem;
-    border-radius: 0.5rem;
-    background: #f1f5f9;
-    color: #64748b;
-    border: none;
-    margin-top: 0.5rem;
   }
 
   .metricsContainer {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 0.75rem;
-    padding: 0.75rem;
-    margin-bottom: 1.5rem;
+    gap: 1rem;
+    padding: 0 1.25rem;
+    margin-top: -1rem;
+    position: relative;
+    z-index: 1;
   }
 
   .metricCard {
     background: white;
-    padding: 1rem;
-    border-radius: 0.75rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
-    border: 1px solid rgba(0, 0, 0, 0.03);
+    padding: 1.25rem;
+    border-radius: 1rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    transition: transform 0.2s ease;
+  }
+
+  .metricCard:active {
+    transform: scale(0.98);
   }
 
   .metricValue {
-    font-size: 1.25rem;
-    font-weight: 600;
+    font-size: 1.5rem;
+    font-weight: 700;
     color: #1a202c;
+    margin: 0;
   }
 
   .metricLabel {
     font-size: 0.75rem;
     color: #64748b;
     text-transform: uppercase;
-    letter-spacing: 0.025em;
+    letter-spacing: 0.05em;
+    margin: 0;
   }
 
-  .sectionTitle {
-    font-size: 1rem;
-    font-weight: 600;
-    color: #1a202c;
-    margin: 1.5rem 1rem 1rem;
-  }
-
-  .actionButtons {
-    display: flex;
-    gap: 0.5rem;
-    padding: 0.75rem;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    margin-bottom: 1rem;
-  }
-
-  .actionButtons::-webkit-scrollbar {
-    display: none;
+  .quickActions {
+    padding: 1.25rem;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
   }
 
   .actionButton {
-    flex: 0 0 auto;
-    padding: 0.625rem 1rem;
-    font-size: 0.875rem;
-    border-radius: 0.5rem;
-    background: white;
+    background: #f8fafc;
+    border: none;
+    padding: 1.25rem;
+    border-radius: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
     color: #1a202c;
-    border: 1px solid rgba(0, 0, 0, 0.05);
-    white-space: nowrap;
+    transition: all 0.2s ease;
   }
 
   .actionButton:active {
     background: #f1f5f9;
+    transform: scale(0.98);
   }
 
-  .contentSection {
+  .actionIcon {
+    width: 24px;
+    height: 24px;
+    color: #2563eb;
+  }
+
+  .actionLabel {
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-align: center;
+  }
+
+  .recentActivity {
+    padding: 0 1.25rem;
+  }
+
+  .sectionTitle {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1a202c;
+    margin: 0 0 1rem 0;
+  }
+
+  .activityList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .activityCard {
     background: white;
-    margin: 0.75rem;
+    border: 1px solid #e2e8f0;
     border-radius: 1rem;
-    overflow: hidden;
-    border: 1px solid rgba(0, 0, 0, 0.03);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
-  }
-
-  .dashboardGrid {
-    grid-template-columns: 1fr;
+    padding: 1rem;
+    display: flex;
+    align-items: center;
     gap: 1rem;
   }
 
-  .dashboardCard {
-    padding: 1.25rem;
+  .activityIcon {
+    width: 40px;
+    height: 40px;
     border-radius: 12px;
+    background: #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #2563eb;
   }
 
-  .cardTitle {
-    font-size: 1.25rem;
-    margin-bottom: 0.5rem;
+  .activityInfo {
+    flex: 1;
   }
 
-  .cardDescription {
+  .activityTitle {
     font-size: 0.875rem;
+    font-weight: 500;
+    color: #1a202c;
+    margin: 0;
   }
 
-  /* Optimize hover effects for touch devices */
-  .metricCard:hover,
-  .dashboardCard:hover {
-    transform: none;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  .activityTime {
+    font-size: 0.75rem;
+    color: #64748b;
+    margin: 0.25rem 0 0 0;
   }
 
-  .metricCard:active,
-  .dashboardCard:active {
+  .bottomNav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    padding: 0.75rem 1.25rem;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    z-index: 10;
+  }
+
+  .navButton {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.375rem;
+    color: #64748b;
+    text-decoration: none;
+    padding: 0.5rem;
+    border-radius: 0.75rem;
+    transition: all 0.2s ease;
+  }
+
+  .navButton.active {
+    color: #2563eb;
+    background: #f1f5f9;
+  }
+
+  .navIcon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .navLabel {
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+
+  .logoutButton {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 0.625rem 1.25rem;
+    border-radius: 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-top: 1rem;
+    width: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+  }
+
+  .logoutButton:active {
+    background: rgba(255, 255, 255, 0.2);
     transform: scale(0.98);
-    transition: transform 0.2s ease;
-  }
-
-  /* Optimize animations for mobile */
-  .metricCard::before,
-  .dashboardCard::before {
-    display: none;
-  }
-
-  .metricCard::after,
-  .dashboardCard::after {
-    display: none;
-  }
-
-  /* Adjust backdrop filters for better mobile performance */
-  .metricCard,
-  .dashboardCard {
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
   }
 } 
