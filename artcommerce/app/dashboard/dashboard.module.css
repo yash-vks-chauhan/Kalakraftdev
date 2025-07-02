@@ -519,43 +519,250 @@
     margin: 0;
     min-height: 100vh;
     width: 100vw;
-    background: #f8fafc;
+    background: #121212;
+    color: #ffffff;
     overflow-x: hidden;
   }
 
   .header {
-    padding: 1.5rem 1.25rem;
-    background: #1a202c;
+    padding: 1rem 1.25rem;
+    background: #121212;
     color: white;
     margin: 0;
     width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .backButton {
+    color: white;
+    background: none;
+    border: none;
+    padding: 0.5rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+  }
+
+  .title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: white;
+    margin: 0;
+  }
+
+  .profileSection {
+    padding: 1.5rem;
+    background: #121212;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   }
 
   .userInfo {
     display: flex;
     align-items: center;
     gap: 1rem;
-    margin-bottom: 1rem;
   }
 
   .avatar {
-    width: 48px;
-    height: 48px;
+    width: 60px;
+    height: 60px;
     border-radius: 50%;
-    border: 2px solid rgba(255, 255, 255, 0.2);
+    background: #2a2a2a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: #fff;
+    font-weight: 500;
   }
 
-  .welcomeText {
+  .userDetails {
+    flex: 1;
+  }
+
+  .userName {
     font-size: 1.25rem;
+    font-weight: 600;
     color: white;
     margin: 0;
-    font-weight: 600;
   }
 
-  .userEmail {
+  .userStatus {
     font-size: 0.875rem;
-    color: rgba(255, 255, 255, 0.7);
+    color: rgba(255, 255, 255, 0.6);
+    margin-top: 0.25rem;
+  }
+
+  .quickActions {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    padding: 1.25rem;
+    background: #1a1a1a;
+    border-radius: 1rem;
+    margin: 1rem 1rem 1.5rem;
+  }
+
+  .actionItem {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    background: #2a2a2a;
+    border-radius: 0.75rem;
+    text-align: center;
+  }
+
+  .actionIcon {
+    width: 24px;
+    height: 24px;
+    color: #fff;
+  }
+
+  .actionLabel {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: white;
+  }
+
+  /* Settings Sections */
+  .settingsSection {
+    padding: 1.5rem 1rem;
+  }
+
+  .sectionTitle {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 1rem 0.5rem;
+  }
+
+  .settingsList {
+    background: #1a1a1a;
+    border-radius: 1rem;
+    overflow: hidden;
+  }
+
+  .settingItem {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    gap: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    text-decoration: none;
+  }
+
+  .settingItem:last-child {
+    border-bottom: none;
+  }
+
+  .settingIcon {
+    width: 24px;
+    height: 24px;
+    color: rgba(255, 255, 255, 0.8);
+    background: #2a2a2a;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+  }
+
+  .settingContent {
+    flex: 1;
+  }
+
+  .settingLabel {
+    font-size: 1rem;
+    font-weight: 500;
+    color: white;
     margin: 0;
+  }
+
+  .settingDescription {
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin-top: 0.25rem;
+  }
+
+  .settingValue {
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.6);
+    padding: 0.25rem 0.75rem;
+    background: #2a2a2a;
+    border-radius: 1rem;
+  }
+
+  .chevronRight {
+    color: rgba(255, 255, 255, 0.4);
+  }
+
+  /* Version Info */
+  .versionInfo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: #1a1a1a;
+    border-radius: 1rem;
+    margin: 1rem;
+  }
+
+  .updateIcon {
+    width: 24px;
+    height: 24px;
+    color: #00b894;
+  }
+
+  .updateInfo {
+    flex: 1;
+  }
+
+  .updateLabel {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: white;
+    margin: 0;
+  }
+
+  .versionNumber {
+    font-size: 0.75rem;
+    color: #00b894;
+    padding: 0.25rem 0.5rem;
+    background: rgba(0, 184, 148, 0.1);
+    border-radius: 0.5rem;
+  }
+
+  /* Theme Toggle */
+  .themeToggle {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    background: #1a1a1a;
+    border-radius: 1rem;
+    margin: 1rem;
+  }
+
+  .themeIcon {
+    width: 24px;
+    height: 24px;
+    color: white;
+    margin-right: 0.75rem;
+  }
+
+  .themeLabel {
+    flex: 1;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: white;
+  }
+
+  .themeValue {
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.6);
   }
 
   /* Stats Section */
@@ -591,50 +798,6 @@
     font-size: 0.75rem;
     color: #64748b;
     margin-top: 0.25rem;
-  }
-
-  /* Quick Actions */
-  .actionsSection {
-    padding: 1.5rem 1rem;
-    background: white;
-    margin-top: 1rem;
-    width: 100%;
-  }
-
-  .sectionTitle {
-    font-size: 1rem;
-    font-weight: 600;
-    color: #1a202c;
-    margin: 0 0 1rem 0;
-  }
-
-  .actionGrid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
-  }
-
-  .actionItem {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 1rem;
-    background: #f8fafc;
-    border-radius: 0.75rem;
-    text-align: center;
-  }
-
-  .actionIcon {
-    width: 24px;
-    height: 24px;
-    color: #2563eb;
-  }
-
-  .actionLabel {
-    font-size: 0.75rem;
-    font-weight: 500;
-    color: #1a202c;
   }
 
   /* Recent Activity */
@@ -817,32 +980,6 @@
   .statusCompleted {
     background: #dcfce7;
     color: #166534;
-  }
-
-  /* Settings Section */
-  .settingsSection {
-    padding: 1rem;
-  }
-
-  .settingItem {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem;
-    background: white;
-    border-radius: 0.75rem;
-    margin-bottom: 0.75rem;
-  }
-
-  .settingLabel {
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: #1a202c;
-  }
-
-  .settingValue {
-    font-size: 0.875rem;
-    color: #64748b;
   }
 
   /* Notifications */
