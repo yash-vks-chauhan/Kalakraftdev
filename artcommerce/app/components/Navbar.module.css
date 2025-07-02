@@ -425,96 +425,26 @@
   color: rgba(0, 0, 0, 0.9);
 }
 
+/* Hamburger menu button */
 .mobileToggle {
-  display: inline-flex;
-  font-size: 1.5rem;
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: rgba(255, 255, 255, 0.7);
-  padding: 0.5rem;
-  border-radius: 6px;
-  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  z-index: 1061;
-}
-
-.mobileToggleOpen {
-  position: fixed !important;
-  top: 20px;
-  left: 250px;
-  z-index: 1070 !important;
-  background-color: rgba(255, 255, 255, 0.95);
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  backdrop-filter: blur(10px);
-  pointer-events: auto !important;
-  animation: buttonSlideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-@keyframes buttonSlideIn {
-  0% {
-    transform: translateX(-20px);
-    opacity: 0;
-  }
-  100% {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-/* Hamburger Icon */
-.hamburgerIcon {
-  width: 24px;
-  height: 18px;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-.line {
-  width: 100%;
-  height: 2px;
-  background-color: rgba(0, 0, 0, 0.7);
-  transition: all 0.3s ease;
-  border-radius: 2px;
-  box-shadow: none;
-}
-
-/* Home page hamburger menu - white */
-.homeNavbar .line {
-  background-color: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-}
-
-.minimized .line {
-  background-color: rgba(0, 0, 0, 0.7);
-  box-shadow: none;
-}
-
-/* Elegant Hamburger to X animation */
-.hamburgerOpen .line1 {
-  transform: translateY(8px) rotate(45deg);
-  background-color: #ffffff;
-}
-
-.hamburgerOpen .line2 {
-  opacity: 0;
-  transform: scale(0) translateX(-20px);
-}
-
-.hamburgerOpen .line3 {
-  transform: translateY(-8px) rotate(-45deg);
-  background-color: #ffffff;
-}
-
-.mobileToggle:hover {
-  color: #ffffff;
-  background-color: rgba(255, 255, 255, 0.1);
+  display: none; /* Hide by default on desktop */
 }
 
 @media (max-width: 768px) {
+  .mobileToggle {
+    display: inline-flex; /* Only show on mobile */
+    font-size: 1.5rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: rgba(255, 255, 255, 0.7);
+    padding: 0.5rem;
+    border-radius: 6px;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    z-index: 1061;
+  }
+  
   .navbar {
     margin: 0.5rem;
     padding: 0.5rem 1rem;
@@ -524,11 +454,6 @@
   .center {
     gap: 2rem;
     padding: 0 1rem;
-  }
-  
-  .mobileToggle {
-    display: inline-flex;
-    color: rgba(255, 255, 255, 0.7);
   }
   
   .right {
