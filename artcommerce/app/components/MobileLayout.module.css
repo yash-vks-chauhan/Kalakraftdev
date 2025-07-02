@@ -1267,6 +1267,27 @@
   margin-top: 0.25rem;
 }
 
+/* Guest info styles for non-logged in users */
+.guestInfo {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+  margin-bottom: 0.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+.guestTitle {
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.8);
+  font-size: 1rem;
+}
+
+.guestSubtitle {
+  color: rgba(0, 0, 0, 0.6);
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
 .dropdownItem {
   display: flex;
   align-items: center;
