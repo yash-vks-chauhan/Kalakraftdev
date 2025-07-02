@@ -266,6 +266,14 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
     }
   }
 
+  const handleHomeClick = () => {
+    router.push('/');
+    // Close mobile menu if it's open
+    if (isMobileMenuOpen) {
+      setIsMobileMenuOpen(false);
+    }
+  }
+
   const handleAccountClick = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
@@ -637,13 +645,13 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
       
       {/* Mobile Footer Navigation */}
       <nav className={`${styles.mobileFooter} ${isFooterVisible ? styles.footerVisible : styles.footerHidden}`}>
-        <Link 
-          href="/" 
+        <button 
+          onClick={handleHomeClick}
           className={`${styles.footerNavItem} ${isActivePath('/') ? styles.active : ''}`}
         >
           <Home size={20} />
           <span>Home</span>
-        </Link>
+        </button>
         <Link 
           href="/products" 
           className={`${styles.footerNavItem} ${isActivePath('/products') ? styles.active : ''}`}
