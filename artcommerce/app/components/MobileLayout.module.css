@@ -311,26 +311,30 @@
 @keyframes slideUp {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(15px) scale(0.98);
     visibility: hidden;
+    box-shadow: 0 0px 0px rgba(0, 0, 0, 0);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
     visibility: visible;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
   }
 }
 
 @keyframes slideDown {
   from {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
     visibility: visible;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
   }
   to {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(15px) scale(0.98);
     visibility: hidden;
+    box-shadow: 0 0px 0px rgba(0, 0, 0, 0);
   }
 }
 
@@ -1230,7 +1234,7 @@
   -webkit-backdrop-filter: blur(5px) saturate(180%);
   opacity: 0;
   visibility: hidden;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 999;
   pointer-events: none;
 }
@@ -1239,6 +1243,20 @@
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
+  animation: fadeIn 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+  }
+  to {
+    opacity: 1;
+    backdrop-filter: blur(5px) saturate(180%);
+    -webkit-backdrop-filter: blur(5px) saturate(180%);
+  }
 }
 
 .profileDropdownBackdropVisible {
@@ -1247,12 +1265,20 @@
   pointer-events: auto !important;
 }
 
-.userInfo {
+.userInfo, .guestInfo {
   padding: 0.75rem 1rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.4);
   margin-bottom: 0.5rem;
   position: relative;
   z-index: 1;
+  opacity: 0;
+  animation: headerFadeIn 0.4s forwards;
+}
+
+@keyframes headerFadeIn {
+  to {
+    opacity: 1;
+  }
 }
 
 .userName {
@@ -1267,15 +1293,7 @@
   margin-top: 0.25rem;
 }
 
-/* Guest info styles for non-logged in users */
-.guestInfo {
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.4);
-  margin-bottom: 0.5rem;
-  position: relative;
-  z-index: 1;
-}
-
+/* Guest info styles for non-logged in users - only title and subtitle */
 .guestTitle {
   font-weight: 600;
   color: rgba(0, 0, 0, 0.8);
@@ -1305,6 +1323,22 @@
   cursor: pointer;
   position: relative;
   z-index: 1;
+  opacity: 0;
+  transform: translateY(10px);
+  animation: dropdownItemFadeIn 0.5s forwards;
+}
+
+.dropdownItem:nth-child(2) { animation-delay: 0.05s; }
+.dropdownItem:nth-child(3) { animation-delay: 0.1s; }
+.dropdownItem:nth-child(4) { animation-delay: 0.15s; }
+.dropdownItem:nth-child(5) { animation-delay: 0.2s; }
+.dropdownItem:nth-child(6) { animation-delay: 0.25s; }
+
+@keyframes dropdownItemFadeIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .dropdownItem:hover {
@@ -1318,32 +1352,6 @@
   height: 1px;
   background-color: rgba(0, 0, 0, 0.1);
   margin: 8px 0;
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-    visibility: hidden;
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-    visibility: visible;
-  }
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 1;
-    transform: translateY(0);
-    visibility: visible;
-  }
-  to {
-    opacity: 0;
-    transform: translateY(10px);
-    visibility: hidden;
-  }
 }
 
 /* Button pulse animation for feedback */

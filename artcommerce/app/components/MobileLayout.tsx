@@ -267,7 +267,17 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
   }
 
   const handleHomeClick = () => {
-    router.push('/');
+    // If already on home page, scroll to top
+    if (pathname === '/') {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    } else {
+      // Navigate to home page
+      router.push('/');
+    }
+    
     // Close mobile menu if it's open
     if (isMobileMenuOpen) {
       setIsMobileMenuOpen(false);
@@ -693,8 +703,8 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
               ref={accountDropdownRef}
               className={`${styles.accountDropdown} ${isAccountDropdownOpen ? styles.accountDropdownOpen : ''}`}
               style={{ 
-                animation: isAccountDropdownOpen ? `${styles.slideUp} 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards` : 
-                  `${styles.slideDown} 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards`
+                animation: isAccountDropdownOpen ? `${styles.slideUp} 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards` : 
+                  `${styles.slideDown} 0.25s cubic-bezier(0.4, 0.0, 0.2, 1) forwards`
               }}
             >
               {user ? (
