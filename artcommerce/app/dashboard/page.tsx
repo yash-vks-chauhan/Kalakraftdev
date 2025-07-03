@@ -7,6 +7,8 @@ import { useAuth } from '../contexts/AuthContext'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import styles from './dashboard.module.css'
+import MobileDashboardHome from './MobileDashboardHome'
+import { useIsMobile } from '../../lib/utils'
 
 // Card styling
 const cardClasses = `
@@ -19,6 +21,8 @@ export default function DashboardHomePage() {
   const { user, token, logout } = useAuth()
   const router = useRouter()
   
+  const isMobile = useIsMobile()
+  const [forceDesktopView, setForceDesktopView] = useState(false)
 
   const [period, setPeriod] = useState<'today'|'week'|'month'|'year'|'all'>('today')
   const [metrics, setMetrics] = useState<null | {
@@ -27,6 +31,15 @@ export default function DashboardHomePage() {
     statusCounts: { status: string; _count: { status: number } }[]
     revenue: number
   }>(null)
+
+  const mobileView = isMobile && !forceDesktopView;
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const pref = localStorage.getItem('viewPreference')
+      if (pref === 'desktop') setForceDesktopView(true)
+    }
+  }, [])
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -38,6 +51,10 @@ export default function DashboardHomePage() {
       .then(setMetrics)
       .catch(console.error)
   }, [token, user, period])
+
+  if (mobileView) {
+    return <MobileDashboardHome />
+  }
 
   if (!user) return null
 
