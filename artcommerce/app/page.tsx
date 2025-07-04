@@ -24,6 +24,14 @@ export default function Home() {
 const [message, setMessage] = useState<string|null>(null)
 
 const [rotatingText, setRotatingText] = useState('coasters')
+const [displayText, setDisplayText] = useState('')
+const [isTyping, setIsTyping] = useState(true)
+const [currentWordIndex, setCurrentWordIndex] = useState(0)
+const words = ['coasters', 'wall art', 'home decor', 'custom pieces']
+const typingSpeed = 100 // milliseconds per character
+const deletingSpeed = 50 // milliseconds per character
+const pauseBeforeTyping = 500 // pause before typing a new word
+const pauseBeforeDeletion = 1500 // pause before deleting the word
 
 const carouselTrackRef = useRef<HTMLDivElement>(null)
 
@@ -240,30 +248,46 @@ scrollIndicator?.removeEventListener('click', handleScrollClick)
 
 
 useEffect(() => {
-
-// Rotating text animation
-
-const items = ['coasters', 'wall art', 'home decor', 'custom pieces']
-
-let currentIndex = 0
-
-
-
-const rotateText = () => {
-
-currentIndex = (currentIndex + 1) % items.length
-
-setRotatingText(items[currentIndex])
-
-}
-
-
-
-const interval = setInterval(rotateText, 3000)
-
-return () => clearInterval(interval)
-
-}, [])
+  let timer: NodeJS.Timeout;
+  
+  // Handle the typewriter effect
+  if (isTyping) {
+    // If we're typing and haven't completed the word
+    if (displayText.length < words[currentWordIndex].length) {
+      timer = setTimeout(() => {
+        setDisplayText(words[currentWordIndex].substring(0, displayText.length + 1));
+      }, typingSpeed);
+    } 
+    // If we've completed typing the word
+    else {
+      setIsTyping(false);
+      timer = setTimeout(() => {
+        setIsTyping(false);
+      }, pauseBeforeDeletion);
+    }
+  } else {
+    // If we're deleting and there's still text left
+    if (displayText.length > 0) {
+      timer = setTimeout(() => {
+        setDisplayText(displayText.substring(0, displayText.length - 1));
+      }, deletingSpeed);
+    } 
+    // If we've deleted all text
+    else {
+      setIsTyping(true);
+      // Move to the next word
+      setCurrentWordIndex((currentWordIndex + 1) % words.length);
+      timer = setTimeout(() => {
+        // Small delay before typing next word
+      }, pauseBeforeTyping);
+    }
+  }
+  
+  // Update the main rotating text state for any components that use it
+  setRotatingText(displayText);
+  
+  return () => clearTimeout(timer);
+}, [displayText, isTyping, currentWordIndex])
 
 
 
@@ -483,7 +507,7 @@ data-aos-delay="400"
 
 <h1 className={styles.title} data-aos="fade-up" data-aos-delay="600">
 
-Handcrafted resin art for <span id="rotator">{rotatingText}</span>
+Handcrafted resin art for <span id="rotator">{displayText}</span>
 
 </h1>
 

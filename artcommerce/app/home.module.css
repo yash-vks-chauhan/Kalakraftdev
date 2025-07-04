@@ -144,9 +144,25 @@
 
 #rotator {
   display: inline-block;
-  color: #FFD700;
-  transition: all 0.5s ease;
-  animation: rotateText 0.5s ease-in-out;
+  font-style: italic;
+  font-weight: 400;
+  position: relative;
+  color: #FFD700; /* Gold color for emphasis */
+  min-width: 120px; /* Prevent layout shift */
+}
+
+/* Typewriter cursor effect */
+#rotator::after {
+  content: '|';
+  position: absolute;
+  right: -8px;
+  color: rgba(255, 255, 255, 0.8);
+  animation: cursor-blink 1s step-end infinite;
+}
+
+@keyframes cursor-blink {
+  from, to { opacity: 1; }
+  50% { opacity: 0; }
 }
 
 .scrollIndicator {
