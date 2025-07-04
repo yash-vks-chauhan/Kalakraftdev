@@ -649,7 +649,7 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
       </header>
       
       {/* Main Content Area */}
-      <main className={styles.mobileContent}>
+      <main className={`${styles.mobileContent} ${isHomePage ? styles.homeContent : ''}`}>
         {children}
       </main>
       

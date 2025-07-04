@@ -152,7 +152,8 @@
 
 /* Home page specific content styles */
 .homeContent {
-  padding: 0;
+  /* Remove horizontal padding on homepage, keep bottom padding for footer */
+  padding: 0 0 70px 0;
   margin-top: 0; /* Remove top margin for home page */
 }
 

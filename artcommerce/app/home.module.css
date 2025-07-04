@@ -1290,6 +1290,23 @@
     padding: 0.6rem 1.5rem;
     font-size: 0.8rem;
   }
+
+  /* Enable manual swipe and disable auto-scroll on mobile */
+  .carouselContainer {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+  }
+
+  .carouselTrack {
+    animation: none;
+    scroll-snap-type: x mandatory;
+  }
+
+  .productCard {
+    scroll-snap-align: start;
+  }
 }
 
 /* Navigation arrows for carousel */
