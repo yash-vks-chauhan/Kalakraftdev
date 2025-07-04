@@ -438,12 +438,6 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
       setIsDragging(false)
     }
 
-    // Handle navigation to category page
-    const navigateToCategory = (category: string) => {
-      if (isDragging) return; // Don't navigate if dragging
-      router.push(`/products?category=${encodeURIComponent(category.toLowerCase())}`);
-    };
-
     return (
       <section className={styles.mobileCollectionsSection}>
         <div className={styles.mobileSectionHeader}>
@@ -469,11 +463,7 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
             onTouchEnd={handleTouchEnd}
           >
             {productCategories.map((category, index) => (
-              <div 
-                key={index} 
-                className={styles.mobileProductCard}
-                onClick={() => navigateToCategory(category.title)}
-              >
+              <div key={index} className={styles.mobileProductCard}>
                 <div className={styles.mobileCardInner}>
                   <Image
                     src={category.image}
@@ -487,13 +477,7 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
                     {category.title}
                   </div>
                   <div className={styles.mobileCardOverlay}>
-                    <button 
-                      className={styles.mobileViewButton}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigateToCategory(category.title);
-                      }}
-                    >
+                    <button className={styles.mobileViewButton}>
                       View Collection
                     </button>
                   </div>

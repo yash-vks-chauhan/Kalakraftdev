@@ -716,10 +716,9 @@
   font-weight: 500;
   text-align: center;
   letter-spacing: 0.05em;
-  opacity: 1; /* Make visible by default */
-  transform: translateY(0); /* No translation by default */
+  opacity: 0;
+  transform: translateY(10px);
   transition: all 0.3s ease;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5); /* Add text shadow for better readability */
 }
 
 .mobileCardOverlay {
@@ -728,7 +727,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.2); /* Lighter overlay */
+  background: rgba(0, 0, 0, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -749,25 +748,8 @@
   opacity: 0;
   transition: all 0.3s ease;
   cursor: pointer;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); /* Add shadow for better visibility */
 }
 
-/* Change from :active to :hover for better UX */
-.mobileProductCard:hover .mobileCardOverlay {
-  opacity: 1;
-}
-
-.mobileProductCard:hover .mobileViewButton {
-  transform: translateY(0);
-  opacity: 1;
-}
-
-/* Keep the category title visible when hovering */
-.mobileProductCard:hover .mobileCategoryTitle {
-  opacity: 0; /* Hide the title when hovering to show the button clearly */
-}
-
-/* Keep the active states for touch devices */
 .mobileProductCard:active .mobileCardOverlay {
   opacity: 1;
 }
@@ -775,11 +757,6 @@
 .mobileProductCard:active .mobileViewButton {
   transform: translateY(0);
   opacity: 1;
-}
-
-/* Keep the category title hidden when tapping */
-.mobileProductCard:active .mobileCategoryTitle {
-  opacity: 0;
 }
 
 .mobileCollectionFooter {
