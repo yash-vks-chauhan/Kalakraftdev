@@ -66,10 +66,26 @@
   width: 180px;
   height: auto;
   margin-bottom: 2rem;
-  filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.5)) drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
   opacity: 0;
   transform: translateY(20px);
   animation: fadeInUp 0.8s ease forwards 0.5s;
+  position: relative;
+  z-index: 5;
+}
+
+/* Add a subtle backdrop behind the logo */
+.logo::before {
+  content: '';
+  position: absolute;
+  top: -20px;
+  left: -20px;
+  right: -20px;
+  bottom: -20px;
+  background: radial-gradient(circle at center, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0) 70%);
+  z-index: -1;
+  border-radius: 50%;
+  pointer-events: none;
 }
 
 .title {
