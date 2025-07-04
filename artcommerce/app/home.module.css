@@ -66,23 +66,51 @@
   width: 180px;
   height: auto;
   margin-bottom: 2rem;
-  filter: brightness(1.1) contrast(1.1);
+  filter: invert(1) brightness(1.05);
   opacity: 0;
   transform: translateY(20px);
-  animation: fadeInUp 0.8s ease forwards 0.5s;
+  animation: fadeInUp 0.8s ease forwards 0.5s, logoGlow 3s ease-in-out infinite alternate;
   position: relative;
   z-index: 5;
-  padding: 15px;
-  background: rgba(255, 255, 255, 0.85);
-  border-radius: 10px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  /* Create a subtle glow effect instead of a background */
 }
 
 /* Add a subtle backdrop behind the logo */
 .logo::before {
-  display: none; /* Remove the previous solution */
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  right: -10px;
+  bottom: -10px;
+  z-index: -1;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0.3;
+  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+  animation: pulsateGlow 4s ease-in-out infinite;
+}
+
+/* Add keyframes for the logo glow effect */
+@keyframes logoGlow {
+  0% {
+    filter: invert(1) brightness(1.05) drop-shadow(0 0 5px rgba(255, 255, 255, 0.3));
+  }
+  100% {
+    filter: invert(1) brightness(1.05) drop-shadow(0 0 15px rgba(255, 255, 255, 0.5));
+  }
+}
+
+/* Add keyframes for the pulsating glow effect */
+@keyframes pulsateGlow {
+  0%, 100% {
+    opacity: 0.2;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(1.05);
+  }
 }
 
 .title {
