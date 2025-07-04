@@ -313,23 +313,78 @@
 
 @media (max-width: 768px) {
   .title {
-    font-size: 3rem;
+    font-size: 2.25rem;
+    line-height: 1.2;
+    margin-bottom: 1.5rem;
   }
-
-  .topText {
-    font-size: 1rem;
-    letter-spacing: 3px;
+  
+  .productGrid {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+    padding: 0 1rem;
   }
-
-  .logo {
-    width: 140px;
+  
+  .productGridSection {
+    padding: 2.5rem 1rem;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .collectionDescription {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: 2.5rem;
+    max-width: 100%;
+  }
+  
+  .collectionFooter p {
+    font-size: 1.1rem;
+  }
+  
+  .productImage {
+    height: 450px;
+    border-radius: 1rem;
+    overflow: hidden;
+  }
+  
+  .sectionTitle {
+    font-size: 2.25rem;
     margin-bottom: 1.5rem;
   }
 
-  .collectionsGrid {
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
-    padding: 1.5rem;
+  .productCard {
+    transform: none;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    margin-bottom: 1rem;
+  }
+
+  .productCard:active {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  }
+
+  .brushAccent {
+    width: 100px;
+    height: 100px;
+    opacity: 0.6;
+  }
+
+  .watercolorSplash,
+  .watercolorSplash2,
+  .inkSplash {
+    width: 150px;
+    height: 150px;
+    opacity: 0.4;
+  }
+
+  .carouselTrack {
+    gap: 1.25rem;
+    padding: 1rem 0;
+  }
+  
+  .productCard {
+    min-width: 280px;
+    max-width: 100%;
   }
 }
 
@@ -960,695 +1015,77 @@
 
 @media (max-width: 768px) {
   .title {
-    font-size: 2rem;
+    font-size: 2.25rem;
+    line-height: 1.2;
+    margin-bottom: 1.5rem;
   }
+  
   .productGrid {
     grid-template-columns: 1fr;
-    gap: 3rem;
+    gap: 2.5rem;
+    padding: 0 1rem;
   }
+  
   .productGridSection {
-    padding: 3rem 1.5rem;
+    padding: 2.5rem 1rem;
+    position: relative;
+    overflow: hidden;
   }
+  
   .collectionDescription {
-    font-size: 1rem;
+    font-size: 1.1rem;
+    line-height: 1.6;
     margin-bottom: 2.5rem;
+    max-width: 100%;
   }
+  
   .collectionFooter p {
-    font-size: 1rem;
+    font-size: 1.1rem;
   }
+  
   .productImage {
-    height: 400px;
+    height: 450px;
+    border-radius: 1rem;
+    overflow: hidden;
   }
+  
   .sectionTitle {
-    font-size: 2rem;
+    font-size: 2.25rem;
+    margin-bottom: 1.5rem;
   }
-  .productGridSection::after,
-  .productGridSection > div:last-child::before {
-    width: 40px;
-    height: 40px;
-    top: 20px;
-    left: 20px;
+
+  .productCard {
+    transform: none;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    margin-bottom: 1rem;
   }
-  .productGridSection > div:last-child::before {
-    bottom: 20px;
-    right: 20px;
-    top: auto;
-    left: auto;
+
+  .productCard:active {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
   }
+
   .brushAccent {
-    width: 80px;
-    right: 5%;
+    width: 100px;
+    height: 100px;
+    opacity: 0.6;
   }
-  .watercolorSplash, .watercolorSplash2, .inkSplash {
+
+  .watercolorSplash,
+  .watercolorSplash2,
+  .inkSplash {
     width: 150px;
     height: 150px;
+    opacity: 0.4;
   }
-  .headerLine::before {
-    left: 10%;
-  }
-  .headerLine::after {
-    right: 10%;
-  }
-}
 
-/* Artistic loading animation */
-@keyframes card-fade-in {
-  0% {
-    opacity: 0;
-    transform: translateY(30px);
-    filter: blur(5px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-    filter: blur(0);
-  }
-}
-
-/* Mouse interaction effect with enhanced gradient */
-.productGridSection {
-  --x-position: 50%;
-  --y-position: 50%;
-}
-
-.lightEffect {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: radial-gradient(
-    circle 400px at var(--x-position) var(--y-position),
-    rgba(255, 255, 255, 0.08),
-    rgba(0, 0, 0, 0.02) 70%,
-    transparent
-  );
-  pointer-events: none;
-  z-index: 1;
-  opacity: 0;
-  transition: opacity 0.5s;
-}
-
-.productGridSection:hover .lightEffect {
-  opacity: 1;
-}
-
-/* Elegant page section separator with black accent */
-.sectionSeparator {
-  position: relative;
-  height: 60px;
-  margin: 2rem 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.sectionSeparator::before {
-  content: '';
-  position: absolute;
-  width: 100%;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.15), transparent);
-}
-
-.sectionSeparator::after {
-  content: '❦';
-  font-size: 1.5rem;
-  color: rgba(0, 0, 0, 0.3);
-  background-color: #f8f8f8;
-  padding: 0 1rem;
-  position: relative;
-}
-
-/* Collection Description - New elegant text section */
-.collectionDescription {
-  max-width: 800px;
-  margin: 0 auto 4rem;
-  text-align: center;
-  position: relative;
-  z-index: 2;
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 1.2rem;
-  line-height: 1.7;
-  color: #333;
-  padding: 0 1rem;
-}
-
-.collectionDescription p {
-  position: relative;
-  font-style: italic;
-}
-
-.collectionDescription p::before,
-.collectionDescription p::after {
-  content: '';
-  position: absolute;
-  height: 1px;
-  width: 60px;
-  background: linear-gradient(90deg, transparent, rgba(179, 138, 88, 0.4), transparent);
-}
-
-.collectionDescription p::before {
-  top: -15px;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-.collectionDescription p::after {
-  bottom: -15px;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-/* Category Description - New elegant description for each category */
-.categoryDescription {
-  font-family: 'Inter', sans-serif;
-  font-size: 0.85rem;
-  line-height: 1.5;
-  color: #666;
-  padding: 1rem 0.5rem;
-  text-align: center;
-  max-height: 0;
-  overflow: hidden;
-  opacity: 0;
-  transition: all 0.4s ease;
-  background: linear-gradient(to bottom, rgba(255,255,255,0.95), #fff);
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 3;
-  transform: translateY(100%);
-  border-top: 1px solid rgba(0,0,0,0.05);
-}
-
-.productCard:hover .categoryDescription {
-  max-height: 80px;
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* Collection Footer with elegant styling */
-.collectionFooter {
-  margin-top: 4rem;
-  text-align: center;
-  position: relative;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1.5rem;
-}
-
-.collectionFooter p {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 1.1rem;
-  font-style: italic;
-  max-width: 700px;
-  color: #555;
-  line-height: 1.6;
-}
-
-/* Explore All Collections button with premium styling */
-.exploreAllButton {
-  background: transparent;
-  border: 1px solid rgba(0,0,0,0.2);
-  color: #333;
-  padding: 0.75rem 2rem;
-  font-family: 'Inter', sans-serif;
-  font-weight: 400;
-  text-transform: uppercase;
-  font-size: 0.9rem;
-  letter-spacing: 0.15em;
-  cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-  position: relative;
-  overflow: hidden;
-  margin-top: 1rem;
-}
-
-.exploreAllButton::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, rgba(255,255,255,0), rgba(179, 138, 88, 0.2), rgba(255,255,255,0));
-  transition: left 0.7s ease;
-}
-
-.exploreAllButton:hover {
-  background-color: #333;
-  color: white;
-  border-color: #333;
-}
-
-.exploreAllButton:hover::before {
-  left: 100%;
-}
-
-/* Carousel Container */
-.carouselContainer {
-  width: 100%;
-  overflow: hidden;
-  position: relative;
-  margin: 2rem 0;
-  padding: 1rem 0;
-}
-
-/* Carousel Track - this is what actually moves */
-.carouselTrack {
-  display: flex;
-  gap: 2.5rem; /* Increased gap between items */
-  animation: scrollCarousel 35s linear infinite; /* Even faster animation */
-  width: fit-content;
-  padding: 1.5rem 0;
-  transition: transform 0.5s ease-in-out;
-}
-
-/* Pause animation on hover */
-.carouselContainer:hover .carouselTrack {
-  animation-play-state: paused;
-}
-
-/* Carousel Animation */
-@keyframes scrollCarousel {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(calc(-100% / 2));
-  }
-}
-
-/* Gradient overlay on the sides to indicate more content */
-.carouselContainer::before,
-.carouselContainer::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  width: 100px;
-  height: 100%;
-  z-index: 2;
-  pointer-events: none;
-}
-
-.carouselContainer::before {
-  left: 0;
-  background: linear-gradient(to right, rgba(248, 248, 248, 1), rgba(248, 248, 248, 0));
-}
-
-.carouselContainer::after {
-  right: 0;
-  background: linear-gradient(to left, rgba(248, 248, 248, 1), rgba(248, 248, 248, 0));
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
   .carouselTrack {
-    gap: 1.5rem;
-    animation-duration: 30s;
+    gap: 1.25rem;
+    padding: 1rem 0;
   }
   
   .productCard {
     min-width: 280px;
-    max-width: 280px;
-  }
-  
-  .categoryTitle {
-    font-size: 1.2rem;
-    padding: 2.5rem 0 1rem;
-  }
-  
-  .carouselContainer::before,
-  .carouselContainer::after {
-    width: 40px;
-  }
-  
-  .viewAllButton {
-    padding: 0.6rem 1.5rem;
-    font-size: 0.8rem;
-  }
-}
-
-/* Navigation arrows for carousel */
-.carouselNav {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 50px;
-  height: 50px;
-  background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: 20;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-  color: white;
-}
-
-.carouselNav:hover {
-  background: rgba(0, 0, 0, 0.5);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-  transform: translateY(-50%) scale(1.05);
-}
-
-.prevNav {
-  left: 20px;
-}
-
-.nextNav {
-  right: 20px;
-}
-
-/* Update carousel track to support manual navigation */
-.carouselTrack {
-  display: flex;
-  gap: 2.5rem;
-  transition: transform 0.5s ease-in-out;
-  width: fit-content;
-  padding: 1.5rem 0;
-}
-
-/* Remove the auto-scrolling animation when using manual navigation */
-.carouselTrack.manualNav {
-  animation: none;
-}
-
-/* Artistry in Every Layer Section - Redesigned */
-.artistrySection {
-  background-color: #f8f8f8;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: relative;
-  overflow: hidden;
-  border-top: 1px solid rgba(0,0,0,0.05);
-}
-
-.artistryBackground {
-  position: relative;
-  width: 100%;
-  padding: 8rem 4rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background-image: linear-gradient(to right, rgba(248, 248, 248, 0.95), rgba(248, 248, 248, 0.8)), url('/images/collectionwall.png');
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
-  overflow: hidden;
-}
-
-.artistryCards {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 3rem;
-  width: 100%;
-  max-width: 1200px;
-  position: relative;
-  z-index: 2;
-  margin-top: 2rem;
-}
-
-.artistryCard {
-  background-color: white;
-  border-radius: 8px;
-  padding: 3rem 2rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s ease-out;
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
-  border: 1px solid rgba(0,0,0,0.03);
-  width: 300px;
-  min-height: 280px;
-  flex-shrink: 0;
-  margin-bottom: 1rem;
-  transform-style: preserve-3d;
-  perspective: 1000px;
-}
-
-@media (max-width: 1024px) {
-  .artistryCards {
-    justify-content: center;
-  }
-  
-  .artistryCard {
-    width: calc(50% - 1rem);
-  }
-}
-
-@media (max-width: 768px) {
-  .artistryCard {
-    width: 100%;
-  }
-}
-
-.artistryCard::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 5px;
-  background: linear-gradient(90deg, transparent, rgba(179, 138, 88, 0.3), transparent);
-  opacity: 0;
-  transition: opacity 0.4s ease;
-}
-
-.artistryCard:hover {
-  transform: translateY(-10px) rotateX(5deg) scale(1.02);
-  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.15);
-}
-
-.artistryCard:hover::after {
-  opacity: 1;
-}
-
-.artistryFeatureImage {
-  position: absolute;
-  right: 0;
-  top: 0;
-  width: 45%;
-  height: 100%;
-  object-fit: cover;
-  z-index: 0;
-  clip-path: polygon(15% 0, 100% 0, 100% 100%, 0% 100%);
-  opacity: 0.9;
-  box-shadow: -10px 0 30px rgba(0,0,0,0.2);
-}
-
-.artistryContent {
-  width: 60%;
-  position: relative;
-  z-index: 2;
-  padding-right: 2rem;
-}
-
-.artistryQuote {
-  font-family: 'Cormorant Garamond', serif;
-  font-style: italic;
-  font-size: 1.4rem;
-  color: rgba(0,0,0,0.7);
-  line-height: 1.6;
-  margin: 2.5rem 0;
-  position: relative;
-  padding-left: 2rem;
-  max-width: 800px;
-  text-align: center;
-}
-
-.artistryQuote::before {
-  content: '"';
-  position: absolute;
-  left: 0;
-  top: -1rem;
-  font-size: 4rem;
-  color: rgba(179, 138, 88, 0.4);
-  font-family: 'Georgia', serif;
-  line-height: 1;
-}
-
-.artistryQuote::after {
-  content: '"';
-  position: absolute;
-  right: 0;
-  bottom: -1.5rem;
-  font-size: 4rem;
-  color: rgba(179, 138, 88, 0.4);
-  font-family: 'Georgia', serif;
-  line-height: 1;
-  transform: rotate(180deg);
-}
-
-@media (max-width: 1024px) {
-  .artistryCards {
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: center;
-    gap: 1.5rem;
-  }
-  
-  .artistryFeatureImage {
-    position: relative;
-    width: 100%;
-    height: 300px;
-    margin-top: 3rem;
-    clip-path: none;
-    border-radius: 8px;
-  }
-  
-  .artistryContent {
-    width: 100%;
-    padding-right: 0;
-  }
-  
-  .artistryQuote {
-    font-size: 1.2rem;
-    margin: 2rem 0;
-    padding-left: 0;
-  }
-  
-  .artistryCard {
-    width: 280px;
-    min-height: 260px;
-    margin: 0 0.5rem 1.5rem;
-  }
-}
-
-/* Artistry icons and animations */
-.artistryIcon {
-  width: 64px;
-  height: 64px;
-  margin-bottom: 2rem;
-  position: relative;
-  transition: transform 0.3s ease;
-  color: rgba(179, 138, 88, 0.8);
-}
-
-.artistryCard:hover .artistryIcon {
-  animation: iconPulse 0.5s ease-out;
-}
-
-.artistryIconRipple {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  background: transparent;
-  border: 2px solid rgba(179, 138, 88, 0.4);
-  opacity: 0;
-  pointer-events: none;
-}
-
-.artistryCard:hover .artistryIconRipple {
-  animation: rippleEffect 0.8s ease-out;
-}
-
-.artistryCardTitle {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 1.4rem;
-  color: #333;
-  margin-bottom: 1.2rem;
-  text-align: center;
-  font-weight: 500;
-  letter-spacing: 0.05em;
-}
-
-.artistryCardText {
-  font-family: 'Inter', sans-serif;
-  font-size: 0.95rem;
-  color: #555;
-  text-align: center;
-  line-height: 1.6;
-  max-width: 45ch;
-  opacity: 0.8;
-  transition: opacity 0.3s ease;
-}
-
-.artistryCard:hover .artistryCardText {
-  opacity: 1;
-}
-
-@keyframes iconPulse {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.2);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-@keyframes rippleEffect {
-  0% {
-    width: 64px;
-    height: 64px;
-    opacity: 0.8;
-  }
-  100% {
-    width: 120px;
-    height: 120px;
-    opacity: 0;
-  }
-}
-
-@media (max-width: 1024px) {
-  .artistryBackground {
-    background: rgba(248, 248, 248, 0.95);
-    align-items: center;
-    padding: 6rem 2rem;
-  }
-}
-
-.logo[data-aos="fade-in"] {
-  opacity: 0;
-  transform: translateY(20px);
-  transition-property: opacity, transform;
-}
-
-.title[data-aos="fade-up"] {
-  opacity: 0;
-  transform: translateY(30px);
-  transition-property: opacity, transform;
-}
-
-.productGridSection[data-aos="fade-up"] {
-  opacity: 0;
-  transform: translateY(50px);
-  transition-property: opacity, transform;
-}
-
-.productGridSection.aos-animate[data-aos="fade-up"] {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* Desktop/Mobile visibility classes */
-.desktopOnly {
-  display: block;
-}
-
-@media (max-width: 768px) {
-  .desktopOnly {
-    display: none;
+    max-width: 100%;
   }
 }
