@@ -5,9 +5,9 @@ import { useEffect } from 'react'
 export default function ZoomNormalizer() {
   useEffect(() => {
     const normalize = () => {
-      if (window.innerWidth >= 768) {
-        const zoomPercent = window.devicePixelRatio * 100
-        const target = 80
+      const zoomPercent = (window.outerWidth / window.innerWidth) * 100
+      const target = 80
+      if (window.innerWidth >= 768 && zoomPercent > 100) {
         const scale = target / zoomPercent
 
         document.documentElement.style.transformOrigin = '0 0'
