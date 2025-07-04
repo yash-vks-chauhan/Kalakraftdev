@@ -508,9 +508,7 @@ data-aos-delay="400"
 
 <h1 className={styles.title} data-aos="fade-up" data-aos-delay="600">
 
-Handcrafted resin art for
-
-<span id="rotator">{displayText}</span>
+Handcrafted resin art for <span id="rotator">{displayText}</span>
 
 </h1>
 
