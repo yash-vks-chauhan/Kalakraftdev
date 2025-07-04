@@ -581,10 +581,7 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
               
               {/* Hero Text */}
               <h1 className={styles.curvedHeroTitle}>
-                {"Handcrafted resin art for ".split('').map((letter, index) => (
-                  <span key={index}>{letter}</span>
-                ))}
-                {rotatingText}
+                Handcrafted resin art for {rotatingText}
               </h1>
               
               {/* Scroll indicator */}
