@@ -174,3 +174,8 @@ body:has(> div > main[data-page="home"]) {
 .animate-poofOut {
   animation: poofOut 0.4s ease-in forwards;
 }
+
+/* Scale entire site to 80% to simulate browser 80% zoom at 100% */
+html {
+  zoom: 80%;
+}
