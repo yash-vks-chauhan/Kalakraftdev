@@ -9,20 +9,6 @@
   overflow: hidden;
 }
 
-@supports (zoom: 1) {
-  .videoContainer {
-    /* Compensate for html zoom: 80% so video fills 100vh */
-    height: 125vh;
-  }
-}
-
-@supports not (zoom: 1) {
-  .videoContainer {
-    /* Compensate for transform fallback: scale(0.8) so video fills 100vh */
-    height: 125vh;
-  }
-}
-
 .videoBackground {
   position: absolute;
   top: 0;

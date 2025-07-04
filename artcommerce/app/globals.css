@@ -174,18 +174,3 @@ body:has(> div > main[data-page="home"]) {
 .animate-poofOut {
   animation: poofOut 0.4s ease-in forwards;
 }
-
-/* Scale entire site to 80% to simulate browser 80% zoom at 100% */
-html {
-  zoom: 80%;
-}
-
-@supports not (zoom: 1) {
-  /* Fallback scaling for browsers that don’t support CSS zoom */
-  html, body {
-    transform: scale(0.8);
-    transform-origin: top left;
-    width: 125%;
-    height: auto;
-  }
-}
