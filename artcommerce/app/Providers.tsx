@@ -6,23 +6,19 @@ import { WishlistProvider } from './contexts/WishlistContext'
 import { MobileMenuProvider } from './contexts/MobileMenuContext'
 import { NotificationProvider } from './contexts/NotificationContext'
 import { FirebaseAuthProvider } from './contexts/FirebaseAuthContext'
-import ZoomNormalizer from './components/ZoomNormalizer'
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <>
-      <ZoomNormalizer />
-      <NotificationProvider>
-        <AuthProvider>
-          <MobileMenuProvider>
-            <CartProvider>
-              <WishlistProvider>
-                <FirebaseAuthProvider>{children}</FirebaseAuthProvider>
-              </WishlistProvider>
-            </CartProvider>
-          </MobileMenuProvider>
-        </AuthProvider>
-      </NotificationProvider>
-    </>
+    <NotificationProvider>
+      <AuthProvider>
+        <MobileMenuProvider>
+          <CartProvider>
+            <WishlistProvider>
+              <FirebaseAuthProvider>{children}</FirebaseAuthProvider>
+            </WishlistProvider>
+          </CartProvider>
+        </MobileMenuProvider>
+      </AuthProvider>
+    </NotificationProvider>
   )
 }
