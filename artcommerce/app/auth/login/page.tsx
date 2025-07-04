@@ -83,26 +83,46 @@ export default function LoginPage() {
   };
 
   const handleGoogleLogin = async () => {
-    setError('')
+    setError('');
+    setIsLoading(true);
     try {
-      await loginWithGoogle()
-      // No need to redirect here, it's handled by the useEffect when authUser is set
+      const result = await loginWithGoogle();
+      if (result && result.user) {
+        const idToken = await result.user.getIdToken();
+        await loginWithFirebaseToken(idToken);
+        // Redirect to home
+        router.replace('/');
+      } else {
+        throw new Error('Google Sign-In failed or no user data.');
+      }
     } catch (err: any) {
-      console.error('LoginPage: Google login error', err)
-      // Error is now handled by the FirebaseAuthContext
+      console.error('LoginPage: Google login error', err);
+      setError(err.message || 'Google Sign-In failed');
+    } finally {
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleFacebookLogin = async () => {
-    setError('')
+    setError('');
+    setIsLoading(true);
     try {
-      await loginWithFacebook()
-      // No need to redirect here, it's handled by the useEffect when authUser is set
+      const result = await loginWithFacebook();
+      if (result && result.user) {
+        const idToken = await result.user.getIdToken();
+        await loginWithFirebaseToken(idToken);
+        // Redirect to home
+        router.replace('/');
+      } else {
+        throw new Error('Facebook Sign-In failed or no user data.');
+      }
     } catch (err: any) {
-      console.error('LoginPage: Facebook login error', err)
-      // Error is now handled by the FirebaseAuthContext
+      console.error('LoginPage: Facebook login error', err);
+      setError(err.message || 'Facebook Sign-In failed');
+    } finally {
+      setIsLoading(false);
     }
-  }
+  };
 
   const loading = authLoading || firebaseLoading || isLoading
 
