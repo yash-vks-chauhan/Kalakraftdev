@@ -1,16 +1,29 @@
 .mobileDashboardContainer {
-  min-height: calc(100vh - 70px - 64px); /* subtract header and footer heights */
-  background: #ffffff;
-  padding: 1rem;
+  min-height: calc(100vh - 70px - 64px);
+  background: linear-gradient(to bottom, #ffffff, #f8f9fa);
+  padding: 1.5rem;
   display: flex;
   flex-direction: column;
+  gap: 1.5rem;
 }
 
 .mobileHeader {
-  font-size: 1.25rem;
+  font-size: 1.5rem;
   font-weight: 600;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
   color: #1a202c;
+  position: relative;
+  padding-bottom: 0.5rem;
+}
+
+.mobileHeader::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 60px;
+  height: 2px;
+  background: linear-gradient(90deg, #1a202c, transparent);
 }
 
 .menuList {
@@ -19,28 +32,52 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 1rem;
 }
 
 .menuItem {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.75rem 1rem;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.75rem;
-  background: #fff;
+  padding: 1rem 1.25rem;
+  border: 1px solid rgba(229, 231, 235, 0.5);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(8px);
   text-decoration: none;
   color: #1a202c;
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-weight: 500;
-  transition: background-color 0.2s ease;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
 }
 
 .menuItem:active {
-  background-color: #f1f5f9;
+  background: rgba(241, 245, 249, 0.9);
+  transform: translateY(1px);
 }
 
 .menuItemText {
   flex: 1;
-} 
+  position: relative;
+  z-index: 1;
+}
+
+.menuItem::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 1rem;
+  padding: 1px;
+  background: linear-gradient(45deg, transparent, rgba(26, 32, 44, 0.1));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.menuItem:active::before {
+  opacity: 1;
+}
