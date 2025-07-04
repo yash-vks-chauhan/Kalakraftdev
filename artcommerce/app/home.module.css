@@ -147,11 +147,8 @@
   font-style: italic;
   font-weight: 400;
   position: relative;
-  color: #b38a58; /* Elegant gold/bronze color that fits with resin art aesthetic */
-  min-width: 140px; /* Prevent layout shift */
-  margin-left: 0.5rem; /* Space after "for" */
-  border-bottom: 1px solid rgba(255, 255, 255, 0.3); /* Subtle underline */
-  padding-bottom: 2px; /* Space between text and underline */
+  color: #FFD700; /* Gold color for emphasis */
+  min-width: 120px; /* Prevent layout shift */
 }
 
 /* Typewriter cursor effect */
@@ -160,8 +157,7 @@
   position: absolute;
   right: -8px;
   color: rgba(255, 255, 255, 0.8);
-  animation: cursor-blink 1.2s step-end infinite;
-  top: 0;
+  animation: cursor-blink 1s step-end infinite;
 }
 
 @keyframes cursor-blink {
@@ -417,8 +413,6 @@
   font-size: 2.5rem;
   max-width: 600px;
   line-height: 1.4;
-  display: inline-block;
-  text-align: center;
 }
 
 .title #rotator {
