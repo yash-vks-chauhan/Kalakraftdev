@@ -431,72 +431,6 @@
 }
 
 @media (max-width: 768px) {
-  .navbar {
-    padding: 0.75rem 1rem;
-    height: 64px;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(8px);
-  }
-  
-  .center {
-    gap: 1.5rem;
-    padding: 0 1rem;
-  }
-  
-  .right {
-    gap: 0.75rem;
-  }
-  
-  .auth {
-    padding: 0.5rem 1rem;
-    font-size: 0.95rem;
-    border-radius: 0.5rem;
-    background: linear-gradient(to right, rgba(26, 32, 44, 0.05), rgba(26, 32, 44, 0.1));
-    backdrop-filter: blur(4px);
-  }
-  
-  .icon {
-    width: 32px;
-    height: 32px;
-    transition: transform 0.2s ease;
-  }
-
-  .icon:active {
-    transform: scale(0.95);
-  }
-
-  .brand {
-    height: 36px;
-  }
-
-  .link[href="/products"] {
-    display: flex;
-    width: 100%;
-    justify-content: center;
-    margin: 0.75rem 0;
-    padding: 0.75rem;
-    border-radius: 0.5rem;
-    background: rgba(26, 32, 44, 0.03);
-    transition: background 0.2s ease;
-  }
-
-  .link[href="/products"]:active {
-    background: rgba(26, 32, 44, 0.06);
-  }
-
-  .authToggleContainer {
-    width: 100%;
-    margin: 1rem 0;
-    padding: 0 1rem;
-  }
-
-  .mobileMenu {
-    backdrop-filter: blur(12px);
-    background: rgba(255, 255, 255, 0.95);
-  }
-}
-
-@media (max-width: 768px) {
   .mobileToggle {
     display: inline-flex; /* Only show on mobile */
     font-size: 1.5rem;
@@ -1294,4 +1228,4 @@
 
 .minimized .authToggleButton.active {
   color: rgba(255, 255, 255, 1);
-}
+} 
