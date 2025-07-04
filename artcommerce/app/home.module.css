@@ -147,8 +147,11 @@
   font-style: italic;
   font-weight: 400;
   position: relative;
-  color: #FFD700; /* Gold color for emphasis */
+  color: #b38a58; /* Elegant gold/bronze color that fits with resin art aesthetic */
   min-width: 120px; /* Prevent layout shift */
+  height: 1.4em; /* Fixed height to prevent layout shift */
+  text-align: center;
+  margin-top: 0.5rem; /* Add space between the static text and the rotating text */
 }
 
 /* Typewriter cursor effect */
@@ -157,7 +160,7 @@
   position: absolute;
   right: -8px;
   color: rgba(255, 255, 255, 0.8);
-  animation: cursor-blink 1s step-end infinite;
+  animation: cursor-blink 1.2s step-end infinite;
 }
 
 @keyframes cursor-blink {
@@ -413,6 +416,10 @@
   font-size: 2.5rem;
   max-width: 600px;
   line-height: 1.4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .title #rotator {

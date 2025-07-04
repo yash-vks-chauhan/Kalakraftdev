@@ -23,15 +23,16 @@ export default function Home() {
 
 const [message, setMessage] = useState<string|null>(null)
 
+// Adjust the typing speed parameters to be slower
 const [rotatingText, setRotatingText] = useState('coasters')
 const [displayText, setDisplayText] = useState('')
 const [isTyping, setIsTyping] = useState(true)
 const [currentWordIndex, setCurrentWordIndex] = useState(0)
 const words = ['coasters', 'wall art', 'home decor', 'custom pieces']
-const typingSpeed = 100 // milliseconds per character
-const deletingSpeed = 50 // milliseconds per character
-const pauseBeforeTyping = 500 // pause before typing a new word
-const pauseBeforeDeletion = 1500 // pause before deleting the word
+const typingSpeed = 180 // milliseconds per character (slower typing)
+const deletingSpeed = 100 // milliseconds per character (slower deletion)
+const pauseBeforeTyping = 800 // longer pause before typing a new word
+const pauseBeforeDeletion = 2500 // longer pause before deleting the word
 
 const carouselTrackRef = useRef<HTMLDivElement>(null)
 
@@ -507,7 +508,9 @@ data-aos-delay="400"
 
 <h1 className={styles.title} data-aos="fade-up" data-aos-delay="600">
 
-Handcrafted resin art for <span id="rotator">{displayText}</span>
+Handcrafted resin art for
+
+<span id="rotator">{displayText}</span>
 
 </h1>
 
