@@ -17,8 +17,15 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
   const isPublic = PUBLIC_ROUTES.some((route) =>
     pathname === route || pathname.startsWith(route + '/')
   )
+  // Only restrict non-public routes
+  if (!isPublic) {
+    if (loading) {
+      return <p>Loading…</p>;
+    }
+    if (!user) {
+      return <p>Unauthorized. Please <a href="/auth/login">log in</a>.</p>;
+    }
+  }
 
-  if (loading) return <p>Loading…</p>
-  if (!user && !isPublic) return <p>Unauthorized. Please <a href="/auth/login">log in</a>.</p>
   return <>{children}</>
 }
