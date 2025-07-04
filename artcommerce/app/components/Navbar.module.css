@@ -1149,3 +1149,44 @@
     grid-template-columns: 1fr;
   }
 } 
+
+/* Auth toggle switch styles */
+.authToggleContainer {
+  display: inline-flex;
+  position: relative;
+  background-color: #f3f4f6;
+  border: 1px solid #e2e8f0;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.authToggleContainer .authToggleBackground {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 50%;
+  height: 100%;
+  background-color: #1a202c;
+  transition: left 0.3s ease;
+  border-radius: 9999px;
+}
+
+.authToggleContainer.signupActive .authToggleBackground {
+  left: 50%;
+}
+
+.authToggleButton {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  text-align: center;
+  padding: 0.5rem 1rem;
+  color: #1a202c;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.authToggleButton.active {
+  color: #fff;
+} 
