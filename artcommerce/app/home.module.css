@@ -113,6 +113,7 @@
   }
 }
 
+/* Enhanced title styling with resin effect */
 .title {
   font-family: 'Cormorant Garamond', serif;
   font-weight: 500;
@@ -127,6 +128,165 @@
   transform: translateY(20px);
   animation: fadeInUp 0.8s ease forwards 0.8s;
   font-style: italic;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Resin letter animation effect */
+.title span {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(60px) scale(0.8);
+  animation: resinLetterReveal 0.6s cubic-bezier(0.215, 0.61, 0.355, 1) forwards;
+  position: relative;
+  background: linear-gradient(180deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.7) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 5px 15px rgba(0,0,0,0.4);
+}
+
+/* Staggered animation for each letter */
+.title span:nth-child(1) { animation-delay: 0.1s; }
+.title span:nth-child(2) { animation-delay: 0.15s; }
+.title span:nth-child(3) { animation-delay: 0.2s; }
+.title span:nth-child(4) { animation-delay: 0.25s; }
+.title span:nth-child(5) { animation-delay: 0.3s; }
+.title span:nth-child(6) { animation-delay: 0.35s; }
+.title span:nth-child(7) { animation-delay: 0.4s; }
+.title span:nth-child(8) { animation-delay: 0.45s; }
+.title span:nth-child(9) { animation-delay: 0.5s; }
+.title span:nth-child(10) { animation-delay: 0.55s; }
+.title span:nth-child(11) { animation-delay: 0.6s; }
+.title span:nth-child(12) { animation-delay: 0.65s; }
+.title span:nth-child(13) { animation-delay: 0.7s; }
+.title span:nth-child(14) { animation-delay: 0.75s; }
+.title span:nth-child(15) { animation-delay: 0.8s; }
+.title span:nth-child(16) { animation-delay: 0.85s; }
+.title span:nth-child(17) { animation-delay: 0.9s; }
+.title span:nth-child(18) { animation-delay: 0.95s; }
+.title span:nth-child(19) { animation-delay: 1s; }
+.title span:nth-child(20) { animation-delay: 1.05s; }
+.title span:nth-child(21) { animation-delay: 1.1s; }
+.title span:nth-child(22) { animation-delay: 1.15s; }
+.title span:nth-child(23) { animation-delay: 1.2s; }
+.title span:nth-child(24) { animation-delay: 1.25s; }
+.title span:nth-child(25) { animation-delay: 1.3s; }
+
+/* Resin drip effect for each letter */
+.title span::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 0;
+  width: 100%;
+  height: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.2) 100%);
+  animation: resinDrip 1.2s ease-out forwards;
+  animation-delay: inherit;
+  transform-origin: top;
+  opacity: 0;
+  border-radius: 0 0 4px 4px;
+  filter: blur(2px);
+}
+
+/* Resin shine effect */
+.title span::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(255,255,255,0.1), 
+    rgba(255,255,255,0.3), 
+    rgba(255,255,255,0.1), 
+    transparent);
+  animation: resinShine 3s linear infinite;
+  animation-delay: calc(inherit + 1s);
+}
+
+/* Resin letter reveal animation */
+@keyframes resinLetterReveal {
+  0% {
+    opacity: 0;
+    transform: translateY(60px) scale(0.8);
+    filter: blur(10px);
+  }
+  60% {
+    opacity: 0.8;
+    filter: blur(5px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+/* Resin drip animation */
+@keyframes resinDrip {
+  0% {
+    height: 0;
+    opacity: 0;
+  }
+  30% {
+    height: 10px;
+    opacity: 0.7;
+  }
+  80% {
+    height: 7px;
+    opacity: 0.5;
+  }
+  100% {
+    height: 5px;
+    opacity: 0.3;
+  }
+}
+
+/* Resin shine animation */
+@keyframes resinShine {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 200%;
+  }
+}
+
+/* Resin ripple effect for the title */
+.title::after {
+  content: '';
+  position: absolute;
+  bottom: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 70%);
+  border-radius: 50%;
+  opacity: 0;
+  animation: resinRipple 2s ease-out forwards 2s;
+}
+
+/* Resin ripple animation */
+@keyframes resinRipple {
+  0% {
+    width: 0;
+    height: 0;
+    opacity: 0;
+  }
+  50% {
+    width: 300px;
+    height: 300px;
+    opacity: 0.5;
+  }
+  100% {
+    width: 600px;
+    height: 600px;
+    opacity: 0;
+  }
 }
 
 .tagline {
@@ -152,9 +312,37 @@
   margin-left: 0.5rem; /* Space after "for" */
   border-bottom: 1px solid rgba(255, 255, 255, 0.3); /* Subtle underline */
   padding-bottom: 2px; /* Space between text and underline */
+  overflow: hidden;
 }
 
-/* Typewriter cursor effect */
+/* Enhanced rotator text with resin bubble effect */
+#rotator::before {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: rgba(255,255,255,0.8);
+  animation: resinFlow 2s ease-in-out infinite alternate;
+  box-shadow: 0 0 8px 2px rgba(255,255,255,0.3);
+}
+
+/* Resin flow animation */
+@keyframes resinFlow {
+  0% {
+    transform: scaleX(0.3);
+    opacity: 0.3;
+    filter: blur(3px);
+  }
+  100% {
+    transform: scaleX(1);
+    opacity: 0.8;
+    filter: blur(1px);
+  }
+}
+
+/* Improved typewriter cursor effect */
 #rotator::after {
   content: '|';
   position: absolute;
@@ -162,11 +350,12 @@
   color: rgba(255, 255, 255, 0.8);
   animation: cursor-blink 1.2s step-end infinite;
   top: 0;
+  text-shadow: 0 0 10px rgba(255,255,255,0.5);
 }
 
 @keyframes cursor-blink {
-  from, to { opacity: 1; }
-  50% { opacity: 0; }
+  from, to { opacity: 1; filter: blur(0); }
+  50% { opacity: 0.2; filter: blur(1px); }
 }
 
 .scrollIndicator {

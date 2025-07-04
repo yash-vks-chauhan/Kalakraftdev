@@ -507,9 +507,11 @@ data-aos-delay="400"
 />
 
 <h1 className={styles.title} data-aos="fade-up" data-aos-delay="600">
-
-Handcrafted resin art for <span id="rotator">{displayText}</span>
-
+  {/* Wrap each letter in a span for animation */}
+  {"Handcrafted resin art for ".split('').map((letter, index) => (
+    <span key={index}>{letter}</span>
+  ))}
+  <span id="rotator">{displayText}</span>
 </h1>
 
 </div>
