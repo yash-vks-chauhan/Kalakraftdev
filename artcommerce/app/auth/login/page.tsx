@@ -40,7 +40,6 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     // Prevent default form submission behavior
     e.preventDefault();
-    e.stopPropagation();
     
     // Clear previous error
     setError('');
@@ -48,20 +47,20 @@ export default function LoginPage() {
     // Validate fields individually
     if (!email.trim() && !password.trim()) {
       setError('Please enter both email and password');
-      return false;
+      return;
     }
     if (!email.trim()) {
       setError('Please enter your email');
-      return false;
+      return;
     }
     if (!password.trim()) {
       setError('Please enter your password');
-      return false;
+      return;
     }
 
     // Prevent double submission
     if (loading) {
-      return false;
+      return;
     }
 
     setIsLoading(true);
@@ -79,8 +78,8 @@ export default function LoginPage() {
       setIsLoading(false);
     }
 
-    // Prevent form submission
-    return false;
+    // Done handling submission
+    return;
   };
 
   const handleGoogleLogin = async () => {
