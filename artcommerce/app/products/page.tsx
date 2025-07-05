@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import dynamicImport from 'next/dynamic'
 
 const ProductsResponsiveClient = dynamicImport(
@@ -7,8 +9,6 @@ const ProductsResponsiveClient = dynamicImport(
     loading: () => <div>Loading products…</div>
   }
 )
-
-export const dynamic = 'force-dynamic'
 
 export default function Page() {
   return <ProductsResponsiveClient />
