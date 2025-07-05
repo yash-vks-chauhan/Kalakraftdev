@@ -221,12 +221,15 @@ export default function MobileProductManagement() {
                   ) : (
                     <CircleX size={16} className="text-gray-400" />
                   )}
-                  <ChevronRight size={20} className={expandedProduct === product.id ? "transform rotate-90" : ""} />
+                  <ChevronRight 
+                    size={20} 
+                    className={`transform transition-transform duration-300 ${expandedProduct === product.id ? "rotate-90" : ""}`} 
+                  />
                 </div>
               </div>
               
-              {expandedProduct === product.id && (
-                <div className="bg-gray-50 p-4 rounded-b-lg border-t border-gray-100 space-y-4">
+              <div className={`${styles.expandableContent} ${expandedProduct === product.id ? styles.expanded : ''} bg-gray-50 rounded-b-lg border-t border-gray-100`}>
+                <div className="p-4 space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 text-sm">
                       <span className="text-gray-500">Stock:</span>
@@ -269,7 +272,7 @@ export default function MobileProductManagement() {
                     View Details
                   </Link>
                 </div>
-              )}
+              </div>
             </li>
           ))}
         </ul>

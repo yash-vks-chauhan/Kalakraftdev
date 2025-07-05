@@ -130,6 +130,21 @@
   left: 100%;
 }
 
+/* Add smooth animation for expanded product details */
+.expandableContent {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease, opacity 0.3s ease, transform 0.3s ease;
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.expandableContent.expanded {
+  max-height: 500px; /* Large enough to fit content */
+  opacity: 1;
+  transform: translateY(0);
+}
+
 .menuItemText {
   flex: 1;
   position: relative;
