@@ -9,6 +9,8 @@ import styles from './products-list.module.css'
 import { FiEdit2, FiTrash2, FiArrowRight } from 'react-icons/fi'
 import LoadingSpinner from '../../../components/LoadingSpinner'
 import { useRouter } from 'next/navigation'
+import MobileProductManagement from './MobileProductManagement'
+import { useIsMobile } from '../../../../lib/utils'
 
 interface Product {
   id: number
@@ -28,6 +30,15 @@ export default function AdminProductsPage() {
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
+  const isMobile = useIsMobile()
+  const [forceDesktopView, setForceDesktopView] = useState(false)
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const pref = localStorage.getItem('viewPreference')
+      if (pref === 'desktop') setForceDesktopView(true)
+    }
+  }, [])
 
   useEffect(() => {
     if (user?.role !== 'admin') {
@@ -47,6 +58,11 @@ export default function AdminProductsPage() {
       .catch(err => setError(err.message))
       .finally(() => setIsLoading(false))
   }, [token, user])
+
+  // Use mobile view if on mobile device and not forcing desktop view
+  if (isMobile && !forceDesktopView) {
+    return <MobileProductManagement />
+  }
 
   async function handleDelete(id: number) {
     if (!confirm('Are you sure you want to delete this product? This action cannot be undone.')) return

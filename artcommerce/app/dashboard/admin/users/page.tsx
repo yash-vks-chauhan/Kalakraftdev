@@ -2,6 +2,8 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../../contexts/AuthContext'
 import Link from 'next/link'
+import MobileUserManagement from './MobileUserManagement'
+import { useIsMobile } from '../../../../lib/utils'
 
 interface UserRow {
   id: number
@@ -16,6 +18,15 @@ export default function AdminUsersPage() {
   const { token, user } = useAuth()
   const [users, setUsers] = useState<UserRow[]>([])
   const [loading, setLoading] = useState(true)
+  const isMobile = useIsMobile()
+  const [forceDesktopView, setForceDesktopView] = useState(false)
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const pref = localStorage.getItem('viewPreference')
+      if (pref === 'desktop') setForceDesktopView(true)
+    }
+  }, [])
 
   useEffect(() => {
     if (user?.role !== 'admin') return
@@ -27,6 +38,11 @@ export default function AdminUsersPage() {
       .catch(console.error)
       .finally(() => setLoading(false))
   }, [token, user])
+
+  // Use mobile view if on mobile device and not forcing desktop view
+  if (isMobile && !forceDesktopView) {
+    return <MobileUserManagement />
+  }
 
   if (user?.role !== 'admin') {
     return <p className="p-8">Unauthorized</p>
