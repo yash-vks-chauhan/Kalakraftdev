@@ -11,6 +11,7 @@ import { onAuthStateChanged } from 'firebase/auth'
 import { ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react'
 
 import styles from './home.module.css'
+import mobileStyles from './components/MobileLayout.module.css'
 import { getImageUrl } from '../lib/cloudinaryImages'
 
 // Add this to detect mobile view
@@ -42,7 +43,9 @@ const [slidePosition, setSlidePosition] = useState(0)
 
 const resumeTimerRef = useRef<NodeJS.Timeout | null>(null)
 
-
+const [isVideoLoaded, setIsVideoLoaded] = useState(false)
+const [carouselPosition, setCarouselPosition] = useState(0)
+const [isMobile, setIsMobile] = useState(false)
 
 // Product categories for the grid - expanded with more items
 
@@ -442,6 +445,26 @@ useEffect(() => {
 
 
 
+// Initialize AOS and check if mobile
+useEffect(() => {
+  AOS.init({
+    duration: 1000,
+    once: true,
+    disable: 'mobile'
+  })
+  
+  setIsMobile(isMobileView())
+  
+  const handleResize = () => {
+    setIsMobile(isMobileView())
+  }
+  
+  window.addEventListener('resize', handleResize)
+  return () => window.removeEventListener('resize', handleResize)
+}, [])
+
+
+
 return (
 
 <main data-page="home" style={{background: '#f8f8f8'}}>
@@ -718,85 +741,153 @@ onClick={() => handleCarouselNav('next')}
 </section>
 
 {/* Artistry in Every Layer Section - Redesigned */}
-<section className={styles.artistrySection}>
-  <div 
-    className={styles.artistryBackground}
-    style={{
-      backgroundImage: `linear-gradient(to right, rgba(248, 248, 248, 0.95), rgba(248, 248, 248, 0.8)), url('${getImageUrl('collectionwall.png')}')`
-    }}
-  >
-    <img 
-      src={getImageUrl('DSC01366.JPG')}
-      alt="Resin art creation process" 
-      className={styles.artistryFeatureImage} 
-      data-aos="fade-left"
-    />
-    
-    <div className={styles.artistryContent}>
-      {/* Section Header with description */}
-      <div className={styles.sectionHeader} data-aos="fade-in">
-        <div className={styles.headerLine}></div>
-        <h2 className={styles.sectionTitle}>Artistry in Every Layer</h2>
-        <div className={styles.headerLine}></div>
-      </div>
+{!isMobile ? (
+  <section className={styles.artistrySection}>
+    <div 
+      className={styles.artistryBackground}
+      style={{
+        backgroundImage: `linear-gradient(to right, rgba(248, 248, 248, 0.95), rgba(248, 248, 248, 0.8)), url('${getImageUrl('collectionwall.png')}')`
+      }}
+    >
+      <img 
+        src={getImageUrl('DSC01366.JPG')}
+        alt="Resin art creation process" 
+        className={styles.artistryFeatureImage} 
+        data-aos="fade-up"
+        data-mobile-first="true"
+      />
       
-      <div className={styles.artistryQuote} data-aos="fade-up">
-        Our resin art combines premium materials with meticulous craftsmanship to create pieces that capture light, color, and imagination in ways that will endure for generations.
-      </div>
-      
-      <div className={styles.artistryCards}>
-        {/* Card 1 */}
-        <div className={styles.artistryCard} data-aos="fade-up" data-aos-delay="100">
-          <div className={styles.artistryIcon}>
-            <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="rgba(179, 138, 88, 0.8)" strokeWidth="1.5">
-              <path d="M32 8C32 8 16 24 16 40C16 48.8366 23.1634 56 32 56C40.8366 56 48 48.8366 48 40C48 24 32 8 32 8Z" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M32 44C34.2091 44 36 42.2091 36 40C36 37.7909 32 32 32 32C32 32 28 37.7909 28 40C28 42.2091 29.7909 44 32 44Z" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            <div className={styles.artistryIconRipple}></div>
-          </div>
-          <h3 className={styles.artistryCardTitle}>Museum-Grade Resin</h3>
-          <p className={styles.artistryCardText}>Hand-mixed for crystal clarity and vibrant hues that endure.</p>
+      <div className={styles.artistryContent}>
+        {/* Section Header with description */}
+        <div className={styles.sectionHeader} data-aos="fade-in">
+          <div className={styles.headerLine}></div>
+          <h2 className={styles.sectionTitle}>Artistry in Every Layer</h2>
+          <div className={styles.headerLine}></div>
         </div>
         
-        {/* Card 2 */}
-        <div className={styles.artistryCard} data-aos="fade-up" data-aos-delay="200">
-          <div className={styles.artistryIcon}>
-            <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="rgba(179, 138, 88, 0.8)" strokeWidth="1.5">
-              <path d="M8 24L32 32L56 24" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M8 32L32 40L56 32" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M8 40L32 48L56 40" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M32 16L16 22L32 28L48 22L32 16Z" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            <div className={styles.artistryIconRipple}></div>
-          </div>
-          <h3 className={styles.artistryCardTitle}>Precision Pouring</h3>
-          <p className={styles.artistryCardText}>Controlled, bubble-free layers for a seamless, mirror-smooth surface.</p>
+        <div className={styles.artistryQuote} data-aos="fade-up">
+          Our resin art combines premium materials with meticulous craftsmanship to create pieces that capture light, color, and imagination in ways that will endure for generations.
         </div>
         
-        {/* Card 3 */}
-        <div className={styles.artistryCard} data-aos="fade-up" data-aos-delay="300">
-          <div className={styles.artistryIcon}>
-            <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="rgba(179, 138, 88, 0.8)" strokeWidth="1.5">
-              <circle cx="32" cy="32" r="16" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M32 16V8" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M32 56V48" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M16 32H8" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M56 32H48" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M48 16L44 20" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M20 44L16 48" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M48 48L44 44" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M20 20L16 16" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M32 24V32H40" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            <div className={styles.artistryIconRipple}></div>
+        <div className={styles.artistryCards}>
+          {/* Card 1 */}
+          <div className={styles.artistryCard} data-aos="fade-up" data-aos-delay="100">
+            <div className={styles.artistryIcon}>
+              <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="rgba(179, 138, 88, 0.8)" strokeWidth="1.5">
+                <path d="M32 8C32 8 16 24 16 40C16 48.8366 23.1634 56 32 56C40.8366 56 48 48.8366 48 40C48 24 32 8 32 8Z" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M32 44C34.2091 44 36 42.2091 36 40C36 37.7909 32 32 32 32C32 32 28 37.7909 28 40C28 42.2091 29.7909 44 32 44Z" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <div className={styles.artistryIconRipple}></div>
+            </div>
+            <h3 className={styles.artistryCardTitle}>Museum-Grade Resin</h3>
+            <p className={styles.artistryCardText}>Hand-mixed for crystal clarity and vibrant hues that endure.</p>
           </div>
-          <h3 className={styles.artistryCardTitle}>UV-Resistant Gloss</h3>
-          <p className={styles.artistryCardText}>Anti-yellowing top coat protects color and shine from sun exposure.</p>
+          
+          {/* Card 2 */}
+          <div className={styles.artistryCard} data-aos="fade-up" data-aos-delay="200">
+            <div className={styles.artistryIcon}>
+              <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="rgba(179, 138, 88, 0.8)" strokeWidth="1.5">
+                <path d="M8 24L32 32L56 24" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M8 32L32 40L56 32" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M8 40L32 48L56 40" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M32 16L16 22L32 28L48 22L32 16Z" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <div className={styles.artistryIconRipple}></div>
+            </div>
+            <h3 className={styles.artistryCardTitle}>Precision Pouring</h3>
+            <p className={styles.artistryCardText}>Controlled, bubble-free layers for a seamless, mirror-smooth surface.</p>
+          </div>
+          
+          {/* Card 3 */}
+          <div className={styles.artistryCard} data-aos="fade-up" data-aos-delay="300">
+            <div className={styles.artistryIcon}>
+              <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="rgba(179, 138, 88, 0.8)" strokeWidth="1.5">
+                <circle cx="32" cy="32" r="16" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M32 16V8" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M32 56V48" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M16 32H8" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M56 32H48" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M48 16L44 20" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M20 44L16 48" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M48 48L44 44" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M20 20L16 16" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M32 24V32H40" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <div className={styles.artistryIconRipple}></div>
+            </div>
+            <h3 className={styles.artistryCardTitle}>UV-Resistant Gloss</h3>
+            <p className={styles.artistryCardText}>Anti-yellowing top coat protects color and shine from sun exposure.</p>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-</section>
+  </section>
+) : (
+  <section className={mobileStyles.mobileArtistrySection}>
+    <div className={mobileStyles.mobileArtistryHeader}>
+      <h2 className={mobileStyles.mobileArtistryTitle}>Artistry in Every Layer</h2>
+      <div className={mobileStyles.mobileHeaderLine}></div>
+    </div>
+    
+    <img 
+      src={getImageUrl('DSC01366.JPG')}
+      alt="Resin art creation process" 
+      className={mobileStyles.mobileArtistryImage}
+    />
+    
+    <div className={mobileStyles.mobileArtistryQuote}>
+      Our resin art combines premium materials with meticulous craftsmanship to create pieces that capture light, color, and imagination in ways that will endure for generations.
+    </div>
+    
+    <div className={mobileStyles.mobileArtistryCards}>
+      {/* Card 1 */}
+      <div className={mobileStyles.mobileArtistryCard}>
+        <div className={mobileStyles.mobileArtistryIcon}>
+          <svg width="48" height="48" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="rgba(179, 138, 88, 0.8)" strokeWidth="1.5">
+            <path d="M32 8C32 8 16 24 16 40C16 48.8366 23.1634 56 32 56C40.8366 56 48 48.8366 48 40C48 24 32 8 32 8Z" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M32 44C34.2091 44 36 42.2091 36 40C36 37.7909 32 32 32 32C32 32 28 37.7909 28 40C28 42.2091 29.7909 44 32 44Z" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </div>
+        <h3 className={mobileStyles.mobileArtistryCardTitle}>Museum-Grade Resin</h3>
+        <p className={mobileStyles.mobileArtistryCardText}>Hand-mixed for crystal clarity and vibrant hues that endure.</p>
+      </div>
+      
+      {/* Card 2 */}
+      <div className={mobileStyles.mobileArtistryCard}>
+        <div className={mobileStyles.mobileArtistryIcon}>
+          <svg width="48" height="48" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="rgba(179, 138, 88, 0.8)" strokeWidth="1.5">
+            <path d="M8 24L32 32L56 24" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M8 32L32 40L56 32" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M8 40L32 48L56 40" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M32 16L16 22L32 28L48 22L32 16Z" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </div>
+        <h3 className={mobileStyles.mobileArtistryCardTitle}>Precision Pouring</h3>
+        <p className={mobileStyles.mobileArtistryCardText}>Controlled, bubble-free layers for a seamless, mirror-smooth surface.</p>
+      </div>
+      
+      {/* Card 3 */}
+      <div className={mobileStyles.mobileArtistryCard}>
+        <div className={mobileStyles.mobileArtistryIcon}>
+          <svg width="48" height="48" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="rgba(179, 138, 88, 0.8)" strokeWidth="1.5">
+            <circle cx="32" cy="32" r="16" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M32 16V8" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M32 56V48" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M16 32H8" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M56 32H48" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M48 16L44 20" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M20 44L16 48" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M48 48L44 44" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M20 20L16 16" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M32 24V32H40" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </div>
+        <h3 className={mobileStyles.mobileArtistryCardTitle}>UV-Resistant Gloss</h3>
+        <p className={mobileStyles.mobileArtistryCardText}>Anti-yellowing top coat protects color and shine from sun exposure.</p>
+      </div>
+    </div>
+  </section>
+)}
 
 </main>
 

@@ -1459,3 +1459,192 @@
     margin: 1rem 0;
   }
 }
+
+/* Mobile Artistry Section */
+.mobileArtistrySection {
+  padding: 3rem 1rem;
+  background-color: #f8f8f8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+  border-top: 1px solid rgba(0,0,0,0.05);
+}
+
+.mobileArtistryHeader {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.mobileArtistryTitle {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.75rem;
+  font-weight: 500;
+  color: #000;
+  margin: 0.5rem 0;
+  letter-spacing: 0.02em;
+}
+
+.mobileHeaderLine {
+  width: 40px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #000, transparent);
+  margin: 0.5rem auto;
+}
+
+.mobileArtistryImage {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  animation: fadeInUp 0.8s ease-out forwards;
+}
+
+.mobileArtistryQuote {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 1.1rem;
+  color: rgba(0,0,0,0.7);
+  line-height: 1.6;
+  margin: 1rem 0 1.5rem;
+  text-align: center;
+  padding: 0 0.5rem;
+  position: relative;
+  animation: fadeInUp 1s ease-out forwards;
+  animation-delay: 0.2s;
+  opacity: 0;
+}
+
+.mobileArtistryQuote::before {
+  content: '"';
+  position: absolute;
+  left: 0;
+  top: -1rem;
+  font-size: 2.5rem;
+  color: rgba(179, 138, 88, 0.4);
+  font-family: 'Georgia', serif;
+}
+
+.mobileArtistryQuote::after {
+  content: '"';
+  position: absolute;
+  right: 0;
+  bottom: -1.5rem;
+  font-size: 2.5rem;
+  color: rgba(179, 138, 88, 0.4);
+  font-family: 'Georgia', serif;
+  transform: rotate(180deg);
+}
+
+.mobileArtistryCards {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+}
+
+.mobileArtistryCard {
+  background-color: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0,0,0,0.03);
+  animation: fadeInUp 0.8s ease-out forwards;
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.mobileArtistryCard:nth-child(1) {
+  animation-delay: 0.3s;
+}
+
+.mobileArtistryCard:nth-child(2) {
+  animation-delay: 0.5s;
+}
+
+.mobileArtistryCard:nth-child(3) {
+  animation-delay: 0.7s;
+}
+
+.mobileArtistryCard:active {
+  transform: scale(0.98);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.mobileArtistryIcon {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 1rem;
+  color: rgba(179, 138, 88, 0.8);
+  position: relative;
+}
+
+.mobileArtistryIcon::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 1px solid rgba(179, 138, 88, 0.3);
+  opacity: 0;
+}
+
+.mobileArtistryCard:active .mobileArtistryIcon::after {
+  animation: mobileIconPulse 0.8s ease-out;
+}
+
+.mobileArtistryCardTitle {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.2rem;
+  color: #333;
+  margin-bottom: 0.75rem;
+  text-align: center;
+  font-weight: 500;
+}
+
+.mobileArtistryCardText {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9rem;
+  color: #555;
+  text-align: center;
+  line-height: 1.5;
+}
+
+@keyframes mobileIconPulse {
+  0% {
+    opacity: 0.8;
+    width: 48px;
+    height: 48px;
+  }
+  100% {
+    opacity: 0;
+    width: 80px;
+    height: 80px;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
