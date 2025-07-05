@@ -20,7 +20,8 @@ import {
   CircleX,
   BarChart3,
   User,
-  LogOut
+  LogOut,
+  ArrowRight
 } from 'lucide-react'
 
 interface Product {
@@ -169,22 +170,22 @@ export default function MobileProductManagement() {
         </button>
       </div>
 
-      <div className="flex flex-row justify-between items-center gap-2 mb-6">
+      <div className={styles.mobileButtonsContainer}>
         <a
           href="/dashboard/admin/products/new"
-          className="flex-1 flex items-center justify-center gap-2 bg-black text-white text-base py-4 px-4 rounded-lg font-medium active:bg-gray-800 active:transform active:scale-95 transition-all no-underline"
+          className={styles.mobileActionButton}
           style={{ touchAction: 'manipulation' }}
         >
-          <PlusCircle size={18} />
-          Add New Product
+          + Add New Product
+          <ArrowRight size={14} className={styles.mobileArrowIcon} />
         </a>
         <a
           href="/dashboard/admin/products/highest-rated"
-          className="flex-1 flex items-center justify-center gap-2 bg-amber-100 text-amber-800 text-base py-4 px-4 rounded-lg font-medium active:bg-amber-200 active:transform active:scale-95 transition-all no-underline"
+          className={styles.mobileActionButton}
           style={{ touchAction: 'manipulation' }}
         >
-          <Star size={18} />
-          Highest Rated
+          ⭐ Highest Rated
+          <ArrowRight size={14} className={styles.mobileArrowIcon} />
         </a>
       </div>
 

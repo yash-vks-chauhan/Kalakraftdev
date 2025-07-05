@@ -582,4 +582,49 @@
 
 .activityHeader:active .rotateIcon {
   transform: rotate(180deg);
+}
+
+/* Mobile product management styles */
+.mobileButtonsContainer {
+  display: flex;
+  flex-direction: row;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.mobileActionButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  background-color: white;
+  color: #111827;
+  border: 2px solid #111827;
+  border-radius: 0.25rem;
+  font-weight: 500;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  text-decoration: none;
+  position: relative;
+  flex: 1;
+  justify-content: center;
+  transform: translateZ(0); /* Hardware acceleration */
+}
+
+.mobileActionButton:active {
+  background-color: #111827;
+  color: white;
+  transform: scale(0.98) translateZ(0);
+}
+
+.mobileArrowIcon {
+  opacity: 0;
+  transform: translateX(-5px);
+  transition: all 0.2s ease;
+}
+
+.mobileActionButton:active .mobileArrowIcon {
+  opacity: 1;
+  transform: translateX(0);
 } 
