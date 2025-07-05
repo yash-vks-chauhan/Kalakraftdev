@@ -1,15 +1,12 @@
 export const dynamic = 'force-dynamic'
 
-import dynamicImport from 'next/dynamic'
-
-const ProductsResponsiveClient = dynamicImport(
-  () => import('./ProductsResponsiveClient'),
-  {
-    ssr: false,
-    loading: () => <div>Loading products…</div>
-  }
-)
+import { Suspense } from 'react'
+import ProductsResponsiveClient from './ProductsResponsiveClient'
 
 export default function Page() {
-  return <ProductsResponsiveClient />
+  return (
+    <Suspense fallback={<div>Loading products…</div>}>
+      <ProductsResponsiveClient />
+    </Suspense>
+  )
 } 
