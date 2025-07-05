@@ -41,6 +41,7 @@ export default function MobileProductManagement() {
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
+  const [isTransitioning, setIsTransitioning] = useState(false)
 
   useEffect(() => {
     if (user?.role !== 'admin') {
@@ -117,6 +118,17 @@ export default function MobileProductManagement() {
     return <p className="p-4 text-red-500">Unauthorized</p>
   }
 
+  if (isLoading || isTransitioning) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen">
+        <RefreshCw className="animate-spin h-8 w-8 text-gray-800 mb-4" />
+        <p className="text-gray-600 text-sm">
+          {isTransitioning ? 'Navigating...' : 'Loading products...'}
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.mobileDashboardContainer}>
       <h1 className={styles.mobileHeader}>
@@ -160,22 +172,22 @@ export default function MobileProductManagement() {
         </button>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 mb-4">
-        <button
-          onClick={() => window.location.href = '/dashboard/admin/products/new'}
-          className="flex items-center justify-center gap-2 bg-black text-white text-sm py-3 px-4 rounded-md w-full"
+      <div className="grid grid-cols-1 gap-4 mb-6">
+        <a
+          href="/dashboard/admin/products/new"
+          className="flex items-center justify-center gap-2 bg-black text-white text-base py-4 px-4 rounded-lg w-full font-medium active:bg-gray-800 active:transform active:scale-95 transition-all"
         >
-          <PlusCircle size={16} />
-          Add Product
-        </button>
+          <PlusCircle size={20} />
+          Add New Product
+        </a>
         
-        <button
-          onClick={() => window.location.href = '/dashboard/admin/products/highest-rated'}
-          className="flex items-center justify-center gap-2 bg-amber-100 text-amber-800 text-sm py-3 px-4 rounded-md w-full"
+        <a
+          href="/dashboard/admin/products/highest-rated"
+          className="flex items-center justify-center gap-2 bg-amber-100 text-amber-800 text-base py-4 px-4 rounded-lg w-full font-medium active:bg-amber-200 active:transform active:scale-95 transition-all"
         >
-          <Star size={16} />
-          Top Rated
-        </button>
+          <Star size={20} />
+          View Top Rated
+        </a>
       </div>
 
       {isLoading ? (
