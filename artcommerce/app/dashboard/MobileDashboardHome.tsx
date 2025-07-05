@@ -23,14 +23,14 @@ export default function MobileDashboardHome() {
     if (user) {
       fetchRecentOrders()
     }
-  }, [user, token, period])
+  }, [user, token])
 
-  const fetchMetrics = async () => {
+  const fetchMetrics = async (p: string = period) => {
     if (user?.role !== 'admin' || !token) return
     
     setRefreshing(true)
     try {
-      const response = await fetch(`/api/admin/metrics?period=${period}`, {
+      const response = await fetch(`/api/admin/metrics?period=${p}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       const data = await response.json()
@@ -40,6 +40,12 @@ export default function MobileDashboardHome() {
     } finally {
       setRefreshing(false)
     }
+  }
+
+  const handlePeriodChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newPeriod = e.target.value as 'today'|'week'|'month'|'year'|'all'
+    setPeriod(newPeriod)
+    fetchMetrics(newPeriod)
   }
 
   const fetchRecentOrders = async () => {
@@ -133,7 +139,7 @@ export default function MobileDashboardHome() {
           <div className="flex items-center justify-between mb-4 px-4">
             <select
               value={period}
-              onChange={e => setPeriod(e.target.value as any)}
+              onChange={handlePeriodChange}
               className="border border-gray-300 rounded-md p-2"
             >
               <option value="today">Today</option>
@@ -143,7 +149,7 @@ export default function MobileDashboardHome() {
               <option value="all">All time</option>
             </select>
             <button
-              onClick={fetchMetrics}
+              onClick={() => fetchMetrics()}
               className={styles.refreshButton}
               disabled={refreshing}
             >
