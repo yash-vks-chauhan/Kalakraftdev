@@ -17,7 +17,9 @@ import {
   DollarSign,
   CircleCheck,
   CircleX,
-  BarChart3
+  BarChart3,
+  User,
+  LogOut
 } from 'lucide-react'
 
 interface Product {
@@ -38,6 +40,7 @@ export default function MobileProductManagement() {
   const [expandedProduct, setExpandedProduct] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
 
   useEffect(() => {
     if (user?.role !== 'admin') {
@@ -99,6 +102,17 @@ export default function MobileProductManagement() {
     router.push('/dashboard/admin/products/new')
   }
 
+  const handleLogout = () => {
+    if (showLogoutConfirm) {
+      // Call logout function from auth context
+      window.location.href = '/auth/logout'
+    } else {
+      setShowLogoutConfirm(true)
+      // Auto hide after 3 seconds
+      setTimeout(() => setShowLogoutConfirm(false), 3000)
+    }
+  }
+
   if (user?.role !== 'admin') {
     return <p className="p-4 text-red-500">Unauthorized</p>
   }
@@ -108,13 +122,43 @@ export default function MobileProductManagement() {
       <h1 className={styles.mobileHeader}>
         Manage Products
         <button 
+          onClick={handleLogout}
+          className={showLogoutConfirm ? "text-red-500" : "text-gray-500"}
+        >
+          <LogOut size={20} />
+        </button>
+      </h1>
+
+      <div className={styles.userProfile}>
+        {user.avatarUrl ? (
+          <img
+            src={user.avatarUrl}
+            alt={`${user.fullName}'s avatar`}
+            className={styles.avatar}
+          />
+        ) : (
+          <div className={styles.avatar}>
+            <User size={30} />
+          </div>
+        )}
+        <div className={styles.userInfo}>
+          <span className={styles.userName}>{user.fullName}</span>
+          <span className={styles.userRole}>{user.role}</span>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between mb-4">
+        <div className="text-sm font-medium text-gray-500">
+          Total Products: <span className="text-black">{products.length}</span>
+        </div>
+        <button 
           onClick={fetchProducts}
           className={isLoading ? `${styles.refreshButton} ${styles.refreshing}` : styles.refreshButton}
           disabled={isLoading}
         >
           <RefreshCw size={16} />
         </button>
-      </h1>
+      </div>
 
       <div className="flex flex-wrap gap-2 mb-4">
         <button
