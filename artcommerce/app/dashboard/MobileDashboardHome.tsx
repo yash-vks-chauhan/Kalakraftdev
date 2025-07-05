@@ -5,7 +5,7 @@ import { ChevronRight, ChevronDown, ChevronUp, User, Package, ShoppingCart, Hear
 import { useAuth } from '../contexts/AuthContext'
 import styles from './mobile-dashboard.module.css'
 import desktopStyles from './dashboard.module.css'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 export default function MobileDashboardHome() {
   const { user, logout, token } = useAuth()
@@ -16,6 +16,8 @@ export default function MobileDashboardHome() {
   const [period, setPeriod] = useState<'today'|'week'|'month'|'year'|'all'>('week')
   const [recentOrders, setRecentOrders] = useState<any[]>([])
   const [loadingOrders, setLoadingOrders] = useState(false)
+  const [activeMetricDot, setActiveMetricDot] = useState(0)
+  const metricsRowRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (user?.role === 'admin') {
@@ -25,6 +27,24 @@ export default function MobileDashboardHome() {
       fetchRecentOrders()
     }
   }, [user, token])
+
+  // Add scroll event listener for metrics row
+  useEffect(() => {
+    const metricsRow = metricsRowRef.current
+    if (!metricsRow) return
+
+    const handleScroll = () => {
+      const scrollPosition = metricsRow.scrollLeft
+      const itemWidth = metricsRow.scrollWidth / (metrics?.statusCounts?.length + 2 || 3)
+      const activeIndex = Math.round(scrollPosition / itemWidth)
+      setActiveMetricDot(activeIndex)
+    }
+
+    metricsRow.addEventListener('scroll', handleScroll)
+    return () => {
+      metricsRow.removeEventListener('scroll', handleScroll)
+    }
+  }, [metrics])
 
   const fetchMetrics = async (p: string = period) => {
     if (user?.role !== 'admin' || !token) return
@@ -162,7 +182,7 @@ export default function MobileDashboardHome() {
             </button>
           </div>
           <div className={styles.metricsScrollContainer}>
-            <div className={styles.metricsRow}>
+            <div className={styles.metricsRow} ref={metricsRowRef}>
               <div className={styles.metricCard}>
                 <h3 className={styles.metricTitle}>Orders</h3>
                 <p className={styles.metricValue}>{metrics?.totalOrders || '0'}</p>
@@ -181,19 +201,34 @@ export default function MobileDashboardHome() {
               ))}
             </div>
             <div className={styles.scrollIndicator}>
-              <div className={styles.scrollDot}></div>
-              <div className={styles.scrollDot}></div>
-              <div className={styles.scrollDot}></div>
+              {[0, 1, ...(metrics?.statusCounts?.map((_: any, i: number) => i + 2) || [])].map((i) => (
+                <div 
+                  key={i} 
+                  className={`${styles.scrollDot} ${activeMetricDot === i ? styles.activeDot : ''}`}
+                  onClick={() => {
+                    if (metricsRowRef.current) {
+                      const itemWidth = metricsRowRef.current.scrollWidth / (metrics?.statusCounts?.length + 2 || 3)
+                      metricsRowRef.current.scrollTo({
+                        left: itemWidth * i,
+                        behavior: 'smooth'
+                      })
+                    }
+                  }}
+                ></div>
+              ))}
             </div>
           </div>
         </>
       )}
 
       <div className={styles.activitySection}>
-        <div className={styles.activityHeader}>
+        <div 
+          className={styles.activityHeader}
+          onClick={() => setShowRecent(prev => !prev)}
+        >
           <h2 className={styles.activityTitle}>Recent Orders</h2>
-          <button onClick={() => setShowRecent(prev => !prev)} className="p-2">
-            {showRecent ? <ChevronUp size={20}/> : <ChevronDown size={20}/>}          
+          <button className="p-2">
+            {showRecent ? <ChevronUp size={20} className={styles.rotateIcon}/> : <ChevronDown size={20}/>}          
           </button>
         </div>
         <div className={`${styles.expandableSection} ${showRecent ? styles.expanded : ''}`}>
