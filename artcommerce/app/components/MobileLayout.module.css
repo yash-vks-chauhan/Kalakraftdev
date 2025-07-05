@@ -147,7 +147,7 @@
 /* Mobile Content */
 .mobileContent {
   flex: 1;
-  padding: 0 16px 70px 16px; /* Add horizontal padding, keep bottom padding for nav */
+  padding: 70px 16px 70px 16px; /* Add top padding for header, horizontal padding, keep bottom padding for nav */
 }
 
 /* Home page specific content styles */
