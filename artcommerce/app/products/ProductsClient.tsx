@@ -629,8 +629,9 @@ export default function ProductsClient() {
         ) : (
           <div className={`${styles.productGrid} ${isMobileView ? styles.mobileProductGrid : ''}`} ref={productGridRef}>
             {(products).map((prod, index) => (
-              <div 
-                key={prod.id} 
+              <Link 
+                href={`/products/${prod.id}`} 
+                key={prod.id}
                 className={styles.productCard}
                 style={{
                   animationDelay: `${index * 0.1}s`
@@ -658,21 +659,40 @@ export default function ProductsClient() {
                       <span className={styles.noImageText}>No image</span>
                     </div>
                   )}
-                  <div className={styles.productImageOverlay}>
+                  {!isMobileView && (
+                    <div className={styles.productImageOverlay}>
+                      <WishlistButton 
+                        productId={prod.id} 
+                        className={styles.wishlistButton}
+                        preventNavigation={true}
+                      />
+                    </div>
+                  )}
+                </div>
+                {isMobileView && (
+                  <div className={styles.mobileWishlistContainer} onClick={(e) => e.preventDefault()}>
                     <WishlistButton 
                       productId={prod.id} 
-                      className={styles.wishlistButton}
+                      className={styles.mobileWishlistButton}
                       preventNavigation={true}
                     />
                   </div>
-                </div>
+                )}
                 <div className={styles.productInfo}>
                   {prod.category && (
                     <span className={styles.productCategory}>{prod.category.name}</span>
                   )}
                   <h3 className={styles.productName}>{prod.name}</h3>
-                  <p className={styles.productPrice}>{prod.currency} {prod.price.toFixed(2)}</p>
-                  {prod.avgRating !== undefined && (
+                  <div className={styles.productPriceContainer}>
+                    <p className={styles.productPrice}>{isMobileView ? prod.price.toFixed(2) : `${prod.currency} ${prod.price.toFixed(2)}`}</p>
+                    {isMobileView && prod.avgRating !== undefined && prod.avgRating > 0 && (
+                      <p className={styles.productRating}>
+                        <span className={styles.starFilled}>★</span> 
+                        <span className={styles.ratingValue}>{prod.avgRating.toFixed(1)}</span>
+                      </p>
+                    )}
+                  </div>
+                  {!isMobileView && prod.avgRating !== undefined && (
                     <p className={styles.productRating}>
                       {[1,2,3,4,5].map((i, idx) => (
                         <span key={idx} className={i <= Math.round(prod.avgRating!) ? styles.starFilled : styles.starEmpty}>
@@ -683,11 +703,13 @@ export default function ProductsClient() {
                     </p>
                   )}
                   {!isMobileView && <p className={styles.productShortDesc}>{prod.shortDesc}</p>}
-                  <Link href={`/products/${prod.id}`} className={styles.viewDetailsButton}>
-                    View Details
-                  </Link>
+                  {!isMobileView && (
+                    <span className={styles.viewDetailsButton}>
+                      View Details
+                    </span>
+                  )}
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}
