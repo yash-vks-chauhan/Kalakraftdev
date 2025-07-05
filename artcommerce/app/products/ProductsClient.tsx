@@ -184,7 +184,7 @@ export default function ProductsClient() {
 
   // Apply scroll-based transformations to products
   useEffect(() => {
-    if (!productGridRef.current) return
+    if (!productGridRef.current || isMobileView) return;
 
     const cards = productGridRef.current.querySelectorAll(`.${styles.productCard}`)
     cards.forEach((card, index) => {
@@ -198,7 +198,7 @@ export default function ProductsClient() {
       ;(card as HTMLElement).style.transform = `scale(${scale}) translateY(${translateY}px)`
       ;(card as HTMLElement).style.opacity = opacity.toString()
     })
-  }, [scrollY, products])
+  }, [scrollY, products, isMobileView])
 
   // Close mobile filter drawer when switching to desktop view
   useEffect(() => {
@@ -535,6 +535,85 @@ export default function ProductsClient() {
       `}>
         <h1 className={styles.title}>Discover Our Collection</h1>
 
+        {/* Active filters display for mobile */}
+        {isMobileView && (currentCategory || currentTag || ratingMin || lowStockOnly || inStockOnly || sortOrder) && (
+          <div className={styles.mobileActiveFilters}>
+            {currentCategory && (
+              <div className={styles.mobileFilterTag}>
+                {KNOWN_CATEGORIES.find(cat => cat.slug === currentCategory)?.name || currentCategory}
+                <button onClick={() => {
+                  const qs = new URLSearchParams(searchParams.toString())
+                  qs.delete('category')
+                  router.replace(qs.toString() ? `/products?${qs}` : '/products')
+                }}>×</button>
+              </div>
+            )}
+            {currentTag && (
+              <div className={styles.mobileFilterTag}>
+                {currentTag}
+                <button onClick={() => {
+                  const qs = new URLSearchParams(searchParams.toString())
+                  qs.delete('usageTag')
+                  router.replace(qs.toString() ? `/products?${qs}` : '/products')
+                }}>×</button>
+              </div>
+            )}
+            {ratingMin && (
+              <div className={styles.mobileFilterTag}>
+                {ratingMin}+ ★
+                <button onClick={() => {
+                  setRatingMin('')
+                  const qs = new URLSearchParams(searchParams.toString())
+                  qs.delete('ratingMin')
+                  router.replace(qs.toString() ? `/products?${qs}` : '/products')
+                }}>×</button>
+              </div>
+            )}
+            {lowStockOnly && (
+              <div className={styles.mobileFilterTag}>
+                Low Stock
+                <button onClick={() => {
+                  setLowStockOnly(false)
+                  const qs = new URLSearchParams(searchParams.toString())
+                  qs.delete('lowStock')
+                  router.replace(qs.toString() ? `/products?${qs}` : '/products')
+                }}>×</button>
+              </div>
+            )}
+            {inStockOnly && (
+              <div className={styles.mobileFilterTag}>
+                In Stock
+                <button onClick={() => {
+                  setInStockOnly(false)
+                  const qs = new URLSearchParams(searchParams.toString())
+                  qs.delete('inStock')
+                  router.replace(qs.toString() ? `/products?${qs}` : '/products')
+                }}>×</button>
+              </div>
+            )}
+            {sortOrder && (
+              <div className={styles.mobileFilterTag}>
+                {sortOrder === 'oldest' ? 'Oldest' : 
+                 sortOrder === 'price_asc' ? 'Price: Low-High' : 
+                 sortOrder === 'price_desc' ? 'Price: High-Low' : 'Newest'}
+                <button onClick={() => {
+                  setSortOrder('')
+                  const qs = new URLSearchParams(searchParams.toString())
+                  qs.delete('sort')
+                  router.replace(qs.toString() ? `/products?${qs}` : '/products')
+                }}>×</button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Results count for mobile */}
+        {isMobileView && (
+          <p className={styles.mobileResultsCount}>
+            {products.length} {products.length === 1 ? 'product' : 'products'} found
+          </p>
+        )}
+
         {/* Results */}
         {(products.length === 0) ? (
           <p className={styles.emptyProducts}>No products found.</p>
@@ -585,11 +664,16 @@ export default function ProductsClient() {
                   <h3 className={styles.productName}>{prod.name}</h3>
                   <p className={styles.productPrice}>{prod.currency} {prod.price.toFixed(2)}</p>
                   {prod.avgRating !== undefined && (
-                    <p style={{ fontSize: '0.85rem', margin: '2px 0' }}>
-                      {[1,2,3,4,5].map(i=>i<=Math.round(prod.avgRating!)?'★':'☆').join('')} ({prod.ratingCount})
+                    <p className={styles.productRating}>
+                      {[1,2,3,4,5].map((i, idx) => (
+                        <span key={idx} className={i <= Math.round(prod.avgRating!) ? styles.starFilled : styles.starEmpty}>
+                          ★
+                        </span>
+                      ))} 
+                      <span className={styles.ratingCount}>({prod.ratingCount})</span>
                     </p>
                   )}
-                  <p className={styles.productShortDesc}>{prod.shortDesc}</p>
+                  {!isMobileView && <p className={styles.productShortDesc}>{prod.shortDesc}</p>}
                   <Link href={`/products/${prod.id}`} className={styles.viewDetailsButton}>
                     View Details
                   </Link>
