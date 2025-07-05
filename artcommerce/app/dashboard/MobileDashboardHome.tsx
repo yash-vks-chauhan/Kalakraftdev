@@ -1,13 +1,14 @@
 "use client"
 
 import Link from 'next/link'
-import { ChevronRight, User, Package, ShoppingCart, Heart, Settings, Users, Tag, AlertTriangle, TicketCheck, Star, LogOut, RefreshCw, Clock, PackageOpen, Calendar } from 'lucide-react'
+import { ChevronRight, ChevronDown, ChevronUp, User, Package, ShoppingCart, Heart, Settings, Users, Tag, AlertTriangle, TicketCheck, Star, LogOut, RefreshCw, Clock, PackageOpen, Calendar } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import styles from './mobile-dashboard.module.css'
 import { useState, useEffect } from 'react'
 
 export default function MobileDashboardHome() {
   const { user, logout, token } = useAuth()
+  const [showRecent, setShowRecent] = useState(true)
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
   const [metrics, setMetrics] = useState<any>(null)
   const [refreshing, setRefreshing] = useState(false)
@@ -172,12 +173,15 @@ export default function MobileDashboardHome() {
 
       <div className={styles.activitySection}>
         <div className={styles.activityHeader}>
-          <h2 className={styles.activityTitle}>Recent Activity</h2>
+          <h2 className={styles.activityTitle}>Recent Orders</h2>
+          <button onClick={() => setShowRecent(prev => !prev)} className="p-2">
+            {showRecent ? <ChevronUp size={20}/> : <ChevronDown size={20}/>}          
+          </button>
           <Link href="/dashboard/orders" className={styles.viewAllLink}>
             View All
           </Link>
         </div>
-        
+        <div className={`${styles.expandableSection} ${showRecent ? styles.expanded : ''}`}>
         {loadingOrders ? (
           <div className={styles.emptyState}>
             <RefreshCw className={`${styles.emptyStateIcon} ${styles.refreshing}`} size={24} />
@@ -216,6 +220,7 @@ export default function MobileDashboardHome() {
             <p className={styles.emptyStateText}>No recent orders found</p>
           </div>
         )}
+        </div>
       </div>
 
       <ul className={styles.menuList}>
