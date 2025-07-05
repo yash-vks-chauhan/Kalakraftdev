@@ -1,6 +1,6 @@
-import dynamic from 'next/dynamic'
+import dynamicImport from 'next/dynamic'
 
-const ProductsResponsiveClient = dynamic(
+const ProductsResponsiveClient = dynamicImport(
   () => import('./ProductsResponsiveClient'),
   {
     ssr: false,
