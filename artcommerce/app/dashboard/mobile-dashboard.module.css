@@ -198,6 +198,47 @@
   z-index: 1;
 }
 
+/* New styles for horizontal scrolling metrics */
+.metricsScrollContainer {
+  position: relative;
+  margin-bottom: 2rem;
+  z-index: 1;
+  width: 100%;
+}
+
+.metricsRow {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  gap: 0.75rem;
+  padding: 0.5rem 0.25rem;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.metricsRow::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+.scrollIndicator {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.scrollDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: rgba(100, 116, 139, 0.3);
+  transition: all 0.3s ease;
+}
+
+.scrollDot:first-child {
+  background-color: rgba(100, 116, 139, 0.8);
+}
+
 .metricCard {
   background: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(8px);
@@ -213,6 +254,9 @@
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
+  min-width: 140px;
+  scroll-snap-align: center;
+  flex-shrink: 0;
 }
 
 .metricCard:active {
@@ -250,7 +294,86 @@
 }
 
 .refreshing {
-  animation: spin 1s linear infinite;
+  animation: spin 1.5s linear infinite;
+}
+
+/* New styles for mobile period selector */
+.periodSelectorMobile {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  position: relative;
+  z-index: 1;
+}
+
+.periodSelectWrapper {
+  position: relative;
+  flex: 1;
+}
+
+.periodSelectWrapper::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid #64748b;
+  pointer-events: none;
+}
+
+.periodSelectMobile {
+  appearance: none;
+  width: 100%;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  border-radius: 8px;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  background-color: rgba(255, 255, 255, 0.8);
+  color: #1a202c;
+  font-weight: 500;
+  padding-right: 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.refreshButton {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: none;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  z-index: 2;
+  transition: transform 0.3s ease;
+  padding: 0.5rem;
+}
+
+.refreshButton:active {
+  transform: rotate(180deg);
+}
+
+.periodRefreshButton {
+  position: relative;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 0.75rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease;
+}
+
+.periodRefreshButton:active {
+  transform: rotate(180deg);
 }
 
 @keyframes spin {

@@ -137,45 +137,54 @@ export default function MobileDashboardHome() {
 
       {user.role === 'admin' && (
         <>
-          <div className={desktopStyles.periodSelector}>
-            <label htmlFor="mobile-period" className={desktopStyles.periodLabel}>Period:</label>
-            <select
-              id="mobile-period"
-              value={period}
-              onChange={handlePeriodChange}
-              className={desktopStyles.periodSelect}
-            >
-              <option value="today">Today</option>
-              <option value="week">Last 7 days</option>
-              <option value="month">This month</option>
-              <option value="year">This year</option>
-              <option value="all">All time</option>
-            </select>
+          <div className={styles.periodSelectorMobile}>
+            <div className={styles.periodSelectWrapper}>
+              <select
+                id="mobile-period"
+                value={period}
+                onChange={handlePeriodChange}
+                className={styles.periodSelectMobile}
+              >
+                <option value="today">Today</option>
+                <option value="week">Last 7 days</option>
+                <option value="month">This month</option>
+                <option value="year">This year</option>
+                <option value="all">All time</option>
+              </select>
+            </div>
             <button
               onClick={() => fetchMetrics()}
-              className={styles.refreshButton}
+              className={styles.periodRefreshButton}
               disabled={refreshing}
+              aria-label="Refresh metrics"
             >
               <RefreshCw size={16} className={refreshing ? styles.refreshing : ''} />
             </button>
           </div>
-          <div className={styles.metricsGrid}>
-            <div className={styles.metricCard}>
-              <h3 className={styles.metricTitle}>Orders ({period === 'today' ? 'Today' : period === 'week' ? 'Week' : period === 'month' ? 'Month' : period === 'year' ? 'Year' : 'All'})</h3>
-              <p className={styles.metricValue}>{metrics?.totalOrders || '0'}</p>
-            </div>
-            <div className={styles.metricCard}>
-              <h3 className={styles.metricTitle}>Revenue ({period === 'today' ? 'Today' : period === 'week' ? 'Week' : period === 'month' ? 'Month' : period === 'year' ? 'Year' : 'All'})</h3>
-              <p className={styles.metricValue}>₹{metrics?.revenue ? metrics.revenue.toFixed(2) : '0.00'}</p>
-            </div>
-            {metrics?.statusCounts?.slice(0, 2).map((sc: any) => (
-              <div key={sc.status} className={styles.metricCard}>
-                <h3 className={styles.metricTitle}>
-                  {sc.status.charAt(0).toUpperCase() + sc.status.slice(1)}
-                </h3>
-                <p className={styles.metricValue}>{sc._count.status}</p>
+          <div className={styles.metricsScrollContainer}>
+            <div className={styles.metricsRow}>
+              <div className={styles.metricCard}>
+                <h3 className={styles.metricTitle}>Orders</h3>
+                <p className={styles.metricValue}>{metrics?.totalOrders || '0'}</p>
               </div>
-            ))}
+              <div className={styles.metricCard}>
+                <h3 className={styles.metricTitle}>Revenue</h3>
+                <p className={styles.metricValue}>₹{metrics?.revenue ? metrics.revenue.toFixed(2) : '0.00'}</p>
+              </div>
+              {metrics?.statusCounts?.map((sc: any) => (
+                <div key={sc.status} className={styles.metricCard}>
+                  <h3 className={styles.metricTitle}>
+                    {sc.status.charAt(0).toUpperCase() + sc.status.slice(1)}
+                  </h3>
+                  <p className={styles.metricValue}>{sc._count.status}</p>
+                </div>
+              ))}
+            </div>
+            <div className={styles.scrollIndicator}>
+              <div className={styles.scrollDot}></div>
+              <div className={styles.scrollDot}></div>
+              <div className={styles.scrollDot}></div>
+            </div>
           </div>
         </>
       )}
