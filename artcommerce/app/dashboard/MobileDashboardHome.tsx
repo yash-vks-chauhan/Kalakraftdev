@@ -179,7 +179,7 @@ export default function MobileDashboardHome() {
                 </div>
                 <div className={styles.activityContent}>
                   <h3 className={styles.activityTitle}>
-                    Order #{order.id.substring(0, 8)}
+                    Order #{order.id.toString().substring(0, 8)}
                   </h3>
                   <div className={styles.activityMeta}>
                     <span className={styles.activityDate}>
