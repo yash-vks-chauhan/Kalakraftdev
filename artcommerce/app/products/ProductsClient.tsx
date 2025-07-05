@@ -62,6 +62,9 @@ export default function ProductsClient() {
   const [inStockOnly, setInStockOnly] = useState(inStockOnlyParam)
   const [ratingMin, setRatingMin] = useState(ratingMinParam)
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+  const [page, setPage] = useState(1)
+  const itemsPerPage = 15
+  const displayedProducts = products.slice(0, page * itemsPerPage)
 
   function handleCategoryClick(slug: string) {
     // Use exact slug from database, no transformations needed
@@ -454,6 +457,7 @@ export default function ProductsClient() {
       </aside>
 
       <main className={`${styles.productsContainer} ${isSidebarOpen ? styles.mainContent : styles.mainContentCollapsed}`} style={{ flex: 1 }}>
+        <button className={styles.filterButton} onClick={() => setIsSidebarOpen(true)}>Filter</button>
         <h1 className={styles.title}>Discover Our Collection</h1>
 
         {/* Results */}
@@ -461,7 +465,7 @@ export default function ProductsClient() {
           <p className={styles.emptyProducts}>No products found.</p>
         ) : (
           <div className={styles.productGrid} ref={productGridRef}>
-            {(products).map((prod, index) => (
+            {(displayedProducts).map((prod, index) => (
               <div 
                 key={prod.id} 
                 className={styles.productCard}
@@ -517,6 +521,13 @@ export default function ProductsClient() {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+        {products.length > displayedProducts.length && (
+          <div className={styles.loadMoreContainer}>
+            <button className={styles.loadMoreButton} onClick={() => setPage(page + 1)}>
+              View More
+            </button>
           </div>
         )}
       </main>
