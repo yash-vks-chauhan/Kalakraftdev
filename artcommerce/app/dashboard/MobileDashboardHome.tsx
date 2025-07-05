@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { ChevronRight, ChevronDown, ChevronUp, User, Package, ShoppingCart, Heart, Settings, Users, Tag, AlertTriangle, TicketCheck, Star, LogOut, RefreshCw, Clock, PackageOpen, Calendar } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import styles from './mobile-dashboard.module.css'
+import desktopStyles from './dashboard.module.css'
 import { useState, useEffect } from 'react'
 
 export default function MobileDashboardHome() {
@@ -136,11 +137,13 @@ export default function MobileDashboardHome() {
 
       {user.role === 'admin' && (
         <>
-          <div className="flex items-center justify-between mb-4 px-4">
+          <div className={desktopStyles.periodSelector}>
+            <label htmlFor="mobile-period" className={desktopStyles.periodLabel}>Period:</label>
             <select
+              id="mobile-period"
               value={period}
               onChange={handlePeriodChange}
-              className="border border-gray-300 rounded-md p-2"
+              className={desktopStyles.periodSelect}
             >
               <option value="today">Today</option>
               <option value="week">Last 7 days</option>
@@ -183,9 +186,6 @@ export default function MobileDashboardHome() {
           <button onClick={() => setShowRecent(prev => !prev)} className="p-2">
             {showRecent ? <ChevronUp size={20}/> : <ChevronDown size={20}/>}          
           </button>
-          <Link href="/dashboard/orders" className={styles.viewAllLink}>
-            View All
-          </Link>
         </div>
         <div className={`${styles.expandableSection} ${showRecent ? styles.expanded : ''}`}>
         {loadingOrders ? (
