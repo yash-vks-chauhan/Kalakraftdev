@@ -837,7 +837,7 @@ details[open] .arrow {
   display: grid;
   grid-template-columns: repeat(2, 1fr) !important;
   gap: 8px !important;
-  padding: 8px !important;
+  padding: 0 !important;
   margin: 0 !important;
   width: 100% !important;
   box-sizing: border-box;
