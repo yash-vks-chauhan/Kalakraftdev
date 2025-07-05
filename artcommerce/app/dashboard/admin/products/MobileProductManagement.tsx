@@ -161,13 +161,13 @@ export default function MobileProductManagement() {
       </div>
 
       <div className="flex flex-wrap gap-2 mb-4">
-        <button
-          onClick={handleAddNew}
+        <Link
+          href="/dashboard/admin/products/new"
           className="flex items-center gap-1 bg-black text-white text-sm px-3 py-2 rounded-md"
         >
           <PlusCircle size={16} />
           Add Product
-        </button>
+        </Link>
         
         <Link
           href="/dashboard/admin/products/highest-rated"
@@ -243,17 +243,17 @@ export default function MobileProductManagement() {
                   </div>
                   
                   <div className="flex flex-wrap gap-2">
-                    <button
-                      onClick={() => handleEdit(product.id)}
-                      className="flex items-center gap-1 bg-gray-100 text-gray-800 text-sm px-3 py-2 rounded-md flex-1"
+                    <Link
+                      href={`/dashboard/admin/products/${product.id}`}
+                      className="flex items-center gap-1 bg-gray-100 text-gray-800 text-sm px-3 py-2 rounded-md flex-1 justify-center"
                     >
                       <Edit size={14} />
                       Edit
-                    </button>
+                    </Link>
                     
                     <button
                       onClick={() => handleDelete(product.id, product.name)}
-                      className="flex items-center gap-1 bg-red-100 text-red-800 text-sm px-3 py-2 rounded-md flex-1"
+                      className="flex items-center gap-1 bg-red-100 text-red-800 text-sm px-3 py-2 rounded-md flex-1 justify-center"
                     >
                       <Trash2 size={14} />
                       Delete

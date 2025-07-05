@@ -2,9 +2,26 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useIsMobile } from '../../../lib/utils';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const path = usePathname();
+  const isMobile = useIsMobile();
+  const [forceDesktopView, setForceDesktopView] = useState(false);
+  
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const pref = localStorage.getItem('viewPreference')
+      if (pref === 'desktop') setForceDesktopView(true)
+    }
+  }, []);
+  
+  // If on mobile and not forcing desktop view, return children directly without wrappers
+  if (isMobile && !forceDesktopView) {
+    return <>{children}</>;
+  }
+  
   const hideNav = [
     '/dashboard/admin/products',
     '/dashboard/admin/users',
