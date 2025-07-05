@@ -169,25 +169,21 @@ export default function MobileProductManagement() {
         </button>
       </div>
 
-      <div className={desktopStyles.header}>
-        <h1 className={desktopStyles.title}>Manage Products</h1>
+      <div className="flex flex-row justify-between items-center gap-2 mb-6">
         <button
           type="button"
           onClick={() => router.push('/dashboard/admin/products/new')}
-          className={desktopStyles.newButton}
+          className="flex-1 flex items-center justify-center gap-2 bg-black text-white text-base py-3 px-3 rounded-lg font-medium active:bg-gray-800 active:transform active:scale-95 transition-all"
         >
-          <PlusCircle size={20} />
+          <PlusCircle size={18} />
           Add New Product
-          <ChevronRight className={desktopStyles.arrowIcon} />
         </button>
         <Link
           href="/dashboard/admin/products/highest-rated"
-          className={desktopStyles.newButton}
-          style={{ marginLeft: '1rem' }}
+          className="flex-1 flex items-center justify-center gap-2 bg-amber-100 text-amber-800 text-base py-3 px-3 rounded-lg font-medium active:bg-amber-200 active:transform active:scale-95 transition-all"
         >
-          <Star size={20} />
+          <Star size={18} />
           Highest Rated
-          <ChevronRight className={desktopStyles.arrowIcon} />
         </Link>
       </div>
 
