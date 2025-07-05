@@ -45,6 +45,10 @@ export default function NewProductPage() {
   const [availableTags, setAvailableTags] = useState<string[]>([])
   const [newTagInput, setNewTagInput] = useState('')
 
+  // Cloudinary direct upload config (ensure these env vars are set in .env.local)
+  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+  const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+
   useEffect(() => {
     if (user?.role !== 'admin') {
       setError('Unauthorized')
@@ -120,47 +124,38 @@ export default function NewProductPage() {
       setUploadProgress(prev => ({ ...prev, [uploadId]: 0 }))
       
       try {
-        // Use XMLHttpRequest to track upload progress
+        // Upload directly to Cloudinary via unsigned upload preset
         const xhr = new XMLHttpRequest()
-        
         xhr.upload.onprogress = (event) => {
           if (event.lengthComputable) {
             const progress = Math.round((event.loaded * 100) / event.total)
             setUploadProgress(prev => ({ ...prev, [uploadId]: progress }))
           }
         }
-        
-        const uploadPromise = new Promise<{ url: string }>((resolve, reject) => {
-          xhr.open('POST', `/api/uploads/cloudinary?filename=${encodeURIComponent(file.name)}&folder=products`, true)
-          
+        const uploadPromise = new Promise<{ secure_url: string }>((resolve, reject) => {
+          xhr.open('POST', `https://api.cloudinary.com/v1_1/${cloudName}/upload`, true)
+          const formData = new FormData()
+          formData.append('file', file)
+          formData.append('upload_preset', uploadPreset)
+          formData.append('folder', 'products')
+
           xhr.onload = () => {
             if (xhr.status >= 200 && xhr.status < 300) {
               try {
-                const response = JSON.parse(xhr.responseText)
-                resolve(response)
-              } catch (error) {
+                resolve(JSON.parse(xhr.responseText))
+              } catch {
                 reject(new Error('Invalid response format'))
               }
             } else {
-              try {
-                const errorResponse = JSON.parse(xhr.responseText)
-                reject(new Error(errorResponse.error || `Upload failed with status ${xhr.status}`))
-              } catch (e) {
-                reject(new Error(`Upload failed with status ${xhr.status}`))
-              }
+              reject(new Error(`Upload failed with status ${xhr.status}`))
             }
           }
-          
           xhr.onerror = () => reject(new Error('Network error during upload'))
           xhr.ontimeout = () => reject(new Error('Upload timed out'))
-          
-          xhr.send(file)
+          xhr.send(formData)
         })
-        
         const result = await uploadPromise
-        
-        // Add the new image URL to the state
-        setImageUrls(prev => [...prev, result.url])
+        setImageUrls(prev => [...prev, result.secure_url])
         
         // Remove from uploading files
         setUploadingFiles(prev => {
@@ -205,7 +200,7 @@ export default function NewProductPage() {
         }, 5000);
       }
     }
-  }, [imageUrls.length, setNotificationMessage, setNotificationType, setShowNotification]);
+  }, [imageUrls.length, setNotificationMessage, setNotificationType, setShowNotification, cloudName, uploadPreset]);
 
   const onDropStyling = useCallback(async (acceptedFiles: File[]) => {
     for (const file of acceptedFiles) {
@@ -231,40 +226,38 @@ export default function NewProductPage() {
       setShowNotification(true);
       
       try {
-        // Use XMLHttpRequest to track upload progress
+        // Upload directly to Cloudinary via unsigned upload preset
         const xhr = new XMLHttpRequest()
-        
-        const uploadPromise = new Promise<{ url: string }>((resolve, reject) => {
-          xhr.open('POST', `/api/uploads/cloudinary?filename=${encodeURIComponent(file.name)}&folder=styling`, true)
-          
+        xhr.upload.onprogress = (event) => {
+          if (event.lengthComputable) {
+            const progress = Math.round((event.loaded * 100) / event.total)
+            setUploadProgress(prev => ({ ...prev, [uploadId]: progress }))
+          }
+        }
+        const uploadPromise = new Promise<{ secure_url: string }>((resolve, reject) => {
+          xhr.open('POST', `https://api.cloudinary.com/v1_1/${cloudName}/upload`, true)
+          const formData = new FormData()
+          formData.append('file', file)
+          formData.append('upload_preset', uploadPreset)
+          formData.append('folder', 'styling')
+
           xhr.onload = () => {
             if (xhr.status >= 200 && xhr.status < 300) {
               try {
-                const response = JSON.parse(xhr.responseText)
-                resolve(response)
-              } catch (error) {
+                resolve(JSON.parse(xhr.responseText))
+              } catch {
                 reject(new Error('Invalid response format'))
               }
             } else {
-              try {
-                const errorResponse = JSON.parse(xhr.responseText)
-                reject(new Error(errorResponse.error || `Upload failed with status ${xhr.status}`))
-              } catch (e) {
-                reject(new Error(`Upload failed with status ${xhr.status}`))
-              }
+              reject(new Error(`Upload failed with status ${xhr.status}`))
             }
           }
-          
           xhr.onerror = () => reject(new Error('Network error during upload'))
           xhr.ontimeout = () => reject(new Error('Upload timed out'))
-          
-          xhr.send(file)
+          xhr.send(formData)
         })
-        
         const result = await uploadPromise
-        
-        // Add the styling image to the state
-        setStylingIdeas(prev => [...prev, { url: result.url, text: '' }]);
+        setStylingIdeas(prev => [...prev, { url: result.secure_url, text: '' }]);
         
         // Show success notification
         setNotificationMessage(`Styling image ${file.name} uploaded successfully`);
@@ -289,7 +282,7 @@ export default function NewProductPage() {
         }, 5000);
       }
     }
-  }, [setNotificationMessage, setNotificationType, setShowNotification]);
+  }, [setNotificationMessage, setNotificationType, setShowNotification, cloudName, uploadPreset]);
 
   const { getRootProps, getInputProps, isDragActive, fileRejections } = useDropzone({
     onDrop,
