@@ -171,22 +171,22 @@ export default function MobileProductManagement() {
       </div>
 
       <div className={styles.mobileButtonsContainer}>
-        <a
+        <Link
           href="/dashboard/admin/products/new"
           className={styles.mobileActionButton}
           style={{ touchAction: 'manipulation' }}
         >
           + Add New Product
           <ArrowRight size={14} className={styles.mobileArrowIcon} />
-        </a>
-        <a
+        </Link>
+        <Link
           href="/dashboard/admin/products/highest-rated"
           className={styles.mobileActionButton}
           style={{ touchAction: 'manipulation' }}
         >
           ⭐ Highest Rated
           <ArrowRight size={14} className={styles.mobileArrowIcon} />
-        </a>
+        </Link>
       </div>
 
       {isLoading ? (
