@@ -107,6 +107,42 @@
   justify-content: center;
 }
 
+/* Active Filters */
+.activeFilters {
+  display: flex;
+  overflow-x: auto;
+  padding: 10px 16px;
+  background-color: white;
+  gap: 8px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.activeFilters::-webkit-scrollbar {
+  display: none;
+}
+
+.filterTag {
+  display: flex;
+  align-items: center;
+  background-color: #f0f0f0;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 12px;
+  color: #333;
+  white-space: nowrap;
+}
+
+.filterTag button {
+  background: none;
+  border: none;
+  color: #777;
+  font-size: 16px;
+  margin-left: 4px;
+  padding: 0 0 0 4px;
+  cursor: pointer;
+}
+
 /* Category Styles */
 .categoryScroll {
   display: flex;
@@ -148,6 +184,33 @@
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 12px;
+}
+
+.emptyState {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+  color: #555;
+}
+
+.emptyState p {
+  margin-bottom: 16px;
+  font-size: 16px;
+}
+
+.clearAllButton {
+  background-color: #ff3e6c;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
 }
 
 @media (max-width: 360px) {
@@ -193,10 +256,14 @@
   background-color: #f7f7f7;
 }
 
-.wishlistButton {
+.wishlistButtonContainer {
   position: absolute;
   bottom: 10px;
   right: 10px;
+  z-index: 2;
+}
+
+.wishlistButton {
   width: 32px;
   height: 32px;
   border-radius: 50%;
@@ -207,7 +274,6 @@
   border: none;
   color: #777;
   cursor: pointer;
-  z-index: 2;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
@@ -292,6 +358,27 @@
   margin: 4px 0 0 0;
 }
 
+.lowStockBadge, .soldOutBadge {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  z-index: 2;
+}
+
+.lowStockBadge {
+  background-color: #FFF3CD;
+  color: #856404;
+}
+
+.soldOutBadge {
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+}
+
 /* Bottom Bar Styles */
 .bottomBar {
   position: fixed;
@@ -327,6 +414,140 @@
   width: 1px;
   height: 24px;
   background-color: #e0e0e0;
+}
+
+/* Filter Drawer Styles */
+.filterDrawer, .sortDrawer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: white;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.1);
+  z-index: 30;
+  transform: translateY(100%);
+  transition: transform 0.3s ease;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.filterDrawerOpen, .sortDrawerOpen {
+  transform: translateY(0);
+}
+
+.filterDrawerHeader, .sortDrawerHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.filterDrawerHeader h2, .sortDrawerHeader h2 {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  padding: 5px;
+  color: #333;
+  cursor: pointer;
+}
+
+.filterDrawerContent {
+  padding: 0 16px 16px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.filterSection {
+  border-bottom: 1px solid #f0f0f0;
+  padding: 16px 0;
+}
+
+.filterHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.filterTitle {
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+}
+
+.filterOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.filterOption {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
+}
+
+.filterOption input {
+  margin-right: 8px;
+}
+
+.filterActions {
+  display: flex;
+  justify-content: space-between;
+  padding: 16px 0;
+  gap: 16px;
+}
+
+.applyButton {
+  background-color: #ff3e6c;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  flex: 1;
+  cursor: pointer;
+}
+
+.sortOptions {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sortOption {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
+}
+
+.sortOption input {
+  margin-right: 8px;
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 20;
 }
 
 /* Loading and Error Styles */
