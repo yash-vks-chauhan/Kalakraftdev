@@ -103,6 +103,10 @@ export default function MobileProductManagement() {
     router.push('/dashboard/admin/products/new')
   }
 
+  function handleViewTopRated() {
+    router.push('/dashboard/admin/products/highest-rated')
+  }
+
   const handleLogout = () => {
     if (showLogoutConfirm) {
       // Call logout function from auth context
@@ -173,21 +177,23 @@ export default function MobileProductManagement() {
       </div>
 
       <div className="grid grid-cols-1 gap-4 mb-6">
-        <a
-          href="/dashboard/admin/products/new"
+        <button
+          type="button"
+          onClick={handleAddNew}
           className="flex items-center justify-center gap-2 bg-black text-white text-base py-4 px-4 rounded-lg w-full font-medium active:bg-gray-800 active:transform active:scale-95 transition-all"
         >
           <PlusCircle size={20} />
           Add New Product
-        </a>
+        </button>
         
-        <a
-          href="/dashboard/admin/products/highest-rated"
+        <button
+          type="button"
+          onClick={handleViewTopRated}
           className="flex items-center justify-center gap-2 bg-amber-100 text-amber-800 text-base py-4 px-4 rounded-lg w-full font-medium active:bg-amber-200 active:transform active:scale-95 transition-all"
         >
           <Star size={20} />
           View Top Rated
-        </a>
+        </button>
       </div>
 
       {isLoading ? (
