@@ -506,7 +506,7 @@ export default function ProductsClient() {
           onClick={() => setIsMobileFilterOpen(true)}
           aria-label="Open filters"
         >
-          <FiFilter size={18} /> Filters
+          <FiFilter size={16} /> Filter
         </button>
       )}
 
@@ -543,6 +543,13 @@ export default function ProductsClient() {
         ${isMobileView ? styles.mobileProductsContainer : ''}
       `} style={{ width: isMobileView ? '100%' : 'auto' }}>
         <h1 className={styles.title}>Discover Our Collection</h1>
+
+        {/* Results count for mobile */}
+        {isMobileView && (
+          <p className={styles.mobileResultsCount}>
+            {products.length} products found
+          </p>
+        )}
 
         {/* Active filters display for mobile */}
         {isMobileView && (currentCategory || currentTag || ratingMin || lowStockOnly || inStockOnly || sortOrder) && (
@@ -616,13 +623,6 @@ export default function ProductsClient() {
           </div>
         )}
 
-        {/* Results count for mobile */}
-        {isMobileView && (
-          <p className={styles.mobileResultsCount}>
-            {products.length} {products.length === 1 ? 'product' : 'products'} found
-          </p>
-        )}
-
         {/* Results */}
         {(products.length === 0) ? (
           <p className={styles.emptyProducts}>No products found.</p>
@@ -639,11 +639,11 @@ export default function ProductsClient() {
               >
                 {prod.stockQuantity <= 0 ? (
                   <span className={styles.outOfStockBadge}>
-                    Out of stock
+                    OUT OF STOCK
                   </span>
                 ) : prod.stockQuantity <= LOW_STOCK_THRESHOLD && (
                   <span className={styles.lowStockBadge}>
-                    Low stock
+                    LOW STOCK
                   </span>
                 )}
                 <div className={styles.productImageContainer}>
