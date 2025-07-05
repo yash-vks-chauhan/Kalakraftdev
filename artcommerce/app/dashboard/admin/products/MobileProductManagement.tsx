@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useAuth } from '../../../contexts/AuthContext'
 import { useRouter } from 'next/navigation'
 import styles from '../../mobile-dashboard.module.css'
+import desktopStyles from './products-list.module.css'
 import { 
   Package, 
   ChevronRight, 
@@ -168,21 +169,25 @@ export default function MobileProductManagement() {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 mb-6">
-        <Link
-          href="/dashboard/admin/products/new"
-          className="flex items-center justify-center gap-2 bg-black text-white text-base py-4 px-4 rounded-lg w-full font-medium active:bg-gray-800 active:transform active:scale-95 transition-all"
+      <div className={desktopStyles.header}>
+        <h1 className={desktopStyles.title}>Manage Products</h1>
+        <button
+          type="button"
+          onClick={() => router.push('/dashboard/admin/products/new')}
+          className={desktopStyles.newButton}
         >
           <PlusCircle size={20} />
           Add New Product
-        </Link>
-
+          <ChevronRight className={desktopStyles.arrowIcon} />
+        </button>
         <Link
           href="/dashboard/admin/products/highest-rated"
-          className="flex items-center justify-center gap-2 bg-amber-100 text-amber-800 text-base py-4 px-4 rounded-lg w-full font-medium active:bg-amber-200 active:transform active:scale-95 transition-all"
+          className={desktopStyles.newButton}
+          style={{ marginLeft: '1rem' }}
         >
           <Star size={20} />
-          View Top Rated
+          Highest Rated
+          <ChevronRight className={desktopStyles.arrowIcon} />
         </Link>
       </div>
 
