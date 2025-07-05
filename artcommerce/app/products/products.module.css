@@ -769,8 +769,16 @@ details[open] .arrow {
 /* Mobile specific styles */
 .mobileProductsContainer {
   width: 100%;
-  padding: 0 1rem;
+  padding: 0 0.75rem;
   margin-top: 0;
+}
+
+.mobileProductGrid {
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: 12px !important;
+  padding: 0.75rem 0 !important;
+  margin: 0 !important;
+  width: 100% !important;
 }
 
 .mobileFilterButton {

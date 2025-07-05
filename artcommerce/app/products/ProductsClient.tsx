@@ -67,11 +67,20 @@ export default function ProductsClient() {
 
   // Check if we're in mobile view
   useEffect(() => {
-    const checkMobile = () => setIsMobileView(window.innerWidth <= 768)
+    const checkMobile = () => {
+      const isMobile = window.innerWidth <= 768
+      setIsMobileView(isMobile)
+      
+      // Reset sidebar state when switching between views
+      if (!isMobile && !isSidebarOpen) {
+        setIsSidebarOpen(true)
+      }
+    }
+    
     checkMobile()
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
-  }, [])
+  }, [isSidebarOpen])
 
   function handleCategoryClick(slug: string) {
     // Use exact slug from database, no transformations needed
@@ -532,7 +541,7 @@ export default function ProductsClient() {
         ${styles.productsContainer} 
         ${!isMobileView && isSidebarOpen ? styles.mainContent : styles.mainContentCollapsed}
         ${isMobileView ? styles.mobileProductsContainer : ''}
-      `}>
+      `} style={{ width: isMobileView ? '100%' : 'auto' }}>
         <h1 className={styles.title}>Discover Our Collection</h1>
 
         {/* Active filters display for mobile */}
@@ -618,7 +627,7 @@ export default function ProductsClient() {
         {(products.length === 0) ? (
           <p className={styles.emptyProducts}>No products found.</p>
         ) : (
-          <div className={styles.productGrid} ref={productGridRef}>
+          <div className={`${styles.productGrid} ${isMobileView ? styles.mobileProductGrid : ''}`} ref={productGridRef}>
             {(products).map((prod, index) => (
               <div 
                 key={prod.id} 
