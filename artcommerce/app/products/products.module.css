@@ -611,4 +611,139 @@ details[open] .arrow {
 
 .mainContentCollapsed {
   margin: 0;
+}
+
+/* Mobile specific styles */
+.mobileProductsContainer {
+  width: 100%;
+  padding: 0 1rem;
+  margin-top: 0;
+}
+
+.mobileFilterButton {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  background: #1a202c;
+  color: white;
+  border: none;
+  border-radius: 50px;
+  padding: 0.75rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  font-size: 0.9rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 50;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.mobileFilterButton:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.mobileFilterDrawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background: white;
+  z-index: 1000;
+  transform: translateX(100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.mobileFilterDrawerOpen {
+  transform: translateX(0);
+}
+
+.mobileFilterHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 10;
+}
+
+.mobileFilterHeader h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.mobileFilterCloseButton {
+  background: none;
+  border: none;
+  color: #1a202c;
+  cursor: pointer;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mobileFilterContent {
+  padding: 1.5rem;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.mobileFilterOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  backdrop-filter: blur(4px);
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+@media (max-width: 768px) {
+  .productGrid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 1rem;
+    padding: 1rem 0;
+  }
+  
+  .title {
+    font-size: 2rem;
+    margin: 2rem 0;
+    text-align: center;
+  }
+
+  .productCard {
+    border-radius: 12px;
+  }
+
+  .productName {
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .productPrice {
+    font-size: 0.85rem;
+  }
+
+  .productShortDesc {
+    display: none;
+  }
+
+  .viewDetailsButton {
+    padding: 0.5rem;
+    font-size: 0.8rem;
+  }
 } 

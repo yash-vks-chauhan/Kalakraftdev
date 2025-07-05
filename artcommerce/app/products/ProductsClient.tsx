@@ -6,7 +6,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import WishlistButton from '../components/WishlistButton'
 import styles from './products.module.css'
-import { FiChevronLeft, FiChevronRight, FiFilter, FiGrid, FiStar, FiPackage, FiTrendingUp } from 'react-icons/fi'
+import { FiChevronLeft, FiChevronRight, FiFilter, FiGrid, FiStar, FiPackage, FiTrendingUp, FiX } from 'react-icons/fi'
 
 const LOW_STOCK_THRESHOLD = 5 // Products with stock <= 5 will show low stock warning
 
@@ -62,6 +62,16 @@ export default function ProductsClient() {
   const [inStockOnly, setInStockOnly] = useState(inStockOnlyParam)
   const [ratingMin, setRatingMin] = useState(ratingMinParam)
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false)
+  const [isMobileView, setIsMobileView] = useState(false)
+
+  // Check if we're in mobile view
+  useEffect(() => {
+    const checkMobile = () => setIsMobileView(window.innerWidth <= 768)
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   function handleCategoryClick(slug: string) {
     // Use exact slug from database, no transformations needed
@@ -190,6 +200,13 @@ export default function ProductsClient() {
     })
   }, [scrollY, products])
 
+  // Close mobile filter drawer when switching to desktop view
+  useEffect(() => {
+    if (!isMobileView) {
+      setIsMobileFilterOpen(false)
+    }
+  }, [isMobileView])
+
   if (loading) return (
     <div className={styles.loadingContainer}>
       <Image
@@ -203,257 +220,319 @@ export default function ProductsClient() {
   )
   if (error) return <p className={styles.errorMessage}>Error: {error}</p>
 
-  return (
-    <div style={{ display: 'flex', position: 'relative' }}>
-      {/* Sidebar Toggle Button */}
-      <button 
-        className={styles.sidebarToggle}
-        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-        aria-label={isSidebarOpen ? "Close filters" : "Open filters"}
-        style={{ left: isSidebarOpen ? '280px' : '0' }}
-      >
-        {isSidebarOpen ? <FiChevronLeft size={18} /> : <FiChevronRight size={18} />}  
-      </button>
+  // Render the filter sidebar/drawer
+  const renderFilters = () => (
+    <>
+      <h2 className={styles.filterTitle}>
+        <FiFilter style={{ marginRight: '8px', opacity: 0.8 }} />
+        Filters
+      </h2>
+      
+      {/* Category filter */}
+      <details open className={styles.filterSection}>
+        <summary className={styles.filterHeader}>
+          <span style={{ display: 'flex', alignItems: 'center' }}>
+            <FiGrid style={{ marginRight: '8px' }} />
+            Category
+          </span>
+          <FiChevronRight className={styles.arrow} />
+        </summary>
+        <div className={styles.filterContent}>
+          {KNOWN_CATEGORIES.map(cat => (
+            <label key={cat.slug} className={styles.filterOption}>
+              <input
+                type="radio"
+                name="categoryFilter"
+                checked={currentCategory === cat.slug}
+                onChange={() => {
+                  const qs = new URLSearchParams(searchParams.toString())
+                  if (cat.slug === currentCategory) qs.delete('category')
+                  else qs.set('category', cat.slug)
+                  router.replace(qs.toString() ? `/products?${qs}` : '/products')
+                  if (isMobileView) setIsMobileFilterOpen(false)
+                }}
+              />
+              {cat.name}
+            </label>
+          ))}
+          {currentCategory && (
+            <button className={styles.clearButton} onClick={() => {
+              const qs = new URLSearchParams(searchParams.toString())
+              qs.delete('category');
+              router.replace(qs.toString() ? `/products?${qs}` : '/products')
+            }}>Clear</button>
+          )}
+        </div>
+      </details>
 
-      {/* Sidebar */}
-      <aside className={`${styles.sidebar} ${!isSidebarOpen ? styles.sidebarClosed : ''}`}>
-        <h2 className={styles.filterTitle}>
-          <FiFilter style={{ marginRight: '8px', opacity: 0.8 }} />
-          Filters
-        </h2>
-        
-        {/* Category filter */}
+      {/* Mood Tags */}
+      {usageTags.length > 0 && (
         <details open className={styles.filterSection}>
           <summary className={styles.filterHeader}>
             <span style={{ display: 'flex', alignItems: 'center' }}>
-              <FiGrid style={{ marginRight: '8px' }} />
-              Category
+              <FiTrendingUp style={{ marginRight: '8px' }} />
+              Purpose / Mood
             </span>
             <FiChevronRight className={styles.arrow} />
           </summary>
           <div className={styles.filterContent}>
-            {KNOWN_CATEGORIES.map(cat => (
-              <label key={cat.slug} className={styles.filterOption}>
+            {usageTags.map(tag => (
+              <label key={tag} className={styles.filterOption}>
                 <input
                   type="radio"
-                  name="categoryFilter"
-                  checked={currentCategory === cat.slug}
+                  name="tagFilter"
+                  checked={currentTag === tag}
                   onChange={() => {
                     const qs = new URLSearchParams(searchParams.toString())
-                    if (cat.slug === currentCategory) qs.delete('category')
-                    else qs.set('category', cat.slug)
+                    if (tag === currentTag) qs.delete('usageTag')
+                    else qs.set('usageTag', tag)
                     router.replace(qs.toString() ? `/products?${qs}` : '/products')
+                    if (isMobileView) setIsMobileFilterOpen(false)
                   }}
                 />
-                {cat.name}
+                {tag}
               </label>
             ))}
-            {currentCategory && (
+            {currentTag && (
               <button className={styles.clearButton} onClick={() => {
-                const qs = new URLSearchParams(searchParams.toString())
-                qs.delete('category');
+                const qs = new URLSearchParams(searchParams.toString());
+                qs.delete('usageTag');
                 router.replace(qs.toString() ? `/products?${qs}` : '/products')
               }}>Clear</button>
             )}
           </div>
         </details>
+      )}
 
-        {/* Mood Tags */}
-        {usageTags.length > 0 && (
-          <details open className={styles.filterSection}>
-            <summary className={styles.filterHeader}>
-              <span style={{ display: 'flex', alignItems: 'center' }}>
-                <FiTrendingUp style={{ marginRight: '8px' }} />
-                Purpose / Mood
-              </span>
-              <FiChevronRight className={styles.arrow} />
-            </summary>
-            <div className={styles.filterContent}>
-              {usageTags.map(tag => (
-                <label key={tag} className={styles.filterOption}>
-                  <input
-                    type="radio"
-                    name="tagFilter"
-                    checked={currentTag === tag}
-                    onChange={() => {
-                      const qs = new URLSearchParams(searchParams.toString())
-                      if (tag === currentTag) qs.delete('usageTag')
-                      else qs.set('usageTag', tag)
-                      router.replace(qs.toString() ? `/products?${qs}` : '/products')
-                    }}
-                  />
-                  {tag}
-                </label>
-              ))}
-              {currentTag && (
-                <button className={styles.clearButton} onClick={() => {
-                  const qs = new URLSearchParams(searchParams.toString());
-                  qs.delete('usageTag');
-                  router.replace(qs.toString() ? `/products?${qs}` : '/products')
-                }}>Clear</button>
-              )}
-            </div>
-          </details>
-        )}
+      {/* Rating */}
+      <details open className={styles.filterSection}>
+        <summary className={styles.filterHeader}>
+          <span style={{ display: 'flex', alignItems: 'center' }}>
+            <FiStar style={{ marginRight: '8px' }} />
+            Rating
+          </span>
+          <FiChevronRight className={styles.arrow} />
+        </summary>
+        <div className={styles.filterContent}>
+          {[4,3,2,1].map(thr => (
+            <label key={thr} className={styles.filterOption}>
+              <input
+                type="radio"
+                name="ratingFilter"
+                checked={Number(ratingMin) === thr}
+                onChange={() => {
+                  const qs = new URLSearchParams(searchParams.toString())
+                  if (Number(ratingMin) === thr) {
+                    setRatingMin('')
+                    qs.delete('ratingMin')
+                  } else {
+                    setRatingMin(String(thr))
+                    qs.set('ratingMin', String(thr))
+                  }
+                  router.replace(qs.toString()?`/products?${qs}`:'/products')
+                  if (isMobileView) setIsMobileFilterOpen(false)
+                }}
+              />
+              {thr}+ stars
+            </label>
+          ))}
+          {ratingMin && (
+            <button className={styles.clearButton} onClick={() => {
+              setRatingMin('')
+              const qs = new URLSearchParams(searchParams.toString())
+              qs.delete('ratingMin')
+              router.replace(qs.toString()?`/products?${qs}`:'/products')
+            }}>Clear</button>
+          )}
+        </div>
+      </details>
 
-        {/* Rating */}
-        <details open className={styles.filterSection}>
-          <summary className={styles.filterHeader}>
-            <span style={{ display: 'flex', alignItems: 'center' }}>
-              <FiStar style={{ marginRight: '8px' }} />
-              Rating
-            </span>
-            <FiChevronRight className={styles.arrow} />
-          </summary>
-          <div className={styles.filterContent}>
-            {[4,3,2,1].map(thr => (
-              <label key={thr} className={styles.filterOption}>
-                <input
-                  type="radio"
-                  name="ratingFilter"
-                  checked={Number(ratingMin) === thr}
-                  onChange={() => {
-                    const qs = new URLSearchParams(searchParams.toString())
-                    if (Number(ratingMin) === thr) {
-                      setRatingMin('')
-                      qs.delete('ratingMin')
-                    } else {
-                      setRatingMin(String(thr))
-                      qs.set('ratingMin', String(thr))
-                    }
-                    router.replace(qs.toString()?`/products?${qs}`:'/products')
-                  }}
-                />
-                {thr}+ stars
-              </label>
-            ))}
-            {ratingMin && (
-              <button className={styles.clearButton} onClick={() => {
-                setRatingMin('')
+      {/* Stock */}
+      <details open className={styles.filterSection}>
+        <summary className={styles.filterHeader}>
+          <span style={{ display: 'flex', alignItems: 'center' }}>
+            <FiPackage style={{ marginRight: '8px' }} />
+            Stock
+          </span>
+          <FiChevronRight className={styles.arrow} />
+        </summary>
+        <div className={styles.filterContent}>
+          <label className={styles.filterOption}>
+            <input
+              type="checkbox"
+              checked={lowStockOnly}
+              onChange={e => {
+                setLowStockOnly(e.target.checked)
                 const qs = new URLSearchParams(searchParams.toString())
-                qs.delete('ratingMin')
+                if (e.target.checked) qs.set('lowStock','true')
+                else qs.delete('lowStock')
+                if (inStockOnly) qs.set('inStock','true')
                 router.replace(qs.toString()?`/products?${qs}`:'/products')
-              }}>Clear</button>
-            )}
-          </div>
-        </details>
+                if (isMobileView) setIsMobileFilterOpen(false)
+              }}
+            />
+            Only low stock
+          </label>
+          <label className={styles.filterOption}>
+            <input
+              type="checkbox"
+              checked={inStockOnly}
+              onChange={e=>{
+                setInStockOnly(e.target.checked)
+                const qs=new URLSearchParams(searchParams.toString())
+                if(e.target.checked) qs.set('inStock','true'); else qs.delete('inStock')
+                router.replace(qs.toString()?`/products?${qs}`:'/products')
+                if (isMobileView) setIsMobileFilterOpen(false)
+              }}
+            />
+            In stock only
+          </label>
+        </div>
+      </details>
 
-        {/* Stock */}
-        <details open className={styles.filterSection}>
-          <summary className={styles.filterHeader}>
-            <span style={{ display: 'flex', alignItems: 'center' }}>
-              <FiPackage style={{ marginRight: '8px' }} />
-              Stock
-            </span>
-            <FiChevronRight className={styles.arrow} />
-          </summary>
-          <div className={styles.filterContent}>
-            <label className={styles.filterOption}>
-              <input
-                type="checkbox"
-                checked={lowStockOnly}
-                onChange={e => {
-                  setLowStockOnly(e.target.checked)
-                  const qs = new URLSearchParams(searchParams.toString())
-                  if (e.target.checked) qs.set('lowStock','true')
-                  else qs.delete('lowStock')
-                  if (inStockOnly) qs.set('inStock','true')
-                  router.replace(qs.toString()?`/products?${qs}`:'/products')
-                }}
-              />
-              Only low stock
-            </label>
-            <label className={styles.filterOption}>
-              <input
-                type="checkbox"
-                checked={inStockOnly}
-                onChange={e=>{
-                  setInStockOnly(e.target.checked)
-                  const qs=new URLSearchParams(searchParams.toString())
-                  if(e.target.checked) qs.set('inStock','true'); else qs.delete('inStock')
-                  router.replace(qs.toString()?`/products?${qs}`:'/products')
-                }}
-              />
-              In stock only
-            </label>
-          </div>
-        </details>
-
-        {/* Sort */}
-        <details open className={styles.filterSection}>
-          <summary className={styles.filterHeader}>
-            <span style={{ display: 'flex', alignItems: 'center' }}>
-              <FiTrendingUp style={{ marginRight: '8px' }} />
-              Sort
-            </span>
-            <FiChevronRight className={styles.arrow} />
-          </summary>
-          <div className={styles.filterContent}>
-            <label className={styles.filterOption}>
-              <input
-                type="radio"
-                name="sortoption"
-                checked={sortOrder === '' || sortOrder === 'newest'}
-                onChange={() => {
-                  setSortOrder('')
-                  const qs = new URLSearchParams(searchParams.toString())
-                  qs.delete('sort')
-                  router.replace(qs.toString()?`/products?${qs}`:'/products')
-                }}
-              /> Newest
-            </label>
-            <label className={styles.filterOption}>
-              <input
-                type="radio"
-                name="sortoption"
-                checked={sortOrder === 'oldest'}
-                onChange={() => {
-                  setSortOrder('oldest')
-                  const qs = new URLSearchParams(searchParams.toString())
-                  qs.set('sort','oldest')
-                  router.replace(`/products?${qs}`)
-                }}
-              /> Oldest
-            </label>
-            <label className={styles.filterOption}>
-              <input
-                type="radio"
-                name="sortoption"
-                checked={sortOrder === 'price_asc'}
-                onChange={() => {
-                  setSortOrder('price_asc')
-                  const qs = new URLSearchParams(searchParams.toString())
-                  qs.set('sort','price_asc')
-                  router.replace(`/products?${qs}`)
-                }}
-              /> Low to High
-            </label>
-            <label className={styles.filterOption}>
-              <input
-                type="radio"
-                name="sortoption"
-                checked={sortOrder === 'price_desc'}
-                onChange={() => {
-                  setSortOrder('price_desc')
-                  const qs = new URLSearchParams(searchParams.toString())
-                  qs.set('sort','price_desc')
-                  router.replace(`/products?${qs}`)
-                }}
-              /> High to Low
-            </label>
-            {sortOrder && sortOrder !== '' && (
-              <button className={styles.clearButton} onClick={() => {
+      {/* Sort */}
+      <details open className={styles.filterSection}>
+        <summary className={styles.filterHeader}>
+          <span style={{ display: 'flex', alignItems: 'center' }}>
+            <FiTrendingUp style={{ marginRight: '8px' }} />
+            Sort
+          </span>
+          <FiChevronRight className={styles.arrow} />
+        </summary>
+        <div className={styles.filterContent}>
+          <label className={styles.filterOption}>
+            <input
+              type="radio"
+              name="sortoption"
+              checked={sortOrder === '' || sortOrder === 'newest'}
+              onChange={() => {
                 setSortOrder('')
                 const qs = new URLSearchParams(searchParams.toString())
                 qs.delete('sort')
                 router.replace(qs.toString()?`/products?${qs}`:'/products')
-              }}>Clear</button>
-            )}
-          </div>
-        </details>
-      </aside>
+                if (isMobileView) setIsMobileFilterOpen(false)
+              }}
+            /> Newest
+          </label>
+          <label className={styles.filterOption}>
+            <input
+              type="radio"
+              name="sortoption"
+              checked={sortOrder === 'oldest'}
+              onChange={() => {
+                setSortOrder('oldest')
+                const qs = new URLSearchParams(searchParams.toString())
+                qs.set('sort','oldest')
+                router.replace(`/products?${qs}`)
+                if (isMobileView) setIsMobileFilterOpen(false)
+              }}
+            /> Oldest
+          </label>
+          <label className={styles.filterOption}>
+            <input
+              type="radio"
+              name="sortoption"
+              checked={sortOrder === 'price_asc'}
+              onChange={() => {
+                setSortOrder('price_asc')
+                const qs = new URLSearchParams(searchParams.toString())
+                qs.set('sort','price_asc')
+                router.replace(`/products?${qs}`)
+                if (isMobileView) setIsMobileFilterOpen(false)
+              }}
+            /> Low to High
+          </label>
+          <label className={styles.filterOption}>
+            <input
+              type="radio"
+              name="sortoption"
+              checked={sortOrder === 'price_desc'}
+              onChange={() => {
+                setSortOrder('price_desc')
+                const qs = new URLSearchParams(searchParams.toString())
+                qs.set('sort','price_desc')
+                router.replace(`/products?${qs}`)
+                if (isMobileView) setIsMobileFilterOpen(false)
+              }}
+            /> High to Low
+          </label>
+          {sortOrder && sortOrder !== '' && (
+            <button className={styles.clearButton} onClick={() => {
+              setSortOrder('')
+              const qs = new URLSearchParams(searchParams.toString())
+              qs.delete('sort')
+              router.replace(qs.toString()?`/products?${qs}`:'/products')
+            }}>Clear</button>
+          )}
+        </div>
+      </details>
+    </>
+  )
 
-      <main className={`${styles.productsContainer} ${isSidebarOpen ? styles.mainContent : styles.mainContentCollapsed}`} style={{ flex: 1 }}>
+  return (
+    <div style={{ display: 'flex', position: 'relative' }}>
+      {/* Desktop Sidebar Toggle Button */}
+      {!isMobileView && (
+        <button 
+          className={styles.sidebarToggle}
+          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          aria-label={isSidebarOpen ? "Close filters" : "Open filters"}
+          style={{ left: isSidebarOpen ? '280px' : '0' }}
+        >
+          {isSidebarOpen ? <FiChevronLeft size={18} /> : <FiChevronRight size={18} />}  
+        </button>
+      )}
+
+      {/* Desktop Sidebar */}
+      {!isMobileView && (
+        <aside className={`${styles.sidebar} ${!isSidebarOpen ? styles.sidebarClosed : ''}`}>
+          {renderFilters()}
+        </aside>
+      )}
+
+      {/* Mobile Filter Button */}
+      {isMobileView && (
+        <button 
+          className={styles.mobileFilterButton}
+          onClick={() => setIsMobileFilterOpen(true)}
+          aria-label="Open filters"
+        >
+          <FiFilter size={18} /> Filters
+        </button>
+      )}
+
+      {/* Mobile Filter Drawer */}
+      {isMobileView && (
+        <div className={`${styles.mobileFilterDrawer} ${isMobileFilterOpen ? styles.mobileFilterDrawerOpen : ''}`}>
+          <div className={styles.mobileFilterHeader}>
+            <h2>Filters</h2>
+            <button 
+              className={styles.mobileFilterCloseButton}
+              onClick={() => setIsMobileFilterOpen(false)}
+              aria-label="Close filters"
+            >
+              <FiX size={24} />
+            </button>
+          </div>
+          <div className={styles.mobileFilterContent}>
+            {renderFilters()}
+          </div>
+        </div>
+      )}
+
+      {/* Mobile Filter Overlay */}
+      {isMobileView && isMobileFilterOpen && (
+        <div 
+          className={styles.mobileFilterOverlay} 
+          onClick={() => setIsMobileFilterOpen(false)}
+        />
+      )}
+
+      <main className={`
+        ${styles.productsContainer} 
+        ${!isMobileView && isSidebarOpen ? styles.mainContent : styles.mainContentCollapsed}
+        ${isMobileView ? styles.mobileProductsContainer : ''}
+      `}>
         <h1 className={styles.title}>Discover Our Collection</h1>
 
         {/* Results */}
