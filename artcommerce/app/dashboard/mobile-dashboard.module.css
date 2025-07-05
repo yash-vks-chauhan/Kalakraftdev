@@ -401,4 +401,12 @@
 }
 .expanded {
   max-height: 1000px;
+}
+
+/* Override desktop appearance:none for mobile period select */
+#mobile-period {
+  -webkit-appearance: menulist-button !important;
+  -moz-appearance: menulist-button !important;
+  appearance: menulist-button !important;
+  background-image: none !important;
 } 
