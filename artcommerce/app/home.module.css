@@ -1496,11 +1496,6 @@
     gap: 1.5rem;
   }
   
-  .artistryBackground {
-    padding: 6rem 2rem;
-    background-attachment: scroll;
-  }
-  
   .artistryFeatureImage {
     position: relative;
     width: 100%;
@@ -1508,7 +1503,6 @@
     margin-top: 3rem;
     clip-path: none;
     border-radius: 8px;
-    order: -1;
   }
   
   .artistryContent {
@@ -1526,71 +1520,6 @@
     width: 280px;
     min-height: 260px;
     margin: 0 0.5rem 1.5rem;
-  }
-}
-
-@media (max-width: 768px) {
-  .artistryBackground {
-    padding: 4rem 1rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  .artistryFeatureImage {
-    position: relative;
-    width: 100%;
-    height: 220px;
-    margin: 0 0 2rem 0;
-    clip-path: none;
-    border-radius: 8px;
-    object-position: center;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-    order: -1;
-  }
-  
-  .artistryContent {
-    width: 100%;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  .artistryQuote {
-    font-size: 1.1rem;
-    margin: 1.5rem 0;
-    padding: 0 1rem;
-    text-align: center;
-  }
-  
-  .artistryQuote::before,
-  .artistryQuote::after {
-    font-size: 2.5rem;
-  }
-  
-  .artistryCards {
-    gap: 1rem;
-    margin-top: 1rem;
-  }
-  
-  .artistryCard {
-    width: 100%;
-    min-height: auto;
-    padding: 2rem 1.5rem;
-    margin-bottom: 1rem;
-  }
-  
-  .artistryCardTitle {
-    font-size: 1.2rem;
-  }
-  
-  .artistryCardText {
-    font-size: 0.9rem;
-  }
-  
-  .sectionTitle {
-    font-size: 2rem;
   }
 }
 
