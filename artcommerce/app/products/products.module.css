@@ -822,7 +822,7 @@ details[open] .arrow {
 .mobileProductsContainer {
   width: 100%;
   padding: 0;
-  margin: 0;
+  margin: 0 -16px;
   max-width: 100%;
   overflow-x: hidden;
 }
