@@ -160,30 +160,22 @@ export default function MobileProductManagement() {
         </button>
       </div>
 
-      <div className="flex flex-wrap gap-2 mb-4">
-        <Link
-          href="/dashboard/admin/products/new"
-          className="flex items-center gap-1 bg-black text-white text-sm px-3 py-2 rounded-md"
+      <div className="grid grid-cols-2 gap-3 mb-4">
+        <button
+          onClick={() => window.location.href = '/dashboard/admin/products/new'}
+          className="flex items-center justify-center gap-2 bg-black text-white text-sm py-3 px-4 rounded-md w-full"
         >
           <PlusCircle size={16} />
           Add Product
-        </Link>
+        </button>
         
-        <Link
-          href="/dashboard/admin/products/highest-rated"
-          className="flex items-center gap-1 bg-amber-100 text-amber-800 text-sm px-3 py-2 rounded-md"
+        <button
+          onClick={() => window.location.href = '/dashboard/admin/products/highest-rated'}
+          className="flex items-center justify-center gap-2 bg-amber-100 text-amber-800 text-sm py-3 px-4 rounded-md w-full"
         >
           <Star size={16} />
           Top Rated
-        </Link>
-        
-        <Link
-          href="/dashboard/admin/products/low-stock"
-          className="flex items-center gap-1 bg-orange-100 text-orange-800 text-sm px-3 py-2 rounded-md"
-        >
-          <AlertTriangle size={16} />
-          Low Stock
-        </Link>
+        </button>
       </div>
 
       {isLoading ? (
