@@ -48,8 +48,8 @@ export default function MobileDashboardHome() {
     try {
       // For admin, fetch all recent orders, for regular users fetch their orders
       const endpoint = user?.role === 'admin' 
-        ? '/api/admin/orders?limit=3'
-        : '/api/orders?limit=3'
+        ? '/api/admin/orders?limit=5'
+        : '/api/orders?limit=5'
         
       const response = await fetch(endpoint, {
         headers: { Authorization: `Bearer ${token}` },
@@ -57,7 +57,7 @@ export default function MobileDashboardHome() {
       
       if (response.ok) {
         const data = await response.json()
-        setRecentOrders(data.orders || [])
+        setRecentOrders((data.orders || []).slice(0, 5))
       }
     } catch (error) {
       console.error('Error fetching recent orders:', error)
