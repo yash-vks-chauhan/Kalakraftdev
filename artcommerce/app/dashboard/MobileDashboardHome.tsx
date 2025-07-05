@@ -11,6 +11,7 @@ export default function MobileDashboardHome() {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
   const [metrics, setMetrics] = useState<any>(null)
   const [refreshing, setRefreshing] = useState(false)
+  const [period, setPeriod] = useState<'today'|'week'|'month'|'year'|'all'>('week')
   const [recentOrders, setRecentOrders] = useState<any[]>([])
   const [loadingOrders, setLoadingOrders] = useState(false)
 
@@ -21,14 +22,14 @@ export default function MobileDashboardHome() {
     if (user) {
       fetchRecentOrders()
     }
-  }, [user, token])
+  }, [user, token, period])
 
   const fetchMetrics = async () => {
     if (user?.role !== 'admin' || !token) return
     
     setRefreshing(true)
     try {
-      const response = await fetch(`/api/admin/metrics?period=week`, {
+      const response = await fetch(`/api/admin/metrics?period=${period}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       const data = await response.json()
@@ -128,21 +129,33 @@ export default function MobileDashboardHome() {
 
       {user.role === 'admin' && (
         <>
-          <button 
-            onClick={fetchMetrics} 
-            className={styles.refreshButton}
-            disabled={refreshing}
-          >
-            <RefreshCw size={16} className={refreshing ? styles.refreshing : ''} />
-          </button>
-          
+          <div className="flex items-center justify-between mb-4 px-4">
+            <select
+              value={period}
+              onChange={e => setPeriod(e.target.value as any)}
+              className="border border-gray-300 rounded-md p-2"
+            >
+              <option value="today">Today</option>
+              <option value="week">Last 7 days</option>
+              <option value="month">This month</option>
+              <option value="year">This year</option>
+              <option value="all">All time</option>
+            </select>
+            <button
+              onClick={fetchMetrics}
+              className={styles.refreshButton}
+              disabled={refreshing}
+            >
+              <RefreshCw size={16} className={refreshing ? styles.refreshing : ''} />
+            </button>
+          </div>
           <div className={styles.metricsGrid}>
             <div className={styles.metricCard}>
-              <h3 className={styles.metricTitle}>Orders (Week)</h3>
+              <h3 className={styles.metricTitle}>Orders ({period === 'today' ? 'Today' : period === 'week' ? 'Week' : period === 'month' ? 'Month' : period === 'year' ? 'Year' : 'All'})</h3>
               <p className={styles.metricValue}>{metrics?.totalOrders || '0'}</p>
             </div>
             <div className={styles.metricCard}>
-              <h3 className={styles.metricTitle}>Revenue (Week)</h3>
+              <h3 className={styles.metricTitle}>Revenue ({period === 'today' ? 'Today' : period === 'week' ? 'Week' : period === 'month' ? 'Month' : period === 'year' ? 'Year' : 'All'})</h3>
               <p className={styles.metricValue}>₹{metrics?.revenue ? metrics.revenue.toFixed(2) : '0.00'}</p>
             </div>
             {metrics?.statusCounts?.slice(0, 2).map((sc: any) => (
