@@ -391,4 +391,14 @@
     gap: 0.75rem;
     padding: 0 1rem;
   }
+}
+
+/* Add collapsible animation for recent orders section */
+.expandableSection {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+.expanded {
+  max-height: 1000px;
 } 
