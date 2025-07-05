@@ -479,7 +479,7 @@ export default function ProductsClient() {
   )
 
   return (
-    <div style={{ display: 'flex', position: 'relative' }}>
+    <div style={{ display: 'flex', position: 'relative' }} className={isMobileView ? styles.mobilePageWrapper : ''}>
       {/* Desktop Sidebar Toggle Button */}
       {!isMobileView && (
         <button 

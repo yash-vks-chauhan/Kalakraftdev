@@ -360,7 +360,7 @@
 }
 
 @media (max-width: 768px) {
-  body {
+  .mobilePageWrapper {
     margin: 0;
     padding: 0;
     overflow-x: hidden;
@@ -824,6 +824,12 @@ details[open] .arrow {
   padding: 0;
   margin: 0;
   max-width: 100%;
+  overflow-x: hidden;
+}
+
+.mobilePageWrapper {
+  margin: 0;
+  padding: 0;
   overflow-x: hidden;
 }
 
