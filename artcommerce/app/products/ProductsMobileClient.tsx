@@ -48,7 +48,23 @@ export default function ProductsMobileClient() {
     e.stopPropagation()
   }
 
-  if (loading) return <div className={styles.loading}>Loading...</div>
+  // Format price with commas for thousands
+  const formatPrice = (price) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 0,
+      minimumFractionDigits: 0
+    }).format(price);
+  };
+
+  if (loading) return (
+    <div className={styles.loading}>
+      <div className={styles.loadingSpinner}></div>
+      <span>Loading products...</span>
+    </div>
+  );
+  
   if (error) return <div className={styles.error}>Error: {error}</div>
 
   return (
@@ -84,8 +100,11 @@ export default function ProductsMobileClient() {
                   </div>
                 )}
                 <h3 className={styles.name}>{prod.name}</h3>
+                {prod.shortDesc && (
+                  <p className={styles.shortDesc}>{prod.shortDesc.substring(0, 60)}{prod.shortDesc.length > 60 ? '...' : ''}</p>
+                )}
                 <div className={styles.priceRow}>
-                  <p className={styles.price}>₹{prod.price.toFixed(2)}</p>
+                  <p className={styles.price}>{formatPrice(prod.price)}</p>
                   {prod.avgRating > 0 && (
                     <p className={styles.productRating}>
                       <span className={styles.starFilled}>★</span> 
@@ -93,9 +112,6 @@ export default function ProductsMobileClient() {
                     </p>
                   )}
                 </div>
-                {prod.shortDesc && (
-                  <p className={styles.shortDesc}>{prod.shortDesc.substring(0, 60)}{prod.shortDesc.length > 60 ? '...' : ''}</p>
-                )}
               </div>
             </Link>
             <div className={styles.wishlistContainer} onClick={handleWishlistClick}>
