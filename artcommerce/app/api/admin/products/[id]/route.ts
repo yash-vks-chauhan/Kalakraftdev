@@ -99,7 +99,7 @@ export async function DELETE(
     await prisma.$transaction([
       prisma.cartItem.deleteMany({ where: { productId: id } }),
       prisma.wishlistItem.deleteMany({ where: { productId: id } }),
-      prisma.product.update({ where: { id }, data: { isActive: false } })
+      prisma.product.delete({ where: { id } })
     ])
     return NextResponse.json({ ok: true })
   } catch (err: any) {

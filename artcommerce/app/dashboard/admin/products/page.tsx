@@ -81,6 +81,27 @@ export default function AdminProductsPage() {
     }
   }
 
+  async function handleToggleStatus(id: number, newStatus: boolean) {
+    setIsTransitioning(true)
+    try {
+      const res = await fetch(`/api/admin/products/${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ isActive: newStatus })
+      })
+      if (!res.ok) throw new Error((await res.json()).error)
+      const json = await res.json()
+      setProducts(products.map(p => p.id === id ? { ...p, isActive: json.product.isActive } : p))
+    } catch (err: any) {
+      alert('Failed to update product status: ' + err.message)
+    } finally {
+      setIsTransitioning(false)
+    }
+  }
+
   function handleEdit(id: number) {
     setIsTransitioning(true)
     router.push(`/dashboard/admin/products/${id}`)
@@ -141,9 +162,15 @@ export default function AdminProductsPage() {
                 </td>
                 <td className={styles.tableCell}>{stockDisplay}</td>
                 <td className={styles.tableCell}>
-                  <span className={statusClass}>
-                    {statusText}
-                  </span>
+                  <div className={styles.statusSwitch}>
+                    <input
+                      type="checkbox"
+                      checked={p.isActive}
+                      onChange={() => handleToggleStatus(p.id, !p.isActive)}
+                      disabled={isTransitioning}
+                    />
+                    <span className={styles.statusSlider} />
+                  </div>
                 </td>
                 <td className={styles.tableCell}>
                   <div className={styles.actionButtons}>

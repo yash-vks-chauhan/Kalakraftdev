@@ -200,6 +200,51 @@
   font-weight: 500;
 }
 
+.statusSwitch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 20px;
+}
+
+.statusSwitch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.statusSlider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+  border-radius: 34px;
+}
+
+.statusSlider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+.statusSwitch input:checked + .statusSlider {
+  background-color: #dcfce7;  /* same as statusActive background */
+}
+
+.statusSwitch input:checked + .statusSlider:before {
+  transform: translateX(20px);
+}
+
 .actionButtons {
   display: flex;
   gap: 0.75rem;
