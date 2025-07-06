@@ -25,6 +25,8 @@
   position: relative;
   will-change: transform;
   transition: transform 0.2s ease;
+  display: flex;
+  height: 100%;
 }
 
 .card {
@@ -41,6 +43,7 @@
   transition: all 0.3s ease;
   margin-bottom: 0;
   height: 100%;
+  width: 100%;
 }
 
 .card:hover {
@@ -57,6 +60,7 @@
   background: #f9f9f9;
   position: relative;
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .image {
@@ -154,6 +158,7 @@
   flex-direction: column;
   background-color: #fff;
   flex-grow: 1;
+  min-height: 120px;
 }
 
 .categoryTag {
@@ -181,6 +186,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   font-family: "Times New Roman", Times, serif;
+  height: 1.4em;
 }
 
 .priceRow {
@@ -229,6 +235,7 @@
   text-overflow: ellipsis;
   font-family: "Times New Roman", Times, serif;
   font-style: italic;
+  height: 2.8em; /* Fixed height for 2 lines */
 }
 
 .badge {
