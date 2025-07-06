@@ -24,42 +24,90 @@ const ProductCard = ({ product, formatPrice }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
+  const [isSwiping, setIsSwiping] = useState(false);
+  const [swipeOffset, setSwipeOffset] = useState(0);
+  const [animating, setAnimating] = useState(false);
+  const imageContainerRef = useRef(null);
   
   // Minimum swipe distance to register as a swipe
   const minSwipeDistance = 50;
   
   const handleTouchStart = (e) => {
+    if (animating || product.imageUrls.length <= 1) return;
     setTouchStart(e.targetTouches[0].clientX);
+    setIsSwiping(true);
+    setSwipeOffset(0);
   };
   
   const handleTouchMove = (e) => {
+    if (!isSwiping || animating || product.imageUrls.length <= 1) return;
+    
     setTouchEnd(e.targetTouches[0].clientX);
+    const currentOffset = e.targetTouches[0].clientX - touchStart;
+    
+    // Limit the swipe distance with resistance at edges
+    if ((currentImageIndex === 0 && currentOffset > 0) || 
+        (currentImageIndex === product.imageUrls.length - 1 && currentOffset < 0)) {
+      // Add resistance at the edges
+      setSwipeOffset(currentOffset / 3);
+    } else {
+      setSwipeOffset(currentOffset);
+    }
   };
   
   const handleTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
+    if (!isSwiping || animating || product.imageUrls.length <= 1) return;
+    
+    setIsSwiping(false);
+    
+    if (!touchStart || !touchEnd) {
+      setSwipeOffset(0);
+      return;
+    }
     
     const distance = touchStart - touchEnd;
     const isLeftSwipe = distance > minSwipeDistance;
     const isRightSwipe = distance < -minSwipeDistance;
     
+    setAnimating(true);
+    
     if (isLeftSwipe && currentImageIndex < product.imageUrls.length - 1) {
       setCurrentImageIndex(currentImageIndex + 1);
-    }
-    
-    if (isRightSwipe && currentImageIndex > 0) {
+    } else if (isRightSwipe && currentImageIndex > 0) {
       setCurrentImageIndex(currentImageIndex - 1);
     }
     
     // Reset values
     setTouchStart(0);
     setTouchEnd(0);
+    setSwipeOffset(0);
+    
+    // End animation after transition completes
+    setTimeout(() => {
+      setAnimating(false);
+    }, 300);
   };
   
   // Handle wishlist button click to prevent navigation
   const handleWishlistClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
+  };
+  
+  // Calculate transform style for smooth swiping
+  const getImageTransform = () => {
+    if (!isSwiping) {
+      return { transform: `translateX(${-100 * currentImageIndex}%)` };
+    }
+    
+    // Calculate percentage offset for smooth tracking during swipe
+    const containerWidth = imageContainerRef.current?.offsetWidth || 0;
+    const offsetPercentage = (swipeOffset / containerWidth) * 100;
+    
+    return {
+      transform: `translateX(calc(${-100 * currentImageIndex}% + ${offsetPercentage}%))`,
+      transition: isSwiping ? 'none' : 'transform 0.3s ease-out'
+    };
   };
   
   return (
@@ -70,15 +118,22 @@ const ProductCard = ({ product, formatPrice }) => {
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
+          ref={imageContainerRef}
         >
-          {product.imageUrls.length > 0 ? (
-            <img 
-              src={product.imageUrls[currentImageIndex]} 
-              alt={product.name} 
-              className={styles.image}
-              loading="lazy"
-            />
-          ) : (
+          <div className={styles.imageSlider} style={getImageTransform()}>
+            {product.imageUrls.map((url, index) => (
+              <div key={index} className={styles.imageSlide}>
+                <img 
+                  src={url}
+                  alt={`${product.name} - Image ${index + 1}`}
+                  className={styles.image}
+                  loading="lazy"
+                />
+              </div>
+            ))}
+          </div>
+          
+          {product.imageUrls.length === 0 && (
             <div className={styles.noImage}>No image</div>
           )}
           
@@ -564,7 +619,7 @@ export default function ProductsMobileClient() {
         </div>
       )}
 
-      <div className={styles.list}>
+      <div className={styles.list} style={{ marginLeft: -1, marginRight: -1, width: 'calc(100% + 2px)' }}>
         {products.map((prod) => (
           <ProductCard 
             key={prod.id} 

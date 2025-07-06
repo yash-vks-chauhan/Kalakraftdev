@@ -6,18 +6,19 @@
 }
 
 .list {
-  padding: 12px;
+  padding: 0;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
+  gap: 1px;
   width: 100%;
   max-width: 100%;
+  background-color: #f0f0f0;
 }
 
 @media (max-width: 360px) {
   .list {
     grid-template-columns: 1fr;
-    padding: 12px;
+    padding: 0;
   }
 }
 
@@ -25,6 +26,7 @@
   position: relative;
   will-change: transform;
   transition: transform 0.2s ease;
+  background-color: #fff;
 }
 
 .card {
@@ -49,16 +51,30 @@
 .imageContainer {
   width: 100%;
   aspect-ratio: 1/1;
-  background: #f9f9f9;
+  background: #fff;
   position: relative;
   overflow: hidden;
+}
+
+.imageSlider {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.3s ease-out;
+}
+
+.imageSlide {
+  min-width: 100%;
+  width: 100%;
+  height: 100%;
+  flex-shrink: 0;
 }
 
 .image {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.3s ease;
+  display: block;
 }
 
 .noImage {
@@ -142,7 +158,7 @@
 }
 
 .info {
-  padding: 14px 0;
+  padding: 14px 10px;
   display: flex;
   flex-direction: column;
   background-color: #fff;
@@ -251,21 +267,21 @@
   justify-content: center;
   gap: 4px;
   padding: 10px 0;
-  background: linear-gradient(to top, rgba(0,0,0,0.2), transparent);
+  background: linear-gradient(to top, rgba(0,0,0,0.1), transparent);
   z-index: 3;
 }
 
 .indicator {
-  width: 25px;
+  width: 20px;
   height: 2px;
-  background-color: rgba(255, 255, 255, 0.5);
-  border-radius: 1px;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 0;
   transition: all 0.3s ease;
 }
 
 .activeIndicator {
-  background-color: #fff;
-  width: 25px;
+  background-color: #000;
+  width: 20px;
 }
 
 /* Remove overlay for swipeable images */
@@ -414,6 +430,7 @@
   gap: 8px;
   margin: 0 0 1rem 0;
   padding: 12px;
+  background-color: #fff;
 }
 
 .mobileFilterTag {
