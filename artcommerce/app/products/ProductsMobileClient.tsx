@@ -41,29 +41,10 @@ export default function ProductsMobileClient() {
     fetchProducts()
   }, [])
 
-  // Function to render star rating
-  const renderStars = (rating) => {
-    const fullStars = Math.floor(rating)
-    const hasHalfStar = rating - fullStars >= 0.5
-    const stars = []
-    
-    // Add full stars
-    for (let i = 0; i < fullStars; i++) {
-      stars.push(<span key={`full-${i}`} className={styles.star}>★</span>)
-    }
-    
-    // Add half star if needed
-    if (hasHalfStar) {
-      stars.push(<span key="half" className={styles.star}>★</span>)
-    }
-    
-    // Add empty stars
-    const emptyStars = 5 - stars.length
-    for (let i = 0; i < emptyStars; i++) {
-      stars.push(<span key={`empty-${i}`} className={styles.emptyStar}>★</span>)
-    }
-    
-    return stars
+  // Handle wishlist button click to prevent navigation
+  const handleWishlistClick = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
   }
 
   if (loading) return <div className={styles.loading}>Loading...</div>
@@ -73,50 +54,52 @@ export default function ProductsMobileClient() {
     <div className={styles.container}>
       <div className={styles.list}>
         {products.map((prod) => (
-          <Link href={`/products/${prod.id}`} key={prod.id} className={styles.card}>
-            <div className={styles.imageContainer}>
-              {prod.imageUrls[0] ? (
-                <img src={prod.imageUrls[0]} alt={prod.name} className={styles.image} />
-              ) : (
-                <div className={styles.noImage}>No image</div>
-              )}
-              {prod.isNew && <span className={styles.badge}>New</span>}
-              {prod.stockQuantity === 0 && <div className={styles.outOfStock}>Out of Stock</div>}
-              {prod.stockQuantity > 0 && prod.stockQuantity <= 5 && (
-                <div className={styles.lowStock}>Low Stock</div>
-              )}
-              <div className={styles.overlay}>
-                <span className={styles.viewDetails}>View Details</span>
+          <div key={prod.id} className={styles.cardWrapper}>
+            <Link href={`/products/${prod.id}`} className={styles.card}>
+              <div className={styles.imageContainer}>
+                {prod.imageUrls[0] ? (
+                  <img src={prod.imageUrls[0]} alt={prod.name} className={styles.image} />
+                ) : (
+                  <div className={styles.noImage}>No image</div>
+                )}
+                {prod.isNew && <span className={styles.badge}>New</span>}
+                {prod.stockQuantity === 0 && <div className={styles.outOfStock}>Out of Stock</div>}
+                {prod.stockQuantity > 0 && prod.stockQuantity <= 5 && (
+                  <div className={styles.lowStock}>Low Stock</div>
+                )}
+                <div className={styles.overlay}>
+                  <span className={styles.viewDetails}>View Details</span>
+                </div>
               </div>
-            </div>
-            <div className={styles.wishlistContainer} onClick={(e) => e.preventDefault()}>
+              <div className={styles.info}>
+                {prod.category && (
+                  <div className={styles.categoryTag}>
+                    {prod.category.name}
+                  </div>
+                )}
+                <h3 className={styles.name}>{prod.name}</h3>
+                <div className={styles.priceRow}>
+                  <p className={styles.price}>₹{prod.price.toFixed(2)}</p>
+                  {prod.avgRating > 0 && (
+                    <p className={styles.productRating}>
+                      <span className={styles.starFilled}>★</span> 
+                      <span className={styles.ratingValue}>{prod.avgRating.toFixed(1)}</span>
+                    </p>
+                  )}
+                </div>
+                {prod.shortDesc && (
+                  <p className={styles.shortDesc}>{prod.shortDesc.substring(0, 60)}{prod.shortDesc.length > 60 ? '...' : ''}</p>
+                )}
+              </div>
+            </Link>
+            <div className={styles.wishlistContainer} onClick={handleWishlistClick}>
               <WishlistButton 
                 productId={prod.id} 
                 className={styles.wishlistButton}
                 preventNavigation={true}
               />
             </div>
-            <div className={styles.info}>
-              {prod.category && (
-                <div className={styles.categoryTag}>
-                  {prod.category.name}
-                </div>
-              )}
-              <h3 className={styles.name}>{prod.name}</h3>
-              <div className={styles.priceRow}>
-                <p className={styles.price}>₹{prod.price.toFixed(2)}</p>
-                {prod.avgRating > 0 && (
-                  <p className={styles.productRating}>
-                    <span className={styles.starFilled}>★</span> 
-                    <span className={styles.ratingValue}>{prod.avgRating.toFixed(1)}</span>
-                  </p>
-                )}
-              </div>
-              {prod.shortDesc && (
-                <p className={styles.shortDesc}>{prod.shortDesc.substring(0, 60)}{prod.shortDesc.length > 60 ? '...' : ''}</p>
-              )}
-            </div>
-          </Link>
+          </div>
         ))}
       </div>
     </div>

@@ -20,6 +20,10 @@
   }
 }
 
+.cardWrapper {
+  position: relative;
+}
+
 .card {
   background: #fff;
   border-radius: 0;
