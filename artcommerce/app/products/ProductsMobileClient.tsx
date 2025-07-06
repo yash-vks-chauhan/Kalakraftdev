@@ -110,6 +110,14 @@ const ProductCard = ({ product, formatPrice }) => {
     };
   };
   
+  // Format short description
+  const getShortDescription = () => {
+    if (!product.shortDesc) return null;
+    return product.shortDesc.length > 60 
+      ? `${product.shortDesc.substring(0, 60)}...` 
+      : product.shortDesc;
+  };
+  
   return (
     <div className={styles.cardWrapper}>
       <Link href={`/products/${product.id}`} className={styles.card}>
@@ -163,6 +171,12 @@ const ProductCard = ({ product, formatPrice }) => {
             </div>
           )}
           <h3 className={styles.name}>{product.name}</h3>
+          
+          {/* Short description */}
+          {product.shortDesc && (
+            <p className={styles.shortDesc}>{getShortDescription()}</p>
+          )}
+          
           <div className={styles.priceRow}>
             <p className={styles.price}>{formatPrice(product.price)}</p>
             {product.avgRating > 0 && (
@@ -178,7 +192,7 @@ const ProductCard = ({ product, formatPrice }) => {
       <div className={styles.wishlistContainer} onClick={handleWishlistClick}>
         <WishlistButton 
           productId={product.id} 
-          className={styles.wishlistButton}
+          className={`${styles.wishlistButton} ${styles.blackWishlist}`}
           preventNavigation={true}
         />
       </div>
