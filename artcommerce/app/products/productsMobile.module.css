@@ -29,22 +29,21 @@
 
 .card {
   background: #fff;
-  border-radius: 16px;
+  border-radius: 0;
   overflow: hidden;
   text-decoration: none;
   color: inherit;
   display: flex;
   flex-direction: column;
   position: relative;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  box-shadow: none;
   transition: all 0.3s ease;
   margin-bottom: 0;
   height: 100%;
 }
 
 .card:active {
-  transform: translateY(2px);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  transform: translateY(1px);
 }
 
 .imageContainer {
@@ -59,15 +58,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
-}
-
-.card:hover .image {
-  transform: scale(1.03);
-}
-
-.card:active .image {
-  transform: scale(1.05);
+  transition: transform 0.3s ease;
 }
 
 .noImage {
@@ -151,7 +142,7 @@
 }
 
 .info {
-  padding: 14px;
+  padding: 14px 0;
   display: flex;
   flex-direction: column;
   background-color: #fff;
@@ -250,35 +241,39 @@
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
-.overlay {
+/* Image indicators */
+.imageIndicators {
   position: absolute;
   bottom: 0;
   left: 0;
   width: 100%;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0));
-  color: white;
-  padding: 30px 0 12px 0;
-  text-align: center;
-  opacity: 0;
-  transition: opacity 0.3s ease;
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  padding: 10px 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.2), transparent);
   z-index: 3;
 }
 
-.card:hover .overlay {
-  opacity: 1;
+.indicator {
+  width: 25px;
+  height: 2px;
+  background-color: rgba(255, 255, 255, 0.5);
+  border-radius: 1px;
+  transition: all 0.3s ease;
 }
 
-.card:active .overlay {
-  opacity: 1;
+.activeIndicator {
+  background-color: #fff;
+  width: 25px;
 }
 
-.viewDetails {
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-weight: 600;
+/* Remove overlay for swipeable images */
+.overlay {
+  display: none;
 }
 
+/* Loading and error states */
 .loading,
 .error {
   padding: 16px;

@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import styles from './productsMobile.module.css'
 import WishlistButton from '../components/WishlistButton'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { FiFilter, FiX, FiChevronRight, FiStar, FiPackage, FiTrendingUp, FiGrid } from 'react-icons/fi'
+import { FiFilter, FiX, FiChevronRight, FiStar, FiPackage, FiTrendingUp, FiGrid, FiHeart } from 'react-icons/fi'
 
 // Define known categories similar to desktop version
 const KNOWN_CATEGORIES = [
@@ -18,6 +18,118 @@ const KNOWN_CATEGORIES = [
   { slug: 'matt rangoli', name: 'Matt Rangoli' },
   { slug: 'mirror work', name: 'Mirror Work' }
 ]
+
+// Product Card with Swipeable Images component
+const ProductCard = ({ product, formatPrice }) => {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [touchStart, setTouchStart] = useState(0);
+  const [touchEnd, setTouchEnd] = useState(0);
+  
+  // Minimum swipe distance to register as a swipe
+  const minSwipeDistance = 50;
+  
+  const handleTouchStart = (e) => {
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+  
+  const handleTouchMove = (e) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+  
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+    
+    if (isLeftSwipe && currentImageIndex < product.imageUrls.length - 1) {
+      setCurrentImageIndex(currentImageIndex + 1);
+    }
+    
+    if (isRightSwipe && currentImageIndex > 0) {
+      setCurrentImageIndex(currentImageIndex - 1);
+    }
+    
+    // Reset values
+    setTouchStart(0);
+    setTouchEnd(0);
+  };
+  
+  // Handle wishlist button click to prevent navigation
+  const handleWishlistClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+  
+  return (
+    <div className={styles.cardWrapper}>
+      <Link href={`/products/${product.id}`} className={styles.card}>
+        <div 
+          className={styles.imageContainer}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
+          {product.imageUrls.length > 0 ? (
+            <img 
+              src={product.imageUrls[currentImageIndex]} 
+              alt={product.name} 
+              className={styles.image}
+              loading="lazy"
+            />
+          ) : (
+            <div className={styles.noImage}>No image</div>
+          )}
+          
+          {product.isNew && <span className={styles.badge}>New</span>}
+          {product.stockQuantity === 0 && <div className={styles.outOfStock}>Out of Stock</div>}
+          {product.stockQuantity > 0 && product.stockQuantity <= 5 && (
+            <div className={styles.lowStock}>Only {product.stockQuantity} left</div>
+          )}
+          
+          {/* Image indicators */}
+          {product.imageUrls.length > 1 && (
+            <div className={styles.imageIndicators}>
+              {product.imageUrls.map((_, index) => (
+                <div 
+                  key={index} 
+                  className={`${styles.indicator} ${index === currentImageIndex ? styles.activeIndicator : ''}`}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+        
+        <div className={styles.info}>
+          {product.category && (
+            <div className={styles.categoryTag}>
+              {product.category.name}
+            </div>
+          )}
+          <h3 className={styles.name}>{product.name}</h3>
+          <div className={styles.priceRow}>
+            <p className={styles.price}>{formatPrice(product.price)}</p>
+            {product.avgRating > 0 && (
+              <p className={styles.productRating}>
+                <span className={styles.starFilled}>★</span> 
+                <span className={styles.ratingValue}>{product.avgRating.toFixed(1)}</span>
+              </p>
+            )}
+          </div>
+        </div>
+      </Link>
+      
+      <div className={styles.wishlistContainer} onClick={handleWishlistClick}>
+        <WishlistButton 
+          productId={product.id} 
+          className={styles.wishlistButton}
+          preventNavigation={true}
+        />
+      </div>
+    </div>
+  );
+};
 
 export default function ProductsMobileClient() {
   const router = useRouter()
@@ -454,57 +566,11 @@ export default function ProductsMobileClient() {
 
       <div className={styles.list}>
         {products.map((prod) => (
-          <div key={prod.id} className={styles.cardWrapper}>
-            <Link href={`/products/${prod.id}`} className={styles.card}>
-              <div className={styles.imageContainer}>
-                {prod.imageUrls[0] ? (
-                  <img 
-                    src={prod.imageUrls[0]} 
-                    alt={prod.name} 
-                    className={styles.image}
-                    loading="lazy"
-                  />
-                ) : (
-                  <div className={styles.noImage}>No image</div>
-                )}
-                {prod.isNew && <span className={styles.badge}>New</span>}
-                {prod.stockQuantity === 0 && <div className={styles.outOfStock}>Out of Stock</div>}
-                {prod.stockQuantity > 0 && prod.stockQuantity <= 5 && (
-                  <div className={styles.lowStock}>Only {prod.stockQuantity} left</div>
-                )}
-                <div className={styles.overlay}>
-                  <span className={styles.viewDetails}>View Details</span>
-                </div>
-              </div>
-              <div className={styles.info}>
-                {prod.category && (
-                  <div className={styles.categoryTag}>
-                    {prod.category.name}
-                  </div>
-                )}
-                <h3 className={styles.name}>{prod.name}</h3>
-                {prod.shortDesc && (
-                  <p className={styles.shortDesc}>{prod.shortDesc.substring(0, 60)}{prod.shortDesc.length > 60 ? '...' : ''}</p>
-                )}
-                <div className={styles.priceRow}>
-                  <p className={styles.price}>{formatPrice(prod.price)}</p>
-                  {prod.avgRating > 0 && (
-                    <p className={styles.productRating}>
-                      <span className={styles.starFilled}>★</span> 
-                      <span className={styles.ratingValue}>{prod.avgRating.toFixed(1)}</span>
-                    </p>
-                  )}
-                </div>
-              </div>
-            </Link>
-            <div className={styles.wishlistContainer} onClick={handleWishlistClick}>
-              <WishlistButton 
-                productId={prod.id} 
-                className={styles.wishlistButton}
-                preventNavigation={true}
-              />
-            </div>
-          </div>
+          <ProductCard 
+            key={prod.id} 
+            product={prod} 
+            formatPrice={formatPrice} 
+          />
         ))}
       </div>
     </div>
