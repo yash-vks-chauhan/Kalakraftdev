@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import styles from './productsMobile.module.css'
 import WishlistButton from '../components/WishlistButton'
+import Image from 'next/image'
 
 export default function ProductsMobileClient() {
   const [products, setProducts] = useState([])
@@ -58,14 +59,19 @@ export default function ProductsMobileClient() {
             <Link href={`/products/${prod.id}`} className={styles.card}>
               <div className={styles.imageContainer}>
                 {prod.imageUrls[0] ? (
-                  <img src={prod.imageUrls[0]} alt={prod.name} className={styles.image} />
+                  <img 
+                    src={prod.imageUrls[0]} 
+                    alt={prod.name} 
+                    className={styles.image}
+                    loading="lazy"
+                  />
                 ) : (
                   <div className={styles.noImage}>No image</div>
                 )}
                 {prod.isNew && <span className={styles.badge}>New</span>}
                 {prod.stockQuantity === 0 && <div className={styles.outOfStock}>Out of Stock</div>}
                 {prod.stockQuantity > 0 && prod.stockQuantity <= 5 && (
-                  <div className={styles.lowStock}>Low Stock</div>
+                  <div className={styles.lowStock}>Only {prod.stockQuantity} left</div>
                 )}
                 <div className={styles.overlay}>
                   <span className={styles.viewDetails}>View Details</span>
