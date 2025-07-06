@@ -1,38 +1,60 @@
+.container {
+  width: 100%;
+  padding: 0;
+  background-color: #f9f9f9;
+}
+
 .list {
-  padding: 16px;
+  padding: 12px;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
+  gap: 12px;
+  width: 100%;
+  max-width: 100%;
 }
 
 @media (max-width: 360px) {
   .list {
     grid-template-columns: 1fr;
+    padding: 16px;
   }
 }
 
 .card {
   background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 0;
   overflow: hidden;
   text-decoration: none;
   color: inherit;
   display: flex;
   flex-direction: column;
+  position: relative;
+  box-shadow: none;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  margin-bottom: 8px;
+}
+
+.card:active {
+  transform: translateY(2px);
 }
 
 .imageContainer {
   width: 100%;
-  aspect-ratio: 1 / 1;
-  background: #f0f0f0;
+  aspect-ratio: 4/5;
+  background: #f5f5f5;
   position: relative;
+  overflow: hidden;
 }
 
 .image {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.card:active .image {
+  transform: scale(1.05);
 }
 
 .noImage {
@@ -43,26 +65,115 @@
   justify-content: center;
   color: #888;
   font-size: 0.9rem;
+  background-color: #f0f0f0;
+}
+
+.outOfStock {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 500;
+  z-index: 2;
 }
 
 .info {
-  padding: 12px;
+  padding: 10px 8px;
   display: flex;
   flex-direction: column;
+  background-color: #fff;
 }
 
 .name {
-  font-size: 1rem;
-  font-weight: 500;
+  font-size: 0.85rem;
+  font-weight: 400;
   margin: 0 0 4px 0;
   line-height: 1.2;
+  color: #333;
+  text-transform: none;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.priceRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .price {
-  font-size: 1rem;
-  font-weight: 700;
-  color: #1a202c;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #000;
   margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.rating {
+  display: flex;
+  align-items: center;
+  font-size: 0.7rem;
+}
+
+.star {
+  color: #FFD700;
+  margin-right: -1px;
+}
+
+.emptyStar {
+  color: #e0e0e0;
+  margin-right: -1px;
+}
+
+.badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background-color: #000;
+  color: #fff;
+  font-size: 0.7rem;
+  padding: 3px 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  z-index: 2;
+  font-weight: 500;
+}
+
+.overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 8px 0;
+  text-align: center;
+  transform: translateY(100%);
+  transition: transform 0.3s ease;
+  z-index: 3;
+}
+
+.card:active .overlay {
+  transform: translateY(0);
+}
+
+.viewDetails {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 500;
 }
 
 .loading,
@@ -70,4 +181,10 @@
   padding: 16px;
   text-align: center;
   color: #555;
+  width: 100%;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
 } 
