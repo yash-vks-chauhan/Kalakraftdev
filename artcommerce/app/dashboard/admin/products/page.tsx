@@ -82,7 +82,6 @@ export default function AdminProductsPage() {
   }
 
   async function handleToggleStatus(id: number, newStatus: boolean) {
-    setIsTransitioning(true)
     try {
       const res = await fetch(`/api/admin/products/${id}`, {
         method: 'PATCH',
@@ -97,8 +96,6 @@ export default function AdminProductsPage() {
       setProducts(products.map(p => p.id === id ? { ...p, isActive: json.product.isActive } : p))
     } catch (err: any) {
       alert('Failed to update product status: ' + err.message)
-    } finally {
-      setIsTransitioning(false)
     }
   }
 
@@ -167,7 +164,6 @@ export default function AdminProductsPage() {
                       type="checkbox"
                       checked={p.isActive}
                       onChange={() => handleToggleStatus(p.id, !p.isActive)}
-                      disabled={isTransitioning}
                     />
                     <span className={styles.statusSlider} />
                   </div>

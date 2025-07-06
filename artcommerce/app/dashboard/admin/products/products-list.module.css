@@ -238,7 +238,7 @@
 }
 
 .statusSwitch input:checked + .statusSlider {
-  background-color: #dcfce7;  /* same as statusActive background */
+  background-color: #10B981;  /* vibrant green for active state */
 }
 
 .statusSwitch input:checked + .statusSlider:before {
