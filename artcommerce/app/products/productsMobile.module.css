@@ -327,30 +327,30 @@
   bottom: 70px;
   left: 50%;
   transform: translateX(-50%);
-  background: #1a202c;
+  background: #333;
   color: white;
   border: none;
   border-radius: 50px;
-  padding: 12px 28px;
+  padding: 10px 24px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 8px;
   font-weight: 500;
-  font-size: 0.95rem;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  font-size: 0.9rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   z-index: 100;
   cursor: pointer;
-  width: 130px;
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
+  width: 120px;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
               background-color 0.3s ease,
               box-shadow 0.3s ease;
 }
 
 .mobileFilterButton:active {
-  transform: translateX(-50%) scale(0.95);
+  transform: translateX(-50%) scale(0.96);
   background-color: #000;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
 }
 
 .mobileFilterDrawer {
@@ -363,14 +363,13 @@
   background: white;
   z-index: 1000;
   transform: translateY(100%);
-  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.15);
-  border-top-left-radius: 20px;
-  border-top-right-radius: 20px;
-  will-change: transform;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
 }
 
 .mobileFilterDrawerOpen {
@@ -381,44 +380,44 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.5rem 1.75rem;
+  padding: 1.25rem 1.5rem;
   border-bottom: 1px solid rgba(226, 232, 240, 0.8);
   position: sticky;
   top: 0;
   background: white;
   z-index: 10;
-  border-top-left-radius: 20px;
-  border-top-right-radius: 20px;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
 }
 
 .mobileFilterHeader h2 {
-  font-size: 1.35rem;
+  font-size: 1.25rem;
   font-weight: 600;
   margin: 0;
   letter-spacing: -0.01em;
 }
 
 .mobileFilterCloseButton {
-  background: rgba(240, 240, 240, 0.8);
+  background: none;
   border: none;
   color: #1a202c;
   cursor: pointer;
-  padding: 0.75rem;
+  padding: 0.5rem;
   margin: -0.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  transition: background-color 0.3s ease, transform 0.3s ease;
+  transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
 .mobileFilterCloseButton:active {
-  background-color: rgba(220, 220, 220, 0.9);
-  transform: scale(0.92);
+  background-color: rgba(226, 232, 240, 0.5);
+  transform: scale(0.95);
 }
 
 .mobileFilterContent {
-  padding: 1.75rem;
+  padding: 1.5rem;
   flex: 1;
   overflow-y: auto;
 }
@@ -429,13 +428,12 @@
   left: 0;
   width: 100%;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.4);
   z-index: 999;
-  backdrop-filter: blur(3px);
+  backdrop-filter: blur(2px);
   opacity: 0;
-  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: opacity;
-  animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .mobileFilterOverlayVisible {
@@ -496,19 +494,18 @@
   margin-bottom: 1.5rem;
   background: rgba(255, 255, 255, 0.5);
   border-radius: 12px;
-  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.3s ease;
   overflow: hidden;
-  position: relative;
 }
 
 .filterSection[open] {
   padding-bottom: 1rem;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
 }
 
 .filterHeader {
   cursor: pointer;
-  padding: 1.25rem;
+  padding: 1rem;
   font-weight: 500;
   color: #1a202c;
   display: flex;
@@ -517,17 +514,14 @@
   user-select: none;
   font-size: 0.95rem;
   border-radius: 8px;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.2s ease;
   border: 1px solid rgba(226, 232, 240, 0.8);
-  background: rgba(255, 255, 255, 0.95);
-  position: relative;
-  z-index: 2;
+  background: rgba(255, 255, 255, 0.8);
 }
 
 .filterHeader:hover {
-  background: rgba(255, 255, 255, 1);
-  border-color: rgba(26, 32, 44, 0.15);
-  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(26, 32, 44, 0.1);
 }
 
 .filterHeader:active {
@@ -542,16 +536,15 @@
   margin-top: 0.75rem;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  padding: 0.5rem 1.25rem;
-  animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  will-change: transform, opacity;
+  gap: 0.5rem;
+  padding: 0 1rem;
+  animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes slideDown {
   from {
     opacity: 0;
-    transform: translateY(-15px);
+    transform: translateY(-10px);
   }
   to {
     opacity: 1;
@@ -559,114 +552,62 @@
   }
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
 .filterOption {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 0.75rem;
+  gap: 0.75rem;
+  padding: 0.5rem;
   color: #4a5568;
-  transition: all 0.25s ease;
-  font-size: 0.95rem;
-  border-radius: 8px;
-  position: relative;
-  overflow: hidden;
-}
-
-.filterOption::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.04);
-  opacity: 0;
-  transition: opacity 0.25s ease;
-  border-radius: 8px;
-  z-index: -1;
-}
-
-.filterOption:hover::after {
-  opacity: 1;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+  border-radius: 6px;
 }
 
 .filterOption:hover {
   color: #1a202c;
+  background: rgba(255, 255, 255, 0.8);
 }
 
 .filterOption:active {
-  transform: scale(0.98);
+  background: rgba(240, 240, 240, 0.8);
 }
 
 .filterOption input[type="radio"],
 .filterOption input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   border: 2px solid rgba(26, 32, 44, 0.3);
   border-radius: 4px;
   cursor: pointer;
   accent-color: #1a202c;
-  transition: all 0.3s ease;
-  position: relative;
-}
-
-.filterOption input[type="radio"] {
-  border-radius: 50%;
+  transition: all 0.2s ease;
 }
 
 .filterOption input[type="radio"]:checked,
 .filterOption input[type="checkbox"]:checked {
   background-color: #1a202c;
   border-color: #1a202c;
-  box-shadow: 0 0 0 2px rgba(26, 32, 44, 0.1);
 }
 
 .clearButton {
-  margin-top: 1rem;
-  padding: 0.75rem 1rem;
+  margin-top: 0.75rem;
+  padding: 0.5rem 1rem;
   font-size: 0.85rem;
   font-weight: 500;
   color: #1a202c;
   background-color: transparent;
   border: 1px solid #1a202c;
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.3s ease;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   width: 100%;
-  position: relative;
-  overflow: hidden;
-}
-
-.clearButton::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: #1a202c;
-  opacity: 0;
-  transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  z-index: -1;
 }
 
 .clearButton:hover {
+  background-color: #1a202c;
   color: #ffffff;
-}
-
-.clearButton:hover::after {
-  opacity: 1;
 }
 
 .clearButton:active {
@@ -674,10 +615,8 @@
 }
 
 .arrow {
-  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   opacity: 0.7;
-  width: 20px;
-  height: 20px;
 }
 
 details[open] .arrow {
@@ -686,64 +625,4 @@ details[open] .arrow {
 
 .filterHeader:hover .arrow {
   opacity: 1;
-}
-
-/* Error and loading states */
-.loadingContainer {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 300px;
-  width: 100%;
-}
-
-.spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid rgba(0, 0, 0, 0.1);
-  border-top-color: #1a202c;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.errorContainer {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  height: 300px;
-  width: 100%;
-  padding: 1rem;
-  text-align: center;
-}
-
-.errorContainer p {
-  margin-bottom: 1rem;
-  color: #e53e3e;
-}
-
-.errorContainer button {
-  padding: 0.75rem 1.5rem;
-  background-color: #1a202c;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-.noProducts {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  padding: 3rem 1rem;
-  text-align: center;
-  grid-column: 1 / -1;
 } 

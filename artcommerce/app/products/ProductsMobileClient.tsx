@@ -1,456 +1,687 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
-import Image from 'next/image'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import styles from './productsMobile.module.css'
+import WishlistButton from '../components/WishlistButton'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { FiStar, FiHeart } from 'react-icons/fi'
-import { ChevronRight, Filter, X } from 'lucide-react'
+import { FiFilter, FiX, FiChevronRight, FiStar, FiPackage, FiTrendingUp, FiGrid, FiHeart } from 'react-icons/fi'
 
 // Define known categories similar to desktop version
 const KNOWN_CATEGORIES = [
-  { name: 'All Products', slug: '' },
-  { name: 'Wall Art', slug: 'wall-art' },
-  { name: 'Vases', slug: 'vases' },
-  { name: 'Trays', slug: 'trays' },
-  { name: 'Sculptures', slug: 'sculptures' },
-  { name: 'Clocks', slug: 'clocks' },
+  { slug: 'clocks', name: 'Clocks' },
+  { slug: 'pots', name: 'Pots' },
+  { slug: 'tray', name: 'Trays' },
+  { slug: 'Tray', name: 'Jewelry Trays' },
+  { slug: 'rangoli', name: 'Rangoli' },
+  { slug: 'decor', name: 'Wall Decor' },
+  { slug: 'matt rangoli', name: 'Matt Rangoli' },
+  { slug: 'mirror work', name: 'Mirror Work' }
 ]
 
-interface Product {
-  id: number
-  name: string
-  slug: string
-  description?: string
-  price: number
-  currency: string
-  images: string[]
-  stockQuantity: number
-  category: { id: number; name: string; slug: string } | null
-  rating?: number
-}
+// Product Card with Swipeable Images component
+const ProductCard = ({ product, formatPrice }) => {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [touchStart, setTouchStart] = useState(0);
+  const [touchEnd, setTouchEnd] = useState(0);
+  const [isSwiping, setIsSwiping] = useState(false);
+  const [swipeOffset, setSwipeOffset] = useState(0);
+  const [animating, setAnimating] = useState(false);
+  const imageContainerRef = useRef(null);
+  
+  // Minimum swipe distance to register as a swipe
+  const minSwipeDistance = 50;
+  
+  const handleTouchStart = (e) => {
+    if (animating || product.imageUrls.length <= 1) return;
+    setTouchStart(e.targetTouches[0].clientX);
+    setIsSwiping(true);
+    setSwipeOffset(0);
+  };
+  
+  const handleTouchMove = (e) => {
+    if (!isSwiping || animating || product.imageUrls.length <= 1) return;
+    
+    setTouchEnd(e.targetTouches[0].clientX);
+    const currentOffset = e.targetTouches[0].clientX - touchStart;
+    
+    // Limit the swipe distance with resistance at edges
+    if ((currentImageIndex === 0 && currentOffset > 0) || 
+        (currentImageIndex === product.imageUrls.length - 1 && currentOffset < 0)) {
+      // Add resistance at the edges
+      setSwipeOffset(currentOffset / 3);
+    } else {
+      setSwipeOffset(currentOffset);
+    }
+  };
+  
+  const handleTouchEnd = () => {
+    if (!isSwiping || animating || product.imageUrls.length <= 1) return;
+    
+    setIsSwiping(false);
+    
+    if (!touchStart || !touchEnd) {
+      setSwipeOffset(0);
+      return;
+    }
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+    
+    setAnimating(true);
+    
+    if (isLeftSwipe && currentImageIndex < product.imageUrls.length - 1) {
+      setCurrentImageIndex(currentImageIndex + 1);
+    } else if (isRightSwipe && currentImageIndex > 0) {
+      setCurrentImageIndex(currentImageIndex - 1);
+    }
+    
+    // Reset values
+    setTouchStart(0);
+    setTouchEnd(0);
+    setSwipeOffset(0);
+    
+    // End animation after transition completes
+    setTimeout(() => {
+      setAnimating(false);
+    }, 300);
+  };
+  
+  // Handle wishlist button click to prevent navigation
+  const handleWishlistClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+  
+  // Calculate transform style for smooth swiping
+  const getImageTransform = () => {
+    if (!isSwiping) {
+      return { transform: `translateX(${-100 * currentImageIndex}%)` };
+    }
+    
+    // Calculate percentage offset for smooth tracking during swipe
+    const containerWidth = imageContainerRef.current?.offsetWidth || 0;
+    const offsetPercentage = (swipeOffset / containerWidth) * 100;
+    
+    return {
+      transform: `translateX(calc(${-100 * currentImageIndex}% + ${offsetPercentage}%))`,
+      transition: isSwiping ? 'none' : 'transform 0.3s ease-out'
+    };
+  };
+  
+  // Format short description
+  const getShortDescription = () => {
+    if (!product.shortDesc) return null;
+    return product.shortDesc.length > 60 
+      ? `${product.shortDesc.substring(0, 60)}...` 
+      : product.shortDesc;
+  };
+  
+  return (
+    <div className={styles.cardWrapper}>
+      <Link href={`/products/${product.id}`} className={styles.card}>
+        <div 
+          className={styles.imageContainer}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          ref={imageContainerRef}
+        >
+          <div className={styles.imageSlider} style={getImageTransform()}>
+            {product.imageUrls.map((url, index) => (
+              <div key={index} className={styles.imageSlide}>
+                <img 
+                  src={url}
+                  alt={`${product.name} - Image ${index + 1}`}
+                  className={styles.image}
+                  loading="lazy"
+                />
+              </div>
+            ))}
+          </div>
+          
+          {product.imageUrls.length === 0 && (
+            <div className={styles.noImage}>No image</div>
+          )}
+          
+          {product.isNew && <span className={styles.badge}>New</span>}
+          {product.stockQuantity === 0 && <div className={styles.outOfStock}>Out of Stock</div>}
+          {product.stockQuantity > 0 && product.stockQuantity <= 5 && (
+            <div className={styles.lowStock}>Only {product.stockQuantity} left</div>
+          )}
+          
+          {/* Image indicators */}
+          {product.imageUrls.length > 1 && (
+            <div className={styles.imageIndicators}>
+              {product.imageUrls.map((_, index) => (
+                <div 
+                  key={index} 
+                  className={`${styles.indicator} ${index === currentImageIndex ? styles.activeIndicator : ''}`}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+        
+        <div className={styles.info}>
+          {product.category && (
+            <div className={styles.categoryTag}>
+              {product.category.name}
+            </div>
+          )}
+          <h3 className={styles.name}>{product.name}</h3>
+          
+          {/* Short description */}
+          {product.shortDesc && (
+            <p className={styles.shortDesc}>{getShortDescription()}</p>
+          )}
+          
+          <div className={styles.priceRow}>
+            <p className={styles.price}>{formatPrice(product.price)}</p>
+            {product.avgRating > 0 && (
+              <p className={styles.productRating}>
+                <span className={styles.starFilled}>★</span> 
+                <span className={styles.ratingValue}>{product.avgRating.toFixed(1)}</span>
+              </p>
+            )}
+          </div>
+        </div>
+      </Link>
+      
+      <div className={styles.wishlistContainer} onClick={handleWishlistClick}>
+        <WishlistButton 
+          productId={product.id} 
+          className={`${styles.wishlistButton} ${styles.blackWishlist}`}
+          preventNavigation={true}
+        />
+      </div>
+    </div>
+  );
+};
 
-const ProductsMobileClient = () => {
+export default function ProductsMobileClient() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const currentCategory = searchParams.get('category') || ''
+  const currentTag = searchParams.get('usageTag') || ''
+  const priceMinParam = searchParams.get('priceMin') || ''
+  const priceMaxParam = searchParams.get('priceMax') || ''
+  const sortParam = searchParams.get('sort') || ''
+  const ratingMinParam = searchParams.get('ratingMin') || ''
+  const lowStockParam = searchParams.get('lowStock') === 'true'
+  const inStockOnlyParam = searchParams.get('inStock') === 'true'
+
+  const [products, setProducts] = useState([])
+  const [usageTags, setUsageTags] = useState([])
   const [loading, setLoading] = useState(true)
-  const [products, setProducts] = useState<Product[]>([])
-  const [categories, setCategories] = useState<{id: string, name: string}[]>([])
-  const [currentPage, setCurrentPage] = useState(1)
+  const [error, setError] = useState(null)
+  const [priceMin, setPriceMin] = useState(priceMinParam)
+  const [priceMax, setPriceMax] = useState(priceMaxParam)
+  const [sortOrder, setSortOrder] = useState(sortParam)
+  const [lowStockOnly, setLowStockOnly] = useState(lowStockParam)
+  const [inStockOnly, setInStockOnly] = useState(inStockOnlyParam)
+  const [ratingMin, setRatingMin] = useState(ratingMinParam)
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false)
-  const [currentCategory, setCurrentCategory] = useState(searchParams.get('category') || '')
-  const [currentRating, setCurrentRating] = useState(searchParams.get('rating') || '')
-  const [inStockOnly, setInStockOnly] = useState(searchParams.get('inStock') === 'true')
-  const [currentSort, setCurrentSort] = useState(searchParams.get('sort') || 'featured')
-  const [error, setError] = useState<string | null>(null)
-  
-  // Track which filter sections are open
   const [openSections, setOpenSections] = useState({
     category: true,
-    rating: false,
-    stock: false,
-    sort: false
-  })
+    rating: true,
+    stock: true,
+    sort: true
+  });
+  
+  // Toggle filter sections
+  const toggleSection = (section) => {
+    setOpenSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
 
-  // Prevent body scroll when filter is open
+  // Fetch list of available usage tags once
   useEffect(() => {
-    if (isMobileFilterOpen) {
-      document.body.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = 'auto'
+    async function fetchTags() {
+      try {
+        const res = await fetch('/api/products/usage-tags')
+        const data = await res.json()
+        if (Array.isArray(data.tags)) setUsageTags(data.tags)
+      } catch (err) {
+        console.error('Failed to fetch usage tags:', err)
+      }
     }
-    return () => {
-      document.body.style.overflow = 'auto'
-    }
-  }, [isMobileFilterOpen])
+    fetchTags()
+  }, [])
 
-  // Fetch products data
+  // fetch products from API with filters
   useEffect(() => {
     async function fetchProducts() {
       setLoading(true)
       setError(null)
-      const params = new URLSearchParams()
       
+      const params = new URLSearchParams()
       if (currentCategory) {
         params.set('category', currentCategory)
       }
-      
-      if (currentRating) {
-        params.set('ratingMin', currentRating)
+      if (currentTag) {
+        params.set('usageTag', currentTag)
       }
-      
-      if (inStockOnly) {
-        params.set('inStock', 'true')
-      }
-      
-      if (currentSort && currentSort !== 'featured') {
-        params.set('sort', currentSort)
-      }
+      if (priceMin) params.set('priceMin', priceMin)
+      if (priceMax) params.set('priceMax', priceMax)
+      if (sortOrder) params.set('sort', sortOrder)
+      if (lowStockOnly) params.set('lowStock', 'true')
+      if (inStockOnly) params.set('inStock', 'true')
+      if (ratingMin) params.set('ratingMin', ratingMin)
       
       try {
         const res = await fetch(`/api/products?${params.toString()}`)
         const data = await res.json()
-        
         if (!res.ok) throw new Error(data.error || 'Failed to fetch products')
         
-        // Normalize image URLs
-        const processedProducts = data.products.map((p: any) => {
-          let images: string[] = []
-          
-          if (Array.isArray(p.imageUrls)) {
-            images = p.imageUrls
-          } else if (p.imageUrls) {
-            try {
-              const parsed = JSON.parse(p.imageUrls)
-              images = Array.isArray(parsed) ? parsed : []
-            } catch {
-              images = []
-            }
+        // Normalize imageUrls
+        let filteredProducts = (Array.isArray(data.products) ? data.products : []).map((p) => {
+          let urls = []
+          try {
+            urls = Array.isArray(p.imageUrls) ? p.imageUrls : JSON.parse(p.imageUrls || '[]')
+          } catch {
+            urls = []
           }
           
-          // Ensure all images have proper paths
-          images = images.map((img: string) => {
-            return img.startsWith('http') || img.startsWith('/') 
-              ? img 
-              : `/uploads/${img}`
-          })
+          // Check if product is new (less than 14 days old)
+          const isNew = p.createdAt && new Date(p.createdAt) > new Date(Date.now() - 14 * 24 * 60 * 60 * 1000)
           
-          return { 
-            ...p, 
-            images,
-            rating: p.avgRating || 0
-          }
+          return { ...p, imageUrls: urls, isNew }
         })
         
-        setProducts(processedProducts)
-      } catch (err: any) {
+        // Client-side category filtering as backup
+        if (currentCategory && filteredProducts.length > 0) {
+          filteredProducts = filteredProducts.filter((product) => {
+            const categorySlug = product.category?.slug || ''
+            return categorySlug === currentCategory
+          })
+        }
+        
+        // Client-side tag filtering as backup
+        if (currentTag && filteredProducts.length > 0) {
+          filteredProducts = filteredProducts.filter((product) => {
+            return Array.isArray(product.usageTags) && product.usageTags.includes(currentTag)
+          })
+        }
+        
+        setProducts(filteredProducts)
+      } catch (err) {
         setError(err.message)
-        console.error('Error fetching products:', err)
       } finally {
         setLoading(false)
       }
     }
-    
-    // Fetch categories
-    async function fetchCategories() {
-      try {
-        const res = await fetch('/api/categories')
-        const data = await res.json()
-        if (data.categories) {
-          setCategories(data.categories)
-        }
-      } catch (err) {
-        console.error('Error fetching categories:', err)
-      }
-    }
-    
     fetchProducts()
-    fetchCategories()
-  }, [currentCategory, currentRating, inStockOnly, currentSort])
+  }, [currentCategory, currentTag, priceMin, priceMax, sortOrder, lowStockOnly, inStockOnly, ratingMin])
 
-  // Toggle filter sections
-  const toggleSection = (section: 'category' | 'rating' | 'stock' | 'sort') => {
-    setOpenSections(prev => ({
-      ...prev,
-      [section]: !prev[section]
-    }))
+  // Handle wishlist button click to prevent navigation
+  const handleWishlistClick = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
   }
 
-  // Handle navigation
-  const handleFilterChange = (param: string, value: string) => {
-    const qs = new URLSearchParams(searchParams.toString())
-    
-    if (value === '' || value === 'featured' || value === 'false') {
-      qs.delete(param)
-    } else {
-      qs.set(param, value)
-    }
-    
-    router.replace(qs.toString() ? `/products?${qs}` : '/products')
-  }
+  // Format price with commas for thousands
+  const formatPrice = (price) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 0,
+      minimumFractionDigits: 0
+    }).format(price);
+  };
 
-  // Clear all filters
-  const clearAllFilters = () => {
-    router.replace('/products')
-    setIsMobileFilterOpen(false)
-  }
-
-  // Render filter section with enhanced UI and animations
-  const renderFilterSection = (
-    title: string,
-    content: React.ReactNode,
-    section: 'category' | 'rating' | 'stock' | 'sort',
-    isOpen: boolean = false
-  ) => {
+  // Render filters similar to desktop sidebar
+  const renderFilters = () => {
     return (
-      <details 
-        className={styles.filterSection} 
-        open={openSections[section]}
-        onClick={(e) => {
-          // Prevent default only if clicking on summary
-          if ((e.target as HTMLElement).tagName === 'SUMMARY') {
-            e.preventDefault()
-            toggleSection(section)
-          }
-        }}
-      >
-        <summary className={styles.filterHeader}>
-          {title}
-          <ChevronRight className={styles.arrow} />
-        </summary>
-        <div className={styles.filterContent}>
-          {content}
-        </div>
-      </details>
+      <>
+        {/* Category filter */}
+        <details open={openSections.category} className={styles.filterSection}>
+          <summary 
+            className={styles.filterHeader}
+            onClick={(e) => {
+              e.preventDefault();
+              toggleSection('category');
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center' }}>
+              <FiGrid style={{ marginRight: '8px' }} />
+              Category
+            </span>
+            <FiChevronRight className={styles.arrow} />
+          </summary>
+          <div className={styles.filterContent}>
+            {KNOWN_CATEGORIES.map(cat => (
+              <label key={cat.slug} className={styles.filterOption}>
+                <input
+                  type="radio"
+                  name="categoryFilter"
+                  checked={currentCategory === cat.slug}
+                  onChange={() => {
+                    const qs = new URLSearchParams(searchParams.toString())
+                    if (cat.slug === currentCategory) qs.delete('category')
+                    else qs.set('category', cat.slug)
+                    router.replace(qs.toString() ? `/products?${qs}` : '/products')
+                    setIsMobileFilterOpen(false)
+                  }}
+                />
+                {cat.name}
+              </label>
+            ))}
+            {currentCategory && (
+              <button className={styles.clearButton} onClick={() => {
+                const qs = new URLSearchParams(searchParams.toString())
+                qs.delete('category');
+                router.replace(qs.toString() ? `/products?${qs}` : '/products')
+              }}>Clear</button>
+            )}
+          </div>
+        </details>
+
+        {/* Rating */}
+        <details open={openSections.rating} className={styles.filterSection}>
+          <summary 
+            className={styles.filterHeader}
+            onClick={(e) => {
+              e.preventDefault();
+              toggleSection('rating');
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center' }}>
+              <FiStar style={{ marginRight: '8px' }} />
+              Rating
+            </span>
+            <FiChevronRight className={styles.arrow} />
+          </summary>
+          <div className={styles.filterContent}>
+            {[4,3,2,1].map(thr => (
+              <label key={thr} className={styles.filterOption}>
+                <input
+                  type="radio"
+                  name="ratingFilter"
+                  checked={Number(ratingMin) === thr}
+                  onChange={() => {
+                    const qs = new URLSearchParams(searchParams.toString())
+                    if (Number(ratingMin) === thr) {
+                      setRatingMin('')
+                      qs.delete('ratingMin')
+                    } else {
+                      setRatingMin(String(thr))
+                      qs.set('ratingMin', String(thr))
+                    }
+                    router.replace(qs.toString()?`/products?${qs}`:'/products')
+                    setIsMobileFilterOpen(false)
+                  }}
+                />
+                {thr}+ stars
+              </label>
+            ))}
+            {ratingMin && (
+              <button className={styles.clearButton} onClick={() => {
+                setRatingMin('')
+                const qs = new URLSearchParams(searchParams.toString())
+                qs.delete('ratingMin')
+                router.replace(qs.toString()?`/products?${qs}`:'/products')
+              }}>Clear</button>
+            )}
+          </div>
+        </details>
+
+        {/* Stock */}
+        <details open={openSections.stock} className={styles.filterSection}>
+          <summary 
+            className={styles.filterHeader}
+            onClick={(e) => {
+              e.preventDefault();
+              toggleSection('stock');
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center' }}>
+              <FiPackage style={{ marginRight: '8px' }} />
+              Stock
+            </span>
+            <FiChevronRight className={styles.arrow} />
+          </summary>
+          <div className={styles.filterContent}>
+            <label className={styles.filterOption}>
+              <input
+                type="checkbox"
+                checked={lowStockOnly}
+                onChange={e => {
+                  setLowStockOnly(e.target.checked)
+                  const qs = new URLSearchParams(searchParams.toString())
+                  if (e.target.checked) qs.set('lowStock','true')
+                  else qs.delete('lowStock')
+                  if (inStockOnly) qs.set('inStock','true')
+                  router.replace(qs.toString()?`/products?${qs}`:'/products')
+                  setIsMobileFilterOpen(false)
+                }}
+              />
+              Only low stock
+            </label>
+            <label className={styles.filterOption}>
+              <input
+                type="checkbox"
+                checked={inStockOnly}
+                onChange={e=>{
+                  setInStockOnly(e.target.checked)
+                  const qs=new URLSearchParams(searchParams.toString())
+                  if(e.target.checked) qs.set('inStock','true'); else qs.delete('inStock')
+                  router.replace(qs.toString()?`/products?${qs}`:'/products')
+                  setIsMobileFilterOpen(false)
+                }}
+              />
+              In stock only
+            </label>
+          </div>
+        </details>
+
+        {/* Sort */}
+        <details open={openSections.sort} className={styles.filterSection}>
+          <summary 
+            className={styles.filterHeader}
+            onClick={(e) => {
+              e.preventDefault();
+              toggleSection('sort');
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center' }}>
+              <FiTrendingUp style={{ marginRight: '8px' }} />
+              Sort
+            </span>
+            <FiChevronRight className={styles.arrow} />
+          </summary>
+          <div className={styles.filterContent}>
+            <label className={styles.filterOption}>
+              <input
+                type="radio"
+                name="sortoption"
+                checked={sortOrder === '' || sortOrder === 'newest'}
+                onChange={() => {
+                  setSortOrder('')
+                  const qs = new URLSearchParams(searchParams.toString())
+                  qs.delete('sort')
+                  router.replace(qs.toString()?`/products?${qs}`:'/products')
+                  setIsMobileFilterOpen(false)
+                }}
+              /> Newest
+            </label>
+            <label className={styles.filterOption}>
+              <input
+                type="radio"
+                name="sortoption"
+                checked={sortOrder === 'oldest'}
+                onChange={() => {
+                  setSortOrder('oldest')
+                  const qs = new URLSearchParams(searchParams.toString())
+                  qs.set('sort','oldest')
+                  router.replace(`/products?${qs}`)
+                  setIsMobileFilterOpen(false)
+                }}
+              /> Oldest
+            </label>
+            <label className={styles.filterOption}>
+              <input
+                type="radio"
+                name="sortoption"
+                checked={sortOrder === 'price_asc'}
+                onChange={() => {
+                  setSortOrder('price_asc')
+                  const qs = new URLSearchParams(searchParams.toString())
+                  qs.set('sort','price_asc')
+                  router.replace(`/products?${qs}`)
+                  setIsMobileFilterOpen(false)
+                }}
+              /> Price: Low to High
+            </label>
+            <label className={styles.filterOption}>
+              <input
+                type="radio"
+                name="sortoption"
+                checked={sortOrder === 'price_desc'}
+                onChange={() => {
+                  setSortOrder('price_desc')
+                  const qs = new URLSearchParams(searchParams.toString())
+                  qs.set('sort','price_desc')
+                  router.replace(`/products?${qs}`)
+                  setIsMobileFilterOpen(false)
+                }}
+              /> Price: High to Low
+            </label>
+          </div>
+        </details>
+      </>
     );
   };
 
-  // Filter content components with enhanced UI
-  const categoryFilterContent = (
-    <>
-      {KNOWN_CATEGORIES.map((category) => (
-        <label key={category.slug} className={styles.filterOption}>
-          <input
-            type="radio"
-            name="categoryFilter"
-            checked={currentCategory === category.slug}
-            onChange={() => {
-              setCurrentCategory(category.slug)
-              handleFilterChange('category', category.slug)
-            }}
-          />
-          {category.name}
-        </label>
-      ))}
-      {currentCategory && (
-        <button 
-          className={styles.clearButton} 
-          onClick={() => {
-            setCurrentCategory('')
-            handleFilterChange('category', '')
-          }}
-        >
-          Clear Category
-        </button>
-      )}
-    </>
-  );
-
-  const ratingFilterContent = (
-    <>
-      {[4, 3, 2, 1].map((rating) => (
-        <label key={rating} className={styles.filterOption}>
-          <input
-            type="radio"
-            name="ratingFilter"
-            checked={currentRating === rating.toString()}
-            onChange={() => {
-              setCurrentRating(rating.toString())
-              handleFilterChange('rating', rating.toString())
-            }}
-          />
-          {rating}+ Stars
-        </label>
-      ))}
-      {currentRating && (
-        <button 
-          className={styles.clearButton} 
-          onClick={() => {
-            setCurrentRating('')
-            handleFilterChange('rating', '')
-          }}
-        >
-          Clear Rating
-        </button>
-      )}
-    </>
-  );
-
-  const stockFilterContent = (
-    <>
-      <label className={styles.filterOption}>
-        <input
-          type="checkbox"
-          checked={inStockOnly}
-          onChange={(e) => {
-            setInStockOnly(e.target.checked)
-            handleFilterChange('inStock', e.target.checked ? 'true' : 'false')
-          }}
-        />
-        In stock only
-      </label>
-    </>
-  );
-
-  const sortFilterContent = (
-    <>
-      <label className={styles.filterOption}>
-        <input
-          type="radio"
-          name="sortFilter"
-          checked={currentSort === 'featured'}
-          onChange={() => {
-            setCurrentSort('featured')
-            handleFilterChange('sort', '')
-          }}
-        />
-        Featured
-      </label>
-      <label className={styles.filterOption}>
-        <input
-          type="radio"
-          name="sortFilter"
-          checked={currentSort === 'newest'}
-          onChange={() => {
-            setCurrentSort('newest')
-            handleFilterChange('sort', 'newest')
-          }}
-        />
-        Newest Arrivals
-      </label>
-      <label className={styles.filterOption}>
-        <input
-          type="radio"
-          name="sortFilter"
-          checked={currentSort === 'price_asc'}
-          onChange={() => {
-            setCurrentSort('price_asc')
-            handleFilterChange('sort', 'price_asc')
-          }}
-        />
-        Price: Low to High
-      </label>
-      <label className={styles.filterOption}>
-        <input
-          type="radio"
-          name="sortFilter"
-          checked={currentSort === 'price_desc'}
-          onChange={() => {
-            setCurrentSort('price_desc')
-            handleFilterChange('sort', 'price_desc')
-          }}
-        />
-        Price: High to Low
-      </label>
-    </>
-  );
-
   if (loading) return (
-    <div className={styles.loadingContainer}>
-      <div className={styles.spinner}></div>
+    <div className={styles.loading}>
+      <div className={styles.loadingSpinner}></div>
+      <span>Loading products...</span>
     </div>
-  )
+  );
   
-  if (error) return (
-    <div className={styles.errorContainer}>
-      <p>Error: {error}</p>
-      <button onClick={() => window.location.reload()}>Try Again</button>
-    </div>
-  )
+  if (error) return <div className={styles.error}>Error: {error}</div>
 
   return (
     <div className={styles.container}>
-      {/* Mobile Filter Button with enhanced UI */}
+      {/* Mobile Filter Button */}
       <button 
-        className={styles.mobileFilterButton} 
+        className={styles.mobileFilterButton}
         onClick={() => setIsMobileFilterOpen(true)}
+        aria-label="Open filters"
       >
-        <Filter size={16} />
-        Filter
+        <FiFilter size={16} /> Filter
       </button>
-      
-      {/* Improved Filter Drawer with smooth transitions */}
+
+      {/* Mobile Filter Drawer */}
+      <div className={`${styles.mobileFilterDrawer} ${isMobileFilterOpen ? styles.mobileFilterDrawerOpen : ''}`}>
+        <div className={styles.mobileFilterHeader}>
+          <h2>Filters</h2>
+          <button 
+            className={styles.mobileFilterCloseButton}
+            onClick={() => setIsMobileFilterOpen(false)}
+            aria-label="Close filters"
+          >
+            <FiX size={24} />
+          </button>
+        </div>
+        <div className={styles.mobileFilterContent}>
+          {renderFilters()}
+                </div>
+              </div>
+
+      {/* Mobile Filter Overlay */}
       {isMobileFilterOpen && (
         <div 
           className={`${styles.mobileFilterOverlay} ${isMobileFilterOpen ? styles.mobileFilterOverlayVisible : ''}`}
           onClick={() => setIsMobileFilterOpen(false)}
         />
       )}
-      
-      <div className={`${styles.mobileFilterDrawer} ${isMobileFilterOpen ? styles.mobileFilterDrawerOpen : ''}`}>
-        <div className={styles.mobileFilterHeader}>
-          <h2>Filters</h2>
-          <button 
-            className={styles.mobileFilterCloseButton} 
-            onClick={() => setIsMobileFilterOpen(false)}
-          >
-            <X size={18} />
-          </button>
-        </div>
-        <div className={styles.mobileFilterContent}>
-          {renderFilterSection('Categories', categoryFilterContent, 'category', true)}
-          {renderFilterSection('Rating', ratingFilterContent, 'rating')}
-          {renderFilterSection('Availability', stockFilterContent, 'stock')}
-          {renderFilterSection('Sort By', sortFilterContent, 'sort')}
-          
-          {(currentCategory || currentRating || inStockOnly || currentSort !== 'featured') && (
-            <button 
-              className={styles.clearButton} 
-              onClick={clearAllFilters}
-              style={{ marginTop: '2rem', background: '#1a202c', color: 'white' }}
-            >
-              Clear All Filters
-            </button>
-          )}
-        </div>
-      </div>
 
-      {/* Product grid */}
-      <div className={styles.productGrid}>
-        {products.length > 0 ? (
-          products.map((product) => (
-            <div key={product.id} className={styles.productCard}>
-              <Link href={`/products/${product.id}`} className={styles.productLink}>
-                <div className={styles.imageContainer}>
-                  {product.images && product.images.length > 0 && (
-                    <Image
-                      src={product.images[0]}
-                      alt={product.name}
-                      fill
-                      sizes="(max-width: 768px) 100vw, 33vw"
-                      className={styles.productImage}
-                      priority={false}
-                    />
-                  )}
-                  <button className={styles.wishlistButton} aria-label="Add to wishlist">
-                    <FiHeart className={styles.wishlistIcon} />
-                  </button>
-                </div>
-                <div className={styles.productInfo}>
-                  <h3 className={styles.productName}>{product.name}</h3>
-                  {product.description && (
-                    <p className={styles.productDescription}>
-                      {product.description.substring(0, 60)}
-                      {product.description.length > 60 ? '...' : ''}
-                    </p>
-                  )}
-                  <div className={styles.productMeta}>
-                    <span className={styles.productPrice}>${product.price.toFixed(2)}</span>
-                    <div className={styles.productRating}>
-                      <FiStar className={styles.starIcon} />
-                      <span>{product.rating ? product.rating.toFixed(1) : '0.0'}</span>
-                    </div>
+      {/* Active filters display */}
+      {(currentCategory || currentTag || ratingMin || lowStockOnly || inStockOnly || sortOrder) && (
+        <div className={styles.mobileActiveFilters}>
+          {currentCategory && (
+            <div className={styles.mobileFilterTag}>
+              {KNOWN_CATEGORIES.find(cat => cat.slug === currentCategory)?.name || currentCategory}
+              <button onClick={() => {
+                const qs = new URLSearchParams(searchParams.toString())
+                qs.delete('category')
+                router.replace(qs.toString() ? `/products?${qs}` : '/products')
+              }}>×</button>
                   </div>
-                </div>
-              </Link>
+                )}
+          {currentTag && (
+            <div className={styles.mobileFilterTag}>
+              {currentTag}
+              <button onClick={() => {
+                const qs = new URLSearchParams(searchParams.toString())
+                qs.delete('usageTag')
+                router.replace(qs.toString() ? `/products?${qs}` : '/products')
+              }}>×</button>
             </div>
-          ))
-        ) : (
-          <div className={styles.noProducts}>
-            <p>No products found matching your filters.</p>
-            <button 
-              className={styles.clearButton} 
-              onClick={clearAllFilters}
-              style={{ marginTop: '1rem', background: '#1a202c', color: 'white' }}
-            >
-              Clear All Filters
-            </button>
+          )}
+          {ratingMin && (
+            <div className={styles.mobileFilterTag}>
+              {ratingMin}+ stars
+              <button onClick={() => {
+                setRatingMin('')
+                const qs = new URLSearchParams(searchParams.toString())
+                qs.delete('ratingMin')
+                router.replace(qs.toString() ? `/products?${qs}` : '/products')
+              }}>×</button>
+            </div>
+          )}
+          {lowStockOnly && (
+            <div className={styles.mobileFilterTag}>
+              Low stock only
+              <button onClick={() => {
+                setLowStockOnly(false)
+                const qs = new URLSearchParams(searchParams.toString())
+                qs.delete('lowStock')
+                router.replace(qs.toString() ? `/products?${qs}` : '/products')
+              }}>×</button>
+                </div>
+          )}
+          {inStockOnly && (
+            <div className={styles.mobileFilterTag}>
+              In stock only
+              <button onClick={() => {
+                setInStockOnly(false)
+                const qs = new URLSearchParams(searchParams.toString())
+                qs.delete('inStock')
+                router.replace(qs.toString() ? `/products?${qs}` : '/products')
+              }}>×</button>
+              </div>
+          )}
+          {sortOrder && (
+            <div className={styles.mobileFilterTag}>
+              {sortOrder === 'price_asc' ? 'Price: Low to High' : 
+               sortOrder === 'price_desc' ? 'Price: High to Low' : 
+               sortOrder === 'oldest' ? 'Oldest' : 'Newest'}
+              <button onClick={() => {
+                setSortOrder('')
+                const qs = new URLSearchParams(searchParams.toString())
+                qs.delete('sort')
+                router.replace(qs.toString() ? `/products?${qs}` : '/products')
+              }}>×</button>
+            </div>
+          )}
           </div>
-        )}
+      )}
+
+      <div className={styles.list} style={{ marginLeft: -1, marginRight: -1, width: 'calc(100% + 2px)' }}>
+        {products.map((prod) => (
+          <ProductCard 
+            key={prod.id} 
+            product={prod} 
+            formatPrice={formatPrice} 
+          />
+        ))}
       </div>
     </div>
-  );
-};
-
-export default ProductsMobileClient; 
+  )
+} 
