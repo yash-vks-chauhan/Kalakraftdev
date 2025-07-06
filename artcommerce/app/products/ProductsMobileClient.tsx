@@ -4,12 +4,32 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import styles from './productsMobile.module.css'
 import WishlistButton from '../components/WishlistButton'
-import Image from 'next/image'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { FiFilter, FiX, FiChevronRight, FiStar, FiPackage, FiTrendingUp } from 'react-icons/fi'
 
 export default function ProductsMobileClient() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const currentCategory = searchParams.get('category') || ''
+  const currentTag = searchParams.get('usageTag') || ''
+  const priceMinParam = searchParams.get('priceMin') || ''
+  const priceMaxParam = searchParams.get('priceMax') || ''
+  const sortParam = searchParams.get('sort') || ''
+  const ratingMinParam = searchParams.get('ratingMin') || ''
+  const lowStockParam = searchParams.get('lowStock') === 'true'
+  const inStockOnlyParam = searchParams.get('inStock') === 'true'
+
   const [products, setProducts] = useState([])
+  const [usageTags, setUsageTags] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [priceMin, setPriceMin] = useState(priceMinParam)
+  const [priceMax, setPriceMax] = useState(priceMaxParam)
+  const [sortOrder, setSortOrder] = useState(sortParam)
+  const [lowStockOnly, setLowStockOnly] = useState(lowStockParam)
+  const [inStockOnly, setInStockOnly] = useState(inStockOnlyParam)
+  const [ratingMin, setRatingMin] = useState(ratingMinParam)
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false)
 
   useEffect(() => {
     async function fetchProducts() {
@@ -40,6 +60,19 @@ export default function ProductsMobileClient() {
       }
     }
     fetchProducts()
+
+    // Fetch usage tags
+    async function fetchUsageTags() {
+      try {
+        const res = await fetch('/api/products/usage-tags')
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.error || 'Failed to fetch usage tags')
+        setUsageTags(data.tags || [])
+      } catch (err) {
+        console.error('Error fetching usage tags:', err)
+      }
+    }
+    fetchUsageTags()
   }, [])
 
   // Handle wishlist button click to prevent navigation
@@ -58,6 +91,138 @@ export default function ProductsMobileClient() {
     }).format(price);
   };
 
+  // Render filters similar to desktop sidebar
+  const renderFilters = () => (
+    <>
+      {/* Rating */}
+      <details open className={styles.filterSection}>
+        <summary className={styles.filterHeader}>
+          <span style={{ display: 'flex', alignItems: 'center' }}>
+            <FiStar style={{ marginRight: '8px' }} />
+            Rating
+          </span>
+          <FiChevronRight className={styles.arrow} />
+        </summary>
+        <div className={styles.filterContent}>
+          {[4,3,2,1].map(thr => (
+            <label key={thr} className={styles.filterOption}>
+              <input
+                type="radio"
+                name="ratingFilter"
+                checked={Number(ratingMin) === thr}
+                onChange={() => {
+                  const qs = new URLSearchParams(searchParams.toString())
+                  if (Number(ratingMin) === thr) {
+                    setRatingMin('')
+                    qs.delete('ratingMin')
+                  } else {
+                    setRatingMin(String(thr))
+                    qs.set('ratingMin', String(thr))
+                  }
+                  router.replace(qs.toString()?`/products?${qs}`:'/products')
+                  setIsMobileFilterOpen(false)
+                }}
+              />
+              {thr}+ stars
+            </label>
+          ))}
+          {ratingMin && (
+            <button className={styles.clearButton} onClick={() => {
+              setRatingMin('')
+              const qs = new URLSearchParams(searchParams.toString())
+              qs.delete('ratingMin')
+              router.replace(qs.toString()?`/products?${qs}`:'/products')
+            }}>Clear</button>
+          )}
+        </div>
+      </details>
+
+      {/* Stock */}
+      <details open className={styles.filterSection}>
+        <summary className={styles.filterHeader}>
+          <span style={{ display: 'flex', alignItems: 'center' }}>
+            <FiPackage style={{ marginRight: '8px' }} />
+            Stock
+          </span>
+          <FiChevronRight className={styles.arrow} />
+        </summary>
+        <div className={styles.filterContent}>
+          <label className={styles.filterOption}>
+            <input
+              type="checkbox"
+              checked={lowStockOnly}
+              onChange={e => {
+                setLowStockOnly(e.target.checked)
+                const qs = new URLSearchParams(searchParams.toString())
+                if (e.target.checked) qs.set('lowStock','true')
+                else qs.delete('lowStock')
+                if (inStockOnly) qs.set('inStock','true')
+                router.replace(qs.toString()?`/products?${qs}`:'/products')
+                setIsMobileFilterOpen(false)
+              }}
+            />
+            Only low stock
+          </label>
+          <label className={styles.filterOption}>
+            <input
+              type="checkbox"
+              checked={inStockOnly}
+              onChange={e=>{
+                setInStockOnly(e.target.checked)
+                const qs=new URLSearchParams(searchParams.toString())
+                if(e.target.checked) qs.set('inStock','true'); else qs.delete('inStock')
+                router.replace(qs.toString()?`/products?${qs}`:'/products')
+                setIsMobileFilterOpen(false)
+              }}
+            />
+            In stock only
+          </label>
+        </div>
+      </details>
+
+      {/* Sort */}
+      <details open className={styles.filterSection}>
+        <summary className={styles.filterHeader}>
+          <span style={{ display: 'flex', alignItems: 'center' }}>
+            <FiTrendingUp style={{ marginRight: '8px' }} />
+            Sort
+          </span>
+          <FiChevronRight className={styles.arrow} />
+        </summary>
+        <div className={styles.filterContent}>
+          <label className={styles.filterOption}>
+            <input
+              type="radio"
+              name="sortoption"
+              checked={sortOrder === '' || sortOrder === 'newest'}
+              onChange={() => {
+                setSortOrder('')
+                const qs = new URLSearchParams(searchParams.toString())
+                qs.delete('sort')
+                router.replace(qs.toString()?`/products?${qs}`:'/products')
+                setIsMobileFilterOpen(false)
+              }}
+            /> Newest
+          </label>
+          <label className={styles.filterOption}>
+            <input
+              type="radio"
+              name="sortoption"
+              checked={sortOrder === 'oldest'}
+              onChange={() => {
+                setSortOrder('oldest')
+                const qs = new URLSearchParams(searchParams.toString())
+                qs.set('sort','oldest')
+                router.replace(`/products?${qs}`)
+                setIsMobileFilterOpen(false)
+              }}
+            /> Oldest
+          </label>
+        </div>
+      </details>
+    </>
+  );
+
   if (loading) return (
     <div className={styles.loading}>
       <div className={styles.loadingSpinner}></div>
@@ -69,6 +234,77 @@ export default function ProductsMobileClient() {
 
   return (
     <div className={styles.container}>
+      {/* Mobile Filter Button */}
+      <button 
+        className={styles.mobileFilterButton}
+        onClick={() => setIsMobileFilterOpen(true)}
+        aria-label="Open filters"
+      >
+        <FiFilter size={16} /> Filter
+      </button>
+
+      {/* Mobile Filter Drawer */}
+      <div className={`${styles.mobileFilterDrawer} ${isMobileFilterOpen ? styles.mobileFilterDrawerOpen : ''}`}>
+        <div className={styles.mobileFilterHeader}>
+          <h2>Filters</h2>
+          <button 
+            className={styles.mobileFilterCloseButton}
+            onClick={() => setIsMobileFilterOpen(false)}
+            aria-label="Close filters"
+          >
+            <FiX size={24} />
+          </button>
+        </div>
+        <div className={styles.mobileFilterContent}>
+          {renderFilters()}
+        </div>
+      </div>
+
+      {/* Mobile Filter Overlay */}
+      {isMobileFilterOpen && (
+        <div 
+          className={styles.mobileFilterOverlay} 
+          onClick={() => setIsMobileFilterOpen(false)}
+        />
+      )}
+
+      {/* Active filters display */}
+      {(currentCategory || currentTag || ratingMin || lowStockOnly || inStockOnly || sortOrder) && (
+        <div className={styles.mobileActiveFilters}>
+          {currentCategory && (
+            <div className={styles.mobileFilterTag}>
+              {currentCategory}
+              <button onClick={() => {
+                const qs = new URLSearchParams(searchParams.toString())
+                qs.delete('category')
+                router.replace(qs.toString() ? `/products?${qs}` : '/products')
+              }}>×</button>
+            </div>
+          )}
+          {currentTag && (
+            <div className={styles.mobileFilterTag}>
+              {currentTag}
+              <button onClick={() => {
+                const qs = new URLSearchParams(searchParams.toString())
+                qs.delete('usageTag')
+                router.replace(qs.toString() ? `/products?${qs}` : '/products')
+              }}>×</button>
+            </div>
+          )}
+          {ratingMin && (
+            <div className={styles.mobileFilterTag}>
+              {ratingMin}+ stars
+              <button onClick={() => {
+                setRatingMin('')
+                const qs = new URLSearchParams(searchParams.toString())
+                qs.delete('ratingMin')
+                router.replace(qs.toString() ? `/products?${qs}` : '/products')
+              }}>×</button>
+            </div>
+          )}
+        </div>
+      )}
+
       <div className={styles.list}>
         {products.map((prod) => (
           <div key={prod.id} className={styles.cardWrapper}>
