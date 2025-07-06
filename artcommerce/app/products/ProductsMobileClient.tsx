@@ -223,6 +223,20 @@ export default function ProductsMobileClient() {
   const [inStockOnly, setInStockOnly] = useState(inStockOnlyParam)
   const [ratingMin, setRatingMin] = useState(ratingMinParam)
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false)
+  const [openSections, setOpenSections] = useState({
+    category: true,
+    rating: true,
+    stock: true,
+    sort: true
+  });
+  
+  // Toggle filter sections
+  const toggleSection = (section) => {
+    setOpenSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
 
   // Fetch list of available usage tags once
   useEffect(() => {
@@ -320,201 +334,227 @@ export default function ProductsMobileClient() {
   };
 
   // Render filters similar to desktop sidebar
-  const renderFilters = () => (
-    <>
-      {/* Category filter */}
-      <details open className={styles.filterSection}>
-        <summary className={styles.filterHeader}>
-          <span style={{ display: 'flex', alignItems: 'center' }}>
-            <FiGrid style={{ marginRight: '8px' }} />
-            Category
-          </span>
-          <FiChevronRight className={styles.arrow} />
-        </summary>
-        <div className={styles.filterContent}>
-          {KNOWN_CATEGORIES.map(cat => (
-            <label key={cat.slug} className={styles.filterOption}>
-              <input
-                type="radio"
-                name="categoryFilter"
-                checked={currentCategory === cat.slug}
-                onChange={() => {
-                  const qs = new URLSearchParams(searchParams.toString())
-                  if (cat.slug === currentCategory) qs.delete('category')
-                  else qs.set('category', cat.slug)
-                  router.replace(qs.toString() ? `/products?${qs}` : '/products')
-                  setIsMobileFilterOpen(false)
-                }}
-              />
-              {cat.name}
-            </label>
-          ))}
-          {currentCategory && (
-            <button className={styles.clearButton} onClick={() => {
-              const qs = new URLSearchParams(searchParams.toString())
-              qs.delete('category');
-              router.replace(qs.toString() ? `/products?${qs}` : '/products')
-            }}>Clear</button>
-          )}
-        </div>
-      </details>
+  const renderFilters = () => {
+    return (
+      <>
+        {/* Category filter */}
+        <details open={openSections.category} className={styles.filterSection}>
+          <summary 
+            className={styles.filterHeader}
+            onClick={(e) => {
+              e.preventDefault();
+              toggleSection('category');
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center' }}>
+              <FiGrid style={{ marginRight: '8px' }} />
+              Category
+            </span>
+            <FiChevronRight className={styles.arrow} />
+          </summary>
+          <div className={styles.filterContent}>
+            {KNOWN_CATEGORIES.map(cat => (
+              <label key={cat.slug} className={styles.filterOption}>
+                <input
+                  type="radio"
+                  name="categoryFilter"
+                  checked={currentCategory === cat.slug}
+                  onChange={() => {
+                    const qs = new URLSearchParams(searchParams.toString())
+                    if (cat.slug === currentCategory) qs.delete('category')
+                    else qs.set('category', cat.slug)
+                    router.replace(qs.toString() ? `/products?${qs}` : '/products')
+                    setIsMobileFilterOpen(false)
+                  }}
+                />
+                {cat.name}
+              </label>
+            ))}
+            {currentCategory && (
+              <button className={styles.clearButton} onClick={() => {
+                const qs = new URLSearchParams(searchParams.toString())
+                qs.delete('category');
+                router.replace(qs.toString() ? `/products?${qs}` : '/products')
+              }}>Clear</button>
+            )}
+          </div>
+        </details>
 
-      {/* Rating */}
-      <details open className={styles.filterSection}>
-        <summary className={styles.filterHeader}>
-          <span style={{ display: 'flex', alignItems: 'center' }}>
-            <FiStar style={{ marginRight: '8px' }} />
-            Rating
-          </span>
-          <FiChevronRight className={styles.arrow} />
-        </summary>
-        <div className={styles.filterContent}>
-          {[4,3,2,1].map(thr => (
-            <label key={thr} className={styles.filterOption}>
+        {/* Rating */}
+        <details open={openSections.rating} className={styles.filterSection}>
+          <summary 
+            className={styles.filterHeader}
+            onClick={(e) => {
+              e.preventDefault();
+              toggleSection('rating');
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center' }}>
+              <FiStar style={{ marginRight: '8px' }} />
+              Rating
+            </span>
+            <FiChevronRight className={styles.arrow} />
+          </summary>
+          <div className={styles.filterContent}>
+            {[4,3,2,1].map(thr => (
+              <label key={thr} className={styles.filterOption}>
+                <input
+                  type="radio"
+                  name="ratingFilter"
+                  checked={Number(ratingMin) === thr}
+                  onChange={() => {
+                    const qs = new URLSearchParams(searchParams.toString())
+                    if (Number(ratingMin) === thr) {
+                      setRatingMin('')
+                      qs.delete('ratingMin')
+                    } else {
+                      setRatingMin(String(thr))
+                      qs.set('ratingMin', String(thr))
+                    }
+                    router.replace(qs.toString()?`/products?${qs}`:'/products')
+                    setIsMobileFilterOpen(false)
+                  }}
+                />
+                {thr}+ stars
+              </label>
+            ))}
+            {ratingMin && (
+              <button className={styles.clearButton} onClick={() => {
+                setRatingMin('')
+                const qs = new URLSearchParams(searchParams.toString())
+                qs.delete('ratingMin')
+                router.replace(qs.toString()?`/products?${qs}`:'/products')
+              }}>Clear</button>
+            )}
+          </div>
+        </details>
+
+        {/* Stock */}
+        <details open={openSections.stock} className={styles.filterSection}>
+          <summary 
+            className={styles.filterHeader}
+            onClick={(e) => {
+              e.preventDefault();
+              toggleSection('stock');
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center' }}>
+              <FiPackage style={{ marginRight: '8px' }} />
+              Stock
+            </span>
+            <FiChevronRight className={styles.arrow} />
+          </summary>
+          <div className={styles.filterContent}>
+            <label className={styles.filterOption}>
               <input
-                type="radio"
-                name="ratingFilter"
-                checked={Number(ratingMin) === thr}
-                onChange={() => {
+                type="checkbox"
+                checked={lowStockOnly}
+                onChange={e => {
+                  setLowStockOnly(e.target.checked)
                   const qs = new URLSearchParams(searchParams.toString())
-                  if (Number(ratingMin) === thr) {
-                    setRatingMin('')
-                    qs.delete('ratingMin')
-                  } else {
-                    setRatingMin(String(thr))
-                    qs.set('ratingMin', String(thr))
-                  }
+                  if (e.target.checked) qs.set('lowStock','true')
+                  else qs.delete('lowStock')
+                  if (inStockOnly) qs.set('inStock','true')
                   router.replace(qs.toString()?`/products?${qs}`:'/products')
                   setIsMobileFilterOpen(false)
                 }}
               />
-              {thr}+ stars
+              Only low stock
             </label>
-          ))}
-          {ratingMin && (
-            <button className={styles.clearButton} onClick={() => {
-              setRatingMin('')
-              const qs = new URLSearchParams(searchParams.toString())
-              qs.delete('ratingMin')
-              router.replace(qs.toString()?`/products?${qs}`:'/products')
-            }}>Clear</button>
-          )}
-        </div>
-      </details>
+            <label className={styles.filterOption}>
+              <input
+                type="checkbox"
+                checked={inStockOnly}
+                onChange={e=>{
+                  setInStockOnly(e.target.checked)
+                  const qs=new URLSearchParams(searchParams.toString())
+                  if(e.target.checked) qs.set('inStock','true'); else qs.delete('inStock')
+                  router.replace(qs.toString()?`/products?${qs}`:'/products')
+                  setIsMobileFilterOpen(false)
+                }}
+              />
+              In stock only
+            </label>
+          </div>
+        </details>
 
-      {/* Stock */}
-      <details open className={styles.filterSection}>
-        <summary className={styles.filterHeader}>
-          <span style={{ display: 'flex', alignItems: 'center' }}>
-            <FiPackage style={{ marginRight: '8px' }} />
-            Stock
-          </span>
-          <FiChevronRight className={styles.arrow} />
-        </summary>
-        <div className={styles.filterContent}>
-          <label className={styles.filterOption}>
-            <input
-              type="checkbox"
-              checked={lowStockOnly}
-              onChange={e => {
-                setLowStockOnly(e.target.checked)
-                const qs = new URLSearchParams(searchParams.toString())
-                if (e.target.checked) qs.set('lowStock','true')
-                else qs.delete('lowStock')
-                if (inStockOnly) qs.set('inStock','true')
-                router.replace(qs.toString()?`/products?${qs}`:'/products')
-                setIsMobileFilterOpen(false)
-              }}
-            />
-            Only low stock
-          </label>
-          <label className={styles.filterOption}>
-            <input
-              type="checkbox"
-              checked={inStockOnly}
-              onChange={e=>{
-                setInStockOnly(e.target.checked)
-                const qs=new URLSearchParams(searchParams.toString())
-                if(e.target.checked) qs.set('inStock','true'); else qs.delete('inStock')
-                router.replace(qs.toString()?`/products?${qs}`:'/products')
-                setIsMobileFilterOpen(false)
-              }}
-            />
-            In stock only
-          </label>
-        </div>
-      </details>
-
-      {/* Sort */}
-      <details open className={styles.filterSection}>
-        <summary className={styles.filterHeader}>
-          <span style={{ display: 'flex', alignItems: 'center' }}>
-            <FiTrendingUp style={{ marginRight: '8px' }} />
-            Sort
-          </span>
-          <FiChevronRight className={styles.arrow} />
-        </summary>
-        <div className={styles.filterContent}>
-          <label className={styles.filterOption}>
-            <input
-              type="radio"
-              name="sortoption"
-              checked={sortOrder === '' || sortOrder === 'newest'}
-              onChange={() => {
-                setSortOrder('')
-                const qs = new URLSearchParams(searchParams.toString())
-                qs.delete('sort')
-                router.replace(qs.toString()?`/products?${qs}`:'/products')
-                setIsMobileFilterOpen(false)
-              }}
-            /> Newest
-          </label>
-          <label className={styles.filterOption}>
-            <input
-              type="radio"
-              name="sortoption"
-              checked={sortOrder === 'oldest'}
-              onChange={() => {
-                setSortOrder('oldest')
-                const qs = new URLSearchParams(searchParams.toString())
-                qs.set('sort','oldest')
-                router.replace(`/products?${qs}`)
-                setIsMobileFilterOpen(false)
-              }}
-            /> Oldest
-          </label>
-          <label className={styles.filterOption}>
-            <input
-              type="radio"
-              name="sortoption"
-              checked={sortOrder === 'price_asc'}
-              onChange={() => {
-                setSortOrder('price_asc')
-                const qs = new URLSearchParams(searchParams.toString())
-                qs.set('sort','price_asc')
-                router.replace(`/products?${qs}`)
-                setIsMobileFilterOpen(false)
-              }}
-            /> Price: Low to High
-          </label>
-          <label className={styles.filterOption}>
-            <input
-              type="radio"
-              name="sortoption"
-              checked={sortOrder === 'price_desc'}
-              onChange={() => {
-                setSortOrder('price_desc')
-                const qs = new URLSearchParams(searchParams.toString())
-                qs.set('sort','price_desc')
-                router.replace(`/products?${qs}`)
-                setIsMobileFilterOpen(false)
-              }}
-            /> Price: High to Low
-          </label>
-        </div>
-      </details>
-    </>
-  );
+        {/* Sort */}
+        <details open={openSections.sort} className={styles.filterSection}>
+          <summary 
+            className={styles.filterHeader}
+            onClick={(e) => {
+              e.preventDefault();
+              toggleSection('sort');
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center' }}>
+              <FiTrendingUp style={{ marginRight: '8px' }} />
+              Sort
+            </span>
+            <FiChevronRight className={styles.arrow} />
+          </summary>
+          <div className={styles.filterContent}>
+            <label className={styles.filterOption}>
+              <input
+                type="radio"
+                name="sortoption"
+                checked={sortOrder === '' || sortOrder === 'newest'}
+                onChange={() => {
+                  setSortOrder('')
+                  const qs = new URLSearchParams(searchParams.toString())
+                  qs.delete('sort')
+                  router.replace(qs.toString()?`/products?${qs}`:'/products')
+                  setIsMobileFilterOpen(false)
+                }}
+              /> Newest
+            </label>
+            <label className={styles.filterOption}>
+              <input
+                type="radio"
+                name="sortoption"
+                checked={sortOrder === 'oldest'}
+                onChange={() => {
+                  setSortOrder('oldest')
+                  const qs = new URLSearchParams(searchParams.toString())
+                  qs.set('sort','oldest')
+                  router.replace(`/products?${qs}`)
+                  setIsMobileFilterOpen(false)
+                }}
+              /> Oldest
+            </label>
+            <label className={styles.filterOption}>
+              <input
+                type="radio"
+                name="sortoption"
+                checked={sortOrder === 'price_asc'}
+                onChange={() => {
+                  setSortOrder('price_asc')
+                  const qs = new URLSearchParams(searchParams.toString())
+                  qs.set('sort','price_asc')
+                  router.replace(`/products?${qs}`)
+                  setIsMobileFilterOpen(false)
+                }}
+              /> Price: Low to High
+            </label>
+            <label className={styles.filterOption}>
+              <input
+                type="radio"
+                name="sortoption"
+                checked={sortOrder === 'price_desc'}
+                onChange={() => {
+                  setSortOrder('price_desc')
+                  const qs = new URLSearchParams(searchParams.toString())
+                  qs.set('sort','price_desc')
+                  router.replace(`/products?${qs}`)
+                  setIsMobileFilterOpen(false)
+                }}
+              /> Price: High to Low
+            </label>
+          </div>
+        </details>
+      </>
+    );
+  };
 
   if (loading) return (
     <div className={styles.loading}>
@@ -556,7 +596,7 @@ export default function ProductsMobileClient() {
       {/* Mobile Filter Overlay */}
       {isMobileFilterOpen && (
         <div 
-          className={styles.mobileFilterOverlay} 
+          className={`${styles.mobileFilterOverlay} ${isMobileFilterOpen ? styles.mobileFilterOverlayVisible : ''}`}
           onClick={() => setIsMobileFilterOpen(false)}
         />
       )}

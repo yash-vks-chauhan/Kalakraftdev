@@ -342,6 +342,15 @@
   z-index: 100;
   cursor: pointer;
   width: 120px;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+              background-color 0.3s ease,
+              box-shadow 0.3s ease;
+}
+
+.mobileFilterButton:active {
+  transform: translateX(-50%) scale(0.96);
+  background-color: #000;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
 }
 
 .mobileFilterDrawer {
@@ -354,7 +363,7 @@
   background: white;
   z-index: 1000;
   transform: translateY(100%);
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -399,11 +408,12 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
 .mobileFilterCloseButton:active {
   background-color: rgba(226, 232, 240, 0.5);
+  transform: scale(0.95);
 }
 
 .mobileFilterContent {
@@ -421,8 +431,13 @@
   background: rgba(0, 0, 0, 0.4);
   z-index: 999;
   backdrop-filter: blur(2px);
+  opacity: 0;
+  transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity;
+}
+
+.mobileFilterOverlayVisible {
   opacity: 1;
-  transition: opacity 0.3s ease;
 }
 
 .mobileActiveFilters {
@@ -445,6 +460,12 @@
   font-size: 0.75rem;
   color: #1a202c;
   font-weight: 500;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.mobileFilterTag:active {
+  transform: scale(0.97);
+  background-color: #f0f4f8;
 }
 
 .mobileFilterTag button {
@@ -459,6 +480,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: color 0.2s ease;
+}
+
+.mobileFilterTag button:active {
+  color: #000;
 }
 
 /* Filter component styles */
@@ -469,10 +495,12 @@
   background: rgba(255, 255, 255, 0.5);
   border-radius: 12px;
   transition: all 0.3s ease;
+  overflow: hidden;
 }
 
 .filterSection[open] {
   padding-bottom: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
 }
 
 .filterHeader {
@@ -496,6 +524,10 @@
   border-color: rgba(26, 32, 44, 0.1);
 }
 
+.filterHeader:active {
+  transform: scale(0.99);
+}
+
 .filterHeader::-webkit-details-marker {
   display: none;
 }
@@ -506,6 +538,18 @@
   flex-direction: column;
   gap: 0.5rem;
   padding: 0 1rem;
+  animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .filterOption {
@@ -522,6 +566,10 @@
 .filterOption:hover {
   color: #1a202c;
   background: rgba(255, 255, 255, 0.8);
+}
+
+.filterOption:active {
+  background: rgba(240, 240, 240, 0.8);
 }
 
 .filterOption input[type="radio"],
@@ -560,6 +608,10 @@
 .clearButton:hover {
   background-color: #1a202c;
   color: #ffffff;
+}
+
+.clearButton:active {
+  transform: scale(0.98);
 }
 
 .arrow {
