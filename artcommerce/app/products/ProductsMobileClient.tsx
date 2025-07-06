@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import styles from './productsMobile.module.css'
@@ -18,21 +18,32 @@ const KNOWN_CATEGORIES = [
   { name: 'Clocks', slug: 'clocks' },
 ]
 
-interface ProductsMobileClientProps {
-  products: any[]
-  categories: any[]
+interface Product {
+  id: number
+  name: string
+  slug: string
+  description?: string
+  price: number
+  currency: string
+  images: string[]
+  stockQuantity: number
+  category: { id: number; name: string; slug: string } | null
+  rating?: number
 }
 
-const ProductsMobileClient: React.FC<ProductsMobileClientProps> = ({ products, categories }) => {
+const ProductsMobileClient = () => {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [products, setProducts] = useState<Product[]>([])
+  const [categories, setCategories] = useState<{id: string, name: string}[]>([])
   const [currentPage, setCurrentPage] = useState(1)
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false)
   const [currentCategory, setCurrentCategory] = useState(searchParams.get('category') || '')
   const [currentRating, setCurrentRating] = useState(searchParams.get('rating') || '')
   const [inStockOnly, setInStockOnly] = useState(searchParams.get('inStock') === 'true')
   const [currentSort, setCurrentSort] = useState(searchParams.get('sort') || 'featured')
+  const [error, setError] = useState<string | null>(null)
   
   // Track which filter sections are open
   const [openSections, setOpenSections] = useState({
@@ -53,6 +64,90 @@ const ProductsMobileClient: React.FC<ProductsMobileClientProps> = ({ products, c
       document.body.style.overflow = 'auto'
     }
   }, [isMobileFilterOpen])
+
+  // Fetch products data
+  useEffect(() => {
+    async function fetchProducts() {
+      setLoading(true)
+      setError(null)
+      const params = new URLSearchParams()
+      
+      if (currentCategory) {
+        params.set('category', currentCategory)
+      }
+      
+      if (currentRating) {
+        params.set('ratingMin', currentRating)
+      }
+      
+      if (inStockOnly) {
+        params.set('inStock', 'true')
+      }
+      
+      if (currentSort && currentSort !== 'featured') {
+        params.set('sort', currentSort)
+      }
+      
+      try {
+        const res = await fetch(`/api/products?${params.toString()}`)
+        const data = await res.json()
+        
+        if (!res.ok) throw new Error(data.error || 'Failed to fetch products')
+        
+        // Normalize image URLs
+        const processedProducts = data.products.map((p: any) => {
+          let images: string[] = []
+          
+          if (Array.isArray(p.imageUrls)) {
+            images = p.imageUrls
+          } else if (p.imageUrls) {
+            try {
+              const parsed = JSON.parse(p.imageUrls)
+              images = Array.isArray(parsed) ? parsed : []
+            } catch {
+              images = []
+            }
+          }
+          
+          // Ensure all images have proper paths
+          images = images.map((img: string) => {
+            return img.startsWith('http') || img.startsWith('/') 
+              ? img 
+              : `/uploads/${img}`
+          })
+          
+          return { 
+            ...p, 
+            images,
+            rating: p.avgRating || 0
+          }
+        })
+        
+        setProducts(processedProducts)
+      } catch (err: any) {
+        setError(err.message)
+        console.error('Error fetching products:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    
+    // Fetch categories
+    async function fetchCategories() {
+      try {
+        const res = await fetch('/api/categories')
+        const data = await res.json()
+        if (data.categories) {
+          setCategories(data.categories)
+        }
+      } catch (err) {
+        console.error('Error fetching categories:', err)
+      }
+    }
+    
+    fetchProducts()
+    fetchCategories()
+  }, [currentCategory, currentRating, inStockOnly, currentSort])
 
   // Toggle filter sections
   const toggleSection = (section: 'category' | 'rating' | 'stock' | 'sort') => {
@@ -246,6 +341,13 @@ const ProductsMobileClient: React.FC<ProductsMobileClientProps> = ({ products, c
       <div className={styles.spinner}></div>
     </div>
   )
+  
+  if (error) return (
+    <div className={styles.errorContainer}>
+      <p>Error: {error}</p>
+      <button onClick={() => window.location.reload()}>Try Again</button>
+    </div>
+  )
 
   return (
     <div className={styles.container}>
@@ -296,38 +398,56 @@ const ProductsMobileClient: React.FC<ProductsMobileClientProps> = ({ products, c
 
       {/* Product grid */}
       <div className={styles.productGrid}>
-        {products.map((product) => (
-          <div key={product.id} className={styles.productCard}>
-            <Link href={`/products/${product.id}`} className={styles.productLink}>
-              <div className={styles.imageContainer}>
-                {product.images && product.images.length > 0 && (
-                  <Image
-                    src={product.images[0]}
-                    alt={product.name}
-                    fill
-                    sizes="(max-width: 768px) 100vw, 33vw"
-                    className={styles.productImage}
-                    priority={false}
-                  />
-                )}
-                <button className={styles.wishlistButton} aria-label="Add to wishlist">
-                  <FiHeart className={styles.wishlistIcon} />
-                </button>
-              </div>
-              <div className={styles.productInfo}>
-                <h3 className={styles.productName}>{product.name}</h3>
-                <p className={styles.productDescription}>{product.description?.substring(0, 60)}...</p>
-                <div className={styles.productMeta}>
-                  <span className={styles.productPrice}>${product.price.toFixed(2)}</span>
-                  <div className={styles.productRating}>
-                    <FiStar className={styles.starIcon} />
-                    <span>{product.rating ? product.rating.toFixed(1) : '0.0'}</span>
+        {products.length > 0 ? (
+          products.map((product) => (
+            <div key={product.id} className={styles.productCard}>
+              <Link href={`/products/${product.id}`} className={styles.productLink}>
+                <div className={styles.imageContainer}>
+                  {product.images && product.images.length > 0 && (
+                    <Image
+                      src={product.images[0]}
+                      alt={product.name}
+                      fill
+                      sizes="(max-width: 768px) 100vw, 33vw"
+                      className={styles.productImage}
+                      priority={false}
+                    />
+                  )}
+                  <button className={styles.wishlistButton} aria-label="Add to wishlist">
+                    <FiHeart className={styles.wishlistIcon} />
+                  </button>
+                </div>
+                <div className={styles.productInfo}>
+                  <h3 className={styles.productName}>{product.name}</h3>
+                  {product.description && (
+                    <p className={styles.productDescription}>
+                      {product.description.substring(0, 60)}
+                      {product.description.length > 60 ? '...' : ''}
+                    </p>
+                  )}
+                  <div className={styles.productMeta}>
+                    <span className={styles.productPrice}>${product.price.toFixed(2)}</span>
+                    <div className={styles.productRating}>
+                      <FiStar className={styles.starIcon} />
+                      <span>{product.rating ? product.rating.toFixed(1) : '0.0'}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </Link>
+              </Link>
+            </div>
+          ))
+        ) : (
+          <div className={styles.noProducts}>
+            <p>No products found matching your filters.</p>
+            <button 
+              className={styles.clearButton} 
+              onClick={clearAllFilters}
+              style={{ marginTop: '1rem', background: '#1a202c', color: 'white' }}
+            >
+              Clear All Filters
+            </button>
           </div>
-        ))}
+        )}
       </div>
     </div>
   );

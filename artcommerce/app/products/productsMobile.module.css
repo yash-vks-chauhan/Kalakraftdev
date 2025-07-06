@@ -686,4 +686,64 @@ details[open] .arrow {
 
 .filterHeader:hover .arrow {
   opacity: 1;
+}
+
+/* Error and loading states */
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+  width: 100%;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(0, 0, 0, 0.1);
+  border-top-color: #1a202c;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.errorContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+  width: 100%;
+  padding: 1rem;
+  text-align: center;
+}
+
+.errorContainer p {
+  margin-bottom: 1rem;
+  color: #e53e3e;
+}
+
+.errorContainer button {
+  padding: 0.75rem 1.5rem;
+  background-color: #1a202c;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.noProducts {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: 3rem 1rem;
+  text-align: center;
+  grid-column: 1 / -1;
 } 
