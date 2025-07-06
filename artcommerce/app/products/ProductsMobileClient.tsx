@@ -61,7 +61,7 @@ export default function ProductsMobileClient() {
   if (loading) return (
     <div className={styles.loading}>
       <div className={styles.loadingSpinner}></div>
-      <span>Loading products...</span>
+      <span>Loading artworks...</span>
     </div>
   );
   
@@ -87,7 +87,7 @@ export default function ProductsMobileClient() {
                 {prod.isNew && <span className={styles.badge}>New</span>}
                 {prod.stockQuantity === 0 && <div className={styles.outOfStock}>Out of Stock</div>}
                 {prod.stockQuantity > 0 && prod.stockQuantity <= 5 && (
-                  <div className={styles.lowStock}>Only {prod.stockQuantity} left</div>
+                  <div className={styles.lowStock}>Limited Edition</div>
                 )}
                 <div className={styles.overlay}>
                   <span className={styles.viewDetails}>View Details</span>
