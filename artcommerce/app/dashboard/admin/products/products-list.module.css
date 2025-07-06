@@ -245,6 +245,11 @@
   transform: translateX(20px);
 }
 
+/* Inactive toggle state: red background */
+.statusSwitch input:not(:checked) + .statusSlider {
+  background-color: #dc2626;
+}
+
 .actionButtons {
   display: flex;
   gap: 0.75rem;
