@@ -43,15 +43,47 @@ export default function ProductsMobileClient() {
   const [ratingMin, setRatingMin] = useState(ratingMinParam)
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false)
 
+  // Fetch list of available usage tags once
+  useEffect(() => {
+    async function fetchTags() {
+      try {
+        const res = await fetch('/api/products/usage-tags')
+        const data = await res.json()
+        if (Array.isArray(data.tags)) setUsageTags(data.tags)
+      } catch (err) {
+        console.error('Failed to fetch usage tags:', err)
+      }
+    }
+    fetchTags()
+  }, [])
+
+  // fetch products from API with filters
   useEffect(() => {
     async function fetchProducts() {
       setLoading(true)
+      setError(null)
+      
+      const params = new URLSearchParams()
+      if (currentCategory) {
+        params.set('category', currentCategory)
+      }
+      if (currentTag) {
+        params.set('usageTag', currentTag)
+      }
+      if (priceMin) params.set('priceMin', priceMin)
+      if (priceMax) params.set('priceMax', priceMax)
+      if (sortOrder) params.set('sort', sortOrder)
+      if (lowStockOnly) params.set('lowStock', 'true')
+      if (inStockOnly) params.set('inStock', 'true')
+      if (ratingMin) params.set('ratingMin', ratingMin)
+      
       try {
-        const res = await fetch('/api/products')
+        const res = await fetch(`/api/products?${params.toString()}`)
         const data = await res.json()
         if (!res.ok) throw new Error(data.error || 'Failed to fetch products')
-        // Normalize image URLs
-        const normalized = (Array.isArray(data.products) ? data.products : []).map((p) => {
+        
+        // Normalize imageUrls
+        let filteredProducts = (Array.isArray(data.products) ? data.products : []).map((p) => {
           let urls = []
           try {
             urls = Array.isArray(p.imageUrls) ? p.imageUrls : JSON.parse(p.imageUrls || '[]')
@@ -64,7 +96,23 @@ export default function ProductsMobileClient() {
           
           return { ...p, imageUrls: urls, isNew }
         })
-        setProducts(normalized)
+        
+        // Client-side category filtering as backup
+        if (currentCategory && filteredProducts.length > 0) {
+          filteredProducts = filteredProducts.filter((product) => {
+            const categorySlug = product.category?.slug || ''
+            return categorySlug === currentCategory
+          })
+        }
+        
+        // Client-side tag filtering as backup
+        if (currentTag && filteredProducts.length > 0) {
+          filteredProducts = filteredProducts.filter((product) => {
+            return Array.isArray(product.usageTags) && product.usageTags.includes(currentTag)
+          })
+        }
+        
+        setProducts(filteredProducts)
       } catch (err) {
         setError(err.message)
       } finally {
@@ -72,20 +120,7 @@ export default function ProductsMobileClient() {
       }
     }
     fetchProducts()
-
-    // Fetch usage tags
-    async function fetchUsageTags() {
-      try {
-        const res = await fetch('/api/products/usage-tags')
-        const data = await res.json()
-        if (!res.ok) throw new Error(data.error || 'Failed to fetch usage tags')
-        setUsageTags(data.tags || [])
-      } catch (err) {
-        console.error('Error fetching usage tags:', err)
-      }
-    }
-    fetchUsageTags()
-  }, [])
+  }, [currentCategory, currentTag, priceMin, priceMax, sortOrder, lowStockOnly, inStockOnly, ratingMin])
 
   // Handle wishlist button click to prevent navigation
   const handleWishlistClick = (e) => {
@@ -375,6 +410,28 @@ export default function ProductsMobileClient() {
                 setRatingMin('')
                 const qs = new URLSearchParams(searchParams.toString())
                 qs.delete('ratingMin')
+                router.replace(qs.toString() ? `/products?${qs}` : '/products')
+              }}>×</button>
+            </div>
+          )}
+          {lowStockOnly && (
+            <div className={styles.mobileFilterTag}>
+              Low stock only
+              <button onClick={() => {
+                setLowStockOnly(false)
+                const qs = new URLSearchParams(searchParams.toString())
+                qs.delete('lowStock')
+                router.replace(qs.toString() ? `/products?${qs}` : '/products')
+              }}>×</button>
+            </div>
+          )}
+          {inStockOnly && (
+            <div className={styles.mobileFilterTag}>
+              In stock only
+              <button onClick={() => {
+                setInStockOnly(false)
+                const qs = new URLSearchParams(searchParams.toString())
+                qs.delete('inStock')
                 router.replace(qs.toString() ? `/products?${qs}` : '/products')
               }}>×</button>
             </div>
