@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import styles from './productsMobile.module.css'
+import WishlistButton from '../components/WishlistButton'
 
 export default function ProductsMobileClient() {
   const [products, setProducts] = useState([])
@@ -88,6 +89,13 @@ export default function ProductsMobileClient() {
                 <span className={styles.viewDetails}>View Details</span>
               </div>
             </div>
+            <div className={styles.wishlistContainer} onClick={(e) => e.preventDefault()}>
+              <WishlistButton 
+                productId={prod.id} 
+                className={styles.wishlistButton}
+                preventNavigation={true}
+              />
+            </div>
             <div className={styles.info}>
               {prod.category && (
                 <div className={styles.categoryTag}>
@@ -98,14 +106,10 @@ export default function ProductsMobileClient() {
               <div className={styles.priceRow}>
                 <p className={styles.price}>₹{prod.price.toFixed(2)}</p>
                 {prod.avgRating > 0 && (
-                  <div className={styles.ratingContainer}>
-                    <div className={styles.rating}>
-                      {renderStars(prod.avgRating)}
-                    </div>
-                    {prod.ratingCount > 0 && (
-                      <span className={styles.ratingCount}>({prod.ratingCount})</span>
-                    )}
-                  </div>
+                  <p className={styles.productRating}>
+                    <span className={styles.starFilled}>★</span> 
+                    <span className={styles.ratingValue}>{prod.avgRating.toFixed(1)}</span>
+                  </p>
                 )}
               </div>
               {prod.shortDesc && (
