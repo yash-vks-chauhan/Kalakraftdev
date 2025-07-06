@@ -5,7 +5,19 @@ import Link from 'next/link'
 import styles from './productsMobile.module.css'
 import WishlistButton from '../components/WishlistButton'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { FiFilter, FiX, FiChevronRight, FiStar, FiPackage, FiTrendingUp } from 'react-icons/fi'
+import { FiFilter, FiX, FiChevronRight, FiStar, FiPackage, FiTrendingUp, FiGrid } from 'react-icons/fi'
+
+// Define known categories similar to desktop version
+const KNOWN_CATEGORIES = [
+  { slug: 'clocks', name: 'Clocks' },
+  { slug: 'pots', name: 'Pots' },
+  { slug: 'tray', name: 'Trays' },
+  { slug: 'Tray', name: 'Jewelry Trays' },
+  { slug: 'rangoli', name: 'Rangoli' },
+  { slug: 'decor', name: 'Wall Decor' },
+  { slug: 'matt rangoli', name: 'Matt Rangoli' },
+  { slug: 'mirror work', name: 'Mirror Work' }
+]
 
 export default function ProductsMobileClient() {
   const router = useRouter()
@@ -94,6 +106,43 @@ export default function ProductsMobileClient() {
   // Render filters similar to desktop sidebar
   const renderFilters = () => (
     <>
+      {/* Category filter */}
+      <details open className={styles.filterSection}>
+        <summary className={styles.filterHeader}>
+          <span style={{ display: 'flex', alignItems: 'center' }}>
+            <FiGrid style={{ marginRight: '8px' }} />
+            Category
+          </span>
+          <FiChevronRight className={styles.arrow} />
+        </summary>
+        <div className={styles.filterContent}>
+          {KNOWN_CATEGORIES.map(cat => (
+            <label key={cat.slug} className={styles.filterOption}>
+              <input
+                type="radio"
+                name="categoryFilter"
+                checked={currentCategory === cat.slug}
+                onChange={() => {
+                  const qs = new URLSearchParams(searchParams.toString())
+                  if (cat.slug === currentCategory) qs.delete('category')
+                  else qs.set('category', cat.slug)
+                  router.replace(qs.toString() ? `/products?${qs}` : '/products')
+                  setIsMobileFilterOpen(false)
+                }}
+              />
+              {cat.name}
+            </label>
+          ))}
+          {currentCategory && (
+            <button className={styles.clearButton} onClick={() => {
+              const qs = new URLSearchParams(searchParams.toString())
+              qs.delete('category');
+              router.replace(qs.toString() ? `/products?${qs}` : '/products')
+            }}>Clear</button>
+          )}
+        </div>
+      </details>
+
       {/* Rating */}
       <details open className={styles.filterSection}>
         <summary className={styles.filterHeader}>
@@ -218,6 +267,34 @@ export default function ProductsMobileClient() {
               }}
             /> Oldest
           </label>
+          <label className={styles.filterOption}>
+            <input
+              type="radio"
+              name="sortoption"
+              checked={sortOrder === 'price_asc'}
+              onChange={() => {
+                setSortOrder('price_asc')
+                const qs = new URLSearchParams(searchParams.toString())
+                qs.set('sort','price_asc')
+                router.replace(`/products?${qs}`)
+                setIsMobileFilterOpen(false)
+              }}
+            /> Price: Low to High
+          </label>
+          <label className={styles.filterOption}>
+            <input
+              type="radio"
+              name="sortoption"
+              checked={sortOrder === 'price_desc'}
+              onChange={() => {
+                setSortOrder('price_desc')
+                const qs = new URLSearchParams(searchParams.toString())
+                qs.set('sort','price_desc')
+                router.replace(`/products?${qs}`)
+                setIsMobileFilterOpen(false)
+              }}
+            /> Price: High to Low
+          </label>
         </div>
       </details>
     </>
@@ -273,7 +350,7 @@ export default function ProductsMobileClient() {
         <div className={styles.mobileActiveFilters}>
           {currentCategory && (
             <div className={styles.mobileFilterTag}>
-              {currentCategory}
+              {KNOWN_CATEGORIES.find(cat => cat.slug === currentCategory)?.name || currentCategory}
               <button onClick={() => {
                 const qs = new URLSearchParams(searchParams.toString())
                 qs.delete('category')
@@ -298,6 +375,19 @@ export default function ProductsMobileClient() {
                 setRatingMin('')
                 const qs = new URLSearchParams(searchParams.toString())
                 qs.delete('ratingMin')
+                router.replace(qs.toString() ? `/products?${qs}` : '/products')
+              }}>×</button>
+            </div>
+          )}
+          {sortOrder && (
+            <div className={styles.mobileFilterTag}>
+              {sortOrder === 'price_asc' ? 'Price: Low to High' : 
+               sortOrder === 'price_desc' ? 'Price: High to Low' : 
+               sortOrder === 'oldest' ? 'Oldest' : 'Newest'}
+              <button onClick={() => {
+                setSortOrder('')
+                const qs = new URLSearchParams(searchParams.toString())
+                qs.delete('sort')
                 router.replace(qs.toString() ? `/products?${qs}` : '/products')
               }}>×</button>
             </div>
