@@ -61,7 +61,7 @@ export default function ProductsMobileClient() {
   if (loading) return (
     <div className={styles.loading}>
       <div className={styles.loadingSpinner}></div>
-      <span>Loading artworks...</span>
+      <span>Loading products...</span>
     </div>
   );
   
@@ -87,7 +87,7 @@ export default function ProductsMobileClient() {
                 {prod.isNew && <span className={styles.badge}>New</span>}
                 {prod.stockQuantity === 0 && <div className={styles.outOfStock}>Out of Stock</div>}
                 {prod.stockQuantity > 0 && prod.stockQuantity <= 5 && (
-                  <div className={styles.lowStock}>Limited Edition</div>
+                  <div className={styles.lowStock}>Only {prod.stockQuantity} left</div>
                 )}
                 <div className={styles.overlay}>
                   <span className={styles.viewDetails}>View Details</span>
@@ -100,22 +100,15 @@ export default function ProductsMobileClient() {
                   </div>
                 )}
                 <h3 className={styles.name}>{prod.name}</h3>
-                <p className={styles.shortDesc}>
-                  {prod.shortDesc 
-                    ? `${prod.shortDesc.substring(0, 60)}${prod.shortDesc.length > 60 ? '...' : ''}`
-                    : 'Handcrafted art piece'}
-                </p>
+                {prod.shortDesc && (
+                  <p className={styles.shortDesc}>{prod.shortDesc.substring(0, 60)}{prod.shortDesc.length > 60 ? '...' : ''}</p>
+                )}
                 <div className={styles.priceRow}>
                   <p className={styles.price}>{formatPrice(prod.price)}</p>
-                  {prod.avgRating > 0 ? (
+                  {prod.avgRating > 0 && (
                     <p className={styles.productRating}>
                       <span className={styles.starFilled}>★</span> 
                       <span className={styles.ratingValue}>{prod.avgRating.toFixed(1)}</span>
-                    </p>
-                  ) : (
-                    <p className={styles.productRating}>
-                      <span className={styles.starFilled}>★</span> 
-                      <span className={styles.ratingValue}>New</span>
                     </p>
                   )}
                 </div>

@@ -5,10 +5,10 @@
 }
 
 .list {
-  padding: 16px;
+  padding: 12px;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 24px;
+  gap: 16px;
   width: 100%;
   max-width: 100%;
 }
@@ -16,8 +16,7 @@
 @media (max-width: 360px) {
   .list {
     grid-template-columns: 1fr;
-    padding: 16px;
-    gap: 20px;
+    padding: 12px;
   }
 }
 
@@ -25,53 +24,49 @@
   position: relative;
   will-change: transform;
   transition: transform 0.2s ease;
-  display: flex;
-  height: 100%;
 }
 
 .card {
   background: #fff;
-  border-radius: 0;
+  border-radius: 16px;
   overflow: hidden;
   text-decoration: none;
   color: inherit;
   display: flex;
   flex-direction: column;
   position: relative;
-  box-shadow: none;
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
   transition: all 0.3s ease;
   margin-bottom: 0;
   height: 100%;
-  width: 100%;
-}
-
-.card:hover {
-  border: 1px solid rgba(0, 0, 0, 0.15);
 }
 
 .card:active {
-  transform: translateY(1px);
+  transform: translateY(2px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
 }
 
 .imageContainer {
   width: 100%;
-  aspect-ratio: 1/1.2;
+  aspect-ratio: 1/1;
   background: #f9f9f9;
   position: relative;
   overflow: hidden;
-  flex-shrink: 0;
 }
 
 .image {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.8s cubic-bezier(0.165, 0.84, 0.44, 1);
+  transition: transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
 }
 
 .card:hover .image {
-  transform: scale(1.02);
+  transform: scale(1.03);
+}
+
+.card:active .image {
+  transform: scale(1.05);
 }
 
 .noImage {
@@ -87,22 +82,22 @@
 
 .wishlistContainer {
   position: absolute;
-  top: 16px;
-  right: 16px;
+  top: 10px;
+  right: 10px;
   z-index: 10;
 }
 
 .wishlistButton {
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.95);
   border: none;
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
   color: #333;
   transition: all 0.2s ease;
   backdrop-filter: blur(4px);
@@ -110,13 +105,12 @@
 
 .wishlistButton:hover {
   transform: scale(1.05);
-  background: rgba(255, 255, 255, 0.95);
 }
 
 .wishlistButton[data-active="true"] {
   color: #e53e3e;
-  background: rgba(255, 255, 255, 0.95);
-  box-shadow: 0 2px 10px rgba(229, 62, 62, 0.15);
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 2px 10px rgba(229, 62, 62, 0.2);
 }
 
 .outOfStock {
@@ -128,81 +122,83 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: rgba(0, 0, 0, 0.3);
+  background-color: rgba(0, 0, 0, 0.4);
   color: white;
   font-size: 0.9rem;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  font-weight: 400;
+  letter-spacing: 0.05em;
+  font-weight: 500;
   z-index: 2;
   backdrop-filter: blur(2px);
 }
 
 .lowStock {
   position: absolute;
-  bottom: 16px;
-  left: 0;
-  background-color: #000;
+  bottom: 10px;
+  left: 10px;
+  background-color: rgba(245, 158, 11, 0.9);
   color: white;
   font-size: 0.65rem;
-  padding: 8px 12px;
+  padding: 5px 10px;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.05em;
   z-index: 2;
-  font-weight: 400;
+  font-weight: 500;
+  border-radius: 6px;
+  backdrop-filter: blur(2px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 .info {
-  padding: 16px;
+  padding: 14px;
   display: flex;
   flex-direction: column;
   background-color: #fff;
   flex-grow: 1;
-  min-height: 120px;
 }
 
 .categoryTag {
   display: inline-block;
   font-size: 0.65rem;
-  color: #888;
+  color: #666;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  margin-bottom: 8px;
-  font-weight: 400;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+  font-weight: 500;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  opacity: 0.8;
 }
 
 .name {
   font-size: 0.9rem;
-  font-weight: 400;
+  font-weight: 500;
   margin: 0 0 8px 0;
-  line-height: 1.4;
-  color: #000;
+  line-height: 1.3;
+  color: #222;
   text-transform: none;
   letter-spacing: 0.02em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-family: "Times New Roman", Times, serif;
-  height: 1.4em;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 .priceRow {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0;
+  margin-bottom: 6px;
   margin-top: auto;
 }
 
 .price {
   font-size: 0.95rem;
-  font-weight: 400;
+  font-weight: 600;
   color: #000;
   margin: 0;
-  font-family: "Times New Roman", Times, serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 .productRating {
@@ -210,46 +206,47 @@
   align-items: center;
   margin: 0;
   font-size: 0.75rem;
-  padding: 0;
+  background-color: rgba(255, 215, 0, 0.1);
+  padding: 3px 8px;
+  border-radius: 6px;
 }
 
 .starFilled {
-  color: #000;
+  color: #FFD700;
   margin-right: 3px;
 }
 
 .ratingValue {
-  font-weight: 400;
-  color: #000;
+  font-weight: 600;
+  color: #333;
 }
 
 .shortDesc {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: #666;
-  margin: 0 0 12px 0;
-  line-height: 1.5;
+  margin: 4px 0 0 0;
+  line-height: 1.4;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-family: "Times New Roman", Times, serif;
-  font-style: italic;
-  height: 2.8em; /* Fixed height for 2 lines */
 }
 
 .badge {
   position: absolute;
-  top: 16px;
-  left: 0;
+  top: 10px;
+  left: 10px;
   background-color: #000;
   color: #fff;
   font-size: 0.65rem;
-  padding: 8px 12px;
+  padding: 5px 10px;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.05em;
   z-index: 2;
-  font-weight: 400;
+  font-weight: 600;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 .overlay {
@@ -259,7 +256,7 @@
   width: 100%;
   background: linear-gradient(to top, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0));
   color: white;
-  padding: 40px 0 16px 0;
+  padding: 30px 0 12px 0;
   text-align: center;
   opacity: 0;
   transition: opacity 0.3s ease;
@@ -270,12 +267,15 @@
   opacity: 1;
 }
 
+.card:active .overlay {
+  opacity: 1;
+}
+
 .viewDetails {
   font-size: 0.75rem;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  font-weight: 400;
-  font-family: "Times New Roman", Times, serif;
+  letter-spacing: 0.05em;
+  font-weight: 600;
 }
 
 .loading,
@@ -296,7 +296,7 @@
 .loadingSpinner {
   width: 30px;
   height: 30px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  border: 3px solid rgba(0, 0, 0, 0.1);
   border-radius: 50%;
   border-top-color: #000;
   animation: spin 0.8s linear infinite;
