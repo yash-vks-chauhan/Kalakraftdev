@@ -81,20 +81,36 @@ export default function ProductsMobileClient() {
               )}
               {prod.isNew && <span className={styles.badge}>New</span>}
               {prod.stockQuantity === 0 && <div className={styles.outOfStock}>Out of Stock</div>}
+              {prod.stockQuantity > 0 && prod.stockQuantity <= 5 && (
+                <div className={styles.lowStock}>Low Stock</div>
+              )}
+              <div className={styles.overlay}>
+                <span className={styles.viewDetails}>View Details</span>
+              </div>
             </div>
             <div className={styles.info}>
+              {prod.category && (
+                <div className={styles.categoryTag}>
+                  {prod.category.name}
+                </div>
+              )}
               <h3 className={styles.name}>{prod.name}</h3>
               <div className={styles.priceRow}>
                 <p className={styles.price}>₹{prod.price.toFixed(2)}</p>
                 {prod.avgRating > 0 && (
-                  <div className={styles.rating}>
-                    {renderStars(prod.avgRating)}
+                  <div className={styles.ratingContainer}>
+                    <div className={styles.rating}>
+                      {renderStars(prod.avgRating)}
+                    </div>
+                    {prod.ratingCount > 0 && (
+                      <span className={styles.ratingCount}>({prod.ratingCount})</span>
+                    )}
                   </div>
                 )}
               </div>
-            </div>
-            <div className={styles.overlay}>
-              <span className={styles.viewDetails}>View Details</span>
+              {prod.shortDesc && (
+                <p className={styles.shortDesc}>{prod.shortDesc.substring(0, 60)}{prod.shortDesc.length > 60 ? '...' : ''}</p>
+              )}
             </div>
           </Link>
         ))}
