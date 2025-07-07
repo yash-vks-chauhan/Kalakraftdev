@@ -300,6 +300,7 @@
   }
 }
 
+/* Remove the old fadeIn animation since we now have backdropFadeIn */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -1235,27 +1236,17 @@
   top: 0;
   left: 0;
   right: 0;
-  bottom: 70px; /* Changed from 0 to 70px to stop above the footer */
-  background: rgba(255, 255, 255, 0.15); /* Increased opacity for better visibility */
-  backdrop-filter: blur(16px) saturate(180%); /* Enhanced blur effect */
-  -webkit-backdrop-filter: blur(16px) saturate(180%); /* Enhanced blur effect */
-  opacity: 0;
-  visibility: hidden;
-  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-  z-index: 900; /* Ensure it's below the dropdown but above other content */
-  pointer-events: none;
-}
-
-.accountDropdownBackdrop[aria-hidden="false"] {
-  opacity: 1;
-  visibility: visible;
+  bottom: 70px; /* Stop above the footer */
+  background-color: rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(10px) saturate(180%);
+  -webkit-backdrop-filter: blur(10px) saturate(180%);
+  z-index: 900; /* Below the dropdown but above content */
+  animation: backdropFadeIn 0.3s ease forwards;
+  transition: all 0.3s ease;
   pointer-events: auto;
-  animation: fadeIn 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
 }
 
-@keyframes fadeIn {
+@keyframes backdropFadeIn {
   from {
     opacity: 0;
     backdrop-filter: blur(0px);
@@ -1263,17 +1254,26 @@
   }
   to {
     opacity: 1;
-    backdrop-filter: blur(16px) saturate(180%); /* Match the enhanced blur */
-    -webkit-backdrop-filter: blur(16px) saturate(180%); /* Match the enhanced blur */
+    backdrop-filter: blur(10px) saturate(180%);
+    -webkit-backdrop-filter: blur(10px) saturate(180%);
   }
+}
+
+.accountDropdownBackdrop[aria-hidden="false"] {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  backdrop-filter: blur(10px) saturate(180%);
+  -webkit-backdrop-filter: blur(10px) saturate(180%);
 }
 
 .profileDropdownBackdropVisible {
   opacity: 1 !important;
   visibility: visible !important;
   pointer-events: auto !important;
-  backdrop-filter: blur(16px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
+  backdrop-filter: blur(10px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(10px) saturate(180%) !important;
+  background-color: rgba(0, 0, 0, 0.15) !important;
 }
 
 .userInfo, .guestInfo {

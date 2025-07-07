@@ -693,7 +693,7 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
           {isAccountDropdownOpen && (
             <div 
               className={styles.accountDropdownBackdrop}
-              aria-hidden={!isAccountDropdownOpen}
+              aria-hidden="false"
               onClick={() => setIsAccountDropdownOpen(false)}
             />
           )}
