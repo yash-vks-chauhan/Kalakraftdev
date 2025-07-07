@@ -303,9 +303,13 @@
 @keyframes fadeIn {
   from {
     opacity: 0;
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
   }
   to {
     opacity: 1;
+    backdrop-filter: blur(5px) saturate(180%);
+    -webkit-backdrop-filter: blur(5px) saturate(180%);
   }
 }
 
@@ -353,7 +357,7 @@
   justify-content: space-around;
   align-items: center;
   border-top: 1px solid rgba(255, 255, 255, 0.3);
-  z-index: 50;
+  z-index: 1002; /* Increased to be above the backdrop and dropdown */
   transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
   box-shadow: 
     0 -4px 15px rgba(0, 0, 0, 0.08),
@@ -1200,7 +1204,7 @@
   transform-style: preserve-3d;
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
-  z-index: 1000;
+  z-index: 1001; /* Increased to be above the backdrop */
 }
 
 .accountDropdown::before {
@@ -1229,7 +1233,7 @@
   top: 0;
   left: 0;
   right: 0;
-  bottom: 0;
+  bottom: 70px; /* Changed from 0 to 70px to stop above the footer */
   background: rgba(0, 0, 0, 0.2);
   backdrop-filter: blur(5px) saturate(180%);
   -webkit-backdrop-filter: blur(5px) saturate(180%);
