@@ -1231,49 +1231,27 @@
   transform: translateY(0);
 }
 
-.accountDropdownBackdrop {
+/* Profile Dropdown Backdrop - matches desktop implementation */
+.profileDropdownBackdrop {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 70px; /* Stop above the footer */
-  background-color: rgba(0, 0, 0, 0.15);
-  backdrop-filter: blur(10px) saturate(180%);
-  -webkit-backdrop-filter: blur(10px) saturate(180%);
-  z-index: 900; /* Below the dropdown but above content */
-  animation: backdropFadeIn 0.3s ease forwards;
-  transition: all 0.3s ease;
-  pointer-events: auto;
-}
-
-@keyframes backdropFadeIn {
-  from {
-    opacity: 0;
-    backdrop-filter: blur(0px);
-    -webkit-backdrop-filter: blur(0px);
-  }
-  to {
-    opacity: 1;
-    backdrop-filter: blur(10px) saturate(180%);
-    -webkit-backdrop-filter: blur(10px) saturate(180%);
-  }
-}
-
-.accountDropdownBackdrop[aria-hidden="false"] {
-  opacity: 1;
-  visibility: visible;
-  pointer-events: auto;
-  backdrop-filter: blur(10px) saturate(180%);
-  -webkit-backdrop-filter: blur(10px) saturate(180%);
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 999;
+  pointer-events: none;
 }
 
 .profileDropdownBackdropVisible {
-  opacity: 1 !important;
-  visibility: visible !important;
-  pointer-events: auto !important;
-  backdrop-filter: blur(10px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(10px) saturate(180%) !important;
-  background-color: rgba(0, 0, 0, 0.15) !important;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
 }
 
 .userInfo, .guestInfo {

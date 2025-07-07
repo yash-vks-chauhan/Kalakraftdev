@@ -690,13 +690,7 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
           </button>
           
           {/* Account Dropdown */}
-          {isAccountDropdownOpen && (
-            <div 
-              className={styles.accountDropdownBackdrop}
-              aria-hidden="false"
-              onClick={() => setIsAccountDropdownOpen(false)}
-            />
-          )}
+          <div className={`${styles.profileDropdownBackdrop} ${isAccountDropdownOpen ? styles.profileDropdownBackdropVisible : ''}`} />
           
           {/* Show different dropdown content based on authentication status */}
           {isAccountDropdownOpen && (
