@@ -38,33 +38,7 @@ const ProductCard = ({ product, formatPrice }) => {
     return () => clearTimeout(timer);
   }, []);
   
-  // Add passive touch event listeners for better performance
-  useEffect(() => {
-    if (!imageContainerRef.current || product.imageUrls.length <= 1) return;
-    
-    const element = imageContainerRef.current;
-    const options = { passive: true };
-    
-    const touchStartHandler = (e) => handleTouchStart(e);
-    const touchMoveHandler = (e) => handleTouchMove(e);
-    const touchEndHandler = () => handleTouchEnd();
-    
-    element.addEventListener('touchstart', touchStartHandler, options);
-    element.addEventListener('touchmove', touchMoveHandler, options);
-    element.addEventListener('touchend', touchEndHandler);
-    
-    return () => {
-      element.removeEventListener('touchstart', touchStartHandler);
-      element.removeEventListener('touchmove', touchMoveHandler);
-      element.removeEventListener('touchend', touchEndHandler);
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [product.imageUrls.length]);
-  
-  // Improved swipe sensitivity and threshold
-  const minSwipeDistance = 30; // Reduced threshold for easier swiping
-  const minSwipeVelocity = 0.3; // Minimum velocity to trigger swipe
-  
+  // Direct touch event handlers for better reliability
   const handleTouchStart = (e) => {
     if (product.imageUrls.length <= 1) return;
     
@@ -166,6 +140,10 @@ const ProductCard = ({ product, formatPrice }) => {
     }, 300);
   };
   
+  // Improved swipe sensitivity and threshold
+  const minSwipeDistance = 20; // Reduced threshold for easier swiping
+  const minSwipeVelocity = 0.2; // Minimum velocity to trigger swipe
+  
   // Handle manual image navigation with tap
   const handleImageTap = (e) => {
     if (product.imageUrls.length <= 1 || animating) return;
@@ -227,6 +205,9 @@ const ProductCard = ({ product, formatPrice }) => {
           className={styles.imageContainer}
           ref={imageContainerRef}
           onClick={handleImageTap}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
         >
           <div className={styles.imageSlider} style={getImageTransform()}>
             {product.imageUrls.map((url, index) => (
