@@ -6,13 +6,14 @@
 }
 
 .pageHeader {
-  padding: 16px 16px 8px;
+  padding: 16px 16px 12px;
   background-color: #fff;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  border-bottom: none;
+  margin-bottom: 1px;
 }
 
 .pageTitle {
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   font-weight: 600;
   margin: 0 0 4px 0;
   color: #000;
@@ -20,17 +21,17 @@
 }
 
 .resultCount {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: #666;
   margin: 0;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 .list {
-  padding: 8px;
+  padding: 0;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
+  gap: 0;
   width: 100%;
   max-width: 100%;
   background-color: #fff;
@@ -40,7 +41,7 @@
 @media (max-width: 360px) {
   .list {
     grid-template-columns: 1fr;
-    padding: 8px;
+    padding: 0;
   }
 }
 
@@ -55,7 +56,8 @@
   flex-direction: column;
   border-radius: 0; /* Remove rounded corners */
   overflow: hidden;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  box-shadow: none;
+  border: none;
 }
 
 /* Update card to remove border-radius */
@@ -82,7 +84,7 @@
 /* Update imageContainer to remove border-radius */
 .imageContainer {
   width: 100%;
-  aspect-ratio: 1/1;
+  aspect-ratio: 1/1.05;
   background: #fff;
   position: relative;
   overflow: hidden;
@@ -90,7 +92,7 @@
   -webkit-user-select: none;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
-  border-radius: 0; /* Remove any potential border-radius */
+  border-radius: 0;
 }
 
 .imageSlider {
@@ -172,12 +174,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: rgba(0, 0, 0, 0.5);
-  color: white;
-  font-size: 0.9rem;
+  background-color: rgba(255, 255, 255, 0.7);
+  color: #000;
+  font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  font-weight: 500;
+  font-weight: 600;
   z-index: 2;
   backdrop-filter: blur(2px);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -187,22 +189,21 @@
   position: absolute;
   bottom: 10px;
   left: 10px;
-  background-color: rgba(255, 59, 48, 0.9);
+  background-color: rgba(0, 0, 0, 0.7);
   color: white;
   font-size: 0.65rem;
-  padding: 5px 10px;
+  padding: 4px 8px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   z-index: 2;
   font-weight: 500;
-  border-radius: 0; /* Remove rounded corners */
+  border-radius: 0;
   backdrop-filter: blur(2px);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 .info {
-  padding: 12px 10px;
+  padding: 12px 10px 16px;
   display: flex;
   flex-direction: column;
   background-color: #fff;
@@ -230,11 +231,11 @@
 }
 
 .name {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 500;
   margin: 0 0 6px 0;
   line-height: 1.3;
-  color: #222;
+  color: #000;
   text-transform: none;
   letter-spacing: 0.02em;
   overflow: hidden;
@@ -258,7 +259,7 @@
 }
 
 .price {
-  font-size: 1rem;
+  font-size: 0.85rem;
   font-weight: 600;
   color: #000;
   margin: 0;
@@ -311,37 +312,36 @@
   letter-spacing: 0.05em;
   z-index: 2;
   font-weight: 500;
-  border-radius: 0; /* Remove rounded corners */
+  border-radius: 0;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 /* Image indicators */
 .imageIndicators {
   position: absolute;
-  bottom: 12px;
+  bottom: 10px;
   left: 0;
-  width: 100%;
+  right: 0;
   display: flex;
   justify-content: center;
-  gap: 6px;
-  padding: 0;
+  gap: 4px;
   z-index: 3;
 }
 
 .indicator {
-  width: 20px;
-  height: 3px;
+  width: 16px;
+  height: 2px;
   background-color: rgba(255, 255, 255, 0.5);
-  margin: 0 2px;
-  border-radius: 0; /* Remove rounded corners */
+  margin: 0 1px;
+  border-radius: 0;
   transition: all 0.3s ease;
 }
 
 .activeIndicator {
   background-color: white;
-  width: 24px;
-  height: 3px;
-  border-radius: 0; /* Remove rounded corners */
+  width: 20px;
+  height: 2px;
+  border-radius: 0;
 }
 
 /* Remove overlay for swipeable images */
