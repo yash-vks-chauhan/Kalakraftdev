@@ -159,14 +159,14 @@ export default function AdminProductsPage() {
                 </td>
                 <td className={styles.tableCell}>{stockDisplay}</td>
                 <td className={styles.tableCell}>
-                  <div className={styles.statusSwitch}>
+                  <label className={styles.statusSwitch}>
                     <input
                       type="checkbox"
                       checked={p.isActive}
                       onChange={() => handleToggleStatus(p.id, !p.isActive)}
                     />
                     <span className={styles.statusSlider} />
-                  </div>
+                  </label>
                 </td>
                 <td className={styles.tableCell}>
                   <div className={styles.actionButtons}>
