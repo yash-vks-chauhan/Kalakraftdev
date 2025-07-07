@@ -12,6 +12,7 @@ import { useMobileMenu } from '../contexts/MobileMenuContext'
 import { getImageUrl } from '../../lib/cloudinaryImages'
 import styles from './MobileLayout.module.css'
 import MobileMenuPanel from './MobileMenuPanel'
+import SearchModal from './SearchModal'
 
 interface MobileLayoutProps {
   children: React.ReactNode
@@ -785,76 +786,10 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
       
       {/* Search Overlay */}
       {isSearchOpen && (
-        <div className={`${styles.searchOverlay} ${isSearchClosing ? styles.searchOverlayClosing : ''}`}>
-          <div className={styles.searchContainer}>
-            <div className={styles.searchHeader}>
-              <div className={styles.logoContainer}>
-                <Image 
-                  src={getImageUrl('logo.png')}
-                  alt="Kalakraft"
-                  width={120}
-                  height={32}
-                  className={styles.logoImage}
-                />
-              </div>
-              <button 
-                onClick={closeSearch}
-                className={styles.closeButton}
-                aria-label="Close search"
-              >
-                <X size={20} />
-              </button>
-            </div>
-            
-            <div className={styles.searchContent}>
-              <form onSubmit={handleSearchSubmit} className={styles.searchForm}>
-                <div className={styles.searchInputContainer}>
-                  <Search size={20} className={styles.searchIcon} />
-                  <input 
-                    type="text" 
-                    placeholder="SEARCH PRODUCTS..." 
-                    className={styles.searchInput}
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    autoFocus
-                    autoComplete="off"
-                  />
-                  {searchQuery && (
-                    <button 
-                      type="button"
-                      className={styles.clearButton}
-                      onClick={() => setSearchQuery('')}
-                    >
-                      Clear
-                    </button>
-                  )}
-                </div>
-              </form>
-              
-              <div className={styles.categoriesContainer}>
-                <button className={`${styles.categoryPill}`}>CLOCK</button>
-                <button className={styles.categoryPill}>POTS</button>
-                <button className={styles.categoryPill}>TRAYS</button>
-                <button className={styles.categoryPill}>JEWELERY TRAYS</button>
-                <button className={styles.categoryPill}>RANGOLI</button>
-                <button className={styles.categoryPill}>WALL DECOR</button>
-                <button className={styles.categoryPill}>MATT RANGOLI</button>
-                <button className={styles.categoryPill}>MIRROR WORK</button>
-              </div>
-              
-              <div className={styles.quickFilters}>
-                <button className={styles.quickFilterButton}>New Arrivals</button>
-                <button className={styles.quickFilterButton}>Trending</button>
-                <button className={styles.quickFilterButton}>Popular</button>
-                <button className={styles.quickFilterButton}>On Sale</button>
-              </div>
-              
-              <div className={styles.searchResults}>
-                {/* Search results would appear here */}
-              </div>
-            </div>
-          </div>
-        </div>
+        <SearchModal
+          open={isSearchOpen}
+          onClose={closeSearch}
+        />
       )}
 
       {/* Mobile Bottom Navigation removed as we're using the footer instead */}
