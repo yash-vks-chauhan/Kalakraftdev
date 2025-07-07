@@ -377,10 +377,11 @@
   
   .productGrid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
+    gap: 1px;
     padding: 0;
     margin: 0;
     width: 100%;
+    box-sizing: border-box;
   }
   
   .title {
@@ -413,6 +414,8 @@
     flex-direction: column;
     overflow: hidden;
     position: relative;
+    aspect-ratio: 0.8;
+    height: auto;
   }
   
   .productImageContainer {
@@ -437,8 +440,9 @@
     display: flex;
     flex-direction: column;
     gap: 2px;
-    height: 70px;
+    height: 80px;
     justify-content: space-between;
+    box-sizing: border-box;
   }
   
   .productCategory {

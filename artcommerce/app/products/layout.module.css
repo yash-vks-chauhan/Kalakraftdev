@@ -9,5 +9,7 @@
   .productContainer {
     padding: 0;
     max-width: 100%;
+    width: 100%;
+    margin: 0;
   }
 } 

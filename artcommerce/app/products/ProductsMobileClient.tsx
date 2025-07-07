@@ -27,36 +27,96 @@ const ProductCard = ({ product, formatPrice }) => {
   const [isSwiping, setIsSwiping] = useState(false);
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [animating, setAnimating] = useState(false);
+  const [swipeVelocity, setSwipeVelocity] = useState(0);
+  const [lastTouchTimestamp, setLastTouchTimestamp] = useState(0);
+  const [showHints, setShowHints] = useState(true);
   const imageContainerRef = useRef(null);
   
-  // Minimum swipe distance to register as a swipe
-  const minSwipeDistance = 50;
+  // Hide hints after first interaction or after timeout
+  useEffect(() => {
+    const timer = setTimeout(() => setShowHints(false), 4000);
+    return () => clearTimeout(timer);
+  }, []);
+  
+  // Add passive touch event listeners for better performance
+  useEffect(() => {
+    if (!imageContainerRef.current || product.imageUrls.length <= 1) return;
+    
+    const element = imageContainerRef.current;
+    const options = { passive: true };
+    
+    const touchStartHandler = (e) => handleTouchStart(e);
+    const touchMoveHandler = (e) => handleTouchMove(e);
+    const touchEndHandler = () => handleTouchEnd();
+    
+    element.addEventListener('touchstart', touchStartHandler, options);
+    element.addEventListener('touchmove', touchMoveHandler, options);
+    element.addEventListener('touchend', touchEndHandler);
+    
+    return () => {
+      element.removeEventListener('touchstart', touchStartHandler);
+      element.removeEventListener('touchmove', touchMoveHandler);
+      element.removeEventListener('touchend', touchEndHandler);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product.imageUrls.length]);
+  
+  // Improved swipe sensitivity and threshold
+  const minSwipeDistance = 30; // Reduced threshold for easier swiping
+  const minSwipeVelocity = 0.3; // Minimum velocity to trigger swipe
   
   const handleTouchStart = (e) => {
-    if (animating || product.imageUrls.length <= 1) return;
+    if (product.imageUrls.length <= 1) return;
+    
+    // Hide hints on first interaction
+    setShowHints(false);
+    
+    // Cancel any ongoing animations
+    if (animating) {
+      setAnimating(false);
+      setSwipeOffset(0);
+    }
+    
     setTouchStart(e.targetTouches[0].clientX);
+    setLastTouchTimestamp(Date.now());
     setIsSwiping(true);
     setSwipeOffset(0);
+    setSwipeVelocity(0);
   };
   
   const handleTouchMove = (e) => {
-    if (!isSwiping || animating || product.imageUrls.length <= 1) return;
+    if (!isSwiping || product.imageUrls.length <= 1) return;
     
-    setTouchEnd(e.targetTouches[0].clientX);
-    const currentOffset = e.targetTouches[0].clientX - touchStart;
+    const currentTouch = e.targetTouches[0].clientX;
+    const currentTime = Date.now();
+    const timeDelta = currentTime - lastTouchTimestamp;
     
-    // Limit the swipe distance with resistance at edges
+    // Calculate velocity (pixels per millisecond)
+    if (timeDelta > 0) {
+      const instantVelocity = (currentTouch - touchEnd) / timeDelta;
+      // Smooth velocity with exponential moving average
+      setSwipeVelocity(prev => prev * 0.7 + instantVelocity * 0.3);
+    }
+    
+    setTouchEnd(currentTouch);
+    setLastTouchTimestamp(currentTime);
+    
+    const currentOffset = currentTouch - touchStart;
+    const containerWidth = imageContainerRef.current?.offsetWidth || 0;
+    
+    // Add progressive resistance at edges for better feel
     if ((currentImageIndex === 0 && currentOffset > 0) || 
         (currentImageIndex === product.imageUrls.length - 1 && currentOffset < 0)) {
-      // Add resistance at the edges
-      setSwipeOffset(currentOffset / 3);
+      // Cubic resistance curve for more natural feel at edges
+      const resistanceFactor = 1 - Math.min(Math.abs(currentOffset) / containerWidth, 0.5);
+      setSwipeOffset(currentOffset * Math.pow(resistanceFactor, 2));
     } else {
       setSwipeOffset(currentOffset);
     }
   };
   
   const handleTouchEnd = () => {
-    if (!isSwiping || animating || product.imageUrls.length <= 1) return;
+    if (!isSwiping || product.imageUrls.length <= 1) return;
     
     setIsSwiping(false);
     
@@ -66,26 +126,65 @@ const ProductCard = ({ product, formatPrice }) => {
     }
     
     const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > minSwipeDistance;
-    const isRightSwipe = distance < -minSwipeDistance;
+    const containerWidth = imageContainerRef.current?.offsetWidth || 0;
+    const absDistance = Math.abs(distance);
+    const absVelocity = Math.abs(swipeVelocity);
+    
+    // Determine if swipe should trigger image change based on distance OR velocity
+    const isSignificantSwipe = 
+      absDistance > minSwipeDistance || 
+      (absDistance > minSwipeDistance / 2 && absVelocity > minSwipeVelocity);
+    
+    const isLeftSwipe = distance > 0;
+    const isRightSwipe = distance < 0;
     
     setAnimating(true);
     
-    if (isLeftSwipe && currentImageIndex < product.imageUrls.length - 1) {
-      setCurrentImageIndex(currentImageIndex + 1);
-    } else if (isRightSwipe && currentImageIndex > 0) {
-      setCurrentImageIndex(currentImageIndex - 1);
+    if (isSignificantSwipe) {
+      if (isLeftSwipe && currentImageIndex < product.imageUrls.length - 1) {
+        setCurrentImageIndex(currentImageIndex + 1);
+      } else if (isRightSwipe && currentImageIndex > 0) {
+        setCurrentImageIndex(currentImageIndex - 1);
+      } else {
+        // If at edge, animate back with spring effect
+        setSwipeOffset(0);
+      }
+    } else {
+      // Not a significant swipe, animate back to current position
+      setSwipeOffset(0);
     }
     
     // Reset values
     setTouchStart(0);
     setTouchEnd(0);
-    setSwipeOffset(0);
+    setSwipeVelocity(0);
     
     // End animation after transition completes
     setTimeout(() => {
       setAnimating(false);
+      setSwipeOffset(0);
     }, 300);
+  };
+  
+  // Handle manual image navigation with tap
+  const handleImageTap = (e) => {
+    if (product.imageUrls.length <= 1 || animating) return;
+    
+    const containerWidth = imageContainerRef.current?.offsetWidth || 0;
+    const tapX = e.nativeEvent.offsetX;
+    
+    // Tap on right third of image - go next
+    if (tapX > containerWidth * 0.7 && currentImageIndex < product.imageUrls.length - 1) {
+      setAnimating(true);
+      setCurrentImageIndex(currentImageIndex + 1);
+      setTimeout(() => setAnimating(false), 300);
+    }
+    // Tap on left third of image - go previous
+    else if (tapX < containerWidth * 0.3 && currentImageIndex > 0) {
+      setAnimating(true);
+      setCurrentImageIndex(currentImageIndex - 1);
+      setTimeout(() => setAnimating(false), 300);
+    }
   };
   
   // Handle wishlist button click to prevent navigation
@@ -94,19 +193,22 @@ const ProductCard = ({ product, formatPrice }) => {
     e.stopPropagation();
   };
   
-  // Calculate transform style for smooth swiping
+  // Calculate transform style for smooth swiping with improved transitions
   const getImageTransform = () => {
-    if (!isSwiping) {
-      return { transform: `translateX(${-100 * currentImageIndex}%)` };
+    if (!isSwiping && swipeOffset === 0) {
+      return { 
+        transform: `translateX(${-100 * currentImageIndex}%)`,
+        transition: animating ? 'transform 0.3s cubic-bezier(0.25, 1, 0.5, 1)' : 'none'
+      };
     }
     
     // Calculate percentage offset for smooth tracking during swipe
     const containerWidth = imageContainerRef.current?.offsetWidth || 0;
-    const offsetPercentage = (swipeOffset / containerWidth) * 100;
+    const offsetPercentage = containerWidth ? (swipeOffset / containerWidth) * 100 : 0;
     
     return {
       transform: `translateX(calc(${-100 * currentImageIndex}% + ${offsetPercentage}%))`,
-      transition: isSwiping ? 'none' : 'transform 0.3s ease-out'
+      transition: isSwiping ? 'none' : 'transform 0.3s cubic-bezier(0.25, 1, 0.5, 1)'
     };
   };
   
@@ -123,10 +225,8 @@ const ProductCard = ({ product, formatPrice }) => {
       <Link href={`/products/${product.id}`} className={styles.card}>
         <div 
           className={styles.imageContainer}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
           ref={imageContainerRef}
+          onClick={handleImageTap}
         >
           <div className={styles.imageSlider} style={getImageTransform()}>
             {product.imageUrls.map((url, index) => (
@@ -136,6 +236,7 @@ const ProductCard = ({ product, formatPrice }) => {
                   alt={`${product.name} - Image ${index + 1}`}
                   className={styles.image}
                   loading="lazy"
+                  draggable="false"
                 />
               </div>
             ))}
@@ -162,6 +263,26 @@ const ProductCard = ({ product, formatPrice }) => {
               ))}
             </div>
           )}
+          
+          {/* Swipe hints - only show if multiple images and on first render */}
+          {showHints && product.imageUrls.length > 1 && (
+            <>
+              {currentImageIndex > 0 && (
+                <div className={styles.swipeRightHint}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                  </svg>
+                </div>
+              )}
+              {currentImageIndex < product.imageUrls.length - 1 && (
+                <div className={styles.swipeLeftHint}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                  </svg>
+                </div>
+              )}
+            </>
+          )}
         </div>
         
         <div className={styles.info}>
@@ -172,8 +293,8 @@ const ProductCard = ({ product, formatPrice }) => {
           )}
           <h3 className={styles.name}>{product.name}</h3>
           
-          {/* Short description */}
-          {product.shortDesc && (
+          {/* Short description - only show if there's space */}
+          {product.shortDesc && !product.avgRating && (
             <p className={styles.shortDesc}>{getShortDescription()}</p>
           )}
           
@@ -590,8 +711,8 @@ export default function ProductsMobileClient() {
         </div>
         <div className={styles.mobileFilterContent}>
           {renderFilters()}
-                </div>
-              </div>
+        </div>
+      </div>
 
       {/* Mobile Filter Overlay */}
       {isMobileFilterOpen && (
@@ -612,8 +733,8 @@ export default function ProductsMobileClient() {
                 qs.delete('category')
                 router.replace(qs.toString() ? `/products?${qs}` : '/products')
               }}>×</button>
-                  </div>
-                )}
+            </div>
+          )}
           {currentTag && (
             <div className={styles.mobileFilterTag}>
               {currentTag}
@@ -644,7 +765,7 @@ export default function ProductsMobileClient() {
                 qs.delete('lowStock')
                 router.replace(qs.toString() ? `/products?${qs}` : '/products')
               }}>×</button>
-                </div>
+            </div>
           )}
           {inStockOnly && (
             <div className={styles.mobileFilterTag}>
@@ -655,7 +776,7 @@ export default function ProductsMobileClient() {
                 qs.delete('inStock')
                 router.replace(qs.toString() ? `/products?${qs}` : '/products')
               }}>×</button>
-              </div>
+            </div>
           )}
           {sortOrder && (
             <div className={styles.mobileFilterTag}>
@@ -670,7 +791,7 @@ export default function ProductsMobileClient() {
               }}>×</button>
             </div>
           )}
-          </div>
+        </div>
       )}
 
       <div className={styles.list} style={{ marginLeft: -1, marginRight: -1, width: 'calc(100% + 2px)' }}>
