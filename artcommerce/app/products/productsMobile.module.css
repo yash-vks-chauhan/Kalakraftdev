@@ -134,35 +134,51 @@
 
 .wishlistContainer {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 0;
+  right: 0;
   z-index: 10;
 }
 
 .wishlistButton {
-  background: rgba(255, 255, 255, 0.9);
+  background: transparent;
   border: none;
   width: 32px;
   height: 32px;
-  border-radius: 0; /* Remove rounded corners */
+  border-radius: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  color: #333;
+  box-shadow: none;
+  color: #000;
   transition: all 0.2s ease;
-  backdrop-filter: blur(4px);
+  backdrop-filter: none;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 10;
 }
 
 .wishlistButton:hover {
   transform: scale(1.05);
 }
 
+/* Update the active wishlist button to be solid black */
 .blackWishlist[data-active="true"] {
-  color: #ff3b30 !important;
-  background: rgba(255, 255, 255, 0.98);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  color: #000 !important;
+  background: transparent;
+  box-shadow: none;
+  fill: #000;
+}
+
+/* Default state is outline only */
+.blackWishlist {
+  color: #000 !important;
+  background: transparent;
+  box-shadow: none;
+  fill: none;
+  stroke: #000;
+  stroke-width: 1px;
 }
 
 .outOfStock {
@@ -316,7 +332,7 @@
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
-/* Image indicators */
+/* Update image indicators to black */
 .imageIndicators {
   position: absolute;
   bottom: 10px;
@@ -331,14 +347,14 @@
 .indicator {
   width: 16px;
   height: 2px;
-  background-color: rgba(255, 255, 255, 0.5);
+  background-color: rgba(0, 0, 0, 0.3);
   margin: 0 1px;
   border-radius: 0;
   transition: all 0.3s ease;
 }
 
 .activeIndicator {
-  background-color: white;
+  background-color: #000;
   width: 20px;
   height: 2px;
   border-radius: 0;
