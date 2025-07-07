@@ -84,6 +84,9 @@ export default function EditProductPage() {
   const [uploadProgress, setUploadProgress] = useState<{ [key: string]: number }>({});
   const [uploadErrors, setUploadErrors] = useState<{ [key: string]: string }>({});
 
+  // State for drag-and-drop reordering
+  const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
+
   // Safe parsing functions
   const safeParseArray = <T,>(value: any, defaultValue: T[] = []): T[] => {
     if (Array.isArray(value)) return value;
@@ -192,6 +195,16 @@ export default function EditProductPage() {
 
   const handleRemoveImage = (indexToRemove: number) => {
     setImageUrls(prev => prev.filter((_, index) => index !== indexToRemove));
+  };
+
+  // Function to reorder images array
+  const reorderImages = (fromIndex: number, toIndex: number) => {
+    setImageUrls(prev => {
+      const updated = [...prev];
+      const [moved] = updated.splice(fromIndex, 1);
+      updated.splice(toIndex, 0, moved);
+      return updated;
+    });
   };
 
   const handleRemoveStylingImage = (indexToRemove: number) => {
@@ -673,7 +686,20 @@ export default function EditProductPage() {
 
             <div className={styles.imageGrid}>
               {imageUrls.map((url, i) => (
-                <div key={`${url}-${i}`} className={styles.imagePreviewContainer}>
+                <div
+                  key={`${url}-${i}`}
+                  className={styles.imagePreviewContainer}
+                  draggable
+                  onDragStart={() => setDraggingIndex(i)}
+                  onDragOver={e => e.preventDefault()}
+                  onDragEnd={() => setDraggingIndex(null)}
+                  onDrop={() => {
+                    if (draggingIndex !== null) {
+                      reorderImages(draggingIndex, i);
+                    }
+                    setDraggingIndex(null);
+                  }}
+                >
                   <img
                     src={url}
                     alt={`Product preview ${i + 1}`}

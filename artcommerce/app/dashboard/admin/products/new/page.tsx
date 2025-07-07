@@ -49,6 +49,19 @@ export default function NewProductPage() {
   const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
   const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
 
+  // State for drag-and-drop reordering
+  const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
+
+  // Function to reorder images array
+  const reorderImages = (fromIndex: number, toIndex: number) => {
+    setImageUrls(prev => {
+      const updated = [...prev];
+      const [moved] = updated.splice(fromIndex, 1);
+      updated.splice(toIndex, 0, moved);
+      return updated;
+    });
+  };
+
   useEffect(() => {
     if (user?.role !== 'admin') {
       setError('Unauthorized')
@@ -629,7 +642,20 @@ export default function NewProductPage() {
 
             <div className={styles.imageGrid}>
               {imageUrls.map((url, i) => (
-                <div key={i} className={styles.imagePreviewContainer}>
+                <div
+                  key={i}
+                  className={styles.imagePreviewContainer}
+                  draggable
+                  onDragStart={() => setDraggingIndex(i)}
+                  onDragOver={e => e.preventDefault()}
+                  onDragEnd={() => setDraggingIndex(null)}
+                  onDrop={() => {
+                    if (draggingIndex !== null) {
+                      reorderImages(draggingIndex, i);
+                    }
+                    setDraggingIndex(null);
+                  }}
+                >
                   <img
                     src={url}
                     alt={`Product preview ${i + 1}`}
