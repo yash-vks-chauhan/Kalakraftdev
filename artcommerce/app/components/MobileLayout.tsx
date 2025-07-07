@@ -12,7 +12,7 @@ import { useMobileMenu } from '../contexts/MobileMenuContext'
 import { getImageUrl } from '../../lib/cloudinaryImages'
 import styles from './MobileLayout.module.css'
 import MobileMenuPanel from './MobileMenuPanel'
-import SearchModal from './SearchModal'
+import MobileSearchModal from './MobileSearchModal'
 
 interface MobileLayoutProps {
   children: React.ReactNode
@@ -785,7 +785,7 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
       
       {/* Search Overlay */}
       {isSearchOpen && (
-        <SearchModal
+        <MobileSearchModal
           open={isSearchOpen}
           onClose={closeSearch}
         />
