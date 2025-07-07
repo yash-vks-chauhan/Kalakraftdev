@@ -332,6 +332,13 @@ export default function ProductsMobileClient() {
     sort: true
   });
   
+  // Get current category name for display
+  const getCurrentCategoryName = () => {
+    if (!currentCategory) return 'All Products';
+    const category = KNOWN_CATEGORIES.find(cat => cat.slug === currentCategory);
+    return category ? category.name : 'Products';
+  };
+
   // Toggle filter sections
   const toggleSection = (section) => {
     setOpenSections(prev => ({
@@ -658,57 +665,22 @@ export default function ProductsMobileClient() {
     );
   };
 
-  if (loading) return (
-    <div className={styles.loading}>
-      <div className={styles.loadingSpinner}></div>
-      <span>Loading products...</span>
-    </div>
-  );
-  
-  if (error) return <div className={styles.error}>Error: {error}</div>
-
   return (
     <div className={styles.container}>
-      {/* Mobile Filter Button */}
-      <button 
-        className={styles.mobileFilterButton}
-        onClick={() => setIsMobileFilterOpen(true)}
-        aria-label="Open filters"
-      >
-        <FiFilter size={16} /> Filter
-      </button>
-
-      {/* Mobile Filter Drawer */}
-      <div className={`${styles.mobileFilterDrawer} ${isMobileFilterOpen ? styles.mobileFilterDrawerOpen : ''}`}>
-        <div className={styles.mobileFilterHeader}>
-          <h2>Filters</h2>
-          <button 
-            className={styles.mobileFilterCloseButton}
-            onClick={() => setIsMobileFilterOpen(false)}
-            aria-label="Close filters"
-          >
-            <FiX size={24} />
-          </button>
-        </div>
-        <div className={styles.mobileFilterContent}>
-          {renderFilters()}
-        </div>
+      {/* Page header with title */}
+      <div className={styles.pageHeader}>
+        <h1 className={styles.pageTitle}>{getCurrentCategoryName()}</h1>
+        {products.length > 0 && (
+          <p className={styles.resultCount}>{products.length} products</p>
+        )}
       </div>
-
-      {/* Mobile Filter Overlay */}
-      {isMobileFilterOpen && (
-        <div 
-          className={`${styles.mobileFilterOverlay} ${isMobileFilterOpen ? styles.mobileFilterOverlayVisible : ''}`}
-          onClick={() => setIsMobileFilterOpen(false)}
-        />
-      )}
-
+      
       {/* Active filters display */}
-      {(currentCategory || currentTag || ratingMin || lowStockOnly || inStockOnly || sortOrder) && (
+      {(currentCategory || currentTag || priceMin || priceMax || sortOrder || lowStockOnly || inStockOnly || ratingMin) && (
         <div className={styles.mobileActiveFilters}>
           {currentCategory && (
             <div className={styles.mobileFilterTag}>
-              {KNOWN_CATEGORIES.find(cat => cat.slug === currentCategory)?.name || currentCategory}
+              Category: {KNOWN_CATEGORIES.find(c => c.slug === currentCategory)?.name || currentCategory}
               <button onClick={() => {
                 const qs = new URLSearchParams(searchParams.toString())
                 qs.delete('category')
@@ -718,7 +690,7 @@ export default function ProductsMobileClient() {
           )}
           {currentTag && (
             <div className={styles.mobileFilterTag}>
-              {currentTag}
+              Tag: {currentTag}
               <button onClick={() => {
                 const qs = new URLSearchParams(searchParams.toString())
                 qs.delete('usageTag')
@@ -726,33 +698,10 @@ export default function ProductsMobileClient() {
               }}>×</button>
             </div>
           )}
-          {ratingMin && (
-            <div className={styles.mobileFilterTag}>
-              {ratingMin}+ stars
-              <button onClick={() => {
-                setRatingMin('')
-                const qs = new URLSearchParams(searchParams.toString())
-                qs.delete('ratingMin')
-                router.replace(qs.toString() ? `/products?${qs}` : '/products')
-              }}>×</button>
-            </div>
-          )}
-          {lowStockOnly && (
-            <div className={styles.mobileFilterTag}>
-              Low stock only
-              <button onClick={() => {
-                setLowStockOnly(false)
-                const qs = new URLSearchParams(searchParams.toString())
-                qs.delete('lowStock')
-                router.replace(qs.toString() ? `/products?${qs}` : '/products')
-              }}>×</button>
-            </div>
-          )}
           {inStockOnly && (
             <div className={styles.mobileFilterTag}>
-              In stock only
+              In Stock Only
               <button onClick={() => {
-                setInStockOnly(false)
                 const qs = new URLSearchParams(searchParams.toString())
                 qs.delete('inStock')
                 router.replace(qs.toString() ? `/products?${qs}` : '/products')
@@ -761,11 +710,8 @@ export default function ProductsMobileClient() {
           )}
           {sortOrder && (
             <div className={styles.mobileFilterTag}>
-              {sortOrder === 'price_asc' ? 'Price: Low to High' : 
-               sortOrder === 'price_desc' ? 'Price: High to Low' : 
-               sortOrder === 'oldest' ? 'Oldest' : 'Newest'}
+              Sort: {sortOrder.replace('_', ' ')}
               <button onClick={() => {
-                setSortOrder('')
                 const qs = new URLSearchParams(searchParams.toString())
                 qs.delete('sort')
                 router.replace(qs.toString() ? `/products?${qs}` : '/products')
@@ -775,15 +721,77 @@ export default function ProductsMobileClient() {
         </div>
       )}
 
-      <div className={styles.list} style={{ marginLeft: -1, marginRight: -1, width: 'calc(100% + 2px)' }}>
-        {products.map((prod) => (
-          <ProductCard 
-            key={prod.id} 
-            product={prod} 
-            formatPrice={formatPrice} 
-          />
-        ))}
+      {loading ? (
+        <div className={styles.loading}>
+          <div className={styles.loadingSpinner}></div>
+          <p>Loading products...</p>
+        </div>
+      ) : error ? (
+        <div className={styles.error}>
+          <p>Error: {error}</p>
+          <button 
+            onClick={() => router.refresh()}
+            className={styles.clearButton}
+          >
+            Try Again
+          </button>
+        </div>
+      ) : products.length === 0 ? (
+        <div className={styles.error}>
+          <p>No products found</p>
+          <button 
+            onClick={() => {
+              router.replace('/products')
+            }}
+            className={styles.clearButton}
+          >
+            Clear Filters
+          </button>
+        </div>
+      ) : (
+        <div className={styles.list}>
+          {products.map(product => (
+            <ProductCard 
+              key={product.id} 
+              product={product} 
+              formatPrice={formatPrice}
+            />
+          ))}
+        </div>
+      )}
+      
+      {/* Filter button */}
+      <button 
+        className={styles.mobileFilterButton}
+        onClick={() => setIsMobileFilterOpen(true)}
+      >
+        <FiFilter size={16} />
+        <span>Filter</span>
+      </button>
+      
+      {/* Mobile Filter Drawer */}
+      <div className={`${styles.mobileFilterDrawer} ${isMobileFilterOpen ? styles.mobileFilterDrawerOpen : ''}`}>
+        <div className={styles.mobileFilterHeader}>
+          <h2>Filter Products</h2>
+          <button 
+            className={styles.mobileFilterCloseButton}
+            onClick={() => setIsMobileFilterOpen(false)}
+          >
+            <FiX size={20} />
+          </button>
+        </div>
+        <div className={styles.mobileFilterContent}>
+          {renderFilters()}
+        </div>
       </div>
+      
+      {/* Mobile Filter Overlay */}
+      {isMobileFilterOpen && (
+        <div 
+          className={`${styles.mobileFilterOverlay} ${isMobileFilterOpen ? styles.mobileFilterOverlayVisible : ''}`}
+          onClick={() => setIsMobileFilterOpen(false)}
+        />
+      )}
     </div>
-  )
+  );
 } 
