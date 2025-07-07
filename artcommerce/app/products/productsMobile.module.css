@@ -44,6 +44,7 @@
   }
 }
 
+/* Update cardWrapper to remove border-radius */
 .cardWrapper {
   position: relative;
   will-change: transform;
@@ -52,14 +53,15 @@
   aspect-ratio: auto;
   display: flex;
   flex-direction: column;
-  border-radius: 8px;
+  border-radius: 0; /* Remove rounded corners */
   overflow: hidden;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
+/* Update card to remove border-radius */
 .card {
   background: #fff;
-  border-radius: 8px;
+  border-radius: 0; /* Remove rounded corners */
   overflow: hidden;
   text-decoration: none;
   color: inherit;
@@ -77,6 +79,7 @@
   transform: translateY(1px);
 }
 
+/* Update imageContainer to remove border-radius */
 .imageContainer {
   width: 100%;
   aspect-ratio: 1/1;
@@ -87,6 +90,7 @@
   -webkit-user-select: none;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
+  border-radius: 0; /* Remove any potential border-radius */
 }
 
 .imageSlider {
@@ -138,7 +142,7 @@
   border: none;
   width: 32px;
   height: 32px;
-  border-radius: 50%;
+  border-radius: 0; /* Remove rounded corners */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -191,7 +195,7 @@
   letter-spacing: 0.05em;
   z-index: 2;
   font-weight: 500;
-  border-radius: 4px;
+  border-radius: 0; /* Remove rounded corners */
   backdrop-filter: blur(2px);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -302,13 +306,12 @@
   background-color: #000;
   color: #fff;
   font-size: 0.65rem;
-  padding: 5px 10px;
+  padding: 4px 8px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   z-index: 2;
-  font-weight: 600;
-  border-radius: 4px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  font-weight: 500;
+  border-radius: 0; /* Remove rounded corners */
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
@@ -326,17 +329,19 @@
 }
 
 .indicator {
-  width: 6px;
-  height: 6px;
+  width: 20px;
+  height: 3px;
   background-color: rgba(255, 255, 255, 0.5);
-  border-radius: 50%;
+  margin: 0 2px;
+  border-radius: 0; /* Remove rounded corners */
   transition: all 0.3s ease;
 }
 
 .activeIndicator {
-  background-color: #fff;
-  transform: scale(1.2);
-  box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+  background-color: white;
+  width: 24px;
+  height: 3px;
+  border-radius: 0; /* Remove rounded corners */
 }
 
 /* Remove overlay for swipeable images */

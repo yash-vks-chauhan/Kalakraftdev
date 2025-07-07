@@ -106,7 +106,7 @@
   color: #4a5568;
   background: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(8px);
-  border-radius: 12px;
+  border-radius: 0; /* Remove rounded corners */
   border: 1px solid rgba(226, 232, 240, 0.8);
   margin-top: 2rem;
 }
@@ -123,7 +123,7 @@
   padding: 3rem;
   background: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(8px);
-  border-radius: 16px;
+  border-radius: 0; /* Remove rounded corners */
   border: 1px solid rgba(226, 232, 240, 0.8);
   margin-top: 2rem;
 }
@@ -142,7 +142,7 @@
 .productCard {
   background: rgba(255, 255, 255, 0.95);
   border: none;
-  border-radius: 16px;
+  border-radius: 0; /* Remove rounded corners */
   padding: 0;
   position: relative;
   overflow: hidden;
@@ -177,7 +177,7 @@
   font-size: 0.7rem;
   font-weight: 600;
   padding: 0.4rem 1rem;
-  border-radius: 99px;
+  border-radius: 0; /* Remove rounded corners */
   box-shadow: 0 4px 12px rgba(229, 62, 62, 0.2);
   z-index: 10;
   letter-spacing: 0.8px;
@@ -194,7 +194,7 @@
   font-size: 0.7rem;
   font-weight: 600;
   padding: 0.4rem 1rem;
-  border-radius: 99px;
+  border-radius: 0; /* Remove rounded corners */
   box-shadow: 0 4px 12px rgba(45, 55, 72, 0.2);
   z-index: 10;
   letter-spacing: 0.8px;
@@ -245,7 +245,7 @@
   border: none;
   width: 40px;
   height: 40px;
-  border-radius: 50%;
+  border-radius: 0; /* Remove rounded corners */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -330,7 +330,7 @@
   color: #1a202c;
   background: transparent;
   border: 1px solid #1a202c;
-  border-radius: 8px;
+  border-radius: 0; /* Remove rounded corners */
   transition: all 0.3s ease;
   text-align: center;
   text-decoration: none;
@@ -850,41 +850,38 @@ details[open] .arrow {
 }
 
 .mobileFilterButton {
-  position: fixed;
-  bottom: 70px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #333;
-  color: white;
-  border: none;
-  border-radius: 50px;
-  padding: 10px 24px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 0.5rem;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 0; /* Remove rounded corners */
+  padding: 0.6rem 1rem;
+  font-size: 0.85rem;
+  color: #1a202c;
   font-weight: 500;
-  font-size: 0.9rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  z-index: 100;
-  cursor: pointer;
-  width: 120px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  margin-bottom: 0.75rem;
+  width: 100%;
+  transition: all 0.2s ease;
 }
 
 .mobileFilterDrawer {
   position: fixed;
   top: 0;
   right: 0;
-  width: 100%;
+  width: 85%;
+  max-width: 360px;
   height: 100vh;
-  background: white;
+  background: #ffffff;
   z-index: 1000;
   transform: translateX(100%);
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  overflow-y: auto;
+  transition: transform 0.3s ease-in-out;
+  box-shadow: -5px 0 25px rgba(0, 0, 0, 0.15);
   display: flex;
   flex-direction: column;
-  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.1);
+  border-radius: 0; /* Remove rounded corners */
 }
 
 .mobileFilterDrawerOpen {
@@ -973,16 +970,15 @@ details[open] .arrow {
 }
 
 .mobileFilterTag {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
-  background: #f7fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 50px;
-  padding: 0.35rem 0.75rem;
+  background: #f3f4f6;
+  padding: 0.4rem 0.75rem;
+  margin-right: 0.5rem;
   font-size: 0.75rem;
-  color: #1a202c;
-  font-weight: 500;
+  white-space: nowrap;
+  border-radius: 0; /* Remove rounded corners */
+  border: 1px solid #e5e7eb;
 }
 
 .mobileFilterTag button {
@@ -1036,14 +1032,17 @@ details[open] .arrow {
 }
 
 .mobileWishlistButton {
-  background: rgba(255, 255, 255, 0.8);
-  border-radius: 50%;
-  width: 28px;
-  height: 28px;
+  background: white;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 0; /* Remove rounded corners */
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  border: none;
   cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  color: #333;
+  transition: all 0.2s ease;
+  margin-left: 0.5rem;
 } 

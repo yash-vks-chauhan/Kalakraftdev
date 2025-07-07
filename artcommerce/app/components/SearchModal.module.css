@@ -319,7 +319,7 @@
 /* Product cards */
 .productCard {
   position: relative;
-  border-radius: 0;
+  border-radius: 0; /* Remove rounded corners */
   overflow: hidden;
   background-color: #fff;
   box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.8);
