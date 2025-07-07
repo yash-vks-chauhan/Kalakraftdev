@@ -774,6 +774,27 @@
 
 /* Mobile responsiveness */
 @media (max-width: 768px) {
+  /* Mobile: overlay fades quickly */
+  .searchOverlay {
+    transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+  }
+  /* Mobile: slide-up from bottom with smooth easing */
+  .searchModal {
+    transform: translateY(100vh);
+    transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.2s ease-in-out;
+  }
+  /* When open, slide into place */
+  .searchOverlayOpen .searchModal {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  /* On close, slide back down with slightly faster exit */
+  .searchModalClosing .searchModal {
+    transform: translateY(100vh);
+    opacity: 0;
+    transition: transform 0.25s cubic-bezier(0.55, 0.085, 0.68, 0.53), opacity 0.15s ease-in-out;
+  }
+
   .searchHeader {
     padding: 1rem 1.5rem;
   }
@@ -845,22 +866,6 @@
   
   .sortOptions {
     padding: 0;
-  }
-
-  .searchOverlay {
-    transition: opacity 0.15s ease, visibility 0.15s ease;
-  }
-  .searchModal {
-    transform: translateY(100%);
-    transition: transform 0.15s ease-out, opacity 0.15s ease-out;
-  }
-  .searchOverlayOpen .searchModal {
-    transform: translateY(0);
-    opacity: 1;
-  }
-  .searchModalClosing .searchModal {
-    transform: translateY(100%);
-    opacity: 0;
   }
 }
 
