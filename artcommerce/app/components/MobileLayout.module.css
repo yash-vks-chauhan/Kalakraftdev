@@ -1234,9 +1234,9 @@
   left: 0;
   right: 0;
   bottom: 70px; /* Changed from 0 to 70px to stop above the footer */
-  background: rgba(0, 0, 0, 0.2);
-  backdrop-filter: blur(5px) saturate(180%);
-  -webkit-backdrop-filter: blur(5px) saturate(180%);
+  background: rgba(255, 255, 255, 0.08); /* Changed to match desktop style */
+  backdrop-filter: blur(16px) saturate(180%); /* Enhanced blur effect */
+  -webkit-backdrop-filter: blur(16px) saturate(180%); /* Enhanced blur effect */
   opacity: 0;
   visibility: hidden;
   transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
@@ -1259,8 +1259,8 @@
   }
   to {
     opacity: 1;
-    backdrop-filter: blur(5px) saturate(180%);
-    -webkit-backdrop-filter: blur(5px) saturate(180%);
+    backdrop-filter: blur(16px) saturate(180%); /* Match the enhanced blur */
+    -webkit-backdrop-filter: blur(16px) saturate(180%); /* Match the enhanced blur */
   }
 }
 
@@ -1268,6 +1268,8 @@
   opacity: 1 !important;
   visibility: visible !important;
   pointer-events: auto !important;
+  backdrop-filter: blur(16px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
 }
 
 .userInfo, .guestInfo {
