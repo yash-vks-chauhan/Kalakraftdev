@@ -1187,9 +1187,9 @@
   bottom: 70px;
   right: 16px;
   width: 220px;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  background: rgba(255, 255, 255, 0.1); /* Changed to match desktop */
+  backdrop-filter: blur(8px) saturate(180%); /* Match desktop */
+  -webkit-backdrop-filter: blur(8px) saturate(180%); /* Match desktop */
   border-radius: 1rem;
   min-width: 220px;
   padding: 0.75rem 0.5rem;
@@ -1454,9 +1454,9 @@
   left: 0;
   right: 0;
   bottom: 64px; /* Exactly at the footer height */
-  background: rgba(0, 0, 0, 0.2);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.08); /* Match desktop */
+  backdrop-filter: blur(16px) saturate(180%); /* Match desktop */
+  -webkit-backdrop-filter: blur(16px) saturate(180%); /* Match desktop */
   z-index: 900; /* Below the footer (1002) but above content */
   animation: fadeInBackdrop 0.3s ease forwards;
   pointer-events: auto; /* Ensure it captures clicks */
@@ -1465,8 +1465,12 @@
 @keyframes fadeInBackdrop {
   from {
     opacity: 0;
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
   }
   to {
     opacity: 1;
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
   }
 }
