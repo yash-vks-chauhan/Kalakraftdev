@@ -97,6 +97,28 @@ export default function MobileProductManagement() {
     }
   }
 
+  // Toggle product active/inactive status
+  async function handleToggleStatus(id: number, newStatus: boolean) {
+    try {
+      const res = await fetch(`/api/admin/products/${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ isActive: newStatus })
+      })
+      if (!res.ok) {
+        const errorData = await res.json()
+        throw new Error(errorData.error || 'Error updating product status')
+      }
+      const json = await res.json()
+      setProducts(products.map(p => p.id === id ? { ...p, isActive: json.product.isActive } : p))
+    } catch (err: any) {
+      alert('Failed to update product status: ' + err.message)
+    }
+  }
+
   function handleEdit(id: number) {
     router.push(`/dashboard/admin/products/${id}`)
   }
@@ -242,9 +264,19 @@ export default function MobileProductManagement() {
                     
                     <div className="flex items-center gap-2 text-sm">
                       <span className="text-gray-500">Status:</span>
-                      <span className={`${product.isActive ? 'text-green-600' : 'text-gray-500'} font-medium`}>
-                        {product.isActive ? 'Active' : 'Inactive'}
-                      </span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleToggleStatus(product.id, !product.isActive)
+                        }}
+                        className={`relative inline-flex items-center h-6 w-11 rounded-full transition-colors ${
+                          product.isActive ? 'bg-green-500' : 'bg-red-500'
+                        }`}
+                      >
+                        <span className={`w-4 h-4 bg-white rounded-full shadow transform transition-transform ${
+                          product.isActive ? 'translate-x-5' : 'translate-x-1'
+                        }`} />
+                      </button>
                     </div>
                   </div>
                   
@@ -258,7 +290,10 @@ export default function MobileProductManagement() {
                     </Link>
                     
                     <button
-                      onClick={() => handleDelete(product.id, product.name)}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleDelete(product.id, product.name)
+                      }}
                       className="flex items-center gap-1 bg-red-100 text-red-800 text-sm px-3 py-2 rounded-md flex-1 justify-center"
                     >
                       <Trash2 size={14} />
