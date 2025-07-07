@@ -264,19 +264,14 @@ export default function MobileProductManagement() {
                     
                     <div className="flex items-center gap-2 text-sm">
                       <span className="text-gray-500">Status:</span>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleToggleStatus(product.id, !product.isActive)
-                        }}
-                        className={`relative inline-flex items-center h-6 w-11 rounded-full transition-colors ${
-                          product.isActive ? 'bg-green-500' : 'bg-red-500'
-                        }`}
-                      >
-                        <span className={`w-4 h-4 bg-white rounded-full shadow transform transition-transform ${
-                          product.isActive ? 'translate-x-5' : 'translate-x-1'
-                        }`} />
-                      </button>
+                      <label className={desktopStyles.statusSwitch} onClick={e => e.stopPropagation()}>
+                        <input
+                          type="checkbox"
+                          checked={product.isActive}
+                          onChange={() => handleToggleStatus(product.id, !product.isActive)}
+                        />
+                        <span className={desktopStyles.statusSlider} />
+                      </label>
                     </div>
                   </div>
                   
