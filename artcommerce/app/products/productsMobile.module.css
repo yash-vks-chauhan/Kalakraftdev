@@ -87,23 +87,13 @@
   -webkit-user-select: none;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
-  transform: translateZ(0);
-  -webkit-transform: translateZ(0);
-  will-change: transform;
-  z-index: 1;
 }
 
 .imageSlider {
   display: flex;
   width: 100%;
   height: 100%;
-  transition: transform 0.3s cubic-bezier(0.33, 1, 0.68, 1);
-  will-change: transform;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  transform: translate3d(0, 0, 0);
-  -webkit-transform: translate3d(0, 0, 0);
-  z-index: 1;
+  transition: transform 0.3s ease;
 }
 
 .imageSlide {
@@ -113,10 +103,6 @@
   flex-shrink: 0;
   position: relative;
   overflow: hidden;
-  transform: translateZ(0);
-  -webkit-transform: translateZ(0);
-  will-change: transform;
-  z-index: 1;
 }
 
 .image {
@@ -125,10 +111,7 @@
   object-fit: cover;
   display: block;
   pointer-events: none;
-  transform: translateZ(0);
-  -webkit-transform: translateZ(0);
   -webkit-user-drag: none;
-  will-change: transform;
 }
 
 .noImage {
@@ -346,13 +329,12 @@
   height: 6px;
   background-color: rgba(255, 255, 255, 0.5);
   border-radius: 50%;
-  transition: all 0.4s cubic-bezier(0.33, 1, 0.68, 1);
-  transform: scale(0.8);
+  transition: all 0.3s ease;
 }
 
 .activeIndicator {
   background-color: #fff;
-  transform: scale(1);
+  transform: scale(1.2);
   box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
 }
 

@@ -25,281 +25,14 @@ const ProductCard = ({ product, formatPrice }) => {
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
   const [isSwiping, setIsSwiping] = useState(false);
-  const [swipeOffset, setSwipeOffset] = useState(0);
-  const [animating, setAnimating] = useState(false);
-  const [swipeVelocity, setSwipeVelocity] = useState(0);
-  const [lastTouchTimestamp, setLastTouchTimestamp] = useState(0);
   const [showHints, setShowHints] = useState(true);
-  const [touchStartY, setTouchStartY] = useState(0); // Track vertical movement
   const imageContainerRef = useRef(null);
-  const animationRef = useRef(null);
   
   // Hide hints after first interaction or after timeout
   useEffect(() => {
     const timer = setTimeout(() => setShowHints(false), 4000);
     return () => clearTimeout(timer);
   }, []);
-  
-  // Spring animation constants - adjusted for faster response
-  const SPRING_TENSION = 0.15; // Increased from 0.08
-  const SPRING_FRICTION = 0.15; // Reduced from 0.20
-  const VELOCITY_SCALE = 8; // Adjusted from 10
-  
-  // Direct touch event handlers for better reliability
-  const handleTouchStart = (e) => {
-    if (product.imageUrls.length <= 1) return;
-    
-    // Hide hints on first interaction
-    setShowHints(false);
-    
-    // Cancel any ongoing animations
-    if (animationRef.current) {
-      cancelAnimationFrame(animationRef.current);
-      animationRef.current = null;
-    }
-    
-    if (animating) {
-      setAnimating(false);
-      setSwipeOffset(0);
-    }
-    
-    setTouchStart(e.targetTouches[0].clientX);
-    setTouchStartY(e.targetTouches[0].clientY); // Track Y position to detect scroll vs swipe
-    setLastTouchTimestamp(Date.now());
-    setIsSwiping(true);
-    setSwipeOffset(0);
-    setSwipeVelocity(0);
-  };
-  
-  const handleTouchMove = (e) => {
-    if (!isSwiping || product.imageUrls.length <= 1) return;
-    
-    const currentTouch = e.targetTouches[0].clientX;
-    const currentTouchY = e.targetTouches[0].clientY;
-    const currentTime = Date.now();
-    const timeDelta = currentTime - lastTouchTimestamp;
-    
-    // Detect if user is trying to scroll vertically rather than swipe horizontally
-    const verticalMovement = Math.abs(currentTouchY - touchStartY);
-    const horizontalMovement = Math.abs(currentTouch - touchStart);
-    
-    // If vertical scrolling is dominant, exit swipe mode
-    if (verticalMovement > horizontalMovement * 1.2 && horizontalMovement < 10) {
-      setIsSwiping(false);
-      setSwipeOffset(0);
-      return;
-    }
-    
-    // Prevent page scrolling when swiping images
-    e.preventDefault();
-    
-    // Calculate velocity (pixels per millisecond)
-    if (timeDelta > 0) {
-      const instantVelocity = (currentTouch - touchEnd) / timeDelta;
-      // Smooth velocity with exponential moving average
-      setSwipeVelocity(prev => prev * 0.7 + instantVelocity * 0.3);
-    }
-    
-    setTouchEnd(currentTouch);
-    setLastTouchTimestamp(currentTime);
-    
-    const currentOffset = currentTouch - touchStart;
-    const containerWidth = imageContainerRef.current?.offsetWidth || 0;
-    
-    // Add progressive resistance at edges for better feel
-    if ((currentImageIndex === 0 && currentOffset > 0) || 
-        (currentImageIndex === product.imageUrls.length - 1 && currentOffset < 0)) {
-      // Enhanced resistance curve for more luxurious edge behavior
-      const resistanceFactor = 1 - Math.min(Math.abs(currentOffset) / containerWidth, 0.6);
-      setSwipeOffset(currentOffset * Math.pow(resistanceFactor, 3));
-    } else {
-      setSwipeOffset(currentOffset);
-    }
-  };
-  
-  // Spring animation function for smoother transitions
-  const springAnimation = (targetOffset, startOffset, startVelocity) => {
-    let currentOffset = startOffset;
-    let velocity = startVelocity * VELOCITY_SCALE;
-    let lastTime = performance.now();
-    
-    // Set the new image index immediately for faster visual feedback
-    if (targetOffset === 0) {
-      // We're already at the correct image index, just need to animate the offset
-      setSwipeOffset(startOffset); // Ensure we start from the current position
-    }
-    
-    const animate = (time) => {
-      const deltaTime = Math.min(time - lastTime, 32); // Cap at ~30fps minimum for smoother animation
-      lastTime = time;
-      
-      // Spring physics
-      const displacement = targetOffset - currentOffset;
-      const springForce = displacement * SPRING_TENSION;
-      const dampingForce = -velocity * SPRING_FRICTION;
-      
-      // Apply forces
-      velocity += (springForce + dampingForce) * deltaTime;
-      currentOffset += velocity * deltaTime;
-      
-      // Update position
-      setSwipeOffset(currentOffset);
-      
-      // Check if animation should continue
-      if (Math.abs(displacement) > 0.1 || Math.abs(velocity) > 0.005) {
-        animationRef.current = requestAnimationFrame(animate);
-      } else {
-        // Animation complete
-        setSwipeOffset(targetOffset);
-        setAnimating(false);
-        animationRef.current = null;
-      }
-    };
-    
-    animationRef.current = requestAnimationFrame(animate);
-  };
-  
-  const handleTouchEnd = () => {
-    if (!isSwiping || product.imageUrls.length <= 1) return;
-    
-    setIsSwiping(false);
-    
-    if (!touchStart || !touchEnd) {
-      setSwipeOffset(0);
-      return;
-    }
-    
-    const distance = touchStart - touchEnd;
-    const containerWidth = imageContainerRef.current?.offsetWidth || 0;
-    const absDistance = Math.abs(distance);
-    const absVelocity = Math.abs(swipeVelocity);
-    
-    // Determine if swipe should trigger image change based on distance OR velocity
-    const isSignificantSwipe = 
-      absDistance > minSwipeDistance || 
-      (absDistance > minSwipeDistance / 3 && absVelocity > minSwipeVelocity);
-    
-    const isLeftSwipe = distance > 0;
-    const isRightSwipe = distance < 0;
-    
-    // Cancel any ongoing animations
-    if (animationRef.current) {
-      cancelAnimationFrame(animationRef.current);
-    }
-    
-    if (isSignificantSwipe) {
-      if (isLeftSwipe && currentImageIndex < product.imageUrls.length - 1) {
-        // Set the new index immediately before animation starts
-        setCurrentImageIndex(prevIndex => prevIndex + 1);
-        setAnimating(true);
-        // Use spring animation for smoother transition
-        springAnimation(0, swipeOffset, swipeVelocity);
-      } else if (isRightSwipe && currentImageIndex > 0) {
-        // Set the new index immediately before animation starts
-        setCurrentImageIndex(prevIndex => prevIndex - 1);
-        setAnimating(true);
-        // Use spring animation for smoother transition
-        springAnimation(0, swipeOffset, swipeVelocity);
-      } else {
-        // If at edge, animate back with spring effect
-        setAnimating(true);
-        springAnimation(0, swipeOffset, swipeVelocity);
-      }
-    } else {
-      // Not a significant swipe, animate back to current position
-      setAnimating(true);
-      springAnimation(0, swipeOffset, swipeVelocity);
-    }
-    
-    // Reset values
-    setTouchStart(0);
-    setTouchEnd(0);
-    setTouchStartY(0);
-    setSwipeVelocity(0);
-  };
-  
-  // Improved swipe sensitivity and threshold
-  const minSwipeDistance = 10; // Further reduced threshold for easier swiping
-  const minSwipeVelocity = 0.1; // More sensitive velocity detection
-  
-  // Handle manual image navigation with tap
-  const handleImageTap = (e) => {
-    if (product.imageUrls.length <= 1 || animating) return;
-    
-    const containerWidth = imageContainerRef.current?.offsetWidth || 0;
-    const tapX = e.nativeEvent.offsetX;
-    
-    // Tap on right third of image - go next
-    if (tapX > containerWidth * 0.7 && currentImageIndex < product.imageUrls.length - 1) {
-      setAnimating(true);
-      setCurrentImageIndex(currentImageIndex + 1);
-      
-      // Cancel any ongoing animations
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
-      
-      // Use spring animation for smoother transition
-      springAnimation(0, 0, 0);
-    }
-    // Tap on left third of image - go previous
-    else if (tapX < containerWidth * 0.3 && currentImageIndex > 0) {
-      setAnimating(true);
-      setCurrentImageIndex(currentImageIndex - 1);
-      
-      // Cancel any ongoing animations
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
-      
-      // Use spring animation for smoother transition
-      springAnimation(0, 0, 0);
-    }
-  };
-  
-  // Handle wishlist button click to prevent navigation
-  const handleWishlistClick = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
-  
-  // Calculate transform style for smooth swiping with improved transitions
-  const getImageTransform = () => {
-    // During active swiping or animation, use immediate transform without transition
-    if (isSwiping || animating) {
-      // Calculate percentage offset for smooth tracking during swipe
-      const containerWidth = imageContainerRef.current?.offsetWidth || 0;
-      const offsetPercentage = containerWidth ? (swipeOffset / containerWidth) * 100 : 0;
-      
-      return {
-        transform: `translateX(calc(${-100 * currentImageIndex}% + ${offsetPercentage}%))`,
-        transition: 'none'
-      };
-    }
-    
-    // When not swiping or animating, use smooth transition
-    return { 
-      transform: `translateX(${-100 * currentImageIndex}%)`,
-      transition: 'transform 0.3s cubic-bezier(0.33, 1, 0.68, 1)'
-    };
-  };
-  
-  // Cleanup animation on unmount
-  useEffect(() => {
-    return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
-    };
-  }, []);
-  
-  // Format short description
-  const getShortDescription = () => {
-    if (!product.shortDesc) return null;
-    return product.shortDesc.length > 60 
-      ? `${product.shortDesc.substring(0, 60)}...` 
-      : product.shortDesc;
-  };
   
   // Preload images for smoother transitions
   useEffect(() => {
@@ -312,6 +45,80 @@ const ProductCard = ({ product, formatPrice }) => {
     });
   }, [product.imageUrls]);
   
+  // Direct touch event handlers for better reliability
+  const handleTouchStart = (e) => {
+    if (product.imageUrls.length <= 1) return;
+    
+    // Hide hints on first interaction
+    setShowHints(false);
+    
+    setTouchStart(e.targetTouches[0].clientX);
+    setIsSwiping(true);
+  };
+  
+  const handleTouchMove = (e) => {
+    if (!isSwiping || product.imageUrls.length <= 1) return;
+    
+    const currentTouch = e.targetTouches[0].clientX;
+    setTouchEnd(currentTouch);
+  };
+  
+  const handleTouchEnd = () => {
+    if (!isSwiping || product.imageUrls.length <= 1) return;
+    
+    setIsSwiping(false);
+    
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const minSwipeDistance = 50;
+    
+    if (Math.abs(distance) < minSwipeDistance) return;
+    
+    if (distance > 0 && currentImageIndex < product.imageUrls.length - 1) {
+      // Swiped left, go to next image
+      setCurrentImageIndex(prevIndex => prevIndex + 1);
+    } else if (distance < 0 && currentImageIndex > 0) {
+      // Swiped right, go to previous image
+      setCurrentImageIndex(prevIndex => prevIndex - 1);
+    }
+    
+    // Reset values
+    setTouchStart(0);
+    setTouchEnd(0);
+  };
+  
+  // Handle manual image navigation with tap
+  const handleImageTap = (e) => {
+    if (product.imageUrls.length <= 1) return;
+    
+    const containerWidth = imageContainerRef.current?.offsetWidth || 0;
+    const tapX = e.nativeEvent.offsetX;
+    
+    // Tap on right third of image - go next
+    if (tapX > containerWidth * 0.7 && currentImageIndex < product.imageUrls.length - 1) {
+      setCurrentImageIndex(prevIndex => prevIndex + 1);
+    }
+    // Tap on left third of image - go previous
+    else if (tapX < containerWidth * 0.3 && currentImageIndex > 0) {
+      setCurrentImageIndex(prevIndex => prevIndex - 1);
+    }
+  };
+  
+  // Handle wishlist button click to prevent navigation
+  const handleWishlistClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+  
+  // Format short description
+  const getShortDescription = () => {
+    if (!product.shortDesc) return null;
+    return product.shortDesc.length > 60 
+      ? `${product.shortDesc.substring(0, 60)}...` 
+      : product.shortDesc;
+  };
+  
   return (
     <div className={styles.cardWrapper}>
       <Link href={`/products/${product.id}`} className={styles.card}>
@@ -323,16 +130,21 @@ const ProductCard = ({ product, formatPrice }) => {
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
         >
-          <div className={styles.imageSlider} style={getImageTransform()}>
+          <div 
+            className={styles.imageSlider} 
+            style={{
+              transform: `translateX(-${currentImageIndex * 100}%)`,
+              transition: isSwiping ? 'none' : 'transform 0.3s ease'
+            }}
+          >
             {product.imageUrls.map((url, index) => (
               <div key={index} className={styles.imageSlide}>
                 <img 
                   src={url}
                   alt={`${product.name} - Image ${index + 1}`}
                   className={styles.image}
-                  loading={index === 0 ? "eager" : "lazy"}
+                  loading={index === 0 || index === 1 ? "eager" : "lazy"}
                   draggable="false"
-                  decoding="async"
                 />
               </div>
             ))}
