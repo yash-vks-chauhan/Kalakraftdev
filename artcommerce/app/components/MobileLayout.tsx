@@ -527,6 +527,11 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
 
   return (
     <div className={styles.mobileLayoutContainer}>
+      {/* Backdrop for account dropdown */}
+      {isAccountDropdownOpen && (
+        <div className={styles.mobileBackdrop} onClick={() => setIsAccountDropdownOpen(false)}></div>
+      )}
+      
       {/* Home page specific content - Put at the top */}
       {isHomePage && (
         <div className={styles.curvedCardContainer}>
