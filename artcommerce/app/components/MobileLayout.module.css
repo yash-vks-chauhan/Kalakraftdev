@@ -305,11 +305,13 @@
     opacity: 0;
     backdrop-filter: blur(0px);
     -webkit-backdrop-filter: blur(0px);
+    background: rgba(255, 255, 255, 0);
   }
   to {
     opacity: 1;
-    backdrop-filter: blur(5px) saturate(180%);
-    -webkit-backdrop-filter: blur(5px) saturate(180%);
+    backdrop-filter: blur(16px) saturate(180%); /* Match the enhanced blur */
+    -webkit-backdrop-filter: blur(16px) saturate(180%); /* Match the enhanced blur */
+    background: rgba(255, 255, 255, 0.15);
   }
 }
 
@@ -1234,13 +1236,13 @@
   left: 0;
   right: 0;
   bottom: 70px; /* Changed from 0 to 70px to stop above the footer */
-  background: rgba(255, 255, 255, 0.08); /* Changed to match desktop style */
+  background: rgba(255, 255, 255, 0.15); /* Increased opacity for better visibility */
   backdrop-filter: blur(16px) saturate(180%); /* Enhanced blur effect */
   -webkit-backdrop-filter: blur(16px) saturate(180%); /* Enhanced blur effect */
   opacity: 0;
   visibility: hidden;
   transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-  z-index: 999;
+  z-index: 900; /* Ensure it's below the dropdown but above other content */
   pointer-events: none;
 }
 
@@ -1249,6 +1251,8 @@
   visibility: visible;
   pointer-events: auto;
   animation: fadeIn 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
 }
 
 @keyframes fadeIn {
