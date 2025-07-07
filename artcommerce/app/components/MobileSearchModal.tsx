@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { X, Search, ArrowLeft } from 'lucide-react'
+import WishlistButton from './WishlistButton'
 import styles from './MobileSearchModal.module.css'
 
 interface Product {
@@ -21,7 +22,278 @@ interface Product {
   category: { id: number; name: string; slug: string } | null
   avgRating?: number
   ratingCount?: number
+  isNew?: boolean
+  createdAt?: string
 }
+
+// Product Card with Swipeable Images component
+const ProductCard = ({ product, handleProductClick }) => {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [touchStart, setTouchStart] = useState(0);
+  const [touchEnd, setTouchEnd] = useState(0);
+  const [isSwiping, setIsSwiping] = useState(false);
+  const [swipeDistance, setSwipeDistance] = useState(0);
+  const [showHints, setShowHints] = useState(true);
+  const imageContainerRef = useRef(null);
+  const containerWidth = useRef(0);
+  
+  // Hide hints after first interaction or after timeout
+  useEffect(() => {
+    const timer = setTimeout(() => setShowHints(false), 4000);
+    return () => clearTimeout(timer);
+  }, []);
+  
+  // Preload images for smoother transitions
+  useEffect(() => {
+    if (!product.imageUrls || product.imageUrls.length <= 1) return;
+    
+    // Preload all images
+    product.imageUrls.forEach(url => {
+      const img = new window.Image();
+      img.src = url;
+    });
+  }, [product.imageUrls]);
+  
+  // Direct touch event handlers for better reliability
+  const handleTouchStart = (e) => {
+    if (product.imageUrls.length <= 1) return;
+    
+    // Hide hints on first interaction
+    setShowHints(false);
+    
+    // Store container width for calculations
+    containerWidth.current = imageContainerRef.current?.offsetWidth || 0;
+    
+    setTouchStart(e.targetTouches[0].clientX);
+    setTouchEnd(e.targetTouches[0].clientX);
+    setIsSwiping(true);
+    setSwipeDistance(0);
+  };
+  
+  const handleTouchMove = (e) => {
+    if (!isSwiping || product.imageUrls.length <= 1) return;
+    
+    // Prevent default to avoid page scrolling while swiping
+    e.preventDefault();
+    
+    const currentTouch = e.targetTouches[0].clientX;
+    setTouchEnd(currentTouch);
+    
+    // Calculate how far the user has swiped
+    const distance = currentTouch - touchStart;
+    
+    // Apply resistance at the edges
+    let finalDistance = distance;
+    if ((currentImageIndex === 0 && distance > 0) || 
+        (currentImageIndex === product.imageUrls.length - 1 && distance < 0)) {
+      // Apply resistance at edges - finger moves 3x more than image
+      finalDistance = distance / 3;
+    }
+    
+    setSwipeDistance(finalDistance);
+  };
+  
+  const handleTouchEnd = () => {
+    if (!isSwiping || product.imageUrls.length <= 1) return;
+    
+    setIsSwiping(false);
+    
+    if (!touchStart || !touchEnd) {
+      setSwipeDistance(0);
+      return;
+    }
+    
+    const distance = touchStart - touchEnd;
+    const minSwipeDistance = containerWidth.current * 0.2; // 20% of container width
+    
+    if (Math.abs(distance) < minSwipeDistance) {
+      // Not swiped far enough, snap back
+      setSwipeDistance(0);
+      return;
+    }
+    
+    if (distance > 0 && currentImageIndex < product.imageUrls.length - 1) {
+      // Swiped left, go to next image
+      setCurrentImageIndex(prevIndex => prevIndex + 1);
+    } else if (distance < 0 && currentImageIndex > 0) {
+      // Swiped right, go to previous image
+      setCurrentImageIndex(prevIndex => prevIndex - 1);
+    }
+    
+    // Reset values
+    setTouchStart(0);
+    setTouchEnd(0);
+    setSwipeDistance(0);
+  };
+  
+  // Handle manual image navigation with tap
+  const handleImageTap = (e) => {
+    if (product.imageUrls.length <= 1) return;
+    
+    const containerWidth = imageContainerRef.current?.offsetWidth || 0;
+    const tapX = e.nativeEvent.offsetX;
+    
+    // Tap on right third of image - go next
+    if (tapX > containerWidth * 0.7 && currentImageIndex < product.imageUrls.length - 1) {
+      setCurrentImageIndex(prevIndex => prevIndex + 1);
+    }
+    // Tap on left third of image - go previous
+    else if (tapX < containerWidth * 0.3 && currentImageIndex > 0) {
+      setCurrentImageIndex(prevIndex => prevIndex - 1);
+    }
+  };
+  
+  // Handle wishlist button click to prevent navigation
+  const handleWishlistClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+  
+  // Calculate transform style for real-time finger tracking
+  const getImageTransform = () => {
+    if (isSwiping) {
+      // During swipe, follow finger exactly
+      const percentageOffset = containerWidth.current ? (swipeDistance / containerWidth.current) * 100 : 0;
+      return {
+        transform: `translateX(calc(-${currentImageIndex * 100}% + ${percentageOffset}%))`,
+        transition: 'none'
+      };
+    }
+    
+    // When not swiping, use smooth transition
+    return {
+      transform: `translateX(-${currentImageIndex * 100}%)`,
+      transition: 'transform 0.3s ease'
+    };
+  };
+  
+  // Format short description
+  const getShortDescription = () => {
+    if (!product.shortDesc) return null;
+    return product.shortDesc.length > 60 
+      ? `${product.shortDesc.substring(0, 60)}...` 
+      : product.shortDesc;
+  };
+  
+  // Format price with commas for thousands
+  const formatPrice = (price) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 0,
+      minimumFractionDigits: 0
+    }).format(price);
+  };
+  
+  return (
+    <div className={styles.cardWrapper}>
+      <div 
+        className={styles.card}
+        onClick={() => handleProductClick(product.id)}
+      >
+        <div 
+          className={styles.imageContainer}
+          ref={imageContainerRef}
+          onClick={handleImageTap}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
+          <div 
+            className={styles.imageSlider} 
+            style={getImageTransform()}
+          >
+            {product.imageUrls.map((url, index) => (
+              <div key={index} className={styles.imageSlide}>
+                <img 
+                  src={url}
+                  alt={`${product.name} - Image ${index + 1}`}
+                  className={styles.image}
+                  loading={index === 0 || index === 1 ? "eager" : "lazy"}
+                  draggable="false"
+                />
+              </div>
+            ))}
+          </div>
+          
+          {product.imageUrls.length === 0 && (
+            <div className={styles.noImage}>No image</div>
+          )}
+          
+          {product.isNew && <span className={styles.badge}>New</span>}
+          {product.stockQuantity === 0 && <div className={styles.outOfStock}>Out of Stock</div>}
+          {product.stockQuantity > 0 && product.stockQuantity <= 5 && (
+            <div className={styles.lowStock}>Only {product.stockQuantity} left</div>
+          )}
+          
+          {/* Image indicators */}
+          {product.imageUrls.length > 1 && (
+            <div className={styles.imageIndicators}>
+              {product.imageUrls.map((_, index) => (
+                <div 
+                  key={index} 
+                  className={`${styles.indicator} ${index === currentImageIndex ? styles.activeIndicator : ''}`}
+                />
+              ))}
+            </div>
+          )}
+          
+          {/* Swipe hints - only show if multiple images and on first render */}
+          {showHints && product.imageUrls.length > 1 && (
+            <>
+              {currentImageIndex > 0 && (
+                <div className={styles.swipeRightHint}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                  </svg>
+                </div>
+              )}
+              {currentImageIndex < product.imageUrls.length - 1 && (
+                <div className={styles.swipeLeftHint}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                  </svg>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+        
+        <div className={styles.info}>
+          {product.category && (
+            <div className={styles.categoryTag}>
+              {product.category.name}
+            </div>
+          )}
+          <h3 className={styles.name}>{product.name}</h3>
+          
+          {/* Short description - only show if there's space */}
+          {product.shortDesc && !product.avgRating && (
+            <p className={styles.shortDesc}>{getShortDescription()}</p>
+          )}
+          
+          <div className={styles.priceRow}>
+            <p className={styles.price}>{formatPrice(product.price)}</p>
+            {product.avgRating > 0 && (
+              <p className={styles.productRating}>
+                <span className={styles.starFilled}>★</span> 
+                <span className={styles.ratingValue}>{product.avgRating.toFixed(1)}</span>
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+      
+      <div className={styles.wishlistContainer} onClick={handleWishlistClick}>
+        <WishlistButton 
+          productId={product.id} 
+          className={`${styles.wishlistButton} ${styles.blackWishlist}`}
+          preventNavigation={true}
+        />
+      </div>
+    </div>
+  );
+};
 
 // Client-side synonyms mapping (English + Hindi)
 const SYNONYMS: Record<string, string> = {
@@ -180,7 +452,21 @@ export default function MobileSearchModal({ open, onClose }: Props) {
           throw new Error(data.error || 'Failed to fetch search results')
         }
         
-        let products = Array.isArray(data.products) ? data.products : []
+        // Normalize imageUrls and add isNew flag
+        let products = (Array.isArray(data.products) ? data.products : []).map((p) => {
+          let urls = []
+          try {
+            urls = Array.isArray(p.imageUrls) ? p.imageUrls : JSON.parse(p.imageUrls || '[]')
+          } catch {
+            urls = []
+          }
+          
+          // Check if product is new (less than 14 days old)
+          const isNew = p.createdAt && new Date(p.createdAt) > new Date(Date.now() - 14 * 24 * 60 * 60 * 1000)
+          
+          return { ...p, imageUrls: urls, isNew }
+        })
+        
         setSearchResults(products)
       } catch (err: any) {
         setErrorResults(err.message)
@@ -320,50 +606,13 @@ export default function MobileSearchModal({ open, onClose }: Props) {
               <p className={styles.errorText}>Error: {errorResults}</p>
             </div>
           ) : searchResults.length > 0 ? (
-            <div className={styles.productResults}>
+            <div className={styles.list}>
               {searchResults.map(product => (
-                <div 
+                <ProductCard 
                   key={product.id} 
-                  className={styles.productCard}
-                  onClick={() => handleProductClick(product.id)}
-                >
-                  <div className={styles.productImageContainer}>
-                    {product.imageUrls[0] ? (
-                      <img 
-                        src={product.imageUrls[0]} 
-                        alt={product.name} 
-                        className={styles.productImage} 
-                      />
-                    ) : (
-                      <div className={styles.noImagePlaceholder}>No Image</div>
-                    )}
-                    {product.stockQuantity === 0 && (
-                      <div className={styles.outOfStock}>Out of Stock</div>
-                    )}
-                    {product.stockQuantity > 0 && product.stockQuantity <= 5 && (
-                      <div className={styles.lowStock}>Only {product.stockQuantity} left</div>
-                    )}
-                  </div>
-                  <div className={styles.productInfo}>
-                    {product.category && (
-                      <div className={styles.categoryTag}>
-                        {product.category.name}
-                      </div>
-                    )}
-                    <h3 className={styles.productName}>{product.name}</h3>
-                    <div className={styles.priceRow}>
-                      <p className={styles.productPrice}>
-                        {product.price.toFixed(2)}
-                      </p>
-                      {product.avgRating > 0 && (
-                        <p className={styles.productRating}>
-                          <span className={styles.starFilled}>★</span> 
-                          <span className={styles.ratingValue}>{product.avgRating.toFixed(1)}</span>
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </div>
+                  product={product}
+                  handleProductClick={handleProductClick}
+                />
               ))}
             </div>
           ) : searchText ? (
