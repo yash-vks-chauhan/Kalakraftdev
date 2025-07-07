@@ -25,8 +25,10 @@ const ProductCard = ({ product, formatPrice }) => {
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
   const [isSwiping, setIsSwiping] = useState(false);
+  const [swipeDistance, setSwipeDistance] = useState(0);
   const [showHints, setShowHints] = useState(true);
   const imageContainerRef = useRef(null);
+  const containerWidth = useRef(0);
   
   // Hide hints after first interaction or after timeout
   useEffect(() => {
@@ -52,15 +54,36 @@ const ProductCard = ({ product, formatPrice }) => {
     // Hide hints on first interaction
     setShowHints(false);
     
+    // Store container width for calculations
+    containerWidth.current = imageContainerRef.current?.offsetWidth || 0;
+    
     setTouchStart(e.targetTouches[0].clientX);
+    setTouchEnd(e.targetTouches[0].clientX);
     setIsSwiping(true);
+    setSwipeDistance(0);
   };
   
   const handleTouchMove = (e) => {
     if (!isSwiping || product.imageUrls.length <= 1) return;
     
+    // Prevent default to avoid page scrolling while swiping
+    e.preventDefault();
+    
     const currentTouch = e.targetTouches[0].clientX;
     setTouchEnd(currentTouch);
+    
+    // Calculate how far the user has swiped
+    const distance = currentTouch - touchStart;
+    
+    // Apply resistance at the edges
+    let finalDistance = distance;
+    if ((currentImageIndex === 0 && distance > 0) || 
+        (currentImageIndex === product.imageUrls.length - 1 && distance < 0)) {
+      // Apply resistance at edges - finger moves 3x more than image
+      finalDistance = distance / 3;
+    }
+    
+    setSwipeDistance(finalDistance);
   };
   
   const handleTouchEnd = () => {
@@ -68,12 +91,19 @@ const ProductCard = ({ product, formatPrice }) => {
     
     setIsSwiping(false);
     
-    if (!touchStart || !touchEnd) return;
+    if (!touchStart || !touchEnd) {
+      setSwipeDistance(0);
+      return;
+    }
     
     const distance = touchStart - touchEnd;
-    const minSwipeDistance = 50;
+    const minSwipeDistance = containerWidth.current * 0.2; // 20% of container width
     
-    if (Math.abs(distance) < minSwipeDistance) return;
+    if (Math.abs(distance) < minSwipeDistance) {
+      // Not swiped far enough, snap back
+      setSwipeDistance(0);
+      return;
+    }
     
     if (distance > 0 && currentImageIndex < product.imageUrls.length - 1) {
       // Swiped left, go to next image
@@ -86,6 +116,7 @@ const ProductCard = ({ product, formatPrice }) => {
     // Reset values
     setTouchStart(0);
     setTouchEnd(0);
+    setSwipeDistance(0);
   };
   
   // Handle manual image navigation with tap
@@ -111,6 +142,24 @@ const ProductCard = ({ product, formatPrice }) => {
     e.stopPropagation();
   };
   
+  // Calculate transform style for real-time finger tracking
+  const getImageTransform = () => {
+    if (isSwiping) {
+      // During swipe, follow finger exactly
+      const percentageOffset = containerWidth.current ? (swipeDistance / containerWidth.current) * 100 : 0;
+      return {
+        transform: `translateX(calc(-${currentImageIndex * 100}% + ${percentageOffset}%))`,
+        transition: 'none'
+      };
+    }
+    
+    // When not swiping, use smooth transition
+    return {
+      transform: `translateX(-${currentImageIndex * 100}%)`,
+      transition: 'transform 0.3s ease'
+    };
+  };
+  
   // Format short description
   const getShortDescription = () => {
     if (!product.shortDesc) return null;
@@ -132,10 +181,7 @@ const ProductCard = ({ product, formatPrice }) => {
         >
           <div 
             className={styles.imageSlider} 
-            style={{
-              transform: `translateX(-${currentImageIndex * 100}%)`,
-              transition: isSwiping ? 'none' : 'transform 0.3s ease'
-            }}
+            style={getImageTransform()}
           >
             {product.imageUrls.map((url, index) => (
               <div key={index} className={styles.imageSlide}>
