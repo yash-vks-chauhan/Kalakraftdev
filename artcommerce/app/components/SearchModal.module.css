@@ -846,6 +846,22 @@
   .sortOptions {
     padding: 0;
   }
+
+  .searchOverlay {
+    transition: opacity 0.15s ease, visibility 0.15s ease;
+  }
+  .searchModal {
+    transform: translateY(100%);
+    transition: transform 0.15s ease-out, opacity 0.15s ease-out;
+  }
+  .searchOverlayOpen .searchModal {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  .searchModalClosing .searchModal {
+    transform: translateY(100%);
+    opacity: 0;
+  }
 }
 
 @media (max-width: 480px) {
