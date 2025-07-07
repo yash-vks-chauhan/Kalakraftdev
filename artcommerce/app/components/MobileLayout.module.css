@@ -1453,12 +1453,13 @@
   top: 0;
   left: 0;
   right: 0;
-  bottom: 70px; /* Stop above footer */
+  bottom: 64px; /* Exactly at the footer height */
   background: rgba(0, 0, 0, 0.2);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  z-index: 900;
+  z-index: 900; /* Below the footer (1002) but above content */
   animation: fadeInBackdrop 0.3s ease forwards;
+  pointer-events: auto; /* Ensure it captures clicks */
 }
 
 @keyframes fadeInBackdrop {
