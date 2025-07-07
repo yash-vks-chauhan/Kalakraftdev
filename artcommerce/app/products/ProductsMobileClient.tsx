@@ -40,10 +40,10 @@ const ProductCard = ({ product, formatPrice }) => {
     return () => clearTimeout(timer);
   }, []);
   
-  // Spring animation constants
-  const SPRING_TENSION = 0.08;
-  const SPRING_FRICTION = 0.20;
-  const VELOCITY_SCALE = 10;
+  // Spring animation constants - adjusted for faster response
+  const SPRING_TENSION = 0.15; // Increased from 0.08
+  const SPRING_FRICTION = 0.15; // Reduced from 0.20
+  const VELOCITY_SCALE = 8; // Adjusted from 10
   
   // Direct touch event handlers for better reliability
   const handleTouchStart = (e) => {
@@ -120,11 +120,17 @@ const ProductCard = ({ product, formatPrice }) => {
   // Spring animation function for smoother transitions
   const springAnimation = (targetOffset, startOffset, startVelocity) => {
     let currentOffset = startOffset;
-    let velocity = startVelocity * VELOCITY_SCALE; // Scale velocity for better effect
+    let velocity = startVelocity * VELOCITY_SCALE;
     let lastTime = performance.now();
     
+    // Set the new image index immediately for faster visual feedback
+    if (targetOffset === 0) {
+      // We're already at the correct image index, just need to animate the offset
+      setSwipeOffset(startOffset); // Ensure we start from the current position
+    }
+    
     const animate = (time) => {
-      const deltaTime = Math.min(time - lastTime, 64); // Cap at ~15fps minimum
+      const deltaTime = Math.min(time - lastTime, 32); // Cap at ~30fps minimum for smoother animation
       lastTime = time;
       
       // Spring physics
@@ -140,7 +146,7 @@ const ProductCard = ({ product, formatPrice }) => {
       setSwipeOffset(currentOffset);
       
       // Check if animation should continue
-      if (Math.abs(displacement) > 0.5 || Math.abs(velocity) > 0.01) {
+      if (Math.abs(displacement) > 0.1 || Math.abs(velocity) > 0.005) {
         animationRef.current = requestAnimationFrame(animate);
       } else {
         // Animation complete
@@ -176,8 +182,6 @@ const ProductCard = ({ product, formatPrice }) => {
     const isLeftSwipe = distance > 0;
     const isRightSwipe = distance < 0;
     
-    setAnimating(true);
-    
     // Cancel any ongoing animations
     if (animationRef.current) {
       cancelAnimationFrame(animationRef.current);
@@ -185,19 +189,25 @@ const ProductCard = ({ product, formatPrice }) => {
     
     if (isSignificantSwipe) {
       if (isLeftSwipe && currentImageIndex < product.imageUrls.length - 1) {
-        setCurrentImageIndex(currentImageIndex + 1);
+        // Set the new index immediately before animation starts
+        setCurrentImageIndex(prevIndex => prevIndex + 1);
+        setAnimating(true);
         // Use spring animation for smoother transition
         springAnimation(0, swipeOffset, swipeVelocity);
       } else if (isRightSwipe && currentImageIndex > 0) {
-        setCurrentImageIndex(currentImageIndex - 1);
+        // Set the new index immediately before animation starts
+        setCurrentImageIndex(prevIndex => prevIndex - 1);
+        setAnimating(true);
         // Use spring animation for smoother transition
         springAnimation(0, swipeOffset, swipeVelocity);
       } else {
         // If at edge, animate back with spring effect
+        setAnimating(true);
         springAnimation(0, swipeOffset, swipeVelocity);
       }
     } else {
       // Not a significant swipe, animate back to current position
+      setAnimating(true);
       springAnimation(0, swipeOffset, swipeVelocity);
     }
     
@@ -209,8 +219,8 @@ const ProductCard = ({ product, formatPrice }) => {
   };
   
   // Improved swipe sensitivity and threshold
-  const minSwipeDistance = 15; // Reduced threshold for easier swiping
-  const minSwipeVelocity = 0.15; // More sensitive velocity detection
+  const minSwipeDistance = 10; // Further reduced threshold for easier swiping
+  const minSwipeVelocity = 0.1; // More sensitive velocity detection
   
   // Handle manual image navigation with tap
   const handleImageTap = (e) => {
@@ -255,27 +265,22 @@ const ProductCard = ({ product, formatPrice }) => {
   
   // Calculate transform style for smooth swiping with improved transitions
   const getImageTransform = () => {
-    if (!isSwiping && swipeOffset === 0 && !animating) {
-      return { 
-        transform: `translateX(${-100 * currentImageIndex}%)`,
-        transition: 'transform 0.5s cubic-bezier(0.33, 1, 0.68, 1)'
-      };
-    }
-    
-    if (!isSwiping && swipeOffset === 0 && animating) {
-      return { 
-        transform: `translateX(${-100 * currentImageIndex}%)`,
+    // During active swiping or animation, use immediate transform without transition
+    if (isSwiping || animating) {
+      // Calculate percentage offset for smooth tracking during swipe
+      const containerWidth = imageContainerRef.current?.offsetWidth || 0;
+      const offsetPercentage = containerWidth ? (swipeOffset / containerWidth) * 100 : 0;
+      
+      return {
+        transform: `translateX(calc(${-100 * currentImageIndex}% + ${offsetPercentage}%))`,
         transition: 'none'
       };
     }
     
-    // Calculate percentage offset for smooth tracking during swipe
-    const containerWidth = imageContainerRef.current?.offsetWidth || 0;
-    const offsetPercentage = containerWidth ? (swipeOffset / containerWidth) * 100 : 0;
-    
-    return {
-      transform: `translateX(calc(${-100 * currentImageIndex}% + ${offsetPercentage}%))`,
-      transition: 'none'
+    // When not swiping or animating, use smooth transition
+    return { 
+      transform: `translateX(${-100 * currentImageIndex}%)`,
+      transition: 'transform 0.3s cubic-bezier(0.33, 1, 0.68, 1)'
     };
   };
   
@@ -296,6 +301,17 @@ const ProductCard = ({ product, formatPrice }) => {
       : product.shortDesc;
   };
   
+  // Preload images for smoother transitions
+  useEffect(() => {
+    if (!product.imageUrls || product.imageUrls.length <= 1) return;
+    
+    // Preload all images
+    product.imageUrls.forEach(url => {
+      const img = new Image();
+      img.src = url;
+    });
+  }, [product.imageUrls]);
+  
   return (
     <div className={styles.cardWrapper}>
       <Link href={`/products/${product.id}`} className={styles.card}>
@@ -314,8 +330,9 @@ const ProductCard = ({ product, formatPrice }) => {
                   src={url}
                   alt={`${product.name} - Image ${index + 1}`}
                   className={styles.image}
-                  loading="lazy"
+                  loading={index === 0 ? "eager" : "lazy"}
                   draggable="false"
+                  decoding="async"
                 />
               </div>
             ))}

@@ -89,18 +89,21 @@
   -webkit-tap-highlight-color: transparent;
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
+  will-change: transform;
+  z-index: 1;
 }
 
 .imageSlider {
   display: flex;
   width: 100%;
   height: 100%;
-  transition: transform 0.5s cubic-bezier(0.33, 1, 0.68, 1);
+  transition: transform 0.3s cubic-bezier(0.33, 1, 0.68, 1);
   will-change: transform;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   transform: translate3d(0, 0, 0);
   -webkit-transform: translate3d(0, 0, 0);
+  z-index: 1;
 }
 
 .imageSlide {
@@ -112,6 +115,8 @@
   overflow: hidden;
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
+  will-change: transform;
+  z-index: 1;
 }
 
 .image {
@@ -123,6 +128,7 @@
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
   -webkit-user-drag: none;
+  will-change: transform;
 }
 
 .noImage {
