@@ -19,6 +19,8 @@ interface Product {
   imageUrls: string[]
   stockQuantity: number
   category: { id: number; name: string; slug: string } | null
+  avgRating?: number
+  ratingCount?: number
 }
 
 // Client-side synonyms mapping (English + Hindi)
@@ -335,12 +337,31 @@ export default function MobileSearchModal({ open, onClose }: Props) {
                     ) : (
                       <div className={styles.noImagePlaceholder}>No Image</div>
                     )}
+                    {product.stockQuantity === 0 && (
+                      <div className={styles.outOfStock}>Out of Stock</div>
+                    )}
+                    {product.stockQuantity > 0 && product.stockQuantity <= 5 && (
+                      <div className={styles.lowStock}>Only {product.stockQuantity} left</div>
+                    )}
                   </div>
                   <div className={styles.productInfo}>
+                    {product.category && (
+                      <div className={styles.categoryTag}>
+                        {product.category.name}
+                      </div>
+                    )}
                     <h3 className={styles.productName}>{product.name}</h3>
-                    <p className={styles.productPrice}>
-                      {product.currency} {product.price.toFixed(2)}
-                    </p>
+                    <div className={styles.priceRow}>
+                      <p className={styles.productPrice}>
+                        {product.price.toFixed(2)}
+                      </p>
+                      {product.avgRating > 0 && (
+                        <p className={styles.productRating}>
+                          <span className={styles.starFilled}>★</span> 
+                          <span className={styles.ratingValue}>{product.avgRating.toFixed(1)}</span>
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}

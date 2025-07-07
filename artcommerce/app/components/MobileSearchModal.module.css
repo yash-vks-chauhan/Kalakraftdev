@@ -192,30 +192,64 @@
 }
 
 .productResults {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0;
+  width: 100%;
+  max-width: 100%;
+  background-color: #fff;
+  box-sizing: border-box;
+}
+
+@media (max-width: 360px) {
+  .productResults {
+    grid-template-columns: 1fr;
+    padding: 0;
+  }
 }
 
 .productCard {
+  position: relative;
+  background: #fff;
+  border-radius: 0;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
   display: flex;
-  border-bottom: 1px solid #f0f0f0;
-  padding-bottom: 1rem;
-  cursor: pointer;
+  flex-direction: column;
+  position: relative;
+  box-shadow: none;
+  transition: all 0.3s ease;
+  margin-bottom: 0;
+  height: 100%;
+  width: 100%;
+  border: none;
+}
+
+.productCard:active {
+  transform: translateY(1px);
 }
 
 .productImageContainer {
-  width: 80px;
-  height: 80px;
+  width: 100%;
+  aspect-ratio: 1/1.05;
+  background: #fff;
   position: relative;
-  margin-right: 1rem;
-  flex-shrink: 0;
+  overflow: hidden;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  border-radius: 0;
 }
 
 .productImage {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
+  pointer-events: none;
+  -webkit-user-drag: none;
 }
 
 .noImagePlaceholder {
@@ -224,30 +258,73 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #f5f5f5;
-  color: #9e9e9e;
-  font-size: 0.75rem;
+  color: #888;
+  font-size: 0.9rem;
+  background-color: #f9f9f9;
 }
 
 .productInfo {
-  flex: 1;
+  padding: 12px 10px 16px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  background-color: #fff;
+  flex-grow: 1;
+  height: auto;
+  min-height: 80px;
+  box-sizing: border-box;
+  justify-content: space-between;
+}
+
+.productCategory {
+  display: inline-block;
+  font-size: 0.7rem;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  opacity: 0.9;
+  max-width: 100%;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 .productName {
-  font-size: 0.875rem;
+  font-size: 0.85rem;
   font-weight: 500;
-  margin: 0 0 0.25rem;
-  color: #000000;
+  margin: 0 0 6px 0;
+  line-height: 1.3;
+  color: #000;
+  text-transform: none;
+  letter-spacing: 0.02em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  white-space: normal;
+  height: auto;
+  max-height: 2.6em;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  max-width: 100%;
+}
+
+.priceRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+  margin-bottom: 0;
 }
 
 .productPrice {
-  font-size: 0.875rem;
+  font-size: 0.85rem;
   font-weight: 600;
+  color: #000;
   margin: 0;
-  color: #000000;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 .noResultsContainer {
@@ -328,4 +405,60 @@
   color: #757575;
   margin: 0;
   max-width: 80%;
+}
+
+.outOfStock {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.7);
+  color: #000;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+  z-index: 2;
+  backdrop-filter: blur(2px);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.lowStock {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  font-size: 0.65rem;
+  padding: 4px 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  z-index: 2;
+  font-weight: 500;
+  border-radius: 0;
+  backdrop-filter: blur(2px);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.starFilled {
+  color: #FFD700;
+  margin-right: 2px;
+}
+
+.productRating {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  font-size: 0.7rem;
+  background-color: rgba(255, 215, 0, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.ratingValue {
+  color: #000;
 } 
