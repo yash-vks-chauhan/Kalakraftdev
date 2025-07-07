@@ -87,13 +87,15 @@
   -webkit-user-select: none;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 }
 
 .imageSlider {
   display: flex;
   width: 100%;
   height: 100%;
-  transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  transition: transform 0.5s cubic-bezier(0.33, 1, 0.68, 1);
   will-change: transform;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
@@ -323,29 +325,29 @@
 /* Image indicators */
 .imageIndicators {
   position: absolute;
-  bottom: 0;
+  bottom: 12px;
   left: 0;
   width: 100%;
   display: flex;
   justify-content: center;
-  gap: 4px;
-  padding: 10px 0;
-  background: linear-gradient(to top, rgba(0,0,0,0.1), transparent);
+  gap: 6px;
+  padding: 0;
   z-index: 3;
 }
 
 .indicator {
-  width: 20px;
-  height: 2px;
+  width: 6px;
+  height: 6px;
   background-color: rgba(255, 255, 255, 0.5);
-  border-radius: 0;
-  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  border-radius: 50%;
+  transition: all 0.4s cubic-bezier(0.33, 1, 0.68, 1);
+  transform: scale(0.8);
 }
 
 .activeIndicator {
   background-color: #fff;
-  width: 20px;
-  transform: scaleX(1.2);
+  transform: scale(1);
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
 }
 
 /* Remove overlay for swipeable images */
@@ -699,14 +701,14 @@ details[open] .arrow {
   bottom: 0;
   background: linear-gradient(
     90deg,
-    rgba(0, 0, 0, 0.05) 0%,
-    rgba(0, 0, 0, 0) 10%,
-    rgba(0, 0, 0, 0) 90%,
-    rgba(0, 0, 0, 0.05) 100%
+    rgba(255, 255, 255, 0.03) 0%,
+    rgba(255, 255, 255, 0) 20%,
+    rgba(255, 255, 255, 0) 80%,
+    rgba(255, 255, 255, 0.03) 100%
   );
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.2s ease;
   z-index: 2;
 }
 
