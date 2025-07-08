@@ -20,12 +20,6 @@ const isMobileView = () => {
 };
 
 export default function Home() {
-  // Add scroll restoration to prevent reload from preserving scroll position
-  useEffect(() => {
-    if ('scrollRestoration' in window.history) {
-      window.history.scrollRestoration = 'manual';
-    }
-  }, []);
 
 const [message, setMessage] = useState<string|null>(null)
 
@@ -452,7 +446,7 @@ return (
 
 <main data-page="home" style={{background: '#f8f8f8'}}>
 
-<section className="relative overflow-hidden">
+<section className={`relative overflow-hidden ${styles.desktopOnly}`}>
 
 <div className={styles.videoContainer}>
   {/* Video with fallback image */}
