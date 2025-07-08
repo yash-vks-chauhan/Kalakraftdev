@@ -10,7 +10,7 @@ const inter = Inter({
 })
 
 export const metadata = {
-  title: 'Artcommerce',
+  title: 'Kalakraft',
   description: 'Your one-stop shop for handcrafted art pieces',
 }
 
