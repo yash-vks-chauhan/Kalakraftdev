@@ -23,6 +23,7 @@ export default function WishlistButton({ productId, className = '', preventNavig
   const [showFlyingCard, setShowFlyingCard] = useState(false)
   const buttonRef = useRef<HTMLButtonElement>(null)
   const [animationCompleted, setAnimationCompleted] = useState(false)
+  const [triggerFooterBeat, setTriggerFooterBeat] = useState(false)
 
   const inWishlist = isInWishlist(productId)
 
@@ -50,8 +51,15 @@ export default function WishlistButton({ productId, className = '', preventNavig
         // Wait for animation to complete before hiding
         setTimeout(() => {
           setAnimationCompleted(true)
+          // Trigger the footer icon beat animation
+          setTriggerFooterBeat(true)
+          
           setTimeout(() => {
             setShowFlyingCard(false)
+            // Reset footer beat animation after a delay
+            setTimeout(() => {
+              setTriggerFooterBeat(false)
+            }, 1000);
           }, 300); // Short delay after completion animation
         }, 1000)
       }
@@ -92,6 +100,21 @@ export default function WishlistButton({ productId, className = '', preventNavig
     }
   }
 
+  // Apply the beat animation to the footer wishlist icon
+  useEffect(() => {
+    if (triggerFooterBeat) {
+      const footerIcon = document.querySelector('[data-wishlist-footer-icon]');
+      if (footerIcon) {
+        footerIcon.classList.add('wishlist-icon-beat');
+        
+        // Remove the class after animation completes
+        setTimeout(() => {
+          footerIcon.classList.remove('wishlist-icon-beat');
+        }, 1000);
+      }
+    }
+  }, [triggerFooterBeat]);
+
   // Debug function to manually trigger the animation for testing
   const debugTriggerAnimation = () => {
     if (window.innerWidth <= 768) {
@@ -99,8 +122,12 @@ export default function WishlistButton({ productId, className = '', preventNavig
       setShowFlyingCard(true);
       setTimeout(() => {
         setAnimationCompleted(true);
+        setTriggerFooterBeat(true);
         setTimeout(() => {
           setShowFlyingCard(false);
+          setTimeout(() => {
+            setTriggerFooterBeat(false);
+          }, 1000);
         }, 300);
       }, 1000);
     }
@@ -182,6 +209,10 @@ function FlyingCardEffect({ buttonRef, animationCompleted }: {
     top: '0px',
     left: '0px',
   } as React.CSSProperties)
+  
+  // For trail effect
+  const [trails, setTrails] = useState<Array<{id: number, style: React.CSSProperties}>>([]);
+  const trailCountRef = useRef(0);
 
   useEffect(() => {
     // Calculate the starting position (button location)
@@ -215,6 +246,36 @@ function FlyingCardEffect({ buttonRef, animationCompleted }: {
           end: { x: wishlistRect.left, y: wishlistRect.top },
           endX, endY
         });
+        
+        // Create trail effect
+        const trailCount = 8;
+        const trailInterval = setInterval(() => {
+          if (trailCountRef.current < trailCount) {
+            const progress = trailCountRef.current / trailCount;
+            const trailX = buttonRect.left + buttonRect.width/2 + endX * progress;
+            const trailY = buttonRect.top + buttonRect.height/2 + (endY * progress) - Math.sin(progress * Math.PI) * 40;
+            
+            setTrails(prev => [...prev, {
+              id: Date.now(),
+              style: {
+                top: `${trailY}px`,
+                left: `${trailX}px`,
+                animation: `trail 0.8s ease-out forwards`,
+                animationDelay: `${trailCountRef.current * 0.1}s`
+              }
+            }]);
+            
+            trailCountRef.current++;
+          } else {
+            clearInterval(trailInterval);
+          }
+        }, 100);
+        
+        return () => {
+          clearInterval(trailInterval);
+          trailCountRef.current = 0;
+          setTrails([]);
+        };
       } else {
         console.warn('Wishlist footer icon not found, using fallback animation');
         // Fallback if wishlist icon not found - animate to bottom right
@@ -235,6 +296,15 @@ function FlyingCardEffect({ buttonRef, animationCompleted }: {
 
   return (
     <>
+      {/* Trail effect */}
+      {trails.map(trail => (
+        <div 
+          key={trail.id}
+          className="wishlist-trail"
+          style={trail.style}
+        />
+      ))}
+    
       <div 
         className="flying-card-animation wishlist-flying-heart" 
         style={style}
@@ -243,6 +313,12 @@ function FlyingCardEffect({ buttonRef, animationCompleted }: {
         <svg viewBox="0 0 24 24">
           <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
         </svg>
+        
+        {/* Sparkle effects */}
+        <div className="sparkle sparkle-1"></div>
+        <div className="sparkle sparkle-2"></div>
+        <div className="sparkle sparkle-3"></div>
+        <div className="sparkle sparkle-4"></div>
       </div>
       
       {animationCompleted && (

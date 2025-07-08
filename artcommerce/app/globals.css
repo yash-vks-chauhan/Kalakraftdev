@@ -188,14 +188,27 @@ body:has(> div > main[data-page="home"]) {
     opacity: 0;
     filter: blur(5px);
   }
+  10% {
+    transform: translate(-50%, -50%) scale(1.2);
+    opacity: 0.95;
+    filter: blur(0);
+  }
   15% {
     transform: translate(-50%, -50%) scale(1);
     opacity: 0.9;
     filter: blur(0);
   }
+  30% {
+    transform: translate(calc(-50% + var(--end-x) * 0.1), calc(-50% + var(--end-y) * 0.1 - 20px)) scale(0.9);
+    opacity: 0.9;
+  }
+  50% {
+    transform: translate(calc(-50% + var(--end-x) * 0.5), calc(-50% + var(--end-y) * 0.5 - 40px)) scale(0.7);
+    opacity: 0.8;
+  }
   70% {
     opacity: 0.8;
-    transform: translate(calc(-50% + var(--end-x) * 0.7), calc(-50% + var(--end-y) * 0.7)) scale(0.5);
+    transform: translate(calc(-50% + var(--end-x) * 0.7), calc(-50% + var(--end-y) * 0.7 - 20px)) scale(0.5);
   }
   100% {
     transform: translate(calc(-50% + var(--end-x)), calc(-50% + var(--end-y))) scale(0.2);
@@ -204,11 +217,49 @@ body:has(> div > main[data-page="home"]) {
   }
 }
 
+@keyframes heartBeat {
+  0% {
+    transform: scale(1);
+  }
+  15% {
+    transform: scale(1.3);
+  }
+  30% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.2);
+  }
+  60% {
+    transform: scale(1);
+  }
+}
+
+@keyframes sparkle {
+  0% {
+    opacity: 0;
+    transform: scale(0);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0);
+  }
+}
+
 @keyframes completionPulse {
   0% {
     transform: translate(-50%, -50%) scale(0.2);
     opacity: 0.5;
     box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7);
+  }
+  20% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.8;
+    box-shadow: 0 0 0 5px rgba(255, 0, 0, 0.5);
   }
   70% {
     transform: translate(-50%, -50%) scale(2);
@@ -247,7 +298,7 @@ body:has(> div > main[data-page="home"]) {
   height: 60px;
   border-radius: 50%;
   background: linear-gradient(135deg, #ff7676, #ff4545);
-  box-shadow: 0 4px 20px rgba(255, 69, 69, 0.4);
+  box-shadow: 0 4px 20px rgba(255, 69, 69, 0.4), 0 0 0 2px rgba(255, 255, 255, 0.8);
   opacity: 0.9;
   pointer-events: none;
   border: 2px solid white;
@@ -263,6 +314,84 @@ body:has(> div > main[data-page="home"]) {
   stroke-width: 1;
   width: 30px;
   height: 30px;
+}
+
+.wishlist-flying-heart::before,
+.wishlist-flying-heart::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  transform: translate(-50%, -50%) scale(0);
+  z-index: -1;
+}
+
+.wishlist-flying-heart::before {
+  animation: sparkle 0.6s ease-out 0.1s;
+}
+
+.wishlist-flying-heart::after {
+  animation: sparkle 0.6s ease-out 0.3s;
+}
+
+.sparkle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: white;
+  border-radius: 50%;
+  opacity: 0;
+}
+
+.sparkle-1 {
+  top: -5px;
+  left: 50%;
+  animation: sparkle 0.6s ease-out 0.2s;
+}
+
+.sparkle-2 {
+  top: 50%;
+  right: -5px;
+  animation: sparkle 0.6s ease-out 0.3s;
+}
+
+.sparkle-3 {
+  bottom: -5px;
+  left: 50%;
+  animation: sparkle 0.6s ease-out 0.4s;
+}
+
+.sparkle-4 {
+  top: 50%;
+  left: -5px;
+  animation: sparkle 0.6s ease-out 0.5s;
+}
+
+.wishlist-icon-beat {
+  animation: heartBeat 1s ease-in-out;
+}
+
+.wishlist-trail {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 119, 119, 0.6);
+  filter: blur(2px);
+  opacity: 0;
+}
+
+@keyframes trail {
+  0% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 
 /* End of global wishlist animation */
