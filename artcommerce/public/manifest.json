@@ -1,0 +1,26 @@
+{
+  "name": "Kalakraft",
+  "short_name": "Kalakraft",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "https://res.cloudinary.com/downe8107/image/upload/v1751076330/kalakraft/logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://res.cloudinary.com/downe8107/image/upload/v1751076330/kalakraft/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "https://res.cloudinary.com/downe8107/image/upload/c_scale,w_512,h_512/v1751076330/kalakraft/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+} 
