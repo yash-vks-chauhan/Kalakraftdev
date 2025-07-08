@@ -58,6 +58,9 @@ const ProductCard = ({ product, handleProductClick }) => {
   const handleTouchStart = (e) => {
     if (product.imageUrls.length <= 1) return;
     
+    // Prevent default to avoid any browser behaviors
+    e.preventDefault();
+    
     // Hide hints on first interaction
     setShowHints(false);
     
@@ -130,6 +133,9 @@ const ProductCard = ({ product, handleProductClick }) => {
   const handleImageTap = (e) => {
     if (product.imageUrls.length <= 1) return;
     
+    // Prevent default to avoid any browser behaviors
+    e.preventDefault();
+    
     const containerWidth = imageContainerRef.current?.offsetWidth || 0;
     const tapX = e.nativeEvent.offsetX;
     
@@ -152,18 +158,18 @@ const ProductCard = ({ product, handleProductClick }) => {
   // Calculate transform style for real-time finger tracking
   const getImageTransform = () => {
     if (isSwiping) {
-      // During swipe, follow finger exactly
+      // During swipe, follow finger exactly with hardware acceleration
       const percentageOffset = containerWidth.current ? (swipeDistance / containerWidth.current) * 100 : 0;
       return {
-        transform: `translateX(calc(-${currentImageIndex * 100}% + ${percentageOffset}%))`,
+        transform: `translate3d(calc(-${currentImageIndex * 100}% + ${percentageOffset}%), 0, 0)`,
         transition: 'none'
       };
     }
     
-    // When not swiping, use smooth transition
+    // When not swiping, use smooth transition with hardware acceleration
     return {
-      transform: `translateX(-${currentImageIndex * 100}%)`,
-      transition: 'transform 0.3s ease'
+      transform: `translate3d(-${currentImageIndex * 100}%, 0, 0)`,
+      transition: 'transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1)'
     };
   };
   
