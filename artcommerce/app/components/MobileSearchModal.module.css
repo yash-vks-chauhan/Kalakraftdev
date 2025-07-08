@@ -72,13 +72,13 @@
 .mobileSearchContent {
   flex: 1;
   overflow-y: auto;
-  padding: 0.5rem 1rem;
+  padding: 0;
   display: flex;
   flex-direction: column;
 }
 
 .searchForm {
-  margin-bottom: 1rem;
+  margin: 0.5rem 1rem 1rem;
 }
 
 .searchInputContainer {
@@ -110,7 +110,7 @@
   display: flex;
   overflow-x: auto;
   gap: 0.5rem;
-  padding: 0.5rem 0;
+  padding: 0.5rem 1rem;
   margin-bottom: 1rem;
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -141,6 +141,9 @@
 .resultsContainer {
   flex: 1;
   overflow-y: auto;
+  width: 100%;
+  padding: 0;
+  margin: 0;
 }
 
 /* Loading, Error and Empty states */
@@ -152,7 +155,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
+  padding: 2rem 1rem;
   text-align: center;
   height: 200px;
 }
@@ -194,7 +197,7 @@
 
 /* Recent searches */
 .recentSearches {
-  padding: 1rem 0;
+  padding: 1rem;
 }
 
 .recentSearchesTitle {
@@ -236,6 +239,8 @@
   max-width: 100%;
   background-color: #fff;
   box-sizing: border-box;
+  padding: 0;
+  margin: 0;
 }
 
 @media (max-width: 360px) {
@@ -251,6 +256,8 @@
   border-bottom: 1px solid #f0f0f0;
   border-right: 1px solid #f0f0f0;
   box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 .cardWrapper:nth-child(2n) {
@@ -268,7 +275,8 @@
   position: relative;
   box-shadow: none;
   transition: all 0.3s ease;
-  margin-bottom: 0;
+  margin: 0;
+  padding: 0;
   height: 100%;
   width: 100%;
   border: none;
