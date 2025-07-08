@@ -159,6 +159,36 @@
   transform: translateY(0);
 }
 
+/* Submenu styling for expandable sections */
+.submenuItem {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  background: rgba(241, 245, 249, 0.8);
+  color: #1a202c;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  margin-left: 1rem;
+  margin-right: 0.5rem;
+}
+
+.submenuItem:active {
+  background-color: rgba(226, 232, 240, 0.9);
+  transform: scale(0.98);
+}
+
+.submenuItem svg {
+  margin-right: 0.75rem;
+  color: #64748b;
+}
+
+.submenuItem span {
+  flex: 1;
+}
+
 .menuItemText {
   flex: 1;
   position: relative;

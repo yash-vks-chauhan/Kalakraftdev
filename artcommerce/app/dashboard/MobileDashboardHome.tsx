@@ -1,7 +1,7 @@
 "use client"
 
 import Link from 'next/link'
-import { ChevronRight, ChevronDown, ChevronUp, User, Package, ShoppingCart, Heart, Settings, Users, Tag, AlertTriangle, TicketCheck, Star, LogOut, RefreshCw, Clock, PackageOpen, Calendar } from 'lucide-react'
+import { ChevronRight, ChevronDown, ChevronUp, User, Package, ShoppingCart, Heart, Settings, Users, Tag, AlertTriangle, TicketCheck, Star, LogOut, RefreshCw, Clock, PackageOpen, Calendar, PlusCircle, BarChart3 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import styles from './mobile-dashboard.module.css'
 import desktopStyles from './dashboard.module.css'
@@ -18,6 +18,7 @@ export default function MobileDashboardHome() {
   const [loadingOrders, setLoadingOrders] = useState(false)
   const [activeMetricDot, setActiveMetricDot] = useState(0)
   const metricsRowRef = useRef<HTMLDivElement>(null)
+  const [showProductsMenu, setShowProductsMenu] = useState(false)
 
   useEffect(() => {
     if (user?.role === 'admin') {
@@ -326,13 +327,40 @@ export default function MobileDashboardHome() {
               </Link>
             </li>
             <li>
-              <Link href="/dashboard/admin/products" className={styles.menuItem}>
+              <div 
+                className={styles.menuItem}
+                onClick={() => setShowProductsMenu(!showProductsMenu)}
+              >
                 <div className={styles.menuIcon}>
                   <Tag size={18} />
                 </div>
                 <span className={styles.menuItemText}>Manage Products</span>
-                <ChevronRight size={20} />
-              </Link>
+                {showProductsMenu ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+              </div>
+              <div className={`${styles.expandableContent} ${showProductsMenu ? styles.expanded : ''}`}>
+                <div className="p-2 space-y-2">
+                  <Link href="/dashboard/admin/products" className={styles.submenuItem}>
+                    <BarChart3 size={16} />
+                    <span>Show All Products</span>
+                    <ChevronRight size={16} />
+                  </Link>
+                  <Link href="/dashboard/admin/products/new" className={styles.submenuItem}>
+                    <PlusCircle size={16} />
+                    <span>Add New Product</span>
+                    <ChevronRight size={16} />
+                  </Link>
+                  <Link href="/dashboard/admin/products/highest-rated" className={styles.submenuItem}>
+                    <Star size={16} />
+                    <span>Highest Rated Products</span>
+                    <ChevronRight size={16} />
+                  </Link>
+                  <Link href="/dashboard/admin/products/low-stock" className={styles.submenuItem}>
+                    <AlertTriangle size={16} />
+                    <span>Low-Stock Products</span>
+                    <ChevronRight size={16} />
+                  </Link>
+                </div>
+              </div>
             </li>
             <li>
               <Link href="/dashboard/admin/users" className={styles.menuItem}>
@@ -349,15 +377,6 @@ export default function MobileDashboardHome() {
                   <Tag size={18} />
                 </div>
                 <span className={styles.menuItemText}>Coupon Manager</span>
-                <ChevronRight size={20} />
-              </Link>
-            </li>
-            <li>
-              <Link href="/dashboard/admin/products/low-stock" className={styles.menuItem}>
-                <div className={styles.menuIcon}>
-                  <AlertTriangle size={18} />
-                </div>
-                <span className={styles.menuItemText}>Low-Stock</span>
                 <ChevronRight size={20} />
               </Link>
             </li>
