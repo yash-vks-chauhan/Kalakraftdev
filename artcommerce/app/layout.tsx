@@ -2,7 +2,7 @@ import './globals.css'
 import { Inter } from 'next/font/google'
 import AppRootClient from './AppRootClient'
 import { MobileMenuProvider } from './contexts/MobileMenuContext'
-import { getImageUrl, getOptimizedImageUrl } from '../lib/cloudinaryImages'
+import { getImageUrl } from '../lib/cloudinaryImages'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -36,16 +36,7 @@ export default function RootLayout({
           }
         `}</style>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-        <link
-          rel="icon"
-          href={getImageUrl('logo.png')}
-          media="(prefers-color-scheme: light)"
-        />
-        <link
-          rel="icon"
-          href={getOptimizedImageUrl('logo.png', 'e_invert')}
-          media="(prefers-color-scheme: dark)"
-        />
+        <link id="favicon" rel="icon" href={getImageUrl('logo.png')} />
       </head>
       <MobileMenuProvider>
         <AppRootClient>{children}</AppRootClient>

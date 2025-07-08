@@ -11,6 +11,7 @@ import MobileMenuPanel from './components/MobileMenuPanel'
 import MobileLayout from './components/MobileLayout'
 import styles from './components/Navbar.module.css'
 import { isMobileDevice } from '../lib/utils'
+import { getImageUrl, getOptimizedImageUrl } from '../lib/cloudinaryImages'
 
 export default function AppRootClient({ children }: { children: React.ReactNode }) {
   const { isMobileMenuOpen, setIsMobileMenuOpen } = useMobileMenu();
@@ -46,6 +47,31 @@ export default function AppRootClient({ children }: { children: React.ReactNode 
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [pathname])
+
+  // Swap favicon for dark/light mode in Chromium browsers
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const updateFavicon = () => {
+      const link = document.getElementById('favicon') as HTMLLinkElement | null;
+      if (!link) return;
+      link.href = mediaQuery.matches
+        ? getOptimizedImageUrl('logo.png', 'e_negate')
+        : getImageUrl('logo.png');
+    };
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener('change', updateFavicon);
+    } else {
+      mediaQuery.addListener(updateFavicon);
+    }
+    updateFavicon();
+    return () => {
+      if (mediaQuery.removeEventListener) {
+        mediaQuery.removeEventListener('change', updateFavicon);
+      } else {
+        mediaQuery.removeListener(updateFavicon);
+      }
+    };
+  }, []);
 
   const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
     (e.currentTarget as HTMLElement).dataset.startX = e.touches[0].clientX.toString();
