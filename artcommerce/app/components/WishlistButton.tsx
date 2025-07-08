@@ -20,10 +20,8 @@ export default function WishlistButton({ productId, className = '', preventNavig
   const [loading, setLoading] = useState(false)
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [isAnimating, setIsAnimating] = useState(false)
-  const [localWishlistState, setLocalWishlistState] = useState<boolean | null>(null)
 
-  // Use the actual wishlist state from context, but override with local state during animation
-  const inWishlist = localWishlistState !== null ? localWishlistState : isInWishlist(productId)
+  const inWishlist = isInWishlist(productId)
 
   const handleToggleWishlist = async (e: React.MouseEvent) => {
     // Prevent the event from bubbling up to parent elements
@@ -34,28 +32,16 @@ export default function WishlistButton({ productId, className = '', preventNavig
       return
     }
 
-    // Get current wishlist state
-    const currentlyInWishlist = isInWishlist(productId)
-    
     // Start animation and set loading state
     setIsAnimating(true)
     setLoading(true)
     
-    // Don't change the heart fill state yet - keep it as is during animation
-    setLocalWishlistState(currentlyInWishlist)
-    
     try {
-      // Add a longer delay to show the animation clearly
-      await new Promise(resolve => setTimeout(resolve, 800))
+      // Add a small delay to show the animation
+      await new Promise(resolve => setTimeout(resolve, 400))
       
-      if (currentlyInWishlist) {
+      if (inWishlist) {
         await removeFromWishlist(productId)
-        // Update local state to reflect removal
-        setLocalWishlistState(false)
-        
-        // Wait a moment to show the unfilled heart
-        await new Promise(resolve => setTimeout(resolve, 200))
-        
         addNotification({
           title: 'Removed from Wishlist',
           body: 'Item has been removed from your wishlist',
@@ -64,12 +50,6 @@ export default function WishlistButton({ productId, className = '', preventNavig
         })
       } else {
         await addToWishlist(productId)
-        // Update local state to reflect addition
-        setLocalWishlistState(true)
-        
-        // Wait a moment to show the filled heart
-        await new Promise(resolve => setTimeout(resolve, 200))
-        
         addNotification({
           title: 'Added to Wishlist',
           body: 'Item has been added to your wishlist',
@@ -78,9 +58,6 @@ export default function WishlistButton({ productId, className = '', preventNavig
         })
       }
     } catch (error) {
-      // Reset to original state if there's an error
-      setLocalWishlistState(null)
-      
       addNotification({
         title: 'Error',
         body: 'Failed to update wishlist',
@@ -88,14 +65,11 @@ export default function WishlistButton({ productId, className = '', preventNavig
         severity: 'error'
       })
     } finally {
-      // Stop animation but keep local state for a moment
-      setIsAnimating(false)
-      
-      // Reset loading and local state after a short delay
+      // Stop animation and loading state
       setTimeout(() => {
+        setIsAnimating(false)
         setLoading(false)
-        setLocalWishlistState(null)
-      }, 300)
+      }, 100)
     }
   }
 
@@ -118,7 +92,7 @@ export default function WishlistButton({ productId, className = '', preventNavig
           fill={inWishlist ? "currentColor" : "none"}
           className={isAnimating ? "animate-wishlist" : ""}
           style={{
-            animation: isAnimating ? 'wishlistRotate 1.2s infinite linear' : 'none'
+            animation: isAnimating ? 'wishlistRotate 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)' : 'none'
           }}
         >
           <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
