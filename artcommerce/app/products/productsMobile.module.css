@@ -142,8 +142,8 @@
 .wishlistButton {
   background: transparent;
   border: none;
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   border-radius: 0;
   display: flex;
   align-items: center;
@@ -161,6 +161,20 @@
 
 .wishlistButton:hover {
   transform: scale(1.05);
+}
+
+.wishlistButton svg {
+  transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.wishlistButton:active svg {
+  transform: rotate(360deg) scale(1.1);
+}
+
+@keyframes wishlistRotate {
+  0% { transform: scale(1); }
+  50% { transform: rotate(180deg) scale(1.2); }
+  100% { transform: rotate(360deg) scale(1); }
 }
 
 /* Update the active wishlist button to be solid black */
