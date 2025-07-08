@@ -672,18 +672,34 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
           href="/products" 
           className={`${styles.footerNavItem} ${isActivePath('/products') ? styles.active : ''}`}
         >
-          <ShoppingBag size={20} />
+          <Grid size={20} />
           <span>Products</span>
+        </Link>
+        <Link 
+          href={user ? '/dashboard/cart' : '/auth/login'}
+          className={`${styles.footerNavItem} ${isActivePath('/dashboard/cart') ? styles.active : ''}`}
+          onClick={handleCartClick}
+        >
+          <div style={{ position: 'relative' }}>
+            <ShoppingBag size={20} />
+            {cartItems.length > 0 && (
+              <span className={styles.cartBadge}>{cartItems.length}</span>
+            )}
+          </div>
+          <span>Cart</span>
         </Link>
         <Link 
           href={user ? '/dashboard/wishlist' : '/auth/login'}
           className={`${styles.footerNavItem} ${isActivePath('/dashboard/wishlist') ? styles.active : ''}`}
+          onClick={handleWishlistClick}
         >
-          <Heart size={20} />
+          <div style={{ position: 'relative' }}>
+            <Heart size={20} />
+            {wishlistItems.length > 0 && (
+              <span className={styles.wishlistBadge}>{wishlistItems.length}</span>
+            )}
+          </div>
           <span>Wishlist</span>
-          {wishlistItems.length > 0 && (
-            <span className={styles.badge}>{wishlistItems.length}</span>
-          )}
         </Link>
         <div className={styles.footerNavItemContainer} ref={accountDropdownRef}>
           <button 

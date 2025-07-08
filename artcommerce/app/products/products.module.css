@@ -225,51 +225,69 @@
 
 .productImageOverlay {
   position: absolute;
-  bottom: 0;
+  top: 0;
   left: 0;
-  right: 0;
-  padding: 1rem;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
-  display: flex;
-  justify-content: flex-end;
-  opacity: 0;
-  transition: opacity 0.3s ease;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0);
+  transition: all 0.3s ease;
+  z-index: 1;
+  pointer-events: none;
 }
 
 .productCard:hover .productImageOverlay {
-  opacity: 1;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.actions {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .wishlistButton {
-  background: white;
+  background: rgba(255, 255, 255, 0.8);
   border: none;
-  width: 40px;
-  height: 40px;
-  border-radius: 0; /* Remove rounded corners */
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(4px);
+  color: #1a202c;
+  z-index: 5;
+  opacity: 0.9;
+  transform: translateZ(10px);
 }
 
 .wishlistButton:hover {
-  transform: scale(1.1);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transform: scale(1.1) translateZ(15px);
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .wishlistButton[data-active="true"] {
-  background: #000000;
-  color: white;
+  background: rgba(255, 255, 255, 0.95);
+  color: #e53e3e;
 }
 
 .noImage {
-  background: linear-gradient(135deg, #e2e8f0 0%, #f8fafc 100%);
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #94a3b8;
+  background-color: #f7fafc;
+  color: #a0aec0;
+  font-size: 0.9rem;
   font-style: italic;
 }
 

@@ -664,6 +664,7 @@ export default function ProductsClient() {
                       <WishlistButton 
                         productId={prod.id} 
                         className={styles.wishlistButton}
+                        productImageUrl={prod.imageUrls[0] || ''}
                         preventNavigation={true}
                       />
                     </div>
@@ -674,6 +675,7 @@ export default function ProductsClient() {
                     <WishlistButton 
                       productId={prod.id} 
                       className={styles.mobileWishlistButton}
+                      productImageUrl={prod.imageUrls[0] || ''}
                       preventNavigation={true}
                     />
                   </div>
