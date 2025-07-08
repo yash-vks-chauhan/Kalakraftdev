@@ -679,7 +679,7 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
           href={user ? '/dashboard/wishlist' : '/auth/login'}
           className={`${styles.footerNavItem} ${isActivePath('/dashboard/wishlist') ? styles.active : ''}`}
         >
-          <Heart size={20} />
+          <Heart size={20} data-wishlist-footer-icon />
           <span>Wishlist</span>
           {wishlistItems.length > 0 && (
             <span className={styles.badge}>{wishlistItems.length}</span>
