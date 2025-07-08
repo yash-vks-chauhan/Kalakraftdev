@@ -36,7 +36,16 @@ export default function RootLayout({
           }
         `}</style>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-        <link rel="icon" href={getImageUrl('logo.png')} />
+        <link
+          rel="icon"
+          href={getImageUrl('logo.png')}
+          media="(prefers-color-scheme: light)"
+        />
+        <link
+          rel="icon"
+          href={getImageUrl('logo-white.png')}
+          media="(prefers-color-scheme: dark)"
+        />
       </head>
       <MobileMenuProvider>
         <AppRootClient>{children}</AppRootClient>
