@@ -48,14 +48,18 @@ export default function WishlistButton({ productId, className = '', preventNavig
     // Get the button's position
     const buttonRect = buttonRef.current.getBoundingClientRect()
     
-    // Find the wishlist icon in the bottom navigation
-    const wishlistIcon = document.querySelector('[href="/dashboard/wishlist"], a[href*="wishlist"]')
+    // Try multiple selectors to find the wishlist icon in the footer
+    const wishlistIcon = 
+      document.querySelector('.footerNavItem [href*="wishlist"] svg') || // SVG inside wishlist link
+      document.querySelector('.footerNavItem [href*="wishlist"]') ||     // Wishlist link
+      document.querySelector('nav [href*="wishlist"]') ||                // Any wishlist link in nav
+      document.querySelector('a[href*="wishlist"]');                     // Any wishlist link
     
     if (!wishlistIcon) {
       // If we can't find the wishlist icon, use a default position (bottom right)
       return { 
         x: window.innerWidth - buttonRect.left - buttonRect.width/2, 
-        y: window.innerHeight - buttonRect.top - buttonRect.height/2
+        y: window.innerHeight - buttonRect.top - buttonRect.height/2 - 10
       }
     }
     
@@ -105,14 +109,15 @@ export default function WishlistButton({ productId, className = '', preventNavig
         const flyingImage = document.createElement('div')
         flyingImage.className = 'flying-image'
         flyingImage.style.position = 'fixed'
-        flyingImage.style.width = '50px'
-        flyingImage.style.height = '50px'
+        flyingImage.style.width = '60px'
+        flyingImage.style.height = '60px'
         flyingImage.style.borderRadius = '50%'
         flyingImage.style.backgroundImage = `url(${productImageUrl})`
         flyingImage.style.backgroundSize = 'cover'
         flyingImage.style.backgroundPosition = 'center'
         flyingImage.style.zIndex = '9999'
         flyingImage.style.pointerEvents = 'none'
+        flyingImage.style.border = '2px solid white'
         
         // Position at the button's location
         const buttonRect = buttonRef.current?.getBoundingClientRect() || { left: 0, top: 0 }
@@ -124,7 +129,7 @@ export default function WishlistButton({ productId, className = '', preventNavig
         document.documentElement.style.setProperty('--fly-y', `${y}px`)
         
         // Add the animation class
-        flyingImage.style.animation = 'flyToWishlist 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards'
+        flyingImage.style.animation = 'flyToWishlist 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards'
         
         // Add to the DOM
         document.body.appendChild(flyingImage)
@@ -134,15 +139,30 @@ export default function WishlistButton({ productId, className = '', preventNavig
           if (flyingImage.parentNode) {
             flyingImage.parentNode.removeChild(flyingImage)
           }
-        }, 800)
+        }, 1500)
         
         // Animate the wishlist icon in the navigation
-        const wishlistIcon = document.querySelector('[href="/dashboard/wishlist"], a[href*="wishlist"]')
+        // Try multiple selectors to find the wishlist icon
+        const wishlistIcon = 
+          document.querySelector('.footerNavItem [href*="wishlist"]') || 
+          document.querySelector('nav [href*="wishlist"]') || 
+          document.querySelector('a[href*="wishlist"]');
+          
         if (wishlistIcon) {
-          wishlistIcon.classList.add('animate-wishlistBadgePulse')
+          // Find the heart icon inside the wishlist link
+          const heartIcon = wishlistIcon.querySelector('svg') || wishlistIcon;
+          
+          // Add the pulse animation after a delay to match when the flying image arrives
           setTimeout(() => {
-            wishlistIcon.classList.remove('animate-wishlistBadgePulse')
-          }, 600)
+            heartIcon.classList.add('animate-wishlistBadgePulse');
+            wishlistIcon.classList.add('highlight-wishlist-icon');
+            
+            // Remove the animation classes after it completes
+            setTimeout(() => {
+              heartIcon.classList.remove('animate-wishlistBadgePulse');
+              wishlistIcon.classList.remove('highlight-wishlist-icon');
+            }, 800);
+          }, 1200);
         }
       }
     }
