@@ -136,7 +136,8 @@
   position: absolute;
   top: 0;
   right: 0;
-  z-index: 10;
+  z-index: 100;
+  isolation: isolate;
 }
 
 .wishlistButton {
@@ -193,6 +194,12 @@
   fill: none;
   stroke: #000;
   stroke-width: 1px;
+}
+
+/* Ensure the flying heart animation is visible */
+.wishlistContainer .flying-card-animation,
+.wishlistContainer .completion-animation {
+  z-index: 1100;
 }
 
 .outOfStock {
