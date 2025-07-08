@@ -1,7 +1,7 @@
 // File: app/components/WishlistButton.tsx
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { useWishlist } from '../contexts/WishlistContext'
 import { useNotificationContext } from '../contexts/NotificationContext'
@@ -11,71 +11,21 @@ interface Props {
   productId: number;
   className?: string;
   preventNavigation?: boolean;
-  productImageUrl?: string;
 }
 
-export default function WishlistButton({ productId, className = '', preventNavigation = false, productImageUrl }: Props) {
+export default function WishlistButton({ productId, className = '', preventNavigation = false }: Props) {
   const { user } = useAuth()
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist()
   const { addNotification } = useNotificationContext()
   const [loading, setLoading] = useState(false)
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [isAnimating, setIsAnimating] = useState(false)
-  const [showFlyingImage, setShowFlyingImage] = useState(false)
-  const [flyingImageStyle, setFlyingImageStyle] = useState({})
-  const buttonRef = useRef<HTMLButtonElement>(null)
-  const flyingImageRef = useRef<HTMLDivElement>(null)
-  const [flyToCoords, setFlyToCoords] = useState({ x: 0, y: 0 })
 
   const inWishlist = isInWishlist(productId)
-
-  // Create a flying image element in the document body when needed
-  useEffect(() => {
-    if (showFlyingImage && flyingImageRef.current) {
-      document.body.appendChild(flyingImageRef.current)
-      return () => {
-        if (flyingImageRef.current && flyingImageRef.current.parentNode) {
-          flyingImageRef.current.parentNode.removeChild(flyingImageRef.current)
-        }
-      }
-    }
-  }, [showFlyingImage])
-
-  // Function to calculate the distance to the wishlist icon in the bottom nav
-  const calculateDistanceToWishlist = () => {
-    if (!buttonRef.current) return { x: 0, y: 0 }
-
-    // Get the button's position
-    const buttonRect = buttonRef.current.getBoundingClientRect()
-    
-    // Try multiple selectors to find the wishlist icon in the footer
-    const wishlistIcon = 
-      document.querySelector('.footerNavItem [href*="wishlist"] svg') || // SVG inside wishlist link
-      document.querySelector('.footerNavItem [href*="wishlist"]') ||     // Wishlist link
-      document.querySelector('nav [href*="wishlist"]') ||                // Any wishlist link in nav
-      document.querySelector('a[href*="wishlist"]');                     // Any wishlist link
-    
-    if (!wishlistIcon) {
-      // If we can't find the wishlist icon, use a default position (bottom right)
-      return { 
-        x: window.innerWidth - buttonRect.left - buttonRect.width/2, 
-        y: window.innerHeight - buttonRect.top - buttonRect.height/2 - 10
-      }
-    }
-    
-    const wishlistRect = wishlistIcon.getBoundingClientRect()
-    
-    // Calculate the distance from button center to wishlist icon center
-    const distanceX = wishlistRect.left + wishlistRect.width/2 - (buttonRect.left + buttonRect.width/2)
-    const distanceY = wishlistRect.top + wishlistRect.height/2 - (buttonRect.top + buttonRect.height/2)
-    
-    return { x: distanceX, y: distanceY }
-  }
 
   const handleToggleWishlist = async (e: React.MouseEvent) => {
     // Prevent the event from bubbling up to parent elements
     e.stopPropagation()
-    e.preventDefault()
     
     if (!user) {
       setShowAuthModal(true)
@@ -85,87 +35,6 @@ export default function WishlistButton({ productId, className = '', preventNavig
     // Start animation and set loading state
     setIsAnimating(true)
     setLoading(true)
-    
-    // Only animate when adding to wishlist
-    if (!inWishlist) {
-      // Calculate the distance to the wishlist icon
-      const { x, y } = calculateDistanceToWishlist()
-      setFlyToCoords({ x, y })
-      
-      // Get the parent product card element
-      const productCard = buttonRef.current?.closest('.card, [class*="productCard"], [class*="card"]')
-      
-      // Apply shrink animation to the product card
-      if (productCard) {
-        productCard.classList.add('animate-shrinkProduct')
-        setTimeout(() => {
-          productCard.classList.remove('animate-shrinkProduct')
-        }, 600)
-      }
-      
-      // If we have a product image, show the flying image animation
-      if (productImageUrl) {
-        // Create a new div for the flying image
-        const flyingImage = document.createElement('div')
-        flyingImage.className = 'flying-image'
-        flyingImage.style.position = 'fixed'
-        flyingImage.style.width = '60px'
-        flyingImage.style.height = '60px'
-        flyingImage.style.borderRadius = '50%'
-        flyingImage.style.backgroundImage = `url(${productImageUrl})`
-        flyingImage.style.backgroundSize = 'cover'
-        flyingImage.style.backgroundPosition = 'center'
-        flyingImage.style.zIndex = '9999'
-        flyingImage.style.pointerEvents = 'none'
-        flyingImage.style.border = '2px solid white'
-        
-        // Position at the button's location
-        const buttonRect = buttonRef.current?.getBoundingClientRect() || { left: 0, top: 0 }
-        flyingImage.style.left = `${buttonRect.left}px`
-        flyingImage.style.top = `${buttonRect.top}px`
-        
-        // Set CSS variables for the animation
-        document.documentElement.style.setProperty('--fly-x', `${x}px`)
-        document.documentElement.style.setProperty('--fly-y', `${y}px`)
-        
-        // Add the animation class
-        flyingImage.style.animation = 'flyToWishlist 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards'
-        
-        // Add to the DOM
-        document.body.appendChild(flyingImage)
-        
-        // Remove after animation completes
-        setTimeout(() => {
-          if (flyingImage.parentNode) {
-            flyingImage.parentNode.removeChild(flyingImage)
-          }
-        }, 1500)
-        
-        // Animate the wishlist icon in the navigation
-        // Try multiple selectors to find the wishlist icon
-        const wishlistIcon = 
-          document.querySelector('.footerNavItem [href*="wishlist"]') || 
-          document.querySelector('nav [href*="wishlist"]') || 
-          document.querySelector('a[href*="wishlist"]');
-          
-        if (wishlistIcon) {
-          // Find the heart icon inside the wishlist link
-          const heartIcon = wishlistIcon.querySelector('svg') || wishlistIcon;
-          
-          // Add the pulse animation after a delay to match when the flying image arrives
-          setTimeout(() => {
-            heartIcon.classList.add('animate-wishlistBadgePulse');
-            wishlistIcon.classList.add('highlight-wishlist-icon');
-            
-            // Remove the animation classes after it completes
-            setTimeout(() => {
-              heartIcon.classList.remove('animate-wishlistBadgePulse');
-              wishlistIcon.classList.remove('highlight-wishlist-icon');
-            }, 800);
-          }, 1200);
-        }
-      }
-    }
     
     try {
       // Add a small delay to show the animation
@@ -207,7 +76,6 @@ export default function WishlistButton({ productId, className = '', preventNavig
   return (
     <>
       <button
-        ref={buttonRef}
         onClick={handleToggleWishlist}
         className={className}
         data-active={inWishlist}

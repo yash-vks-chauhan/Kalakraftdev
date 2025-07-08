@@ -98,21 +98,6 @@
   justify-content: center;
 }
 
-.wishlistBadge {
-  position: absolute;
-  top: -4px;
-  right: -4px;
-  background-color: #f44336;
-  color: white;
-  font-size: 10px;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 /* Logo container - move to left corner */
 .logoContainer {
   display: flex;

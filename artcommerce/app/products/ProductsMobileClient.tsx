@@ -167,12 +167,6 @@ const ProductCard = ({ product, formatPrice }) => {
       ? `${product.shortDesc.substring(0, 60)}...` 
       : product.shortDesc;
   };
-
-  // Get the current product image for the wishlist animation
-  const getCurrentProductImage = () => {
-    if (!product.imageUrls || product.imageUrls.length === 0) return '';
-    return product.imageUrls[currentImageIndex];
-  };
   
   return (
     <div className={styles.cardWrapper}>
@@ -270,12 +264,10 @@ const ProductCard = ({ product, formatPrice }) => {
         </div>
       </Link>
       
-      {/* Move wishlist button outside the Link component */}
-      <div className={styles.actions} onClick={handleWishlistClick}>
+      <div className={styles.wishlistContainer} onClick={handleWishlistClick}>
         <WishlistButton 
           productId={product.id} 
-          className={styles.wishlistButton}
-          productImageUrl={getCurrentProductImage()}
+          className={`${styles.wishlistButton} ${styles.blackWishlist}`}
           preventNavigation={true}
         />
       </div>

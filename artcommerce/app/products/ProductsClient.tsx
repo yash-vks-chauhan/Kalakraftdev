@@ -629,74 +629,87 @@ export default function ProductsClient() {
         ) : (
           <div className={`${styles.productGrid} ${isMobileView ? styles.mobileProductGrid : ''}`} ref={productGridRef}>
             {(products).map((prod, index) => (
-              <div className={styles.productCard} key={prod.id}>
-                <Link href={`/products/${prod.id}`} className={styles.productLink}>
-                  {prod.stockQuantity <= 0 ? (
-                    <span className={styles.outOfStockBadge}>
-                      OUT OF STOCK
-                    </span>
-                  ) : prod.stockQuantity <= LOW_STOCK_THRESHOLD && (
-                    <span className={styles.lowStockBadge}>
-                      LOW STOCK
-                    </span>
-                  )}
-                  <div className={styles.productImageContainer}>
-                    {prod.imageUrls[0] ? (
-                      <img 
-                        src={prod.imageUrls[0]} 
-                        alt={prod.name} 
-                        className={styles.productImage}
-                        loading="lazy"
-                      />
-                    ) : (
-                      <div className={`${styles.productImage} ${styles.noImage}`}>  
-                        <span className={styles.noImageText}>No image</span>
-                      </div>
-                    )}
-                  </div>
-                  <div className={styles.productInfo}>
-                    {prod.category && (
-                      <span className={styles.productCategory}>{prod.category.name}</span>
-                    )}
-                    <h3 className={styles.productName}>{prod.name}</h3>
-                    <div className={styles.productPriceContainer}>
-                      <p className={styles.productPrice}>{isMobileView ? prod.price.toFixed(2) : `${prod.currency} ${prod.price.toFixed(2)}`}</p>
-                      {isMobileView && prod.avgRating !== undefined && prod.avgRating > 0 && (
-                        <p className={styles.productRating}>
-                          <span className={styles.starFilled}>★</span> 
-                          <span className={styles.ratingValue}>{prod.avgRating.toFixed(1)}</span>
-                        </p>
-                      )}
+              <Link 
+                href={`/products/${prod.id}`} 
+                key={prod.id}
+                className={styles.productCard}
+                style={{
+                  animationDelay: `${index * 0.1}s`
+                }}
+              >
+                {prod.stockQuantity <= 0 ? (
+                  <span className={styles.outOfStockBadge}>
+                    OUT OF STOCK
+                  </span>
+                ) : prod.stockQuantity <= LOW_STOCK_THRESHOLD && (
+                  <span className={styles.lowStockBadge}>
+                    LOW STOCK
+                  </span>
+                )}
+                <div className={styles.productImageContainer}>
+                  {prod.imageUrls[0] ? (
+                    <img 
+                      src={prod.imageUrls[0]} 
+                      alt={prod.name} 
+                      className={styles.productImage}
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className={`${styles.productImage} ${styles.noImage}`}>  
+                      <span className={styles.noImageText}>No image</span>
                     </div>
-                    {!isMobileView && prod.avgRating !== undefined && (
+                  )}
+                  {!isMobileView && (
+                    <div className={styles.productImageOverlay}>
+                      <WishlistButton 
+                        productId={prod.id} 
+                        className={styles.wishlistButton}
+                        preventNavigation={true}
+                      />
+                    </div>
+                  )}
+                </div>
+                {isMobileView && (
+                  <div className={styles.mobileWishlistContainer} onClick={(e) => e.preventDefault()}>
+                    <WishlistButton 
+                      productId={prod.id} 
+                      className={styles.mobileWishlistButton}
+                      preventNavigation={true}
+                    />
+                  </div>
+                )}
+                <div className={styles.productInfo}>
+                  {prod.category && (
+                    <span className={styles.productCategory}>{prod.category.name}</span>
+                  )}
+                  <h3 className={styles.productName}>{prod.name}</h3>
+                  <div className={styles.productPriceContainer}>
+                    <p className={styles.productPrice}>{isMobileView ? prod.price.toFixed(2) : `${prod.currency} ${prod.price.toFixed(2)}`}</p>
+                    {isMobileView && prod.avgRating !== undefined && prod.avgRating > 0 && (
                       <p className={styles.productRating}>
-                        {[1,2,3,4,5].map((i, idx) => (
-                          <span key={idx} className={i <= Math.round(prod.avgRating!) ? styles.starFilled : styles.starEmpty}>
-                            ★
-                          </span>
-                        ))} 
-                        <span className={styles.ratingCount}>({prod.ratingCount})</span>
+                        <span className={styles.starFilled}>★</span> 
+                        <span className={styles.ratingValue}>{prod.avgRating.toFixed(1)}</span>
                       </p>
                     )}
-                    {!isMobileView && <p className={styles.productShortDesc}>{prod.shortDesc}</p>}
-                    {!isMobileView && (
-                      <span className={styles.viewDetailsButton}>
-                        View Details
-                      </span>
-                    )}
                   </div>
-                </Link>
-                
-                {/* Move the wishlist button outside the Link */}
-                <div className={styles.actions} onClick={(e) => e.stopPropagation()}>
-                  <WishlistButton 
-                    productId={prod.id} 
-                    className={styles.wishlistButton}
-                    productImageUrl={prod.imageUrls[0] || ''}
-                    preventNavigation={true}
-                  />
+                  {!isMobileView && prod.avgRating !== undefined && (
+                    <p className={styles.productRating}>
+                      {[1,2,3,4,5].map((i, idx) => (
+                        <span key={idx} className={i <= Math.round(prod.avgRating!) ? styles.starFilled : styles.starEmpty}>
+                          ★
+                        </span>
+                      ))} 
+                      <span className={styles.ratingCount}>({prod.ratingCount})</span>
+                    </p>
+                  )}
+                  {!isMobileView && <p className={styles.productShortDesc}>{prod.shortDesc}</p>}
+                  {!isMobileView && (
+                    <span className={styles.viewDetailsButton}>
+                      View Details
+                    </span>
+                  )}
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}
