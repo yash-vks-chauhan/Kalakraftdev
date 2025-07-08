@@ -184,20 +184,21 @@ body:has(> div > main[data-page="home"]) {
 
 @keyframes flyToWishlist {
   0% {
-    transform: scale(0) translate(0, 0);
+    transform: translate(-50%, -50%) scale(0);
     opacity: 0;
     filter: blur(5px);
   }
   15% {
-    transform: scale(1) translate(0, 0);
+    transform: translate(-50%, -50%) scale(1);
     opacity: 0.9;
     filter: blur(0);
   }
   70% {
     opacity: 0.8;
+    transform: translate(calc(-50% + var(--end-x) * 0.7), calc(-50% + var(--end-y) * 0.7)) scale(0.5);
   }
   100% {
-    transform: scale(0.2) translate(var(--end-x), var(--end-y));
+    transform: translate(calc(-50% + var(--end-x)), calc(-50% + var(--end-y))) scale(0.2);
     opacity: 0;
     filter: blur(2px);
   }
@@ -205,17 +206,17 @@ body:has(> div > main[data-page="home"]) {
 
 @keyframes completionPulse {
   0% {
-    transform: scale(0.2);
+    transform: translate(-50%, -50%) scale(0.2);
     opacity: 0.5;
     box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7);
   }
   70% {
-    transform: scale(2);
+    transform: translate(-50%, -50%) scale(2);
     opacity: 0;
     box-shadow: 0 0 0 20px rgba(255, 0, 0, 0);
   }
   100% {
-    transform: scale(0);
+    transform: translate(-50%, -50%) scale(0);
     opacity: 0;
   }
 }
@@ -224,6 +225,7 @@ body:has(> div > main[data-page="home"]) {
   animation: flyToWishlist 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
   --end-x: 0px;
   --end-y: 0px;
+  will-change: transform;
 }
 
 .completion-animation {
@@ -235,7 +237,7 @@ body:has(> div > main[data-page="home"]) {
   border-radius: 50%;
   background: #ff4545;
   pointer-events: none;
-  transform: translate(-50%, -50%);
+  will-change: transform;
 }
 
 .wishlist-flying-heart {
@@ -248,7 +250,6 @@ body:has(> div > main[data-page="home"]) {
   box-shadow: 0 4px 20px rgba(255, 69, 69, 0.4);
   opacity: 0.9;
   pointer-events: none;
-  transform: translate(-50%, -50%);
   border: 2px solid white;
 }
 

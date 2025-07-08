@@ -92,6 +92,20 @@ export default function WishlistButton({ productId, className = '', preventNavig
     }
   }
 
+  // Debug function to manually trigger the animation for testing
+  const debugTriggerAnimation = () => {
+    if (window.innerWidth <= 768) {
+      setAnimationCompleted(false);
+      setShowFlyingCard(true);
+      setTimeout(() => {
+        setAnimationCompleted(true);
+        setTimeout(() => {
+          setShowFlyingCard(false);
+        }, 300);
+      }, 1000);
+    }
+  };
+
   return (
     <>
       <button
@@ -126,6 +140,27 @@ export default function WishlistButton({ productId, className = '', preventNavig
 
       {showFlyingCard && (
         <FlyingCardEffect buttonRef={buttonRef} animationCompleted={animationCompleted} />
+      )}
+      
+      {/* Debug button - remove in production */}
+      {process.env.NODE_ENV === 'development' && (
+        <button 
+          onClick={debugTriggerAnimation}
+          style={{
+            position: 'fixed',
+            bottom: '100px',
+            right: '20px',
+            zIndex: 9999,
+            padding: '5px',
+            background: 'rgba(0,0,0,0.5)',
+            color: 'white',
+            borderRadius: '4px',
+            fontSize: '10px',
+            display: window.innerWidth <= 768 ? 'block' : 'none'
+          }}
+        >
+          Test Animation
+        </button>
       )}
     </>
   )
@@ -174,7 +209,14 @@ function FlyingCardEffect({ buttonRef, animationCompleted }: {
           top: `${wishlistRect.top + wishlistRect.height/2}px`,
           left: `${wishlistRect.left + wishlistRect.width/2}px`,
         })
+        
+        console.log('Flying animation calculated:', {
+          start: { x: buttonRect.left, y: buttonRect.top },
+          end: { x: wishlistRect.left, y: wishlistRect.top },
+          endX, endY
+        });
       } else {
+        console.warn('Wishlist footer icon not found, using fallback animation');
         // Fallback if wishlist icon not found - animate to bottom right
         setStyle({
           top: `${buttonRect.top + buttonRect.height/2}px`,
@@ -193,14 +235,22 @@ function FlyingCardEffect({ buttonRef, animationCompleted }: {
 
   return (
     <>
-      <div className="flying-card-animation wishlist-flying-heart" style={style}>
+      <div 
+        className="flying-card-animation wishlist-flying-heart" 
+        style={style}
+        data-testid="flying-heart"
+      >
         <svg viewBox="0 0 24 24">
           <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
         </svg>
       </div>
       
       {animationCompleted && (
-        <div className="completion-animation" style={pulseStyle} />
+        <div 
+          className="completion-animation" 
+          style={pulseStyle}
+          data-testid="completion-pulse"
+        />
       )}
     </>
   )
