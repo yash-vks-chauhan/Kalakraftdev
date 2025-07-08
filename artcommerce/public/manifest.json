@@ -21,12 +21,6 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
-    },
-    {
-      "src": "https://res.cloudinary.com/downe8107/image/upload/c_scale,w_1024,h_1024/v1751076330/kalakraft/logo.png",
-      "sizes": "1024x1024",
-      "type": "image/png",
-      "purpose": "maskable any"
     }
   ]
 } 
