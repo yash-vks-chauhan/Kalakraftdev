@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { usePathname } from 'next/navigation'
 import Navbar from './components/Navbar'
 import NotificationContainer from './components/NotificationContainer'
@@ -14,6 +14,8 @@ import { isMobileDevice } from '../lib/utils'
 import { getImageUrl, getOptimizedImageUrl } from '../lib/cloudinaryImages'
 
 export default function AppRootClient({ children }: { children: React.ReactNode }) {
+  // Skip automatic scroll on initial load
+  const isFirstPathRef = useRef(true);
   const { isMobileMenuOpen, setIsMobileMenuOpen } = useMobileMenu();
   const pathname = usePathname();
   const [isMobile, setIsMobile] = useState(false);
@@ -43,10 +45,14 @@ export default function AppRootClient({ children }: { children: React.ReactNode 
     };
   }, []);
 
-  // Scroll to top on route change
+  // Scroll to top on route change, but not on initial mount
   useEffect(() => {
-    window.scrollTo(0, 0)
-  }, [pathname])
+    if (isFirstPathRef.current) {
+      isFirstPathRef.current = false;
+      return;
+    }
+    window.scrollTo(0, 0);
+  }, [pathname]);
 
   // Swap favicon for dark/light mode in Chromium browsers
   useEffect(() => {
