@@ -268,15 +268,17 @@ const ProductCard = ({ product, formatPrice }) => {
             )}
           </div>
         </div>
-        
-        <div className={styles.actions}>
-          <WishlistButton 
-            productId={product.id} 
-            className={styles.wishlistButton}
-            productImageUrl={getCurrentProductImage()}
-          />
-        </div>
       </Link>
+      
+      {/* Move wishlist button outside the Link component */}
+      <div className={styles.actions} onClick={handleWishlistClick}>
+        <WishlistButton 
+          productId={product.id} 
+          className={styles.wishlistButton}
+          productImageUrl={getCurrentProductImage()}
+          preventNavigation={true}
+        />
+      </div>
     </div>
   );
 };

@@ -25,8 +25,21 @@ export default function WishlistButton({ productId, className = '', preventNavig
   const [flyingImageStyle, setFlyingImageStyle] = useState({})
   const buttonRef = useRef<HTMLButtonElement>(null)
   const flyingImageRef = useRef<HTMLDivElement>(null)
+  const [flyToCoords, setFlyToCoords] = useState({ x: 0, y: 0 })
 
   const inWishlist = isInWishlist(productId)
+
+  // Create a flying image element in the document body when needed
+  useEffect(() => {
+    if (showFlyingImage && flyingImageRef.current) {
+      document.body.appendChild(flyingImageRef.current)
+      return () => {
+        if (flyingImageRef.current && flyingImageRef.current.parentNode) {
+          flyingImageRef.current.parentNode.removeChild(flyingImageRef.current)
+        }
+      }
+    }
+  }, [showFlyingImage])
 
   // Function to calculate the distance to the wishlist icon in the bottom nav
   const calculateDistanceToWishlist = () => {
@@ -36,7 +49,7 @@ export default function WishlistButton({ productId, className = '', preventNavig
     const buttonRect = buttonRef.current.getBoundingClientRect()
     
     // Find the wishlist icon in the bottom navigation
-    const wishlistIcon = document.querySelector('[href="/dashboard/wishlist"], [href="/wishlist"]')
+    const wishlistIcon = document.querySelector('[href="/dashboard/wishlist"], a[href*="wishlist"]')
     
     if (!wishlistIcon) {
       // If we can't find the wishlist icon, use a default position (bottom right)
@@ -58,6 +71,7 @@ export default function WishlistButton({ productId, className = '', preventNavig
   const handleToggleWishlist = async (e: React.MouseEvent) => {
     // Prevent the event from bubbling up to parent elements
     e.stopPropagation()
+    e.preventDefault()
     
     if (!user) {
       setShowAuthModal(true)
@@ -72,6 +86,7 @@ export default function WishlistButton({ productId, className = '', preventNavig
     if (!inWishlist) {
       // Calculate the distance to the wishlist icon
       const { x, y } = calculateDistanceToWishlist()
+      setFlyToCoords({ x, y })
       
       // Get the parent product card element
       const productCard = buttonRef.current?.closest('.card, [class*="productCard"], [class*="card"]')
@@ -86,25 +101,43 @@ export default function WishlistButton({ productId, className = '', preventNavig
       
       // If we have a product image, show the flying image animation
       if (productImageUrl) {
-        // Set the CSS variables for the animation
+        // Create a new div for the flying image
+        const flyingImage = document.createElement('div')
+        flyingImage.className = 'flying-image'
+        flyingImage.style.position = 'fixed'
+        flyingImage.style.width = '50px'
+        flyingImage.style.height = '50px'
+        flyingImage.style.borderRadius = '50%'
+        flyingImage.style.backgroundImage = `url(${productImageUrl})`
+        flyingImage.style.backgroundSize = 'cover'
+        flyingImage.style.backgroundPosition = 'center'
+        flyingImage.style.zIndex = '9999'
+        flyingImage.style.pointerEvents = 'none'
+        
+        // Position at the button's location
+        const buttonRect = buttonRef.current?.getBoundingClientRect() || { left: 0, top: 0 }
+        flyingImage.style.left = `${buttonRect.left}px`
+        flyingImage.style.top = `${buttonRect.top}px`
+        
+        // Set CSS variables for the animation
         document.documentElement.style.setProperty('--fly-x', `${x}px`)
         document.documentElement.style.setProperty('--fly-y', `${y}px`)
         
-        setFlyingImageStyle({
-          backgroundImage: `url(${productImageUrl})`,
-          top: `${buttonRef.current?.getBoundingClientRect().top || 0}px`,
-          left: `${buttonRef.current?.getBoundingClientRect().left || 0}px`,
-        })
+        // Add the animation class
+        flyingImage.style.animation = 'flyToWishlist 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards'
         
-        setShowFlyingImage(true)
+        // Add to the DOM
+        document.body.appendChild(flyingImage)
         
-        // Hide the flying image after animation completes
+        // Remove after animation completes
         setTimeout(() => {
-          setShowFlyingImage(false)
+          if (flyingImage.parentNode) {
+            flyingImage.parentNode.removeChild(flyingImage)
+          }
         }, 800)
         
         // Animate the wishlist icon in the navigation
-        const wishlistIcon = document.querySelector('[href="/dashboard/wishlist"], [href="/wishlist"]')
+        const wishlistIcon = document.querySelector('[href="/dashboard/wishlist"], a[href*="wishlist"]')
         if (wishlistIcon) {
           wishlistIcon.classList.add('animate-wishlistBadgePulse')
           setTimeout(() => {
@@ -177,15 +210,6 @@ export default function WishlistButton({ productId, className = '', preventNavig
           <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
         </svg>
       </button>
-
-      {/* Flying image element */}
-      {showFlyingImage && (
-        <div 
-          ref={flyingImageRef}
-          className="fixed w-16 h-16 rounded-full bg-cover bg-center z-50 pointer-events-none animate-flyToWishlist"
-          style={flyingImageStyle}
-        />
-      )}
 
       <AuthModal 
         isOpen={showAuthModal} 

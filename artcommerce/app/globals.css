@@ -226,3 +226,17 @@ body:has(> div > main[data-page="home"]) {
 .animate-wishlistBadgePulse {
   animation: wishlistBadgePulse 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
+
+/* Add specific styles for the flying image */
+.flying-image {
+  position: fixed;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  z-index: 9999;
+  pointer-events: none;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  animation: flyToWishlist 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
