@@ -138,6 +138,18 @@ export default function MobileProductManagement() {
   async function handleToggleStatus(id: number, newStatus: boolean) {
     // Optimistically update UI
     setAllProducts(products => products.map(p => p.id === id ? { ...p, isActive: newStatus } : p))
+    
+    // Add animation class to the expanded content
+    const expandedContent = document.querySelector(`[data-product-id="${id}"] .${styles.expandableContent}`);
+    if (expandedContent) {
+      expandedContent.classList.add(styles.statusChanging);
+      
+      // Remove the class after animation completes
+      setTimeout(() => {
+        expandedContent?.classList.remove(styles.statusChanging);
+      }, 500);
+    }
+    
     try {
       const res = await fetch(`/api/admin/products/${id}`, {
         method: 'PATCH',
@@ -352,7 +364,7 @@ export default function MobileProductManagement() {
               </div>
               
               <div className={`${styles.expandableContent} ${expandedProduct === product.id ? styles.expanded : ''} bg-gray-50 rounded-b-lg border-t border-gray-100`}>
-                <div className="p-4 space-y-4">
+                <div className="p-4 space-y-4" data-product-id={product.id}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 text-sm">
                       <span className="text-gray-500">Stock:</span>

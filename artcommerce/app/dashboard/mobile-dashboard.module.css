@@ -148,7 +148,9 @@
 .expandableContent {
   max-height: 0;
   overflow: hidden;
-  transition: max-height 0.3s ease, opacity 0.3s ease, transform 0.3s ease;
+  transition: max-height 0.3s cubic-bezier(0.4, 0.0, 0.2, 1), 
+              opacity 0.3s cubic-bezier(0.4, 0.0, 0.2, 1), 
+              transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
   opacity: 0;
   transform: translateY(-10px);
 }
@@ -157,6 +159,75 @@
   max-height: 500px; /* Large enough to fit content */
   opacity: 1;
   transform: translateY(0);
+}
+
+/* Status changing animation */
+.statusChanging {
+  animation: statusPulse 0.5s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+@keyframes statusPulse {
+  0% {
+    background-color: rgba(241, 245, 249, 0.8);
+  }
+  50% {
+    background-color: rgba(224, 242, 254, 0.8);
+  }
+  100% {
+    background-color: rgba(241, 245, 249, 0.8);
+  }
+}
+
+/* Filter changing animation */
+.filterChanging {
+  animation: filterTransition 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+@keyframes filterTransition {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 0.6;
+    transform: translateY(5px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Improve toggle buttons in filter */
+.relative.z-10 .rounded-full {
+  position: relative;
+  overflow: hidden;
+}
+
+.relative.z-10 .rounded-full button {
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.relative.z-10 .rounded-full button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 70%);
+  transform: scale(0);
+  transition: transform 0.5s cubic-bezier(0.4, 0.0, 0.2, 1);
+  opacity: 0;
+  z-index: -1;
+}
+
+.relative.z-10 .rounded-full button:active::before {
+  transform: scale(2);
+  opacity: 1;
+  transition: transform 0.2s cubic-bezier(0.4, 0.0, 0.2, 1), opacity 0.1s linear;
 }
 
 /* Submenu styling for expandable sections */

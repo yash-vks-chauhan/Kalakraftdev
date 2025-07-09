@@ -230,8 +230,9 @@
   right: 0;
   bottom: 0;
   background-color: #ccc;
-  transition: .4s;
+  transition: .3s cubic-bezier(0.4, 0.0, 0.2, 1);
   border-radius: 34px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .statusSlider:before {
@@ -242,8 +243,9 @@
   left: 2px;
   bottom: 2px;
   background-color: white;
-  transition: .4s;
+  transition: .3s cubic-bezier(0.4, 0.0, 0.2, 1);
   border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
 }
 
 .statusSwitch input:checked + .statusSlider {
@@ -254,9 +256,19 @@
   transform: translateX(20px);
 }
 
-/* Inactive toggle state: red background */
 .statusSwitch input:not(:checked) + .statusSlider {
-  background-color: #dc2626;
+  background-color: #E5E7EB;
+}
+
+/* Add ripple effect on click */
+.statusSwitch input:active + .statusSlider:before {
+  width: 18px;
+  transition: .1s ease;
+}
+
+/* Add focus effect */
+.statusSwitch input:focus + .statusSlider {
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
 }
 
 .actionButtons {

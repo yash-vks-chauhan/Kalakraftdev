@@ -143,6 +143,18 @@ export default function MobileUserManagement({ initialFilter = 'admin' }: Mobile
 
   const handleFilterChange = (filter: 'admin' | 'user') => {
     setExpandedUser(null);
+    
+    // Add transition class to the content for smooth animation
+    const contentElement = document.querySelector(`.${styles.menuList}`);
+    if (contentElement) {
+      contentElement.classList.add(styles.filterChanging);
+      
+      // Remove the class after animation completes
+      setTimeout(() => {
+        contentElement?.classList.remove(styles.filterChanging);
+      }, 300);
+    }
+    
     setActiveFilter(filter);
   };
 
@@ -207,6 +219,7 @@ export default function MobileUserManagement({ initialFilter = 'admin' }: Mobile
                   : 'text-gray-600 hover:bg-gray-100'
               }`}
             >
+              <Shield size={14} className={activeFilter === 'admin' ? 'text-white' : 'text-gray-500'} />
               Admins
             </button>
             <button 
@@ -219,6 +232,7 @@ export default function MobileUserManagement({ initialFilter = 'admin' }: Mobile
                   : 'text-gray-600 hover:bg-gray-100'
               }`}
             >
+              <User size={14} className={activeFilter === 'user' ? 'text-white' : 'text-gray-500'} />
               Users
             </button>
           </div>
