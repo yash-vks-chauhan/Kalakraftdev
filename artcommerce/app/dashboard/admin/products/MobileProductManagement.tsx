@@ -116,8 +116,10 @@ export default function MobileProductManagement() {
     }
   }
 
-  // Toggle product active/inactive status
+  // Toggle product active/inactive status with optimistic UI update
   async function handleToggleStatus(id: number, newStatus: boolean) {
+    // Optimistically update UI
+    setAllProducts(products => products.map(p => p.id === id ? { ...p, isActive: newStatus } : p))
     try {
       const res = await fetch(`/api/admin/products/${id}`, {
         method: 'PATCH',
@@ -131,9 +133,10 @@ export default function MobileProductManagement() {
         const errorData = await res.json()
         throw new Error(errorData.error || 'Error updating product status')
       }
-      const json = await res.json()
-      setAllProducts(products => products.map(p => p.id === id ? { ...p, isActive: json.product.isActive } : p))
+      // Already updated UI optimistically
     } catch (err: any) {
+      // Revert UI on failure
+      setAllProducts(products => products.map(p => p.id === id ? { ...p, isActive: !newStatus } : p))
       alert('Failed to update product status: ' + err.message)
     }
   }
