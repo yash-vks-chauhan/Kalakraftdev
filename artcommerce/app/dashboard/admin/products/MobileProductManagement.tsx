@@ -228,7 +228,7 @@ export default function MobileProductManagement() {
               ref={activeButtonRef}
               type="button"
               onClick={() => handleFilterChange('active')}
-              className={`px-4 py-1.5 text-xs font-medium rounded-full transition-all duration-300 flex items-center gap-1 ${
+              className={`flex-1 flex justify-center items-center gap-1 px-4 py-1.5 text-xs font-medium rounded-full transition-all duration-300 ${
                 activeFilter === 'active' 
                   ? 'bg-green-600 text-white shadow-sm' 
                   : 'text-gray-600 hover:bg-gray-100'
@@ -241,7 +241,7 @@ export default function MobileProductManagement() {
               ref={inactiveButtonRef}
               type="button"
               onClick={() => handleFilterChange('inactive')}
-              className={`px-4 py-1.5 text-xs font-medium rounded-full transition-all duration-300 flex items-center gap-1 ${
+              className={`flex-1 flex justify-center items-center gap-1 px-4 py-1.5 text-xs font-medium rounded-full transition-all duration-300 ${
                 activeFilter === 'inactive' 
                   ? 'bg-gray-700 text-white shadow-sm' 
                   : 'text-gray-600 hover:bg-gray-100'
