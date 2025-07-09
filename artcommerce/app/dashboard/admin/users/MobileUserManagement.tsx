@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../../../contexts/AuthContext'
 import Link from 'next/link'
 import { User, Package, ChevronRight, Mail, Calendar, RefreshCw, Shield, Trash2, Send, Users, LogOut } from 'lucide-react'
@@ -27,6 +27,10 @@ export default function MobileUserManagement({ initialFilter = 'admin' }: Mobile
   const [expandedUser, setExpandedUser] = useState<number | null>(null)
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
   const [activeFilter, setActiveFilter] = useState<'admin' | 'user'>(initialFilter === 'user' ? 'user' : 'admin')
+  
+  // Refs for toggle buttons
+  const adminButtonRef = useRef<HTMLButtonElement>(null);
+  const userButtonRef = useRef<HTMLButtonElement>(null);
 
   // Fetch users on mount
   useEffect(() => {
@@ -138,8 +142,26 @@ export default function MobileUserManagement({ initialFilter = 'admin' }: Mobile
   }
 
   const handleFilterChange = (filter: 'admin' | 'user') => {
-    setExpandedUser(null); // Close any expanded user when switching views
-    setActiveFilter(filter);
+    // Force a small delay to ensure the state update happens
+    setTimeout(() => {
+      setExpandedUser(null); // Close any expanded user when switching views
+      setActiveFilter(filter);
+      
+      // Force update the button styles directly
+      if (adminButtonRef.current && userButtonRef.current) {
+        if (filter === 'admin') {
+          adminButtonRef.current.classList.add('bg-gray-800', 'text-white', 'shadow-sm');
+          adminButtonRef.current.classList.remove('text-gray-600', 'hover:bg-gray-100');
+          userButtonRef.current.classList.remove('bg-gray-800', 'text-white', 'shadow-sm');
+          userButtonRef.current.classList.add('text-gray-600', 'hover:bg-gray-100');
+        } else {
+          userButtonRef.current.classList.add('bg-gray-800', 'text-white', 'shadow-sm');
+          userButtonRef.current.classList.remove('text-gray-600', 'hover:bg-gray-100');
+          adminButtonRef.current.classList.remove('bg-gray-800', 'text-white', 'shadow-sm');
+          adminButtonRef.current.classList.add('text-gray-600', 'hover:bg-gray-100');
+        }
+      }
+    }, 10);
   };
 
   if (user?.role !== 'admin') {
@@ -194,6 +216,7 @@ export default function MobileUserManagement({ initialFilter = 'admin' }: Mobile
           <span className="text-sm font-medium ml-2 text-gray-600">Show:</span>
           <div className="flex items-center bg-white rounded-full p-1 shadow-sm">
             <button 
+              ref={adminButtonRef}
               type="button"
               onClick={() => handleFilterChange('admin')}
               className={`px-4 py-1.5 text-xs font-medium rounded-full transition-all duration-300 ${
@@ -205,6 +228,7 @@ export default function MobileUserManagement({ initialFilter = 'admin' }: Mobile
               Admins
             </button>
             <button 
+              ref={userButtonRef}
               type="button"
               onClick={() => handleFilterChange('user')}
               className={`px-4 py-1.5 text-xs font-medium rounded-full transition-all duration-300 ${
