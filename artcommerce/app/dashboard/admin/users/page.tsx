@@ -91,25 +91,6 @@ export default function AdminUsersPage() {
     <main className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">User Management</h1>
-        {filterParam && (
-          <div className="flex gap-2">
-            <Link href="/dashboard/admin/users" className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-md">
-              Show All
-            </Link>
-            <Link 
-              href="/dashboard/admin/users?filter=admin" 
-              className={`px-3 py-1 text-sm rounded-md ${filterParam === 'admin' ? 'bg-gray-800 text-white' : 'bg-gray-100 hover:bg-gray-200'}`}
-            >
-              Admins Only
-            </Link>
-            <Link 
-              href="/dashboard/admin/users?filter=user" 
-              className={`px-3 py-1 text-sm rounded-md ${filterParam === 'user' ? 'bg-gray-800 text-white' : 'bg-gray-100 hover:bg-gray-200'}`}
-            >
-              Regular Users
-            </Link>
-          </div>
-        )}
       </div>
       
       <table className="w-full border-collapse">

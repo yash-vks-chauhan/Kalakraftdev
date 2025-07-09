@@ -142,26 +142,8 @@ export default function MobileUserManagement({ initialFilter = 'admin' }: Mobile
   }
 
   const handleFilterChange = (filter: 'admin' | 'user') => {
-    // Force a small delay to ensure the state update happens
-    setTimeout(() => {
-      setExpandedUser(null); // Close any expanded user when switching views
-      setActiveFilter(filter);
-      
-      // Force update the button styles directly
-      if (adminButtonRef.current && userButtonRef.current) {
-        if (filter === 'admin') {
-          adminButtonRef.current.classList.add('bg-gray-800', 'text-white', 'shadow-sm');
-          adminButtonRef.current.classList.remove('text-gray-600', 'hover:bg-gray-100');
-          userButtonRef.current.classList.remove('bg-gray-800', 'text-white', 'shadow-sm');
-          userButtonRef.current.classList.add('text-gray-600', 'hover:bg-gray-100');
-        } else {
-          userButtonRef.current.classList.add('bg-gray-800', 'text-white', 'shadow-sm');
-          userButtonRef.current.classList.remove('text-gray-600', 'hover:bg-gray-100');
-          adminButtonRef.current.classList.remove('bg-gray-800', 'text-white', 'shadow-sm');
-          adminButtonRef.current.classList.add('text-gray-600', 'hover:bg-gray-100');
-        }
-      }
-    }, 10);
+    setExpandedUser(null);
+    setActiveFilter(filter);
   };
 
   if (user?.role !== 'admin') {
@@ -212,14 +194,14 @@ export default function MobileUserManagement({ initialFilter = 'admin' }: Mobile
           </button>
         </div>
         
-        <div className="flex items-center justify-between bg-gray-50 p-2 rounded-lg border border-gray-200">
+        <div className="relative z-10 flex items-center justify-between bg-gray-50 p-2 rounded-lg border border-gray-200">
           <span className="text-sm font-medium ml-2 text-gray-600">Show:</span>
           <div className="flex items-center bg-white rounded-full p-1 shadow-sm">
             <button 
               ref={adminButtonRef}
               type="button"
               onClick={() => handleFilterChange('admin')}
-              className={`px-4 py-1.5 text-xs font-medium rounded-full transition-all duration-300 ${
+              className={`flex-1 flex justify-center items-center gap-1 px-4 py-1.5 text-xs font-medium rounded-full transition-all duration-300 ${
                 activeFilter === 'admin' 
                   ? 'bg-gray-800 text-white shadow-sm' 
                   : 'text-gray-600 hover:bg-gray-100'
@@ -231,7 +213,7 @@ export default function MobileUserManagement({ initialFilter = 'admin' }: Mobile
               ref={userButtonRef}
               type="button"
               onClick={() => handleFilterChange('user')}
-              className={`px-4 py-1.5 text-xs font-medium rounded-full transition-all duration-300 ${
+              className={`flex-1 flex justify-center items-center gap-1 px-4 py-1.5 text-xs font-medium rounded-full transition-all duration-300 ${
                 activeFilter === 'user' 
                   ? 'bg-gray-800 text-white shadow-sm' 
                   : 'text-gray-600 hover:bg-gray-100'
