@@ -80,6 +80,12 @@ export default function ProductsClient() {
     checkMobile()
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+  
+  // Ensure sidebar toggle button position updates correctly
+  useEffect(() => {
+    // This empty effect ensures the toggle button position is updated when sidebar state changes
+    // The state change triggers a re-render with the updated style
   }, [isSidebarOpen])
 
   function handleCategoryClick(slug: string) {
@@ -238,7 +244,7 @@ export default function ProductsClient() {
       </h2>
       
       {/* Category filter */}
-      <details open className={styles.filterSection}>
+      <details className={styles.filterSection}>
         <summary className={styles.filterHeader}>
           <span style={{ display: 'flex', alignItems: 'center' }}>
             <FiGrid style={{ marginRight: '8px' }} />
@@ -276,7 +282,7 @@ export default function ProductsClient() {
 
       {/* Mood Tags */}
       {usageTags.length > 0 && (
-        <details open className={styles.filterSection}>
+        <details className={styles.filterSection}>
           <summary className={styles.filterHeader}>
             <span style={{ display: 'flex', alignItems: 'center' }}>
               <FiTrendingUp style={{ marginRight: '8px' }} />
@@ -314,7 +320,7 @@ export default function ProductsClient() {
       )}
 
       {/* Rating */}
-      <details open className={styles.filterSection}>
+      <details className={styles.filterSection}>
         <summary className={styles.filterHeader}>
           <span style={{ display: 'flex', alignItems: 'center' }}>
             <FiStar style={{ marginRight: '8px' }} />
@@ -357,7 +363,7 @@ export default function ProductsClient() {
       </details>
 
       {/* Stock */}
-      <details open className={styles.filterSection}>
+      <details className={styles.filterSection}>
         <summary className={styles.filterHeader}>
           <span style={{ display: 'flex', alignItems: 'center' }}>
             <FiPackage style={{ marginRight: '8px' }} />
@@ -400,7 +406,7 @@ export default function ProductsClient() {
       </details>
 
       {/* Sort */}
-      <details open className={styles.filterSection}>
+      <details className={styles.filterSection}>
         <summary className={styles.filterHeader}>
           <span style={{ display: 'flex', alignItems: 'center' }}>
             <FiTrendingUp style={{ marginRight: '8px' }} />
@@ -483,10 +489,11 @@ export default function ProductsClient() {
       {/* Desktop Sidebar Toggle Button */}
       {!isMobileView && (
         <button 
-          className={styles.sidebarToggle}
-          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          className={`${styles.sidebarToggle} ${!isSidebarOpen ? styles.sidebarToggleClosed : ''}`}
+          onClick={() => {
+            setIsSidebarOpen(!isSidebarOpen);
+          }}
           aria-label={isSidebarOpen ? "Close filters" : "Open filters"}
-          style={{ left: isSidebarOpen ? '280px' : '0' }}
         >
           {isSidebarOpen ? <FiChevronLeft size={18} /> : <FiChevronRight size={18} />}  
         </button>
@@ -539,9 +546,9 @@ export default function ProductsClient() {
 
       <main className={`
         ${styles.productsContainer} 
-        ${!isMobileView && isSidebarOpen ? styles.mainContent : styles.mainContentCollapsed}
+        ${!isMobileView ? (isSidebarOpen ? styles.mainContent : styles.mainContentCollapsed) : ''}
         ${isMobileView ? styles.mobileProductsContainer : ''}
-      `} style={{ width: isMobileView ? '100%' : 'auto' }}>
+      `}>
         <h1 className={styles.title}>Discover Our Collection</h1>
 
         {/* Results count for mobile */}
