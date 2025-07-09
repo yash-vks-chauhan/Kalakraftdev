@@ -471,8 +471,13 @@ export default function MobileSearchModal({ open, onClose }: Props) {
     const fetchSearchResults = async () => {
       setErrorResults(null)
       const params = new URLSearchParams()
-      const finalSearch = normalizeSearch(searchText)
-      params.set('search', finalSearch)
+      const normalized = normalizeSearch(searchText)
+      // If finalSearch matches a category slug and no category filter set, use category filter
+      if (!selectedCategory && KNOWN_CATEGORIES.some(cat => cat.slug === normalized)) {
+        params.set('category', normalized)
+      } else if (normalized) {
+        params.set('search', normalized)
+      }
 
       if (selectedCategory) {
         params.set('category', selectedCategory)
@@ -485,7 +490,6 @@ export default function MobileSearchModal({ open, onClose }: Props) {
           throw new Error(data.error || 'Failed to fetch search results')
         }
         
-        // Normalize imageUrls and add isNew flag
         let products = (Array.isArray(data.products) ? data.products : []).map((p) => {
           let urls = []
           try {
@@ -493,24 +497,28 @@ export default function MobileSearchModal({ open, onClose }: Props) {
           } catch {
             urls = []
           }
-          
           // Check if product is new (less than 14 days old)
           const isNew = p.createdAt && new Date(p.createdAt) > new Date(Date.now() - 14 * 24 * 60 * 60 * 1000)
-          
           return { ...p, imageUrls: urls, isNew }
         })
-        // Apply weighted fuzzy matching with match data
-        const fuse = new Fuse(products, {
-          keys: [
-            { name: 'name', weight: 0.7 },
-            { name: 'shortDesc', weight: 0.2 },
-            { name: 'category.name', weight: 0.1 },
-          ],
-          threshold: 0.3,
-          includeMatches: true,
-        })
-        const fuseResults = fuse.search(finalSearch)
-        products = fuseResults.map((r: any) => ({ ...r.item, _matches: r.matches }))
+        // If normalized term matches a category slug and no category filter is set, skip fuzzy filtering
+        const isCategorySearch = !selectedCategory && KNOWN_CATEGORIES.some(cat => cat.slug === normalized)
+        if (isCategorySearch) {
+          products = products.map(p => ({ ...p, _matches: [] }))
+        } else {
+          // Apply weighted fuzzy matching with match data
+          const fuse = new Fuse(products, {
+            keys: [
+              { name: 'name', weight: 0.7 },
+              { name: 'shortDesc', weight: 0.2 },
+              { name: 'category.name', weight: 0.1 },
+            ],
+            threshold: 0.3,
+            includeMatches: true,
+          })
+          const fuseResults = fuse.search(normalized)
+          products = fuseResults.map((r: any) => ({ ...r.item, _matches: r.matches }))
+        }
         
         setSearchResults(products)
       } catch (err: any) {
