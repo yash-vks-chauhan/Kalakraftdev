@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
 import { useAuth } from '../../../contexts/AuthContext'
 import { useRouter } from 'next/navigation'
@@ -48,6 +48,10 @@ export default function MobileProductManagement() {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [activeFilter, setActiveFilter] = useState<'active' | 'inactive'>('active')
+  
+  // Refs for toggle buttons
+  const activeButtonRef = useRef<HTMLButtonElement>(null);
+  const inactiveButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (user?.role !== 'admin') {
@@ -150,8 +154,26 @@ export default function MobileProductManagement() {
   }
 
   const handleFilterChange = (filter: 'active' | 'inactive') => {
-    setExpandedProduct(null); // Close any expanded product when switching views
-    setActiveFilter(filter);
+    // Force a small delay to ensure the state update happens
+    setTimeout(() => {
+      setExpandedProduct(null); // Close any expanded product when switching views
+      setActiveFilter(filter);
+      
+      // Force update the button styles directly
+      if (activeButtonRef.current && inactiveButtonRef.current) {
+        if (filter === 'active') {
+          activeButtonRef.current.classList.add('bg-green-600', 'text-white', 'shadow-sm');
+          activeButtonRef.current.classList.remove('text-gray-600', 'hover:bg-gray-100');
+          inactiveButtonRef.current.classList.remove('bg-gray-700', 'text-white', 'shadow-sm');
+          inactiveButtonRef.current.classList.add('text-gray-600', 'hover:bg-gray-100');
+        } else {
+          inactiveButtonRef.current.classList.add('bg-gray-700', 'text-white', 'shadow-sm');
+          inactiveButtonRef.current.classList.remove('text-gray-600', 'hover:bg-gray-100');
+          activeButtonRef.current.classList.remove('bg-green-600', 'text-white', 'shadow-sm');
+          activeButtonRef.current.classList.add('text-gray-600', 'hover:bg-gray-100');
+        }
+      }
+    }, 10);
   };
 
   if (user?.role !== 'admin') {
@@ -218,6 +240,7 @@ export default function MobileProductManagement() {
           <span className="text-sm font-medium ml-2 text-gray-600">Show:</span>
           <div className="flex items-center bg-white rounded-full p-1 shadow-sm">
             <button 
+              ref={activeButtonRef}
               type="button"
               onClick={() => handleFilterChange('active')}
               className={`px-4 py-1.5 text-xs font-medium rounded-full transition-all duration-300 flex items-center gap-1 ${
@@ -230,6 +253,7 @@ export default function MobileProductManagement() {
               Active
             </button>
             <button 
+              ref={inactiveButtonRef}
               type="button"
               onClick={() => handleFilterChange('inactive')}
               className={`px-4 py-1.5 text-xs font-medium rounded-full transition-all duration-300 flex items-center gap-1 ${
