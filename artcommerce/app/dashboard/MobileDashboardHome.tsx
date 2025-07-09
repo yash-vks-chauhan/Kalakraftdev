@@ -376,11 +376,6 @@ export default function MobileDashboardHome() {
               </div>
               <div className={`${styles.expandableContent} ${showUsersMenu ? styles.expanded : ''}`}>
                 <div className="p-2 space-y-2">
-                  <Link href="/dashboard/admin/users" className={styles.submenuItem}>
-                    <Users size={16} />
-                    <span>All Users</span>
-                    <ChevronRight size={16} />
-                  </Link>
                   <Link href="/dashboard/admin/users?filter=admin" className={styles.submenuItem}>
                     <Shield size={16} />
                     <span>Admin Users</span>
