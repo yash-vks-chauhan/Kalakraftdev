@@ -4,11 +4,10 @@ import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useAuth } from '../contexts/AuthContext'
 import { useMobileMenu } from '../contexts/MobileMenuContext'
-import { useTheme } from '../contexts/ThemeContext'
 import styles from './MobileLayout.module.css'
 import { useRouter } from 'next/navigation'
 import { isMobileDevice } from '../../lib/utils'
-import { X, User, ShoppingBag, Heart, MessageCircle, Settings, Info, LogOut, Monitor, Smartphone, Sun, Moon } from 'lucide-react'
+import { X, User, ShoppingBag, Heart, MessageCircle, Settings, Info, LogOut, Monitor, Smartphone } from 'lucide-react'
 
 interface MobileMenuPanelProps {
   isOpen: boolean;
@@ -20,7 +19,6 @@ interface MobileMenuPanelProps {
 const MobileMenuPanel: React.FC<MobileMenuPanelProps> = ({ isOpen, onClose, toggleViewMode, viewMode }) => {
   const router = useRouter();
   const { user, logout } = useAuth();
-  const { theme, toggleTheme } = useTheme();
   const [isActualMobileDevice, setIsActualMobileDevice] = useState(false);
 
   useEffect(() => {
@@ -125,20 +123,6 @@ const MobileMenuPanel: React.FC<MobileMenuPanelProps> = ({ isOpen, onClose, togg
               {viewMode === 'mobile' ? <Monitor size={20} /> : <Smartphone size={20} />}
               <span>Switch to {viewMode === 'mobile' ? 'Desktop' : 'Mobile'} View</span>
             </button>
-          )}
-          
-          {/* Dark Mode Toggle - Only for admin users */}
-          {user?.role === 'admin' && (
-            <div className={styles.themeToggleContainer}>
-              <button 
-                onClick={toggleTheme}
-                className={styles.themeToggle}
-                aria-label={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
-              >
-                {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
-                <span>{theme === 'light' ? 'Dark Mode' : 'Light Mode'}</span>
-              </button>
-            </div>
           )}
         </div>
       </div>

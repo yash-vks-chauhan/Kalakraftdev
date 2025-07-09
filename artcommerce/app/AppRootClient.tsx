@@ -7,7 +7,6 @@ import NotificationContainer from './components/NotificationContainer'
 import AdminNotifications from './components/AdminNotifications'
 import Providers from './Providers'
 import { useMobileMenu } from './contexts/MobileMenuContext'
-import { useTheme } from './contexts/ThemeContext'
 import MobileMenuPanel from './components/MobileMenuPanel'
 import MobileLayout from './components/MobileLayout'
 import styles from './components/Navbar.module.css'
@@ -18,7 +17,6 @@ export default function AppRootClient({ children }: { children: React.ReactNode 
   // Skip automatic scroll on initial load
   const isFirstPathRef = useRef(true);
   const { isMobileMenuOpen, setIsMobileMenuOpen } = useMobileMenu();
-  const { theme } = useTheme();
   const pathname = usePathname();
   const [isMobile, setIsMobile] = useState(false);
   const [forceDesktopView, setForceDesktopView] = useState(false);
@@ -110,7 +108,7 @@ export default function AppRootClient({ children }: { children: React.ReactNode 
   const showDesktopView = forceDesktopView || !isMobile;
 
   return (
-    <body suppressHydrationWarning className={theme === 'dark' ? 'dark-mode' : ''}>
+    <body suppressHydrationWarning>
       <Providers>
         {!showDesktopView ? (
           // Mobile Layout

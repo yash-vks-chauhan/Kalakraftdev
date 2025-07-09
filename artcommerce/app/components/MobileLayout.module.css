@@ -40,11 +40,11 @@
 
 /* Non-home page header styling */
 .mobileHeader:not(.homeMobileHeader) {
-  background: var(--header-bg);
+  background: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(8px) saturate(180%);
   -webkit-backdrop-filter: blur(8px) saturate(180%);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* Header spacer for balance */
@@ -66,7 +66,7 @@
   border: none;
   padding: 6px;
   cursor: pointer;
-  color: var(--text-color);
+  color: #000;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -482,7 +482,7 @@
   width: 80%;
   max-width: 300px;
   height: 100vh;
-  background: var(--menu-bg);
+  background: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(30px) saturate(250%);
   -webkit-backdrop-filter: blur(30px) saturate(250%);
   z-index: 2000;
@@ -494,8 +494,8 @@
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  border-left: 1px solid var(--border-color);
-  outline: 1px solid var(--border-color);
+  border-left: 1px solid rgba(255, 255, 255, 0.3);
+  outline: 1px solid rgba(255, 255, 255, 0.1);
   outline-offset: -2px;
 }
 
@@ -507,8 +507,8 @@
   display: flex;
   justify-content: flex-end;
   padding: 20px;
-  border-bottom: 2px solid var(--border-color);
-  background: var(--menu-bg);
+  border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.5);
   backdrop-filter: blur(15px) saturate(200%);
   -webkit-backdrop-filter: blur(15px) saturate(200%);
 }
@@ -516,7 +516,7 @@
 .closeMenuButton {
   background: none;
   border: none;
-  color: var(--text-color);
+  color: #333;
   cursor: pointer;
   padding: 5px;
   border-radius: 50%;
@@ -540,57 +540,38 @@
 .mobileNavLink {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 24px;
+  gap: 15px;
+  padding: 12px 20px;
   background: none;
   border: none;
   font-size: 16px;
-  font-weight: 500;
-  color: var(--text-color);
+  color: #333;
   cursor: pointer;
-  transition: background-color 0.2s ease;
   text-align: left;
+  transition: all 0.3s ease;
   width: 100%;
+  position: relative;
+  overflow: hidden;
 }
 
-.mobileNavLink:hover {
-  background-color: rgba(0, 0, 0, 0.05);
+.mobileNavLink::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 0;
+  height: 2px;
+  background-color: #000;
+  transition: width 0.3s ease;
 }
 
-.dark-mode .mobileNavLink:hover {
-  background-color: rgba(255, 255, 255, 0.05);
+.mobileNavLink:hover, .mobileNavLink:active {
+  background-color: rgba(0, 0, 0, 0.03);
+  color: #000;
 }
 
-/* Theme toggle button */
-.themeToggleContainer {
-  padding: 12px 24px;
-  margin-top: 20px;
-  border-top: 1px solid var(--border-color);
-}
-
-.themeToggle {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px;
-  background: none;
-  border: none;
-  font-size: 16px;
-  font-weight: 500;
-  color: var(--text-color);
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-  text-align: left;
+.mobileNavLink:hover::before {
   width: 100%;
-  border-radius: 8px;
-}
-
-.themeToggle:hover {
-  background-color: rgba(0, 0, 0, 0.05);
-}
-
-.dark-mode .themeToggle:hover {
-  background-color: rgba(255, 255, 255, 0.05);
 }
 
 /* Media query for larger mobile devices */
