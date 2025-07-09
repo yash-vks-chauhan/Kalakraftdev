@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useRef, FormEvent, useCallback } from 'react'
+import { useEffect, useState, useRef, FormEvent, useCallback, ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
@@ -8,6 +8,20 @@ import Image from 'next/image'
 import { X, Search, ArrowLeft } from 'lucide-react'
 import WishlistButton from './WishlistButton'
 import styles from './MobileSearchModal.module.css'
+import Fuse from 'fuse.js'
+
+// helper to highlight matched substrings
+const getHighlightedText = (text: string, indices: number[][]) => {
+  let lastIndex = 0;
+  const elements: ReactNode[] = [];
+  indices.forEach(([start, end], idx) => {
+    if (lastIndex < start) elements.push(text.slice(lastIndex, start));
+    elements.push(<mark key={idx}>{text.slice(start, end + 1)}</mark>);
+    lastIndex = end + 1;
+  });
+  if (lastIndex < text.length) elements.push(text.slice(lastIndex));
+  return elements;
+}
 
 interface Product {
   id: number
@@ -20,6 +34,7 @@ interface Product {
   imageUrls: string[]
   stockQuantity: number
   category: { id: number; name: string; slug: string } | null
+  _matches?: Array<{ key: string; indices: number[][] }>;
   avgRating?: number
   ratingCount?: number
   isNew?: boolean
@@ -28,6 +43,8 @@ interface Product {
 
 // Product Card with Swipeable Images component
 const ProductCard = ({ product, handleProductClick }) => {
+  const nameMatch = product._matches?.find(m => m.key === 'name')
+  const catMatch = product._matches?.find(m => m.key === 'category.name')
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
@@ -268,10 +285,10 @@ const ProductCard = ({ product, handleProductClick }) => {
         <div className={styles.info}>
           {product.category && (
             <div className={styles.categoryTag}>
-              {product.category.name}
+              {catMatch ? getHighlightedText(product.category.name, catMatch.indices) : product.category.name}
             </div>
           )}
-          <h3 className={styles.name}>{product.name}</h3>
+          <h3 className={styles.name}>{nameMatch ? getHighlightedText(product.name, nameMatch.indices) : product.name}</h3>
           
           {/* Short description - only show if there's space */}
           {product.shortDesc && !product.avgRating && (
@@ -312,6 +329,17 @@ const SYNONYMS: Record<string, string> = {
   decor: 'decor', decoration: 'decor', shringar: 'decor', alankar: 'decor', 'सजावट': 'decor', sajavat: 'decor', diwar: 'decor', diwaar: 'decor',
   'matt rangoli': 'matt rangoli', mattrangoli: 'matt rangoli', 'मैट रंगोली': 'मैट रंगोली',
   'mirror work': 'mirror work', mirrorwork: 'mirror work', shishakala: 'mirror work', 'शीशा कला': 'mirror work', 'shisha kala': 'mirror work',
+}
+// Helper to escape regex special chars in synonyms
+const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+// Normalize search text by replacing multi-word synonyms before search
+function normalizeSearch(input: string): string {
+  let result = input.trim().toLowerCase();
+  Object.entries(SYNONYMS).forEach(([key, val]) => {
+    const pattern = new RegExp(`\\b${escapeRegex(key)}\\b`, 'gi');
+    result = result.replace(pattern, val);
+  });
+  return result;
 }
 
 const KNOWN_CATEGORIES = [
@@ -443,8 +471,7 @@ export default function MobileSearchModal({ open, onClose }: Props) {
     const fetchSearchResults = async () => {
       setErrorResults(null)
       const params = new URLSearchParams()
-      const tokens = searchText.trim().toLowerCase().split(/\s+/).map(tok => SYNONYMS[tok] || tok)
-      const finalSearch = tokens.join(' ')
+      const finalSearch = normalizeSearch(searchText)
       params.set('search', finalSearch)
 
       if (selectedCategory) {
@@ -472,6 +499,18 @@ export default function MobileSearchModal({ open, onClose }: Props) {
           
           return { ...p, imageUrls: urls, isNew }
         })
+        // Apply weighted fuzzy matching with match data
+        const fuse = new Fuse(products, {
+          keys: [
+            { name: 'name', weight: 0.7 },
+            { name: 'shortDesc', weight: 0.2 },
+            { name: 'category.name', weight: 0.1 },
+          ],
+          threshold: 0.3,
+          includeMatches: true,
+        })
+        const fuseResults = fuse.search(finalSearch)
+        products = fuseResults.map((r: any) => ({ ...r.item, _matches: r.matches }))
         
         setSearchResults(products)
       } catch (err: any) {
@@ -493,8 +532,7 @@ export default function MobileSearchModal({ open, onClose }: Props) {
 
   function handleSearchSubmit(e: FormEvent) {
     e.preventDefault()
-    const tokens = searchText.trim().toLowerCase().split(/\s+/).map(tok => SYNONYMS[tok] || tok)
-    const finalSearch = tokens.join(' ')
+    const finalSearch = normalizeSearch(searchText)
     const isCat = KNOWN_CATEGORIES.some(cat => cat.slug === finalSearch)
     const params = new URLSearchParams()
     if (isCat) params.set('category', finalSearch)
