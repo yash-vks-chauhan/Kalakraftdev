@@ -15,14 +15,18 @@ interface UserRow {
   abandonedCartCount: number
 }
 
-export default function MobileUserManagement() {
+interface MobileUserManagementProps {
+  initialFilter?: string;
+}
+
+export default function MobileUserManagement({ initialFilter = 'admin' }: MobileUserManagementProps) {
   const { token, user } = useAuth()
   const [users, setUsers] = useState<UserRow[]>([])
   const [filteredUsers, setFilteredUsers] = useState<UserRow[]>([])
   const [loading, setLoading] = useState(true)
   const [expandedUser, setExpandedUser] = useState<number | null>(null)
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
-  const [showAdmins, setShowAdmins] = useState(true)
+  const [showAdmins, setShowAdmins] = useState(initialFilter === 'admin')
 
   useEffect(() => {
     if (user?.role !== 'admin') return

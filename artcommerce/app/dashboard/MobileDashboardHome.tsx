@@ -1,7 +1,7 @@
 "use client"
 
 import Link from 'next/link'
-import { ChevronRight, ChevronDown, ChevronUp, User, Package, ShoppingCart, Heart, Settings, Users, Tag, AlertTriangle, TicketCheck, Star, LogOut, RefreshCw, Clock, PackageOpen, Calendar, PlusCircle, BarChart3 } from 'lucide-react'
+import { ChevronRight, ChevronDown, ChevronUp, User, Package, ShoppingCart, Heart, Settings, Users, Tag, AlertTriangle, TicketCheck, Star, LogOut, RefreshCw, Clock, PackageOpen, Calendar, PlusCircle, BarChart3, Shield, UserCheck } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import styles from './mobile-dashboard.module.css'
 import desktopStyles from './dashboard.module.css'
@@ -19,6 +19,7 @@ export default function MobileDashboardHome() {
   const [activeMetricDot, setActiveMetricDot] = useState(0)
   const metricsRowRef = useRef<HTMLDivElement>(null)
   const [showProductsMenu, setShowProductsMenu] = useState(false)
+  const [showUsersMenu, setShowUsersMenu] = useState(false)
 
   useEffect(() => {
     if (user?.role === 'admin') {
@@ -363,13 +364,35 @@ export default function MobileDashboardHome() {
               </div>
             </li>
             <li>
-              <Link href="/dashboard/admin/users" className={styles.menuItem}>
+              <div 
+                className={styles.menuItem}
+                onClick={() => setShowUsersMenu(!showUsersMenu)}
+              >
                 <div className={styles.menuIcon}>
                   <Users size={18} />
                 </div>
                 <span className={styles.menuItemText}>User Management</span>
-                <ChevronRight size={20} />
-              </Link>
+                {showUsersMenu ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+              </div>
+              <div className={`${styles.expandableContent} ${showUsersMenu ? styles.expanded : ''}`}>
+                <div className="p-2 space-y-2">
+                  <Link href="/dashboard/admin/users" className={styles.submenuItem}>
+                    <Users size={16} />
+                    <span>All Users</span>
+                    <ChevronRight size={16} />
+                  </Link>
+                  <Link href="/dashboard/admin/users?filter=admin" className={styles.submenuItem}>
+                    <Shield size={16} />
+                    <span>Admin Users</span>
+                    <ChevronRight size={16} />
+                  </Link>
+                  <Link href="/dashboard/admin/users?filter=user" className={styles.submenuItem}>
+                    <UserCheck size={16} />
+                    <span>Regular Users</span>
+                    <ChevronRight size={16} />
+                  </Link>
+                </div>
+              </div>
             </li>
             <li>
               <Link href="/dashboard/admin/coupons" className={styles.menuItem}>
