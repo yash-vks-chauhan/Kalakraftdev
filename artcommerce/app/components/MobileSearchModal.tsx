@@ -34,6 +34,7 @@ interface Product {
   imageUrls: string[]
   stockQuantity: number
   category: { id: number; name: string; slug: string } | null
+  synonyms?: string[]
   _matches?: Array<{ key: string; indices: number[][] }>;
   avgRating?: number
   ratingCount?: number
@@ -329,6 +330,15 @@ const SYNONYMS: Record<string, string> = {
   decor: 'decor', decoration: 'decor', shringar: 'decor', alankar: 'decor', 'सजावट': 'decor', sajavat: 'decor', diwar: 'decor', diwaar: 'decor',
   'matt rangoli': 'matt rangoli', mattrangoli: 'matt rangoli', 'मैट रंगोली': 'मैट रंगोली',
   'mirror work': 'mirror work', mirrorwork: 'mirror work', shishakala: 'mirror work', 'शीशा कला': 'mirror work', 'shisha kala': 'mirror work',
+  // Additional synonyms for better matching
+  clock: 'clocks', 'घड़ियाँ': 'clocks', 'घड़िया': 'clocks',
+  kolam: 'rangoli', alpana: 'rangoli', alpona: 'rangoli', 'अल्पना': 'rangoli',
+  'wall art': 'decor', wallart: 'decor', 'home decor': 'decor', homedecor: 'decor', walldecor: 'decor',
+  planter: 'pots', planters: 'pots', 'flower vase': 'pots', flowervase: 'pots', gamla: 'pots', 'गमला': 'pots',
+  'mat rangoli': 'matt rangoli', 'flat rangoli': 'matt rangoli', flatrangoli: 'matt rangoli',
+  // Tray-specific synonyms
+  trays: 'tray', 'jewellery tray': 'tray', jewellerytray: 'tray',
+  'puja tray': 'tray', pujatray: 'tray', 'puja thali': 'tray', pujathali: 'tray',
 }
 // Helper to escape regex special chars in synonyms
 const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -501,6 +511,13 @@ export default function MobileSearchModal({ open, onClose }: Props) {
           const isNew = p.createdAt && new Date(p.createdAt) > new Date(Date.now() - 14 * 24 * 60 * 60 * 1000)
           return { ...p, imageUrls: urls, isNew }
         })
+        // Add synonyms list for partial synonyms search
+        products = products.map((p: any) => ({
+          ...p,
+          synonyms: Object.entries(SYNONYMS)
+            .filter(([, v]) => v === p.category?.slug)
+            .map(([k]) => k),
+        }))
         // If normalized term matches a category slug and no category filter is set, skip fuzzy filtering
         const isCategorySearch = !selectedCategory && KNOWN_CATEGORIES.some(cat => cat.slug === normalized)
         if (isCategorySearch) {
@@ -509,11 +526,12 @@ export default function MobileSearchModal({ open, onClose }: Props) {
           // Apply weighted fuzzy matching with match data
           const fuse = new Fuse(products, {
             keys: [
-              { name: 'name', weight: 0.7 },
-              { name: 'shortDesc', weight: 0.2 },
-              { name: 'category.name', weight: 0.1 },
+              { name: 'name', weight: 0.6 },
+              { name: 'shortDesc', weight: 0.15 },
+              { name: 'category.name', weight: 0.15 },
+              { name: 'synonyms', weight: 0.3 },
             ],
-            threshold: 0.3,
+            threshold: 0.4,
             includeMatches: true,
           })
           const fuseResults = fuse.search(normalized)
