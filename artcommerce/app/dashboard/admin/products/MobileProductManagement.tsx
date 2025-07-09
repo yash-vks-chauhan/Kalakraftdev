@@ -23,7 +23,8 @@ import {
   LogOut,
   ArrowRight,
   Check,
-  X
+  X,
+  MoreVertical
 } from 'lucide-react'
 
 interface Product {
@@ -48,11 +49,28 @@ export default function MobileProductManagement() {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [activeFilter, setActiveFilter] = useState<'active' | 'inactive'>('active')
+  const [showActionsMenu, setShowActionsMenu] = useState(false)
   
   // Refs for toggle buttons
   const activeButtonRef = useRef<HTMLButtonElement>(null);
   const inactiveButtonRef = useRef<HTMLButtonElement>(null);
+  const actionsMenuRef = useRef<HTMLDivElement>(null);
 
+  // Close actions menu when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (actionsMenuRef.current && !actionsMenuRef.current.contains(event.target as Node)) {
+        setShowActionsMenu(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Fetch products on mount
   useEffect(() => {
     if (user?.role !== 'admin') {
       setError('Unauthorized')
@@ -212,13 +230,46 @@ export default function MobileProductManagement() {
             {activeFilter === 'active' ? 'Active Products' : 'Inactive Products'}: <span className="text-black">{displayProducts.length}</span>
             <span className="text-xs text-gray-400 ml-1">of {allProducts.length}</span>
           </div>
-          <button 
-            onClick={fetchProducts}
-            className={isLoading ? `${styles.refreshButton} ${styles.refreshing}` : styles.refreshButton}
-            disabled={isLoading}
-          >
-            <RefreshCw size={16} />
-          </button>
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={fetchProducts}
+              className={isLoading ? `${styles.refreshButton} ${styles.refreshing}` : styles.refreshButton}
+              disabled={isLoading}
+            >
+              <RefreshCw size={16} />
+            </button>
+            
+            <div className="relative" ref={actionsMenuRef}>
+              <button 
+                onClick={() => setShowActionsMenu(!showActionsMenu)}
+                className={`${styles.actionMenuButton} ${showActionsMenu ? styles.actionMenuButtonActive : ''}`}
+                aria-label="More actions"
+              >
+                <MoreVertical size={18} />
+              </button>
+              
+              {showActionsMenu && (
+                <div className={styles.actionMenuDropdown}>
+                  <Link
+                    href="/dashboard/admin/products/new"
+                    className={styles.actionMenuItem}
+                    onClick={() => setShowActionsMenu(false)}
+                  >
+                    <PlusCircle size={16} />
+                    <span>Add New Product</span>
+                  </Link>
+                  <Link
+                    href="/dashboard/admin/products/highest-rated"
+                    className={styles.actionMenuItem}
+                    onClick={() => setShowActionsMenu(false)}
+                  >
+                    <Star size={16} />
+                    <span>Highest Rated</span>
+                  </Link>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
         
         <div className="relative z-10 flex items-center justify-between bg-gray-50 p-2 rounded-lg border border-gray-200">
@@ -252,25 +303,6 @@ export default function MobileProductManagement() {
             </button>
           </div>
         </div>
-      </div>
-
-      <div className={styles.mobileButtonsContainer}>
-        <Link
-          href="/dashboard/admin/products/new"
-          className={styles.mobileActionButton}
-          style={{ touchAction: 'manipulation' }}
-        >
-          + Add New Product
-          <ArrowRight size={14} className={styles.mobileArrowIcon} />
-        </Link>
-        <Link
-          href="/dashboard/admin/products/highest-rated"
-          className={styles.mobileActionButton}
-          style={{ touchAction: 'manipulation' }}
-        >
-          ⭐ Highest Rated
-          <ArrowRight size={14} className={styles.mobileArrowIcon} />
-        </Link>
       </div>
 
       {isLoading ? (

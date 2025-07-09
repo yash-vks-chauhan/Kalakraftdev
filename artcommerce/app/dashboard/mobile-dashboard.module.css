@@ -809,3 +809,70 @@
   opacity: 1;
   transform: translateX(0);
 } 
+
+/* Action menu button and dropdown styles */
+.actionMenuButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: rgba(241, 245, 249, 0.8);
+  color: #64748b;
+  transition: all 0.2s ease;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.actionMenuButtonActive {
+  background: rgba(226, 232, 240, 1);
+  color: #1a202c;
+}
+
+.actionMenuDropdown {
+  position: absolute;
+  top: calc(100% + 5px);
+  right: 0;
+  min-width: 180px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  z-index: 50;
+  overflow: hidden;
+  animation: fadeInMenu 0.2s ease-out;
+}
+
+@keyframes fadeInMenu {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.actionMenuItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  color: #1a202c;
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+
+.actionMenuItem:hover,
+.actionMenuItem:active {
+  background-color: rgba(241, 245, 249, 0.8);
+}
+
+.actionMenuItem svg {
+  color: #64748b;
+}
+
+.actionMenuItem:not(:last-child) {
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+} 
