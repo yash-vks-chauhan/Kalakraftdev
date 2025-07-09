@@ -221,7 +221,7 @@ export default function MobileProductManagement() {
           </button>
         </div>
         
-        <div className="flex items-center justify-between bg-gray-50 p-2 rounded-lg border border-gray-200">
+        <div className="relative z-10 flex items-center justify-between bg-gray-50 p-2 rounded-lg border border-gray-200">
           <span className="text-sm font-medium ml-2 text-gray-600">Show:</span>
           <div className="flex items-center bg-white rounded-full p-1 shadow-sm">
             <button 
