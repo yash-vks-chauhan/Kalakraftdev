@@ -21,23 +21,23 @@ interface MobileUserManagementProps {
 
 export default function MobileUserManagement({ initialFilter = 'admin' }: MobileUserManagementProps) {
   const { token, user } = useAuth()
-  const [users, setUsers] = useState<UserRow[]>([])
-  const [filteredUsers, setFilteredUsers] = useState<UserRow[]>([])
+  const [allUsers, setAllUsers] = useState<UserRow[]>([])
+  const [displayUsers, setDisplayUsers] = useState<UserRow[]>([])
   const [loading, setLoading] = useState(true)
   const [expandedUser, setExpandedUser] = useState<number | null>(null)
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
-  const [showAdmins, setShowAdmins] = useState(initialFilter === 'admin')
+  const [activeFilter, setActiveFilter] = useState<'admin' | 'user'>(initialFilter === 'user' ? 'user' : 'admin')
 
+  // Fetch users on mount
   useEffect(() => {
     if (user?.role !== 'admin') return
     fetchUsers()
   }, [token, user])
 
+  // Filter users when allUsers or activeFilter changes
   useEffect(() => {
-    if (users.length > 0) {
-      setFilteredUsers(users.filter(u => showAdmins ? u.role === 'admin' : u.role === 'user'))
-    }
-  }, [users, showAdmins])
+    filterUsers()
+  }, [allUsers, activeFilter])
 
   const fetchUsers = async () => {
     setLoading(true)
@@ -46,12 +46,19 @@ export default function MobileUserManagement({ initialFilter = 'admin' }: Mobile
         headers: { Authorization: `Bearer ${token}` }
       })
       const data = await response.json()
-      setUsers(data.users)
+      setAllUsers(data.users)
     } catch (error) {
       console.error('Error fetching users:', error)
     } finally {
       setLoading(false)
     }
+  }
+
+  const filterUsers = () => {
+    if (allUsers.length === 0) return;
+    
+    const filtered = allUsers.filter(u => u.role === activeFilter);
+    setDisplayUsers(filtered);
   }
 
   async function onRoleChange(id: number, newRole: string) {
@@ -70,7 +77,7 @@ export default function MobileUserManagement({ initialFilter = 'admin' }: Mobile
       }
       
       const { user: updated } = await res.json()
-      setUsers(u => u.map(u => u.id === id ? updated : u))
+      setAllUsers(users => users.map(u => u.id === id ? updated : u))
     } catch (error) {
       alert('Failed to update role')
       console.error(error)
@@ -87,7 +94,7 @@ export default function MobileUserManagement({ initialFilter = 'admin' }: Mobile
       })
       
       if (res.ok) {
-        setUsers(us => us.filter(x => x.id !== id))
+        setAllUsers(users => users.filter(x => x.id !== id))
       } else {
         throw new Error('Failed to delete user')
       }
@@ -130,9 +137,9 @@ export default function MobileUserManagement({ initialFilter = 'admin' }: Mobile
     }
   }
 
-  const toggleShowAdmins = (value: boolean) => {
+  const handleFilterChange = (filter: 'admin' | 'user') => {
     setExpandedUser(null); // Close any expanded user when switching views
-    setShowAdmins(value);
+    setActiveFilter(filter);
   };
 
   if (user?.role !== 'admin') {
@@ -172,7 +179,7 @@ export default function MobileUserManagement({ initialFilter = 'admin' }: Mobile
       <div className="flex flex-col gap-3 mb-4">
         <div className="flex items-center justify-between">
           <div className="text-sm font-medium text-gray-500">
-            {showAdmins ? 'Admins' : 'Regular Users'}: <span className="text-black">{filteredUsers.length}</span>
+            {activeFilter === 'admin' ? 'Admins' : 'Regular Users'}: <span className="text-black">{displayUsers.length}</span>
           </div>
           <button 
             onClick={fetchUsers}
@@ -187,12 +194,10 @@ export default function MobileUserManagement({ initialFilter = 'admin' }: Mobile
           <span className="text-sm font-medium ml-2 text-gray-600">Show:</span>
           <div className="flex items-center bg-white rounded-full p-1 shadow-sm">
             <button 
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleShowAdmins(true);
-              }}
+              type="button"
+              onClick={() => handleFilterChange('admin')}
               className={`px-4 py-1.5 text-xs font-medium rounded-full transition-all duration-300 ${
-                showAdmins 
+                activeFilter === 'admin' 
                   ? 'bg-gray-800 text-white shadow-sm' 
                   : 'text-gray-600 hover:bg-gray-100'
               }`}
@@ -200,12 +205,10 @@ export default function MobileUserManagement({ initialFilter = 'admin' }: Mobile
               Admins
             </button>
             <button 
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleShowAdmins(false);
-              }}
+              type="button"
+              onClick={() => handleFilterChange('user')}
               className={`px-4 py-1.5 text-xs font-medium rounded-full transition-all duration-300 ${
-                !showAdmins 
+                activeFilter === 'user' 
                   ? 'bg-gray-800 text-white shadow-sm' 
                   : 'text-gray-600 hover:bg-gray-100'
               }`}
@@ -221,14 +224,14 @@ export default function MobileUserManagement({ initialFilter = 'admin' }: Mobile
           <RefreshCw className={`${styles.emptyStateIcon} ${styles.refreshing}`} size={24} />
           <p className={styles.emptyStateText}>Loading users...</p>
         </div>
-      ) : filteredUsers.length === 0 ? (
+      ) : displayUsers.length === 0 ? (
         <div className={styles.emptyState}>
           <Users size={24} className={styles.emptyStateIcon} />
-          <p className={styles.emptyStateText}>No {showAdmins ? 'admin' : 'regular'} users found</p>
+          <p className={styles.emptyStateText}>No {activeFilter === 'admin' ? 'admin' : 'regular'} users found</p>
         </div>
       ) : (
         <ul className={styles.menuList}>
-          {filteredUsers.map(u => (
+          {displayUsers.map(u => (
             <li key={u.id}>
               <div 
                 className={styles.menuItem}
