@@ -125,6 +125,41 @@ export default function MobileDashboardHome() {
     }
   }
 
+  // Helper to get the first product image from order items
+  const getFirstProductImage = (order: any) => {
+    if (!order.orderItems || order.orderItems.length === 0) return null
+    
+    const firstItem = order.orderItems[0]
+    if (!firstItem.product || !firstItem.product.imageUrls) return null
+    
+    let imageUrls = []
+    try {
+      imageUrls = Array.isArray(firstItem.product.imageUrls) 
+        ? firstItem.product.imageUrls 
+        : JSON.parse(firstItem.product.imageUrls || '[]')
+    } catch {
+      imageUrls = []
+    }
+    
+    return imageUrls.length > 0 ? imageUrls[0] : null
+  }
+  
+  // Helper to get the product name from order items
+  const getProductName = (order: any) => {
+    if (!order.orderItems || order.orderItems.length === 0) return 'Unknown Product'
+    return order.orderItems[0].product?.name || 'Unknown Product'
+  }
+  
+  // Helper to handle multiple products in an order
+  const getProductSummary = (order: any) => {
+    if (!order.orderItems || order.orderItems.length === 0) return 'No products'
+    
+    const itemCount = order.orderItems.length
+    if (itemCount === 1) return order.orderItems[0].product?.name || 'Unknown Product'
+    
+    return `${order.orderItems[0].product?.name || 'Unknown Product'} + ${itemCount - 1} more`
+  }
+
   if (!user) return null
 
   return (
@@ -240,32 +275,50 @@ export default function MobileDashboardHome() {
             <p>Loading recent orders...</p>
           </div>
         ) : recentOrders.length > 0 ? (
-          <ul className={styles.activityList}>
-            {recentOrders.map((order: any) => (
-              <li key={order.id} className={styles.activityItem}>
-                <div className={styles.activityIcon}>
-                  <PackageOpen size={20} />
+          <div className={styles.ordersScrollContainer}>
+            <div className={styles.ordersRow}>
+              {recentOrders.map((order: any) => (
+                <div key={order.id} className={styles.orderCard}>
+                  <Link href={`/dashboard/orders/${order.id}`} className={styles.orderCardLink}>
+                    <div className={styles.orderImageContainer}>
+                      {getFirstProductImage(order) ? (
+                        <img 
+                          src={getFirstProductImage(order)} 
+                          alt={getProductName(order)}
+                          className={styles.orderImage}
+                        />
+                      ) : (
+                        <div className={styles.noOrderImage}>
+                          <Package size={24} />
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className={styles.orderContent}>
+                      <div className={styles.orderHeader}>
+                        <h3 className={styles.productName}>
+                          {getProductSummary(order)}
+                        </h3>
+                        <span className={styles.orderNumber}>
+                          Order #{order.id.toString().substring(0, 8)}
+                        </span>
+                      </div>
+                      
+                      <div className={styles.orderMeta}>
+                        <span className={styles.orderDate}>
+                          <Calendar size={12} style={{ display: 'inline', marginRight: '4px' }} />
+                          {formatDate(order.createdAt)}
+                        </span>
+                        <span className={`${styles.orderStatus} ${getStatusClass(order.status)}`}>
+                          {order.status}
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
                 </div>
-                <div className={styles.activityContent}>
-                  <h3 className={styles.activityTitle}>
-                    Order #{order.id.toString().substring(0, 8)}
-                  </h3>
-                  <div className={styles.activityMeta}>
-                    <span className={styles.activityDate}>
-                      <Calendar size={12} style={{ display: 'inline', marginRight: '4px' }} />
-                      {formatDate(order.createdAt)}
-                    </span>
-                    <span className={`${styles.activityStatus} ${getStatusClass(order.status)}`}>
-                      {order.status}
-                    </span>
-                  </div>
-                </div>
-                <Link href={`/dashboard/orders/${order.id}`}>
-                  <ChevronRight size={16} />
-                </Link>
-              </li>
-            ))}
-          </ul>
+              ))}
+            </div>
+          </div>
         ) : (
           <div className={styles.emptyState}>
             <Package className={styles.emptyStateIcon} size={24} />

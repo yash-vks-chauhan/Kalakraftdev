@@ -468,6 +468,157 @@
   text-decoration: none;
 }
 
+/* Horizontal scrolling container for recent orders */
+.ordersScrollContainer {
+  position: relative;
+  width: 100%;
+  margin-bottom: 1rem;
+  overflow: hidden;
+}
+
+.ordersRow {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  gap: 1rem;
+  padding: 0.5rem 0.25rem;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+  scroll-behavior: smooth; /* Smooth scrolling animation */
+  padding-bottom: 0.75rem; /* Add some padding to avoid cut-off shadows */
+}
+
+.ordersRow::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* Update order card styles for horizontal layout */
+.orderCard {
+  display: flex;
+  flex-direction: column;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  transition: all 0.2s ease;
+  transform: translateZ(0); /* Hardware acceleration */
+  min-width: 220px; /* Fixed width for horizontal scrolling */
+  width: 220px;
+  flex-shrink: 0;
+  scroll-snap-align: start;
+  height: 280px; /* Fixed height to maintain consistency */
+}
+
+.orderCardLink {
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: inherit;
+  height: 100%;
+}
+
+.orderImageContainer {
+  position: relative;
+  width: 100%;
+  height: 140px;
+  overflow: hidden;
+  background-color: #f8fafc;
+}
+
+.orderImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.orderCard:active .orderImage {
+  transform: scale(1.05);
+}
+
+.noOrderImage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background-color: #f1f5f9;
+  color: #94a3b8;
+}
+
+.orderContent {
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  justify-content: space-between;
+}
+
+.orderHeader {
+  display: flex;
+  flex-direction: column;
+}
+
+.productName {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1a202c;
+  margin-bottom: 0.25rem;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.orderNumber {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.orderMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.5rem;
+}
+
+.orderDate {
+  font-size: 0.75rem;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+}
+
+.orderStatus {
+  font-size: 0.7rem;
+  font-weight: 500;
+  padding: 0.2rem 0.5rem;
+  border-radius: 1rem;
+  text-transform: capitalize;
+}
+
+/* Keep existing status classes but rename for order cards */
+.orderStatus.statusPending {
+  background-color: #fff7ed;
+  color: #c2410c;
+}
+
+.orderStatus.statusCompleted {
+  background-color: #f0fdf4;
+  color: #15803d;
+}
+
+.orderStatus.statusProcessing {
+  background-color: #eff6ff;
+  color: #1d4ed8;
+}
+
+/* Update existing activity list to work with new order cards */
 .activityList {
   list-style: none;
   margin: 0;
