@@ -21,7 +21,9 @@ import {
   BarChart3,
   User,
   LogOut,
-  ArrowRight
+  ArrowRight,
+  Check,
+  X
 } from 'lucide-react'
 
 interface Product {
@@ -37,13 +39,15 @@ interface Product {
 
 export default function MobileProductManagement() {
   const { user, token } = useAuth()
-  const [products, setProducts] = useState<Product[]>([])
+  const [allProducts, setAllProducts] = useState<Product[]>([])
+  const [displayProducts, setDisplayProducts] = useState<Product[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [expandedProduct, setExpandedProduct] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
   const [isTransitioning, setIsTransitioning] = useState(false)
+  const [activeFilter, setActiveFilter] = useState<'active' | 'inactive'>('active')
 
   useEffect(() => {
     if (user?.role !== 'admin') {
@@ -54,6 +58,17 @@ export default function MobileProductManagement() {
 
     fetchProducts()
   }, [token, user])
+
+  useEffect(() => {
+    filterProducts()
+  }, [allProducts, activeFilter])
+
+  const filterProducts = () => {
+    if (allProducts.length === 0) return;
+    
+    const filtered = allProducts.filter(p => activeFilter === 'active' ? p.isActive : !p.isActive);
+    setDisplayProducts(filtered);
+  }
 
   const fetchProducts = async () => {
     setIsLoading(true)
@@ -68,7 +83,7 @@ export default function MobileProductManagement() {
       }
       
       const data = await response.json()
-      setProducts(data.products)
+      setAllProducts(data.products)
       setError(null)
     } catch (error: any) {
       setError(error.message)
@@ -91,7 +106,7 @@ export default function MobileProductManagement() {
         throw new Error(errorData.error)
       }
       
-      setProducts(products.filter(p => p.id !== id))
+      setAllProducts(products => products.filter(p => p.id !== id))
     } catch (error: any) {
       alert('Failed to delete product: ' + error.message)
     }
@@ -113,7 +128,7 @@ export default function MobileProductManagement() {
         throw new Error(errorData.error || 'Error updating product status')
       }
       const json = await res.json()
-      setProducts(products.map(p => p.id === id ? { ...p, isActive: json.product.isActive } : p))
+      setAllProducts(products => products.map(p => p.id === id ? { ...p, isActive: json.product.isActive } : p))
     } catch (err: any) {
       alert('Failed to update product status: ' + err.message)
     }
@@ -133,6 +148,11 @@ export default function MobileProductManagement() {
       setTimeout(() => setShowLogoutConfirm(false), 3000)
     }
   }
+
+  const handleFilterChange = (filter: 'active' | 'inactive') => {
+    setExpandedProduct(null); // Close any expanded product when switching views
+    setActiveFilter(filter);
+  };
 
   if (user?.role !== 'admin') {
     return <p className="p-4 text-red-500">Unauthorized</p>
@@ -179,17 +199,50 @@ export default function MobileProductManagement() {
         </div>
       </div>
 
-      <div className="flex items-center justify-between mb-4">
-        <div className="text-sm font-medium text-gray-500">
-          Total Products: <span className="text-black">{products.length}</span>
+      <div className="flex flex-col gap-3 mb-4">
+        <div className="flex items-center justify-between">
+          <div className="text-sm font-medium text-gray-500">
+            {activeFilter === 'active' ? 'Active Products' : 'Inactive Products'}: <span className="text-black">{displayProducts.length}</span>
+            <span className="text-xs text-gray-400 ml-1">of {allProducts.length}</span>
+          </div>
+          <button 
+            onClick={fetchProducts}
+            className={isLoading ? `${styles.refreshButton} ${styles.refreshing}` : styles.refreshButton}
+            disabled={isLoading}
+          >
+            <RefreshCw size={16} />
+          </button>
         </div>
-        <button 
-          onClick={fetchProducts}
-          className={isLoading ? `${styles.refreshButton} ${styles.refreshing}` : styles.refreshButton}
-          disabled={isLoading}
-        >
-          <RefreshCw size={16} />
-        </button>
+        
+        <div className="flex items-center justify-between bg-gray-50 p-2 rounded-lg border border-gray-200">
+          <span className="text-sm font-medium ml-2 text-gray-600">Show:</span>
+          <div className="flex items-center bg-white rounded-full p-1 shadow-sm">
+            <button 
+              type="button"
+              onClick={() => handleFilterChange('active')}
+              className={`px-4 py-1.5 text-xs font-medium rounded-full transition-all duration-300 flex items-center gap-1 ${
+                activeFilter === 'active' 
+                  ? 'bg-green-600 text-white shadow-sm' 
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              <CircleCheck size={14} className={activeFilter === 'active' ? 'text-white' : 'text-green-500'} />
+              Active
+            </button>
+            <button 
+              type="button"
+              onClick={() => handleFilterChange('inactive')}
+              className={`px-4 py-1.5 text-xs font-medium rounded-full transition-all duration-300 flex items-center gap-1 ${
+                activeFilter === 'inactive' 
+                  ? 'bg-gray-700 text-white shadow-sm' 
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              <CircleX size={14} className={activeFilter === 'inactive' ? 'text-white' : 'text-gray-400'} />
+              Inactive
+            </button>
+          </div>
+        </div>
       </div>
 
       <div className={styles.mobileButtonsContainer}>
@@ -221,9 +274,14 @@ export default function MobileProductManagement() {
           <AlertTriangle className={styles.emptyStateIcon} size={24} />
           <p className={styles.emptyStateText}>{error}</p>
         </div>
+      ) : displayProducts.length === 0 ? (
+        <div className={styles.emptyState}>
+          <Package className={styles.emptyStateIcon} size={24} />
+          <p className={styles.emptyStateText}>No {activeFilter} products found</p>
+        </div>
       ) : (
         <ul className={styles.menuList}>
-          {products.map(product => (
+          {displayProducts.map(product => (
             <li key={product.id}>
               <div 
                 className={styles.menuItem}
