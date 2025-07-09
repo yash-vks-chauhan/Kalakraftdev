@@ -126,6 +126,11 @@ export default function MobileUserManagement() {
     }
   }
 
+  const toggleShowAdmins = (value: boolean) => {
+    setExpandedUser(null); // Close any expanded user when switching views
+    setShowAdmins(value);
+  };
+
   if (user?.role !== 'admin') {
     return <p className="p-4 text-red-500">Unauthorized</p>
   }
@@ -174,18 +179,32 @@ export default function MobileUserManagement() {
           </button>
         </div>
         
-        <div className="flex items-center justify-between bg-gray-100 p-2 rounded-lg">
-          <span className="text-sm font-medium ml-2">Show:</span>
-          <div className="flex items-center bg-white rounded-md p-1 shadow-sm">
+        <div className="flex items-center justify-between bg-gray-50 p-2 rounded-lg border border-gray-200">
+          <span className="text-sm font-medium ml-2 text-gray-600">Show:</span>
+          <div className="flex items-center bg-white rounded-full p-1 shadow-sm">
             <button 
-              onClick={() => setShowAdmins(true)}
-              className={`px-3 py-1 text-sm rounded-md transition-colors ${showAdmins ? 'bg-indigo-600 text-white' : 'text-gray-700'}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleShowAdmins(true);
+              }}
+              className={`px-4 py-1.5 text-xs font-medium rounded-full transition-all duration-300 ${
+                showAdmins 
+                  ? 'bg-gray-800 text-white shadow-sm' 
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
             >
               Admins
             </button>
             <button 
-              onClick={() => setShowAdmins(false)}
-              className={`px-3 py-1 text-sm rounded-md transition-colors ${!showAdmins ? 'bg-indigo-600 text-white' : 'text-gray-700'}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleShowAdmins(false);
+              }}
+              className={`px-4 py-1.5 text-xs font-medium rounded-full transition-all duration-300 ${
+                !showAdmins 
+                  ? 'bg-gray-800 text-white shadow-sm' 
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
             >
               Users
             </button>
