@@ -6,19 +6,22 @@ import { WishlistProvider } from './contexts/WishlistContext'
 import { MobileMenuProvider } from './contexts/MobileMenuContext'
 import { NotificationProvider } from './contexts/NotificationContext'
 import { FirebaseAuthProvider } from './contexts/FirebaseAuthContext'
+import { ThemeProvider } from './contexts/ThemeContext'
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <NotificationProvider>
-      <AuthProvider>
-        <MobileMenuProvider>
-          <CartProvider>
-            <WishlistProvider>
-              <FirebaseAuthProvider>{children}</FirebaseAuthProvider>
-            </WishlistProvider>
-          </CartProvider>
-        </MobileMenuProvider>
-      </AuthProvider>
-    </NotificationProvider>
+    <ThemeProvider>
+      <NotificationProvider>
+        <AuthProvider>
+          <MobileMenuProvider>
+            <CartProvider>
+              <WishlistProvider>
+                <FirebaseAuthProvider>{children}</FirebaseAuthProvider>
+              </WishlistProvider>
+            </CartProvider>
+          </MobileMenuProvider>
+        </AuthProvider>
+      </NotificationProvider>
+    </ThemeProvider>
   )
 }

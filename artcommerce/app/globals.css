@@ -7,6 +7,23 @@
   --background-rgb: 255, 255, 255;
   --primary-color: #2d3748;
   --secondary-color: #4a5568;
+  --card-bg: #ffffff;
+  --border-color: rgba(0, 0, 0, 0.1);
+  --text-color: #000000;
+  --header-bg: rgba(255, 255, 255, 0.8);
+  --menu-bg: rgba(255, 255, 255, 0.8);
+}
+
+.dark-mode {
+  --foreground-rgb: 255, 255, 255;
+  --background-rgb: 18, 18, 18;
+  --primary-color: #90cdf4;
+  --secondary-color: #a0aec0;
+  --card-bg: #1e1e1e;
+  --border-color: rgba(255, 255, 255, 0.1);
+  --text-color: #ffffff;
+  --header-bg: rgba(18, 18, 18, 0.8);
+  --menu-bg: rgba(18, 18, 18, 0.8);
 }
 
 /* Add scroll snapping */
@@ -109,23 +126,28 @@ body:has(> div > main[data-page="home"]) {
   }
 }
 
-.animate-slideIn {
-  animation: slideIn 0.3s ease-out forwards;
+/* Dark mode transitions */
+html {
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-@keyframes modalSlideIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95) translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
+/* Dark mode styles for common elements */
+.dark-mode button:not([class*="bg-"]) {
+  color: var(--text-color);
 }
 
-.animate-modalSlideIn {
-  animation: modalSlideIn 0.3s ease-out forwards;
+.dark-mode input, 
+.dark-mode textarea, 
+.dark-mode select {
+  background-color: rgba(30, 30, 30, 0.8);
+  color: var(--text-color);
+  border-color: var(--border-color);
+}
+
+.dark-mode .card,
+.dark-mode [class*="card"] {
+  background-color: var(--card-bg);
+  border-color: var(--border-color);
 }
 
 @keyframes slideInFromTop {

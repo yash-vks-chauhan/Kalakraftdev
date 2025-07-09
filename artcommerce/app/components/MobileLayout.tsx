@@ -7,6 +7,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '../contexts/AuthContext'
 import { useCart } from '../contexts/CartContext'
 import { useWishlist } from '../contexts/WishlistContext'
+import { useTheme } from '../contexts/ThemeContext'
 import { Search, Home, ShoppingBag, User, Menu, X, Heart, ShoppingCart, Monitor, ChevronDown, Grid, HelpCircle, LogOut } from 'lucide-react'
 import { useMobileMenu } from '../contexts/MobileMenuContext'
 import { getImageUrl } from '../../lib/cloudinaryImages'
@@ -23,6 +24,7 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
   const { user, logout } = useAuth()
   const { cartItems } = useCart()
   const { wishlistItems } = useWishlist()
+  const { theme } = useTheme()
   const { isMobileMenuOpen, setIsMobileMenuOpen } = useMobileMenu()
   const [isSearchOpen, setIsSearchOpen] = React.useState(false)
   const [isSearchClosing, setIsSearchClosing] = useState(false)
@@ -526,7 +528,7 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
   }
 
   return (
-    <div className={styles.mobileLayoutContainer}>
+    <div className={`${styles.mobileLayoutContainer} ${theme === 'dark' ? 'dark-mode' : ''}`}>
       {/* Backdrop for account dropdown */}
       {isAccountDropdownOpen && (
         <div className={styles.mobileBackdrop} onClick={() => setIsAccountDropdownOpen(false)}></div>
