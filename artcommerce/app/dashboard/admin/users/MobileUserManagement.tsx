@@ -17,9 +17,10 @@ interface UserRow {
 
 interface MobileUserManagementProps {
   initialFilter?: string;
+  filterMode?: 'all' | 'admin' | 'user';
 }
 
-export default function MobileUserManagement({ initialFilter = 'admin' }: MobileUserManagementProps) {
+export default function MobileUserManagement({ initialFilter = 'admin', filterMode = 'all' }: MobileUserManagementProps) {
   const { token, user } = useAuth()
   const [allUsers, setAllUsers] = useState<UserRow[]>([])
   const [displayUsers, setDisplayUsers] = useState<UserRow[]>([])
@@ -41,7 +42,7 @@ export default function MobileUserManagement({ initialFilter = 'admin' }: Mobile
   // Filter users when allUsers or activeFilter changes
   useEffect(() => {
     filterUsers()
-  }, [allUsers, activeFilter])
+  }, [allUsers, activeFilter, filterMode])
 
   const fetchUsers = async () => {
     setLoading(true)
@@ -61,7 +62,18 @@ export default function MobileUserManagement({ initialFilter = 'admin' }: Mobile
   const filterUsers = () => {
     if (allUsers.length === 0) return;
     
-    const filtered = allUsers.filter(u => u.role === activeFilter);
+    let filtered;
+    if (filterMode === 'all') {
+      // In "All Users" mode, filter based on toggle selection
+      filtered = allUsers.filter(u => u.role === activeFilter);
+    } else if (filterMode === 'admin') {
+      // In "Admin Users" mode, show only admins regardless of toggle
+      filtered = allUsers.filter(u => u.role === 'admin');
+    } else if (filterMode === 'user') {
+      // In "Regular Users" mode, show only regular users regardless of toggle
+      filtered = allUsers.filter(u => u.role === 'user');
+    }
+    
     setDisplayUsers(filtered);
   }
 
@@ -142,6 +154,9 @@ export default function MobileUserManagement({ initialFilter = 'admin' }: Mobile
   }
 
   const handleFilterChange = (filter: 'admin' | 'user') => {
+    // Only allow filter changes in 'all' mode
+    if (filterMode !== 'all') return;
+    
     // Force a small delay to ensure the state update happens
     setTimeout(() => {
       setExpandedUser(null); // Close any expanded user when switching views
@@ -164,9 +179,43 @@ export default function MobileUserManagement({ initialFilter = 'admin' }: Mobile
     }, 10);
   };
 
+  // Set the correct toggle state based on filterMode
+  useEffect(() => {
+    if (filterMode === 'admin' && activeFilter !== 'admin') {
+      setActiveFilter('admin');
+      // Update toggle UI
+      if (adminButtonRef.current && userButtonRef.current) {
+        adminButtonRef.current.classList.add('bg-gray-800', 'text-white', 'shadow-sm');
+        adminButtonRef.current.classList.remove('text-gray-600', 'hover:bg-gray-100');
+        userButtonRef.current.classList.remove('bg-gray-800', 'text-white', 'shadow-sm');
+        userButtonRef.current.classList.add('text-gray-600', 'hover:bg-gray-100');
+      }
+    } else if (filterMode === 'user' && activeFilter !== 'user') {
+      setActiveFilter('user');
+      // Update toggle UI
+      if (adminButtonRef.current && userButtonRef.current) {
+        userButtonRef.current.classList.add('bg-gray-800', 'text-white', 'shadow-sm');
+        userButtonRef.current.classList.remove('text-gray-600', 'hover:bg-gray-100');
+        adminButtonRef.current.classList.remove('bg-gray-800', 'text-white', 'shadow-sm');
+        adminButtonRef.current.classList.add('text-gray-600', 'hover:bg-gray-100');
+      }
+    }
+  }, [filterMode]);
+
   if (user?.role !== 'admin') {
     return <p className="p-4 text-red-500">Unauthorized</p>
   }
+
+  // Determine the title based on filterMode
+  const getTitle = () => {
+    if (filterMode === 'all') {
+      return activeFilter === 'admin' ? 'Admins' : 'Regular Users';
+    } else if (filterMode === 'admin') {
+      return 'Admin Users';
+    } else {
+      return 'Regular Users';
+    }
+  };
 
   return (
     <div className={styles.mobileDashboardContainer}>
@@ -201,7 +250,7 @@ export default function MobileUserManagement({ initialFilter = 'admin' }: Mobile
       <div className="flex flex-col gap-3 mb-4">
         <div className="flex items-center justify-between">
           <div className="text-sm font-medium text-gray-500">
-            {activeFilter === 'admin' ? 'Admins' : 'Regular Users'}: <span className="text-black">{displayUsers.length}</span>
+            {getTitle()}: <span className="text-black">{displayUsers.length}</span>
           </div>
           <button 
             onClick={fetchUsers}
@@ -223,7 +272,8 @@ export default function MobileUserManagement({ initialFilter = 'admin' }: Mobile
                 activeFilter === 'admin' 
                   ? 'bg-gray-800 text-white shadow-sm' 
                   : 'text-gray-600 hover:bg-gray-100'
-              }`}
+              } ${filterMode !== 'all' ? 'opacity-70' : ''}`}
+              disabled={filterMode !== 'all'}
             >
               Admins
             </button>
@@ -235,7 +285,8 @@ export default function MobileUserManagement({ initialFilter = 'admin' }: Mobile
                 activeFilter === 'user' 
                   ? 'bg-gray-800 text-white shadow-sm' 
                   : 'text-gray-600 hover:bg-gray-100'
-              }`}
+              } ${filterMode !== 'all' ? 'opacity-70' : ''}`}
+              disabled={filterMode !== 'all'}
             >
               Users
             </button>
@@ -251,7 +302,7 @@ export default function MobileUserManagement({ initialFilter = 'admin' }: Mobile
       ) : displayUsers.length === 0 ? (
         <div className={styles.emptyState}>
           <Users size={24} className={styles.emptyStateIcon} />
-          <p className={styles.emptyStateText}>No {activeFilter === 'admin' ? 'admin' : 'regular'} users found</p>
+          <p className={styles.emptyStateText}>No {getTitle().toLowerCase()} found</p>
         </div>
       ) : (
         <ul className={styles.menuList}>
@@ -347,4 +398,4 @@ export default function MobileUserManagement({ initialFilter = 'admin' }: Mobile
       )}
     </div>
   )
-} 
+}

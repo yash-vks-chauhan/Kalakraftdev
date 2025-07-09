@@ -5,6 +5,8 @@ import Link from 'next/link'
 import MobileUserManagement from './MobileUserManagement'
 import { useIsMobile } from '../../../../lib/utils'
 import { useSearchParams } from 'next/navigation'
+import { ChevronDown, ChevronUp, Users, Shield, User } from 'lucide-react'
+import styles from '../../mobile-dashboard.module.css'
 
 interface UserRow {
   id: number
@@ -24,6 +26,8 @@ export default function AdminUsersPage() {
   const [forceDesktopView, setForceDesktopView] = useState(false)
   const searchParams = useSearchParams()
   const filterParam = searchParams.get('filter')
+  const [expandedSection, setExpandedSection] = useState<string | null>(null)
+  const [selectedMobileSection, setSelectedMobileSection] = useState<'all' | 'admin' | 'user'>('all')
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -56,9 +60,85 @@ export default function AdminUsersPage() {
     setFilteredUsers(filtered)
   }
 
+  const toggleSection = (section: string) => {
+    if (expandedSection === section) {
+      setExpandedSection(null);
+    } else {
+      setExpandedSection(section);
+    }
+  };
+
+  const handleSectionSelect = (section: 'all' | 'admin' | 'user') => {
+    setSelectedMobileSection(section);
+  };
+
   // Use mobile view if on mobile device and not forcing desktop view
   if (isMobile && !forceDesktopView) {
-    return <MobileUserManagement initialFilter={filterParam === 'user' ? 'user' : 'admin'} />
+    if (selectedMobileSection !== 'all') {
+      return <MobileUserManagement 
+        initialFilter={selectedMobileSection === 'user' ? 'user' : 'admin'} 
+        filterMode={selectedMobileSection}
+      />
+    }
+
+    return (
+      <div className={styles.mobileDashboardContainer}>
+        <h1 className={styles.mobileHeader}>User Management</h1>
+        
+        <div className="mb-6">
+          <div 
+            className="flex items-center justify-between p-3 bg-white rounded-lg shadow-sm mb-2 border border-gray-200"
+            onClick={() => toggleSection('userManagement')}
+          >
+            <div className="flex items-center gap-2">
+              <Users size={18} className="text-gray-700" />
+              <span className="font-medium">User Management</span>
+            </div>
+            {expandedSection === 'userManagement' ? (
+              <ChevronUp size={18} className="text-gray-500" />
+            ) : (
+              <ChevronDown size={18} className="text-gray-500" />
+            )}
+          </div>
+          
+          {expandedSection === 'userManagement' && (
+            <div className="pl-4 pr-2 py-2 bg-gray-50 rounded-lg border border-gray-200 mb-4 space-y-2">
+              <div 
+                className="flex items-center justify-between p-2 bg-white rounded-md shadow-sm"
+                onClick={() => handleSectionSelect('all')}
+              >
+                <div className="flex items-center gap-2">
+                  <Users size={16} className="text-gray-600" />
+                  <span className="text-sm font-medium">All Users</span>
+                </div>
+              </div>
+              
+              <div 
+                className="flex items-center justify-between p-2 bg-white rounded-md shadow-sm"
+                onClick={() => handleSectionSelect('admin')}
+              >
+                <div className="flex items-center gap-2">
+                  <Shield size={16} className="text-indigo-600" />
+                  <span className="text-sm font-medium">Admin Users</span>
+                </div>
+              </div>
+              
+              <div 
+                className="flex items-center justify-between p-2 bg-white rounded-md shadow-sm"
+                onClick={() => handleSectionSelect('user')}
+              >
+                <div className="flex items-center gap-2">
+                  <User size={16} className="text-gray-600" />
+                  <span className="text-sm font-medium">Regular Users</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+        
+        <MobileUserManagement initialFilter="admin" filterMode="all" />
+      </div>
+    )
   }
 
   if (user?.role !== 'admin') {
