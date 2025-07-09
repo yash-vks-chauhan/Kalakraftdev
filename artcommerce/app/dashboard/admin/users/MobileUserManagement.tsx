@@ -18,14 +18,22 @@ interface UserRow {
 export default function MobileUserManagement() {
   const { token, user } = useAuth()
   const [users, setUsers] = useState<UserRow[]>([])
+  const [filteredUsers, setFilteredUsers] = useState<UserRow[]>([])
   const [loading, setLoading] = useState(true)
   const [expandedUser, setExpandedUser] = useState<number | null>(null)
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
+  const [showAdmins, setShowAdmins] = useState(true)
 
   useEffect(() => {
     if (user?.role !== 'admin') return
     fetchUsers()
   }, [token, user])
+
+  useEffect(() => {
+    if (users.length > 0) {
+      setFilteredUsers(users.filter(u => showAdmins ? u.role === 'admin' : u.role === 'user'))
+    }
+  }, [users, showAdmins])
 
   const fetchUsers = async () => {
     setLoading(true)
@@ -152,17 +160,37 @@ export default function MobileUserManagement() {
         </div>
       </div>
 
-      <div className="flex items-center justify-between mb-4">
-        <div className="text-sm font-medium text-gray-500">
-          Total Users: <span className="text-black">{users.length}</span>
+      <div className="flex flex-col gap-3 mb-4">
+        <div className="flex items-center justify-between">
+          <div className="text-sm font-medium text-gray-500">
+            {showAdmins ? 'Admins' : 'Regular Users'}: <span className="text-black">{filteredUsers.length}</span>
+          </div>
+          <button 
+            onClick={fetchUsers}
+            className={loading ? `${styles.refreshButton} ${styles.refreshing}` : styles.refreshButton}
+            disabled={loading}
+          >
+            <RefreshCw size={16} />
+          </button>
         </div>
-        <button 
-          onClick={fetchUsers}
-          className={loading ? `${styles.refreshButton} ${styles.refreshing}` : styles.refreshButton}
-          disabled={loading}
-        >
-          <RefreshCw size={16} />
-        </button>
+        
+        <div className="flex items-center justify-between bg-gray-100 p-2 rounded-lg">
+          <span className="text-sm font-medium ml-2">Show:</span>
+          <div className="flex items-center bg-white rounded-md p-1 shadow-sm">
+            <button 
+              onClick={() => setShowAdmins(true)}
+              className={`px-3 py-1 text-sm rounded-md transition-colors ${showAdmins ? 'bg-indigo-600 text-white' : 'text-gray-700'}`}
+            >
+              Admins
+            </button>
+            <button 
+              onClick={() => setShowAdmins(false)}
+              className={`px-3 py-1 text-sm rounded-md transition-colors ${!showAdmins ? 'bg-indigo-600 text-white' : 'text-gray-700'}`}
+            >
+              Users
+            </button>
+          </div>
+        </div>
       </div>
 
       {loading ? (
@@ -170,9 +198,14 @@ export default function MobileUserManagement() {
           <RefreshCw className={`${styles.emptyStateIcon} ${styles.refreshing}`} size={24} />
           <p className={styles.emptyStateText}>Loading users...</p>
         </div>
+      ) : filteredUsers.length === 0 ? (
+        <div className={styles.emptyState}>
+          <Users size={24} className={styles.emptyStateIcon} />
+          <p className={styles.emptyStateText}>No {showAdmins ? 'admin' : 'regular'} users found</p>
+        </div>
       ) : (
         <ul className={styles.menuList}>
-          {users.map(u => (
+          {filteredUsers.map(u => (
             <li key={u.id}>
               <div 
                 className={styles.menuItem}
@@ -190,10 +223,13 @@ export default function MobileUserManagement() {
                 <div className={`${u.role === 'admin' ? 'bg-indigo-100 text-indigo-800' : 'bg-gray-100 text-gray-800'} text-xs px-2 py-1 rounded-full capitalize`}>
                   {u.role}
                 </div>
-                <ChevronRight size={20} className={expandedUser === u.id ? "transform rotate-90" : ""} />
+                <ChevronRight 
+                  size={20} 
+                  className={`transform transition-transform duration-300 ${expandedUser === u.id ? "rotate-90" : ""}`} 
+                />
               </div>
               
-              {expandedUser === u.id && (
+              <div className={`${styles.expandableContent} ${expandedUser === u.id ? styles.expanded : ''}`}>
                 <div className="bg-gray-50 p-4 rounded-b-lg border-t border-gray-100 space-y-4">
                   <div className="flex items-center gap-2 text-sm text-gray-500">
                     <Calendar size={14} />
@@ -214,7 +250,10 @@ export default function MobileUserManagement() {
                     </div>
                     
                     <button
-                      onClick={() => handleDeleteUser(u.id, u.fullName)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteUser(u.id, u.fullName);
+                      }}
                       className="flex items-center gap-1 text-red-600 text-sm"
                     >
                       <Trash2 size={14} />
@@ -238,7 +277,10 @@ export default function MobileUserManagement() {
                       
                       {u.abandonedCartCount > 0 && (
                         <button
-                          onClick={() => sendCartReminder(u.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            sendCartReminder(u.id);
+                          }}
                           className="flex items-center gap-1 bg-green-600 text-white text-xs px-2 py-1 rounded"
                         >
                           <Send size={12} />
@@ -248,7 +290,7 @@ export default function MobileUserManagement() {
                     </div>
                   </div>
                 </div>
-              )}
+              </div>
             </li>
           ))}
         </ul>
