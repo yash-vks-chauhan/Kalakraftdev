@@ -1,7 +1,7 @@
 "use client"
 
 import Link from 'next/link'
-import { ChevronRight, ChevronDown, ChevronUp, User, Package, ShoppingCart, Heart, Settings, Users, Tag, AlertTriangle, TicketCheck, Star, LogOut, RefreshCw, Clock, PackageOpen, Calendar, PlusCircle, BarChart3, Shield, UserCheck, Moon, Sun } from 'lucide-react'
+import { ChevronRight, ChevronDown, ChevronUp, User, Package, ShoppingCart, Heart, Settings, Users, Tag, AlertTriangle, TicketCheck, Star, LogOut, RefreshCw, Clock, PackageOpen, Calendar, PlusCircle, BarChart3, Shield, UserCheck } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { useDarkMode } from '../contexts/DarkModeContext'
 import styles from './mobile-dashboard.module.css'
@@ -10,7 +10,7 @@ import { useState, useEffect, useRef } from 'react'
 
 export default function MobileDashboardHome() {
   const { user, logout, token } = useAuth()
-  const { isDarkMode, toggleDarkMode } = useDarkMode()
+  const { isDarkMode } = useDarkMode()
   const [showRecent, setShowRecent] = useState(true)
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
   const [metrics, setMetrics] = useState<any>(null)
@@ -193,22 +193,6 @@ export default function MobileDashboardHome() {
           <span className={styles.userRole}>{user.role}</span>
         </div>
       </div>
-
-      {/* Dark Mode Toggle for admin users */}
-      {user?.role === 'admin' && (
-        <button 
-          className={styles.darkModeToggle}
-          onClick={toggleDarkMode}
-        >
-          <div className={styles.darkModeIcon}>
-            {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
-          </div>
-          <span className={styles.menuItemText}>
-            {isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-          </span>
-          <ChevronRight size={18} />
-        </button>
-      )}
 
       {user.role === 'admin' && (
         <>

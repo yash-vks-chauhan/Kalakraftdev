@@ -106,17 +106,6 @@ const MobileMenuPanel: React.FC<MobileMenuPanelProps> = ({ isOpen, onClose, togg
             ))
           ))}
           
-          {/* Dark Mode Toggle - Only show for admin users */}
-          {user?.role === 'admin' && (
-            <button 
-              onClick={toggleDarkMode}
-              className={styles.mobileNavLink}
-            >
-              {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
-              <span>{isDarkMode ? 'Light Mode' : 'Dark Mode'}</span>
-            </button>
-          )}
-          
           {user && (
             <button 
               onClick={handleLogout}
@@ -136,6 +125,24 @@ const MobileMenuPanel: React.FC<MobileMenuPanelProps> = ({ isOpen, onClose, togg
               {viewMode === 'mobile' ? <Monitor size={20} /> : <Smartphone size={20} />}
               <span>Switch to {viewMode === 'mobile' ? 'Desktop' : 'Mobile'} View</span>
             </button>
+          )}
+          
+          {/* Dark Mode Toggle - Only show for admin users, moved to bottom */}
+          {user?.role === 'admin' && (
+            <div className={styles.darkModeToggleWrapper}>
+              <div className={styles.darkModeLabel}>
+                <Moon size={16} />
+                <span>Dark Mode</span>
+                <Sun size={16} />
+              </div>
+              <button 
+                onClick={toggleDarkMode}
+                className={`${styles.darkModeToggleSwitch} ${isDarkMode ? styles.darkModeActive : ''}`}
+                aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
+              >
+                <div className={styles.darkModeToggleKnob}></div>
+              </button>
+            </div>
           )}
         </div>
       </div>

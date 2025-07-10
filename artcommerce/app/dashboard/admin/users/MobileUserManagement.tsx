@@ -195,20 +195,6 @@ export default function MobileUserManagement({ initialFilter = 'admin' }: Mobile
         </div>
       </div>
 
-      {/* Dark Mode Toggle */}
-      <button 
-        className={styles.darkModeToggle}
-        onClick={toggleDarkMode}
-      >
-        <div className={styles.darkModeIcon}>
-          {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
-        </div>
-        <span className={styles.menuItemText}>
-          {isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-        </span>
-        <ChevronRight size={18} />
-      </button>
-
       <div className="flex flex-col gap-3 mb-4">
         <div className="flex items-center justify-between">
           <div className="text-sm font-medium text-gray-500">
