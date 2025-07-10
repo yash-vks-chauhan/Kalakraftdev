@@ -4,11 +4,10 @@ import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useAuth } from '../contexts/AuthContext'
 import { useMobileMenu } from '../contexts/MobileMenuContext'
-import { useDarkMode } from '../contexts/DarkModeContext'
 import styles from './MobileLayout.module.css'
 import { useRouter } from 'next/navigation'
 import { isMobileDevice } from '../../lib/utils'
-import { X, User, ShoppingBag, Heart, MessageCircle, Settings, Info, LogOut, Monitor, Smartphone, Moon, Sun } from 'lucide-react'
+import { X, User, ShoppingBag, Heart, MessageCircle, Settings, Info, LogOut, Monitor, Smartphone } from 'lucide-react'
 
 interface MobileMenuPanelProps {
   isOpen: boolean;
@@ -20,7 +19,6 @@ interface MobileMenuPanelProps {
 const MobileMenuPanel: React.FC<MobileMenuPanelProps> = ({ isOpen, onClose, toggleViewMode, viewMode }) => {
   const router = useRouter();
   const { user, logout } = useAuth();
-  const { isDarkMode, toggleDarkMode } = useDarkMode();
   const [isActualMobileDevice, setIsActualMobileDevice] = useState(false);
 
   useEffect(() => {
@@ -106,7 +104,7 @@ const MobileMenuPanel: React.FC<MobileMenuPanelProps> = ({ isOpen, onClose, togg
             ))
           ))}
           
-          {user && (
+        {user && (
             <button 
               onClick={handleLogout}
               className={styles.mobileNavLink}
@@ -125,24 +123,6 @@ const MobileMenuPanel: React.FC<MobileMenuPanelProps> = ({ isOpen, onClose, togg
               {viewMode === 'mobile' ? <Monitor size={20} /> : <Smartphone size={20} />}
               <span>Switch to {viewMode === 'mobile' ? 'Desktop' : 'Mobile'} View</span>
             </button>
-          )}
-          
-          {/* Dark Mode Toggle - Only show for admin users, moved to bottom */}
-          {user?.role === 'admin' && (
-            <div className={styles.darkModeToggleWrapper}>
-              <div className={styles.darkModeLabel}>
-                <Moon size={16} />
-                <span>Dark Mode</span>
-                <Sun size={16} />
-              </div>
-              <button 
-                onClick={toggleDarkMode}
-                className={`${styles.darkModeToggleSwitch} ${isDarkMode ? styles.darkModeActive : ''}`}
-                aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
-              >
-                <div className={styles.darkModeToggleKnob}></div>
-              </button>
-            </div>
           )}
         </div>
       </div>

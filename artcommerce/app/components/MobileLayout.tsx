@@ -7,7 +7,6 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '../contexts/AuthContext'
 import { useCart } from '../contexts/CartContext'
 import { useWishlist } from '../contexts/WishlistContext'
-import { useDarkMode } from '../contexts/DarkModeContext'
 import { Search, Home, ShoppingBag, User, Menu, X, Heart, ShoppingCart, Monitor, ChevronDown, Grid, HelpCircle, LogOut } from 'lucide-react'
 import { useMobileMenu } from '../contexts/MobileMenuContext'
 import { getImageUrl } from '../../lib/cloudinaryImages'
@@ -24,7 +23,6 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
   const { user, logout } = useAuth()
   const { cartItems } = useCart()
   const { wishlistItems } = useWishlist()
-  const { isDarkMode } = useDarkMode()
   const { isMobileMenuOpen, setIsMobileMenuOpen } = useMobileMenu()
   const [isSearchOpen, setIsSearchOpen] = React.useState(false)
   const [isSearchClosing, setIsSearchClosing] = useState(false)
@@ -527,11 +525,8 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
     return pathname.startsWith(path)
   }
 
-  // Apply dark mode class to container only for admin users
-  const containerClassName = `${styles.mobileLayoutContainer} ${isDarkMode && user?.role === 'admin' ? 'dark-mode' : ''}`
-
   return (
-    <div className={containerClassName}>
+    <div className={styles.mobileLayoutContainer}>
       {/* Backdrop for account dropdown */}
       {isAccountDropdownOpen && (
         <div className={styles.mobileBackdrop} onClick={() => setIsAccountDropdownOpen(false)}></div>

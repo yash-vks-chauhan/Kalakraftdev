@@ -2,10 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../../../contexts/AuthContext'
-import { useDarkMode } from '../../../contexts/DarkModeContext'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { User, Package, ChevronRight, Mail, Calendar, RefreshCw, Shield, Trash2, Send, Users, LogOut, Moon, Sun } from 'lucide-react'
+import { User, Package, ChevronRight, Mail, Calendar, RefreshCw, Shield, Trash2, Send, Users, LogOut } from 'lucide-react'
 import styles from '../../mobile-dashboard.module.css'
 
 interface UserRow {
@@ -23,7 +21,6 @@ interface MobileUserManagementProps {
 
 export default function MobileUserManagement({ initialFilter = 'admin' }: MobileUserManagementProps) {
   const { token, user } = useAuth()
-  const { isDarkMode, toggleDarkMode } = useDarkMode()
   const [allUsers, setAllUsers] = useState<UserRow[]>([])
   const [displayUsers, setDisplayUsers] = useState<UserRow[]>([])
   const [loading, setLoading] = useState(true)

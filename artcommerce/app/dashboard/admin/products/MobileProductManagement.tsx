@@ -3,7 +3,6 @@
 import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
 import { useAuth } from '../../../contexts/AuthContext'
-import { useDarkMode } from '../../../contexts/DarkModeContext'
 import { useRouter } from 'next/navigation'
 import styles from '../../mobile-dashboard.module.css'
 import desktopStyles from './products-list.module.css'
@@ -41,7 +40,6 @@ interface Product {
 
 export default function MobileProductManagement() {
   const { user, token } = useAuth()
-  const { isDarkMode } = useDarkMode()
   const [allProducts, setAllProducts] = useState<Product[]>([])
   const [displayProducts, setDisplayProducts] = useState<Product[]>([])
   const [isLoading, setIsLoading] = useState(true)

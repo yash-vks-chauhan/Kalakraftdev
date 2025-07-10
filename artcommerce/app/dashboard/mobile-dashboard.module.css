@@ -10,12 +10,6 @@
   animation: fadeIn 0.3s ease-in-out;
 }
 
-/* Dark mode styles */
-:global(.dark-mode) .mobileDashboardContainer {
-  background: linear-gradient(135deg, #121212 0%, #1a1a1a 100%);
-  color: #e2e8f0;
-}
-
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -40,12 +34,6 @@
   z-index: 0;
 }
 
-:global(.dark-mode) .mobileDashboardContainer::before {
-  background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.03) 0%, transparent 50%),
-             radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.03) 0%, transparent 50%);
-  opacity: 0.1;
-}
-
 .mobileHeader {
   font-size: 1.75rem;
   font-weight: 700;
@@ -58,10 +46,6 @@
   justify-content: space-between;
 }
 
-:global(.dark-mode) .mobileHeader {
-  color: #f7fafc;
-}
-
 .mobileHeader::after {
   content: '';
   position: absolute;
@@ -70,10 +54,6 @@
   width: 40px;
   height: 3px;
   background: linear-gradient(90deg, #1a202c, transparent);
-}
-
-:global(.dark-mode) .mobileHeader::after {
-  background: linear-gradient(90deg, #f7fafc, transparent);
 }
 
 .userProfile {
@@ -87,10 +67,6 @@
   z-index: 1;
 }
 
-:global(.dark-mode) .userProfile {
-  border-bottom: 1px solid rgba(45, 55, 72, 0.8);
-}
-
 .avatar {
   width: 60px;
   height: 60px;
@@ -98,11 +74,6 @@
   object-fit: cover;
   border: 2px solid #1a202c;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-:global(.dark-mode) .avatar {
-  border: 2px solid #e2e8f0;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .userInfo {
@@ -116,18 +87,10 @@
   color: #1a202c;
 }
 
-:global(.dark-mode) .userName {
-  color: #f7fafc;
-}
-
 .userRole {
   font-size: 0.85rem;
   color: #64748b;
   text-transform: capitalize;
-}
-
-:global(.dark-mode) .userRole {
-  color: #a0aec0;
 }
 
 .menuList {
@@ -159,13 +122,6 @@
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   transform: translateZ(0); /* Hardware acceleration */
-}
-
-:global(.dark-mode) .menuItem {
-  background: rgba(26, 32, 44, 0.8);
-  border: 1px solid rgba(45, 55, 72, 0.8);
-  color: #e2e8f0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .menuItem::before {
@@ -300,15 +256,6 @@
   color: #64748b;
 }
 
-:global(.dark-mode) .submenuItem {
-  background: rgba(45, 55, 72, 0.8);
-  color: #e2e8f0;
-}
-
-:global(.dark-mode) .submenuItem svg {
-  color: #a0aec0;
-}
-
 .submenuItem span {
   flex: 1;
 }
@@ -328,11 +275,6 @@
   border-radius: 8px;
   background: rgba(241, 245, 249, 0.8);
   margin-right: 1rem;
-}
-
-:global(.dark-mode) .menuIcon {
-  background: rgba(45, 55, 72, 0.8);
-  color: #a0aec0;
 }
 
 .sectionDivider {
@@ -412,10 +354,6 @@
   cursor: pointer;
 }
 
-:global(.dark-mode) .scrollDot {
-  background-color: rgba(160, 174, 192, 0.3);
-}
-
 .scrollDot:first-child {
   background-color: rgba(100, 116, 139, 0.8);
 }
@@ -425,10 +363,6 @@
   height: 8px;
   background-color: rgba(100, 116, 139, 0.8);
   transform: scale(1.2);
-}
-
-:global(.dark-mode) .activeDot {
-  background-color: rgba(160, 174, 192, 0.8);
 }
 
 .metricCard {
@@ -452,12 +386,6 @@
   transform: translateZ(0); /* Hardware acceleration */
 }
 
-:global(.dark-mode) .metricCard {
-  background: rgba(26, 32, 44, 0.8);
-  border: 1px solid rgba(45, 55, 72, 0.8);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
 .metricCard:active {
   transform: scale(0.98) translateZ(0);
 }
@@ -469,18 +397,10 @@
   margin-bottom: 0.5rem;
 }
 
-:global(.dark-mode) .metricTitle {
-  color: #a0aec0;
-}
-
 .metricValue {
   font-size: 1.5rem;
   font-weight: 700;
   color: #1a202c;
-}
-
-:global(.dark-mode) .metricValue {
-  color: #f7fafc;
 }
 
 .refreshButton {
@@ -547,10 +467,21 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-:global(.dark-mode) .periodSelectMobile {
-  background-color: rgba(26, 32, 44, 0.8);
-  border: 1px solid rgba(45, 55, 72, 0.8);
-  color: #e2e8f0;
+.refreshButton {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: none;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  z-index: 2;
+  transition: transform 0.3s ease;
+  padding: 0.5rem;
+}
+
+.refreshButton:active {
+  transform: rotate(180deg);
 }
 
 .periodRefreshButton {
@@ -566,12 +497,6 @@
   margin-left: 0.75rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   transition: transform 0.3s ease;
-}
-
-:global(.dark-mode) .periodRefreshButton {
-  background: rgba(26, 32, 44, 0.8);
-  border: 1px solid rgba(45, 55, 72, 0.8);
-  color: #a0aec0;
 }
 
 .periodRefreshButton:active {
