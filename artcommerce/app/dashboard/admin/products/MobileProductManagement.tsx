@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
 import { useAuth } from '../../../contexts/AuthContext'
+import { useDarkMode } from '../../../contexts/DarkModeContext'
 import { useRouter } from 'next/navigation'
 import styles from '../../mobile-dashboard.module.css'
 import desktopStyles from './products-list.module.css'
@@ -24,7 +25,9 @@ import {
   ArrowRight,
   Check,
   X,
-  MoreVertical
+  MoreVertical,
+  Moon,
+  Sun
 } from 'lucide-react'
 
 interface Product {
@@ -40,6 +43,7 @@ interface Product {
 
 export default function MobileProductManagement() {
   const { user, token } = useAuth()
+  const { isDarkMode, toggleDarkMode } = useDarkMode()
   const [allProducts, setAllProducts] = useState<Product[]>([])
   const [displayProducts, setDisplayProducts] = useState<Product[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -235,6 +239,20 @@ export default function MobileProductManagement() {
           <span className={styles.userRole}>{user.role}</span>
         </div>
       </div>
+
+      {/* Dark Mode Toggle */}
+      <button 
+        className={styles.darkModeToggle}
+        onClick={toggleDarkMode}
+      >
+        <div className={styles.darkModeIcon}>
+          {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+        </div>
+        <span className={styles.menuItemText}>
+          {isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+        </span>
+        <ChevronRight size={18} />
+      </button>
 
       <div className="flex flex-col gap-3 mb-4">
         <div className="flex items-center justify-between">

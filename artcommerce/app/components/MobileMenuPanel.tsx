@@ -4,10 +4,11 @@ import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useAuth } from '../contexts/AuthContext'
 import { useMobileMenu } from '../contexts/MobileMenuContext'
+import { useDarkMode } from '../contexts/DarkModeContext'
 import styles from './MobileLayout.module.css'
 import { useRouter } from 'next/navigation'
 import { isMobileDevice } from '../../lib/utils'
-import { X, User, ShoppingBag, Heart, MessageCircle, Settings, Info, LogOut, Monitor, Smartphone } from 'lucide-react'
+import { X, User, ShoppingBag, Heart, MessageCircle, Settings, Info, LogOut, Monitor, Smartphone, Moon, Sun } from 'lucide-react'
 
 interface MobileMenuPanelProps {
   isOpen: boolean;
@@ -19,6 +20,7 @@ interface MobileMenuPanelProps {
 const MobileMenuPanel: React.FC<MobileMenuPanelProps> = ({ isOpen, onClose, toggleViewMode, viewMode }) => {
   const router = useRouter();
   const { user, logout } = useAuth();
+  const { isDarkMode, toggleDarkMode } = useDarkMode();
   const [isActualMobileDevice, setIsActualMobileDevice] = useState(false);
 
   useEffect(() => {
@@ -104,7 +106,18 @@ const MobileMenuPanel: React.FC<MobileMenuPanelProps> = ({ isOpen, onClose, togg
             ))
           ))}
           
-        {user && (
+          {/* Dark Mode Toggle - Only show for admin users */}
+          {user?.role === 'admin' && (
+            <button 
+              onClick={toggleDarkMode}
+              className={styles.mobileNavLink}
+            >
+              {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+              <span>{isDarkMode ? 'Light Mode' : 'Dark Mode'}</span>
+            </button>
+          )}
+          
+          {user && (
             <button 
               onClick={handleLogout}
               className={styles.mobileNavLink}

@@ -2,8 +2,10 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../../../contexts/AuthContext'
+import { useDarkMode } from '../../../contexts/DarkModeContext'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { User, Package, ChevronRight, Mail, Calendar, RefreshCw, Shield, Trash2, Send, Users, LogOut } from 'lucide-react'
+import { User, Package, ChevronRight, Mail, Calendar, RefreshCw, Shield, Trash2, Send, Users, LogOut, Moon, Sun } from 'lucide-react'
 import styles from '../../mobile-dashboard.module.css'
 
 interface UserRow {
@@ -21,6 +23,7 @@ interface MobileUserManagementProps {
 
 export default function MobileUserManagement({ initialFilter = 'admin' }: MobileUserManagementProps) {
   const { token, user } = useAuth()
+  const { isDarkMode, toggleDarkMode } = useDarkMode()
   const [allUsers, setAllUsers] = useState<UserRow[]>([])
   const [displayUsers, setDisplayUsers] = useState<UserRow[]>([])
   const [loading, setLoading] = useState(true)
@@ -191,6 +194,20 @@ export default function MobileUserManagement({ initialFilter = 'admin' }: Mobile
           <span className={styles.userRole}>{user.role}</span>
         </div>
       </div>
+
+      {/* Dark Mode Toggle */}
+      <button 
+        className={styles.darkModeToggle}
+        onClick={toggleDarkMode}
+      >
+        <div className={styles.darkModeIcon}>
+          {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+        </div>
+        <span className={styles.menuItemText}>
+          {isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+        </span>
+        <ChevronRight size={18} />
+      </button>
 
       <div className="flex flex-col gap-3 mb-4">
         <div className="flex items-center justify-between">
