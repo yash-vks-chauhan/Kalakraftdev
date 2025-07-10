@@ -1646,3 +1646,147 @@
     display: none;
   }
 }
+
+/* Add dark mode styles */
+
+:global(.dark-mode) .container {
+  background-color: #121212;
+  color: #e2e8f0;
+}
+
+:global(.dark-mode) .heroSection {
+  background-color: #121212;
+}
+
+:global(.dark-mode) .heroContent h1 {
+  color: #f7fafc;
+}
+
+:global(.dark-mode) .heroContent p {
+  color: #a0aec0;
+}
+
+:global(.dark-mode) .featuredSection {
+  background-color: #121212;
+}
+
+:global(.dark-mode) .featuredTitle {
+  color: #f7fafc;
+}
+
+:global(.dark-mode) .featuredSubtitle {
+  color: #a0aec0;
+}
+
+:global(.dark-mode) .featuredCard {
+  background-color: #1a202c;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+:global(.dark-mode) .featuredCardContent h3 {
+  color: #f7fafc;
+}
+
+:global(.dark-mode) .featuredCardContent p {
+  color: #a0aec0;
+}
+
+:global(.dark-mode) .categoriesSection {
+  background-color: #121212;
+}
+
+:global(.dark-mode) .categoriesTitle {
+  color: #f7fafc;
+}
+
+:global(.dark-mode) .categoriesSubtitle {
+  color: #a0aec0;
+}
+
+:global(.dark-mode) .categoryCard {
+  background-color: #1a202c;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+:global(.dark-mode) .categoryCardContent h3 {
+  color: #f7fafc;
+}
+
+:global(.dark-mode) .categoryCardContent p {
+  color: #a0aec0;
+}
+
+:global(.dark-mode) .aboutSection {
+  background-color: #121212;
+}
+
+:global(.dark-mode) .aboutContent h2 {
+  color: #f7fafc;
+}
+
+:global(.dark-mode) .aboutContent p {
+  color: #a0aec0;
+}
+
+:global(.dark-mode) .testimonialSection {
+  background-color: #1a202c;
+}
+
+:global(.dark-mode) .testimonialTitle {
+  color: #f7fafc;
+}
+
+:global(.dark-mode) .testimonialCard {
+  background-color: #2d3748;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+:global(.dark-mode) .testimonialText {
+  color: #e2e8f0;
+}
+
+:global(.dark-mode) .testimonialAuthor {
+  color: #a0aec0;
+}
+
+:global(.dark-mode) .ctaSection {
+  background-color: #1a202c;
+}
+
+:global(.dark-mode) .ctaContent h2 {
+  color: #f7fafc;
+}
+
+:global(.dark-mode) .ctaContent p {
+  color: #a0aec0;
+}
+
+:global(.dark-mode) .ctaButton {
+  background-color: #4a5568;
+  color: #f7fafc;
+}
+
+:global(.dark-mode) .footerSection {
+  background-color: #121212;
+  border-top: 1px solid #2d3748;
+}
+
+:global(.dark-mode) .footerContent {
+  color: #a0aec0;
+}
+
+:global(.dark-mode) .footerLinks a {
+  color: #e2e8f0;
+}
+
+:global(.dark-mode) .footerLinks a:hover {
+  color: #f7fafc;
+}
+
+:global(.dark-mode) .footerSocial a {
+  color: #e2e8f0;
+}
+
+:global(.dark-mode) .footerSocial a:hover {
+  color: #f7fafc;
+}

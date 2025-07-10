@@ -527,7 +527,7 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
     return pathname.startsWith(path)
   }
 
-  // Apply dark mode class to container if admin user has dark mode enabled
+  // Apply dark mode class to container only for admin users
   const containerClassName = `${styles.mobileLayoutContainer} ${isDarkMode && user?.role === 'admin' ? 'dark-mode' : ''}`
 
   return (

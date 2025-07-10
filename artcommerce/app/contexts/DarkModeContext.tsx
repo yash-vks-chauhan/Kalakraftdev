@@ -16,11 +16,14 @@ export function DarkModeProvider({ children }: { children: ReactNode }) {
   
   // Load dark mode preference from localStorage on mount
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && user?.role === 'admin') {
       const savedMode = localStorage.getItem('adminDarkMode')
-      if (savedMode && user?.role === 'admin') {
+      if (savedMode) {
         setIsDarkMode(savedMode === 'true')
       }
+    } else {
+      // Ensure dark mode is off for non-admin users
+      setIsDarkMode(false)
     }
   }, [user])
 
@@ -35,10 +38,14 @@ export function DarkModeProvider({ children }: { children: ReactNode }) {
       } else {
         document.body.classList.remove('dark-mode')
       }
+    } else {
+      // Ensure dark mode is off for non-admin users
+      document.body.classList.remove('dark-mode')
     }
   }, [isDarkMode, user])
 
   const toggleDarkMode = () => {
+    // Only admin users can toggle dark mode
     if (user?.role === 'admin') {
       setIsDarkMode(prev => !prev)
     }

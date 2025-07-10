@@ -775,3 +775,252 @@ details[open] .arrow {
   animation: swipeHint 2s ease-in-out 1s forwards;
   transform: translateY(-50%) scaleX(-1);
 } 
+
+/* Add dark mode styles to the existing CSS */
+
+.mobileProductsContainer {
+  padding: 1rem;
+  padding-top: 80px;
+  padding-bottom: 80px;
+}
+
+:global(.dark-mode) .mobileProductsContainer {
+  background-color: #121212;
+  color: #e2e8f0;
+}
+
+.mobileProductGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.mobileProductCard {
+  border-radius: 12px;
+  overflow: hidden;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+}
+
+:global(.dark-mode) .mobileProductCard {
+  background: #1a202c;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.mobileProductImageContainer {
+  position: relative;
+  width: 100%;
+  padding-bottom: 100%; /* 1:1 aspect ratio */
+  overflow: hidden;
+}
+
+.mobileProductImage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.mobileProductInfo {
+  padding: 12px;
+}
+
+.mobileProductName {
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 4px;
+  color: #1a202c;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  height: 2.8em;
+}
+
+:global(.dark-mode) .mobileProductName {
+  color: #f7fafc;
+}
+
+.mobileProductPrice {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1a202c;
+}
+
+:global(.dark-mode) .mobileProductPrice {
+  color: #e2e8f0;
+}
+
+.mobileFiltersButton {
+  position: fixed;
+  bottom: 80px;
+  right: 16px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border: none;
+  z-index: 10;
+}
+
+:global(.dark-mode) .mobileFiltersButton {
+  background: #2d3748;
+  color: #e2e8f0;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.mobileFiltersPanel {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: white;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  transform: translateY(100%);
+  transition: transform 0.3s ease;
+}
+
+:global(.dark-mode) .mobileFiltersPanel {
+  background: #1a202c;
+  color: #e2e8f0;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.mobileFiltersPanel.open {
+  transform: translateY(0);
+}
+
+.filterHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.filterTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1a202c;
+}
+
+:global(.dark-mode) .filterTitle {
+  color: #f7fafc;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+}
+
+:global(.dark-mode) .closeButton {
+  color: #a0aec0;
+}
+
+.filterSection {
+  margin-bottom: 16px;
+}
+
+.filterSectionTitle {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #1a202c;
+}
+
+:global(.dark-mode) .filterSectionTitle {
+  color: #e2e8f0;
+}
+
+.filterOptions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.filterOption {
+  padding: 6px 12px;
+  border-radius: 16px;
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 0.8rem;
+  border: none;
+  cursor: pointer;
+}
+
+:global(.dark-mode) .filterOption {
+  background: #2d3748;
+  color: #a0aec0;
+}
+
+.filterOption.selected {
+  background: #1a202c;
+  color: white;
+}
+
+:global(.dark-mode) .filterOption.selected {
+  background: #4a5568;
+  color: #f7fafc;
+}
+
+.applyFiltersButton {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  background: #1a202c;
+  color: white;
+  border: none;
+  font-weight: 500;
+  margin-top: 16px;
+}
+
+:global(.dark-mode) .applyFiltersButton {
+  background: #4a5568;
+}
+
+.mobileProductsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.categoryTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1a202c;
+}
+
+:global(.dark-mode) .categoryTitle {
+  color: #f7fafc;
+}
+
+.sortButton {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+:global(.dark-mode) .sortButton {
+  color: #a0aec0;
+} 

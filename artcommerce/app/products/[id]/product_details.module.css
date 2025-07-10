@@ -1146,3 +1146,254 @@
     font-size: 0.85rem;
   }
 }
+
+/* Add dark mode styles */
+
+.mobileProductContainer {
+  padding: 1rem;
+  padding-top: 70px;
+  padding-bottom: 80px;
+}
+
+:global(.dark-mode) .mobileProductContainer {
+  background: #121212;
+  color: #e2e8f0;
+}
+
+.mobileProductImages {
+  position: relative;
+  width: 100%;
+  height: 300px;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.mobileProductImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.mobileProductInfo {
+  margin-bottom: 16px;
+}
+
+.mobileProductName {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: #1a202c;
+}
+
+:global(.dark-mode) .mobileProductName {
+  color: #f7fafc;
+}
+
+.mobileProductPrice {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1a202c;
+  margin-bottom: 8px;
+}
+
+:global(.dark-mode) .mobileProductPrice {
+  color: #e2e8f0;
+}
+
+.mobileProductDescription {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: #4b5563;
+  margin-bottom: 16px;
+}
+
+:global(.dark-mode) .mobileProductDescription {
+  color: #a0aec0;
+}
+
+.mobileProductActions {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.mobileAddToCartButton {
+  flex: 1;
+  padding: 12px;
+  border-radius: 8px;
+  background: #1a202c;
+  color: white;
+  border: none;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+:global(.dark-mode) .mobileAddToCartButton {
+  background: #4a5568;
+  color: #f7fafc;
+}
+
+.mobileWishlistButton {
+  padding: 12px;
+  border-radius: 8px;
+  background: #f1f5f9;
+  color: #1a202c;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+:global(.dark-mode) .mobileWishlistButton {
+  background: #2d3748;
+  color: #e2e8f0;
+}
+
+.mobileProductDetails {
+  margin-bottom: 24px;
+}
+
+.mobileDetailsTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #1a202c;
+}
+
+:global(.dark-mode) .mobileDetailsTitle {
+  color: #f7fafc;
+}
+
+.mobileDetailsList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.mobileDetailItem {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 0.9rem;
+}
+
+:global(.dark-mode) .mobileDetailItem {
+  border-bottom: 1px solid #2d3748;
+}
+
+.mobileDetailLabel {
+  color: #64748b;
+  font-weight: 500;
+}
+
+:global(.dark-mode) .mobileDetailLabel {
+  color: #a0aec0;
+}
+
+.mobileDetailValue {
+  color: #1a202c;
+  font-weight: 400;
+}
+
+:global(.dark-mode) .mobileDetailValue {
+  color: #e2e8f0;
+}
+
+.mobileReviews {
+  margin-bottom: 24px;
+}
+
+.mobileReviewsTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #1a202c;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+:global(.dark-mode) .mobileReviewsTitle {
+  color: #f7fafc;
+}
+
+.mobileReviewsList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.mobileReviewItem {
+  padding: 12px 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+:global(.dark-mode) .mobileReviewItem {
+  border-bottom: 1px solid #2d3748;
+}
+
+.mobileReviewHeader {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.mobileReviewAuthor {
+  font-weight: 500;
+  color: #1a202c;
+}
+
+:global(.dark-mode) .mobileReviewAuthor {
+  color: #f7fafc;
+}
+
+.mobileReviewDate {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+:global(.dark-mode) .mobileReviewDate {
+  color: #a0aec0;
+}
+
+.mobileReviewRating {
+  display: flex;
+  gap: 2px;
+  margin-bottom: 8px;
+}
+
+.mobileReviewText {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: #4b5563;
+}
+
+:global(.dark-mode) .mobileReviewText {
+  color: #a0aec0;
+}
+
+.mobileRelatedProducts {
+  margin-bottom: 24px;
+}
+
+.mobileRelatedTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #1a202c;
+}
+
+:global(.dark-mode) .mobileRelatedTitle {
+  color: #f7fafc;
+}
+
+.mobileRelatedGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
