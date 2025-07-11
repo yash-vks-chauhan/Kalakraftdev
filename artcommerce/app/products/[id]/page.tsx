@@ -8,6 +8,7 @@ import { useCart } from '../../contexts/CartContext'
 import WishlistButton from '../../components/WishlistButton'
 import Link from 'next/link'
 import styles from './product_details.module.css'
+import MobileProductDetails from './MobileProductDetails'
 
 // SVG icons for navigation
 const ChevronLeft = () => (
@@ -75,6 +76,7 @@ export default function ProductDetailsPage() {
   const [avgRating, setAvgRating] = useState<number>(0)
   const [ratingCount, setRatingCount] = useState<number>(0)
   const [reviews, setReviews] = useState<any[]>([])
+  const [isMobile, setIsMobile] = useState(false)
   
   // New state for section toggles
   const [expandedSections, setExpandedSections] = useState({
@@ -82,6 +84,24 @@ export default function ProductDetailsPage() {
     care: false,
     styling: true // Keep styling expanded by default
   })
+
+  // Check if the device is mobile
+  useEffect(() => {
+    const checkIfMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    // Initial check
+    checkIfMobile();
+    
+    // Add event listener for window resize
+    window.addEventListener('resize', checkIfMobile);
+    
+    // Cleanup
+    return () => {
+      window.removeEventListener('resize', checkIfMobile);
+    };
+  }, []);
 
   // Fetch product details on mount
   useEffect(() => {
@@ -294,6 +314,18 @@ export default function ProductDetailsPage() {
     )
   }
 
+  // Render mobile view if on mobile device
+  if (isMobile) {
+    return (
+      <MobileProductDetails 
+        product={product} 
+        avgRating={avgRating} 
+        ratingCount={ratingCount} 
+      />
+    );
+  }
+
+  // Desktop view (existing code)
   return (
     <main className={styles.container}>
       <Link href="/products" className={styles.backLink}>
