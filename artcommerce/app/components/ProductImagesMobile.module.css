@@ -15,24 +15,48 @@
   overflow: hidden;
   background-color: #f0f0f0; /* Match the container background color */
   touch-action: pan-y;
-  transition: transform 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
+  -webkit-touch-callout: none; /* Prevent callout to copy image */
+  -webkit-user-select: none; /* Prevent selection when tapping */
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
-.imageContainer.transitioning .mainImage {
+/* New wrapper for the image that will move during swipes */
+.imageWrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  will-change: transform; /* Optimize for animations */
+  transition: transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+  transform: translate3d(0, 0, 0); /* Initial hardware acceleration */
+  backface-visibility: hidden; /* Prevent flickering during animations */
+  -webkit-backface-visibility: hidden;
+  perspective: 1000;
+  -webkit-perspective: 1000;
+}
+
+.imageWrapper.transitioning .mainImage {
   animation: fadeTransition 0.3s ease;
 }
 
 @keyframes fadeTransition {
   0% {
     opacity: 0.7;
-    transform: scale(0.98);
+    transform: scale(0.98) translate3d(0, 0, 0);
   }
   100% {
     opacity: 1;
-    transform: scale(1);
+    transform: scale(1) translate3d(0, 0, 0);
   }
 }
 
@@ -47,7 +71,9 @@
   padding: 0 5%; /* Reduce side padding to allow image to be larger */
   background-color: transparent; /* Ensure image background is transparent */
   mix-blend-mode: multiply; /* Help blend with background better */
-  will-change: transform; /* Optimize for animations */
+  transform: translate3d(0, 0, 0); /* Hardware acceleration */
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 .noImagePlaceholder {
@@ -83,6 +109,7 @@
   z-index: 10;
   opacity: 0.6;
   transition: all 0.2s ease;
+  pointer-events: auto; /* Ensure buttons are clickable */
 }
 
 .navigationButton:active {
@@ -112,6 +139,7 @@
   justify-content: center;
   gap: 4px; /* Reduced gap for lines */
   z-index: 10;
+  pointer-events: auto; /* Ensure indicators are clickable */
 }
 
 .indicatorDot {
