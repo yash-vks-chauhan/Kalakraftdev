@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import ProductImagesMobile from '../../components/ProductImagesMobile';
@@ -28,25 +28,49 @@ interface MobileProductDetailsProps {
   product: Product;
   avgRating: number;
   ratingCount: number;
+  similarProducts?: Product[];
 }
 
 export default function MobileProductDetails({ 
   product, 
   avgRating, 
-  ratingCount 
+  ratingCount,
+  similarProducts: initialSimilarProducts = []
 }: MobileProductDetailsProps) {
   const { addToCart } = useCart();
   const router = useRouter();
   const [qty, setQty] = useState(1);
   const [error, setError] = useState<string | null>(null);
   const [added, setAdded] = useState(false);
+  const [similarProducts, setSimilarProducts] = useState<Product[]>(initialSimilarProducts);
   
   // Section expansion states
   const [expandedSections, setExpandedSections] = useState({
     description: false,
     specifications: false,
     care: false,
+    styling: true, // Keep styling expanded by default
   });
+
+  // Fetch similar products
+  useEffect(() => {
+    if (initialSimilarProducts.length > 0) {
+      setSimilarProducts(initialSimilarProducts);
+      return;
+    }
+    
+    if (product?.category?.slug) {
+      fetch(`/api/products?category=${product.category.slug}`)
+        .then(r => r.json())
+        .then(j => {
+          const others = (j.products || [])
+            .filter((p: any) => p.id !== product.id)
+            .slice(0, 4); // Limit to 4 products for mobile
+          setSimilarProducts(others);
+        })
+        .catch(console.error);
+    }
+  }, [product, initialSimilarProducts]);
 
   const toggleSection = (section: keyof typeof expandedSections) => {
     setExpandedSections(prev => ({
@@ -292,8 +316,110 @@ export default function MobileProductDetails({
               )}
             </div>
           )}
+          
+          {/* Styling Inspiration Gallery Section */}
+          {product.stylingIdeaImages && product.stylingIdeaImages.length > 0 && (
+            <div className={styles.accordionSection}>
+              <button 
+                className={styles.accordionHeader} 
+                onClick={() => toggleSection('styling')}
+                aria-expanded={expandedSections.styling}
+              >
+                <span className={styles.accordionTitle}>Styling Inspiration Gallery</span>
+                <span className={styles.accordionIcon}>
+                  {expandedSections.styling ? '−' : '+'}
+                </span>
+              </button>
+              
+              {expandedSections.styling && (
+                <div className={styles.accordionContent}>
+                  <div className={styles.stylingGallery}>
+                    {product.stylingIdeaImages.map((item, index) => {
+                      const imageObj = typeof item === 'string' ? { url: item, text: '' } : item;
+                      const defaultCaptions = [
+                        "Living Room: Creates a calming focal point that ties the space together",
+                        "Office Setting: Adds artistic flair to professional environments",
+                        "Dining Area: Complements mealtime with artistic elegance"
+                      ];
+                      
+                      // Determine the label based on image count
+                      let spaceLabel = "Living Space";
+                      const imageCount = product.stylingIdeaImages?.length || 0;
+                      if (imageCount === 1) {
+                        spaceLabel = "Featured Styling";
+                      } else if (imageCount === 2) {
+                        spaceLabel = index === 0 ? "Living Space" : "Workspace";
+                      } else {
+                        spaceLabel = index === 0 ? "Living Space" : index === 1 ? "Workspace" : "Dining Area";
+                      }
+                      
+                      return (
+                        <div key={index} className={styles.galleryItem}>
+                          <div className={styles.galleryImageWrap}>
+                            <img 
+                              src={imageObj.url} 
+                              alt={`Styling inspiration ${index + 1}`} 
+                              className={styles.galleryImage} 
+                              loading="lazy" 
+                            />
+                            <div className={styles.galleryOverlay}>
+                              <span className={styles.galleryLabel}>
+                                {spaceLabel}
+                              </span>
+                            </div>
+                          </div>
+                          <div className={styles.galleryCaption}>
+                            <p>{imageObj.text || defaultCaptions[index % defaultCaptions.length]}</p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className={styles.stylingFooter}>
+                    <p>Bring art into your everyday life with thoughtful placement and styling</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
+      
+      {/* You might also like section */}
+      {similarProducts.length > 0 && (
+        <div className={styles.similarProductsSection}>
+          <h2 className={styles.similarProductsTitle}>You might also like</h2>
+          <div className={styles.similarProductsGrid}>
+            {similarProducts.map(similarProduct => (
+              <Link key={similarProduct.id} href={`/products/${similarProduct.id}`} className={styles.similarProductItem}>
+                <div className={styles.similarProductImageContainer}>
+                  <img 
+                    src={similarProduct.imageUrls[0] || '/images/logo-mask.png'} 
+                    alt={similarProduct.name} 
+                    className={styles.similarProductImage}
+                    loading="lazy"
+                  />
+                </div>
+                <div className={styles.similarProductInfo}>
+                  <p className={styles.similarProductName}>{similarProduct.name}</p>
+                  <p className={styles.similarProductPrice}>
+                    {similarProduct.currency}{similarProduct.price.toFixed(2)}
+                  </p>
+                </div>
+              </Link>
+            ))}
+          </div>
+          
+          {/* Link to view more similar products in this category */}
+          {product.category && (
+            <div className={styles.viewAllSimilarWrapper}>
+              <Link href={`/products?category=${product.category.slug}`} className={styles.viewAllSimilarLink}>
+                View all {product.category.name} products →
+              </Link>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 } 

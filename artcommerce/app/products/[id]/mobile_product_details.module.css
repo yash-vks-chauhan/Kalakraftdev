@@ -328,6 +328,165 @@
   gap: 8px;
 } 
 
+/* Styling Gallery */
+.stylingGallery {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.galleryItem {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 16px;
+}
+
+.galleryImageWrap {
+  position: relative;
+  width: 100%;
+  height: 0;
+  padding-bottom: 75%; /* 4:3 aspect ratio */
+  overflow: hidden;
+  border-radius: 6px;
+}
+
+.galleryImage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.galleryOverlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%);
+  padding: 16px 12px;
+  color: #fff;
+  font-size: 14px;
+}
+
+.galleryLabel {
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.galleryCaption {
+  margin-top: 8px;
+  font-size: 13px;
+  color: #666;
+  line-height: 1.4;
+}
+
+.stylingFooter {
+  text-align: center;
+  font-size: 13px;
+  color: #666;
+  font-style: italic;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #eee;
+}
+
+/* Similar Products Section */
+.similarProductsSection {
+  padding: 24px 16px;
+  background-color: #f9f9f9;
+  margin-top: 24px;
+}
+
+.similarProductsTitle {
+  font-size: 18px;
+  font-weight: 500;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.similarProductsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.similarProductItem {
+  text-decoration: none;
+  color: inherit;
+  background-color: #fff;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.similarProductItem:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.similarProductImageContainer {
+  width: 100%;
+  height: 0;
+  padding-bottom: 100%; /* 1:1 aspect ratio */
+  position: relative;
+  overflow: hidden;
+}
+
+.similarProductImage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.similarProductInfo {
+  padding: 10px;
+}
+
+.similarProductName {
+  font-size: 13px;
+  margin: 0 0 4px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.similarProductPrice {
+  font-size: 14px;
+  font-weight: 500;
+  margin: 0;
+}
+
+.viewAllSimilarWrapper {
+  text-align: center;
+  margin-top: 16px;
+}
+
+.viewAllSimilarLink {
+  display: inline-block;
+  color: #000;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  padding: 8px 16px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: #fff;
+  transition: background-color 0.2s ease;
+}
+
+.viewAllSimilarLink:active {
+  background-color: #f5f5f5;
+}
+
 /* Small phones (under 375px) */
 @media (max-width: 374px) {
   .productName {
@@ -431,5 +590,22 @@
   .specBullet,
   .specText {
     font-size: 16px;
+  }
+} 
+
+/* Media Queries */
+@media (min-width: 481px) {
+  .similarProductsGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .stylingGallery {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 640px) {
+  .similarProductsGrid {
+    grid-template-columns: repeat(4, 1fr);
   }
 } 

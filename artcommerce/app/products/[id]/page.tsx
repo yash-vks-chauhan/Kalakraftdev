@@ -321,6 +321,7 @@ export default function ProductDetailsPage() {
         product={product} 
         avgRating={avgRating} 
         ratingCount={ratingCount} 
+        similarProducts={similarProducts}
       />
     );
   }
