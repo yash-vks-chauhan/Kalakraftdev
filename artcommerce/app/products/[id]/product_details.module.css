@@ -914,164 +914,46 @@
   }
 }
 
+/* Mobile adjustments for Gucci-style gallery */
 @media (max-width: 768px) {
   .container {
-    padding: 1.5rem;
+    padding: 1rem 0 2rem;
+    max-width: 100%;
   }
-
+  
+  .backLink {
+    margin: 0 1rem 1.5rem;
+  }
+  
   .productGrid {
     grid-template-columns: 1fr;
-    gap: 2rem;
+    gap: 1.5rem;
   }
-
+  
   .imageSection {
     position: relative;
     top: 0;
-  }
-
-  .mainImage {
-    aspect-ratio: 4/3;
-  }
-
-  .thumbnailGrid {
-    grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
-  }
-
-  .thumbnail {
-    width: 60px;
-    height: 60px;
-  }
-
-  .title {
-    font-size: 1.75rem;
-  }
-
-  .price {
-    font-size: 1.75rem;
-  }
-
-  .addToCartForm {
-    grid-template-columns: 1fr;
-  }
-
-  .imageNav {
-    width: 36px;
-    height: 36px;
-    opacity: 1;
-  }
-
-  .navIcon {
-    width: 20px;
-    height: 20px;
-  }
-
-  .wishlistContainer {
-    position: relative;
-    display: flex;
-    justify-content: center;
-    margin-top: 1rem;
-  }
-
-  .wishlistButton {
+    padding: 0;
+    margin: 0;
+    border-radius: 0;
     width: 100%;
-    height: 44px;
-    border-radius: 4px;
-    font-size: 1rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    display: flex;
-    gap: 0.5rem;
-  }
-
-  /* Mobile adjustments for sections */
-  .productDetails {
-    margin-top: 2rem;
-  }
-
-  .sectionHeader {
-    padding: 1rem 1.5rem;
-  }
-
-  .sectionInner {
-    padding: 1.5rem;
-  }
-
-  .specIntroContainer,
-  .careIntroContainer {
-    padding: 1.5rem 1rem;
+    height: 100vw; /* Make it square */
+    max-height: 80vh;
+    overflow: visible;
   }
   
-  .specIntroTitle,
-  .careIntroTitle {
-    font-size: 1.2rem;
+  /* Hide old image navigation on mobile */
+  .imageNav {
+    display: none;
   }
   
-  .specIntro,
-  .careIntro {
-    font-size: 0.95rem;
-    padding: 0 0.5rem;
+  /* Hide thumbnails on mobile as we have the Gucci slider */
+  .thumbnailGrid {
+    display: none;
   }
   
-  .specGrid,
-  .careContent {
-    padding: 1.5rem;
-  }
-  
-  .specRow {
-    grid-template-columns: 1fr;
-    gap: 0.5rem;
-  }
-
-  .stylingIntroContainer {
-    padding: 1.5rem 1rem;
-  }
-  
-  .stylingIntroTitle {
-    font-size: 1.2rem;
-  }
-  
-  .stylingIntro {
-    font-size: 0.95rem;
-    padding: 0 0.5rem;
-  }
-  
-  .stylingGallery {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-    padding: 1.5rem;
-  }
-
-  .galleryImageWrap {
-    height: 260px;
-  }
-  
-  .singleImage .galleryImageWrap {
-    height: 400px;
-  }
-  
-  .twoImages {
-    grid-template-columns: 1fr;
-  }
-  
-  .twoImages .galleryImageWrap {
-    height: 280px;
-  }
-
-  .similarGrid {
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 1.5rem;
-  }
-
-  .similarInfo {
-    padding: 1rem;
-  }
-
-  .similarName {
-    font-size: 0.9rem;
-  }
-
-  .similarPrice {
-    font-size: 0.95rem;
+  .productInfo {
+    padding: 0 1rem;
   }
 }
 

@@ -6,6 +6,7 @@ import { useRouter, useParams } from 'next/navigation'
 import Image from 'next/image'
 import { useCart } from '../../contexts/CartContext'
 import WishlistButton from '../../components/WishlistButton'
+import ProductImages from '../../components/ProductImages'
 import Link from 'next/link'
 import styles from './product_details.module.css'
 
@@ -309,64 +310,18 @@ export default function ProductDetailsPage() {
       <div className={styles.productGrid}>
         {/* Left column: Images */}
         <div className={styles.imageSection}>
-          <div className={styles.mainImageContainer}>
-            {product.imageUrls[0] ? (
-              <img
-                src={product.imageUrls[selectedImage]}
-                alt={product.name}
-                className={`${styles.mainImage} ${styles.imageTransition}`}
-                loading="lazy"
-                key={selectedImage} // Force re-render for transition
-              />
-            ) : (
-              <div className={styles.mainImage} style={{ 
-                background: '#f8f8f8',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                minHeight: '400px'
-              }}>
-                <span style={{ color: '#666666', fontSize: '0.9rem' }}>No image available</span>
-              </div>
-            )}
-
-            {product.imageUrls.length > 1 && (
-              <>
-                <button
-                  onClick={handlePrevImage}
-                  className={`${styles.imageNav} ${styles.prevImage}`}
-                  aria-label="Previous image"
-                >
-                  <ChevronLeft />
-                </button>
-                <button
-                  onClick={handleNextImage}
-                  className={`${styles.imageNav} ${styles.nextImage}`}
-                  aria-label="Next image"
-                >
-                  <ChevronRight />
-                </button>
-              </>
-            )}
-          </div>
-
-          {product.imageUrls.length > 1 && (
-            <div className={styles.thumbnailGrid}>
-              {product.imageUrls.map((url, index) => (
-                <button
-                  key={url}
-                  onClick={() => setSelectedImage(index)}
-                  className={styles.thumbnailButton}
-                  aria-label={`View image ${index + 1}`}
-                >
-                  <img
-                    src={url}
-                    alt={`${product.name} - View ${index + 1}`}
-                    className={`${styles.thumbnail} ${index === selectedImage ? styles.thumbnailActive : ''}`}
-                    loading="lazy"
-                  />
-                </button>
-              ))}
+          {/* Replace the old image gallery with ProductImages component */}
+          {product.imageUrls && product.imageUrls.length > 0 ? (
+            <ProductImages imageUrls={product.imageUrls} name={product.name} />
+          ) : (
+            <div className={styles.mainImage} style={{ 
+              background: '#f8f8f8',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              minHeight: '400px'
+            }}>
+              <span style={{ color: '#666666', fontSize: '0.9rem' }}>No image available</span>
             </div>
           )}
         </div>
