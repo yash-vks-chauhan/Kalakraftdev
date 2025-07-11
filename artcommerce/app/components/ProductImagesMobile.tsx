@@ -113,6 +113,7 @@ export default function ProductImagesMobile({
           sizes="100vw"
           priority={currentIndex === 0}
           className={styles.mainImage}
+          quality={100} // Ensure high quality for better transparency
         />
         
         {/* Navigation buttons - simplified for Gucci style */}

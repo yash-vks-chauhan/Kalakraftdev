@@ -2,7 +2,18 @@
   width: 100%;
   display: flex;
   flex-direction: column;
-  background-color: #ffffff;
+  background-color: #f8f8f8; /* Light gray background for the entire container */
+}
+
+/* Product Image Wrapper */
+:global(.product-image-wrapper) {
+  width: 100%;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: transparent;
+  padding: 20px 0;
 }
 
 /* Product Info Section - with proper spacing after image slider */

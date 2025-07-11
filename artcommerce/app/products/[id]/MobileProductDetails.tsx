@@ -114,11 +114,13 @@ export default function MobileProductDetails({
 
   return (
     <div className={styles.mobileProductContainer}>
-      {/* Product Images - Full width with Gucci-style slider */}
-      <ProductImagesMobile 
-        imageUrls={product.imageUrls} 
-        name={product.name} 
-      />
+      {/* Product Images - Full width with transparent background */}
+      <div className="product-image-wrapper">
+        <ProductImagesMobile 
+          imageUrls={product.imageUrls} 
+          name={product.name} 
+        />
+      </div>
       
       {/* Product Info - Overlapping the image slightly with rounded corners */}
       <div className={styles.productInfo}>
