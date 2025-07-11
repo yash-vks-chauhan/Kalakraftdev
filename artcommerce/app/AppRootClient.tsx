@@ -45,13 +45,23 @@ export default function AppRootClient({ children }: { children: React.ReactNode 
     };
   }, []);
 
-  // Scroll to top on route change, but not on initial mount
+  // Scroll to top on route change, but not on initial mount or when going to products from home
   useEffect(() => {
     if (isFirstPathRef.current) {
       isFirstPathRef.current = false;
       return;
     }
-    window.scrollTo(0, 0);
+    
+    // Don't scroll to top when navigating from home to products
+    const isNavigatingToProductsFromHome = pathname === '/products' && 
+      sessionStorage.getItem('lastPath') === '/';
+    
+    if (!isNavigatingToProductsFromHome) {
+      window.scrollTo(0, 0);
+    }
+    
+    // Store current path for next navigation
+    sessionStorage.setItem('lastPath', pathname);
   }, [pathname]);
 
   // Swap favicon for dark/light mode in Chromium browsers

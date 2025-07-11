@@ -12,6 +12,7 @@ import { ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react'
 
 import styles from './home.module.css'
 import { getImageUrl } from '../lib/cloudinaryImages'
+import Link from 'next/link'
 
 // Add this to detect mobile view
 const isMobileView = () => {
@@ -514,9 +515,10 @@ Handcrafted resin art for <span id="rotator">{displayText}</span>
 
 {/* New button for "Discover All Pieces" - Desktop only */}
 <div className={`${styles.buttonContainer} ${styles.desktopOnly}`} data-aos="fade-up" data-aos-delay="700">
-  <a href="/products" className={styles.discoverAllButton}>
-    Discover All Pieces
-  </a>
+  <Link href="/products" className={styles.discoverAllButton} prefetch={false}>
+    <span className={styles.buttonText}>Discover All Pieces</span>
+    <ChevronRight size={18} className={styles.buttonIcon} />
+  </Link>
 </div>
 
 </div>
