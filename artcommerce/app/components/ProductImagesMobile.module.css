@@ -24,10 +24,11 @@
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
+  -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
 }
 
-/* Carousel container that will slide horizontally */
-.carousel {
+/* Image slider that will slide horizontally */
+.imageSlider {
   display: flex;
   flex-direction: row;
   width: 100%;
@@ -43,13 +44,8 @@
   -webkit-perspective: 1000;
 }
 
-/* Remove transition during active swiping */
-.carousel.swiping {
-  transition: none;
-}
-
-/* Individual carousel item (one per image) */
-.carouselItem {
+/* Individual slide (one per image) */
+.imageSlide {
   flex: 0 0 100%;
   width: 100%;
   height: 100%;
@@ -57,10 +53,11 @@
   align-items: center;
   justify-content: center;
   position: relative;
+  overflow: hidden;
 }
 
-/* Inner wrapper for image positioning */
-.imageInnerWrapper {
+/* Wrapper for image positioning */
+.imageWrapper {
   position: relative;
   width: 100%;
   height: 100%;
@@ -68,22 +65,7 @@
   align-items: center;
   justify-content: center;
   background-color: #f0f0f0;
-}
-
-/* Animation for transitioning between images */
-.carousel.transitioning .mainImage {
-  animation: fadeTransition 0.3s ease;
-}
-
-@keyframes fadeTransition {
-  0% {
-    opacity: 0.7;
-    transform: scale(0.98);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
+  padding: 10%;
 }
 
 .mainImage {
@@ -93,7 +75,7 @@
   width: 100% !important;
   height: 100% !important;
   object-fit: contain !important;
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition: opacity 0.3s ease;
   padding: 0;
   background-color: transparent !important;
   transform: translate3d(0, 0, 0);
@@ -101,6 +83,7 @@
   -webkit-backface-visibility: hidden;
   margin: 0 auto;
   opacity: 1;
+  mix-blend-mode: multiply; /* Help blend with background */
 }
 
 /* Add loaded class for images that have finished loading */
@@ -132,10 +115,14 @@
   object-position: center !important;
 }
 
+/* Fix for Next.js image container */
+.mainImage > span {
+  position: absolute !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
 .noImagePlaceholder {
-  position: absolute;
-  top: 0;
-  left: 0;
   width: 100%;
   height: 100%;
   display: flex;
@@ -151,7 +138,7 @@
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  background: transparent;
+  background: rgba(255, 255, 255, 0.5);
   color: #000;
   width: 36px;
   height: 36px;
@@ -166,14 +153,16 @@
   opacity: 0.6;
   transition: all 0.2s ease;
   pointer-events: auto;
+  backdrop-filter: blur(2px);
 }
 
 .navigationButton:active {
   opacity: 1;
+  background: rgba(255, 255, 255, 0.8);
 }
 
 .navigationButton:disabled {
-  opacity: 0.4;
+  opacity: 0.3;
   cursor: not-allowed;
 }
 
@@ -185,38 +174,39 @@
   right: 12px;
 }
 
-/* Page indicator lines at bottom of image */
+/* Page indicator dots at bottom of image - redesigned to match the reference */
 .pageIndicator {
   position: absolute;
-  bottom: 16px;
+  bottom: 0;
   left: 0;
   right: 0;
   display: flex;
   justify-content: center;
-  gap: 4px;
+  align-items: center;
+  gap: 8px;
   z-index: 10;
   pointer-events: auto;
+  height: 2px;
+  background-color: #e0e0e0;
+  padding: 0;
 }
 
 .indicatorDot {
-  width: 16px;
+  width: 40px;
   height: 2px;
   border-radius: 0;
-  background-color: rgba(0, 0, 0, 0.3);
+  background-color: #ccc;
   border: none;
   padding: 0;
   cursor: pointer;
   transition: all 0.2s ease;
+  margin: 0;
 }
 
 .indicatorDot.active {
   background-color: #000000;
   transform: none;
-  width: 24px;
-}
-
-.indicatorDot:disabled {
-  cursor: not-allowed;
+  width: 40px;
 }
 
 /* Image counter (1/6) in bottom right */

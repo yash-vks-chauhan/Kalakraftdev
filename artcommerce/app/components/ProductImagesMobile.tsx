@@ -13,12 +13,11 @@ export default function ProductImagesMobile({
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
   const [isSwiping, setIsSwiping] = useState(false);
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  const [swipeOffset, setSwipeOffset] = useState(0);
+  const [swipeDistance, setSwipeDistance] = useState(0);
   const [imageLoaded, setImageLoaded] = useState<boolean[]>([]);
   
-  const carouselRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const sliderRef = useRef<HTMLDivElement>(null);
   const containerWidthRef = useRef<number>(0);
 
   // Preload images and initialize loaded state array
@@ -41,8 +40,8 @@ export default function ProductImagesMobile({
       if (containerRef.current) {
         containerWidthRef.current = containerRef.current.offsetWidth;
         
-        // Update carousel position when resizing
-        updateCarouselPosition(currentIndex, true);
+        // Update slider position when resizing
+        updateSliderPosition(false);
       }
     };
 
@@ -55,65 +54,54 @@ export default function ProductImagesMobile({
     };
   }, [currentIndex]);
 
-  // Update carousel position when current index changes
+  // Update slider position when current index changes
   useEffect(() => {
-    updateCarouselPosition(currentIndex);
+    updateSliderPosition(true);
   }, [currentIndex]);
 
-  const updateCarouselPosition = (index: number, immediate = false) => {
-    if (!carouselRef.current || containerWidthRef.current === 0) return;
+  const updateSliderPosition = (animate: boolean) => {
+    if (!sliderRef.current) return;
     
-    const offset = -index * containerWidthRef.current;
-    
-    if (immediate) {
-      carouselRef.current.style.transition = 'none';
-      carouselRef.current.style.transform = `translateX(${offset}px)`;
-      // Force reflow to ensure the transition is removed before setting it back
-      void carouselRef.current.offsetWidth;
-      carouselRef.current.style.transition = '';
+    if (animate) {
+      sliderRef.current.style.transition = 'transform 0.3s ease';
     } else {
-      carouselRef.current.style.transform = `translateX(${offset}px)`;
+      sliderRef.current.style.transition = 'none';
     }
     
-    setSwipeOffset(offset);
+    sliderRef.current.style.transform = `translateX(-${currentIndex * 100}%)`;
+    
+    // Reset swipe distance
+    setSwipeDistance(0);
   };
 
   const handlePrev = () => {
-    if (isTransitioning) return;
-    
-    setIsTransitioning(true);
-    const newIndex = currentIndex === 0 ? imageUrls.length - 1 : currentIndex - 1;
-    setCurrentIndex(newIndex);
-    
-    setTimeout(() => {
-      setIsTransitioning(false);
-    }, 300);
+    if (currentIndex > 0) {
+      setCurrentIndex(currentIndex - 1);
+    }
   };
 
   const handleNext = () => {
-    if (isTransitioning) return;
-    
-    setIsTransitioning(true);
-    const newIndex = currentIndex === imageUrls.length - 1 ? 0 : currentIndex + 1;
-    setCurrentIndex(newIndex);
-    
-    setTimeout(() => {
-      setIsTransitioning(false);
-    }, 300);
+    if (currentIndex < imageUrls.length - 1) {
+      setCurrentIndex(currentIndex + 1);
+    }
   };
 
   const handleTouchStart = (e: TouchEvent) => {
+    if (!imageUrls || imageUrls.length <= 1) return;
+    
     if (containerRef.current) {
       containerWidthRef.current = containerRef.current.offsetWidth;
     }
     
-    if (carouselRef.current) {
+    if (sliderRef.current) {
       // Remove transition during active swiping for immediate response
-      carouselRef.current.style.transition = 'none';
+      sliderRef.current.style.transition = 'none';
     }
     
     setTouchStart(e.targetTouches[0].clientX);
+    setTouchEnd(e.targetTouches[0].clientX);
     setIsSwiping(true);
+    setSwipeDistance(0);
   };
 
   const handleTouchMove = (e: TouchEvent) => {
@@ -125,27 +113,37 @@ export default function ProductImagesMobile({
     const currentTouch = e.targetTouches[0].clientX;
     setTouchEnd(currentTouch);
     
-    // Calculate drag distance
-    const dragDistance = currentTouch - touchStart;
+    // Calculate how far the user has swiped
+    const distance = currentTouch - touchStart;
     
-    // Apply drag to carousel
-    if (carouselRef.current) {
-      const newOffset = swipeOffset + dragDistance;
-      carouselRef.current.style.transform = `translateX(${newOffset}px)`;
+    // Apply resistance at the edges
+    let finalDistance = distance;
+    if ((currentIndex === 0 && distance > 0) || 
+        (currentIndex === imageUrls.length - 1 && distance < 0)) {
+      // Apply resistance at edges - finger moves 3x more than image
+      finalDistance = distance / 3;
+    }
+    
+    setSwipeDistance(finalDistance);
+    
+    // Apply real-time dragging effect to the slider
+    if (sliderRef.current) {
+      const offset = -currentIndex * 100;
+      const percentageOffset = containerWidthRef.current ? (finalDistance / containerWidthRef.current) * 100 : 0;
+      sliderRef.current.style.transform = `translateX(calc(${offset}% + ${percentageOffset}%))`;
     }
   };
 
   const handleTouchEnd = () => {
     setIsSwiping(false);
     
-    if (!carouselRef.current || !touchStart || !touchEnd || containerWidthRef.current === 0) {
-      // Reset to current position
-      updateCarouselPosition(currentIndex);
+    if (!sliderRef.current || !touchStart || !touchEnd || containerWidthRef.current === 0) {
+      updateSliderPosition(true);
       return;
     }
     
     // Add transition back for smooth movement
-    carouselRef.current.style.transition = 'transform 0.3s ease';
+    sliderRef.current.style.transition = 'transform 0.3s ease';
     
     // Calculate swipe distance and direction
     const distance = touchStart - touchEnd;
@@ -153,26 +151,47 @@ export default function ProductImagesMobile({
     
     if (Math.abs(distance) < swipeThreshold) {
       // Not swiped far enough, snap back to current slide
-      updateCarouselPosition(currentIndex);
+      updateSliderPosition(true);
     } else {
       // Determine direction and update index
-      if (distance > 0) {
+      if (distance > 0 && currentIndex < imageUrls.length - 1) {
         // Swiped left, go to next
-        handleNext();
-      } else {
+        setCurrentIndex(currentIndex + 1);
+      } else if (distance < 0 && currentIndex > 0) {
         // Swiped right, go to previous
-        handlePrev();
+        setCurrentIndex(currentIndex - 1);
+      } else {
+        // At the edge, snap back
+        updateSliderPosition(true);
       }
     }
     
     // Reset touch values
     setTouchStart(0);
     setTouchEnd(0);
+    setSwipeDistance(0);
   };
 
   const handleTouchCancel = () => {
     setIsSwiping(false);
-    updateCarouselPosition(currentIndex);
+    updateSliderPosition(true);
+  };
+
+  // Handle manual image navigation with tap
+  const handleImageTap = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!imageUrls || imageUrls.length <= 1) return;
+    
+    const containerWidth = containerRef.current?.offsetWidth || 0;
+    const tapX = e.nativeEvent.offsetX;
+    
+    // Tap on right third of image - go next
+    if (tapX > containerWidth * 0.7 && currentIndex < imageUrls.length - 1) {
+      setCurrentIndex(currentIndex + 1);
+    }
+    // Tap on left third of image - go previous
+    else if (tapX < containerWidth * 0.3 && currentIndex > 0) {
+      setCurrentIndex(currentIndex - 1);
+    }
   };
 
   const handleImageLoad = (index: number) => {
@@ -181,6 +200,15 @@ export default function ProductImagesMobile({
       newState[index] = true;
       return newState;
     });
+  };
+
+  // Determine if the image is a product that needs special handling
+  const isProductWithBackground = (url: string) => {
+    // Check if the image URL contains certain keywords that indicate it's a product
+    return url.includes('clock') || 
+           url.includes('tray') || 
+           url.includes('pot') ||
+           url.includes('decor');
   };
 
   if (!imageUrls || imageUrls.length === 0) {
@@ -204,14 +232,18 @@ export default function ProductImagesMobile({
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
         onTouchCancel={handleTouchCancel}
+        onClick={handleImageTap}
       >
         <div 
-          ref={carouselRef}
-          className={`${styles.carousel} ${isTransitioning ? styles.transitioning : ''} ${isSwiping ? styles.swiping : ''}`}
+          ref={sliderRef}
+          className={styles.imageSlider}
         >
           {imageUrls.map((url, index) => (
-            <div key={index} className={styles.carouselItem}>
-              <div className={styles.imageInnerWrapper}>
+            <div key={index} className={styles.imageSlide}>
+              <div 
+                className={styles.imageWrapper}
+                style={isProductWithBackground(url) ? { backgroundColor: '#f0f0f0' } : undefined}
+              >
                 <Image
                   src={url}
                   alt={`${name} - Image ${index + 1}`}
@@ -220,9 +252,12 @@ export default function ProductImagesMobile({
                   priority={index === 0}
                   className={`${styles.mainImage} ${imageLoaded[index] ? styles.loaded : ''}`}
                   quality={100}
-                  draggable="false"
+                  draggable={false}
                   onLoad={() => handleImageLoad(index)}
-                  style={{ objectFit: 'contain' }}
+                  style={{ 
+                    objectFit: 'contain',
+                    mixBlendMode: isProductWithBackground(url) ? 'multiply' : 'normal'
+                  }}
                 />
               </div>
             </div>
@@ -236,7 +271,7 @@ export default function ProductImagesMobile({
               onClick={handlePrev}
               className={`${styles.navigationButton} ${styles.prev}`}
               aria-label="Previous image"
-              disabled={isTransitioning}
+              disabled={currentIndex === 0}
             >
               ←
             </button>
@@ -244,26 +279,11 @@ export default function ProductImagesMobile({
               onClick={handleNext}
               className={`${styles.navigationButton} ${styles.next}`}
               aria-label="Next image"
-              disabled={isTransitioning}
+              disabled={currentIndex === imageUrls.length - 1}
             >
               →
             </button>
           </>
-        )}
-
-        {/* Page indicator lines */}
-        {imageUrls.length > 1 && (
-          <div className={styles.pageIndicator}>
-            {imageUrls.map((_, index) => (
-              <button
-                key={index}
-                className={`${styles.indicatorDot} ${index === currentIndex ? styles.active : ""}`}
-                onClick={() => !isTransitioning && setCurrentIndex(index)}
-                aria-label={`View image ${index + 1}`}
-                disabled={isTransitioning}
-              />
-            ))}
-          </div>
         )}
 
         {/* Current image counter */}
@@ -273,6 +293,20 @@ export default function ProductImagesMobile({
           </div>
         )}
       </div>
+      
+      {/* Page indicator line - moved outside the image container to act as a border */}
+      {imageUrls.length > 1 && (
+        <div className={styles.pageIndicator}>
+          {imageUrls.map((_, index) => (
+            <button
+              key={index}
+              className={`${styles.indicatorDot} ${index === currentIndex ? styles.active : ""}`}
+              onClick={() => setCurrentIndex(index)}
+              aria-label={`View image ${index + 1}`}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 } 
