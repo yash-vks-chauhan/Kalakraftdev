@@ -5,13 +5,15 @@
   margin-top: 0; /* Connect directly with navbar */
   background-color: #f0f0f0; /* Match the container background color */
   padding: 0; /* Remove any padding */
+  /* Limit the height to match the green line in the mockup */
+  max-height: 70vh; /* Adjust this value to match the green line */
 }
 
 .imageContainer {
   position: relative;
   width: 100%;
-  height: 0;
-  padding-bottom: 130%; /* Increase aspect ratio for larger image display */
+  /* Change from padding-bottom to fixed height */
+  height: 70vh; /* Match the max-height of container */
   overflow: hidden;
   background-color: #f0f0f0; /* Match the container background color */
   touch-action: pan-y;
@@ -43,6 +45,12 @@
   -webkit-backface-visibility: hidden;
   perspective: 1000;
   -webkit-perspective: 1000;
+  background-color: #f0f0f0; /* Ensure wrapper has same background */
+}
+
+/* Add a class for when the image is actively being swiped */
+.imageWrapper.swiping {
+  transition: none;
 }
 
 .imageWrapper.transitioning .mainImage {
@@ -66,14 +74,44 @@
   left: 0;
   width: 100%;
   height: 100%;
-  object-fit: contain; /* Keep contain to maintain aspect ratio */
+  object-fit: contain !important; /* Force contain to maintain aspect ratio */
   transition: opacity 0.3s ease, transform 0.3s ease;
   padding: 0 5%; /* Reduce side padding to allow image to be larger */
-  background-color: transparent; /* Ensure image background is transparent */
+  background-color: transparent !important; /* Force transparent background */
   mix-blend-mode: multiply; /* Help blend with background better */
   transform: translate3d(0, 0, 0); /* Hardware acceleration */
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
+  margin: 0 auto; /* Center the image */
+  opacity: 0.95; /* Slightly reduce opacity to help with blending */
+}
+
+/* Add loaded class for images that have finished loading */
+.mainImage.loaded {
+  opacity: 1;
+}
+
+/* Fix for Next.js image white background issue */
+.mainImage::before,
+.mainImage::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: transparent !important;
+  z-index: -1;
+}
+
+/* Override any Next.js image styles that might add backgrounds */
+:global(.mainImage > span) {
+  background-color: transparent !important;
+}
+
+:global(.mainImage img) {
+  background-color: transparent !important;
+  object-fit: contain !important;
 }
 
 .noImagePlaceholder {

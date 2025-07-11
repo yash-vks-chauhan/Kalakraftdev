@@ -2,7 +2,7 @@
   width: 100%;
   display: flex;
   flex-direction: column;
-  background-color: #f0f0f0; /* Darker gray background similar to Gucci */
+  background-color: #ffffff; /* Change to white as we only want gray in image section */
 }
 
 /* Product Image Wrapper */
@@ -12,21 +12,22 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: transparent;
+  background-color: #f0f0f0; /* Gray background only for image section */
   padding: 0; /* Remove padding to maximize image size */
-  margin-bottom: -10px; /* Pull content up slightly to reduce gap */
+  margin-bottom: 0; /* Remove negative margin */
 }
 
-/* Product Info Section - with proper spacing after image slider */
+/* Product Info Section - starting right after the image section */
 .productInfo {
   padding: 24px 16px 20px;
-  margin-top: -10px; /* Reduced negative margin to minimize overlap */
+  margin-top: 0; /* Remove negative margin to avoid overlap */
   position: relative;
   z-index: 2;
   border-top-left-radius: 0; /* Remove curved corners */
   border-top-right-radius: 0; /* Remove curved corners */
   box-shadow: none; /* Remove shadow */
   background-color: #ffffff;
+  border-top: 1px solid #eee; /* Add subtle separator */
 }
 
 /* Category Badge */
