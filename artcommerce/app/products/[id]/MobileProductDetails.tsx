@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import ProductImagesMobile from '../../components/ProductImagesMobile';
@@ -22,6 +22,8 @@ interface Product {
   specifications?: string | null;
   careInstructions?: string | null;
   stylingIdeaImages?: ({ url: string; text?: string } | string)[] | null;
+  isNew?: boolean;
+  avgRating?: number;
 }
 
 interface MobileProductDetailsProps {
@@ -44,6 +46,21 @@ export default function MobileProductDetails({
   const [added, setAdded] = useState(false);
   const [similarProducts, setSimilarProducts] = useState<Product[]>(initialSimilarProducts);
   
+  // Carousel state for similar products
+  const carouselRef = useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
+  
+  // Similar product image states
+  const [currentImageIndices, setCurrentImageIndices] = useState<Record<number, number>>({});
+  const [touchStartPositions, setTouchStartPositions] = useState<Record<number, number>>({});
+  const [touchEndPositions, setTouchEndPositions] = useState<Record<number, number>>({});
+  const [isSwipingStates, setIsSwipingStates] = useState<Record<number, boolean>>({});
+  const [swipeDistances, setSwipeDistances] = useState<Record<number, number>>({});
+  const productRefs = useRef<Record<number, HTMLDivElement | null>>({});
+  const containerWidths = useRef<Record<number, number>>({});
+  
   // Section expansion states
   const [expandedSections, setExpandedSections] = useState({
     description: false,
@@ -51,6 +68,16 @@ export default function MobileProductDetails({
     care: false,
     styling: true, // Keep styling expanded by default
   });
+
+  // Format price with commas for thousands
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 0,
+      minimumFractionDigits: 0
+    }).format(price);
+  };
 
   // Fetch similar products
   useEffect(() => {
@@ -65,35 +92,189 @@ export default function MobileProductDetails({
         .then(j => {
           const others = (j.products || [])
             .filter((p: any) => p.id !== product.id)
-            .slice(0, 4); // Limit to 4 products for mobile
+            .slice(0, 8) // Get more products for the carousel
+            .map((p: any) => {
+              let urls: string[] = [];
+              try {
+                urls = Array.isArray(p.imageUrls) ? p.imageUrls : JSON.parse(p.imageUrls || '[]');
+              } catch {
+                urls = [];
+              }
+              
+              // Check if product is new (less than 14 days old)
+              const isNew = p.createdAt && new Date(p.createdAt) > new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
+              
+              return { ...p, imageUrls: urls, isNew };
+            });
           setSimilarProducts(others);
         })
         .catch(console.error);
     }
   }, [product, initialSimilarProducts]);
 
+  // Initialize image indices for similar products
+  useEffect(() => {
+    if (similarProducts.length > 0) {
+      const initialIndices: Record<number, number> = {};
+      similarProducts.forEach(p => {
+        initialIndices[p.id] = 0;
+      });
+      setCurrentImageIndices(initialIndices);
+    }
+  }, [similarProducts]);
+
+  // Carousel touch handlers
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!carouselRef.current) return;
+    setIsDragging(true);
+    setStartX(e.pageX - carouselRef.current.offsetLeft);
+    setScrollLeft(carouselRef.current.scrollLeft);
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (!carouselRef.current) return;
+    setIsDragging(true);
+    setStartX(e.touches[0].pageX - carouselRef.current.offsetLeft);
+    setScrollLeft(carouselRef.current.scrollLeft);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || !carouselRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - carouselRef.current.offsetLeft;
+    const walk = (x - startX) * 1.5; // Scroll speed multiplier
+    carouselRef.current.scrollLeft = scrollLeft - walk;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging || !carouselRef.current) return;
+    const x = e.touches[0].pageX - carouselRef.current.offsetLeft;
+    const walk = (x - startX) * 1.5; // Scroll speed multiplier
+    carouselRef.current.scrollLeft = scrollLeft - walk;
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleMouseLeave = () => {
+    setIsDragging(false);
+  };
+
+  // Product image swipe handlers
+  const handleProductTouchStart = (e: React.TouchEvent, productId: number) => {
+    const product = similarProducts.find(p => p.id === productId);
+    if (!product || product.imageUrls.length <= 1) return;
+    
+    // Store container width for calculations
+    containerWidths.current[productId] = productRefs.current[productId]?.offsetWidth || 0;
+    
+    const clientX = e.targetTouches[0].clientX;
+    setTouchStartPositions(prev => ({ ...prev, [productId]: clientX }));
+    setTouchEndPositions(prev => ({ ...prev, [productId]: clientX }));
+    setIsSwipingStates(prev => ({ ...prev, [productId]: true }));
+    setSwipeDistances(prev => ({ ...prev, [productId]: 0 }));
+    
+    // Prevent parent carousel from scrolling
+    e.stopPropagation();
+  };
+  
+  const handleProductTouchMove = (e: React.TouchEvent, productId: number) => {
+    const product = similarProducts.find(p => p.id === productId);
+    if (!product || !isSwipingStates[productId] || product.imageUrls.length <= 1) return;
+    
+    // Prevent default to avoid page scrolling while swiping
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const currentTouch = e.targetTouches[0].clientX;
+    setTouchEndPositions(prev => ({ ...prev, [productId]: currentTouch }));
+    
+    // Calculate how far the user has swiped
+    const distance = currentTouch - touchStartPositions[productId];
+    const currentIndex = currentImageIndices[productId] || 0;
+    
+    // Apply resistance at the edges
+    let finalDistance = distance;
+    if ((currentIndex === 0 && distance > 0) || 
+        (currentIndex === product.imageUrls.length - 1 && distance < 0)) {
+      // Apply resistance at edges - finger moves 3x more than image
+      finalDistance = distance / 3;
+    }
+    
+    setSwipeDistances(prev => ({ ...prev, [productId]: finalDistance }));
+  };
+  
+  const handleProductTouchEnd = (productId: number) => {
+    const product = similarProducts.find(p => p.id === productId);
+    if (!product || !isSwipingStates[productId] || product.imageUrls.length <= 1) return;
+    
+    setIsSwipingStates(prev => ({ ...prev, [productId]: false }));
+    
+    const touchStart = touchStartPositions[productId];
+    const touchEnd = touchEndPositions[productId];
+    
+    if (!touchStart || !touchEnd) {
+      setSwipeDistances(prev => ({ ...prev, [productId]: 0 }));
+      return;
+    }
+    
+    const distance = touchStart - touchEnd;
+    const minSwipeDistance = containerWidths.current[productId] * 0.2; // 20% of container width
+    const currentIndex = currentImageIndices[productId] || 0;
+    
+    if (Math.abs(distance) < minSwipeDistance) {
+      // Not swiped far enough, snap back
+      setSwipeDistances(prev => ({ ...prev, [productId]: 0 }));
+      return;
+    }
+    
+    if (distance > 0 && currentIndex < product.imageUrls.length - 1) {
+      // Swiped left, go to next image
+      setCurrentImageIndices(prev => ({ ...prev, [productId]: currentIndex + 1 }));
+    } else if (distance < 0 && currentIndex > 0) {
+      // Swiped right, go to previous image
+      setCurrentImageIndices(prev => ({ ...prev, [productId]: currentIndex - 1 }));
+    }
+    
+    // Reset values
+    setTouchStartPositions(prev => ({ ...prev, [productId]: 0 }));
+    setTouchEndPositions(prev => ({ ...prev, [productId]: 0 }));
+    setSwipeDistances(prev => ({ ...prev, [productId]: 0 }));
+  };
+  
+  // Calculate transform style for real-time finger tracking
+  const getProductImageTransform = (productId: number) => {
+    const currentIndex = currentImageIndices[productId] || 0;
+    
+    if (isSwipingStates[productId]) {
+      // During swipe, follow finger exactly
+      const containerWidth = containerWidths.current[productId] || 0;
+      const percentageOffset = containerWidth ? (swipeDistances[productId] / containerWidth) * 100 : 0;
+      return {
+        transform: `translateX(calc(-${currentIndex * 100}% + ${percentageOffset}%))`,
+        transition: 'none'
+      };
+    }
+    
+    // When not swiping, use smooth transition
+    return {
+      transform: `translateX(-${currentIndex * 100}%)`,
+      transition: 'transform 0.3s ease'
+    };
+  };
+
+  // Handle wishlist button click to prevent navigation
+  const handleWishlistClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
   const toggleSection = (section: keyof typeof expandedSections) => {
     setExpandedSections(prev => ({
       ...prev,
       [section]: !prev[section]
     }));
-  };
-
-  const handleAddToCart = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    
-    try {
-      await addToCart(product.id, qty);
-      setAdded(true);
-      
-      // Reset the added state after 3 seconds
-      setTimeout(() => {
-        setAdded(false);
-      }, 3000);
-    } catch (err: any) {
-      setError(err.message || 'Error adding to cart');
-    }
   };
 
   const getStockStatus = () => {
@@ -134,6 +315,23 @@ export default function MobileProductDetails({
         );
       }
     }).filter(Boolean);
+  };
+
+  const handleAddToCart = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    
+    try {
+      await addToCart(product.id, qty);
+      setAdded(true);
+      
+      // Reset the added state after 3 seconds
+      setTimeout(() => {
+        setAdded(false);
+      }, 3000);
+    } catch (err: any) {
+      setError(err.message || 'Error adding to cart');
+    }
   };
 
   return (
@@ -385,28 +583,100 @@ export default function MobileProductDetails({
         </div>
       </div>
       
-      {/* You might also like section */}
+      {/* You might also like section - Horizontal carousel with swipeable product cards */}
       {similarProducts.length > 0 && (
         <div className={styles.similarProductsSection}>
           <h2 className={styles.similarProductsTitle}>You might also like</h2>
-          <div className={styles.similarProductsGrid}>
+          
+          <div 
+            className={styles.similarProductsCarousel}
+            ref={carouselRef}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseLeave}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleMouseUp}
+          >
             {similarProducts.map(similarProduct => (
-              <Link key={similarProduct.id} href={`/products/${similarProduct.id}`} className={styles.similarProductItem}>
-                <div className={styles.similarProductImageContainer}>
-                  <img 
-                    src={similarProduct.imageUrls[0] || '/images/logo-mask.png'} 
-                    alt={similarProduct.name} 
-                    className={styles.similarProductImage}
-                    loading="lazy"
+              <div key={similarProduct.id} className={styles.cardWrapper}>
+                <Link href={`/products/${similarProduct.id}`} className={styles.card}>
+                  <div 
+                    className={styles.imageContainer}
+                    ref={el => productRefs.current[similarProduct.id] = el}
+                    onTouchStart={(e) => handleProductTouchStart(e, similarProduct.id)}
+                    onTouchMove={(e) => handleProductTouchMove(e, similarProduct.id)}
+                    onTouchEnd={() => handleProductTouchEnd(similarProduct.id)}
+                  >
+                    <div 
+                      className={styles.imageSlider} 
+                      style={getProductImageTransform(similarProduct.id)}
+                    >
+                      {similarProduct.imageUrls.map((url, index) => (
+                        <div key={index} className={styles.imageSlide}>
+                          <img 
+                            src={url}
+                            alt={`${similarProduct.name} - Image ${index + 1}`}
+                            className={styles.image}
+                            loading="lazy"
+                            draggable="false"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {similarProduct.imageUrls.length === 0 && (
+                      <div className={styles.noImage}>No image</div>
+                    )}
+                    
+                    {similarProduct.isNew && <span className={styles.badge}>New</span>}
+                    {similarProduct.stockQuantity === 0 && <div className={styles.outOfStock}>Out of Stock</div>}
+                    {similarProduct.stockQuantity > 0 && similarProduct.stockQuantity <= 5 && (
+                      <div className={styles.lowStock}>Only {similarProduct.stockQuantity} left</div>
+                    )}
+                    
+                    {/* Image indicators */}
+                    {similarProduct.imageUrls.length > 1 && (
+                      <div className={styles.imageIndicators}>
+                        {similarProduct.imageUrls.map((_, index) => (
+                          <div 
+                            key={index} 
+                            className={`${styles.indicator} ${index === (currentImageIndices[similarProduct.id] || 0) ? styles.activeIndicator : ''}`}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className={styles.info}>
+                    {similarProduct.category && (
+                      <div className={styles.categoryTag}>
+                        {similarProduct.category.name}
+                      </div>
+                    )}
+                    <h3 className={styles.name}>{similarProduct.name}</h3>
+                    
+                    <div className={styles.priceRow}>
+                      <p className={styles.price}>{formatPrice(similarProduct.price)}</p>
+                      {similarProduct.avgRating && similarProduct.avgRating > 0 && (
+                        <p className={styles.productRating}>
+                          <span className={styles.starFilled}>★</span> 
+                          <span className={styles.ratingValue}>{similarProduct.avgRating.toFixed(1)}</span>
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </Link>
+                
+                <div className={styles.wishlistContainer} onClick={handleWishlistClick}>
+                  <WishlistButton 
+                    productId={similarProduct.id} 
+                    className={`${styles.wishlistButton} ${styles.blackWishlist}`}
+                    preventNavigation={true}
                   />
                 </div>
-                <div className={styles.similarProductInfo}>
-                  <p className={styles.similarProductName}>{similarProduct.name}</p>
-                  <p className={styles.similarProductPrice}>
-                    {similarProduct.currency}{similarProduct.price.toFixed(2)}
-                  </p>
-                </div>
-              </Link>
+              </div>
             ))}
           </div>
           
