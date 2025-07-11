@@ -138,12 +138,18 @@ export default function ProductImages({ imageUrls, name }: { imageUrls: string[]
                   height={800}
                   className={styles.mobileImage}
                   priority={idx === mainIdx}
+                  unoptimized
                 />
               </div>
             ))}
           </div>
           
-          {/* Gucci-style image indicator */}
+          {/* Image counter in Gucci style */}
+          <div className={styles.imageCounter}>
+            {mainIdx + 1} / {imageUrls.length}
+          </div>
+          
+          {/* Gucci-style image indicator at bottom */}
           <div className={styles.mobileImageIndicator}>
             <div className={styles.indicatorTrack}>
               <div 
@@ -153,11 +159,6 @@ export default function ProductImages({ imageUrls, name }: { imageUrls: string[]
                 }}
               />
             </div>
-          </div>
-          
-          {/* Current image counter */}
-          <div className={styles.imageCounter}>
-            {mainIdx + 1} / {imageUrls.length}
           </div>
         </div>
       </div>

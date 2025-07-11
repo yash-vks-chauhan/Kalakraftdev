@@ -917,17 +917,21 @@
 /* Mobile adjustments for Gucci-style gallery */
 @media (max-width: 768px) {
   .container {
-    padding: 1rem 0 2rem;
+    padding: 0;
     max-width: 100%;
+    margin: 0;
+    background: #fff;
   }
   
-  .backLink {
-    margin: 0 1rem 1.5rem;
+  .successBanner {
+    margin: 0;
+    border-radius: 0;
   }
   
-  .productGrid {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
+  .mobileProductGrid {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
   }
   
   .imageSection {
@@ -937,9 +941,11 @@
     margin: 0;
     border-radius: 0;
     width: 100%;
-    height: 100vw; /* Make it square */
-    max-height: 80vh;
+    height: auto;
     overflow: visible;
+    background: transparent;
+    border: none;
+    box-shadow: none;
   }
   
   /* Hide old image navigation on mobile */
@@ -953,7 +959,39 @@
   }
   
   .productInfo {
-    padding: 0 1rem;
+    padding: 1.5rem 1rem;
+    border-top: 1px solid #f0f0f0;
+  }
+  
+  .productTitle {
+    font-size: 1.5rem;
+    margin-top: 0;
+    font-weight: 500;
+  }
+  
+  .category {
+    font-size: 0.7rem;
+    padding: 0.4rem 0.8rem;
+  }
+  
+  .price {
+    font-size: 1.5rem;
+    margin-top: 0.5rem;
+  }
+  
+  .stockInfo {
+    margin-top: 0.5rem;
+  }
+  
+  .addToCartForm {
+    margin-top: 1.5rem;
+  }
+  
+  .wishlistContainer {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    z-index: 10;
   }
 }
 

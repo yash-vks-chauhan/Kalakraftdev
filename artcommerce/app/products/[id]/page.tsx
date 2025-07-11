@@ -84,6 +84,22 @@ export default function ProductDetailsPage() {
     styling: true // Keep styling expanded by default
   })
 
+  const [isMobile, setIsMobile] = useState(false);
+  
+  // Check if we're on mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => {
+      window.removeEventListener('resize', checkMobile);
+    };
+  }, []);
+
   // Fetch product details on mount
   useEffect(() => {
     if (!id) {
@@ -297,9 +313,12 @@ export default function ProductDetailsPage() {
 
   return (
     <main className={styles.container}>
-      <Link href="/products" className={styles.backLink}>
-        ← Back to Products
-      </Link>
+      {/* Only show back link on desktop */}
+      {!isMobile && (
+        <Link href="/products" className={styles.backLink}>
+          ← Back to Products
+        </Link>
+      )}
 
       {added && (
         <div className={styles.successBanner}>
@@ -307,7 +326,7 @@ export default function ProductDetailsPage() {
         </div>
       )}
 
-      <div className={styles.productGrid}>
+      <div className={`${styles.productGrid} ${isMobile ? styles.mobileProductGrid : ''}`}>
         {/* Left column: Images */}
         <div className={styles.imageSection}>
           {/* Replace the old image gallery with ProductImages component */}
