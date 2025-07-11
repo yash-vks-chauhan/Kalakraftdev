@@ -105,11 +105,11 @@
 }
 
 /* Override any Next.js image styles that might add backgrounds */
-:global(.mainImage > span) {
+.mainImage > span {
   background-color: transparent !important;
 }
 
-:global(.mainImage img) {
+.mainImage img {
   background-color: transparent !important;
   object-fit: contain !important;
 }
