@@ -610,60 +610,54 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
         className={`${styles.mobileHeader} ${isHomePage ? styles.homeMobileHeader : ''} ${isProductPage ? styles.productPageHeader : ''}`}
         data-scrolled={isScrolled ? 'true' : 'false'}
       >
-        <button 
-          className={styles.menuButton} 
-          onClick={toggleMobileMenu}
-          aria-label="Menu"
-        >
-          <Menu size={24} />
-        </button>
+        {/* Left side - Logo */}
+        <Link href="/" className={styles.logoContainer}>
+          <Image
+            src={getImageUrl('logo.png')}
+            alt="Artcommerce Logo"
+            width={110}
+            height={36}
+            priority
+            style={{ objectFit: 'contain' }}
+            className={styles.logo}
+          />
+        </Link>
         
-        <div className={styles.logoContainer}>
-          <Link href="/" onClick={() => setIsMobileMenuOpen(false)}>
-            <Image
-              src={getImageUrl('logo.png')}
-              alt="Artcommerce Logo"
-              width={100}
-              height={36}
-              className={styles.logo}
-              priority
-            />
-          </Link>
-        </div>
-        
+        {/* Center - Empty spacer */}
         <div className={styles.headerSpacer}></div>
         
+        {/* Right side - Icons and burger menu */}
         <div className={styles.headerIcons}>
+          {/* Search Icon */}
           <button 
-            className={styles.headerIconButton} 
             onClick={toggleSearch}
+            className={styles.headerIconButton}
             aria-label="Search"
           >
-            <Search size={24} />
+            <Search size={20} strokeWidth={2} />
           </button>
           
+          {/* Cart Icon */}
           <button 
-            className={styles.headerIconButton} 
-            onClick={handleWishlistClick}
-            aria-label="Wishlist"
-          >
-            <Heart size={24} />
-            {wishlistItems.length > 0 && (
-              <span className={styles.cartBadge}>{wishlistItems.length}</span>
-            )}
-          </button>
-          
-          <button 
-            className={styles.headerIconButton} 
             onClick={handleCartClick}
+            className={styles.headerIconButton}
             aria-label="Cart"
           >
-            <ShoppingCart size={24} />
+            <ShoppingCart size={20} />
             {cartItems.length > 0 && (
               <span className={styles.cartBadge}>{cartItems.length}</span>
             )}
           </button>
         </div>
+        
+        {/* Burger menu */}
+        <button 
+          onClick={toggleMobileMenu}
+          className={styles.menuButton}
+          aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+        >
+          <Menu size={24} strokeWidth={2.5} />
+        </button>
       </header>
       
       {/* Main Content Area */}
