@@ -13,7 +13,8 @@
   justify-content: center;
   align-items: center;
   background-color: transparent;
-  padding: 20px 0;
+  padding: 0; /* Remove padding to maximize image size */
+  margin-bottom: -10px; /* Pull content up slightly to reduce gap */
 }
 
 /* Product Info Section - with proper spacing after image slider */

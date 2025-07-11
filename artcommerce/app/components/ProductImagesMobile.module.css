@@ -4,13 +4,14 @@
   overflow: hidden;
   margin-top: 0; /* Connect directly with navbar */
   background-color: #f0f0f0; /* Match the container background color */
+  padding: 0; /* Remove any padding */
 }
 
 .imageContainer {
   position: relative;
   width: 100%;
   height: 0;
-  padding-bottom: 120%; /* Taller aspect ratio like in the Gucci image */
+  padding-bottom: 130%; /* Increase aspect ratio for larger image display */
   overflow: hidden;
   background-color: #f0f0f0; /* Match the container background color */
   touch-action: pan-y;
@@ -43,7 +44,7 @@
   height: 100%;
   object-fit: contain; /* Keep contain to maintain aspect ratio */
   transition: opacity 0.3s ease, transform 0.3s ease;
-  padding: 0 10%; /* Add padding on sides to center the image more */
+  padding: 0 5%; /* Reduce side padding to allow image to be larger */
   background-color: transparent; /* Ensure image background is transparent */
   mix-blend-mode: multiply; /* Help blend with background better */
 }
