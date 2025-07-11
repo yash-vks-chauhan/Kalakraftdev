@@ -354,17 +354,12 @@ export default function ProductDetailsPage() {
             <div className={styles.thumbnailGrid}>
               {product.imageUrls.map((url, index) => (
                 <button
-                  key={url}
+                  key={index}
                   onClick={() => setSelectedImage(index)}
-                  className={styles.thumbnailButton}
+                  className={`${styles.thumbnailButton} ${index === selectedImage ? styles.thumbnailActive : ''}`}
                   aria-label={`View image ${index + 1}`}
                 >
-                  <img
-                    src={url}
-                    alt={`${product.name} - View ${index + 1}`}
-                    className={`${styles.thumbnail} ${index === selectedImage ? styles.thumbnailActive : ''}`}
-                    loading="lazy"
-                  />
+                  <span className="sr-only">Image {index + 1}</span>
                 </button>
               ))}
             </div>
@@ -498,19 +493,25 @@ export default function ProductDetailsPage() {
                     const trimmed = line.trim()
                     if (!trimmed) return null
                     
-                    return (
-                      <div key={index} className={styles.careItem}>
-                        <div className={styles.careBullet}></div>
-                        <span>{trimmed.replace(/^[-•]?\s*/, '')}</span>
-                      </div>
-                    )
+                    if (trimmed.startsWith('-')) {
+                      return (
+                        <div key={index} className={styles.careItem}>
+                          <span className={styles.careBullet}></span>
+                          <span>{trimmed.substring(1).trim()}</span>
+                        </div>
+                      )
+                    } else {
+                      return (
+                        <p key={index} className={styles.careText}>{trimmed}</p>
+                      )
+                    }
                   }).filter(Boolean)}
                 </div>
               </div>
             </div>
           </div>
         )}
-
+        
         {/* Styling Ideas Section */}
         {product.stylingIdeaImages && product.stylingIdeaImages.length > 0 && (
           <div className={styles.detailSection}>
@@ -521,7 +522,7 @@ export default function ProductDetailsPage() {
             >
               <div className={styles.sectionHeaderContent}>
                 <StylingIcon />
-                <h3 className={styles.sectionTitle}>Styling Inspiration Gallery</h3>
+                <h3 className={styles.sectionTitle}>Styling Ideas</h3>
               </div>
               <ChevronRight />
             </button>
@@ -529,64 +530,47 @@ export default function ProductDetailsPage() {
             <div className={`${styles.sectionContent} ${expandedSections.styling ? styles.expanded : ''}`}>
               <div className={`${styles.sectionInner} ${styles.stylingInner}`}>
                 <div className={styles.stylingIntroContainer}>
-                  <h4 className={styles.stylingIntroTitle}>Visualize in Your Space</h4>
+                  <h4 className={styles.stylingIntroTitle}>Get Inspired</h4>
                   <p className={styles.stylingIntro}>
-                    See how this piece transforms environments and creates stunning focal points in various settings.
-                    Each image showcases the versatility of this artwork in different spaces.
+                    Explore creative ways to incorporate this piece into your home decor.
                   </p>
                 </div>
                 
-                <div className={`${styles.stylingGallery} ${
-                    product.stylingIdeaImages?.length === 1 
-                      ? styles.singleImage 
-                      : product.stylingIdeaImages?.length === 2 
-                        ? styles.twoImages 
-                        : ''
-                  }`}>
-                  {product.stylingIdeaImages?.map((it, idx) => {
-                    const obj = typeof it === 'string' ? { url: it, text: '' } : it
-                    const defaultCaptions = [
-                      "Living Room: Creates a calming focal point that ties the space together",
-                      "Office Setting: Adds artistic flair to professional environments",
-                      "Dining Area: Complements mealtime with artistic elegance"
-                    ];
+                <div className={styles.stylingGallery}>
+                  {product.stylingIdeaImages.map((item, index) => {
+                    const url = typeof item === 'string' ? item : item.url
+                    const text = typeof item === 'string' ? null : item.text
                     
-                    // Determine the label based on image count
-                    let spaceLabel = "Living Space";
-                    const imageCount = product.stylingIdeaImages?.length || 0;
-                    if (imageCount === 1) {
-                      spaceLabel = "Featured Styling";
-                    } else if (imageCount === 2) {
-                      spaceLabel = idx === 0 ? "Living Space" : "Workspace";
-                    } else {
-                      spaceLabel = idx === 0 ? "Living Space" : idx === 1 ? "Workspace" : "Dining Area";
-                    }
+                    // Determine layout class based on number of images
+                    const layoutClass = product.stylingIdeaImages!.length === 1 
+                      ? styles.singleImage 
+                      : (product.stylingIdeaImages!.length === 2 ? styles.twoImages : '')
                     
                     return (
-                      <div key={idx} className={styles.galleryItem}>
+                      <div key={index} className={`${styles.galleryItem} ${layoutClass}`}>
                         <div className={styles.galleryImageWrap}>
                           <img 
-                            src={obj.url} 
-                            alt={`Styling inspiration ${idx + 1}`} 
-                            className={styles.galleryImage} 
-                            loading="lazy" 
+                            src={url} 
+                            alt={text || `Styling idea ${index + 1}`} 
+                            className={styles.galleryImage}
+                            loading="lazy"
                           />
                           <div className={styles.galleryOverlay}>
-                            <span className={styles.galleryLabel}>
-                              {spaceLabel}
-                            </span>
+                            <span className={styles.galleryLabel}>Styling Idea</span>
                           </div>
                         </div>
-                        <div className={styles.galleryCaption}>
-                          <p>{obj.text || defaultCaptions[idx % defaultCaptions.length]}</p>
-                        </div>
+                        {text && (
+                          <div className={styles.galleryCaption}>
+                            <p>{text}</p>
+                          </div>
+                        )}
                       </div>
                     )
                   })}
                 </div>
                 
                 <div className={styles.stylingFooter}>
-                  <p>Bring art into your everyday life with thoughtful placement and styling</p>
+                  <p>Share your own styling ideas with us on social media by tagging #ArtCommerce</p>
                 </div>
               </div>
             </div>
@@ -594,50 +578,36 @@ export default function ProductDetailsPage() {
         )}
       </div>
 
-      {/* Similar products */}
+      {/* Similar Products Section */}
       {similarProducts.length > 0 && (
-        <section className={styles.similarSection}>
-          <h2 className={styles.similarTitle}>You might also like</h2>
+        <div className={styles.similarSection}>
+          <h2 className={styles.similarTitle}>You may also like</h2>
           <div className={styles.similarGrid}>
-            {similarProducts.map(p => (
-              <Link key={p.id} href={`/products/${p.id}`} className={styles.similarItem}>
+            {similarProducts.map((product) => (
+              <Link href={`/products/${product.id}`} key={product.id} className={styles.similarItem}>
                 <div className={styles.similarImageContainer}>
-                  <img src={p.imageUrls[0] || '/images/logo-mask.png'} alt={p.name} className={styles.similarImg} />
+                  <img 
+                    src={Array.isArray(product.imageUrls) && product.imageUrls[0] ? product.imageUrls[0] : '/images/placeholder.png'} 
+                    alt={product.name} 
+                    className={styles.similarImg}
+                    loading="lazy"
+                  />
                 </div>
                 <div className={styles.similarInfo}>
-                  <p className={styles.similarName}>{p.name}</p>
-                  <p className={styles.similarPrice}>{p.currency}{p.price.toFixed(2)}</p>
+                  <h3 className={styles.similarName}>{product.name}</h3>
+                  <p className={styles.similarPrice}>
+                    {product.currency} {product.price.toFixed(2)}
+                  </p>
                 </div>
               </Link>
             ))}
           </div>
-
-          {/* Link to view more similar products in this category */}
-          {product.category && (
-            <div className={styles.viewAllSimilarWrapper}>
-              <Link href={`/products?category=${product.category.slug}`} className={styles.viewAllSimilarLink}>
-                View all {product.category.name} products →
-              </Link>
-            </div>
-          )}
-        </section>
-      )}
-
-      {/* Reviews section */}
-      {reviews.length>0 && (
-        <section style={{marginTop:'2rem'}}>
-          <h2 style={{fontSize:'1.25rem',fontWeight:'bold',marginBottom:'0.5rem'}}>Customer Reviews</h2>
-          <ul style={{listStyle:'none',padding:0}}>
-            {reviews.map((rev:any)=>(
-              <li key={rev.id} style={{borderBottom:'1px solid #eee',padding:'0.75rem 0'}}>
-                <p style={{margin:'0 0 4px'}}><strong>{rev.user?.fullName||'Anonymous'}</strong> – {[1,2,3,4,5].map(i=>i<=rev.rating?'★':'☆').join('')}</p>
-                {rev.comment && <p style={{margin:0}}>{rev.comment}</p>}
-                {rev.adminReaction && <p style={{margin:'2px 0'}}><span role="img" aria-label="reaction">{rev.adminReaction}</span></p>}
-                {rev.adminReply && <p style={{margin:'2px 0', fontStyle:'italic',color:'#555'}}>Admin: {rev.adminReply}</p>}
-              </li>
-            ))}
-          </ul>
-        </section>
+          <div className={styles.viewAllSimilarWrapper}>
+            <Link href={`/products?category=${product.category?.slug || ''}`} className={styles.viewAllSimilarLink}>
+              View all {product.category?.name || 'similar products'}
+            </Link>
+          </div>
+        </div>
       )}
     </main>
   )
