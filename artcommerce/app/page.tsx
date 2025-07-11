@@ -717,8 +717,8 @@ onClick={() => handleCarouselNav('next')}
 
 </section>
 
-{/* Artistry in Every Layer Section - Redesigned */}
-<section className={styles.artistrySection}>
+{/* Artistry in Every Layer Section - Redesigned - Desktop Only */}
+<section className={`${styles.artistrySection} ${styles.desktopOnly}`}>
   <div 
     className={styles.artistryBackground}
     style={{
