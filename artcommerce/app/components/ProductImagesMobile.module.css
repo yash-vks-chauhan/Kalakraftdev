@@ -47,6 +47,7 @@
   padding: 0 5%; /* Reduce side padding to allow image to be larger */
   background-color: transparent; /* Ensure image background is transparent */
   mix-blend-mode: multiply; /* Help blend with background better */
+  will-change: transform; /* Optimize for animations */
 }
 
 .noImagePlaceholder {
@@ -111,7 +112,6 @@
   justify-content: center;
   gap: 8px;
   z-index: 10;
-  display: none; /* Hide dots as Gucci uses counter instead */
 }
 
 .indicatorDot {
@@ -134,11 +134,11 @@
   cursor: not-allowed;
 }
 
-/* Image counter (1/6) in bottom right - exactly like in Gucci design */
+/* Image counter (1/6) in bottom left - like in Gucci design */
 .imageCounter {
   position: absolute;
   bottom: 16px;
-  right: 16px;
+  left: 16px; /* Move to left corner */
   background-color: transparent;
   color: #000;
   padding: 4px 10px;

@@ -20,12 +20,12 @@
 /* Product Info Section - with proper spacing after image slider */
 .productInfo {
   padding: 24px 16px 20px;
-  margin-top: -30px; /* Pull content up more over the image area */
+  margin-top: -10px; /* Reduced negative margin to minimize overlap */
   position: relative;
   z-index: 2;
-  border-top-left-radius: 20px;
-  border-top-right-radius: 20px;
-  box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.03);
+  border-top-left-radius: 0; /* Remove curved corners */
+  border-top-right-radius: 0; /* Remove curved corners */
+  box-shadow: none; /* Remove shadow */
   background-color: #ffffff;
 }
 

@@ -14,6 +14,7 @@ export default function ProductImagesMobile({
   const [touchEnd, setTouchEnd] = useState(0);
   const [isSwiping, setIsSwiping] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [swipeDistance, setSwipeDistance] = useState(0);
   
   const imageContainerRef = useRef<HTMLDivElement>(null);
 
@@ -45,6 +46,7 @@ export default function ProductImagesMobile({
   const handleTouchStart = (e: TouchEvent) => {
     setTouchStart(e.targetTouches[0].clientX);
     setIsSwiping(true);
+    setSwipeDistance(0);
   };
 
   const handleTouchMove = (e: TouchEvent) => {
@@ -53,37 +55,47 @@ export default function ProductImagesMobile({
     
     // Apply real-time dragging effect if container ref exists
     if (imageContainerRef.current) {
-      const dragDistance = touchEnd - touchStart;
+      const dragDistance = e.targetTouches[0].clientX - touchStart;
+      setSwipeDistance(dragDistance);
+      
       // Limit the drag effect (don't allow dragging too far)
-      if (Math.abs(dragDistance) < 100) {
-        imageContainerRef.current.style.transform = `translateX(${dragDistance}px)`;
-      }
+      const limitedDrag = Math.max(Math.min(dragDistance, 100), -100);
+      imageContainerRef.current.style.transform = `translateX(${limitedDrag}px)`;
+      imageContainerRef.current.style.transition = 'none';
     }
   };
 
   const handleTouchEnd = () => {
     setIsSwiping(false);
     
-    // Reset transform
+    // Reset transform with smooth transition
     if (imageContainerRef.current) {
+      imageContainerRef.current.style.transition = 'transform 0.3s ease-out';
       imageContainerRef.current.style.transform = '';
     }
     
-    if (touchStart - touchEnd > 75) {
+    // Determine if swipe was significant enough to change slides
+    const swipeThreshold = 75;
+    if (touchStart - touchEnd > swipeThreshold) {
       // Swipe left
       handleNext();
-    } else if (touchStart - touchEnd < -75) {
+    } else if (touchStart - touchEnd < -swipeThreshold) {
       // Swipe right
       handlePrev();
     }
+    
+    // Reset swipe distance
+    setSwipeDistance(0);
   };
 
   // Reset transform when touch is cancelled
   const handleTouchCancel = () => {
     setIsSwiping(false);
     if (imageContainerRef.current) {
+      imageContainerRef.current.style.transition = 'transform 0.3s ease-out';
       imageContainerRef.current.style.transform = '';
     }
+    setSwipeDistance(0);
   };
 
   if (!imageUrls || imageUrls.length === 0) {
@@ -138,20 +150,22 @@ export default function ProductImagesMobile({
           </>
         )}
 
-        {/* Page indicator dots - hidden via CSS but kept for accessibility */}
-        <div className={styles.pageIndicator}>
-          {imageUrls.map((_, index) => (
-            <button
-              key={index}
-              className={`${styles.indicatorDot} ${index === currentIndex ? styles.active : ""}`}
-              onClick={() => !isTransitioning && setCurrentIndex(index)}
-              aria-label={`View image ${index + 1}`}
-              disabled={isTransitioning}
-            />
-          ))}
-        </div>
+        {/* Page indicator dots - visible like in Gucci design */}
+        {imageUrls.length > 1 && (
+          <div className={styles.pageIndicator}>
+            {imageUrls.map((_, index) => (
+              <button
+                key={index}
+                className={`${styles.indicatorDot} ${index === currentIndex ? styles.active : ""}`}
+                onClick={() => !isTransitioning && setCurrentIndex(index)}
+                aria-label={`View image ${index + 1}`}
+                disabled={isTransitioning}
+              />
+            ))}
+          </div>
+        )}
 
-        {/* Current image counter (like in Gucci design) */}
+        {/* Current image counter (like in Gucci design) - moved to left corner */}
         {imageUrls.length > 1 && (
           <div className={styles.imageCounter}>
             {currentIndex + 1} / {imageUrls.length}
