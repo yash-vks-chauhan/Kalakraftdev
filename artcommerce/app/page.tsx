@@ -35,13 +35,47 @@ const pauseBeforeTyping = 800 // longer pause before typing a new word
 const pauseBeforeDeletion = 2500 // longer pause before deleting the word
 
 const carouselTrackRef = useRef<HTMLDivElement>(null)
+const styledCarouselRef = useRef<HTMLDivElement>(null)
 
 const [isManualNav, setIsManualNav] = useState(false)
-
 const [slidePosition, setSlidePosition] = useState(0)
+const [currentSlide, setCurrentSlide] = useState(0)
 
 const resumeTimerRef = useRef<NodeJS.Timeout | null>(null)
 
+// Styled with Soul carousel data
+const styledSlides = [
+  {
+    image: getImageUrl('DSC01322.JPG'),
+    productName: 'Ocean Mist Resin Tray',
+    productPrice: '₹2,499',
+    alt: 'Ocean-inspired resin tray on coffee table'
+  },
+  {
+    image: getImageUrl('DSC01327.JPG'),
+    productName: 'Midnight Sky Wall Clock',
+    productPrice: '₹3,299',
+    alt: 'Elegant wall clock with resin details'
+  },
+  {
+    image: getImageUrl('DSC01340.JPG'),
+    productName: 'Sunrise Coaster Set',
+    productPrice: '₹1,899',
+    alt: 'Colorful resin coasters on dining table'
+  },
+  {
+    image: getImageUrl('DSC01362.JPG'),
+    productName: 'Emerald Jewelry Tray',
+    productPrice: '₹1,599',
+    alt: 'Green resin jewelry tray with gold accents'
+  },
+  {
+    image: getImageUrl('DSC01386.JPG'),
+    productName: 'Marble Dream Serving Platter',
+    productPrice: '₹2,899',
+    alt: 'Marble-effect resin serving platter'
+  }
+];
 
 
 // Product categories for the grid - expanded with more items
@@ -374,6 +408,33 @@ carouselTrackRef.current.style.transform = `translateX(${newPosition}px)`;
 
 
 
+// Handle styled carousel navigation
+
+const handleStyledCarouselNav = (direction: 'prev' | 'next') => {
+
+if (!styledCarouselRef.current) return;
+  
+  const totalSlides = styledSlides.length;
+  let newSlide = currentSlide;
+  
+  if (direction === 'next') {
+    newSlide = (currentSlide + 1) % totalSlides;
+  } else {
+    newSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+  }
+  
+  setCurrentSlide(newSlide);
+  
+  // Scroll to the slide
+  const slideWidth = styledCarouselRef.current.scrollWidth / totalSlides;
+  styledCarouselRef.current.scrollTo({
+    left: newSlide * slideWidth,
+    behavior: 'smooth'
+  });
+}
+
+
+
 // Cleanup timer on component unmount
 
 useEffect(() => {
@@ -406,7 +467,40 @@ easing: 'ease-in-out',
 
 }, [])
 
-
+// Add this new useEffect for the styled carousel
+useEffect(() => {
+  const handleScroll = () => {
+    if (!styledCarouselRef.current) return;
+    
+    const scrollPosition = styledCarouselRef.current.scrollLeft;
+    const slideWidth = styledCarouselRef.current.scrollWidth / styledSlides.length;
+    const newSlide = Math.round(scrollPosition / slideWidth);
+    
+    if (newSlide !== currentSlide) {
+      setCurrentSlide(newSlide);
+    }
+  };
+  
+  const carouselElement = styledCarouselRef.current;
+  if (carouselElement) {
+    carouselElement.addEventListener('scroll', handleScroll);
+  }
+  
+  // Auto-scroll functionality
+  const autoScrollTimer = setInterval(() => {
+    if (styledCarouselRef.current && document.hasFocus()) {
+      const nextSlide = (currentSlide + 1) % styledSlides.length;
+      handleStyledCarouselNav('next');
+    }
+  }, 5000); // Change slide every 5 seconds
+  
+  return () => {
+    if (carouselElement) {
+      carouselElement.removeEventListener('scroll', handleScroll);
+    }
+    clearInterval(autoScrollTimer);
+  };
+}, [currentSlide, styledSlides.length])
 
 // Add this new useEffect for video loading
 useEffect(() => {
@@ -512,6 +606,13 @@ Handcrafted resin art for <span id="rotator">{displayText}</span>
 
 </h1>
 
+{/* New button for "Discover All Pieces" - Desktop only */}
+<div className={`${styles.buttonContainer} ${styles.desktopOnly}`} data-aos="fade-up" data-aos-delay="700">
+  <a href="/products" className={styles.discoverAllButton}>
+    Discover All Pieces
+  </a>
+</div>
+
 </div>
 
 
@@ -557,7 +658,6 @@ Our collections showcase the perfect blend of artistic expression and functional
 bringing the beauty of fluid art into your everyday life.</p>
 
 </div>
-
 
 <div className={styles.carouselContainer} data-aos="fade-up" data-aos-delay="200">
 
@@ -717,6 +817,77 @@ onClick={() => handleCarouselNav('next')}
 
 </section>
 
+{/* Styled with Soul Section - Mobile Only */}
+<section className={`${styles.styledWithSoulSection} ${styles.mobileOnly}`}>
+  <div className={styles.styledWithSoulHeader}>
+    <h2 className={styles.styledWithSoulTitle}>Styled with Soul</h2>
+    <p className={styles.styledWithSoulSubtitle}>
+      Discover how our handcrafted resin art transforms everyday spaces into artistic expressions.
+    </p>
+    <div className={styles.divider}></div>
+  </div>
+  
+  <div className={styles.styledCarouselContainer}>
+    <div 
+      ref={styledCarouselRef}
+      className={styles.styledCarouselTrack}
+    >
+      {styledSlides.map((slide, index) => (
+        <div 
+          key={index} 
+          className={styles.styledCarouselSlide}
+        >
+          <img
+            src={slide.image}
+            alt={slide.alt}
+            className={styles.styledCarouselImage}
+            onError={(e) => (e.currentTarget.src = 'https://placehold.co/600x400/f0f0f0/ccc?text=Image+Not+Found')}
+          />
+          <div className={styles.styledCarouselOverlay}>
+            <h3 className={styles.styledProductName}>{slide.productName}</h3>
+            <p className={styles.styledProductPrice}>{slide.productPrice}</p>
+            <button className={styles.styledShopButton}>Shop This Look</button>
+          </div>
+        </div>
+      ))}
+    </div>
+    
+    {/* Navigation arrows */}
+    <div 
+      className={`${styles.styledCarouselNav} ${styles.styledPrevNav}`}
+      onClick={() => handleStyledCarouselNav('prev')}
+    >
+      <ChevronLeft size={20} color="#333" />
+    </div>
+    <div 
+      className={`${styles.styledCarouselNav} ${styles.styledNextNav}`}
+      onClick={() => handleStyledCarouselNav('next')}
+    >
+      <ChevronRight size={20} color="#333" />
+    </div>
+    
+    {/* Pagination dots */}
+    <div className={styles.styledPagination}>
+      {styledSlides.map((_, index) => (
+        <div 
+          key={index} 
+          className={`${styles.styledPaginationDot} ${index === currentSlide ? styles.active : ''}`}
+          onClick={() => {
+            if (styledCarouselRef.current) {
+              const slideWidth = styledCarouselRef.current.scrollWidth / styledSlides.length;
+              styledCarouselRef.current.scrollTo({
+                left: index * slideWidth,
+                behavior: 'smooth'
+              });
+              setCurrentSlide(index);
+            }
+          }}
+        ></div>
+      ))}
+    </div>
+  </div>
+</section>
+
 {/* Artistry in Every Layer Section - Redesigned - Desktop Only */}
 <section className={`${styles.artistrySection} ${styles.desktopOnly}`}>
   <div 
@@ -793,6 +964,30 @@ onClick={() => handleCarouselNav('next')}
           <h3 className={styles.artistryCardTitle}>UV-Resistant Gloss</h3>
           <p className={styles.artistryCardText}>Anti-yellowing top coat protects color and shine from sun exposure.</p>
         </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{/* Styled with Soul Section - Mobile Only */}
+<section className={`${styles.styledWithSoulSection} ${styles.mobileOnly}`}>
+  <div className={styles.styledWithSoulContent}>
+    <h2 className={styles.styledWithSoulTitle} data-aos="fade-up">Styled with Soul</h2>
+    <p className={styles.styledWithSoulDescription} data-aos="fade-up" data-aos-delay="100">
+      Each piece is crafted with care, ensuring it not only looks beautiful but also feels like a piece of art in your home.
+    </p>
+    <div className={styles.styledWithSoulGrid} data-aos="fade-up" data-aos-delay="200">
+      <div className={styles.styledWithSoulItem}>
+        <img src={getImageUrl('styled1.JPG')} alt="Styled with Soul" />
+        <p>Handcrafted resin art pieces</p>
+      </div>
+      <div className={styles.styledWithSoulItem}>
+        <img src={getImageUrl('styled2.JPG')} alt="Styled with Soul" />
+        <p>Unique and personalized designs</p>
+      </div>
+      <div className={styles.styledWithSoulItem}>
+        <img src={getImageUrl('styled3.JPG')} alt="Styled with Soul" />
+        <p>Functional and decorative</p>
       </div>
     </div>
   </div>
