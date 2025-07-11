@@ -1,38 +1,48 @@
 'use client'
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 
 interface MobileMenuContextType {
   isMobileMenuOpen: boolean;
-  setIsMobileMenuOpen: (isOpen: boolean) => void;
-  toggleMobileMenu: () => void;
-  closeMobileMenu: () => void;
+  setIsMobileMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  isProductPage: boolean;
+  isTransparentNavbar: boolean;
 }
 
-const MobileMenuContext = createContext<MobileMenuContextType | undefined>(undefined);
+const MobileMenuContext = createContext<MobileMenuContextType>({
+  isMobileMenuOpen: false,
+  setIsMobileMenuOpen: () => {},
+  isProductPage: false,
+  isTransparentNavbar: false,
+});
 
-export const MobileMenuProvider = ({ children }: { children: ReactNode }) => {
+export const useMobileMenu = () => useContext(MobileMenuContext);
+
+export const MobileMenuProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(prev => !prev);
-  };
-
-  const closeMobileMenu = () => {
+  const pathname = usePathname();
+  
+  // Check if current page is a product details page
+  // This regex matches paths like /products/123 but not /products or /products/new
+  const isProductPage = pathname ? /^\/products\/\d+$/.test(pathname) : false;
+  
+  // Determine if navbar should be transparent (on product pages)
+  const isTransparentNavbar = isProductPage;
+  
+  // Close mobile menu when route changes
+  useEffect(() => {
     setIsMobileMenuOpen(false);
-  };
-
+  }, [pathname]);
+  
   return (
-    <MobileMenuContext.Provider value={{ isMobileMenuOpen, setIsMobileMenuOpen, toggleMobileMenu, closeMobileMenu }}>
+    <MobileMenuContext.Provider value={{ 
+      isMobileMenuOpen, 
+      setIsMobileMenuOpen,
+      isProductPage,
+      isTransparentNavbar
+    }}>
       {children}
     </MobileMenuContext.Provider>
   );
-};
-
-export const useMobileMenu = () => {
-  const context = useContext(MobileMenuContext);
-  if (context === undefined) {
-    throw new Error('useMobileMenu must be used within a MobileMenuProvider');
-  }
-  return context;
 }; 

@@ -23,7 +23,7 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
   const { user, logout } = useAuth()
   const { cartItems } = useCart()
   const { wishlistItems } = useWishlist()
-  const { isMobileMenuOpen, setIsMobileMenuOpen } = useMobileMenu()
+  const { isMobileMenuOpen, setIsMobileMenuOpen, isProductPage, isTransparentNavbar } = useMobileMenu()
   const [isSearchOpen, setIsSearchOpen] = React.useState(false)
   const [isSearchClosing, setIsSearchClosing] = useState(false)
   const searchCloseTimeoutRef = useRef<NodeJS.Timeout | null>(null)
@@ -525,6 +525,12 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
     return pathname.startsWith(path)
   }
 
+  useEffect(() => {
+    console.log('Current path:', pathname);
+    console.log('Is product page:', isProductPage);
+    console.log('Is transparent navbar:', isTransparentNavbar);
+  }, [pathname, isProductPage, isTransparentNavbar]);
+
   return (
     <div className={styles.mobileLayoutContainer}>
       {/* Backdrop for account dropdown */}
@@ -599,59 +605,65 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
         </div>
       )}
 
-      {/* Mobile Header */}
+      {/* Mobile Header - Now with product page detection */}
       <header 
-        className={`${styles.mobileHeader} ${isHomePage ? styles.homeMobileHeader : ''}`}
+        className={`${styles.mobileHeader} ${isHomePage ? styles.homeMobileHeader : ''} ${isProductPage ? styles.productPageHeader : ''}`}
         data-scrolled={isScrolled ? 'true' : 'false'}
       >
-        {/* Left side - Logo */}
-        <Link href="/" className={styles.logoContainer}>
-          <Image
-            src={getImageUrl('logo.png')}
-            alt="Artcommerce Logo"
-            width={110}
-            height={36}
-            priority
-            style={{ objectFit: 'contain' }}
-            className={styles.logo}
-          />
-        </Link>
+        <button 
+          className={styles.menuButton} 
+          onClick={toggleMobileMenu}
+          aria-label="Menu"
+        >
+          <Menu size={24} />
+        </button>
         
-        {/* Center - Empty spacer */}
+        <div className={styles.logoContainer}>
+          <Link href="/" onClick={() => setIsMobileMenuOpen(false)}>
+            <Image
+              src={getImageUrl('logo.png')}
+              alt="Artcommerce Logo"
+              width={100}
+              height={36}
+              className={styles.logo}
+              priority
+            />
+          </Link>
+        </div>
+        
         <div className={styles.headerSpacer}></div>
         
-        {/* Right side - Icons and burger menu */}
         <div className={styles.headerIcons}>
-          {/* Search Icon */}
           <button 
+            className={styles.headerIconButton} 
             onClick={toggleSearch}
-            className={styles.headerIconButton}
             aria-label="Search"
           >
-            <Search size={20} strokeWidth={2} />
+            <Search size={24} />
           </button>
           
-          {/* Cart Icon */}
           <button 
+            className={styles.headerIconButton} 
+            onClick={handleWishlistClick}
+            aria-label="Wishlist"
+          >
+            <Heart size={24} />
+            {wishlistItems.length > 0 && (
+              <span className={styles.cartBadge}>{wishlistItems.length}</span>
+            )}
+          </button>
+          
+          <button 
+            className={styles.headerIconButton} 
             onClick={handleCartClick}
-            className={styles.headerIconButton}
             aria-label="Cart"
           >
-            <ShoppingCart size={20} />
+            <ShoppingCart size={24} />
             {cartItems.length > 0 && (
               <span className={styles.cartBadge}>{cartItems.length}</span>
             )}
           </button>
         </div>
-        
-        {/* Burger menu */}
-        <button 
-          onClick={toggleMobileMenu}
-          className={styles.menuButton}
-          aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
-        >
-          <Menu size={24} strokeWidth={2.5} />
-        </button>
       </header>
       
       {/* Main Content Area */}

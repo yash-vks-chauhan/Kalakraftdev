@@ -115,7 +115,7 @@ export default function MobileProductDetails({
   return (
     <div className={styles.mobileProductContainer}>
       {/* Product Images - Full width with transparent background */}
-      <div className="product-image-wrapper">
+      <div className={styles.productImageWrapper}>
         <ProductImagesMobile 
           imageUrls={product.imageUrls} 
           name={product.name} 
