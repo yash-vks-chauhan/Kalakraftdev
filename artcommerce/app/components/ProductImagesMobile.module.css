@@ -3,7 +3,7 @@
   position: relative;
   overflow: hidden;
   margin-top: 0; /* Connect directly with navbar */
-  background-color: transparent; /* Changed from #f8f8f8 to transparent */
+  background-color: #f0f0f0; /* Match the container background color */
 }
 
 .imageContainer {
@@ -12,7 +12,7 @@
   height: 0;
   padding-bottom: 120%; /* Taller aspect ratio like in the Gucci image */
   overflow: hidden;
-  background-color: transparent; /* Changed from #f8f8f8 to transparent */
+  background-color: #f0f0f0; /* Match the container background color */
   touch-action: pan-y;
   transition: transform 0.3s ease;
   display: flex;

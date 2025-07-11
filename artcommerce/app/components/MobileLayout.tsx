@@ -532,7 +532,7 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
   }, [pathname, isProductPage, isTransparentNavbar]);
 
   return (
-    <div className={styles.mobileLayoutContainer}>
+    <div className={`${styles.mobileLayoutContainer} ${isProductPage ? styles.productPageContainer : ''}`}>
       {/* Backdrop for account dropdown */}
       {isAccountDropdownOpen && (
         <div className={styles.mobileBackdrop} onClick={() => setIsAccountDropdownOpen(false)}></div>
