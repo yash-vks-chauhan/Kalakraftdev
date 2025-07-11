@@ -15,11 +15,13 @@
   background-color: #f0f0f0; /* Gray background only for image section */
   padding: 0; /* Remove padding to maximize image size */
   margin-bottom: 0; /* Remove negative margin */
+  height: auto; /* Let the height be determined by the content */
+  max-height: 60vh; /* Match the ProductImagesMobile component */
 }
 
 /* Product Info Section - starting right after the image section */
 .productInfo {
-  padding: 24px 16px 20px;
+  padding: 20px 16px 16px; /* Reduced top padding */
   margin-top: 0; /* Remove negative margin to avoid overlap */
   position: relative;
   z-index: 2;
@@ -27,7 +29,7 @@
   border-top-right-radius: 0; /* Remove curved corners */
   box-shadow: none; /* Remove shadow */
   background-color: #ffffff;
-  border-top: 1px solid #eee; /* Add subtle separator */
+  border-top: none; /* Remove border as we have the progress bar */
 }
 
 /* Category Badge */
@@ -37,15 +39,15 @@
   text-transform: uppercase;
   letter-spacing: 1px;
   color: #666;
-  margin-bottom: 8px;
+  margin-bottom: 4px; /* Reduced from 8px */
   text-decoration: none;
 }
 
 /* Product Name */
 .productName {
-  font-size: 24px;
+  font-size: 22px; /* Reduced from 24px */
   font-weight: 500;
-  margin: 0 0 16px;
+  margin: 0 0 14px; /* Reduced from 16px */
   line-height: 1.2;
   color: #000;
 }
@@ -55,7 +57,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 16px; /* Reduced from 20px */
 }
 
 /* Price */
@@ -103,8 +105,8 @@
 .variation {
   display: flex;
   flex-direction: column;
-  margin-bottom: 16px;
-  padding-bottom: 16px;
+  margin-bottom: 14px; /* Reduced from 16px */
+  padding-bottom: 14px; /* Reduced from 16px */
   border-bottom: 1px solid #eee;
 }
 
@@ -121,7 +123,7 @@
 
 /* Stock Status */
 .stockStatus {
-  margin-bottom: 20px;
+  margin-bottom: 16px; /* Reduced from 20px */
   font-size: 14px;
 }
 
@@ -139,18 +141,18 @@
 
 /* Add to Cart Form */
 .addToCartForm {
-  margin-bottom: 24px;
+  margin-bottom: 20px; /* Reduced from 24px */
 }
 
 .quantityContainer {
-  margin-bottom: 16px;
+  margin-bottom: 14px; /* Reduced from 16px */
 }
 
 .quantityLabel {
   display: block;
   font-size: 14px;
   color: #666;
-  margin-bottom: 8px;
+  margin-bottom: 6px; /* Reduced from 8px */
 }
 
 .quantityControls {

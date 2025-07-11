@@ -5,13 +5,13 @@
   margin-top: 0;
   background-color: #f0f0f0;
   padding: 0;
-  max-height: 70vh;
+  max-height: 60vh; /* Reduced from 70vh to 60vh */
 }
 
 .imageContainer {
   position: relative;
   width: 100%;
-  height: 70vh;
+  height: 55vh; /* Reduced from 70vh to 55vh to match Gucci style */
   overflow: hidden;
   background-color: #f0f0f0;
   touch-action: pan-x; /* Allow horizontal panning */
@@ -65,7 +65,7 @@
   align-items: center;
   justify-content: center;
   background-color: #f0f0f0;
-  padding: 8%;
+  padding: 6%; /* Reduced from 8% to 6% */
 }
 
 /* Background layer for images */
@@ -238,4 +238,21 @@
   font-weight: 400;
   z-index: 10;
   transition: opacity 0.3s ease;
+}
+
+/* Media queries for different device sizes */
+@media (max-height: 700px) {
+  .imageContainer {
+    height: 50vh; /* Even smaller for shorter screens */
+  }
+  
+  .productImagesContainer {
+    max-height: 52vh;
+  }
+}
+
+@media (min-height: 800px) {
+  .imageContainer {
+    height: 52vh; /* Slightly taller for larger screens but still shorter than before */
+  }
 } 
