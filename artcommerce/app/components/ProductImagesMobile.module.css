@@ -45,6 +45,16 @@
   -webkit-backface-visibility: hidden;
   perspective: 1000;
   -webkit-perspective: 1000;
+}
+
+/* New inner wrapper to ensure image is centered properly */
+.imageInnerWrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background-color: #f0f0f0; /* Ensure wrapper has same background */
 }
 
@@ -60,30 +70,29 @@
 @keyframes fadeTransition {
   0% {
     opacity: 0.7;
-    transform: scale(0.98) translate3d(0, 0, 0);
+    transform: scale(0.98);
   }
   100% {
     opacity: 1;
-    transform: scale(1) translate3d(0, 0, 0);
+    transform: scale(1);
   }
 }
 
 .mainImage {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
   object-fit: contain !important; /* Force contain to maintain aspect ratio */
   transition: opacity 0.3s ease, transform 0.3s ease;
-  padding: 0 5%; /* Reduce side padding to allow image to be larger */
+  padding: 0; /* Remove padding to allow image to be centered properly */
   background-color: transparent !important; /* Force transparent background */
-  mix-blend-mode: multiply; /* Help blend with background better */
   transform: translate3d(0, 0, 0); /* Hardware acceleration */
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   margin: 0 auto; /* Center the image */
-  opacity: 0.95; /* Slightly reduce opacity to help with blending */
+  opacity: 1; /* Full opacity */
 }
 
 /* Add loaded class for images that have finished loading */
@@ -112,6 +121,7 @@
 .mainImage img {
   background-color: transparent !important;
   object-fit: contain !important;
+  object-position: center !important;
 }
 
 .noImagePlaceholder {

@@ -15,9 +15,11 @@ export default function ProductImagesMobile({
   const [isSwiping, setIsSwiping] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [swipeDistance, setSwipeDistance] = useState(0);
+  const [imageLoaded, setImageLoaded] = useState(false);
   
   const imageRef = useRef<HTMLDivElement>(null);
   const containerWidthRef = useRef<number>(0);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // Preload images for smoother transitions
   useEffect(() => {
@@ -30,6 +32,46 @@ export default function ProductImagesMobile({
     });
   }, [imageUrls]);
 
+  // Reset image position when current index changes
+  useEffect(() => {
+    if (imageRef.current) {
+      // Ensure image is centered after index change
+      imageRef.current.style.transform = 'translate3d(0, 0, 0)';
+    }
+    // Reset image loaded state when changing images
+    setImageLoaded(false);
+  }, [currentIndex]);
+
+  // Reset any pending animations when component unmounts
+  useEffect(() => {
+    return () => {
+      if (imageRef.current) {
+        imageRef.current.style.transform = 'translate3d(0, 0, 0)';
+      }
+    };
+  }, []);
+
+  // Center images on resize
+  useEffect(() => {
+    const handleResize = () => {
+      if (containerRef.current) {
+        containerWidthRef.current = containerRef.current.offsetWidth;
+      }
+      // Ensure image is centered after resize
+      if (imageRef.current) {
+        imageRef.current.style.transform = 'translate3d(0, 0, 0)';
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    // Initial call to set width
+    handleResize();
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
   const handlePrev = () => {
     if (isTransitioning) return;
     
@@ -39,6 +81,11 @@ export default function ProductImagesMobile({
     // Reset transition state after animation completes
     setTimeout(() => {
       setIsTransitioning(false);
+      
+      // Ensure image is centered
+      if (imageRef.current) {
+        imageRef.current.style.transform = 'translate3d(0, 0, 0)';
+      }
     }, 300);
   };
 
@@ -51,24 +98,29 @@ export default function ProductImagesMobile({
     // Reset transition state after animation completes
     setTimeout(() => {
       setIsTransitioning(false);
+      
+      // Ensure image is centered
+      if (imageRef.current) {
+        imageRef.current.style.transform = 'translate3d(0, 0, 0)';
+      }
     }, 300);
   };
 
   // Touch handlers for swipe functionality
   const handleTouchStart = (e: TouchEvent) => {
     // Store container width for calculations
+    if (containerRef.current) {
+      containerWidthRef.current = containerRef.current.offsetWidth;
+    }
+    
     if (imageRef.current) {
-      containerWidthRef.current = imageRef.current.offsetWidth;
+      // Remove transition during active swiping for immediate response
+      imageRef.current.style.transition = 'none';
     }
     
     setTouchStart(e.targetTouches[0].clientX);
     setIsSwiping(true);
     setSwipeDistance(0);
-    
-    // Remove transition during active swiping for immediate response
-    if (imageRef.current) {
-      imageRef.current.style.transition = 'none';
-    }
   };
 
   const handleTouchMove = (e: TouchEvent) => {
@@ -101,6 +153,11 @@ export default function ProductImagesMobile({
     setIsSwiping(false);
     
     if (!imageRef.current || !touchStart || !touchEnd) {
+      // Reset to center position
+      if (imageRef.current) {
+        imageRef.current.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1)';
+        imageRef.current.style.transform = 'translate3d(0, 0, 0)';
+      }
       return;
     }
     
@@ -113,7 +170,7 @@ export default function ProductImagesMobile({
     
     if (Math.abs(distance) < swipeThreshold) {
       // Not swiped far enough, snap back
-      imageRef.current.style.transform = '';
+      imageRef.current.style.transform = 'translate3d(0, 0, 0)';
     } else {
       if (distance > 0 && currentIndex < imageUrls.length - 1) {
         // Swiped left, go to next image
@@ -123,7 +180,7 @@ export default function ProductImagesMobile({
         handlePrev();
       } else {
         // At the edge, snap back
-        imageRef.current.style.transform = '';
+        imageRef.current.style.transform = 'translate3d(0, 0, 0)';
       }
     }
     
@@ -138,9 +195,13 @@ export default function ProductImagesMobile({
     setIsSwiping(false);
     if (imageRef.current) {
       imageRef.current.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1)';
-      imageRef.current.style.transform = '';
+      imageRef.current.style.transform = 'translate3d(0, 0, 0)';
     }
     setSwipeDistance(0);
+  };
+
+  const handleImageLoad = () => {
+    setImageLoaded(true);
   };
 
   if (!imageUrls || imageUrls.length === 0) {
@@ -158,6 +219,7 @@ export default function ProductImagesMobile({
   return (
     <div className={styles.productImagesContainer}>
       <div 
+        ref={containerRef}
         className={styles.imageContainer}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
@@ -166,17 +228,22 @@ export default function ProductImagesMobile({
       >
         <div 
           ref={imageRef}
-          className={`${styles.imageWrapper} ${isTransitioning ? styles.transitioning : ''}`}
+          className={`${styles.imageWrapper} ${isTransitioning ? styles.transitioning : ''} ${isSwiping ? styles.swiping : ''}`}
         >
-          <Image
-            src={imageUrls[currentIndex]}
-            alt={`${name} - Image ${currentIndex + 1}`}
-            fill
-            sizes="100vw"
-            priority={currentIndex === 0}
-            className={styles.mainImage}
-            quality={100} // Ensure high quality for better transparency
-          />
+          <div className={styles.imageInnerWrapper}>
+            <Image
+              src={imageUrls[currentIndex]}
+              alt={`${name} - Image ${currentIndex + 1}`}
+              fill
+              sizes="100vw"
+              priority={currentIndex === 0}
+              className={`${styles.mainImage} ${imageLoaded ? styles.loaded : ''}`}
+              quality={100} // Ensure high quality for better transparency
+              draggable="false" // Prevent image dragging
+              onLoad={handleImageLoad}
+              style={{ objectFit: 'contain' }}
+            />
+          </div>
         </div>
         
         {/* Navigation buttons - simplified for Gucci style */}
