@@ -914,84 +914,164 @@
   }
 }
 
-/* Mobile adjustments for Gucci-style gallery */
 @media (max-width: 768px) {
   .container {
-    padding: 0;
-    max-width: 100%;
-    margin: 0;
-    background: #fff;
+    padding: 1.5rem;
   }
-  
-  .successBanner {
-    margin: 0;
-    border-radius: 0;
+
+  .productGrid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
   }
-  
-  .mobileProductGrid {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-  }
-  
+
   .imageSection {
     position: relative;
     top: 0;
-    padding: 0;
-    margin: 0;
-    border-radius: 0;
-    width: 100%;
-    height: auto;
-    overflow: visible;
-    background: transparent;
-    border: none;
-    box-shadow: none;
   }
-  
-  /* Hide old image navigation on mobile */
-  .imageNav {
-    display: none;
+
+  .mainImage {
+    aspect-ratio: 4/3;
   }
-  
-  /* Hide thumbnails on mobile as we have the Gucci slider */
+
   .thumbnailGrid {
-    display: none;
+    grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
   }
-  
-  .productInfo {
-    padding: 1.5rem 1rem;
-    border-top: 1px solid #f0f0f0;
+
+  .thumbnail {
+    width: 60px;
+    height: 60px;
   }
-  
-  .productTitle {
-    font-size: 1.5rem;
-    margin-top: 0;
-    font-weight: 500;
+
+  .title {
+    font-size: 1.75rem;
   }
-  
-  .category {
-    font-size: 0.7rem;
-    padding: 0.4rem 0.8rem;
-  }
-  
+
   .price {
-    font-size: 1.5rem;
-    margin-top: 0.5rem;
+    font-size: 1.75rem;
   }
-  
-  .stockInfo {
-    margin-top: 0.5rem;
-  }
-  
+
   .addToCartForm {
-    margin-top: 1.5rem;
+    grid-template-columns: 1fr;
+  }
+
+  .imageNav {
+    width: 36px;
+    height: 36px;
+    opacity: 1;
+  }
+
+  .navIcon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .wishlistContainer {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    margin-top: 1rem;
+  }
+
+  .wishlistButton {
+    width: 100%;
+    height: 44px;
+    border-radius: 4px;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  /* Mobile adjustments for sections */
+  .productDetails {
+    margin-top: 2rem;
+  }
+
+  .sectionHeader {
+    padding: 1rem 1.5rem;
+  }
+
+  .sectionInner {
+    padding: 1.5rem;
+  }
+
+  .specIntroContainer,
+  .careIntroContainer {
+    padding: 1.5rem 1rem;
   }
   
-  .wishlistContainer {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    z-index: 10;
+  .specIntroTitle,
+  .careIntroTitle {
+    font-size: 1.2rem;
+  }
+  
+  .specIntro,
+  .careIntro {
+    font-size: 0.95rem;
+    padding: 0 0.5rem;
+  }
+  
+  .specGrid,
+  .careContent {
+    padding: 1.5rem;
+  }
+  
+  .specRow {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+
+  .stylingIntroContainer {
+    padding: 1.5rem 1rem;
+  }
+  
+  .stylingIntroTitle {
+    font-size: 1.2rem;
+  }
+  
+  .stylingIntro {
+    font-size: 0.95rem;
+    padding: 0 0.5rem;
+  }
+  
+  .stylingGallery {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    padding: 1.5rem;
+  }
+
+  .galleryImageWrap {
+    height: 260px;
+  }
+  
+  .singleImage .galleryImageWrap {
+    height: 400px;
+  }
+  
+  .twoImages {
+    grid-template-columns: 1fr;
+  }
+  
+  .twoImages .galleryImageWrap {
+    height: 280px;
+  }
+
+  .similarGrid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .similarInfo {
+    padding: 1rem;
+  }
+
+  .similarName {
+    font-size: 0.9rem;
+  }
+
+  .similarPrice {
+    font-size: 0.95rem;
   }
 }
 
