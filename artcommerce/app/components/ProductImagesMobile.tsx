@@ -115,25 +115,29 @@ export default function ProductImagesMobile({
           className={styles.mainImage}
         />
         
-        {/* Navigation buttons */}
-        <button
-          onClick={handlePrev}
-          className={`${styles.navigationButton} ${styles.prev}`}
-          aria-label="Previous image"
-          disabled={isTransitioning}
-        >
-          ←
-        </button>
-        <button
-          onClick={handleNext}
-          className={`${styles.navigationButton} ${styles.next}`}
-          aria-label="Next image"
-          disabled={isTransitioning}
-        >
-          →
-        </button>
+        {/* Navigation buttons - simplified for Gucci style */}
+        {imageUrls.length > 1 && (
+          <>
+            <button
+              onClick={handlePrev}
+              className={`${styles.navigationButton} ${styles.prev}`}
+              aria-label="Previous image"
+              disabled={isTransitioning}
+            >
+              ←
+            </button>
+            <button
+              onClick={handleNext}
+              className={`${styles.navigationButton} ${styles.next}`}
+              aria-label="Next image"
+              disabled={isTransitioning}
+            >
+              →
+            </button>
+          </>
+        )}
 
-        {/* Page indicator (dots) */}
+        {/* Page indicator dots - hidden via CSS but kept for accessibility */}
         <div className={styles.pageIndicator}>
           {imageUrls.map((_, index) => (
             <button
@@ -147,9 +151,11 @@ export default function ProductImagesMobile({
         </div>
 
         {/* Current image counter (like in Gucci design) */}
-        <div className={styles.imageCounter}>
-          {currentIndex + 1} / {imageUrls.length}
-        </div>
+        {imageUrls.length > 1 && (
+          <div className={styles.imageCounter}>
+            {currentIndex + 1} / {imageUrls.length}
+          </div>
+        )}
       </div>
     </div>
   );

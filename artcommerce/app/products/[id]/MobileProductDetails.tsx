@@ -114,13 +114,13 @@ export default function MobileProductDetails({
 
   return (
     <div className={styles.mobileProductContainer}>
-      {/* Product Images */}
+      {/* Product Images - Full width with Gucci-style slider */}
       <ProductImagesMobile 
         imageUrls={product.imageUrls} 
         name={product.name} 
       />
       
-      {/* Product Info */}
+      {/* Product Info - Overlapping the image slightly with rounded corners */}
       <div className={styles.productInfo}>
         {/* Category */}
         {product.category && (
@@ -131,6 +131,12 @@ export default function MobileProductDetails({
         
         {/* Product Name */}
         <h1 className={styles.productName}>{product.name}</h1>
+        
+        {/* Variation (if applicable) - Moved up like in Gucci design */}
+        <div className={styles.variation}>
+          <span className={styles.variationLabel}>Variation</span>
+          <span className={styles.variationValue}>{product.shortDesc || 'Standard'}</span>
+        </div>
         
         {/* Price */}
         <div className={styles.priceContainer}>
@@ -155,12 +161,6 @@ export default function MobileProductDetails({
               <span className={styles.ratingCount}>({ratingCount})</span>
             </div>
           )}
-        </div>
-        
-        {/* Variation (if applicable) */}
-        <div className={styles.variation}>
-          <span className={styles.variationLabel}>Variation</span>
-          <span className={styles.variationValue}>{product.shortDesc || 'Standard'}</span>
         </div>
         
         {/* Stock Status */}
@@ -285,9 +285,7 @@ export default function MobileProductDetails({
               
               {expandedSections.care && (
                 <div className={styles.accordionContent}>
-                  <div className={styles.careInstructions}>
-                    {formatSpecifications(product.careInstructions)}
-                  </div>
+                  <p className={styles.careInstructions}>{product.careInstructions}</p>
                 </div>
               )}
             </div>

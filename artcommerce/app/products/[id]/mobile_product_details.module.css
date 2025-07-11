@@ -5,9 +5,16 @@
   background-color: #ffffff;
 }
 
-/* Product Info Section */
+/* Product Info Section - with proper spacing after image slider */
 .productInfo {
-  padding: 20px 16px;
+  padding: 24px 16px 20px;
+  margin-top: -30px; /* Pull content up more over the image area */
+  position: relative;
+  z-index: 2;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.03);
+  background-color: #ffffff;
 }
 
 /* Category Badge */
@@ -79,7 +86,7 @@
   color: #666;
 }
 
-/* Variation */
+/* Variation - adjusted for Gucci style */
 .variation {
   display: flex;
   flex-direction: column;
