@@ -2,6 +2,10 @@ import { useState, useEffect, useRef, TouchEvent } from "react";
 import Image from "next/image";
 import styles from "./ProductImagesMobile.module.css";
 
+type MixBlendMode = 'normal' | 'multiply' | 'screen' | 'overlay' | 'darken' | 'lighten' | 
+  'color-dodge' | 'color-burn' | 'hard-light' | 'soft-light' | 'difference' | 
+  'exclusion' | 'hue' | 'saturation' | 'color' | 'luminosity';
+
 export default function ProductImagesMobile({ 
   imageUrls, 
   name 
@@ -18,6 +22,7 @@ export default function ProductImagesMobile({
   
   const containerRef = useRef<HTMLDivElement>(null);
   const sliderRef = useRef<HTMLDivElement>(null);
+  const progressRef = useRef<HTMLDivElement>(null);
   const containerWidthRef = useRef<number>(0);
 
   // Preload images and initialize loaded state array
@@ -57,6 +62,7 @@ export default function ProductImagesMobile({
   // Update slider position when current index changes
   useEffect(() => {
     updateSliderPosition(true);
+    updateProgressBar();
   }, [currentIndex]);
 
   const updateSliderPosition = (animate: boolean) => {
@@ -72,6 +78,16 @@ export default function ProductImagesMobile({
     
     // Reset swipe distance
     setSwipeDistance(0);
+  };
+
+  // Update the progress bar based on current index
+  const updateProgressBar = () => {
+    if (!progressRef.current || imageUrls.length <= 1) return;
+    
+    const progress = (currentIndex / (imageUrls.length - 1)) * 100;
+    const scaleX = currentIndex / (imageUrls.length - 1);
+    
+    progressRef.current.style.transform = `scaleX(${scaleX})`;
   };
 
   const handlePrev = () => {
@@ -132,6 +148,16 @@ export default function ProductImagesMobile({
       const percentageOffset = containerWidthRef.current ? (finalDistance / containerWidthRef.current) * 100 : 0;
       sliderRef.current.style.transform = `translateX(calc(${offset}% + ${percentageOffset}%))`;
     }
+    
+    // Update progress bar during swipe for smooth transition
+    if (progressRef.current && imageUrls.length > 1) {
+      const totalProgress = imageUrls.length - 1;
+      const currentProgress = currentIndex;
+      const swipeProgress = containerWidthRef.current ? -finalDistance / containerWidthRef.current : 0;
+      const newProgress = Math.max(0, Math.min(1, (currentProgress + swipeProgress) / totalProgress));
+      
+      progressRef.current.style.transform = `scaleX(${newProgress})`;
+    }
   };
 
   const handleTouchEnd = () => {
@@ -139,6 +165,7 @@ export default function ProductImagesMobile({
     
     if (!sliderRef.current || !touchStart || !touchEnd || containerWidthRef.current === 0) {
       updateSliderPosition(true);
+      updateProgressBar();
       return;
     }
     
@@ -170,11 +197,15 @@ export default function ProductImagesMobile({
     setTouchStart(0);
     setTouchEnd(0);
     setSwipeDistance(0);
+    
+    // Update progress bar
+    updateProgressBar();
   };
 
   const handleTouchCancel = () => {
     setIsSwiping(false);
     updateSliderPosition(true);
+    updateProgressBar();
   };
 
   // Handle manual image navigation with tap
@@ -205,10 +236,26 @@ export default function ProductImagesMobile({
   // Determine if the image is a product that needs special handling
   const isProductWithBackground = (url: string) => {
     // Check if the image URL contains certain keywords that indicate it's a product
-    return url.includes('clock') || 
-           url.includes('tray') || 
-           url.includes('pot') ||
-           url.includes('decor');
+    return url.toLowerCase().includes('clock') || 
+           url.toLowerCase().includes('tray') || 
+           url.toLowerCase().includes('pot') ||
+           url.toLowerCase().includes('decor') ||
+           url.toLowerCase().includes('rangoli') ||
+           url.toLowerCase().includes('resin');
+  };
+
+  // Get the appropriate blend mode based on image type
+  const getBlendMode = (url: string): MixBlendMode => {
+    const lowerUrl = url.toLowerCase();
+    // For pink/light colored items, isolation works better
+    if (lowerUrl.includes('pink') || 
+        lowerUrl.includes('light') || 
+        lowerUrl.includes('white') ||
+        lowerUrl.includes('tray')) {
+      return 'multiply';
+    }
+    // For dark items
+    return 'multiply';
   };
 
   if (!imageUrls || imageUrls.length === 0) {
@@ -222,6 +269,11 @@ export default function ProductImagesMobile({
       </div>
     );
   }
+
+  // Calculate progress percentage for the progress bar
+  const progressPercentage = imageUrls.length > 1 
+    ? (currentIndex / (imageUrls.length - 1)) * 100 
+    : 100;
 
   return (
     <div className={styles.productImagesContainer}>
@@ -242,8 +294,9 @@ export default function ProductImagesMobile({
             <div key={index} className={styles.imageSlide}>
               <div 
                 className={styles.imageWrapper}
-                style={isProductWithBackground(url) ? { backgroundColor: '#f0f0f0' } : undefined}
+                style={{ backgroundColor: '#f0f0f0' }}
               >
+                <div className={styles.imageBackground}></div>
                 <Image
                   src={url}
                   alt={`${name} - Image ${index + 1}`}
@@ -256,7 +309,7 @@ export default function ProductImagesMobile({
                   onLoad={() => handleImageLoad(index)}
                   style={{ 
                     objectFit: 'contain',
-                    mixBlendMode: isProductWithBackground(url) ? 'multiply' : 'normal'
+                    mixBlendMode: getBlendMode(url)
                   }}
                 />
               </div>
@@ -294,17 +347,14 @@ export default function ProductImagesMobile({
         )}
       </div>
       
-      {/* Page indicator line - moved outside the image container to act as a border */}
+      {/* Progress bar indicator */}
       {imageUrls.length > 1 && (
         <div className={styles.pageIndicator}>
-          {imageUrls.map((_, index) => (
-            <button
-              key={index}
-              className={`${styles.indicatorDot} ${index === currentIndex ? styles.active : ""}`}
-              onClick={() => setCurrentIndex(index)}
-              aria-label={`View image ${index + 1}`}
-            />
-          ))}
+          <div 
+            ref={progressRef} 
+            className={styles.progressBar}
+            style={{ transform: `scaleX(${currentIndex / (imageUrls.length - 1)})` }}
+          ></div>
         </div>
       )}
     </div>

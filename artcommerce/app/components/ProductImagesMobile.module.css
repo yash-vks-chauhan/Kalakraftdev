@@ -65,7 +65,18 @@
   align-items: center;
   justify-content: center;
   background-color: #f0f0f0;
-  padding: 10%;
+  padding: 8%;
+}
+
+/* Background layer for images */
+.imageBackground {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #f0f0f0;
+  z-index: 0;
 }
 
 .mainImage {
@@ -84,6 +95,7 @@
   margin: 0 auto;
   opacity: 1;
   mix-blend-mode: multiply; /* Help blend with background */
+  z-index: 1;
 }
 
 /* Add loaded class for images that have finished loading */
@@ -107,12 +119,17 @@
 /* Override any Next.js image styles that might add backgrounds */
 .mainImage > span {
   background-color: transparent !important;
+  position: absolute !important;
+  width: 100% !important;
+  height: 100% !important;
+  z-index: 1;
 }
 
 .mainImage img {
   background-color: transparent !important;
   object-fit: contain !important;
   object-position: center !important;
+  mix-blend-mode: multiply !important;
 }
 
 /* Fix for Next.js image container */
@@ -174,39 +191,39 @@
   right: 12px;
 }
 
-/* Page indicator dots at bottom of image - redesigned to match the reference */
+/* Progress bar style page indicator */
 .pageIndicator {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
-  z-index: 10;
-  pointer-events: auto;
   height: 2px;
   background-color: #e0e0e0;
-  padding: 0;
+  z-index: 10;
+  overflow: hidden;
 }
 
+/* Progress bar that fills based on current slide */
+.progressBar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background-color: #000;
+  transform-origin: left center;
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+/* Hide the individual dots as we're using a progress bar instead */
 .indicatorDot {
-  width: 40px;
-  height: 2px;
-  border-radius: 0;
-  background-color: #ccc;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  margin: 0;
+  display: none;
 }
 
+/* Active indicator is handled by the progress bar */
 .indicatorDot.active {
-  background-color: #000000;
-  transform: none;
-  width: 40px;
+  display: none;
 }
 
 /* Image counter (1/6) in bottom right */
