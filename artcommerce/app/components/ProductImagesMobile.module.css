@@ -2,52 +2,64 @@
   width: 100%;
   position: relative;
   overflow: hidden;
-  margin-top: 0; /* Connect directly with navbar */
-  background-color: #f0f0f0; /* Match the container background color */
-  padding: 0; /* Remove any padding */
-  /* Limit the height to match the green line in the mockup */
-  max-height: 70vh; /* Adjust this value to match the green line */
+  margin-top: 0;
+  background-color: #f0f0f0;
+  padding: 0;
+  max-height: 70vh;
 }
 
 .imageContainer {
   position: relative;
   width: 100%;
-  /* Change from padding-bottom to fixed height */
-  height: 70vh; /* Match the max-height of container */
+  height: 70vh;
   overflow: hidden;
-  background-color: #f0f0f0; /* Match the container background color */
-  touch-action: pan-y;
+  background-color: #f0f0f0;
+  touch-action: pan-x; /* Allow horizontal panning */
   display: flex;
   align-items: center;
   justify-content: center;
-  -webkit-touch-callout: none; /* Prevent callout to copy image */
-  -webkit-user-select: none; /* Prevent selection when tapping */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
   -khtml-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
 }
 
-/* New wrapper for the image that will move during swipes */
-.imageWrapper {
+/* Carousel container that will slide horizontally */
+.carousel {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  height: 100%;
   position: absolute;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  will-change: transform; /* Optimize for animations */
-  transition: transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
-  transform: translate3d(0, 0, 0); /* Initial hardware acceleration */
-  backface-visibility: hidden; /* Prevent flickering during animations */
+  transition: transform 0.3s ease;
+  will-change: transform;
+  backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   perspective: 1000;
   -webkit-perspective: 1000;
 }
 
-/* New inner wrapper to ensure image is centered properly */
+/* Remove transition during active swiping */
+.carousel.swiping {
+  transition: none;
+}
+
+/* Individual carousel item (one per image) */
+.carouselItem {
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+/* Inner wrapper for image positioning */
 .imageInnerWrapper {
   position: relative;
   width: 100%;
@@ -55,15 +67,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #f0f0f0; /* Ensure wrapper has same background */
+  background-color: #f0f0f0;
 }
 
-/* Add a class for when the image is actively being swiped */
-.imageWrapper.swiping {
-  transition: none;
-}
-
-.imageWrapper.transitioning .mainImage {
+/* Animation for transitioning between images */
+.carousel.transitioning .mainImage {
   animation: fadeTransition 0.3s ease;
 }
 
@@ -84,15 +92,15 @@
   left: 0 !important;
   width: 100% !important;
   height: 100% !important;
-  object-fit: contain !important; /* Force contain to maintain aspect ratio */
+  object-fit: contain !important;
   transition: opacity 0.3s ease, transform 0.3s ease;
-  padding: 0; /* Remove padding to allow image to be centered properly */
-  background-color: transparent !important; /* Force transparent background */
-  transform: translate3d(0, 0, 0); /* Hardware acceleration */
+  padding: 0;
+  background-color: transparent !important;
+  transform: translate3d(0, 0, 0);
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
-  margin: 0 auto; /* Center the image */
-  opacity: 1; /* Full opacity */
+  margin: 0 auto;
+  opacity: 1;
 }
 
 /* Add loaded class for images that have finished loading */
@@ -133,12 +141,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: transparent; /* Changed from #f0f0f0 to transparent */
+  background-color: transparent;
   color: #666;
   font-style: italic;
 }
 
-/* Navigation buttons - minimal like in Gucci design */
+/* Navigation buttons */
 .navigationButton {
   position: absolute;
   top: 50%;
@@ -157,7 +165,7 @@
   z-index: 10;
   opacity: 0.6;
   transition: all 0.2s ease;
-  pointer-events: auto; /* Ensure buttons are clickable */
+  pointer-events: auto;
 }
 
 .navigationButton:active {
@@ -177,7 +185,7 @@
   right: 12px;
 }
 
-/* Page indicator lines at bottom of image - like in Gucci design */
+/* Page indicator lines at bottom of image */
 .pageIndicator {
   position: absolute;
   bottom: 16px;
@@ -185,15 +193,15 @@
   right: 0;
   display: flex;
   justify-content: center;
-  gap: 4px; /* Reduced gap for lines */
+  gap: 4px;
   z-index: 10;
-  pointer-events: auto; /* Ensure indicators are clickable */
+  pointer-events: auto;
 }
 
 .indicatorDot {
-  width: 16px; /* Wider for line style */
-  height: 2px; /* Thinner for line style */
-  border-radius: 0; /* No border radius for lines */
+  width: 16px;
+  height: 2px;
+  border-radius: 0;
   background-color: rgba(0, 0, 0, 0.3);
   border: none;
   padding: 0;
@@ -203,19 +211,19 @@
 
 .indicatorDot.active {
   background-color: #000000;
-  transform: none; /* No transform for lines */
-  width: 24px; /* Active line is longer */
+  transform: none;
+  width: 24px;
 }
 
 .indicatorDot:disabled {
   cursor: not-allowed;
 }
 
-/* Image counter (1/6) in bottom right - exactly like in Gucci design */
+/* Image counter (1/6) in bottom right */
 .imageCounter {
   position: absolute;
   bottom: 16px;
-  right: 16px; /* Move back to right corner */
+  right: 16px;
   background-color: transparent;
   color: #000;
   padding: 4px 10px;
