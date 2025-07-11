@@ -102,7 +102,7 @@
   right: 12px;
 }
 
-/* Page indicator dots at bottom of image - like in Gucci design */
+/* Page indicator lines at bottom of image - like in Gucci design */
 .pageIndicator {
   position: absolute;
   bottom: 16px;
@@ -110,14 +110,14 @@
   right: 0;
   display: flex;
   justify-content: center;
-  gap: 8px;
+  gap: 4px; /* Reduced gap for lines */
   z-index: 10;
 }
 
 .indicatorDot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
+  width: 16px; /* Wider for line style */
+  height: 2px; /* Thinner for line style */
+  border-radius: 0; /* No border radius for lines */
   background-color: rgba(0, 0, 0, 0.3);
   border: none;
   padding: 0;
@@ -127,18 +127,19 @@
 
 .indicatorDot.active {
   background-color: #000000;
-  transform: scale(1.2);
+  transform: none; /* No transform for lines */
+  width: 24px; /* Active line is longer */
 }
 
 .indicatorDot:disabled {
   cursor: not-allowed;
 }
 
-/* Image counter (1/6) in bottom left - like in Gucci design */
+/* Image counter (1/6) in bottom right - exactly like in Gucci design */
 .imageCounter {
   position: absolute;
   bottom: 16px;
-  left: 16px; /* Move to left corner */
+  right: 16px; /* Move back to right corner */
   background-color: transparent;
   color: #000;
   padding: 4px 10px;

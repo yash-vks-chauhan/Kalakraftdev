@@ -150,7 +150,7 @@ export default function ProductImagesMobile({
           </>
         )}
 
-        {/* Page indicator dots - visible like in Gucci design */}
+        {/* Page indicator lines - like in Gucci design */}
         {imageUrls.length > 1 && (
           <div className={styles.pageIndicator}>
             {imageUrls.map((_, index) => (
@@ -165,7 +165,7 @@ export default function ProductImagesMobile({
           </div>
         )}
 
-        {/* Current image counter (like in Gucci design) - moved to left corner */}
+        {/* Current image counter - in bottom right corner */}
         {imageUrls.length > 1 && (
           <div className={styles.imageCounter}>
             {currentIndex + 1} / {imageUrls.length}
