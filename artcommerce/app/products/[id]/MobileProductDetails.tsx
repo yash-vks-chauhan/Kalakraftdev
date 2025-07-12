@@ -343,10 +343,18 @@ export default function MobileProductDetails({
   }, [product, handleShare]); // Include handleShare in dependencies
 
   const toggleSection = (section: keyof typeof expandedSections) => {
-    setExpandedSections(prev => ({
-      ...prev,
-      [section]: !prev[section]
-    }));
+    setExpandedSections(prev => {
+      // Create a new state object with all sections closed
+      const newState = Object.keys(prev).reduce((acc, key) => {
+        acc[key as keyof typeof expandedSections] = false;
+        return acc;
+      }, {} as typeof expandedSections);
+      
+      // Toggle the selected section (if it was already open, it will remain closed)
+      newState[section] = !prev[section];
+      
+      return newState;
+    });
   };
 
   // Format specifications text
