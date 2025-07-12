@@ -848,4 +848,37 @@ export default function MobileProductDetails({
                 <div className={styles.wishlistContainer} onClick={handleWishlistClick}>
                   <WishlistButton 
                     productId={similarProduct.id} 
-                    className={`
+                    className={`${styles.wishlistButton} ${styles.blackWishlist}`}
+                    preventNavigation={true}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          {/* Single line carousel pagination indicator */}
+          {similarProducts.length > carouselItemsPerView && (
+            <div className={styles.carouselPagination}>
+              <div 
+                className={styles.paginationIndicatorActive} 
+                style={{ 
+                  width: `${100 / Math.ceil(similarProducts.length / carouselItemsPerView)}px`,
+                  transform: `translateX(${scrollProgress * (100 - (100 / Math.ceil(similarProducts.length / carouselItemsPerView)))}px)`
+                }}
+              />
+            </div>
+          )}
+          
+          {/* Link to view more similar products in this category */}
+          {product.category && (
+            <div className={styles.viewAllSimilarWrapper}>
+              <Link href={`/products?category=${product.category.slug}`} className={styles.viewAllSimilarLink}>
+                View all {product.category.name} products →
+              </Link>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
