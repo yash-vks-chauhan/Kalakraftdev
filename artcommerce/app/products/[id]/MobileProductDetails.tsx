@@ -463,13 +463,17 @@ export default function MobileProductDetails({
         </div>
         
         {/* Stock Status */}
-        <div className={styles.stockStatus}>
-          <span className={product.stockQuantity <= 0 ? styles.outOfStock : 
-                          product.stockQuantity < 10 ? styles.lowStock : 
-                          styles.inStock}>
-            {getStockStatus()}
-          </span>
-        </div>
+        {product.stockQuantity < 10 ? (
+          <div className={styles.stockStatus}>
+            <span className={product.stockQuantity <= 0 ? styles.outOfStock : styles.lowStock}>
+              {getStockStatus()}
+            </span>
+          </div>
+        ) : (
+          <div className={styles.stockStatus}>
+            <span className={styles.inStock}>{getStockStatus()}</span>
+          </div>
+        )}
         
         {/* Add to Cart Form */}
         <form onSubmit={handleAddToCart} className={styles.addToCartForm}>

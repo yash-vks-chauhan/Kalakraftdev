@@ -162,17 +162,30 @@
 }
 
 .lowStock {
-  color: #ff9800;
-  background-color: rgba(255, 152, 0, 0.1);
-  padding: 4px 8px;
-  border-radius: 2px;
+  color: #fff;
+  background-color: #ff9800;
+  padding: 6px 10px;
+  border-radius: 0;
+  display: inline-block;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-top: 4px;
+  width: auto;
 }
 
 .outOfStock {
-  color: #d32f2f;
-  background-color: rgba(211, 47, 47, 0.1);
-  padding: 4px 8px;
-  border-radius: 2px;
+  color: #fff;
+  background-color: #d32f2f;
+  padding: 6px 10px;
+  border-radius: 0;
+  display: inline-block;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-top: 4px;
+  width: auto;
 }
 
 /* Add to Cart Form */
