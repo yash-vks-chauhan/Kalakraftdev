@@ -475,6 +475,12 @@ export default function MobileProductDetails({
           imageUrls={product.imageUrls} 
           name={product.name} 
         />
+        {/* Low Stock Banner - Only show for products with low stock (5 or less) */}
+        {product.stockQuantity > 0 && product.stockQuantity <= 5 && (
+          <div className={styles.cardLowStock}>
+            Only {product.stockQuantity} left
+          </div>
+        )}
       </div>
       
       {/* Share feedback toast */}
@@ -500,17 +506,7 @@ export default function MobileProductDetails({
         {/* Product Name and Wishlist Button */}
         <div className={styles.productHeader}>
           <h1 className={styles.productName}>{product.name}</h1>
-          <div className={styles.headerActionContainer}>
-            <button 
-              onClick={handleShare}
-              className={styles.shareButton}
-              aria-label="Share product"
-              title={shareSuccess === true ? "Link copied!" : shareSuccess === false ? "Failed to share" : "Share product"}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="0.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M18 8C19.6569 8 21 6.65685 21 5C21 3.34315 19.6569 2 18 2C16.3431 2 15 3.34315 15 5C15 5.12548 15.0077 5.24917 15.0227 5.37061L8.08261 9.12759C7.54305 8.43501 6.7996 8 5.96089 8C4.32224 8 3 9.32126 3 10.9586C3 12.5959 4.32224 13.9172 5.96089 13.9172C6.7996 13.9172 7.54305 13.4821 8.08261 12.7896L15.0227 16.5466C15.0077 16.668 15 16.7917 15 16.9172C15 18.5741 16.3431 19.9172 18 19.9172C19.6569 19.9172 21 18.5741 21 16.9172C21 15.2604 19.6569 13.9172 18 13.9172C17.1614 13.9172 16.4179 14.3523 15.8784 15.0448L8.93827 11.2879C8.95333 11.1664 8.96089 11.0428 8.96089 10.9172C8.96089 10.7917 8.95333 10.668 8.93827 10.5466L15.8784 6.78957C16.4179 7.48215 17.1614 7.91716 18 7.91716L18 8Z"/>
-              </svg>
-            </button>
+          <div className={styles.headerWishlistContainer}>
             <WishlistButton productId={product.id} className={styles.headerWishlistButton} />
           </div>
         </div>
@@ -545,13 +541,6 @@ export default function MobileProductDetails({
             </div>
           )}
         </div>
-        
-        {/* Low Stock Banner - Only show for products with low stock (5 or less) */}
-        {product.stockQuantity > 0 && product.stockQuantity <= 5 && (
-          <div className={styles.lowStockBanner}>
-            LOW STOCK: {product.stockQuantity} LEFT
-          </div>
-        )}
         
         {/* Stock Status - Only show for out of stock or when stock is not low */}
         <div className={styles.stockStatus}>
@@ -859,37 +848,4 @@ export default function MobileProductDetails({
                 <div className={styles.wishlistContainer} onClick={handleWishlistClick}>
                   <WishlistButton 
                     productId={similarProduct.id} 
-                    className={`${styles.wishlistButton} ${styles.blackWishlist}`}
-                    preventNavigation={true}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-          
-          {/* Single line carousel pagination indicator */}
-          {similarProducts.length > carouselItemsPerView && (
-            <div className={styles.carouselPagination}>
-              <div 
-                className={styles.paginationIndicatorActive} 
-                style={{ 
-                  width: `${100 / Math.ceil(similarProducts.length / carouselItemsPerView)}px`,
-                  transform: `translateX(${scrollProgress * (100 - (100 / Math.ceil(similarProducts.length / carouselItemsPerView)))}px)`
-                }}
-              />
-            </div>
-          )}
-          
-          {/* Link to view more similar products in this category */}
-          {product.category && (
-            <div className={styles.viewAllSimilarWrapper}>
-              <Link href={`/products?category=${product.category.slug}`} className={styles.viewAllSimilarLink}>
-                View all {product.category.name} products →
-              </Link>
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-} 
+                    className={`
