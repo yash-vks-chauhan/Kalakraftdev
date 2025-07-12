@@ -375,6 +375,11 @@
 .accordionSection {
   border-bottom: 1px solid #f0f0f0;
   overflow: hidden;
+  transition: border-color 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+.accordionSection.expanded {
+  border-bottom: 1px solid #000;
 }
 
 .accordionHeader {
@@ -1287,4 +1292,13 @@
   background-color: #ff9800;
   border-radius: 50%;
   margin-right: 8px;
+}
+
+.accordionSection.expanded .accordionHeader {
+  padding-bottom: 20px;
+}
+
+.accordionSection.expanded .accordionTitle {
+  color: #000;
+  font-weight: 600;
 } 

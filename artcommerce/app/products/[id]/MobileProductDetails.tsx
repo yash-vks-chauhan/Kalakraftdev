@@ -642,7 +642,7 @@ export default function MobileProductDetails({
         {/* Collapsible Sections */}
         <div className={styles.accordionSections}>
           {/* Description Section */}
-          <div className={styles.accordionSection}>
+          <div className={`${styles.accordionSection} ${expandedSections.description ? styles.expanded : ''}`}>
             <button 
               className={styles.accordionHeader} 
               onClick={() => toggleSection('description')}
@@ -669,7 +669,7 @@ export default function MobileProductDetails({
           
           {/* Specifications Section */}
           {product.specifications && (
-            <div className={styles.accordionSection}>
+            <div className={`${styles.accordionSection} ${expandedSections.specifications ? styles.expanded : ''}`}>
               <button 
                 className={styles.accordionHeader} 
                 onClick={() => toggleSection('specifications')}
@@ -697,7 +697,7 @@ export default function MobileProductDetails({
           
           {/* Care Instructions Section */}
           {product.careInstructions && (
-            <div className={styles.accordionSection}>
+            <div className={`${styles.accordionSection} ${expandedSections.care ? styles.expanded : ''}`}>
               <button 
                 className={styles.accordionHeader} 
                 onClick={() => toggleSection('care')}
@@ -725,7 +725,7 @@ export default function MobileProductDetails({
           
           {/* Styling Inspiration Gallery Section */}
           {product.stylingIdeaImages && product.stylingIdeaImages.length > 0 && (
-            <div className={styles.accordionSection}>
+            <div className={`${styles.accordionSection} ${expandedSections.styling ? styles.expanded : ''}`}>
               <button 
                 className={styles.accordionHeader} 
                 onClick={() => toggleSection('styling')}
