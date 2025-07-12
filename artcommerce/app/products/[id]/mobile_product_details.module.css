@@ -409,7 +409,7 @@
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
-/* Horizontal carousel */
+/* Horizontal carousel - updated to match product listing grid */
 .similarProductsCarousel {
   display: flex;
   overflow-x: auto;
@@ -417,7 +417,7 @@
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none; /* Hide scrollbar for Firefox */
   -ms-overflow-style: none; /* Hide scrollbar for IE and Edge */
-  gap: 12px;
+  gap: 12px; /* Restore gap for horizontal scrolling */
   padding: 4px 0 16px;
   cursor: grab;
 }
@@ -445,7 +445,8 @@
   box-shadow: none;
   border: none;
   flex: 0 0 auto;
-  width: 160px; /* Fixed width for each item */
+  width: calc(50vw - 24px); /* Match the width of product listing cards (approx half viewport) */
+  min-width: 160px; /* Minimum width for very small screens */
 }
 
 .card {
@@ -660,6 +661,20 @@
   max-width: 100%;
 }
 
+.shortDesc {
+  font-size: 0.7rem;
+  color: #666;
+  margin: 0 0 6px 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  line-height: 1.4;
+  max-height: 2.8em;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
 .priceRow {
   display: flex;
   justify-content: space-between;
@@ -743,6 +758,28 @@
 .viewAllSimilarWrapper {
   text-align: center;
   margin-top: 24px;
+}
+
+/* Carousel pagination indicators */
+.carouselPagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  margin: 16px 0;
+  padding: 0;
+}
+
+.paginationIndicator {
+  height: 2px;
+  width: 16px;
+  background-color: rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.paginationIndicatorActive {
+  width: 24px;
+  background-color: #000;
 }
 
 .viewAllSimilarLink {
@@ -872,11 +909,11 @@
 /* Media Queries */
 @media (min-width: 481px) {
   .similarProductsCarousel {
-    gap: 16px;
+    gap: 16px; /* Restore original gap for larger screens */
   }
   
   .cardWrapper {
-    width: 180px; /* Slightly wider on larger phones */
+    width: 180px; /* Fixed width on larger phones */
   }
   
   .stylingGallery {
@@ -886,6 +923,6 @@
 
 @media (min-width: 640px) {
   .cardWrapper {
-    width: 200px; /* Even wider on tablets */
+    width: 200px; /* Fixed width on tablets */
   }
 } 

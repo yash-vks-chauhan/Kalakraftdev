@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import ProductImagesMobile from '../../components/ProductImagesMobile';
@@ -51,6 +51,8 @@ export default function MobileProductDetails({
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
+  const [activeCarouselIndex, setActiveCarouselIndex] = useState(0);
+  const [carouselItemsPerView, setCarouselItemsPerView] = useState(2);
   
   // Similar product image states
   const [currentImageIndices, setCurrentImageIndices] = useState<Record<number, number>>({});
@@ -334,6 +336,68 @@ export default function MobileProductDetails({
     }
   };
 
+  // Calculate visible carousel items and update active index
+  const updateCarouselActiveIndex = useCallback(() => {
+    if (!carouselRef.current || similarProducts.length === 0) return;
+    
+    const scrollPosition = carouselRef.current.scrollLeft;
+    const itemWidth = carouselRef.current.scrollWidth / similarProducts.length;
+    const viewportWidth = carouselRef.current.clientWidth;
+    
+    // Calculate how many items are visible in the viewport
+    const itemsPerView = Math.max(1, Math.floor(viewportWidth / itemWidth));
+    setCarouselItemsPerView(itemsPerView);
+    
+    // Calculate which item is most visible (centered)
+    const activeIndex = Math.min(
+      Math.floor(scrollPosition / itemWidth),
+      similarProducts.length - itemsPerView
+    );
+    setActiveCarouselIndex(activeIndex);
+  }, [similarProducts.length]);
+
+  // Add scroll event listener to track carousel position
+  useEffect(() => {
+    const carousel = carouselRef.current;
+    if (!carousel) return;
+    
+    const handleScroll = () => {
+      updateCarouselActiveIndex();
+    };
+    
+    carousel.addEventListener('scroll', handleScroll);
+    
+    // Initial calculation
+    updateCarouselActiveIndex();
+    
+    return () => {
+      carousel.removeEventListener('scroll', handleScroll);
+    };
+  }, [similarProducts, updateCarouselActiveIndex]);
+
+  // Recalculate on resize
+  useEffect(() => {
+    const handleResize = () => {
+      updateCarouselActiveIndex();
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [updateCarouselActiveIndex]);
+
+  // Scroll to a specific item in the carousel
+  const scrollToItem = (index: number) => {
+    if (!carouselRef.current) return;
+    
+    const itemWidth = carouselRef.current.scrollWidth / similarProducts.length;
+    carouselRef.current.scrollTo({
+      left: index * itemWidth,
+      behavior: 'smooth'
+    });
+  };
+
   return (
     <div className={styles.mobileProductContainer}>
       {/* Product Images - Full width with transparent background */}
@@ -598,9 +662,17 @@ export default function MobileProductDetails({
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleMouseUp}
+            style={{
+              scrollSnapType: 'x mandatory',
+              scrollPaddingLeft: '16px'
+            }}
           >
             {similarProducts.map(similarProduct => (
-              <div key={similarProduct.id} className={styles.cardWrapper}>
+              <div 
+                key={similarProduct.id} 
+                className={styles.cardWrapper}
+                style={{ scrollSnapAlign: 'start' }}
+              >
                 <Link href={`/products/${similarProduct.id}`} className={styles.card}>
                   <div 
                     className={styles.imageContainer}
@@ -657,6 +729,15 @@ export default function MobileProductDetails({
                     )}
                     <h3 className={styles.name}>{similarProduct.name}</h3>
                     
+                    {/* Short description - only show if there's space and no rating */}
+                    {similarProduct.shortDesc && (!similarProduct.avgRating || similarProduct.avgRating <= 0) && (
+                      <p className={styles.shortDesc}>
+                        {similarProduct.shortDesc.length > 60 
+                          ? `${similarProduct.shortDesc.substring(0, 60)}...` 
+                          : similarProduct.shortDesc}
+                      </p>
+                    )}
+                    
                     <div className={styles.priceRow}>
                       <p className={styles.price}>{formatPrice(similarProduct.price)}</p>
                       {similarProduct.avgRating && similarProduct.avgRating > 0 && (
@@ -679,6 +760,21 @@ export default function MobileProductDetails({
               </div>
             ))}
           </div>
+          
+          {/* Carousel pagination indicators */}
+          {similarProducts.length > carouselItemsPerView && (
+            <div className={styles.carouselPagination}>
+              {Array.from({ length: Math.ceil(similarProducts.length / carouselItemsPerView) }).map((_, index) => (
+                <div
+                  key={index}
+                  className={`${styles.paginationIndicator} ${
+                    index === Math.floor(activeCarouselIndex / carouselItemsPerView) ? styles.paginationIndicatorActive : ''
+                  }`}
+                  onClick={() => scrollToItem(index * carouselItemsPerView)}
+                />
+              ))}
+            </div>
+          )}
           
           {/* Link to view more similar products in this category */}
           {product.category && (
