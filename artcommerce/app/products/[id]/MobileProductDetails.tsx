@@ -616,8 +616,10 @@ export default function MobileProductDetails({
               aria-expanded={expandedSections.description}
             >
               <span className={styles.accordionTitle}>Description</span>
-              <span className={styles.accordionIcon}>
-                {expandedSections.description ? '−' : '+'}
+              <span className={styles.accordionIcon} style={{ transform: expandedSections.description ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+                <svg width="14" height="8" viewBox="0 0 14 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M1 1L7 7L13 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
               </span>
             </button>
             
@@ -637,8 +639,10 @@ export default function MobileProductDetails({
                 aria-expanded={expandedSections.specifications}
               >
                 <span className={styles.accordionTitle}>Specifications</span>
-                <span className={styles.accordionIcon}>
-                  {expandedSections.specifications ? '−' : '+'}
+                <span className={styles.accordionIcon} style={{ transform: expandedSections.specifications ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+                  <svg width="14" height="8" viewBox="0 0 14 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M1 1L7 7L13 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
                 </span>
               </button>
               
@@ -661,8 +665,10 @@ export default function MobileProductDetails({
                 aria-expanded={expandedSections.care}
               >
                 <span className={styles.accordionTitle}>Care Instructions</span>
-                <span className={styles.accordionIcon}>
-                  {expandedSections.care ? '−' : '+'}
+                <span className={styles.accordionIcon} style={{ transform: expandedSections.care ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+                  <svg width="14" height="8" viewBox="0 0 14 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M1 1L7 7L13 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
                 </span>
               </button>
               
@@ -683,8 +689,10 @@ export default function MobileProductDetails({
                 aria-expanded={expandedSections.styling}
               >
                 <span className={styles.accordionTitle}>Styling Inspiration Gallery</span>
-                <span className={styles.accordionIcon}>
-                  {expandedSections.styling ? '−' : '+'}
+                <span className={styles.accordionIcon} style={{ transform: expandedSections.styling ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+                  <svg width="14" height="8" viewBox="0 0 14 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M1 1L7 7L13 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
                 </span>
               </button>
               

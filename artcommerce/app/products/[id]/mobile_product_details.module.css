@@ -400,10 +400,16 @@
 .accordionIcon {
   font-size: 18px;
   color: #000;
+  transition: transform 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .accordionContent {
   padding: 0 0 16px;
+  transition: max-height 0.3s ease-in-out;
+  overflow: hidden;
 }
 
 /* Description */
