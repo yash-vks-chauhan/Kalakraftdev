@@ -417,7 +417,7 @@
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none; /* Hide scrollbar for Firefox */
   -ms-overflow-style: none; /* Hide scrollbar for IE and Edge */
-  gap: 12px; /* Restore gap for horizontal scrolling */
+  gap: 0; /* Remove gap between cards */
   padding: 4px 0 16px;
   cursor: grab;
 }
@@ -445,8 +445,10 @@
   box-shadow: none;
   border: none;
   flex: 0 0 auto;
-  width: calc(50vw - 24px); /* Match the width of product listing cards (approx half viewport) */
+  width: 50%; /* Half viewport width for two cards side by side */
   min-width: 160px; /* Minimum width for very small screens */
+  margin: 0; /* Remove any margin */
+  padding: 0; /* Remove any padding */
 }
 
 .card {
@@ -760,26 +762,30 @@
   margin-top: 24px;
 }
 
-/* Carousel pagination indicators */
+/* Carousel pagination indicators - single line style */
 .carouselPagination {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 6px;
-  margin: 16px 0;
+  margin: 16px auto;
   padding: 0;
+  width: 100px; /* Fixed width for the pagination container */
+  position: relative;
+  height: 2px;
+  background-color: rgba(0, 0, 0, 0.2);
 }
 
 .paginationIndicator {
-  height: 2px;
-  width: 16px;
-  background-color: rgba(0, 0, 0, 0.2);
-  transition: all 0.3s ease;
+  display: none; /* Hide individual indicators */
 }
 
 .paginationIndicatorActive {
-  width: 24px;
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 2px;
   background-color: #000;
+  transition: width 0.3s ease, transform 0.3s ease;
 }
 
 .viewAllSimilarLink {

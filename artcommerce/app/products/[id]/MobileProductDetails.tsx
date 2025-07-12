@@ -53,6 +53,7 @@ export default function MobileProductDetails({
   const [scrollLeft, setScrollLeft] = useState(0);
   const [activeCarouselIndex, setActiveCarouselIndex] = useState(0);
   const [carouselItemsPerView, setCarouselItemsPerView] = useState(2);
+  const [scrollProgress, setScrollProgress] = useState(0);
   
   // Similar product image states
   const [currentImageIndices, setCurrentImageIndices] = useState<Record<number, number>>({});
@@ -341,8 +342,13 @@ export default function MobileProductDetails({
     if (!carouselRef.current || similarProducts.length === 0) return;
     
     const scrollPosition = carouselRef.current.scrollLeft;
+    const maxScroll = carouselRef.current.scrollWidth - carouselRef.current.clientWidth;
     const itemWidth = carouselRef.current.scrollWidth / similarProducts.length;
     const viewportWidth = carouselRef.current.clientWidth;
+    
+    // Calculate scroll progress (0 to 1)
+    const progress = maxScroll > 0 ? scrollPosition / maxScroll : 0;
+    setScrollProgress(progress);
     
     // Calculate how many items are visible in the viewport
     const itemsPerView = Math.max(1, Math.floor(viewportWidth / itemWidth));
@@ -664,7 +670,7 @@ export default function MobileProductDetails({
             onTouchEnd={handleMouseUp}
             style={{
               scrollSnapType: 'x mandatory',
-              scrollPaddingLeft: '16px'
+              scrollPaddingLeft: '0'
             }}
           >
             {similarProducts.map(similarProduct => (
@@ -761,18 +767,16 @@ export default function MobileProductDetails({
             ))}
           </div>
           
-          {/* Carousel pagination indicators */}
+          {/* Single line carousel pagination indicator */}
           {similarProducts.length > carouselItemsPerView && (
             <div className={styles.carouselPagination}>
-              {Array.from({ length: Math.ceil(similarProducts.length / carouselItemsPerView) }).map((_, index) => (
-                <div
-                  key={index}
-                  className={`${styles.paginationIndicator} ${
-                    index === Math.floor(activeCarouselIndex / carouselItemsPerView) ? styles.paginationIndicatorActive : ''
-                  }`}
-                  onClick={() => scrollToItem(index * carouselItemsPerView)}
-                />
-              ))}
+              <div 
+                className={styles.paginationIndicatorActive} 
+                style={{ 
+                  width: `${100 / Math.ceil(similarProducts.length / carouselItemsPerView)}px`,
+                  transform: `translateX(${scrollProgress * (100 - (100 / Math.ceil(similarProducts.length / carouselItemsPerView)))}px)`
+                }}
+              />
             </div>
           )}
           
