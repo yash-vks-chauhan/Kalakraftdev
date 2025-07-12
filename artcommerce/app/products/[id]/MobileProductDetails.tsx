@@ -45,6 +45,8 @@ export default function MobileProductDetails({
   const [error, setError] = useState<string | null>(null);
   const [added, setAdded] = useState(false);
   const [similarProducts, setSimilarProducts] = useState<Product[]>(initialSimilarProducts);
+  const [shareSuccess, setShareSuccess] = useState<boolean | null>(null);
+  const [shareMethod, setShareMethod] = useState<'webshare' | 'clipboard' | null>(null);
   
   // Carousel state for similar products
   const carouselRef = useRef<HTMLDivElement>(null);
@@ -273,6 +275,56 @@ export default function MobileProductDetails({
     e.stopPropagation();
   };
 
+  // Handle share button click
+  const handleShare = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Check if Web Share API is available
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: product.name,
+          text: product.shortDesc || `Check out this ${product.name}`,
+          url: window.location.href,
+        });
+        setShareSuccess(true);
+        setShareMethod('webshare');
+        setTimeout(() => {
+          setShareSuccess(null);
+          setShareMethod(null);
+        }, 3000);
+      } catch (err) {
+        console.error('Error sharing:', err);
+        setShareSuccess(false);
+        setShareMethod('webshare');
+        setTimeout(() => {
+          setShareSuccess(null);
+          setShareMethod(null);
+        }, 3000);
+      }
+    } else {
+      // Fallback for browsers that don't support Web Share API
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        setShareSuccess(true);
+        setShareMethod('clipboard');
+        setTimeout(() => {
+          setShareSuccess(null);
+          setShareMethod(null);
+        }, 3000);
+      } catch (err) {
+        console.error('Error copying to clipboard:', err);
+        setShareSuccess(false);
+        setShareMethod('clipboard');
+        setTimeout(() => {
+          setShareSuccess(null);
+          setShareMethod(null);
+        }, 3000);
+      }
+    }
+  };
+
   const toggleSection = (section: keyof typeof expandedSections) => {
     setExpandedSections(prev => ({
       ...prev,
@@ -408,6 +460,17 @@ export default function MobileProductDetails({
         />
       </div>
       
+      {/* Share feedback toast */}
+      <div className={`${styles.shareToast} ${shareSuccess !== null ? styles.shareToastVisible : ''}`}>
+        {shareSuccess 
+          ? (shareMethod === 'webshare' 
+            ? 'Product shared successfully!' 
+            : 'Product link copied to clipboard!')
+          : (shareMethod === 'webshare'
+            ? 'Failed to share product'
+            : 'Failed to copy product link')}
+      </div>
+      
       {/* Product Info - Overlapping the image slightly with rounded corners */}
       <div className={styles.productInfo}>
         {/* Category */}
@@ -420,7 +483,21 @@ export default function MobileProductDetails({
         {/* Product Name and Wishlist Button */}
         <div className={styles.productHeader}>
           <h1 className={styles.productName}>{product.name}</h1>
-          <div className={styles.headerWishlistContainer}>
+          <div className={styles.headerActionContainer}>
+            <button 
+              onClick={handleShare}
+              className={styles.shareButton}
+              aria-label="Share product"
+              title={shareSuccess === true ? "Link copied!" : shareSuccess === false ? "Failed to share" : "Share product"}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="18" cy="5" r="3"></circle>
+                <circle cx="6" cy="12" r="3"></circle>
+                <circle cx="18" cy="19" r="3"></circle>
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+              </svg>
+            </button>
             <WishlistButton productId={product.id} className={styles.headerWishlistButton} />
           </div>
         </div>
@@ -457,17 +534,15 @@ export default function MobileProductDetails({
         </div>
         
         {/* Stock Status */}
-        {product.stockQuantity < 10 ? (
-          <div className={styles.stockStatus}>
-            <span className={product.stockQuantity <= 0 ? styles.outOfStock : styles.lowStock}>
-              {product.stockQuantity <= 0 ? 'Out of stock' : `Low stock: ${product.stockQuantity} left`}
-            </span>
-          </div>
-        ) : (
-          <div className={styles.stockStatus}>
-            <span className={styles.inStock}>{`In stock: ${product.stockQuantity} available`}</span>
-          </div>
-        )}
+        <div className={styles.stockStatus}>
+          {product.stockQuantity <= 0 ? (
+            <span className={styles.outOfStock}>Out of stock</span>
+          ) : product.stockQuantity <= 5 ? (
+            <span className={styles.lowStock}>Low stock: {product.stockQuantity} left</span>
+          ) : (
+            <span className={styles.inStock}>In stock: {product.stockQuantity} available</span>
+          )}
+        </div>
         
         {/* Add to Cart Form */}
         <form onSubmit={handleAddToCart} className={styles.addToCartForm}>
