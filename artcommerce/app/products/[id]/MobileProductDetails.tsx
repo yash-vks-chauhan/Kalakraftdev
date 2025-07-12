@@ -623,11 +623,9 @@ export default function MobileProductDetails({
               </span>
             </button>
             
-            {expandedSections.description && (
-              <div className={styles.accordionContent}>
-                <p className={styles.description}>{product.description}</p>
-              </div>
-            )}
+            <div className={`${styles.accordionContent} ${expandedSections.description ? styles.expanded : ''}`}>
+              <p className={styles.description}>{product.description}</p>
+            </div>
           </div>
           
           {/* Specifications Section */}
@@ -646,13 +644,11 @@ export default function MobileProductDetails({
                 </span>
               </button>
               
-              {expandedSections.specifications && (
-                <div className={styles.accordionContent}>
-                  <div className={styles.specificationsList}>
-                    {formatSpecifications(product.specifications)}
-                  </div>
+              <div className={`${styles.accordionContent} ${expandedSections.specifications ? styles.expanded : ''}`}>
+                <div className={styles.specificationsList}>
+                  {formatSpecifications(product.specifications)}
                 </div>
-              )}
+              </div>
             </div>
           )}
           
@@ -672,11 +668,9 @@ export default function MobileProductDetails({
                 </span>
               </button>
               
-              {expandedSections.care && (
-                <div className={styles.accordionContent}>
-                  <p className={styles.careInstructions}>{product.careInstructions}</p>
-                </div>
-              )}
+              <div className={`${styles.accordionContent} ${expandedSections.care ? styles.expanded : ''}`}>
+                <p className={styles.careInstructions}>{product.careInstructions}</p>
+              </div>
             </div>
           )}
           
@@ -696,55 +690,53 @@ export default function MobileProductDetails({
                 </span>
               </button>
               
-              {expandedSections.styling && (
-                <div className={styles.accordionContent}>
-                  <div className={styles.stylingGallery}>
-                    {product.stylingIdeaImages.map((item, index) => {
-                      const imageObj = typeof item === 'string' ? { url: item, text: '' } : item;
-                      const defaultCaptions = [
-                        "Living Room: Creates a calming focal point that ties the space together",
-                        "Office Setting: Adds artistic flair to professional environments",
-                        "Dining Area: Complements mealtime with artistic elegance"
-                      ];
-                      
-                      // Determine the label based on image count
-                      let spaceLabel = "Living Space";
-                      const imageCount = product.stylingIdeaImages?.length || 0;
-                      if (imageCount === 1) {
-                        spaceLabel = "Featured Styling";
-                      } else if (imageCount === 2) {
-                        spaceLabel = index === 0 ? "Living Space" : "Workspace";
-                      } else {
-                        spaceLabel = index === 0 ? "Living Space" : index === 1 ? "Workspace" : "Dining Area";
-                      }
-                      
-                      return (
-                        <div key={index} className={styles.galleryItem}>
-                          <div className={styles.galleryImageWrap}>
-                            <img 
-                              src={imageObj.url} 
-                              alt={`Styling inspiration ${index + 1}`} 
-                              className={styles.galleryImage} 
-                              loading="lazy" 
-                            />
-                            <div className={styles.galleryOverlay}>
-                              <span className={styles.galleryLabel}>
-                                {spaceLabel}
-                              </span>
-                            </div>
-                          </div>
-                          <div className={styles.galleryCaption}>
-                            <p>{imageObj.text || defaultCaptions[index % defaultCaptions.length]}</p>
+              <div className={`${styles.accordionContent} ${expandedSections.styling ? styles.expanded : ''}`}>
+                <div className={styles.stylingGallery}>
+                  {product.stylingIdeaImages.map((item, index) => {
+                    const imageObj = typeof item === 'string' ? { url: item, text: '' } : item;
+                    const defaultCaptions = [
+                      "Living Room: Creates a calming focal point that ties the space together",
+                      "Office Setting: Adds artistic flair to professional environments",
+                      "Dining Area: Complements mealtime with artistic elegance"
+                    ];
+                    
+                    // Determine the label based on image count
+                    let spaceLabel = "Living Space";
+                    const imageCount = product.stylingIdeaImages?.length || 0;
+                    if (imageCount === 1) {
+                      spaceLabel = "Featured Styling";
+                    } else if (imageCount === 2) {
+                      spaceLabel = index === 0 ? "Living Space" : "Workspace";
+                    } else {
+                      spaceLabel = index === 0 ? "Living Space" : index === 1 ? "Workspace" : "Dining Area";
+                    }
+                    
+                    return (
+                      <div key={index} className={styles.galleryItem}>
+                        <div className={styles.galleryImageWrap}>
+                          <img 
+                            src={imageObj.url} 
+                            alt={`Styling inspiration ${index + 1}`} 
+                            className={styles.galleryImage} 
+                            loading="lazy" 
+                          />
+                          <div className={styles.galleryOverlay}>
+                            <span className={styles.galleryLabel}>
+                              {spaceLabel}
+                            </span>
                           </div>
                         </div>
-                      );
-                    })}
-                  </div>
-                  <div className={styles.stylingFooter}>
-                    <p>Bring art into your everyday life with thoughtful placement and styling</p>
-                  </div>
+                        <div className={styles.galleryCaption}>
+                          <p>{imageObj.text || defaultCaptions[index % defaultCaptions.length]}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-              )}
+                <div className={styles.stylingFooter}>
+                  <p>Bring art into your everyday life with thoughtful placement and styling</p>
+                </div>
+              </div>
             </div>
           )}
         </div>

@@ -407,9 +407,17 @@
 }
 
 .accordionContent {
-  padding: 0 0 16px;
-  transition: max-height 0.3s ease-in-out;
+  max-height: 0;
+  opacity: 0;
+  padding: 0;
   overflow: hidden;
+  transition: all 0.3s ease-in-out;
+}
+
+.accordionContent.expanded {
+  max-height: 2000px; /* Large enough to contain content */
+  opacity: 1;
+  padding: 0 0 16px;
 }
 
 /* Description */
