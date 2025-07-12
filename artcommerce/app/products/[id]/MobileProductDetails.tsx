@@ -280,12 +280,6 @@ export default function MobileProductDetails({
     }));
   };
 
-  const getStockStatus = () => {
-    if (product.stockQuantity <= 0) return 'Out of stock';
-    if (product.stockQuantity < 10) return `Low stock: ${product.stockQuantity} left`;
-    return `In stock: ${product.stockQuantity} available`;
-  };
-
   // Format specifications text
   const formatSpecifications = (text: string) => {
     if (!text) return [];
@@ -466,12 +460,12 @@ export default function MobileProductDetails({
         {product.stockQuantity < 10 ? (
           <div className={styles.stockStatus}>
             <span className={product.stockQuantity <= 0 ? styles.outOfStock : styles.lowStock}>
-              {getStockStatus()}
+              {product.stockQuantity <= 0 ? 'Out of stock' : `Low stock: ${product.stockQuantity} left`}
             </span>
           </div>
         ) : (
           <div className={styles.stockStatus}>
-            <span className={styles.inStock}>{getStockStatus()}</span>
+            <span className={styles.inStock}>{`In stock: ${product.stockQuantity} available`}</span>
           </div>
         )}
         
