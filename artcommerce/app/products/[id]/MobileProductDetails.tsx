@@ -423,8 +423,13 @@ export default function MobileProductDetails({
           </Link>
         )}
         
-        {/* Product Name */}
-        <h1 className={styles.productName}>{product.name}</h1>
+        {/* Product Name and Wishlist Button */}
+        <div className={styles.productHeader}>
+          <h1 className={styles.productName}>{product.name}</h1>
+          <div className={styles.headerWishlistContainer}>
+            <WishlistButton productId={product.id} className={styles.headerWishlistButton} />
+          </div>
+        </div>
         
         {/* Variation (if applicable) - Moved up like in Gucci design */}
         <div className={styles.variation}>
@@ -476,8 +481,11 @@ export default function MobileProductDetails({
                 className={styles.quantityButton}
                 onClick={() => qty > 1 && setQty(qty - 1)}
                 disabled={qty <= 1}
+                aria-label="Decrease quantity"
               >
-                -
+                <svg width="12" height="2" viewBox="0 0 12 2" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect width="12" height="2" fill="currentColor"/>
+                </svg>
               </button>
               <input
                 type="number"
@@ -488,14 +496,19 @@ export default function MobileProductDetails({
                 value={qty}
                 onChange={(e) => setQty(parseInt(e.target.value) || 1)}
                 className={styles.quantityInput}
+                aria-label="Quantity"
               />
               <button 
                 type="button" 
                 className={styles.quantityButton}
                 onClick={() => qty < product.stockQuantity && setQty(qty + 1)}
                 disabled={qty >= product.stockQuantity}
+                aria-label="Increase quantity"
               >
-                +
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect y="5" width="12" height="2" fill="currentColor"/>
+                  <rect x="5" width="2" height="12" fill="currentColor"/>
+                </svg>
               </button>
             </div>
           </div>
@@ -508,10 +521,6 @@ export default function MobileProductDetails({
             >
               {added ? 'Added to Cart ✓' : 'Add to Cart'}
             </button>
-            
-            <div className={styles.wishlistContainer}>
-              <WishlistButton productId={product.id} />
-            </div>
           </div>
           
           {error && <p className={styles.error}>{error}</p>}
@@ -711,7 +720,7 @@ export default function MobileProductDetails({
                     {similarProduct.isNew && <span className={styles.badge}>New</span>}
                     {similarProduct.stockQuantity === 0 && <div className={styles.outOfStock}>Out of Stock</div>}
                     {similarProduct.stockQuantity > 0 && similarProduct.stockQuantity <= 5 && (
-                      <div className={styles.lowStock}>Only {similarProduct.stockQuantity} left</div>
+                      <div className={styles.cardLowStock}>Only {similarProduct.stockQuantity} left</div>
                     )}
                     
                     {/* Image indicators */}
