@@ -1208,8 +1208,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: rgba(255, 152, 0, 0.9);
-  color: white;
+  background-color: #f0f0f0;
+  color: #ff9800;
   font-size: 0.75rem;
   padding: 10px 12px;
   text-transform: uppercase;
@@ -1225,7 +1225,7 @@
   display: inline-block;
   width: 8px;
   height: 8px;
-  background-color: white;
+  background-color: #ff9800;
   border-radius: 50%;
   margin-right: 8px;
 } 

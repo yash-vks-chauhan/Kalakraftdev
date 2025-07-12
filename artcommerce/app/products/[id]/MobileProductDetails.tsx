@@ -280,12 +280,16 @@ export default function MobileProductDetails({
     e.preventDefault();
     e.stopPropagation();
     
+    // Create a more descriptive share text
+    const shareTitle = `${product.name} | Kalakraft`;
+    const shareText = `Check out ${product.name} - ${product.currency}${product.price.toFixed(2)} on Kalakraft!`;
+    
     // Check if Web Share API is available
     if (navigator.share) {
       try {
         await navigator.share({
-          title: product.name,
-          text: product.shortDesc || `Check out this ${product.name}`,
+          title: shareTitle,
+          text: shareText,
           url: window.location.href,
         });
         setShareSuccess(true);
@@ -306,7 +310,7 @@ export default function MobileProductDetails({
     } else {
       // Fallback for browsers that don't support Web Share API
       try {
-        await navigator.clipboard.writeText(window.location.href);
+        await navigator.clipboard.writeText(`${shareTitle}\n${shareText}\n${window.location.href}`);
         setShareSuccess(true);
         setShareMethod('clipboard');
         setTimeout(() => {
@@ -536,11 +540,11 @@ export default function MobileProductDetails({
           </div>
         )}
         
-        {/* Stock Status */}
+        {/* Stock Status - Only show for out of stock or when stock is not low */}
         <div className={styles.stockStatus}>
           {product.stockQuantity <= 0 ? (
             <span className={styles.outOfStock}>Out of stock</span>
-          ) : (
+          ) : product.stockQuantity > 5 && (
             <span className={styles.inStock}>In stock: {product.stockQuantity} available</span>
           )}
         </div>
