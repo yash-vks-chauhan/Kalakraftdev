@@ -1,13 +1,13 @@
 'use client'
 
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '../contexts/AuthContext'
 import { useCart } from '../contexts/CartContext'
 import { useWishlist } from '../contexts/WishlistContext'
-import { Search, Home, ShoppingBag, User, Menu, X, Heart, ShoppingCart, Monitor, ChevronDown, Grid, HelpCircle, LogOut } from 'lucide-react'
+import { Search, Home, ShoppingBag, User, Menu, X, Heart, ShoppingCart, Monitor, ChevronDown, Grid, HelpCircle, LogOut, ArrowLeft, Share } from 'lucide-react'
 import { useMobileMenu } from '../contexts/MobileMenuContext'
 import { getImageUrl } from '../../lib/cloudinaryImages'
 import styles from './MobileLayout.module.css'
@@ -38,6 +38,7 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
   const router = useRouter()
   const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false)
   const accountDropdownRef = useRef<HTMLDivElement>(null)
+  const [productName, setProductName] = useState<string>('')
 
   // For handling the mobile/desktop view toggle
   const [viewMode, setViewMode] = useState<'mobile' | 'desktop'>('mobile')
@@ -531,6 +532,36 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
     console.log('Is transparent navbar:', isTransparentNavbar);
   }, [pathname, isProductPage, isTransparentNavbar]);
 
+  // Handle back button click
+  const handleBackClick = () => {
+    router.back();
+  };
+  
+  // Handle share button click for product pages
+  const handleShareProduct = () => {
+    // This will be handled by the product page itself
+    // We're just dispatching a custom event that the product page can listen for
+    const shareEvent = new CustomEvent('shareProduct');
+    window.dispatchEvent(shareEvent);
+  };
+
+  // Get product name for product pages
+  useEffect(() => {
+    if (isProductPage) {
+      const productId = pathname?.split('/').pop();
+      if (productId) {
+        fetch(`/api/products/${productId}`)
+          .then(res => res.json())
+          .then(data => {
+            if (data.product?.name) {
+              setProductName(data.product.name);
+            }
+          })
+          .catch(err => console.error('Error fetching product name:', err));
+      }
+    }
+  }, [isProductPage, pathname]);
+
   return (
     <div className={`${styles.mobileLayoutContainer} ${isProductPage ? styles.productPageContainer : ''}`}>
       {/* Backdrop for account dropdown */}
@@ -610,24 +641,49 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
         className={`${styles.mobileHeader} ${isHomePage ? styles.homeMobileHeader : ''} ${isProductPage ? styles.productPageHeader : ''}`}
         data-scrolled={isScrolled ? 'true' : 'false'}
       >
-        {/* Left side - Logo */}
-        <Link href="/" className={styles.logoContainer}>
-          <Image
-            src={getImageUrl('logo.png')}
-            alt="Artcommerce Logo"
-            width={110}
-            height={36}
-            priority
-            style={{ objectFit: 'contain' }}
-            className={styles.logo}
-          />
-        </Link>
+        {/* Left side - Logo or Back button for product pages */}
+        {isProductPage ? (
+          <button 
+            onClick={handleBackClick}
+            className={styles.backButton}
+            aria-label="Go back"
+          >
+            <ArrowLeft size={24} strokeWidth={2} />
+          </button>
+        ) : (
+          <Link href="/" className={styles.logoContainer}>
+            <Image
+              src={getImageUrl('logo.png')}
+              alt="Artcommerce Logo"
+              width={110}
+              height={36}
+              priority
+              style={{ objectFit: 'contain' }}
+              className={styles.logo}
+            />
+          </Link>
+        )}
         
-        {/* Center - Empty spacer */}
-        <div className={styles.headerSpacer}></div>
+        {/* Center - Empty spacer or Product title for product pages */}
+        <div className={styles.headerSpacer}>
+          {isProductPage && productName && (
+            <div className={styles.productPageTitle}>{productName}</div>
+          )}
+        </div>
         
         {/* Right side - Icons and burger menu */}
         <div className={styles.headerIcons}>
+          {/* Share button - Only on product pages */}
+          {isProductPage && (
+            <button 
+              onClick={handleShareProduct}
+              className={styles.headerIconButton}
+              aria-label="Share product"
+            >
+              <Share size={20} strokeWidth={2} />
+            </button>
+          )}
+          
           {/* Search Icon */}
           <button 
             onClick={toggleSearch}

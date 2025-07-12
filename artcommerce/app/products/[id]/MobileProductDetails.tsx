@@ -276,7 +276,7 @@ export default function MobileProductDetails({
   };
 
   // Handle share button click
-  const handleShare = async (e: React.MouseEvent) => {
+  const handleShare = useCallback(async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     
@@ -327,7 +327,20 @@ export default function MobileProductDetails({
         }, 3000);
       }
     }
-  };
+  }, [product.name, product.currency, product.price, setShareSuccess, setShareMethod]);
+
+  // Listen for share event from the navbar
+  useEffect(() => {
+    const handleShareEvent = () => {
+      handleShare({ preventDefault: () => {}, stopPropagation: () => {} } as React.MouseEvent);
+    };
+    
+    window.addEventListener('shareProduct', handleShareEvent);
+    
+    return () => {
+      window.removeEventListener('shareProduct', handleShareEvent);
+    };
+  }, [product, handleShare]); // Include handleShare in dependencies
 
   const toggleSection = (section: keyof typeof expandedSections) => {
     setExpandedSections(prev => ({

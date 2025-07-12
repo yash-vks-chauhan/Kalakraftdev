@@ -1534,3 +1534,32 @@
 .productPageContainer .mobileContent {
   background-color: #f0f0f0;
 }
+
+/* Back button for product pages */
+.backButton {
+  background: none;
+  border: none;
+  padding: 6px;
+  cursor: pointer;
+  color: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 4px;
+}
+
+.backButton:active {
+  opacity: 0.7;
+}
+
+/* Product page title in header */
+.productPageTitle {
+  font-size: 16px;
+  font-weight: 500;
+  color: #000;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 150px;
+}
