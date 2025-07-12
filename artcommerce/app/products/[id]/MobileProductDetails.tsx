@@ -703,9 +703,9 @@ export default function MobileProductDetails({
                   {product.stylingIdeaImages.map((item, index) => {
                     const imageObj = typeof item === 'string' ? { url: item, text: '' } : item;
                     const defaultCaptions = [
-                      "Living Room: Creates a calming focal point that ties the space together",
-                      "Office Setting: Adds artistic flair to professional environments",
-                      "Dining Area: Complements mealtime with artistic elegance"
+                      "Elevate your table setting with this elegant piece, adorned with gold accents and crystal embellishments — the perfect blend of art and function.",
+                      "Delicate beauty meets functionality — a handcrafted piece paired with soft-toned tableware and dried florals for a refined, romantic aesthetic.",
+                      "Bring warmth and artistic flair to your space with thoughtful placement that complements your existing decor."
                     ];
                     
                     // Determine the label based on image count

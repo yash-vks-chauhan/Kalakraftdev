@@ -486,29 +486,34 @@
   line-height: 1.6;
   color: #333;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-} 
+}
 
 /* Styling Gallery */
 .stylingGallery {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 16px;
-  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-bottom: 24px;
+  padding: 0 4px;
 }
 
 .galleryItem {
   display: flex;
   flex-direction: column;
-  margin-bottom: 16px;
+  margin-bottom: 0;
+  border-radius: 0;
+  overflow: hidden;
+  background-color: #fff;
 }
 
 .galleryImageWrap {
   position: relative;
   width: 100%;
   height: 0;
-  padding-bottom: 75%; /* 4:3 aspect ratio */
+  padding-bottom: 100%; /* Square aspect ratio */
   overflow: hidden;
   border-radius: 0;
+  background-color: #f9f9f9;
 }
 
 .galleryImage {
@@ -518,7 +523,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.3s ease;
+  transition: transform 0.5s ease;
 }
 
 .galleryOverlay {
@@ -526,35 +531,35 @@
   bottom: 0;
   left: 0;
   right: 0;
-  background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%);
-  padding: 16px 12px;
+  background: linear-gradient(to top, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 100%);
+  padding: 16px 16px;
   color: #fff;
-  font-size: 0.75rem;
 }
 
 .galleryLabel {
   font-weight: 500;
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 .galleryCaption {
-  margin-top: 8px;
-  font-size: 0.7rem;
-  color: #666;
-  line-height: 1.4;
+  margin-top: 12px;
+  padding: 0 4px 4px;
+  font-size: 0.8rem;
+  color: #555;
+  line-height: 1.5;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 .stylingFooter {
   text-align: center;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   color: #666;
   font-style: italic;
-  margin-top: 8px;
-  padding-top: 8px;
+  margin-top: 16px;
+  padding-top: 12px;
   border-top: 1px solid #f0f0f0;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
@@ -1088,7 +1093,9 @@
   }
   
   .stylingGallery {
+    display: grid;
     grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
   }
 }
 
