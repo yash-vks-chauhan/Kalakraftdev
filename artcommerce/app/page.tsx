@@ -20,6 +20,161 @@ const isMobileView = () => {
   return window.innerWidth <= 768;
 };
 
+// Featured Products Grid Component
+const FeaturedProductsGrid = () => {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Format price function
+  const formatPrice = (price) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 0,
+      minimumFractionDigits: 0
+    }).format(price);
+  };
+
+  // Product Card Component (similar to ProductsMobileClient)
+  const ProductCard = ({ product }) => {
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    
+    const handleImageTap = (e) => {
+      e.preventDefault();
+      if (product.imageUrls && product.imageUrls.length > 1) {
+        setCurrentImageIndex((prev) => (prev + 1) % product.imageUrls.length);
+      }
+    };
+
+    return (
+      <Link href={`/products/${product.id}`} className={styles.mobileFeaturedCard}>
+        <div className={styles.mobileFeaturedCardInner}>
+          <div 
+            className={styles.mobileFeaturedImageContainer}
+            onClick={handleImageTap}
+          >
+            {product.imageUrls && product.imageUrls.length > 0 ? (
+              <img
+                src={product.imageUrls[currentImageIndex]}
+                alt={product.name}
+                className={styles.mobileFeaturedImage}
+                onError={(e) => (e.currentTarget.src = 'https://placehold.co/300x300/f0f0f0/888?text=No+Image')}
+              />
+            ) : (
+              <div className={styles.mobileFeaturedNoImage}>No Image</div>
+            )}
+            
+            {product.stockQuantity === 0 && (
+              <div className={styles.mobileFeaturedOutOfStock}>Out of Stock</div>
+            )}
+            
+            {product.stockQuantity > 0 && product.stockQuantity <= 5 && (
+              <div className={styles.mobileFeaturedLowStock}>Only {product.stockQuantity} left</div>
+            )}
+            
+            {product.imageUrls && product.imageUrls.length > 1 && (
+              <div className={styles.mobileFeaturedImageIndicators}>
+                {product.imageUrls.map((_, index) => (
+                  <div 
+                    key={index} 
+                    className={`${styles.mobileFeaturedIndicator} ${
+                      index === currentImageIndex ? styles.mobileFeaturedActiveIndicator : ''
+                    }`}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+          
+          <div className={styles.mobileFeaturedCardInfo}>
+            {product.category && (
+              <div className={styles.mobileFeaturedCategory}>
+                {product.category.name}
+              </div>
+            )}
+            <h3 className={styles.mobileFeaturedProductName}>{product.name}</h3>
+            <div className={styles.mobileFeaturedPriceRow}>
+              <p className={styles.mobileFeaturedPrice}>{formatPrice(product.price)}</p>
+              {product.avgRating > 0 && (
+                <p className={styles.mobileFeaturedRating}>
+                  <span className={styles.mobileFeaturedStarFilled}>★</span>
+                  <span className={styles.mobileFeaturedRatingValue}>{product.avgRating.toFixed(1)}</span>
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      </Link>
+    );
+  };
+
+  // Fetch products and randomize
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('/api/products');
+        const data = await response.json();
+        
+        if (data.products && Array.isArray(data.products)) {
+          // Normalize imageUrls and filter active products
+          const normalizedProducts = data.products
+            .filter(p => p.isActive && p.stockQuantity >= 0)
+            .map(p => {
+              let imageUrls = [];
+              try {
+                imageUrls = Array.isArray(p.imageUrls) ? p.imageUrls : JSON.parse(p.imageUrls || '[]');
+              } catch {
+                imageUrls = [];
+              }
+              return { ...p, imageUrls };
+            });
+          
+          // Shuffle and take 4 random products
+          const shuffled = [...normalizedProducts].sort(() => Math.random() - 0.5);
+          setProducts(shuffled.slice(0, 4));
+        }
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className={styles.mobileFeaturedLoading}>
+        <div className={styles.mobileFeaturedLoadingSpinner}></div>
+        <p>Loading featured products...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className={styles.mobileFeaturedError}>
+        <p>Unable to load featured products</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className={styles.mobileFeaturedProductsGrid}>
+      {products.map((product) => {
+        return (
+          <div key={product.id}>
+            <ProductCard product={product} />
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
 export default function Home() {
 
 const [message, setMessage] = useState<string|null>(null)
@@ -723,6 +878,95 @@ onClick={() => handleCarouselNav('next')}
 
 <div className={styles.brushAccent}></div>
 
+</section>
+
+{/* Mobile Explore Section - New section for mobile only */}
+<section className={`${styles.mobileExploreSection} ${styles.mobileOnly}`}>
+  <div className={styles.mobileExploreHeader}>
+    <div className={styles.mobileExploreHeaderLine} />
+    <h2 className={styles.mobileExploreTitle}>Explore Our Artisan Creations</h2>
+    <div className={styles.mobileExploreHeaderLine} />
+  </div>
+
+  <div className={styles.mobileExploreDescription}>
+    <p>Discover handcrafted masterpieces that bring elegance and artistry to your living space</p>
+  </div>
+
+  <div className={styles.mobileExploreGrid}>
+    {[
+      {
+        title: 'Abstract Waves',
+        description: 'Fluid art inspired by ocean currents',
+        image: 'https://placehold.co/300x300/f0f0f0/888?text=Abstract+Waves'
+      },
+      {
+        title: 'Golden Sunset',
+        description: 'Warm tones of evening light',
+        image: 'https://placehold.co/300x300/f0f0f0/888?text=Golden+Sunset'
+      },
+      {
+        title: 'Marble Dreams',
+        description: 'Elegant marble-inspired patterns',
+        image: 'https://placehold.co/300x300/f0f0f0/888?text=Marble+Dreams'
+      },
+      {
+        title: 'Forest Whispers',
+        description: 'Nature-inspired green compositions',
+        image: 'https://placehold.co/300x300/f0f0f0/888?text=Forest+Whispers'
+      },
+      {
+        title: 'Cosmic Flow',
+        description: 'Deep space-inspired artistry',
+        image: 'https://placehold.co/300x300/f0f0f0/888?text=Cosmic+Flow'
+      },
+      {
+        title: 'Rose Gold Elegance',
+        description: 'Sophisticated metallic accents',
+        image: 'https://placehold.co/300x300/f0f0f0/888?text=Rose+Gold+Elegance'
+      }
+    ].map((item, index) => (
+      <div key={index} className={styles.mobileExploreCard}>
+        <div className={styles.mobileExploreCardInner}>
+          <img
+            src={item.image}
+            alt={item.title}
+            className={styles.mobileExploreImage}
+            onError={(e) => (e.currentTarget.src = 'https://placehold.co/300x300/f0f0f0/888?text=Image+Not+Found')}
+          />
+          <div className={styles.mobileExploreCardOverlay}>
+            <div className={styles.mobileExploreCardContent}>
+              <h3 className={styles.mobileExploreCardTitle}>{item.title}</h3>
+              <p className={styles.mobileExploreCardDescription}>{item.description}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    ))}
+  </div>
+
+  <div className={styles.mobileExploreFooter}>
+    <p>Each piece is meticulously crafted with passion and precision</p>
+    <Link href="/products" className={styles.mobileExploreButton}>
+      View All Artworks
+    </Link>
+  </div>
+</section>
+
+{/* Featured Discoveries Section - Random products from API */}
+<section className={`${styles.mobileFeaturedSection} ${styles.mobileOnly}`}>
+  <div className={styles.mobileFeaturedHeader}>
+    <div className={styles.mobileFeaturedHeaderLine} />
+    <h2 className={styles.mobileFeaturedTitle}>Featured Discoveries</h2>
+    <div className={styles.mobileFeaturedHeaderLine} />
+  </div>
+
+  <div className={styles.mobileFeaturedDescription}>
+    <p>Handpicked selections from our latest collection, curated just for you</p>
+  </div>
+
+  <div className={styles.mobileFeaturedGrid}>
+    <FeaturedProductsGrid />
+  </div>
 </section>
 
 {/* Artistry in Every Layer Section - Redesigned - Desktop Only */}

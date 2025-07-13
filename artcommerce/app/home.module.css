@@ -1647,6 +1647,551 @@
   }
 }
 
+/* Add mobile-only class */
+.mobileOnly {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .mobileOnly {
+    display: block;
+  }
+}
+
+/* Mobile Explore Section Styles */
+.mobileExploreSection {
+  padding: 3rem 1rem;
+  background: linear-gradient(135deg, #fafafa 0%, #f8f8f8 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.mobileExploreHeader {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+.mobileExploreHeaderLine {
+  width: 50px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.6), transparent);
+  margin: 0.5rem auto;
+}
+
+.mobileExploreTitle {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #2c2c2c;
+  margin: 0;
+  letter-spacing: 0.02em;
+  font-style: italic;
+}
+
+.mobileExploreDescription {
+  text-align: center;
+  max-width: 280px;
+  margin: 1rem auto 2.5rem;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: rgba(0, 0, 0, 0.7);
+  font-family: 'Inter', sans-serif;
+}
+
+.mobileExploreGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.mobileExploreCard {
+  position: relative;
+  border-radius: 15px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0;
+  transform: translateY(20px);
+  animation: mobileExploreFadeIn 0.6s ease forwards;
+}
+
+.mobileExploreCardInner {
+  position: relative;
+  width: 100%;
+  padding-bottom: 100%;
+  overflow: hidden;
+}
+
+.mobileExploreImage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.mobileExploreCardOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.5));
+  display: flex;
+  align-items: flex-end;
+  padding: 1rem;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.mobileExploreCardContent {
+  color: #fff;
+  text-align: left;
+  width: 100%;
+  transform: translateY(10px);
+  transition: transform 0.3s ease;
+}
+
+.mobileExploreCardTitle {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin: 0 0 0.25rem 0;
+  letter-spacing: 0.02em;
+}
+
+.mobileExploreCardDescription {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.75rem;
+  margin: 0;
+  opacity: 0.9;
+  line-height: 1.4;
+}
+
+.mobileExploreCard:active {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+}
+
+.mobileExploreCard:active .mobileExploreImage {
+  transform: scale(1.1);
+}
+
+.mobileExploreCard:active .mobileExploreCardOverlay {
+  opacity: 1;
+}
+
+.mobileExploreCard:active .mobileExploreCardContent {
+  transform: translateY(0);
+}
+
+.mobileExploreFooter {
+  text-align: center;
+  margin-top: 2rem;
+  padding: 0 1rem;
+}
+
+.mobileExploreFooter p {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  color: rgba(0, 0, 0, 0.7);
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+.mobileExploreButton {
+  display: inline-block;
+  padding: 0.875rem 2rem;
+  background: linear-gradient(135deg, #2c2c2c, #000);
+  color: #fff;
+  border: none;
+  border-radius: 25px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  font-family: 'Inter', sans-serif;
+}
+
+.mobileExploreButton::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.mobileExploreButton:active {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.mobileExploreButton:active::before {
+  transform: translateX(100%);
+}
+
+@keyframes mobileExploreFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Add staggered animation delays */
+.mobileExploreCard:nth-child(1) { animation-delay: 0.1s; }
+.mobileExploreCard:nth-child(2) { animation-delay: 0.2s; }
+.mobileExploreCard:nth-child(3) { animation-delay: 0.3s; }
+.mobileExploreCard:nth-child(4) { animation-delay: 0.4s; }
+.mobileExploreCard:nth-child(5) { animation-delay: 0.5s; }
+.mobileExploreCard:nth-child(6) { animation-delay: 0.6s; }
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 480px) {
+  .mobileExploreSection {
+    padding: 2.5rem 0.75rem;
+  }
+  
+  .mobileExploreTitle {
+    font-size: 1.5rem;
+  }
+  
+  .mobileExploreGrid {
+    gap: 0.75rem;
+  }
+  
+  .mobileExploreCardOverlay {
+    padding: 0.75rem;
+  }
+  
+  .mobileExploreCardTitle {
+    font-size: 1rem;
+  }
+  
+  .mobileExploreCardDescription {
+    font-size: 0.7rem;
+  }
+}
+
+/* Mobile Featured Discoveries Section Styles */
+.mobileFeaturedSection {
+  padding: 3rem 1rem;
+  background: linear-gradient(135deg, #f8f9fa 0%, #f1f3f4 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.mobileFeaturedHeader {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+.mobileFeaturedHeaderLine {
+  width: 50px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.6), transparent);
+  margin: 0.5rem auto;
+}
+
+.mobileFeaturedTitle {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #2c2c2c;
+  margin: 0;
+  letter-spacing: 0.02em;
+  font-style: italic;
+}
+
+.mobileFeaturedDescription {
+  text-align: center;
+  max-width: 300px;
+  margin: 1rem auto 2rem;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: rgba(0, 0, 0, 0.7);
+  font-family: 'Inter', sans-serif;
+}
+
+.mobileFeaturedGrid {
+  margin-bottom: 2rem;
+}
+
+.mobileFeaturedProductsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+.mobileFeaturedCard {
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: mobileFeaturedFadeIn 0.6s ease forwards;
+}
+
+.mobileFeaturedCardInner {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.mobileFeaturedImageContainer {
+  width: 100%;
+  aspect-ratio: 1/1.05;
+  background: #f8f9fa;
+  position: relative;
+  overflow: hidden;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mobileFeaturedImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.mobileFeaturedNoImage {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f0f0f0;
+  color: #666;
+  font-size: 0.8rem;
+  font-family: 'Inter', sans-serif;
+}
+
+.mobileFeaturedOutOfStock {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: rgba(244, 67, 54, 0.9);
+  color: white;
+  padding: 2px 6px;
+  font-size: 0.6rem;
+  border-radius: 4px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  z-index: 2;
+}
+
+.mobileFeaturedLowStock {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: rgba(255, 152, 0, 0.9);
+  color: white;
+  padding: 2px 6px;
+  font-size: 0.6rem;
+  border-radius: 4px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  z-index: 2;
+}
+
+.mobileFeaturedImageIndicators {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 4px;
+  z-index: 2;
+}
+
+.mobileFeaturedIndicator {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  transition: all 0.3s ease;
+}
+
+.mobileFeaturedActiveIndicator {
+  background: rgba(255, 255, 255, 0.9);
+  transform: scale(1.2);
+}
+
+.mobileFeaturedCardInfo {
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  justify-content: space-between;
+}
+
+.mobileFeaturedCategory {
+  font-size: 0.65rem;
+  padding: 2px 6px;
+  border-radius: 2px;
+  background: #f0f0f0;
+  align-self: flex-start;
+  margin: 0;
+  color: #666;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+}
+
+.mobileFeaturedProductName {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #000;
+  margin: 0;
+  line-height: 1.2;
+  font-family: 'Inter', sans-serif;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.mobileFeaturedPriceRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+}
+
+.mobileFeaturedPrice {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #000;
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+}
+
+.mobileFeaturedRating {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 0.7rem;
+  color: #666;
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+}
+
+.mobileFeaturedStarFilled {
+  color: #ffa500;
+  font-size: 0.8rem;
+}
+
+.mobileFeaturedRatingValue {
+  font-weight: 500;
+}
+
+.mobileFeaturedLoading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  font-family: 'Inter', sans-serif;
+}
+
+.mobileFeaturedLoadingSpinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #000;
+  border-radius: 50%;
+  animation: mobileFeaturedSpin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+.mobileFeaturedError {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  font-family: 'Inter', sans-serif;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+@keyframes mobileFeaturedFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes mobileFeaturedSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Add staggered animation delays for featured products */
+.mobileFeaturedCard:nth-child(1) { animation-delay: 0.1s; }
+.mobileFeaturedCard:nth-child(2) { animation-delay: 0.2s; }
+.mobileFeaturedCard:nth-child(3) { animation-delay: 0.3s; }
+.mobileFeaturedCard:nth-child(4) { animation-delay: 0.4s; }
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 480px) {
+  .mobileFeaturedSection {
+    padding: 2.5rem 0.75rem;
+  }
+  
+  .mobileFeaturedTitle {
+    font-size: 1.5rem;
+  }
+  
+  .mobileFeaturedProductsGrid {
+    gap: 0.5rem;
+  }
+  
+  .mobileFeaturedCardInfo {
+    padding: 6px;
+  }
+  
+  .mobileFeaturedProductName {
+    font-size: 0.8rem;
+  }
+  
+  .mobileFeaturedPrice {
+    font-size: 0.85rem;
+  }
+}
+
 /* New button style for "Discover All Pieces" button */
 .discoverAllButton {
   background: rgba(255, 255, 255, 0.9);
