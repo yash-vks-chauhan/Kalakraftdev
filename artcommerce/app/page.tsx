@@ -725,6 +725,78 @@ onClick={() => handleCarouselNav('next')}
 
 </section>
 
+{/* Mobile Explore Section - New section for mobile only */}
+<section className={`${styles.mobileExploreSection} ${styles.mobileOnly}`}>
+  <div className={styles.mobileExploreHeader}>
+    <div className={styles.mobileExploreHeaderLine} />
+    <h2 className={styles.mobileExploreTitle}>Explore Our Artisan Creations</h2>
+    <div className={styles.mobileExploreHeaderLine} />
+  </div>
+
+  <div className={styles.mobileExploreDescription}>
+    <p>Discover handcrafted masterpieces that bring elegance and artistry to your living space</p>
+  </div>
+
+  <div className={styles.mobileExploreGrid}>
+    {[
+      {
+        title: 'Abstract Waves',
+        description: 'Fluid art inspired by ocean currents',
+        image: 'https://placehold.co/300x300/f0f0f0/888?text=Abstract+Waves'
+      },
+      {
+        title: 'Golden Sunset',
+        description: 'Warm tones of evening light',
+        image: 'https://placehold.co/300x300/f0f0f0/888?text=Golden+Sunset'
+      },
+      {
+        title: 'Marble Dreams',
+        description: 'Elegant marble-inspired patterns',
+        image: 'https://placehold.co/300x300/f0f0f0/888?text=Marble+Dreams'
+      },
+      {
+        title: 'Forest Whispers',
+        description: 'Nature-inspired green compositions',
+        image: 'https://placehold.co/300x300/f0f0f0/888?text=Forest+Whispers'
+      },
+      {
+        title: 'Cosmic Flow',
+        description: 'Deep space-inspired artistry',
+        image: 'https://placehold.co/300x300/f0f0f0/888?text=Cosmic+Flow'
+      },
+      {
+        title: 'Rose Gold Elegance',
+        description: 'Sophisticated metallic accents',
+        image: 'https://placehold.co/300x300/f0f0f0/888?text=Rose+Gold+Elegance'
+      }
+    ].map((item, index) => (
+      <div key={index} className={styles.mobileExploreCard}>
+        <div className={styles.mobileExploreCardInner}>
+          <img
+            src={item.image}
+            alt={item.title}
+            className={styles.mobileExploreImage}
+            onError={(e) => (e.currentTarget.src = 'https://placehold.co/300x300/f0f0f0/888?text=Image+Not+Found')}
+          />
+          <div className={styles.mobileExploreCardOverlay}>
+            <div className={styles.mobileExploreCardContent}>
+              <h3 className={styles.mobileExploreCardTitle}>{item.title}</h3>
+              <p className={styles.mobileExploreCardDescription}>{item.description}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    ))}
+  </div>
+
+  <div className={styles.mobileExploreFooter}>
+    <p>Each piece is meticulously crafted with passion and precision</p>
+    <Link href="/products" className={styles.mobileExploreButton}>
+      View All Artworks
+    </Link>
+  </div>
+</section>
+
 {/* Artistry in Every Layer Section - Redesigned - Desktop Only */}
 <section className={`${styles.artistrySection} ${styles.desktopOnly}`}>
   <div 

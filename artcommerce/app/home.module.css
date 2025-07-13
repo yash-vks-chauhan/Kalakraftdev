@@ -1647,6 +1647,247 @@
   }
 }
 
+/* Add mobile-only class */
+.mobileOnly {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .mobileOnly {
+    display: block;
+  }
+}
+
+/* Mobile Explore Section Styles */
+.mobileExploreSection {
+  padding: 3rem 1rem;
+  background: linear-gradient(135deg, #fafafa 0%, #f8f8f8 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.mobileExploreHeader {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+.mobileExploreHeaderLine {
+  width: 50px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.6), transparent);
+  margin: 0.5rem auto;
+}
+
+.mobileExploreTitle {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #2c2c2c;
+  margin: 0;
+  letter-spacing: 0.02em;
+  font-style: italic;
+}
+
+.mobileExploreDescription {
+  text-align: center;
+  max-width: 280px;
+  margin: 1rem auto 2.5rem;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: rgba(0, 0, 0, 0.7);
+  font-family: 'Inter', sans-serif;
+}
+
+.mobileExploreGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.mobileExploreCard {
+  position: relative;
+  border-radius: 15px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0;
+  transform: translateY(20px);
+  animation: mobileExploreFadeIn 0.6s ease forwards;
+}
+
+.mobileExploreCardInner {
+  position: relative;
+  width: 100%;
+  padding-bottom: 100%;
+  overflow: hidden;
+}
+
+.mobileExploreImage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.mobileExploreCardOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.5));
+  display: flex;
+  align-items: flex-end;
+  padding: 1rem;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.mobileExploreCardContent {
+  color: #fff;
+  text-align: left;
+  width: 100%;
+  transform: translateY(10px);
+  transition: transform 0.3s ease;
+}
+
+.mobileExploreCardTitle {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin: 0 0 0.25rem 0;
+  letter-spacing: 0.02em;
+}
+
+.mobileExploreCardDescription {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.75rem;
+  margin: 0;
+  opacity: 0.9;
+  line-height: 1.4;
+}
+
+.mobileExploreCard:active {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+}
+
+.mobileExploreCard:active .mobileExploreImage {
+  transform: scale(1.1);
+}
+
+.mobileExploreCard:active .mobileExploreCardOverlay {
+  opacity: 1;
+}
+
+.mobileExploreCard:active .mobileExploreCardContent {
+  transform: translateY(0);
+}
+
+.mobileExploreFooter {
+  text-align: center;
+  margin-top: 2rem;
+  padding: 0 1rem;
+}
+
+.mobileExploreFooter p {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  color: rgba(0, 0, 0, 0.7);
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+.mobileExploreButton {
+  display: inline-block;
+  padding: 0.875rem 2rem;
+  background: linear-gradient(135deg, #2c2c2c, #000);
+  color: #fff;
+  border: none;
+  border-radius: 25px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  font-family: 'Inter', sans-serif;
+}
+
+.mobileExploreButton::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.mobileExploreButton:active {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.mobileExploreButton:active::before {
+  transform: translateX(100%);
+}
+
+@keyframes mobileExploreFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Add staggered animation delays */
+.mobileExploreCard:nth-child(1) { animation-delay: 0.1s; }
+.mobileExploreCard:nth-child(2) { animation-delay: 0.2s; }
+.mobileExploreCard:nth-child(3) { animation-delay: 0.3s; }
+.mobileExploreCard:nth-child(4) { animation-delay: 0.4s; }
+.mobileExploreCard:nth-child(5) { animation-delay: 0.5s; }
+.mobileExploreCard:nth-child(6) { animation-delay: 0.6s; }
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 480px) {
+  .mobileExploreSection {
+    padding: 2.5rem 0.75rem;
+  }
+  
+  .mobileExploreTitle {
+    font-size: 1.5rem;
+  }
+  
+  .mobileExploreGrid {
+    gap: 0.75rem;
+  }
+  
+  .mobileExploreCardOverlay {
+    padding: 0.75rem;
+  }
+  
+  .mobileExploreCardTitle {
+    font-size: 1rem;
+  }
+  
+  .mobileExploreCardDescription {
+    font-size: 0.7rem;
+  }
+}
+
 /* New button style for "Discover All Pieces" button */
 .discoverAllButton {
   background: rgba(255, 255, 255, 0.9);
