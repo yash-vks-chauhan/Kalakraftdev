@@ -13,12 +13,17 @@ import { ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react'
 import styles from './home.module.css'
 import { getImageUrl } from '../lib/cloudinaryImages'
 import Link from 'next/link'
+import React from 'react';
 
 // Add this to detect mobile view
 const isMobileView = () => {
   if (typeof window === 'undefined') return false;
   return window.innerWidth <= 768;
 };
+
+// --- Add below imports ---
+import WishlistButton from './products/../components/WishlistButton';
+import productsMobileStyles from './products/productsMobile.module.css';
 
 export default function Home() {
 
@@ -443,6 +448,180 @@ useEffect(() => {
 
 
 
+// --- Add state for featured products by category ---
+const [featuredProducts, setFeaturedProducts] = useState([]);
+const isMobile = typeof window !== 'undefined' ? window.innerWidth <= 768 : false;
+
+// --- Helper: shuffle array ---
+function shuffle(array) {
+  let currentIndex = array.length, randomIndex;
+  while (currentIndex !== 0) {
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex--;
+    [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+  }
+  return array;
+}
+
+// --- Helper: format price ---
+function formatPrice(price) {
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    maximumFractionDigits: 0,
+    minimumFractionDigits: 0
+  }).format(price);
+}
+
+// --- Extracted ProductCard from ProductsMobileClient ---
+const ProductCard = ({ product }) => {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [touchStart, setTouchStart] = useState(0);
+  const [touchEnd, setTouchEnd] = useState(0);
+  const [isSwiping, setIsSwiping] = useState(false);
+  const [swipeDistance, setSwipeDistance] = useState(0);
+  const [showHints, setShowHints] = useState(true);
+  const imageContainerRef = useRef(null);
+  const containerWidth = useRef(0);
+  useEffect(() => { const timer = setTimeout(() => setShowHints(false), 4000); return () => clearTimeout(timer); }, []);
+  useEffect(() => { if (!product.imageUrls || product.imageUrls.length <= 1) return; product.imageUrls.forEach(url => { const img = new window.Image(); img.src = url; }); }, [product.imageUrls]);
+  const handleTouchStart = (e) => { if (product.imageUrls.length <= 1) return; setShowHints(false); containerWidth.current = imageContainerRef.current?.offsetWidth || 0; setTouchStart(e.targetTouches[0].clientX); setTouchEnd(e.targetTouches[0].clientX); setIsSwiping(true); setSwipeDistance(0); };
+  const handleTouchMove = (e) => { if (!isSwiping || product.imageUrls.length <= 1) return; e.preventDefault(); const currentTouch = e.targetTouches[0].clientX; setTouchEnd(currentTouch); let distance = currentTouch - touchStart; if ((currentImageIndex === 0 && distance > 0) || (currentImageIndex === product.imageUrls.length - 1 && distance < 0)) distance = distance / 3; setSwipeDistance(distance); };
+  const handleTouchEnd = () => { if (!isSwiping || product.imageUrls.length <= 1) return; setIsSwiping(false); if (!touchStart || !touchEnd) { setSwipeDistance(0); return; } const distance = touchStart - touchEnd; const minSwipeDistance = containerWidth.current * 0.2; if (Math.abs(distance) < minSwipeDistance) { setSwipeDistance(0); return; } if (distance > 0 && currentImageIndex < product.imageUrls.length - 1) setCurrentImageIndex(prev => prev + 1); else if (distance < 0 && currentImageIndex > 0) setCurrentImageIndex(prev => prev - 1); setTouchStart(0); setTouchEnd(0); setSwipeDistance(0); };
+  const handleImageTap = (e) => { if (product.imageUrls.length <= 1) return; const w = imageContainerRef.current?.offsetWidth || 0; const tapX = e.nativeEvent.offsetX; if (tapX > w * 0.7 && currentImageIndex < product.imageUrls.length - 1) setCurrentImageIndex(prev => prev + 1); else if (tapX < w * 0.3 && currentImageIndex > 0) setCurrentImageIndex(prev => prev - 1); };
+  const handleWishlistClick = (e) => { e.preventDefault(); e.stopPropagation(); };
+  const getImageTransform = () => { if (isSwiping) { const percentageOffset = containerWidth.current ? (swipeDistance / containerWidth.current) * 100 : 0; return { transform: `translateX(calc(-${currentImageIndex * 100}% + ${percentageOffset}%))`, transition: 'none' }; } return { transform: `translateX(-${currentImageIndex * 100}%)`, transition: 'transform 0.3s ease' }; };
+  const getShortDescription = () => { if (!product.shortDesc) return null; return product.shortDesc.length > 60 ? `${product.shortDesc.substring(0, 60)}...` : product.shortDesc; };
+  return (
+    <div className={productsMobileStyles.cardWrapper}>
+      <Link href={`/products/${product.id}`} className={productsMobileStyles.card}>
+        <div 
+          className={productsMobileStyles.imageContainer}
+          ref={imageContainerRef}
+          onClick={handleImageTap}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
+          <div 
+            className={productsMobileStyles.imageSlider} 
+            style={getImageTransform()}
+          >
+            {product.imageUrls.map((url, index) => (
+              <div key={index} className={productsMobileStyles.imageSlide}>
+                <img 
+                  src={url}
+                  alt={`${product.name} - Image ${index + 1}`}
+                  className={productsMobileStyles.image}
+                  loading={index === 0 || index === 1 ? "eager" : "lazy"}
+                  draggable="false"
+                />
+              </div>
+            ))}
+          </div>
+          {product.imageUrls.length === 0 && (
+            <div className={productsMobileStyles.noImage}>No image</div>
+          )}
+          {product.isNew && <span className={productsMobileStyles.badge}>New</span>}
+          {product.stockQuantity === 0 && <div className={productsMobileStyles.outOfStock}>Out of Stock</div>}
+          {product.stockQuantity > 0 && product.stockQuantity <= 5 && (
+            <div className={productsMobileStyles.lowStock}>Only {product.stockQuantity} left</div>
+          )}
+          {product.imageUrls.length > 1 && (
+            <div className={productsMobileStyles.imageIndicators}>
+              {product.imageUrls.map((_, index) => (
+                <div 
+                  key={index} 
+                  className={`${productsMobileStyles.indicator} ${index === currentImageIndex ? productsMobileStyles.activeIndicator : ''}`}
+                />
+              ))}
+            </div>
+          )}
+          {showHints && product.imageUrls.length > 1 && (
+            <>
+              {currentImageIndex > 0 && (
+                <div className={productsMobileStyles.swipeRightHint}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                  </svg>
+                </div>
+              )}
+              {currentImageIndex < product.imageUrls.length - 1 && (
+                <div className={productsMobileStyles.swipeLeftHint}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                  </svg>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+        <div className={productsMobileStyles.info}>
+          {product.category && (
+            <div className={productsMobileStyles.categoryTag}>
+              {product.category.name}
+            </div>
+          )}
+          <h3 className={productsMobileStyles.name}>{product.name}</h3>
+          {product.shortDesc && !product.avgRating && (
+            <p className={productsMobileStyles.shortDesc}>{getShortDescription()}</p>
+          )}
+          <div className={productsMobileStyles.priceRow}>
+            <p className={productsMobileStyles.price}>{formatPrice(product.price)}</p>
+            {product.avgRating > 0 && (
+              <p className={productsMobileStyles.productRating}>
+                <span className={productsMobileStyles.starFilled}>★</span> 
+                <span className={productsMobileStyles.ratingValue}>{product.avgRating.toFixed(1)}</span>
+              </p>
+            )}
+          </div>
+        </div>
+      </Link>
+      <div className={productsMobileStyles.wishlistContainer} onClick={handleWishlistClick}>
+        <WishlistButton 
+          productId={product.id} 
+          className={`${productsMobileStyles.wishlistButton} ${productsMobileStyles.blackWishlist}`}
+          preventNavigation={true}
+        />
+      </div>
+    </div>
+  );
+};
+
+// --- Fetch 4 random products, one from each of 4 random categories ---
+useEffect(() => {
+  if (!isMobile) return;
+  const KNOWN_CATEGORIES = [
+    { slug: 'clocks', name: 'Clocks' },
+    { slug: 'pots', name: 'Pots' },
+    { slug: 'tray', name: 'Trays' },
+    { slug: 'Tray', name: 'Jewelry Trays' },
+    { slug: 'rangoli', name: 'Rangoli' },
+    { slug: 'decor', name: 'Wall Decor' },
+    { slug: 'matt rangoli', name: 'Matt Rangoli' },
+    { slug: 'mirror work', name: 'Mirror Work' }
+  ];
+  const shuffled = shuffle([...KNOWN_CATEGORIES]);
+  const selected = shuffled.slice(0, 4);
+  Promise.all(selected.map(async (cat) => {
+    const res = await fetch(`/api/products?category=${encodeURIComponent(cat.slug)}`);
+    const data = await res.json();
+    if (Array.isArray(data.products) && data.products.length > 0) {
+      // Pick a random product from this category
+      const prod = data.products[Math.floor(Math.random() * data.products.length)];
+      // Normalize imageUrls
+      let urls = [];
+      try { urls = Array.isArray(prod.imageUrls) ? prod.imageUrls : JSON.parse(prod.imageUrls || '[]'); } catch { urls = []; }
+      return { ...prod, imageUrls: urls };
+    }
+    return null;
+  })).then((prods) => {
+    setFeaturedProducts(prods.filter(Boolean));
+  });
+}, [isMobile]);
+
+
+
 return (
 
 <main data-page="home" style={{background: '#f8f8f8'}}>
@@ -805,6 +984,23 @@ onClick={() => handleCarouselNav('next')}
     </div>
   </div>
 </section>
+
+{/* --- Insert new mobile-only section here --- */}
+{isMobile && featuredProducts.length > 0 && (
+  <section style={{ background: '#fff', padding: '2rem 0 1rem', borderBottom: '1px solid #eee' }}>
+    <div style={{ maxWidth: 600, margin: '0 auto', padding: '0 1rem' }}>
+      <div style={{ textAlign: 'center', marginBottom: 16 }}>
+        <h2 style={{ fontSize: '1.3rem', fontWeight: 600, margin: 0 }}>Featured by Category</h2>
+        <div style={{ color: '#888', fontSize: '0.95rem', marginTop: 2 }}>A fresh pick from each collection, every visit</div>
+      </div>
+      <div className={productsMobileStyles.list} style={{ marginBottom: 0 }}>
+        {featuredProducts.map((product) => (
+          <ProductCard key={product.id} product={product} />
+        ))}
+      </div>
+    </div>
+  </section>
+)}
 
 </main>
 
