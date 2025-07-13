@@ -450,7 +450,8 @@ useEffect(() => {
 
 // --- Add state for featured products by category ---
 const [featuredProducts, setFeaturedProducts] = useState([]);
-const isMobile = typeof window !== 'undefined' ? window.innerWidth <= 768 : false;
+const [isMobile, setIsMobile] = useState(false);
+const [hasLoadedFeaturedProducts, setHasLoadedFeaturedProducts] = useState(false);
 
 // --- Helper: shuffle array ---
 function shuffle(array) {
@@ -472,6 +473,18 @@ function formatPrice(price) {
     minimumFractionDigits: 0
   }).format(price);
 }
+
+// --- Mobile detection useEffect ---
+useEffect(() => {
+  const checkMobile = () => {
+    const mobile = window.innerWidth <= 768;
+    setIsMobile(mobile);
+  };
+  
+  checkMobile();
+  window.addEventListener('resize', checkMobile);
+  return () => window.removeEventListener('resize', checkMobile);
+}, []);
 
 // --- Extracted ProductCard from ProductsMobileClient ---
 const ProductCard = ({ product }) => {
@@ -590,7 +603,8 @@ const ProductCard = ({ product }) => {
 
 // --- Fetch 4 random products, one from each of 4 random categories ---
 useEffect(() => {
-  if (!isMobile) return;
+  if (!isMobile || hasLoadedFeaturedProducts) return;
+  
   const KNOWN_CATEGORIES = [
     { slug: 'clocks', name: 'Clocks' },
     { slug: 'pots', name: 'Pots' },
@@ -603,6 +617,7 @@ useEffect(() => {
   ];
   const shuffled = shuffle([...KNOWN_CATEGORIES]);
   const selected = shuffled.slice(0, 4);
+  
   Promise.all(selected.map(async (cat) => {
     const res = await fetch(`/api/products?category=${encodeURIComponent(cat.slug)}`);
     const data = await res.json();
@@ -617,8 +632,9 @@ useEffect(() => {
     return null;
   })).then((prods) => {
     setFeaturedProducts(prods.filter(Boolean));
+    setHasLoadedFeaturedProducts(true);
   });
-}, [isMobile]);
+}, [isMobile, hasLoadedFeaturedProducts]);
 
 
 
