@@ -200,19 +200,7 @@ const FeaturedProductsGrid = () => {
             className={styles.mobileFeaturedCard}
           >
             <div className={styles.mobileFeaturedCardInner}>
-              <div 
-                className={styles.mobileFeaturedImageContainer}
-                onClick={(e) => {
-                  e.preventDefault();
-                  if (product.imageUrls && product.imageUrls.length > 1) {
-                    setImageIndices(prev => {
-                      const currentIndex = prev[product.id] || 0;
-                      const newIndex = (currentIndex + 1) % product.imageUrls.length;
-                      return { ...prev, [product.id]: newIndex };
-                    });
-                  }
-                }}
-              >
+              <div className={styles.mobileFeaturedImageContainer}>
                 {product.imageUrls && product.imageUrls.length > 0 ? (
                   <img
                     src={product.imageUrls[imageIndices[product.id] || 0]}
@@ -223,45 +211,11 @@ const FeaturedProductsGrid = () => {
                 ) : (
                   <div className={styles.mobileFeaturedNoImage}>No Image</div>
                 )}
-                
-                {product.stockQuantity === 0 && (
-                  <div className={styles.mobileFeaturedOutOfStock}>Out of Stock</div>
-                )}
-                
-                {product.stockQuantity > 0 && product.stockQuantity <= 5 && (
-                  <div className={styles.mobileFeaturedLowStock}>Only {product.stockQuantity} left</div>
-                )}
-                
-                {product.imageUrls && product.imageUrls.length > 1 && (
-                  <div className={styles.mobileFeaturedImageIndicators}>
-                    {product.imageUrls.map((_, indicatorIndex) => (
-                      <div 
-                        key={indicatorIndex} 
-                        className={`${styles.mobileFeaturedIndicator} ${
-                          indicatorIndex === (imageIndices[product.id] || 0) ? styles.mobileFeaturedActiveIndicator : ''
-                        }`}
-                      />
-                    ))}
-                  </div>
-                )}
               </div>
               
               <div className={styles.mobileFeaturedCardInfo}>
-                {product.category && (
-                  <div className={styles.mobileFeaturedCategory}>
-                    {product.category.name}
-                  </div>
-                )}
                 <h3 className={styles.mobileFeaturedProductName}>{product.name}</h3>
-                <div className={styles.mobileFeaturedPriceRow}>
-                  <p className={styles.mobileFeaturedPrice}>{formatPrice(product.price)}</p>
-                  {product.avgRating > 0 && (
-                    <p className={styles.mobileFeaturedRating}>
-                      <span className={styles.mobileFeaturedStarFilled}>★</span>
-                      <span className={styles.mobileFeaturedRatingValue}>{product.avgRating.toFixed(1)}</span>
-                    </p>
-                  )}
-                </div>
+                <p className={styles.mobileFeaturedPrice}>{formatPrice(product.price)}</p>
               </div>
             </div>
           </Link>
@@ -991,33 +945,27 @@ onClick={() => handleCarouselNav('next')}
   <div className={styles.mobileExploreGrid}>
     {[
       {
-        title: 'Abstract Waves',
-        description: 'Fluid art inspired by ocean currents',
+        title: 'Artistic Journals',
         image: 'https://res.cloudinary.com/downe8107/image/upload/v1752441188/84D2D636-027E-484D-B886-1BFEE0B9F5CD_1_201_a_ca4hrv.jpg'
       },
       {
-        title: 'Golden Sunset',
-        description: 'Warm tones of evening light',
+        title: 'Wall Clocks',
         image: 'https://res.cloudinary.com/downe8107/image/upload/v1752441196/F0CFF91C-3B7B-4AA9-AECE-35A6DA417194_1_201_a_w5rmde.jpg'
       },
       {
-        title: 'Marble Dreams',
-        description: 'Elegant marble-inspired patterns',
+        title: 'Resin Trays',
         image: 'https://res.cloudinary.com/downe8107/image/upload/v1752441176/2E1812EC-BB3C-4C7D-8480-C1539B7A0FBB_1_201_a_xc2yjx.jpg'
       },
       {
-        title: 'Forest Whispers',
-        description: 'Nature-inspired green compositions',
+        title: 'Rangoli Art',
         image: 'https://res.cloudinary.com/downe8107/image/upload/v1752440782/6F66291E-3673-47F4-8989-701EBB8BB8BE_1_201_a_uxx8zk.jpg'
       },
       {
-        title: 'Cosmic Flow',
-        description: 'Deep space-inspired artistry',
+        title: 'Pattachitra Panels',
         image: 'https://res.cloudinary.com/downe8107/image/upload/v1752441169/65B82642-5A77-4A31-88BC-B36E2B5DB7DE_1_201_a_e7bed1.jpg'
       },
       {
-        title: 'Rose Gold Elegance',
-        description: 'Sophisticated metallic accents',
+        title: 'Krishna Embroidery',
         image: 'https://res.cloudinary.com/downe8107/image/upload/v1752441212/2E077407-F784-4515-8960-988FB394B218_1_201_a_p1as8c.jpg'
       }
     ].map((item, index) => (
@@ -1029,11 +977,8 @@ onClick={() => handleCarouselNav('next')}
             className={styles.mobileExploreImage}
             onError={(e) => (e.currentTarget.src = 'https://placehold.co/300x300/f0f0f0/888?text=Image+Not+Found')}
           />
-          <div className={styles.mobileExploreCardOverlay}>
-            <div className={styles.mobileExploreCardContent}>
-              <h3 className={styles.mobileExploreCardTitle}>{item.title}</h3>
-              <p className={styles.mobileExploreCardDescription}>{item.description}</p>
-            </div>
+          <div className={styles.mobileExploreCardContent}>
+            <h3 className={styles.mobileExploreCardTitle}>{item.title}</h3>
           </div>
         </div>
       </div>
