@@ -988,6 +988,10 @@ onClick={() => handleCarouselNav('next')}
       View All Artworks
     </Link>
   </div>
+
+  {/* Watercolor background accents */}
+  <div className={styles.watercolorAccent1}></div>
+  <div className={styles.watercolorAccent2}></div>
 </section>
 
 {/* Featured Discoveries Section - Random products from API */}
@@ -1005,6 +1009,10 @@ onClick={() => handleCarouselNav('next')}
   <div className={styles.mobileFeaturedGrid}>
     <FeaturedProductsGrid />
   </div>
+
+  {/* Watercolor background accents */}
+  <div className={styles.watercolorAccent1}></div>
+  <div className={styles.watercolorAccent2}></div>
 </section>
 
 {/* Artistry in Every Layer Section - Redesigned - Desktop Only */}

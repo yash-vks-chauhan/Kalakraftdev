@@ -1659,21 +1659,53 @@
 /* Mobile Explore Section Styles */
 .mobileExploreSection {
   padding: 3rem 1rem;
-  background: #fff;
+  background: #f9f9f9;
   position: relative;
   overflow: hidden;
+}
+
+/* Enhanced artistic background effects for mobile explore */
+.mobileExploreSection::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.025'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.015'%3E%3Cpath d='M20 20c0-5.5-4.5-10-10-10s-10 4.5-10 10 4.5 10 10 10 10-4.5 10-10zm10 0c0-5.5-4.5-10-10-10s-10 4.5-10 10 4.5 10 10 10 10-4.5 10-10z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  opacity: 0.7;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Decorative corner accents */
+.mobileExploreSection::after {
+  content: '';
+  position: absolute;
+  top: 30px;
+  left: 30px;
+  width: 60px;
+  height: 60px;
+  border-top: 1px solid;
+  border-left: 1px solid;
+  border-image: linear-gradient(135deg, rgba(179, 138, 88, 0.6), rgba(0, 0, 0, 0.15)) 1;
+  z-index: 2;
+  pointer-events: none;
 }
 
 .mobileExploreHeader {
   text-align: center;
   margin-bottom: 2rem;
   position: relative;
+  z-index: 2;
 }
 
 .mobileExploreHeaderLine {
   width: 40px;
   height: 2px;
-  background: #000;
+  background: linear-gradient(90deg, transparent, #000, transparent);
   margin: 0.5rem auto;
 }
 
@@ -1685,6 +1717,18 @@
   margin: 0;
   letter-spacing: 0.02em;
   font-style: italic;
+  position: relative;
+}
+
+.mobileExploreTitle::before {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(179, 138, 88, 0.5), transparent);
 }
 
 .mobileExploreDescription {
@@ -1694,6 +1738,8 @@
   font-size: 0.875rem;
   line-height: 1.6;
   color: rgba(0, 0, 0, 0.7);
+  position: relative;
+  z-index: 2;
 }
 
 .mobileExploreGrid {
@@ -1701,6 +1747,8 @@
   grid-template-columns: repeat(2, 1fr);
   gap: 1rem;
   margin-bottom: 2rem;
+  position: relative;
+  z-index: 2;
 }
 
 .mobileExploreCard {
@@ -1708,11 +1756,16 @@
   border-radius: 0;
   overflow: hidden;
   background: #fff;
-  box-shadow: none;
-  border: 1px solid #f0f0f0;
-  transition: none;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  border: none;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
   opacity: 1;
   transform: translateY(0);
+}
+
+.mobileExploreCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
 }
 
 .mobileExploreCardInner {
@@ -1727,7 +1780,13 @@
   width: 100%;
   aspect-ratio: 1/1.3;
   object-fit: cover;
+  object-position: center;
   display: block;
+  transition: transform 0.3s ease;
+}
+
+.mobileExploreCard:hover .mobileExploreImage {
+  transform: scale(1.02);
 }
 
 .mobileExploreCardContent {
@@ -1735,6 +1794,10 @@
   text-align: center;
   background: #fff;
   border-top: 1px solid #f0f0f0;
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .mobileExploreCardTitle {
@@ -1751,6 +1814,8 @@
   text-align: center;
   margin-top: 2rem;
   padding: 0 1rem;
+  position: relative;
+  z-index: 2;
 }
 
 .mobileExploreFooter p {
@@ -1764,7 +1829,7 @@
 .mobileExploreButton {
   display: inline-block;
   padding: 0.875rem 2rem;
-  background: #000;
+  background: linear-gradient(135deg, #000 0%, #333 100%);
   color: #fff;
   border: none;
   border-radius: 0;
@@ -1772,13 +1837,33 @@
   font-weight: 500;
   letter-spacing: 0.05em;
   text-decoration: none;
-  transition: background-color 0.3s ease;
+  transition: all 0.3s ease;
   font-family: 'Inter', sans-serif;
   text-transform: uppercase;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.mobileExploreButton::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+  transition: left 0.6s ease;
 }
 
 .mobileExploreButton:hover {
-  background: #333;
+  background: linear-gradient(135deg, #222 0%, #555 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.mobileExploreButton:hover::before {
+  left: 100%;
 }
 
 /* Remove animation delays and keyframes */
@@ -1791,141 +1876,89 @@
   animation: none;
 }
 
-/* Responsive adjustments for tablets and larger mobile devices */
-@media (min-width: 769px) and (max-width: 1024px) {
-  .mobileExploreSection {
-    padding: 4rem 2rem;
-  }
-  
-  .mobileExploreTitle {
-    font-size: 2rem;
-  }
-  
-  .mobileExploreGrid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.25rem;
-    max-width: 900px;
-    margin: 0 auto;
-  }
-  
-  .mobileExploreImage {
-    aspect-ratio: 1/1.3;
-  }
-  
-  .mobileExploreCardTitle {
-    font-size: 1rem;
-  }
-  
-  .mobileFeaturedSection {
-    padding: 4rem 2rem;
-  }
-  
-  .mobileFeaturedTitle {
-    font-size: 2rem;
-  }
-  
-  .mobileFeaturedProductsGrid {
-    grid-template-columns: repeat(3, 1fr);
-    max-width: 800px;
-    margin: 0 auto;
-  }
-  
-  .mobileFeaturedCard {
-    border-right: 1px solid #f0f0f0;
-  }
-  
-  .mobileFeaturedCard:nth-child(2n) {
-    border-right: 1px solid #f0f0f0;
-  }
-  
-  .mobileFeaturedCard:nth-child(3n) {
-    border-right: none;
-  }
-  
-  .mobileFeaturedCardInfo {
-    padding: 12px;
-    height: 90px;
-  }
-  
-  .mobileFeaturedProductName {
-    font-size: 0.95rem;
-  }
-  
-  .mobileFeaturedPrice {
-    font-size: 1rem;
-  }
+/* Watercolor background accents for mobile explore */
+.mobileExploreSection .watercolorAccent1 {
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cpath d='M50,100 Q70,70 90,90 T130,80 T170,100 T150,130 T110,140 T70,120 T50,100' fill='%23b38a58' fill-opacity='0.04'/%3E%3C/svg%3E");
+  background-size: contain;
+  background-repeat: no-repeat;
+  top: 15%;
+  right: 10%;
+  z-index: 1;
+  opacity: 0.6;
+  transform: rotate(-20deg);
+  pointer-events: none;
+  animation: gentle-float 18s infinite alternate ease-in-out;
 }
 
-/* Responsive adjustments for smaller screens */
-@media (max-width: 480px) {
-  .mobileExploreSection {
-    padding: 2.5rem 0.75rem;
-  }
-  
-  .mobileExploreTitle {
-    font-size: 1.5rem;
-  }
-  
-  .mobileExploreGrid {
-    gap: 0.75rem;
-  }
-  
-  .mobileExploreImage {
-    aspect-ratio: 1/1.3;
-  }
-  
-  .mobileExploreCardContent {
-    padding: 0.75rem;
-  }
-  
-  .mobileExploreCardTitle {
-    font-size: 0.8rem;
-  }
-  
-  .mobileFeaturedSection {
-    padding: 2.5rem 0.75rem;
-  }
-  
-  .mobileFeaturedTitle {
-    font-size: 1.5rem;
-  }
-  
-  .mobileFeaturedProductsGrid {
-    gap: 0;
-  }
-  
-  .mobileFeaturedCardInfo {
-    padding: 6px;
-    height: 70px;
-  }
-  
-  .mobileFeaturedProductName {
-    font-size: 0.8rem;
-  }
-  
-  .mobileFeaturedPrice {
-    font-size: 0.85rem;
-  }
+.mobileExploreSection .watercolorAccent2 {
+  position: absolute;
+  width: 150px;
+  height: 150px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cpath d='M70,100 Q90,60 110,80 T150,70 T180,110 T160,140 T120,150 T80,130 T70,100' fill='%23000000' fill-opacity='0.02'/%3E%3C/svg%3E");
+  background-size: contain;
+  background-repeat: no-repeat;
+  bottom: 20%;
+  left: 5%;
+  z-index: 1;
+  opacity: 0.5;
+  transform: rotate(15deg);
+  pointer-events: none;
+  animation: gentle-float 22s infinite alternate-reverse ease-in-out;
 }
 
 /* Mobile Featured Discoveries Section Styles */
 .mobileFeaturedSection {
   padding: 3rem 1rem;
-  background: #fff;
+  background: #fafafa;
   position: relative;
   overflow: hidden;
+}
+
+/* Enhanced artistic background effects for mobile featured */
+.mobileFeaturedSection::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.5' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23noise)' opacity='0.02'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg width='50' height='50' viewBox='0 0 50 50' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.01'%3E%3Cpath d='M25 25l-5-5h10l-5 5zm0 0l5-5v10l-5-5zm0 0l5 5h-10l5-5zm0 0l-5 5v-10l5 5z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  opacity: 0.8;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Decorative corner accents */
+.mobileFeaturedSection::after {
+  content: '';
+  position: absolute;
+  bottom: 30px;
+  right: 30px;
+  width: 60px;
+  height: 60px;
+  border-bottom: 1px solid;
+  border-right: 1px solid;
+  border-image: linear-gradient(315deg, rgba(179, 138, 88, 0.6), rgba(0, 0, 0, 0.15)) 1;
+  z-index: 2;
+  pointer-events: none;
 }
 
 .mobileFeaturedHeader {
   text-align: center;
   margin-bottom: 2rem;
   position: relative;
+  z-index: 2;
 }
 
 .mobileFeaturedHeaderLine {
   width: 40px;
   height: 2px;
-  background: #000;
+  background: linear-gradient(90deg, transparent, #000, transparent);
   margin: 0.5rem auto;
 }
 
@@ -1937,6 +1970,18 @@
   margin: 0;
   letter-spacing: 0.02em;
   font-style: italic;
+  position: relative;
+}
+
+.mobileFeaturedTitle::before {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(179, 138, 88, 0.5), transparent);
 }
 
 .mobileFeaturedDescription {
@@ -1946,10 +1991,14 @@
   font-size: 0.875rem;
   line-height: 1.6;
   color: rgba(0, 0, 0, 0.7);
+  position: relative;
+  z-index: 2;
 }
 
 .mobileFeaturedGrid {
   margin-bottom: 2rem;
+  position: relative;
+  z-index: 2;
 }
 
 .mobileFeaturedProductsGrid {
@@ -1959,6 +2008,9 @@
   width: 100%;
   background-color: #fff;
   box-sizing: border-box;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  border-radius: 0;
+  overflow: hidden;
 }
 
 .mobileFeaturedCard {
@@ -1973,7 +2025,7 @@
   box-shadow: none;
   border-bottom: 1px solid #f0f0f0;
   border-right: 1px solid #f0f0f0;
-  transition: none;
+  transition: background-color 0.3s ease;
   opacity: 1;
   transform: translateY(0);
   animation: none;
@@ -1987,6 +2039,10 @@
   border-right: none;
 }
 
+.mobileFeaturedCard:hover {
+  background-color: #f8f8f8;
+}
+
 .mobileFeaturedCard:active {
   transform: translateY(1px);
 }
@@ -1995,6 +2051,39 @@
   height: 100%;
   display: flex;
   flex-direction: column;
+}
+
+/* Watercolor background accents for mobile featured */
+.mobileFeaturedSection .watercolorAccent1 {
+  position: absolute;
+  width: 180px;
+  height: 180px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cpath d='M60,100 Q80,60 100,80 T140,70 T170,110 T150,140 T110,150 T70,130 T60,100' fill='%23000000' fill-opacity='0.025'/%3E%3C/svg%3E");
+  background-size: contain;
+  background-repeat: no-repeat;
+  top: 10%;
+  left: 8%;
+  z-index: 1;
+  opacity: 0.7;
+  transform: rotate(10deg);
+  pointer-events: none;
+  animation: gentle-float 20s infinite alternate ease-in-out;
+}
+
+.mobileFeaturedSection .watercolorAccent2 {
+  position: absolute;
+  width: 160px;
+  height: 160px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cpath d='M80,100 Q100,60 120,80 T160,70 T180,110 T160,140 T120,150 T80,130 T80,100' fill='%23b38a58' fill-opacity='0.03'/%3E%3C/svg%3E");
+  background-size: contain;
+  background-repeat: no-repeat;
+  bottom: 15%;
+  right: 5%;
+  z-index: 1;
+  opacity: 0.5;
+  transform: rotate(-15deg);
+  pointer-events: none;
+  animation: gentle-float 24s infinite alternate-reverse ease-in-out;
 }
 
 .mobileFeaturedImageContainer {
@@ -2011,6 +2100,11 @@
   height: 100%;
   object-fit: cover;
   display: block;
+  transition: transform 0.3s ease;
+}
+
+.mobileFeaturedCard:hover .mobileFeaturedImage {
+  transform: scale(1.02);
 }
 
 .mobileFeaturedNoImage {
@@ -2102,6 +2196,29 @@
 
 /* Responsive adjustments for tablets and larger mobile devices */
 @media (min-width: 769px) and (max-width: 1024px) {
+  .mobileExploreSection {
+    padding: 4rem 2rem;
+  }
+  
+  .mobileExploreTitle {
+    font-size: 2rem;
+  }
+  
+  .mobileExploreGrid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  
+  .mobileExploreImage {
+    aspect-ratio: 1/1.3;
+  }
+  
+  .mobileExploreCardTitle {
+    font-size: 1rem;
+  }
+  
   .mobileFeaturedSection {
     padding: 4rem 2rem;
   }
@@ -2140,6 +2257,30 @@
 
 /* Responsive adjustments for smaller screens */
 @media (max-width: 480px) {
+  .mobileExploreSection {
+    padding: 2.5rem 0.75rem;
+  }
+  
+  .mobileExploreTitle {
+    font-size: 1.5rem;
+  }
+  
+  .mobileExploreGrid {
+    gap: 0.75rem;
+  }
+  
+  .mobileExploreImage {
+    aspect-ratio: 1/1.3;
+  }
+  
+  .mobileExploreCardContent {
+    padding: 0.75rem;
+  }
+  
+  .mobileExploreCardTitle {
+    font-size: 0.8rem;
+  }
+  
   .mobileFeaturedSection {
     padding: 2.5rem 0.75rem;
   }
