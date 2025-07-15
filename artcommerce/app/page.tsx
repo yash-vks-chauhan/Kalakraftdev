@@ -25,6 +25,7 @@ const FeaturedProductsGrid = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [imageIndices, setImageIndices] = useState({});
 
   // Format price function
   const formatPrice = (price) => {
@@ -114,8 +115,10 @@ const FeaturedProductsGrid = () => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
+        console.log('Fetching products...');
         const response = await fetch('/api/products');
         const data = await response.json();
+        console.log('API response:', data);
         
         if (data.products && Array.isArray(data.products)) {
           // Normalize imageUrls and filter active products
@@ -133,9 +136,11 @@ const FeaturedProductsGrid = () => {
           
           // Shuffle and take 4 random products
           const shuffled = [...normalizedProducts].sort(() => Math.random() - 0.5);
+          console.log('Processed products:', shuffled.slice(0, 4));
           setProducts(shuffled.slice(0, 4));
         }
       } catch (err) {
+        console.error('Error fetching products:', err);
         setError(err.message);
       } finally {
         setLoading(false);
@@ -162,15 +167,106 @@ const FeaturedProductsGrid = () => {
     );
   }
 
+  // Add fallback for when there are no products
+  if (!products || products.length === 0) {
+    return (
+      <div className={styles.mobileFeaturedProductsGrid}>
+        {[1, 2, 3, 4].map((_, index) => (
+          <div key={index} className={styles.mobileFeaturedCard} style={{opacity: 1, transform: 'translateY(0)'}}>
+            <div className={styles.mobileFeaturedCardInner}>
+              <div className={styles.mobileFeaturedImageContainer}>
+                <div className={styles.mobileFeaturedNoImage}>Product {index + 1}</div>
+              </div>
+              <div className={styles.mobileFeaturedCardInfo}>
+                <div className={styles.mobileFeaturedCategory}>Category</div>
+                <h3 className={styles.mobileFeaturedProductName}>Sample Product</h3>
+                <div className={styles.mobileFeaturedPriceRow}>
+                  <p className={styles.mobileFeaturedPrice}>{formatPrice(1200)}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div className={styles.mobileFeaturedProductsGrid}>
-      {products.map((product) => {
-        return (
-          <div key={product.id}>
-            <ProductCard product={product} />
-          </div>
-        );
-      })}
+      {products.map((product, index) => (
+        <div key={product.id} style={{animationDelay: `${0.1 * (index + 1)}s`}}>
+          <Link 
+            href={`/products/${product.id}`} 
+            className={styles.mobileFeaturedCard}
+          >
+            <div className={styles.mobileFeaturedCardInner}>
+              <div 
+                className={styles.mobileFeaturedImageContainer}
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (product.imageUrls && product.imageUrls.length > 1) {
+                    setImageIndices(prev => {
+                      const currentIndex = prev[product.id] || 0;
+                      const newIndex = (currentIndex + 1) % product.imageUrls.length;
+                      return { ...prev, [product.id]: newIndex };
+                    });
+                  }
+                }}
+              >
+                {product.imageUrls && product.imageUrls.length > 0 ? (
+                  <img
+                    src={product.imageUrls[imageIndices[product.id] || 0]}
+                    alt={product.name}
+                    className={styles.mobileFeaturedImage}
+                    onError={(e) => (e.currentTarget.src = 'https://placehold.co/300x300/f0f0f0/888?text=No+Image')}
+                  />
+                ) : (
+                  <div className={styles.mobileFeaturedNoImage}>No Image</div>
+                )}
+                
+                {product.stockQuantity === 0 && (
+                  <div className={styles.mobileFeaturedOutOfStock}>Out of Stock</div>
+                )}
+                
+                {product.stockQuantity > 0 && product.stockQuantity <= 5 && (
+                  <div className={styles.mobileFeaturedLowStock}>Only {product.stockQuantity} left</div>
+                )}
+                
+                {product.imageUrls && product.imageUrls.length > 1 && (
+                  <div className={styles.mobileFeaturedImageIndicators}>
+                    {product.imageUrls.map((_, indicatorIndex) => (
+                      <div 
+                        key={indicatorIndex} 
+                        className={`${styles.mobileFeaturedIndicator} ${
+                          indicatorIndex === (imageIndices[product.id] || 0) ? styles.mobileFeaturedActiveIndicator : ''
+                        }`}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+              
+              <div className={styles.mobileFeaturedCardInfo}>
+                {product.category && (
+                  <div className={styles.mobileFeaturedCategory}>
+                    {product.category.name}
+                  </div>
+                )}
+                <h3 className={styles.mobileFeaturedProductName}>{product.name}</h3>
+                <div className={styles.mobileFeaturedPriceRow}>
+                  <p className={styles.mobileFeaturedPrice}>{formatPrice(product.price)}</p>
+                  {product.avgRating > 0 && (
+                    <p className={styles.mobileFeaturedRating}>
+                      <span className={styles.mobileFeaturedStarFilled}>★</span>
+                      <span className={styles.mobileFeaturedRatingValue}>{product.avgRating.toFixed(1)}</span>
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </Link>
+        </div>
+      ))}
     </div>
   );
 };
@@ -897,32 +993,32 @@ onClick={() => handleCarouselNav('next')}
       {
         title: 'Abstract Waves',
         description: 'Fluid art inspired by ocean currents',
-        image: 'https://placehold.co/300x300/f0f0f0/888?text=Abstract+Waves'
+        image: 'https://res.cloudinary.com/downe8107/image/upload/v1752441188/84D2D636-027E-484D-B886-1BFEE0B9F5CD_1_201_a_ca4hrv.jpg'
       },
       {
         title: 'Golden Sunset',
         description: 'Warm tones of evening light',
-        image: 'https://placehold.co/300x300/f0f0f0/888?text=Golden+Sunset'
+        image: 'https://res.cloudinary.com/downe8107/image/upload/v1752441196/F0CFF91C-3B7B-4AA9-AECE-35A6DA417194_1_201_a_w5rmde.jpg'
       },
       {
         title: 'Marble Dreams',
         description: 'Elegant marble-inspired patterns',
-        image: 'https://placehold.co/300x300/f0f0f0/888?text=Marble+Dreams'
+        image: 'https://res.cloudinary.com/downe8107/image/upload/v1752441176/2E1812EC-BB3C-4C7D-8480-C1539B7A0FBB_1_201_a_xc2yjx.jpg'
       },
       {
         title: 'Forest Whispers',
         description: 'Nature-inspired green compositions',
-        image: 'https://placehold.co/300x300/f0f0f0/888?text=Forest+Whispers'
+        image: 'https://res.cloudinary.com/downe8107/image/upload/v1752440782/6F66291E-3673-47F4-8989-701EBB8BB8BE_1_201_a_uxx8zk.jpg'
       },
       {
         title: 'Cosmic Flow',
         description: 'Deep space-inspired artistry',
-        image: 'https://placehold.co/300x300/f0f0f0/888?text=Cosmic+Flow'
+        image: 'https://res.cloudinary.com/downe8107/image/upload/v1752441169/65B82642-5A77-4A31-88BC-B36E2B5DB7DE_1_201_a_e7bed1.jpg'
       },
       {
         title: 'Rose Gold Elegance',
         description: 'Sophisticated metallic accents',
-        image: 'https://placehold.co/300x300/f0f0f0/888?text=Rose+Gold+Elegance'
+        image: 'https://res.cloudinary.com/downe8107/image/upload/v1752441212/2E077407-F784-4515-8960-988FB394B218_1_201_a_p1as8c.jpg'
       }
     ].map((item, index) => (
       <div key={index} className={styles.mobileExploreCard}>
