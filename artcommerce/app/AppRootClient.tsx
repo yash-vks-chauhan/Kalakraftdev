@@ -34,7 +34,7 @@ export default function AppRootClient({ children }: { children: React.ReactNode 
       
       // Use the utility function for mobile detection
       setIsMobile(isMobileDevice());
-      setIsSmallScreen(window.innerWidth <= 768);
+      setIsSmallScreen(window.innerWidth <= 1024);
     };
     
     checkMobile();

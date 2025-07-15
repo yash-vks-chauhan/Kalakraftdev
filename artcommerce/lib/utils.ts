@@ -1,7 +1,7 @@
 import React from 'react';
 
 /**
- * Checks if the current device is a mobile device based on user agent
+ * Checks if the current device is a mobile device based on user agent and screen size
  * @returns boolean - true if the current device is mobile
  */
 export function isMobileDevice(): boolean {
@@ -13,11 +13,16 @@ export function isMobileDevice(): boolean {
   // Check user agent for common mobile device identifiers
   const userAgent = window.navigator.userAgent.toLowerCase();
   
-  return (
-    /android|webos|iphone|ipad|ipod|blackberry|windows phone/.test(userAgent) ||
-    // Additional check for mobile screen width
-    window.innerWidth < 768
-  );
+  // Check for mobile devices including iPad
+  const isMobileUserAgent = /android|webos|iphone|ipad|ipod|blackberry|windows phone/.test(userAgent);
+  
+  // Check for touch device (helps identify tablets)
+  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  
+  // Use 1024px as the breakpoint to include iPads and smaller tablets
+  const isMobileScreenSize = window.innerWidth <= 1024;
+  
+  return isMobileUserAgent || (isTouchDevice && isMobileScreenSize);
 }
 
 export function useIsMobile(): boolean {

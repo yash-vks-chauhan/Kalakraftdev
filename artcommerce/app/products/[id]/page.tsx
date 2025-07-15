@@ -88,7 +88,7 @@ export default function ProductDetailsPage() {
   // Check if the device is mobile
   useEffect(() => {
     const checkIfMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
+      setIsMobile(window.innerWidth <= 1024);
     };
     
     // Initial check

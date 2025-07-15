@@ -13,7 +13,7 @@ export default function ProductsLayout({
   const [isMobileView, setIsMobileView] = useState(false)
 
   useEffect(() => {
-    const checkMobile = () => setIsMobileView(window.innerWidth <= 768)
+    const checkMobile = () => setIsMobileView(window.innerWidth <= 1024)
     checkMobile()
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)

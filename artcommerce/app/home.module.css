@@ -1636,25 +1636,23 @@
   transform: translateY(0);
 }
 
-/* Desktop/Mobile visibility classes */
-.desktopOnly {
-  display: block;
-}
-
-@media (max-width: 1024px) {
-  .desktopOnly {
-    display: none;
-  }
-}
-
 /* Add mobile-only class */
 .mobileOnly {
   display: none;
 }
 
+/* Add desktop-only class */
+.desktopOnly {
+  display: block;
+}
+
 @media (max-width: 1024px) {
   .mobileOnly {
     display: block;
+  }
+  
+  .desktopOnly {
+    display: none !important;
   }
 }
 

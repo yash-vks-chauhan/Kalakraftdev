@@ -68,7 +68,7 @@ export default function ProductsClient() {
   // Check if we're in mobile view
   useEffect(() => {
     const checkMobile = () => {
-      const isMobile = window.innerWidth <= 768
+      const isMobile = window.innerWidth <= 1024
       setIsMobileView(isMobile)
       
       // Reset sidebar state when switching between views
