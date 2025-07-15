@@ -17,7 +17,7 @@ import Link from 'next/link'
 // Add this to detect mobile view
 const isMobileView = () => {
   if (typeof window === 'undefined') return false;
-  return window.innerWidth <= 768;
+  return window.innerWidth <= 1024;
 };
 
 // Featured Products Grid Component
