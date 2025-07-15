@@ -1656,655 +1656,9 @@
   }
 }
 
-/* Mobile Explore Section Styles */
-.mobileExploreSection {
-  padding: 3rem 1rem;
-  background: #f9f9f9;
-  position: relative;
-  overflow: hidden;
-}
 
-/* Enhanced artistic background effects for mobile explore */
-.mobileExploreSection::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-image: 
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.025'/%3E%3C/svg%3E"),
-    url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.015'%3E%3Cpath d='M20 20c0-5.5-4.5-10-10-10s-10 4.5-10 10 4.5 10 10 10 10-4.5 10-10zm10 0c0-5.5-4.5-10-10-10s-10 4.5-10 10 4.5 10 10 10 10-4.5 10-10z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-  opacity: 0.7;
-  pointer-events: none;
-  z-index: 1;
-}
 
-/* Decorative corner accents */
-.mobileExploreSection::after {
-  content: '';
-  position: absolute;
-  top: 30px;
-  left: 30px;
-  width: 60px;
-  height: 60px;
-  border-top: 1px solid;
-  border-left: 1px solid;
-  border-image: linear-gradient(135deg, rgba(179, 138, 88, 0.6), rgba(0, 0, 0, 0.15)) 1;
-  z-index: 2;
-  pointer-events: none;
-}
 
-.mobileExploreHeader {
-  text-align: center;
-  margin-bottom: 2rem;
-  position: relative;
-  z-index: 2;
-}
-
-.mobileExploreHeaderLine {
-  width: 40px;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, #000, transparent);
-  margin: 0.5rem auto;
-}
-
-.mobileExploreTitle {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 1.75rem;
-  font-weight: 500;
-  color: #000;
-  margin: 0;
-  letter-spacing: 0.02em;
-  font-style: italic;
-  position: relative;
-}
-
-.mobileExploreTitle::before {
-  content: '';
-  position: absolute;
-  bottom: -8px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 80px;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(179, 138, 88, 0.5), transparent);
-}
-
-.mobileExploreDescription {
-  text-align: center;
-  max-width: 300px;
-  margin: 1rem auto 2rem;
-  font-size: 0.875rem;
-  line-height: 1.6;
-  color: rgba(0, 0, 0, 0.7);
-  position: relative;
-  z-index: 2;
-}
-
-.mobileExploreGrid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
-  margin-bottom: 2rem;
-  position: relative;
-  z-index: 2;
-}
-
-.mobileExploreCard {
-  position: relative;
-  border-radius: 0;
-  overflow: hidden;
-  background: #fff;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-  border: none;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.mobileExploreCard:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
-}
-
-.mobileExploreCardInner {
-  position: relative;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
-.mobileExploreImage {
-  width: 100%;
-  aspect-ratio: 1/1.3;
-  object-fit: cover;
-  object-position: center;
-  display: block;
-  transition: transform 0.3s ease;
-}
-
-.mobileExploreCard:hover .mobileExploreImage {
-  transform: scale(1.02);
-}
-
-.mobileExploreCardContent {
-  padding: 1rem;
-  text-align: center;
-  background: #fff;
-  border-top: 1px solid #f0f0f0;
-  flex-grow: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.mobileExploreCardTitle {
-  font-family: 'Inter', sans-serif;
-  font-size: 0.9rem;
-  font-weight: 500;
-  margin: 0;
-  color: #000;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-}
-
-.mobileExploreFooter {
-  text-align: center;
-  margin-top: 2rem;
-  padding: 0 1rem;
-  position: relative;
-  z-index: 2;
-}
-
-.mobileExploreFooter p {
-  font-family: 'Inter', sans-serif;
-  font-size: 0.85rem;
-  color: rgba(0, 0, 0, 0.7);
-  margin-bottom: 1.5rem;
-  line-height: 1.6;
-}
-
-.mobileExploreButton {
-  display: inline-block;
-  padding: 0.875rem 2rem;
-  background: linear-gradient(135deg, #000 0%, #333 100%);
-  color: #fff;
-  border: none;
-  border-radius: 0;
-  font-size: 0.875rem;
-  font-weight: 500;
-  letter-spacing: 0.05em;
-  text-decoration: none;
-  transition: all 0.3s ease;
-  font-family: 'Inter', sans-serif;
-  text-transform: uppercase;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-}
-
-.mobileExploreButton::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-  transition: left 0.6s ease;
-}
-
-.mobileExploreButton:hover {
-  background: linear-gradient(135deg, #222 0%, #555 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-}
-
-.mobileExploreButton:hover::before {
-  left: 100%;
-}
-
-/* Remove animation delays and keyframes */
-.mobileExploreCard:nth-child(1),
-.mobileExploreCard:nth-child(2),
-.mobileExploreCard:nth-child(3),
-.mobileExploreCard:nth-child(4),
-.mobileExploreCard:nth-child(5),
-.mobileExploreCard:nth-child(6) {
-  animation: none;
-}
-
-/* Watercolor background accents for mobile explore */
-.mobileExploreSection .watercolorAccent1 {
-  position: absolute;
-  width: 200px;
-  height: 200px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cpath d='M50,100 Q70,70 90,90 T130,80 T170,100 T150,130 T110,140 T70,120 T50,100' fill='%23b38a58' fill-opacity='0.04'/%3E%3C/svg%3E");
-  background-size: contain;
-  background-repeat: no-repeat;
-  top: 15%;
-  right: 10%;
-  z-index: 1;
-  opacity: 0.6;
-  transform: rotate(-20deg);
-  pointer-events: none;
-  animation: gentle-float 18s infinite alternate ease-in-out;
-}
-
-.mobileExploreSection .watercolorAccent2 {
-  position: absolute;
-  width: 150px;
-  height: 150px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cpath d='M70,100 Q90,60 110,80 T150,70 T180,110 T160,140 T120,150 T80,130 T70,100' fill='%23000000' fill-opacity='0.02'/%3E%3C/svg%3E");
-  background-size: contain;
-  background-repeat: no-repeat;
-  bottom: 20%;
-  left: 5%;
-  z-index: 1;
-  opacity: 0.5;
-  transform: rotate(15deg);
-  pointer-events: none;
-  animation: gentle-float 22s infinite alternate-reverse ease-in-out;
-}
-
-/* Mobile Featured Discoveries Section Styles */
-.mobileFeaturedSection {
-  padding: 3rem 1rem;
-  background: #fafafa;
-  position: relative;
-  overflow: hidden;
-}
-
-/* Enhanced artistic background effects for mobile featured */
-.mobileFeaturedSection::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-image: 
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.5' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23noise)' opacity='0.02'/%3E%3C/svg%3E"),
-    url("data:image/svg+xml,%3Csvg width='50' height='50' viewBox='0 0 50 50' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.01'%3E%3Cpath d='M25 25l-5-5h10l-5 5zm0 0l5-5v10l-5-5zm0 0l5 5h-10l5-5zm0 0l-5 5v-10l5 5z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-  opacity: 0.8;
-  pointer-events: none;
-  z-index: 1;
-}
-
-/* Decorative corner accents */
-.mobileFeaturedSection::after {
-  content: '';
-  position: absolute;
-  bottom: 30px;
-  right: 30px;
-  width: 60px;
-  height: 60px;
-  border-bottom: 1px solid;
-  border-right: 1px solid;
-  border-image: linear-gradient(315deg, rgba(179, 138, 88, 0.6), rgba(0, 0, 0, 0.15)) 1;
-  z-index: 2;
-  pointer-events: none;
-}
-
-.mobileFeaturedHeader {
-  text-align: center;
-  margin-bottom: 2rem;
-  position: relative;
-  z-index: 2;
-}
-
-.mobileFeaturedHeaderLine {
-  width: 40px;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, #000, transparent);
-  margin: 0.5rem auto;
-}
-
-.mobileFeaturedTitle {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 1.75rem;
-  font-weight: 500;
-  color: #000;
-  margin: 0;
-  letter-spacing: 0.02em;
-  font-style: italic;
-  position: relative;
-}
-
-.mobileFeaturedTitle::before {
-  content: '';
-  position: absolute;
-  bottom: -8px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 80px;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(179, 138, 88, 0.5), transparent);
-}
-
-.mobileFeaturedDescription {
-  text-align: center;
-  max-width: 300px;
-  margin: 1rem auto 2rem;
-  font-size: 0.875rem;
-  line-height: 1.6;
-  color: rgba(0, 0, 0, 0.7);
-  position: relative;
-  z-index: 2;
-}
-
-.mobileFeaturedGrid {
-  margin-bottom: 2rem;
-  position: relative;
-  z-index: 2;
-}
-
-.mobileFeaturedProductsGrid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0;
-  width: 100%;
-  background-color: #fff;
-  box-sizing: border-box;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-  border-radius: 0;
-  overflow: hidden;
-}
-
-.mobileFeaturedCard {
-  position: relative;
-  background: #fff;
-  border-radius: 0;
-  overflow: hidden;
-  text-decoration: none;
-  color: inherit;
-  display: flex;
-  flex-direction: column;
-  box-shadow: none;
-  border-bottom: 1px solid #f0f0f0;
-  border-right: 1px solid #f0f0f0;
-  transition: background-color 0.3s ease;
-  opacity: 1;
-  transform: translateY(0);
-  animation: none;
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  width: 100%;
-}
-
-.mobileFeaturedCard:nth-child(2n) {
-  border-right: none;
-}
-
-.mobileFeaturedCard:hover {
-  background-color: #f8f8f8;
-}
-
-.mobileFeaturedCard:active {
-  transform: translateY(1px);
-}
-
-.mobileFeaturedCardInner {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Watercolor background accents for mobile featured */
-.mobileFeaturedSection .watercolorAccent1 {
-  position: absolute;
-  width: 180px;
-  height: 180px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cpath d='M60,100 Q80,60 100,80 T140,70 T170,110 T150,140 T110,150 T70,130 T60,100' fill='%23000000' fill-opacity='0.025'/%3E%3C/svg%3E");
-  background-size: contain;
-  background-repeat: no-repeat;
-  top: 10%;
-  left: 8%;
-  z-index: 1;
-  opacity: 0.7;
-  transform: rotate(10deg);
-  pointer-events: none;
-  animation: gentle-float 20s infinite alternate ease-in-out;
-}
-
-.mobileFeaturedSection .watercolorAccent2 {
-  position: absolute;
-  width: 160px;
-  height: 160px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cpath d='M80,100 Q100,60 120,80 T160,70 T180,110 T160,140 T120,150 T80,130 T80,100' fill='%23b38a58' fill-opacity='0.03'/%3E%3C/svg%3E");
-  background-size: contain;
-  background-repeat: no-repeat;
-  bottom: 15%;
-  right: 5%;
-  z-index: 1;
-  opacity: 0.5;
-  transform: rotate(-15deg);
-  pointer-events: none;
-  animation: gentle-float 24s infinite alternate-reverse ease-in-out;
-}
-
-.mobileFeaturedImageContainer {
-  width: 100%;
-  aspect-ratio: 1/1.05;
-  background: #fff;
-  position: relative;
-  overflow: hidden;
-  border-radius: 0;
-}
-
-.mobileFeaturedImage {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  transition: transform 0.3s ease;
-}
-
-.mobileFeaturedCard:hover .mobileFeaturedImage {
-  transform: scale(1.02);
-}
-
-.mobileFeaturedNoImage {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #f5f5f5;
-  color: #999;
-  font-size: 0.8rem;
-  font-family: 'Inter', sans-serif;
-}
-
-.mobileFeaturedCardInfo {
-  padding: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  flex: 1;
-  justify-content: space-between;
-  height: 80px;
-  box-sizing: border-box;
-}
-
-.mobileFeaturedProductName {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #000;
-  margin: 0;
-  line-height: 1.2;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-}
-
-.mobileFeaturedPrice {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: #000;
-  margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-}
-
-.mobileFeaturedLoading {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 3rem 1rem;
-  font-family: 'Inter', sans-serif;
-}
-
-.mobileFeaturedLoadingSpinner {
-  width: 24px;
-  height: 24px;
-  border: 3px solid #f3f3f3;
-  border-top: 3px solid #000;
-  border-radius: 50%;
-  animation: mobileFeaturedSpin 1s linear infinite;
-  margin-bottom: 1rem;
-}
-
-.mobileFeaturedError {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 3rem 1rem;
-  font-family: 'Inter', sans-serif;
-  color: #666;
-  font-size: 0.9rem;
-}
-
-@keyframes mobileFeaturedSpin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-/* Remove animation delays */
-.mobileFeaturedCard:nth-child(1),
-.mobileFeaturedCard:nth-child(2),
-.mobileFeaturedCard:nth-child(3),
-.mobileFeaturedCard:nth-child(4) {
-  animation: none;
-}
-
-/* Responsive adjustments for tablets and larger mobile devices */
-@media (min-width: 769px) and (max-width: 1024px) {
-  .mobileExploreSection {
-    padding: 4rem 2rem;
-  }
-  
-  .mobileExploreTitle {
-    font-size: 2rem;
-  }
-  
-  .mobileExploreGrid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.25rem;
-    max-width: 900px;
-    margin: 0 auto;
-  }
-  
-  .mobileExploreImage {
-    aspect-ratio: 1/1.3;
-  }
-  
-  .mobileExploreCardTitle {
-    font-size: 1rem;
-  }
-  
-  .mobileFeaturedSection {
-    padding: 4rem 2rem;
-  }
-  
-  .mobileFeaturedTitle {
-    font-size: 2rem;
-  }
-  
-  .mobileFeaturedProductsGrid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1px;
-    max-width: 800px;
-    margin: 0 auto;
-  }
-  
-  .mobileFeaturedCard {
-    border-right: 1px solid #f0f0f0;
-  }
-  
-  .mobileFeaturedCard:nth-child(3n) {
-    border-right: none;
-  }
-  
-  .mobileFeaturedCardInfo {
-    padding: 12px;
-  }
-  
-  .mobileFeaturedProductName {
-    font-size: 0.95rem;
-  }
-  
-  .mobileFeaturedPrice {
-    font-size: 1rem;
-  }
-}
-
-/* Responsive adjustments for smaller screens */
-@media (max-width: 480px) {
-  .mobileExploreSection {
-    padding: 2.5rem 0.75rem;
-  }
-  
-  .mobileExploreTitle {
-    font-size: 1.5rem;
-  }
-  
-  .mobileExploreGrid {
-    gap: 0.75rem;
-  }
-  
-  .mobileExploreImage {
-    aspect-ratio: 1/1.3;
-  }
-  
-  .mobileExploreCardContent {
-    padding: 0.75rem;
-  }
-  
-  .mobileExploreCardTitle {
-    font-size: 0.8rem;
-  }
-  
-  .mobileFeaturedSection {
-    padding: 2.5rem 0.75rem;
-  }
-  
-  .mobileFeaturedTitle {
-    font-size: 1.5rem;
-  }
-  
-  .mobileFeaturedProductsGrid {
-    gap: 0;
-  }
-  
-  .mobileFeaturedCardInfo {
-    padding: 6px;
-  }
-  
-  .mobileFeaturedProductName {
-    font-size: 0.8rem;
-  }
-  
-  .mobileFeaturedPrice {
-    font-size: 0.85rem;
-  }
-}
 
 /* New button style for "Discover All Pieces" button */
 .discoverAllButton {
@@ -2437,4 +1791,505 @@
   opacity: 0;
   transform: translateY(20px);
   animation: fadeInUp 0.8s ease forwards 0.8s;
+}
+
+/* ====================================================================
+   REDESIGNED MOBILE SECTIONS - PROFESSIONAL RESIN ART AESTHETICS
+   ==================================================================== */
+
+/* ----------------------------------------------------------------
+   MOBILE ARTISAN SHOWCASE SECTION 
+   ---------------------------------------------------------------- */
+
+.mobileArtisanSection {
+  background: linear-gradient(180deg, #ffffff 0%, #fafafa 100%);
+  padding: 4rem 1.5rem;
+  position: relative;
+  overflow: hidden;
+  min-height: 100vh;
+}
+
+/* Subtle texture overlay */
+.mobileArtisanSection::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='1' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.015'/%3E%3C/svg%3E");
+  opacity: 0.8;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.mobileArtisanHeader {
+  text-align: center;
+  margin-bottom: 3rem;
+  position: relative;
+  z-index: 2;
+}
+
+.mobileArtisanHeaderLine {
+  width: 60px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.8), transparent);
+  margin: 0.75rem auto;
+  position: relative;
+}
+
+.mobileArtisanHeaderLine::after {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 3px;
+  background: rgba(179, 138, 88, 0.6);
+  border-radius: 2px;
+}
+
+.mobileArtisanTitle {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2rem;
+  font-weight: 400;
+  color: #1a1a1a;
+  margin: 0;
+  letter-spacing: 0.02em;
+  font-style: italic;
+  position: relative;
+}
+
+.mobileArtisanTitle::after {
+  content: '';
+  position: absolute;
+  bottom: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(179, 138, 88, 0.4), transparent);
+}
+
+.mobileArtisanDescription {
+  text-align: center;
+  margin-bottom: 3rem;
+  position: relative;
+  z-index: 2;
+}
+
+.mobileArtisanDescription p {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+  color: rgba(0, 0, 0, 0.7);
+  margin: 0;
+  line-height: 1.6;
+  letter-spacing: 0.02em;
+  font-style: italic;
+}
+
+.mobileArtisanGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+  position: relative;
+  z-index: 2;
+}
+
+.mobileArtisanCard {
+  background: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  position: relative;
+}
+
+.mobileArtisanCard:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+  border-color: rgba(179, 138, 88, 0.2);
+}
+
+.mobileArtisanCardInner {
+  position: relative;
+}
+
+.mobileArtisanImageWrapper {
+  position: relative;
+  aspect-ratio: 4/3;
+  overflow: hidden;
+}
+
+.mobileArtisanImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: all 0.5s ease;
+  filter: contrast(1.02) saturate(1.1);
+}
+
+.mobileArtisanCard:hover .mobileArtisanImage {
+  transform: scale(1.05);
+  filter: contrast(1.05) saturate(1.15);
+}
+
+.mobileArtisanOverlay {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+}
+
+.mobileArtisanCard:hover .mobileArtisanOverlay {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.mobileArtisanCategory {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.mobileArtisanCardContent {
+  padding: 1.25rem;
+  text-align: center;
+}
+
+.mobileArtisanCardTitle {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1rem;
+  font-weight: 400;
+  color: #1a1a1a;
+  margin: 0;
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+  font-style: italic;
+}
+
+.mobileArtisanFooter {
+  text-align: center;
+  position: relative;
+  z-index: 2;
+}
+
+.mobileArtisanFooter p {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9rem;
+  color: rgba(0, 0, 0, 0.6);
+  margin: 0 0 2rem 0;
+  line-height: 1.6;
+  font-style: italic;
+}
+
+.mobileArtisanButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 2rem;
+  background: transparent;
+  border: 1px solid rgba(0, 0, 0, 0.8);
+  color: #1a1a1a;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  border-radius: 0;
+  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.mobileArtisanButton::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(179, 138, 88, 0.1), transparent);
+  transition: left 0.6s ease;
+}
+
+.mobileArtisanButton:hover {
+  background: #1a1a1a;
+  color: #ffffff;
+  border-color: #1a1a1a;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+.mobileArtisanButton:hover::before {
+  left: 100%;
+}
+
+.mobileArtisanButtonIcon {
+  transition: transform 0.3s ease;
+}
+
+.mobileArtisanButton:hover .mobileArtisanButtonIcon {
+  transform: translateX(3px);
+}
+
+/* Artistic corner accents */
+.mobileArtisanCornerAccent {
+  position: absolute;
+  top: 30px;
+  left: 30px;
+  width: 60px;
+  height: 60px;
+  border-top: 1px solid rgba(179, 138, 88, 0.3);
+  border-left: 1px solid rgba(179, 138, 88, 0.3);
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.mobileArtisanCornerAccent2 {
+  position: absolute;
+  bottom: 30px;
+  right: 30px;
+  width: 60px;
+  height: 60px;
+  border-bottom: 1px solid rgba(179, 138, 88, 0.3);
+  border-right: 1px solid rgba(179, 138, 88, 0.3);
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+/* ----------------------------------------------------------------
+   MOBILE FEATURED COLLECTION SECTION 
+   ---------------------------------------------------------------- */
+
+.mobileFeaturedCollectionSection {
+  background: #f8f8f8;
+  padding: 4rem 1.5rem;
+  position: relative;
+  overflow: hidden;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Subtle artistic texture */
+.mobileFeaturedCollectionSection::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cfilter id='paper'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.04' numOctaves='5' result='noise'/%3E%3CfeDiffuseLighting in='noise' lighting-color='white' surfaceScale='1'%3E%3CfeDistantLight azimuth='45' elevation='60'/%3E%3C/feDiffuseLighting%3E%3C/filter%3E%3Crect width='80' height='80' filter='url(%23paper)' opacity='0.03'/%3E%3C/svg%3E");
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.mobileFeaturedCollectionHeader {
+  text-align: center;
+  margin-bottom: 3rem;
+  position: relative;
+  z-index: 2;
+}
+
+.mobileFeaturedCollectionHeaderLine {
+  width: 60px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.6), transparent);
+  margin: 0.75rem auto;
+  position: relative;
+}
+
+.mobileFeaturedCollectionHeaderLine::after {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 16px;
+  height: 3px;
+  background: rgba(179, 138, 88, 0.5);
+  border-radius: 2px;
+}
+
+.mobileFeaturedCollectionTitle {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2rem;
+  font-weight: 400;
+  color: #1a1a1a;
+  margin: 0;
+  letter-spacing: 0.02em;
+  font-style: italic;
+  position: relative;
+}
+
+.mobileFeaturedCollectionTitle::after {
+  content: '';
+  position: absolute;
+  bottom: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(179, 138, 88, 0.4), transparent);
+}
+
+.mobileFeaturedCollectionDescription {
+  text-align: center;
+  margin-bottom: 3rem;
+  position: relative;
+  z-index: 2;
+}
+
+.mobileFeaturedCollectionDescription p {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+  color: rgba(0, 0, 0, 0.65);
+  margin: 0;
+  line-height: 1.6;
+  letter-spacing: 0.02em;
+  font-style: italic;
+}
+
+.mobileFeaturedCollectionContainer {
+  position: relative;
+  z-index: 2;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  margin: 0 -0.5rem;
+}
+
+.mobileFeaturedCollectionContainer::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(135deg, 
+    rgba(179, 138, 88, 0.1) 0%, 
+    transparent 25%, 
+    transparent 75%, 
+    rgba(179, 138, 88, 0.1) 100%);
+  border-radius: 18px;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.mobileFeaturedCollectionContainer:hover::before {
+  opacity: 1;
+}
+
+/* Artistic brush stroke elements */
+.mobileFeaturedCollectionBrushStroke {
+  position: absolute;
+  width: 120px;
+  height: 30px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 30' preserveAspectRatio='none'%3E%3Cpath d='M0,15 Q30,5 60,15 T120,15' stroke='rgba(179,138,88,0.15)' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-size: cover;
+  top: 20%;
+  left: 5%;
+  z-index: 1;
+  transform: rotate(-8deg);
+  pointer-events: none;
+  opacity: 0.7;
+  animation: gentle-brush-float 20s infinite alternate ease-in-out;
+}
+
+.mobileFeaturedCollectionBrushStroke2 {
+  position: absolute;
+  width: 100px;
+  height: 25px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 25' preserveAspectRatio='none'%3E%3Cpath d='M0,12 Q25,5 50,12 T100,12' stroke='rgba(179,138,88,0.12)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-size: cover;
+  bottom: 25%;
+  right: 8%;
+  z-index: 1;
+  transform: rotate(5deg);
+  pointer-events: none;
+  opacity: 0.6;
+  animation: gentle-brush-float 15s infinite alternate-reverse ease-in-out;
+}
+
+@keyframes gentle-brush-float {
+  0% {
+    transform: translateY(0) rotate(-8deg);
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateY(-8px) rotate(-5deg);
+    opacity: 0.4;
+  }
+}
+
+/* ----------------------------------------------------------------
+   RESPONSIVE ADJUSTMENTS
+   ---------------------------------------------------------------- */
+
+@media (max-width: 480px) {
+  .mobileArtisanSection,
+  .mobileFeaturedCollectionSection {
+    padding: 3rem 1rem;
+  }
+  
+  .mobileArtisanTitle,
+  .mobileFeaturedCollectionTitle {
+    font-size: 1.75rem;
+  }
+  
+  .mobileArtisanGrid {
+    gap: 1rem;
+  }
+  
+  .mobileArtisanCardContent {
+    padding: 1rem;
+  }
+  
+  .mobileArtisanCardTitle {
+    font-size: 1rem;
+  }
+  
+  .mobileArtisanButton {
+    padding: 0.875rem 1.5rem;
+    font-size: 0.8rem;
+  }
+  
+  .mobileFeaturedCollectionContainer {
+    padding: 1rem;
+    margin: 0 -0.25rem;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1024px) {
+  .mobileArtisanGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+    max-width: 600px;
+    margin: 0 auto 3rem;
+  }
+  
+  .mobileFeaturedCollectionContainer {
+    max-width: 700px;
+    margin: 0 auto;
+  }
 }

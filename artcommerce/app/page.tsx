@@ -927,93 +927,7 @@ onClick={() => handleCarouselNav('next')}
 
 </section>
 
-{/* Mobile Explore Section - New section for mobile only */}
-<section className={`${styles.mobileExploreSection} ${styles.mobileOnly}`}>
-  <div className={styles.mobileExploreHeader}>
-    <div className={styles.mobileExploreHeaderLine} />
-    <h2 className={styles.mobileExploreTitle}>Explore Our Artisan Creations</h2>
-    <div className={styles.mobileExploreHeaderLine} />
-  </div>
 
-  <div className={styles.mobileExploreDescription}>
-    <p>Discover handcrafted masterpieces that bring elegance and artistry to your living space</p>
-  </div>
-
-  <div className={styles.mobileExploreGrid}>
-    {[
-      {
-        title: 'Artistic Journals',
-        image: 'https://res.cloudinary.com/downe8107/image/upload/v1752441188/84D2D636-027E-484D-B886-1BFEE0B9F5CD_1_201_a_ca4hrv.jpg'
-      },
-      {
-        title: 'Wall Clocks',
-        image: 'https://res.cloudinary.com/downe8107/image/upload/v1752441196/F0CFF91C-3B7B-4AA9-AECE-35A6DA417194_1_201_a_w5rmde.jpg'
-      },
-      {
-        title: 'Resin Trays',
-        image: 'https://res.cloudinary.com/downe8107/image/upload/v1752441176/2E1812EC-BB3C-4C7D-8480-C1539B7A0FBB_1_201_a_xc2yjx.jpg'
-      },
-      {
-        title: 'Rangoli Art',
-        image: 'https://res.cloudinary.com/downe8107/image/upload/v1752440782/6F66291E-3673-47F4-8989-701EBB8BB8BE_1_201_a_uxx8zk.jpg'
-      },
-      {
-        title: 'Pattachitra Panels',
-        image: 'https://res.cloudinary.com/downe8107/image/upload/v1752441169/65B82642-5A77-4A31-88BC-B36E2B5DB7DE_1_201_a_e7bed1.jpg'
-      },
-      {
-        title: 'Krishna Embroidery',
-        image: 'https://res.cloudinary.com/downe8107/image/upload/v1752441212/2E077407-F784-4515-8960-988FB394B218_1_201_a_p1as8c.jpg'
-      }
-    ].map((item, index) => (
-      <div key={index} className={styles.mobileExploreCard}>
-        <div className={styles.mobileExploreCardInner}>
-          <img
-            src={item.image}
-            alt={item.title}
-            className={styles.mobileExploreImage}
-            onError={(e) => (e.currentTarget.src = 'https://placehold.co/300x300/f0f0f0/888?text=Image+Not+Found')}
-          />
-          <div className={styles.mobileExploreCardContent}>
-            <h3 className={styles.mobileExploreCardTitle}>{item.title}</h3>
-          </div>
-        </div>
-      </div>
-    ))}
-  </div>
-
-  <div className={styles.mobileExploreFooter}>
-    <p>Each piece is meticulously crafted with passion and precision</p>
-    <Link href="/products" className={styles.mobileExploreButton}>
-      View All Artworks
-    </Link>
-  </div>
-
-  {/* Watercolor background accents */}
-  <div className={styles.watercolorAccent1}></div>
-  <div className={styles.watercolorAccent2}></div>
-</section>
-
-{/* Featured Discoveries Section - Random products from API */}
-<section className={`${styles.mobileFeaturedSection} ${styles.mobileOnly}`}>
-  <div className={styles.mobileFeaturedHeader}>
-    <div className={styles.mobileFeaturedHeaderLine} />
-    <h2 className={styles.mobileFeaturedTitle}>Featured Discoveries</h2>
-    <div className={styles.mobileFeaturedHeaderLine} />
-  </div>
-
-  <div className={styles.mobileFeaturedDescription}>
-    <p>Handpicked selections from our latest collection, curated just for you</p>
-  </div>
-
-  <div className={styles.mobileFeaturedGrid}>
-    <FeaturedProductsGrid />
-  </div>
-
-  {/* Watercolor background accents */}
-  <div className={styles.watercolorAccent1}></div>
-  <div className={styles.watercolorAccent2}></div>
-</section>
 
 {/* Artistry in Every Layer Section - Redesigned - Desktop Only */}
 <section className={`${styles.artistrySection} ${styles.desktopOnly}`}>
@@ -1094,6 +1008,98 @@ onClick={() => handleCarouselNav('next')}
       </div>
     </div>
   </div>
+</section>
+
+{/* Mobile Artisan Showcase Section - Redesigned for resin art brand */}
+<section className={`${styles.mobileArtisanSection} ${styles.mobileOnly}`}>
+  <div className={styles.mobileArtisanHeader}>
+    <div className={styles.mobileArtisanHeaderLine} />
+    <h2 className={styles.mobileArtisanTitle}>Artisan Mastery</h2>
+    <div className={styles.mobileArtisanHeaderLine} />
+  </div>
+
+  <div className={styles.mobileArtisanDescription}>
+    <p>Where liquid art meets timeless craftsmanship</p>
+  </div>
+
+  <div className={styles.mobileArtisanGrid}>
+    {[
+      {
+        title: 'Fluid Art Coasters',
+        category: 'Functional Art',
+        image: 'https://res.cloudinary.com/downe8107/image/upload/v1752441188/84D2D636-027E-484D-B886-1BFEE0B9F5CD_1_201_a_ca4hrv.jpg'
+      },
+      {
+        title: 'Resin Wall Clocks',
+        category: 'Time Pieces',
+        image: 'https://res.cloudinary.com/downe8107/image/upload/v1752441196/F0CFF91C-3B7B-4AA9-AECE-35A6DA417194_1_201_a_w5rmde.jpg'
+      },
+      {
+        title: 'Serving Trays',
+        category: 'Dining Art',
+        image: 'https://res.cloudinary.com/downe8107/image/upload/v1752441176/2E1812EC-BB3C-4C7D-8480-C1539B7A0FBB_1_201_a_xc2yjx.jpg'
+      },
+      {
+        title: 'Decorative Panels',
+        category: 'Wall Art',
+        image: 'https://res.cloudinary.com/downe8107/image/upload/v1752440782/6F66291E-3673-47F4-8989-701EBB8BB8BE_1_201_a_uxx8zk.jpg'
+      }
+    ].map((item, index) => (
+      <div key={index} className={styles.mobileArtisanCard}>
+        <div className={styles.mobileArtisanCardInner}>
+          <div className={styles.mobileArtisanImageWrapper}>
+            <img
+              src={item.image}
+              alt={item.title}
+              className={styles.mobileArtisanImage}
+              onError={(e) => (e.currentTarget.src = 'https://placehold.co/400x300/f0f0f0/888?text=Image+Not+Found')}
+            />
+            <div className={styles.mobileArtisanOverlay}>
+              <span className={styles.mobileArtisanCategory}>{item.category}</span>
+            </div>
+          </div>
+          <div className={styles.mobileArtisanCardContent}>
+            <h3 className={styles.mobileArtisanCardTitle}>{item.title}</h3>
+          </div>
+        </div>
+      </div>
+    ))}
+  </div>
+
+  <div className={styles.mobileArtisanFooter}>
+    <p>Each creation embodies the fluid beauty of resin artistry</p>
+    <Link href="/products" className={styles.mobileArtisanButton}>
+      <span>Explore Collection</span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className={styles.mobileArtisanButtonIcon}>
+        <path d="M7 17L17 7M17 7H7M17 7V17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    </Link>
+  </div>
+
+  {/* Artistic corner accents */}
+  <div className={styles.mobileArtisanCornerAccent}></div>
+  <div className={styles.mobileArtisanCornerAccent2}></div>
+</section>
+
+{/* Mobile Featured Collection Section - Redesigned with premium aesthetics */}
+<section className={`${styles.mobileFeaturedCollectionSection} ${styles.mobileOnly}`}>
+  <div className={styles.mobileFeaturedCollectionHeader}>
+    <div className={styles.mobileFeaturedCollectionHeaderLine} />
+    <h2 className={styles.mobileFeaturedCollectionTitle}>Curated Selections</h2>
+    <div className={styles.mobileFeaturedCollectionHeaderLine} />
+  </div>
+
+  <div className={styles.mobileFeaturedCollectionDescription}>
+    <p>Handpicked pieces from our master artisan's workshop</p>
+  </div>
+
+  <div className={styles.mobileFeaturedCollectionContainer}>
+    <FeaturedProductsGrid />
+  </div>
+
+  {/* Subtle artistic elements */}
+  <div className={styles.mobileFeaturedCollectionBrushStroke}></div>
+  <div className={styles.mobileFeaturedCollectionBrushStroke2}></div>
 </section>
 
 </main>
