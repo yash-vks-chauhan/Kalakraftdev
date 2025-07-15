@@ -1727,7 +1727,7 @@
 
 .mobileExploreImage {
   width: 100%;
-  aspect-ratio: 1/1;
+  aspect-ratio: 1/1.3;
   object-fit: cover;
   display: block;
 }
@@ -1810,7 +1810,50 @@
     margin: 0 auto;
   }
   
+  .mobileExploreImage {
+    aspect-ratio: 1/1.3;
+  }
+  
   .mobileExploreCardTitle {
+    font-size: 1rem;
+  }
+  
+  .mobileFeaturedSection {
+    padding: 4rem 2rem;
+  }
+  
+  .mobileFeaturedTitle {
+    font-size: 2rem;
+  }
+  
+  .mobileFeaturedProductsGrid {
+    grid-template-columns: repeat(3, 1fr);
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  .mobileFeaturedCard {
+    border-right: 1px solid #f0f0f0;
+  }
+  
+  .mobileFeaturedCard:nth-child(2n) {
+    border-right: 1px solid #f0f0f0;
+  }
+  
+  .mobileFeaturedCard:nth-child(3n) {
+    border-right: none;
+  }
+  
+  .mobileFeaturedCardInfo {
+    padding: 12px;
+    height: 90px;
+  }
+  
+  .mobileFeaturedProductName {
+    font-size: 0.95rem;
+  }
+  
+  .mobileFeaturedPrice {
     font-size: 1rem;
   }
 }
@@ -1829,12 +1872,41 @@
     gap: 0.75rem;
   }
   
+  .mobileExploreImage {
+    aspect-ratio: 1/1.3;
+  }
+  
   .mobileExploreCardContent {
     padding: 0.75rem;
   }
   
   .mobileExploreCardTitle {
     font-size: 0.8rem;
+  }
+  
+  .mobileFeaturedSection {
+    padding: 2.5rem 0.75rem;
+  }
+  
+  .mobileFeaturedTitle {
+    font-size: 1.5rem;
+  }
+  
+  .mobileFeaturedProductsGrid {
+    gap: 0;
+  }
+  
+  .mobileFeaturedCardInfo {
+    padding: 6px;
+    height: 70px;
+  }
+  
+  .mobileFeaturedProductName {
+    font-size: 0.8rem;
+  }
+  
+  .mobileFeaturedPrice {
+    font-size: 0.85rem;
   }
 }
 
@@ -1887,9 +1959,12 @@
   grid-template-columns: repeat(2, 1fr);
   gap: 0;
   width: 100%;
+  background-color: #fff;
+  box-sizing: border-box;
 }
 
 .mobileFeaturedCard {
+  position: relative;
   background: #fff;
   border-radius: 0;
   overflow: hidden;
@@ -1897,25 +1972,21 @@
   color: inherit;
   display: flex;
   flex-direction: column;
-  position: relative;
   box-shadow: none;
-  border: 1px solid #f0f0f0;
-  border-right: none;
-  border-bottom: none;
+  border-bottom: 1px solid #f0f0f0;
+  border-right: 1px solid #f0f0f0;
   transition: none;
   opacity: 1;
   transform: translateY(0);
   animation: none;
   margin: 0;
   padding: 0;
+  height: 100%;
+  width: 100%;
 }
 
-.mobileFeaturedCard:nth-child(even) {
-  border-right: 1px solid #f0f0f0;
-}
-
-.mobileFeaturedCard:nth-last-child(-n+2) {
-  border-bottom: 1px solid #f0f0f0;
+.mobileFeaturedCard:nth-child(2n) {
+  border-right: none;
 }
 
 .mobileFeaturedCard:active {
@@ -1963,6 +2034,8 @@
   gap: 4px;
   flex: 1;
   justify-content: space-between;
+  height: 80px;
+  box-sizing: border-box;
 }
 
 .mobileFeaturedProductName {
@@ -1971,7 +2044,7 @@
   color: #000;
   margin: 0;
   line-height: 1.2;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
@@ -1984,7 +2057,7 @@
   font-weight: 600;
   color: #000;
   margin: 0;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 .mobileFeaturedLoading {

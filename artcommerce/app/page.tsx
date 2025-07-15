@@ -172,17 +172,14 @@ const FeaturedProductsGrid = () => {
     return (
       <div className={styles.mobileFeaturedProductsGrid}>
         {[1, 2, 3, 4].map((_, index) => (
-          <div key={index} className={styles.mobileFeaturedCard} style={{opacity: 1, transform: 'translateY(0)'}}>
+          <div key={index} className={styles.mobileFeaturedCard}>
             <div className={styles.mobileFeaturedCardInner}>
               <div className={styles.mobileFeaturedImageContainer}>
                 <div className={styles.mobileFeaturedNoImage}>Product {index + 1}</div>
               </div>
               <div className={styles.mobileFeaturedCardInfo}>
-                <div className={styles.mobileFeaturedCategory}>Category</div>
                 <h3 className={styles.mobileFeaturedProductName}>Sample Product</h3>
-                <div className={styles.mobileFeaturedPriceRow}>
-                  <p className={styles.mobileFeaturedPrice}>{formatPrice(1200)}</p>
-                </div>
+                <p className={styles.mobileFeaturedPrice}>{formatPrice(1200)}</p>
               </div>
             </div>
           </div>
