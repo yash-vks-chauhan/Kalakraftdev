@@ -25,88 +25,171 @@ const FeaturedProductsGrid = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [imageIndices, setImageIndices] = useState({});
 
-  // Format price function
   const formatPrice = (price) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 0,
-      minimumFractionDigits: 0
-    }).format(price);
+    return `₹${price.toFixed(2)}`;
   };
 
-  // Product Card Component (similar to ProductsMobileClient)
+  // Product Card with Exact Product Listing Layout
   const ProductCard = ({ product }) => {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const [touchStart, setTouchStart] = useState(0);
+    const [touchEnd, setTouchEnd] = useState(0);
+    const [isSwiping, setIsSwiping] = useState(false);
+    const [swipeDistance, setSwipeDistance] = useState(0);
+    const [showHints, setShowHints] = useState(true);
+    const imageContainerRef = useRef(null);
+    const containerWidth = useRef(0);
     
-    const handleImageTap = (e) => {
+    // Hide hints after timeout
+    useEffect(() => {
+      const timer = setTimeout(() => setShowHints(false), 4000);
+      return () => clearTimeout(timer);
+    }, []);
+    
+    // Touch handlers for image swiping - exact same as product listing
+    const handleTouchStart = (e) => {
+      if (!product.imageUrls || product.imageUrls.length <= 1) return;
+      
+      setShowHints(false);
+      containerWidth.current = imageContainerRef.current?.offsetWidth || 0;
+      
+      setTouchStart(e.targetTouches[0].clientX);
+      setTouchEnd(e.targetTouches[0].clientX);
+      setIsSwiping(true);
+      setSwipeDistance(0);
+    };
+    
+    const handleTouchMove = (e) => {
+      if (!isSwiping || !product.imageUrls || product.imageUrls.length <= 1) return;
+      
       e.preventDefault();
-      if (product.imageUrls && product.imageUrls.length > 1) {
-        setCurrentImageIndex((prev) => (prev + 1) % product.imageUrls.length);
+      const currentTouch = e.targetTouches[0].clientX;
+      setTouchEnd(currentTouch);
+      
+      const distance = currentTouch - touchStart;
+      let finalDistance = distance;
+      
+      if ((currentImageIndex === 0 && distance > 0) || 
+          (currentImageIndex === product.imageUrls.length - 1 && distance < 0)) {
+        finalDistance = distance / 3;
       }
+      
+      setSwipeDistance(finalDistance);
+    };
+    
+    const handleTouchEnd = () => {
+      if (!isSwiping || !product.imageUrls || product.imageUrls.length <= 1) return;
+      
+      setIsSwiping(false);
+      
+      if (!touchStart || !touchEnd) {
+        setSwipeDistance(0);
+        return;
+      }
+      
+      const distance = touchStart - touchEnd;
+      const minSwipeDistance = containerWidth.current * 0.2;
+      
+      if (Math.abs(distance) > minSwipeDistance) {
+        if (distance > 0 && currentImageIndex < product.imageUrls.length - 1) {
+          setCurrentImageIndex(prev => prev + 1);
+        } else if (distance < 0 && currentImageIndex > 0) {
+          setCurrentImageIndex(prev => prev - 1);
+        }
+      }
+      
+      setSwipeDistance(0);
+    };
+    
+    const getImageTransform = () => {
+      if (!product.imageUrls || product.imageUrls.length <= 1) return {};
+      
+      const baseTransform = `translateX(-${currentImageIndex * 100}%)`;
+      
+      if (isSwiping && swipeDistance !== 0) {
+        const swipePercentage = (swipeDistance / containerWidth.current) * 100;
+        return {
+          transform: `translateX(calc(-${currentImageIndex * 100}% + ${swipePercentage}%))`,
+          transition: 'none'
+        };
+      }
+      
+      return {
+        transform: baseTransform,
+        transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+      };
     };
 
     return (
-      <Link href={`/products/${product.id}`} className={styles.mobileFeaturedCard}>
-        <div className={styles.mobileFeaturedCardInner}>
+      <div className={styles.featuredCardWrapper}>
+        <Link href={`/products/${product.id}`} className={styles.featuredCard}>
           <div 
-            className={styles.mobileFeaturedImageContainer}
-            onClick={handleImageTap}
+            className={styles.featuredImageContainer}
+            ref={imageContainerRef}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
           >
-            {product.imageUrls && product.imageUrls.length > 0 ? (
-              <img
-                src={product.imageUrls[currentImageIndex]}
-                alt={product.name}
-                className={styles.mobileFeaturedImage}
-                onError={(e) => (e.currentTarget.src = 'https://placehold.co/300x300/f0f0f0/888?text=No+Image')}
-              />
-            ) : (
-              <div className={styles.mobileFeaturedNoImage}>No Image</div>
+            <div 
+              className={styles.featuredImageSlider} 
+              style={getImageTransform()}
+            >
+              {product.imageUrls && product.imageUrls.map((url, index) => (
+                <div key={index} className={styles.featuredImageSlide}>
+                  <img 
+                    src={url}
+                    alt={`${product.name} - Image ${index + 1}`}
+                    className={styles.featuredImage}
+                    loading={index === 0 ? "eager" : "lazy"}
+                    draggable="false"
+                  />
+                </div>
+              ))}
+            </div>
+            
+            {(!product.imageUrls || product.imageUrls.length === 0) && (
+              <div className={styles.featuredNoImage}>No image</div>
             )}
             
-            {product.stockQuantity === 0 && (
-              <div className={styles.mobileFeaturedOutOfStock}>Out of Stock</div>
-            )}
-            
+            {product.stockQuantity === 0 && <div className={styles.featuredOutOfStock}>Out of Stock</div>}
             {product.stockQuantity > 0 && product.stockQuantity <= 5 && (
-              <div className={styles.mobileFeaturedLowStock}>Only {product.stockQuantity} left</div>
+              <div className={styles.featuredLowStock}>Only {product.stockQuantity} left</div>
             )}
             
+            {/* Image indicators */}
             {product.imageUrls && product.imageUrls.length > 1 && (
-              <div className={styles.mobileFeaturedImageIndicators}>
+              <div className={styles.featuredImageIndicators}>
                 {product.imageUrls.map((_, index) => (
                   <div 
                     key={index} 
-                    className={`${styles.mobileFeaturedIndicator} ${
-                      index === currentImageIndex ? styles.mobileFeaturedActiveIndicator : ''
-                    }`}
+                    className={`${styles.featuredIndicator} ${index === currentImageIndex ? styles.featuredActiveIndicator : ''}`}
                   />
                 ))}
               </div>
             )}
           </div>
           
-          <div className={styles.mobileFeaturedCardInfo}>
+          <div className={styles.featuredInfo}>
             {product.category && (
-              <div className={styles.mobileFeaturedCategory}>
+              <div className={styles.featuredCategoryTag}>
                 {product.category.name}
               </div>
             )}
-            <h3 className={styles.mobileFeaturedProductName}>{product.name}</h3>
-            <div className={styles.mobileFeaturedPriceRow}>
-              <p className={styles.mobileFeaturedPrice}>{formatPrice(product.price)}</p>
-              {product.avgRating > 0 && (
-                <p className={styles.mobileFeaturedRating}>
-                  <span className={styles.mobileFeaturedStarFilled}>★</span>
-                  <span className={styles.mobileFeaturedRatingValue}>{product.avgRating.toFixed(1)}</span>
+            <h3 className={styles.featuredName}>{product.name}</h3>
+            
+            <div className={styles.featuredPriceRow}>
+              <p className={styles.featuredPrice}>{formatPrice(product.price)}</p>
+              {product.avgRating && product.avgRating > 0 && (
+                <p className={styles.featuredRating}>
+                  <span className={styles.featuredStarFilled}>★</span> 
+                  <span className={styles.featuredRatingValue}>{product.avgRating.toFixed(1)}</span>
                 </p>
               )}
             </div>
           </div>
-        </div>
-      </Link>
+        </Link>
+      </div>
     );
   };
 
@@ -115,10 +198,8 @@ const FeaturedProductsGrid = () => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        console.log('Fetching products...');
         const response = await fetch('/api/products');
         const data = await response.json();
-        console.log('API response:', data);
         
         if (data.products && Array.isArray(data.products)) {
           // Normalize imageUrls and filter active products
@@ -136,7 +217,6 @@ const FeaturedProductsGrid = () => {
           
           // Shuffle and take 4 random products
           const shuffled = [...normalizedProducts].sort(() => Math.random() - 0.5);
-          console.log('Processed products:', shuffled.slice(0, 4));
           setProducts(shuffled.slice(0, 4));
         }
       } catch (err) {
@@ -152,17 +232,17 @@ const FeaturedProductsGrid = () => {
 
   if (loading) {
     return (
-      <div className={styles.mobileFeaturedLoading}>
-        <div className={styles.mobileFeaturedLoadingSpinner}></div>
-        <p>Loading featured products...</p>
+      <div className={styles.featuredLoading}>
+        <div className={styles.featuredLoadingSpinner}></div>
+        <p>Loading curated selection...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className={styles.mobileFeaturedError}>
-        <p>Unable to load featured products</p>
+      <div className={styles.featuredError}>
+        <p>Unable to load products</p>
       </div>
     );
   }
@@ -170,16 +250,16 @@ const FeaturedProductsGrid = () => {
   // Add fallback for when there are no products
   if (!products || products.length === 0) {
     return (
-      <div className={styles.mobileFeaturedProductsGrid}>
+      <div className={styles.featuredProductsGrid}>
         {[1, 2, 3, 4].map((_, index) => (
-          <div key={index} className={styles.mobileFeaturedCard}>
-            <div className={styles.mobileFeaturedCardInner}>
-              <div className={styles.mobileFeaturedImageContainer}>
-                <div className={styles.mobileFeaturedNoImage}>Product {index + 1}</div>
+          <div key={index} className={styles.featuredCardWrapper}>
+            <div className={styles.featuredCard}>
+              <div className={styles.featuredImageContainer}>
+                <div className={styles.featuredNoImage}>Product {index + 1}</div>
               </div>
-              <div className={styles.mobileFeaturedCardInfo}>
-                <h3 className={styles.mobileFeaturedProductName}>Sample Product</h3>
-                <p className={styles.mobileFeaturedPrice}>{formatPrice(1200)}</p>
+              <div className={styles.featuredInfo}>
+                <h3 className={styles.featuredName}>Sample Product</h3>
+                <p className={styles.featuredPrice}>{formatPrice(1200)}</p>
               </div>
             </div>
           </div>
@@ -189,34 +269,9 @@ const FeaturedProductsGrid = () => {
   }
 
   return (
-    <div className={styles.mobileFeaturedProductsGrid}>
+    <div className={styles.featuredProductsGrid}>
       {products.map((product, index) => (
-        <div key={product.id} style={{animationDelay: `${0.1 * (index + 1)}s`}}>
-          <Link 
-            href={`/products/${product.id}`} 
-            className={styles.mobileFeaturedCard}
-          >
-            <div className={styles.mobileFeaturedCardInner}>
-              <div className={styles.mobileFeaturedImageContainer}>
-                {product.imageUrls && product.imageUrls.length > 0 ? (
-                  <img
-                    src={product.imageUrls[imageIndices[product.id] || 0]}
-                    alt={product.name}
-                    className={styles.mobileFeaturedImage}
-                    onError={(e) => (e.currentTarget.src = 'https://placehold.co/300x300/f0f0f0/888?text=No+Image')}
-                  />
-                ) : (
-                  <div className={styles.mobileFeaturedNoImage}>No Image</div>
-                )}
-              </div>
-              
-              <div className={styles.mobileFeaturedCardInfo}>
-                <h3 className={styles.mobileFeaturedProductName}>{product.name}</h3>
-                <p className={styles.mobileFeaturedPrice}>{formatPrice(product.price)}</p>
-              </div>
-            </div>
-          </Link>
-        </div>
+        <ProductCard key={product.id} product={product} />
       ))}
     </div>
   );
@@ -1010,96 +1065,157 @@ onClick={() => handleCarouselNav('next')}
   </div>
 </section>
 
-{/* Mobile Artisan Showcase Section - Redesigned for resin art brand */}
-<section className={`${styles.mobileArtisanSection} ${styles.mobileOnly}`}>
-  <div className={styles.mobileArtisanHeader}>
-    <div className={styles.mobileArtisanHeaderLine} />
-    <h2 className={styles.mobileArtisanTitle}>Artisan Mastery</h2>
-    <div className={styles.mobileArtisanHeaderLine} />
-  </div>
+{/* Mobile Artisan Gallery Section - Professional Indian Aesthetic */}
+<section className={`${styles.mobileArtisanGallery} ${styles.mobileOnly}`}>
+  <div className={styles.mobileArtisanContainer}>
+    {/* Traditional Indian Pattern Background */}
+    <div className={styles.indianPatternOverlay}></div>
+    
+    {/* Section Header with Traditional Elements */}
+    <div className={styles.mobileArtisanHeader}>
+      <div className={styles.traditionalDivider}>
+        <div className={styles.mandalaDot}></div>
+        <div className={styles.traditionalLine}></div>
+        <div className={styles.mandalaDot}></div>
+      </div>
+      <h2 className={styles.mobileArtisanTitle}>मास्टर कलाकृति</h2>
+      <p className={styles.mobileArtisanSubtitle}>Master Craftsmanship</p>
+      <div className={styles.traditionalDivider}>
+        <div className={styles.mandalaDot}></div>
+        <div className={styles.traditionalLine}></div>
+        <div className={styles.mandalaDot}></div>
+      </div>
+    </div>
 
-  <div className={styles.mobileArtisanDescription}>
-    <p>Where liquid art meets timeless craftsmanship</p>
-  </div>
+    <div className={styles.mobileArtisanDescription}>
+      <p>Where ancient techniques meet contemporary elegance</p>
+    </div>
 
-  <div className={styles.mobileArtisanGrid}>
-    {[
-      {
-        title: 'Fluid Art Coasters',
-        category: 'Functional Art',
-        image: 'https://res.cloudinary.com/downe8107/image/upload/v1752441188/84D2D636-027E-484D-B886-1BFEE0B9F5CD_1_201_a_ca4hrv.jpg'
-      },
-      {
-        title: 'Resin Wall Clocks',
-        category: 'Time Pieces',
-        image: 'https://res.cloudinary.com/downe8107/image/upload/v1752441196/F0CFF91C-3B7B-4AA9-AECE-35A6DA417194_1_201_a_w5rmde.jpg'
-      },
-      {
-        title: 'Serving Trays',
-        category: 'Dining Art',
-        image: 'https://res.cloudinary.com/downe8107/image/upload/v1752441176/2E1812EC-BB3C-4C7D-8480-C1539B7A0FBB_1_201_a_xc2yjx.jpg'
-      },
-      {
-        title: 'Decorative Panels',
-        category: 'Wall Art',
-        image: 'https://res.cloudinary.com/downe8107/image/upload/v1752440782/6F66291E-3673-47F4-8989-701EBB8BB8BE_1_201_a_uxx8zk.jpg'
-      }
-    ].map((item, index) => (
-      <div key={index} className={styles.mobileArtisanCard}>
-        <div className={styles.mobileArtisanCardInner}>
-          <div className={styles.mobileArtisanImageWrapper}>
-            <img
-              src={item.image}
-              alt={item.title}
-              className={styles.mobileArtisanImage}
-              onError={(e) => (e.currentTarget.src = 'https://placehold.co/400x300/f0f0f0/888?text=Image+Not+Found')}
-            />
-            <div className={styles.mobileArtisanOverlay}>
-              <span className={styles.mobileArtisanCategory}>{item.category}</span>
+    {/* Professional Rectangle Grid */}
+    <div className={styles.mobileArtisanGrid}>
+      {[
+        {
+          title: 'Fluid Art Mastery',
+          category: 'रेजिन कला', 
+          image: 'https://res.cloudinary.com/downe8107/image/upload/v1752441188/84D2D636-027E-484D-B886-1BFEE0B9F5CD_1_201_a_ca4hrv.jpg',
+          index: 0
+        },
+        {
+          title: 'Timepiece Artistry',
+          category: 'घड़ी कला',
+          image: 'https://res.cloudinary.com/downe8107/image/upload/v1752441196/F0CFF91C-3B7B-4AA9-AECE-35A6DA417194_1_201_a_w5rmde.jpg',
+          index: 1
+        },
+        {
+          title: 'Serving Elegance',
+          category: 'ट्रे कला',
+          image: 'https://res.cloudinary.com/downe8107/image/upload/v1752441176/2E1812EC-BB3C-4C7D-8480-C1539B7A0FBB_1_201_a_xc2yjx.jpg',
+          index: 2
+        },
+        {
+          title: 'Wall Heritage',
+          category: 'दीवार कला',
+          image: 'https://res.cloudinary.com/downe8107/image/upload/v1752440782/6F66291E-3673-47F4-8989-701EBB8BB8BE_1_201_a_uxx8zk.jpg',
+          index: 3
+        },
+        {
+          title: 'Traditional Canvas',
+          category: 'चित्र कला',
+          image: 'https://res.cloudinary.com/downe8107/image/upload/v1751076362/kalakraft/DSC01366.jpg',
+          index: 4
+        },
+        {
+          title: 'Featured Collection',
+          category: 'विशेष संग्रह',
+          image: 'https://res.cloudinary.com/downe8107/image/upload/v1751076808/kalakraft/featured1.png',
+          index: 5
+        }
+      ].map((item, index) => (
+        <div 
+          key={index} 
+          className={styles.mobileArtisanCard}
+          style={{ animationDelay: `${index * 0.1}s` }}
+        >
+          <div className={styles.cardBlackFrame}>
+            <div className={styles.cardImageContainer}>
+              <img
+                src={item.image}
+                alt={item.title}
+                className={styles.cardImage}
+                onError={(e) => (e.currentTarget.src = 'https://placehold.co/400x300/000000/ffffff?text=कला')}
+              />
+              <div className={styles.cardImageOverlay}>
+                <div className={styles.overlayPattern}></div>
+              </div>
+            </div>
+            <div className={styles.cardContent}>
+              <div className={styles.categoryBadge}>
+                <span className={styles.hindiCategory}>{item.category}</span>
+              </div>
+              <h3 className={styles.cardTitle}>{item.title}</h3>
+              <div className={styles.cardDivider}></div>
             </div>
           </div>
-          <div className={styles.mobileArtisanCardContent}>
-            <h3 className={styles.mobileArtisanCardTitle}>{item.title}</h3>
-          </div>
         </div>
-      </div>
-    ))}
-  </div>
+      ))}
+    </div>
 
-  <div className={styles.mobileArtisanFooter}>
-    <p>Each creation embodies the fluid beauty of resin artistry</p>
-    <Link href="/products" className={styles.mobileArtisanButton}>
-      <span>Explore Collection</span>
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className={styles.mobileArtisanButtonIcon}>
-        <path d="M7 17L17 7M17 7H7M17 7V17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
-    </Link>
+    <div className={styles.mobileArtisanFooter}>
+      <p className={styles.footerText}>हर कृति में कहानी है</p>
+      <p className={styles.footerSubtext}>Every creation tells a story</p>
+      <button className={styles.exploreButton}>
+        <span className={styles.buttonText}>Explore Heritage</span>
+        <div className={styles.buttonArrow}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M7 17L17 7M17 7H7M17 7V17" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </div>
+      </button>
+    </div>
   </div>
-
-  {/* Artistic corner accents */}
-  <div className={styles.mobileArtisanCornerAccent}></div>
-  <div className={styles.mobileArtisanCornerAccent2}></div>
 </section>
 
-{/* Mobile Featured Collection Section - Redesigned with premium aesthetics */}
-<section className={`${styles.mobileFeaturedCollectionSection} ${styles.mobileOnly}`}>
-  <div className={styles.mobileFeaturedCollectionHeader}>
-    <div className={styles.mobileFeaturedCollectionHeaderLine} />
-    <h2 className={styles.mobileFeaturedCollectionTitle}>Curated Selections</h2>
-    <div className={styles.mobileFeaturedCollectionHeaderLine} />
-  </div>
+{/* Mobile Featured Products Section - Exact Product Listing Layout */}
+<section className={`${styles.mobileFeaturedProducts} ${styles.mobileOnly}`}>
+  <div className={styles.productSectionContainer}>
+    {/* Minimal Header */}
+    <div className={styles.productSectionHeader}>
+      <div className={styles.sectionDivider}>
+        <div className={styles.dividerDot}></div>
+        <div className={styles.dividerLine}></div>
+        <div className={styles.dividerDot}></div>
+      </div>
+      <h2 className={styles.productSectionTitle}>चुनिंदा संग्रह</h2>
+      <p className={styles.productSectionSubtitle}>Curated Selection</p>
+      <div className={styles.sectionDivider}>
+        <div className={styles.dividerDot}></div>
+        <div className={styles.dividerLine}></div>
+        <div className={styles.dividerDot}></div>
+      </div>
+    </div>
 
-  <div className={styles.mobileFeaturedCollectionDescription}>
-    <p>Handpicked pieces from our master artisan's workshop</p>
-  </div>
+    <div className={styles.productSectionDescription}>
+      <p>Handpicked pieces from our master artisan's workshop</p>
+    </div>
 
-  <div className={styles.mobileFeaturedCollectionContainer}>
-    <FeaturedProductsGrid />
-  </div>
+    {/* Featured Products Grid - Exact Product Listing Layout */}
+    <div className={styles.featuredProductsContainer}>
+      <FeaturedProductsGrid />
+    </div>
 
-  {/* Subtle artistic elements */}
-  <div className={styles.mobileFeaturedCollectionBrushStroke}></div>
-  <div className={styles.mobileFeaturedCollectionBrushStroke2}></div>
+    <div className={styles.productSectionFooter}>
+      <p className={styles.productFooterText}>कुशलता से बनाया गया</p>
+      <p className={styles.productFooterSubtext}>Crafted with Excellence</p>
+      <Link href="/products" className={styles.viewAllProductsButton}>
+        <span className={styles.viewAllText}>View All Products</span>
+        <div className={styles.viewAllArrow}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </div>
+      </Link>
+    </div>
+  </div>
 </section>
 
 </main>
