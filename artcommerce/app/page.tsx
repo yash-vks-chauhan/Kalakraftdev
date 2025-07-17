@@ -615,7 +615,7 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
             }}>
               <div style={{
                 width: '100%',
-                aspectRatio: '1/0.9',
+                aspectRatio: '1/1.1',
                 position: 'relative',
                 overflow: 'hidden',
                 background: '#f5f5f5',
@@ -633,19 +633,19 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
               </div>
               
               <div style={{
-                padding: '18px',
+                padding: '14px',
                 background: '#fff',
                 position: 'relative',
-                minHeight: '120px',
+                minHeight: '80px',
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'flex-start',
               }}>
                 {product.category && (
                   <div style={{
-                    fontSize: '0.7rem',
+                    fontSize: '0.65rem',
                     color: '#666',
-                    marginBottom: '8px',
+                    marginBottom: '6px',
                     fontWeight: 500,
                     textTransform: 'uppercase',
                     letterSpacing: '0.05em',
@@ -655,20 +655,23 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
                 )}
                 
                 <h3 style={{
-                  fontSize: '0.95rem',
+                  fontSize: '0.9rem',
                   fontWeight: 600,
-                  margin: '0 0 10px 0',
-                  lineHeight: 1.4,
+                  margin: '0 0 8px 0',
+                  lineHeight: 1.3,
                   color: '#000',
-                  flex: '1',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
                 }}>
                   {product.name}
                 </h3>
                 
                 <div style={{
-                  fontSize: '1rem',
+                  fontSize: '0.95rem',
                   fontWeight: 700,
                   color: '#000',
+                  marginTop: 'auto',
                 }}>
                   {formatPrice(product.price)}
                 </div>
