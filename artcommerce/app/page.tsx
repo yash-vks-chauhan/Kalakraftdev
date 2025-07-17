@@ -764,112 +764,119 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
       style.transition = 'all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
     }
     
-    // 🌟 Visible card deck arrangement
+    // 🌟 Well-Spaced Card Deck Arrangement
     if (position === 0) {
-      // Front card
+      // Front card - main spotlight
       style.transform = `
         translateX(${cardOffset}px) 
-        translateZ(40px) 
+        translateZ(50px) 
         rotateY(${cardRotation}deg) 
         scale(${cardScale})
       `;
       style.zIndex = 100;
       style.opacity = 1;
       style.boxShadow = `
-        0 25px 50px rgba(0, 0, 0, 0.2),
-        0 15px 25px rgba(0, 0, 0, 0.15),
-        0 0 20px rgba(255, 215, 0, ${lightIntensity * 0.3})
+        0 30px 60px rgba(0, 0, 0, 0.25),
+        0 20px 35px rgba(0, 0, 0, 0.18),
+        0 0 25px rgba(255, 215, 0, ${lightIntensity * 0.4})
       `;
       
     } else if (position === 1) {
-      // Right visible edge
+      // Right visible edge - well spaced
       style.transform = `
-        translateX(${40 + cardOffset}px) 
-        translateY(8px)
-        translateZ(30px) 
-        rotateY(-10deg) 
-        scale(0.92)
+        translateX(${60 + cardOffset}px) 
+        translateY(12px)
+        translateZ(40px) 
+        rotateY(-8deg) 
+        scale(0.90)
       `;
       style.zIndex = 90;
-      style.opacity = 0.8;
-      style.boxShadow = `0 15px 30px rgba(0, 0, 0, 0.12)`;
+      style.opacity = 0.85;
+      style.boxShadow = `
+        0 20px 40px rgba(0, 0, 0, 0.15),
+        0 10px 20px rgba(0, 0, 0, 0.1)
+      `;
       
     } else if (position === 2) {
-      // More visible right edge
+      // Second right edge - more spaced
       style.transform = `
-        translateX(65px) 
-        translateY(16px)
-        translateZ(20px) 
-        rotateY(-15deg) 
-        scale(0.84)
+        translateX(110px) 
+        translateY(24px)
+        translateZ(30px) 
+        rotateY(-12deg) 
+        scale(0.80)
       `;
       style.zIndex = 80;
-      style.opacity = 0.65;
-      style.boxShadow = `0 12px 25px rgba(0, 0, 0, 0.1)`;
-      
-    } else if (position === 3) {
-      // Far right edge
-      style.transform = `
-        translateX(85px) 
-        translateY(24px)
-        translateZ(10px)
-        rotateY(-20deg) 
-        scale(0.76)
-      `;
-      style.zIndex = 70;
-      style.opacity = 0.4;
-      style.boxShadow = `0 10px 20px rgba(0, 0, 0, 0.08)`;
-      
-    } else if (position === displayProducts.length - 1) {
-      // Left visible edge
-      style.transform = `
-        translateX(${-40 + cardOffset}px) 
-        translateY(8px)
-        translateZ(30px) 
-        rotateY(10deg) 
-        scale(0.92)
-      `;
-      style.zIndex = 90;
-      style.opacity = 0.8;
+      style.opacity = 0.7;
       style.boxShadow = `0 15px 30px rgba(0, 0, 0, 0.12)`;
       
-    } else if (position === displayProducts.length - 2) {
-      // More visible left edge
+    } else if (position === 3) {
+      // Third right edge - clearly separated
       style.transform = `
-        translateX(-65px) 
-        translateY(16px)
-        translateZ(20px) 
-        rotateY(15deg) 
-        scale(0.84)
-      `;
-      style.zIndex = 80;
-      style.opacity = 0.65;
-      style.boxShadow = `0 12px 25px rgba(0, 0, 0, 0.1)`;
-      
-    } else if (position === displayProducts.length - 3) {
-      // Far left edge
-      style.transform = `
-        translateX(-85px) 
-        translateY(24px)
-        translateZ(10px)
-        rotateY(20deg) 
-        scale(0.76)
+        translateX(150px) 
+        translateY(36px)
+        translateZ(20px)
+        rotateY(-16deg) 
+        scale(0.70)
       `;
       style.zIndex = 70;
-      style.opacity = 0.4;
-      style.boxShadow = `0 10px 20px rgba(0, 0, 0, 0.08)`;
+      style.opacity = 0.5;
+      style.boxShadow = `0 12px 25px rgba(0, 0, 0, 0.1)`;
+      
+    } else if (position === displayProducts.length - 1) {
+      // Left visible edge - well spaced
+      style.transform = `
+        translateX(${-60 + cardOffset}px) 
+        translateY(12px)
+        translateZ(40px) 
+        rotateY(8deg) 
+        scale(0.90)
+      `;
+      style.zIndex = 90;
+      style.opacity = 0.85;
+      style.boxShadow = `
+        0 20px 40px rgba(0, 0, 0, 0.15),
+        0 10px 20px rgba(0, 0, 0, 0.1)
+      `;
+      
+    } else if (position === displayProducts.length - 2) {
+      // Second left edge - more spaced
+      style.transform = `
+        translateX(-110px) 
+        translateY(24px)
+        translateZ(30px) 
+        rotateY(12deg) 
+        scale(0.80)
+      `;
+      style.zIndex = 80;
+      style.opacity = 0.7;
+      style.boxShadow = `0 15px 30px rgba(0, 0, 0, 0.12)`;
+      
+    } else if (position === displayProducts.length - 3) {
+      // Third left edge - clearly separated
+      style.transform = `
+        translateX(-150px) 
+        translateY(36px)
+        translateZ(20px)
+        rotateY(16deg) 
+        scale(0.70)
+      `;
+      style.zIndex = 70;
+      style.opacity = 0.5;
+      style.boxShadow = `0 12px 25px rgba(0, 0, 0, 0.1)`;
       
     } else {
-      // Hidden cards
+      // Hidden cards - far behind
       style.transform = `
-        translateX(${position > displayProducts.length / 2 ? -100 : 100}px) 
-        translateY(32px)
-        rotateY(${position > displayProducts.length / 2 ? 25 : -25}deg) 
-        scale(0.68)
+        translateX(${position > displayProducts.length / 2 ? -200 : 200}px) 
+        translateY(50px)
+        translateZ(0px)
+        rotateY(${position > displayProducts.length / 2 ? 20 : -20}deg) 
+        scale(0.60)
       `;
       style.zIndex = 60;
       style.opacity = 0;
-      style.boxShadow = '0 6px 12px rgba(0, 0, 0, 0.04)';
+      style.boxShadow = '0 8px 16px rgba(0, 0, 0, 0.05)';
     }
     
     return style;
@@ -946,21 +953,22 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
         </div>
       )}
 
-      <div 
-        ref={carouselRef}
-        style={{
-          position: 'relative',
-          width: '100%',
-          height: '420px',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          marginBottom: '3rem',
-          zIndex: 3,
-          perspective: '1000px',
-          perspectiveOrigin: 'center center',
-          transformStyle: 'preserve-3d',
-        }}
+              <div 
+          ref={carouselRef}
+          style={{
+            position: 'relative',
+            width: '100%',
+            height: '420px',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginBottom: '3rem',
+            zIndex: 3,
+            perspective: '1500px',
+            perspectiveOrigin: 'center center',
+            transformStyle: 'preserve-3d',
+            overflow: 'visible', // Allow cards to extend beyond container
+          }}
         onTouchStart={handleAdvancedTouchStart}
         onTouchMove={handleAdvancedTouchMove}
         onTouchEnd={handleAdvancedTouchEnd}
