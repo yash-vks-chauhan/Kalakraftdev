@@ -380,13 +380,13 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
 
   // No auto-play functionality - user controlled only
 
-  // Ultra-responsive rubber band effect
+  // Buttery smooth rubber band effect
   const applyRubberBand = (offset) => {
-    const maxDrag = 150; // More range for smoother feel
+    const maxDrag = 160; // Slightly more range for ultra-smooth feel
     if (Math.abs(offset) <= maxDrag) return offset;
     
     const excess = Math.abs(offset) - maxDrag;
-    const damped = maxDrag + excess * 0.15; // Minimal resistance
+    const damped = maxDrag + excess * 0.12; // Even less resistance for smoothness
     return offset > 0 ? damped : -damped;
   };
 
@@ -463,7 +463,7 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
       
       setTimeout(() => {
         endTransition();
-      }, 250);
+      }, 300);
           } else {
         // Return to center instantly
         setDragOffset(0);
@@ -488,7 +488,7 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
     
     setTimeout(() => {
       endTransition();
-    }, 250);
+    }, 300);
   };
   
   // Circular 3D carousel styling - creates a ring of cards
@@ -525,33 +525,29 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
       borderRadius: '8px',
       overflow: 'hidden',
       transformOrigin: 'center center',
-      willChange: 'transform',
+      willChange: 'transform, opacity, filter',
       backfaceVisibility: 'hidden',
+      transform: 'translateZ(0)', // Force hardware acceleration
       cursor: position === 0 ? (isDragging ? 'grabbing' : 'grab') : 'pointer',
       left: '50%',
       top: '50%',
       marginLeft: '-140px',
       marginTop: '-210px',
+      contain: 'layout style paint',
     };
     
-    // Ultra-fast transitions
+    // Silky smooth transitions - only animate transform and opacity
     if (isDragging && position === 0) {
       style.transition = 'none';
     } else if (isTransitioning) {
-      style.transition = 'all 0.25s cubic-bezier(0.25, 0.1, 0.25, 1)';
+      style.transition = 'transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1), opacity 0.3s ease, filter 0.3s ease';
     } else {
-      style.transition = 'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)';
+      style.transition = 'transform 0.25s cubic-bezier(0.4, 0.0, 0.2, 1), opacity 0.25s ease, filter 0.25s ease';
     }
     
     // Center card (current/active)
     if (position === 0) {
-      style.transform = `
-        translateX(${dragOffsetX}px) 
-        translateY(0px)
-        translateZ(60px) 
-        rotateY(${dragRotationY}deg) 
-        scale(1)
-      `;
+      style.transform = `translate3d(${dragOffsetX}px, 0px, 60px) rotateY(${dragRotationY}deg) scale3d(1, 1, 1)`;
       style.zIndex = 100;
       style.opacity = 1;
       style.boxShadow = '0 25px 50px rgba(0, 0, 0, 0.2), 0 15px 30px rgba(0, 0, 0, 0.15)';
@@ -562,13 +558,7 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
       const opacity = 0.4 + (Math.cos(angleRad) * 0.3); // More visible when closer to front
       const brightness = 0.7 + (Math.cos(angleRad) * 0.2); // Brighter when closer
       
-      style.transform = `
-        translateX(${x}px) 
-        translateY(${y}px)
-        translateZ(${z - 100}px) 
-        rotateY(${-angle}deg) 
-        scale(${scale})
-      `;
+      style.transform = `translate3d(${x}px, ${y}px, ${z - 100}px) rotateY(${-angle}deg) scale3d(${scale}, ${scale}, 1)`;
       style.zIndex = Math.round(50 + z); // Higher z-index for cards closer to front
       style.opacity = Math.max(0.3, opacity);
       style.boxShadow = `0 ${10 + z/10}px ${20 + z/5}px rgba(0, 0, 0, ${0.1 + (Math.cos(angleRad) * 0.1)})`;
@@ -596,6 +586,8 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
           perspectiveOrigin: 'center center',
           transformStyle: 'preserve-3d',
           overflow: 'visible',
+          willChange: 'auto',
+          contain: 'layout style',
         }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
@@ -709,7 +701,7 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
           width: `${((currentIndex + 1) / 8) * 100}%`,
           height: '100%',
           background: 'linear-gradient(90deg, #000, #333)',
-          transition: 'width 0.25s ease',
+          transition: 'width 0.3s cubic-bezier(0.25, 0.1, 0.25, 1)',
         }} />
         </div>
 
