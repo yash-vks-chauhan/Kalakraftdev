@@ -922,15 +922,18 @@ onClick={() => handleCarouselNav('next')}
   <MobileVideoSection />
   
   {/* Mobile Explore Section - New section for mobile only */}
-<section className={`${styles.mobileExploreSection} ${styles.mobileOnly}`}>
+<section className={`${styles.mobileExploreSection} ${styles.mobileOnly}`} style={{ padding: '3rem 1.5rem 4rem' }}>
   <div className={styles.mobileExploreHeader}>
-    <div className={styles.mobileExploreHeaderLine} />
-    <h2 className={styles.mobileExploreTitle}>Explore Our Artisan Creations</h2>
-    <div className={styles.mobileExploreHeaderLine} />
-  </div>
-
-  <div className={styles.mobileExploreDescription}>
-    <p>Discover handcrafted masterpieces that bring elegance and artistry to your living space</p>
+    <h2 className={styles.mobileExploreTitle} style={{ 
+      fontSize: '1.5rem', 
+      fontWeight: 400, 
+      marginBottom: '2.5rem',
+      fontFamily: 'Inter, sans-serif',
+      letterSpacing: '0.02em',
+      fontStyle: 'normal'
+    }}>
+      Explore Our Artisan Creations
+    </h2>
   </div>
 
   <div className={styles.mobileExploreGrid}>
@@ -974,13 +977,6 @@ onClick={() => handleCarouselNav('next')}
         </div>
       </div>
     ))}
-  </div>
-
-  <div className={styles.mobileExploreFooter}>
-    <p>Each piece is meticulously crafted with passion and precision</p>
-    <Link href="/products" className={styles.mobileExploreButton}>
-      View All Artworks
-    </Link>
   </div>
 
   {/* Watercolor background accents */}
