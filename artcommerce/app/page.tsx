@@ -305,7 +305,7 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
     if (!isDragging) return;
     
     const diff = startX - currentX;
-    const threshold = 50; // Minimum swipe distance
+    const threshold = 40; // Reduced threshold for more responsive swiping
     
     if (diff > threshold) {
       // Swipe left - next card
@@ -315,7 +315,10 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
       setCurrentIndex((prev) => (prev - 1 + products.length) % products.length);
     }
     
-    setIsDragging(false);
+    // Reset drag state with a small delay to ensure smooth transition
+    setTimeout(() => {
+      setIsDragging(false);
+    }, 50);
   };
   
   // Calculate transform for each card based on its position relative to current
@@ -328,7 +331,7 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
     // Calculate drag offset only for the front card (position 0)
     let dragOffset = 0;
     if (isDragging && position === 0) {
-      dragOffset = (currentX - startX) * 0.5; // Reduce movement for smoother effect
+      dragOffset = (currentX - startX) * 0.6; // Slightly more responsive movement
     }
     
     // Base styles with proper TypeScript annotations
@@ -336,13 +339,15 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
       position: 'absolute',
       width: '85%',
       maxWidth: '350px',
-      transition: isDragging && position === 0 ? 'none' : 'all 0.4s ease',
+      transition: isDragging && position === 0 ? 'none' : 'all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
       borderRadius: '0px',
       overflow: 'hidden',
       boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
       opacity: 1,
       zIndex: products.length - position,
-      transformOrigin: 'center center'
+      transformOrigin: 'center center',
+      willChange: 'transform, opacity', // Optimize for GPU acceleration
+      backfaceVisibility: 'hidden' // Prevent flickering
     };
     
     // Position 0 is current (front) card - only this card moves with drag
@@ -423,7 +428,9 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
         justifyContent: 'center',
         alignItems: 'center',
         marginBottom: '2rem',
-        zIndex: 3
+        zIndex: 3,
+        perspective: '1000px', // Add 3D perspective for smoother transforms
+        transformStyle: 'preserve-3d'
       }}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
@@ -569,7 +576,8 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
               height: '6px',
               borderRadius: '50%',
               background: index === currentIndex ? '#000' : 'rgba(0,0,0,0.2)',
-              transition: 'background 0.3s ease'
+              transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+              transform: index === currentIndex ? 'scale(1.2)' : 'scale(1)'
             }}
           />
         ))}
