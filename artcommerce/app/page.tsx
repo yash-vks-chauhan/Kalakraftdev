@@ -272,6 +272,7 @@ const FeaturedProductsGrid = () => {
 export default function Home() {
 
 const [message, setMessage] = useState<string|null>(null)
+const [featuredProducts, setFeaturedProducts] = useState([]);
 
 // Adjust the typing speed parameters to be slower
 const [rotatingText, setRotatingText] = useState('coasters')
@@ -692,6 +693,35 @@ useEffect(() => {
 
 
 
+// Fetch featured products for mobile carousel
+useEffect(() => {
+  const fetchFeaturedProducts = async () => {
+    try {
+      const response = await fetch('/api/products');
+      const data = await response.json();
+      
+      if (data.products && Array.isArray(data.products)) {
+        // Get active products with stock and images
+        const availableProducts = data.products
+          .filter(p => p.isActive && p.imageUrls && p.imageUrls.length > 0)
+          .map(p => ({
+            ...p,
+            imageUrls: Array.isArray(p.imageUrls) ? p.imageUrls : [p.imageUrls]
+          }))
+          .slice(0, 8); // Limit to 8 products
+          
+        setFeaturedProducts(availableProducts);
+      }
+    } catch (error) {
+      console.error('Error fetching products:', error);
+    }
+  };
+  
+  fetchFeaturedProducts();
+}, []);
+
+
+
 return (
 
 <main data-page="home" style={{background: '#f8f8f8'}}>
@@ -965,7 +995,7 @@ onClick={() => handleCarouselNav('next')}
   </section>
   
   {/* Mobile Video Section - Using the new component */}
-  <MobileVideoSection />
+  <MobileVideoSection featuredProducts={featuredProducts} />
   
   {/* Mobile Explore Section - New section for mobile only */}
 <section className={`${styles.mobileExploreSection} ${styles.mobileOnly}`} style={{ padding: '5rem 1.5rem 6rem' }}>
