@@ -325,9 +325,9 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
     if (position < 0) position += products.length;
     if (position >= products.length) position -= products.length;
     
-    // If dragging, calculate the drag offset
+    // Calculate drag offset only for the front card (position 0)
     let dragOffset = 0;
-    if (isDragging) {
+    if (isDragging && position === 0) {
       dragOffset = (currentX - startX) * 0.5; // Reduce movement for smoother effect
     }
     
@@ -336,7 +336,7 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
       position: 'absolute',
       width: '85%',
       maxWidth: '350px',
-      transition: isDragging ? 'none' : 'all 0.4s ease',
+      transition: isDragging && position === 0 ? 'none' : 'all 0.4s ease',
       borderRadius: '0px',
       overflow: 'hidden',
       boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
@@ -345,30 +345,30 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
       transformOrigin: 'center center'
     };
     
-    // Position 0 is current (front) card
+    // Position 0 is current (front) card - only this card moves with drag
     if (position === 0) {
       style.transform = `translateX(${dragOffset}px) scale(1)`;
       style.zIndex = products.length + 1;
       style.opacity = 1;
     } 
-    // Position 1 is next card (slightly behind and to the right)
+    // Position 1 is next card (slightly behind and to the right) - fixed position
     else if (position === 1) {
-      style.transform = `translateX(${30 + dragOffset}px) scale(0.95) translateY(10px)`;
+      style.transform = `translateX(30px) scale(0.95) translateY(10px)`;
       style.opacity = 0.8;
     }
-    // Position 2 is two cards back
+    // Position 2 is two cards back - fixed position
     else if (position === 2) {
-      style.transform = `translateX(${60 + dragOffset}px) scale(0.9) translateY(20px)`;
+      style.transform = `translateX(60px) scale(0.9) translateY(20px)`;
       style.opacity = 0.6;
     }
-    // Position 3 is three cards back (barely visible)
+    // Position 3 is three cards back (barely visible) - fixed position
     else if (position === 3) {
-      style.transform = `translateX(${90 + dragOffset}px) scale(0.85) translateY(30px)`;
+      style.transform = `translateX(90px) scale(0.85) translateY(30px)`;
       style.opacity = 0.4;
     }
-    // All other cards are stacked behind
+    // All other cards are stacked behind - fixed position
     else {
-      style.transform = `translateX(${120 + dragOffset}px) scale(0.8) translateY(40px)`;
+      style.transform = `translateX(120px) scale(0.8) translateY(40px)`;
       style.opacity = 0;
     }
     
