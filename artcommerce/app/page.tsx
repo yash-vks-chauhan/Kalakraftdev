@@ -924,16 +924,19 @@ onClick={() => handleCarouselNav('next')}
   {/* Mobile Explore Section - New section for mobile only */}
 <section className={`${styles.mobileExploreSection} ${styles.mobileOnly}`} style={{ padding: '3rem 1.5rem 4rem' }}>
   <div className={styles.mobileExploreHeader}>
+    <div className={styles.headerLine}></div>
     <h2 className={styles.mobileExploreTitle} style={{ 
-      fontSize: '1.5rem', 
+      fontFamily: 'Cormorant Garamond, serif',
+      fontSize: '1.75rem', 
       fontWeight: 400, 
-      marginBottom: '2.5rem',
-      fontFamily: 'Inter, sans-serif',
+      marginBottom: '1.5rem',
       letterSpacing: '0.02em',
-      fontStyle: 'normal'
+      fontStyle: 'italic',
+      color: '#000'
     }}>
       Explore Our Artisan Creations
     </h2>
+    <div className={styles.headerLine}></div>
   </div>
 
   <div className={styles.mobileExploreGrid}>
