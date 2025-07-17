@@ -838,6 +838,16 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
         {children}
       </main>
       
+      {/* Simple Black Footer - Appears on all mobile pages */}
+      <div style={{
+        width: '100%',
+        backgroundColor: '#000',
+        padding: '40px 0',
+        marginTop: '20px'
+      }}>
+        {/* This is an empty black footer */}
+      </div>
+      
       {/* Mobile Footer Navigation */}
       <nav className={`${styles.mobileFooter} ${isFooterVisible ? styles.footerVisible : styles.footerHidden}`}>
         <button 

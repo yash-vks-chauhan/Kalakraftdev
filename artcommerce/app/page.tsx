@@ -1131,6 +1131,8 @@ onClick={() => handleCarouselNav('next')}
   <div className={styles.watercolorAccent2}></div>
 </section>
 
+
+
 {/* Artistry in Every Layer Section - Redesigned - Desktop Only */}
 <section className={`${styles.artistrySection} ${styles.desktopOnly}`}>
   <div 
