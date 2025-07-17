@@ -269,17 +269,18 @@ const FeaturedProductsGrid = () => {
   );
 };
 
-// Simple, reliable mobile carousel for featured products
+// Mobile Featured Carousel Component - Optimized for Smooth Performance
 const MobileFeaturedCarousel = ({ products = [] }) => {
+  // Simplified state for better performance
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [autoPlay, setAutoPlay] = useState(true);
-  
   const carouselRef = useRef(null);
   const autoPlayRef = useRef(null);
   const startPos = useRef(0);
+  const lastPos = useRef(0);
   const startTime = useRef(0);
   
   // Format price to INR
@@ -298,7 +299,7 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
       id: '1',
       name: 'Handcrafted Resin Clock',
       price: 4999,
-      imageUrls: ['/images/featured1.png'],
+      imageUrls: ['/images/featured1.png', '/images/category1.png'],
       stockQuantity: 5,
       isNew: true,
       category: { name: 'Clocks' }
@@ -307,7 +308,7 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
       id: '2',
       name: 'Decorative Wall Piece',
       price: 3499,
-      imageUrls: ['/images/featured2.png'],
+      imageUrls: ['/images/featured2.png', '/images/category2.png'],
       stockQuantity: 8,
       category: { name: 'Wall Decor' }
     },
@@ -315,7 +316,7 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
       id: '3',
       name: 'Resin Tray Set',
       price: 2999,
-      imageUrls: ['/images/featured3.JPG'],
+      imageUrls: ['/images/featured3.JPG', '/images/category3.png'],
       stockQuantity: 3,
       category: { name: 'Trays' }
     },
@@ -323,7 +324,7 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
       id: '4',
       name: 'Designer Flower Vase',
       price: 1999,
-      imageUrls: ['/images/category4.png'],
+      imageUrls: ['/images/category4.png', '/images/category5.png'],
       stockQuantity: 0,
       category: { name: 'Decor' }
     }
@@ -331,7 +332,7 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
 
   // Auto-play functionality
   useEffect(() => {
-    if (autoPlay && !isDragging && !isTransitioning && displayProducts.length > 1) {
+    if (autoPlay && !isDragging && displayProducts.length > 1 && !isTransitioning) {
       autoPlayRef.current = setInterval(() => {
         setCurrentIndex((prev) => (prev + 1) % displayProducts.length);
       }, 4000);
@@ -342,7 +343,7 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
         clearInterval(autoPlayRef.current);
       }
     };
-  }, [autoPlay, isDragging, isTransitioning, displayProducts.length]);
+  }, [autoPlay, isDragging, displayProducts.length, isTransitioning]);
 
   // Simple rubber band effect
   const applyRubberBand = (offset) => {
@@ -368,42 +369,46 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
     }
   };
   
-  // Touch event handlers
+  // Simplified touch events
   const handleTouchStart = (e) => {
-    if (e.touches.length > 1) return; // Ignore multi-touch
-    
     pauseAutoPlay();
     setIsDragging(true);
     startPos.current = e.touches[0].clientX;
+    lastPos.current = e.touches[0].clientX;
     startTime.current = Date.now();
     setDragOffset(0);
   };
   
   const handleTouchMove = (e) => {
-    if (e.touches.length > 1 || !isDragging) return;
+    if (!isDragging) return;
     
     const currentPos = e.touches[0].clientX;
     const rawOffset = currentPos - startPos.current;
+    
+    // Apply simple rubber band
     const constrainedOffset = applyRubberBand(rawOffset);
     
+    lastPos.current = currentPos;
     setDragOffset(constrainedOffset);
+    
     e.preventDefault();
   };
   
   const handleTouchEnd = () => {
     if (!isDragging) return;
     
-    const totalDistance = dragOffset;
+    const totalDistance = lastPos.current - startPos.current;
     const swipeTime = Date.now() - startTime.current;
-    const velocity = Math.abs(totalDistance) / swipeTime;
+    const velocity = Math.abs(totalDistance) / swipeTime; // pixels per ms
     
-    const threshold = 50;
-    const quickSwipeThreshold = 0.3;
+    const threshold = 40;
+    const quickSwipeThreshold = 0.5; // pixels per ms
     
+    // Determine if we should change cards
     const shouldNext = totalDistance < -threshold || 
-                      (totalDistance < -25 && velocity > quickSwipeThreshold);
+                      (totalDistance < -20 && velocity > quickSwipeThreshold);
     const shouldPrev = totalDistance > threshold || 
-                      (totalDistance > 25 && velocity > quickSwipeThreshold);
+                      (totalDistance > 20 && velocity > quickSwipeThreshold);
     
     if (shouldNext || shouldPrev) {
       setIsTransitioning(true);
@@ -413,19 +418,23 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
       } else {
         setCurrentIndex((prev) => (prev - 1 + displayProducts.length) % displayProducts.length);
       }
-    }
-    
-    // Reset drag state
-    setDragOffset(0);
-    setIsDragging(false);
-    
-    if (shouldNext || shouldPrev) {
+      
+      // Quick transition
       setTimeout(() => {
-        setIsTransitioning(false);
+        setDragOffset(0);
+        setIsDragging(false);
+        setTimeout(() => {
+          setIsTransitioning(false);
+          resumeAutoPlay();
+        }, 400);
+      }, 50);
+    } else {
+      // Return to center with smooth animation
+      setDragOffset(0);
+      setTimeout(() => {
+        setIsDragging(false);
         resumeAutoPlay();
       }, 300);
-    } else {
-      resumeAutoPlay();
     }
   };
 
@@ -440,222 +449,415 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
     setTimeout(() => {
       setIsTransitioning(false);
       resumeAutoPlay();
-    }, 300);
+    }, 600);
+  };
+  
+  // Card deck styling with visible edges - like a real stack of cards
+  const getCardStyle = (index) => {
+    let position = index - currentIndex;
+    if (position < 0) position += displayProducts.length;
+    if (position >= displayProducts.length) position -= displayProducts.length;
+    
+    // Simple drag response
+    let cardOffset = 0;
+    let cardRotation = 0;
+    let cardScale = 1;
+    
+    if (isDragging && position === 0) {
+      cardOffset = dragOffset;
+      cardRotation = dragOffset * 0.02; // Reduced for smoother feel
+      cardScale = 1 - Math.abs(dragOffset) * 0.0002;
+    } else if (isDragging && position === 1 && dragOffset < 0) {
+      cardOffset = Math.max(-25, dragOffset * 0.4);
+    } else if (isDragging && position === displayProducts.length - 1 && dragOffset > 0) {
+      cardOffset = Math.min(25, dragOffset * 0.4);
+    }
+    
+    const style: React.CSSProperties = {
+      position: 'absolute',
+      width: '85%',
+      maxWidth: '320px',
+      borderRadius: '20px',
+      overflow: 'hidden',
+      transformOrigin: 'center center',
+      willChange: 'transform',
+      backfaceVisibility: 'hidden',
+      cursor: position === 0 ? (isDragging ? 'grabbing' : 'grab') : 'pointer',
+    };
+    
+    // Simple transitions
+    if (isDragging && position === 0) {
+      style.transition = 'none';
+    } else if (isDragging) {
+      style.transition = 'transform 0.2s ease-out';
+    } else {
+      style.transition = 'all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+    }
+    
+    // Realistic deck arrangement with visible card edges
+    if (position === 0) {
+      // Front card - full visibility
+      style.transform = `
+        translateX(${cardOffset}px) 
+        translateZ(40px) 
+        rotateY(${cardRotation}deg) 
+        scale(${cardScale})
+      `;
+      style.zIndex = 100;
+      style.opacity = 1;
+      style.boxShadow = '0 25px 50px rgba(0, 0, 0, 0.2), 0 15px 25px rgba(0, 0, 0, 0.15)';
+    } else if (position === 1) {
+      // Right visible edge - like cards fanned to the right
+      style.transform = `
+        translateX(${30 + cardOffset}px) 
+        translateY(6px)
+        translateZ(30px) 
+        rotateY(-8deg) 
+        scale(0.94)
+      `;
+      style.zIndex = 90;
+      style.opacity = 0.85;
+      style.boxShadow = '0 15px 30px rgba(0, 0, 0, 0.12), 0 8px 15px rgba(0, 0, 0, 0.08)';
+    } else if (position === 2) {
+      // More visible right edge
+      style.transform = `
+        translateX(55px) 
+        translateY(12px)
+        translateZ(20px) 
+        rotateY(-12deg) 
+        scale(0.88)
+      `;
+      style.zIndex = 80;
+      style.opacity = 0.7;
+      style.boxShadow = '0 12px 25px rgba(0, 0, 0, 0.1), 0 6px 12px rgba(0, 0, 0, 0.06)';
+    } else if (position === 3) {
+      // Far right edge - most visible background card
+      style.transform = `
+        translateX(75px) 
+        translateY(18px)
+        translateZ(10px)
+        rotateY(-15deg) 
+        scale(0.82)
+      `;
+      style.zIndex = 70;
+      style.opacity = 0.55;
+      style.boxShadow = '0 10px 20px rgba(0, 0, 0, 0.08), 0 4px 8px rgba(0, 0, 0, 0.04)';
+    } else if (position === displayProducts.length - 1) {
+      // Left visible edge - cards fanned to the left
+      style.transform = `
+        translateX(${-30 + cardOffset}px) 
+        translateY(6px)
+        translateZ(30px) 
+        rotateY(8deg) 
+        scale(0.94)
+      `;
+      style.zIndex = 90;
+      style.opacity = 0.85;
+      style.boxShadow = '0 15px 30px rgba(0, 0, 0, 0.12), 0 8px 15px rgba(0, 0, 0, 0.08)';
+    } else if (position === displayProducts.length - 2) {
+      // More visible left edge
+      style.transform = `
+        translateX(-55px) 
+        translateY(12px)
+        translateZ(20px) 
+        rotateY(12deg) 
+        scale(0.88)
+      `;
+      style.zIndex = 80;
+      style.opacity = 0.7;
+      style.boxShadow = '0 12px 25px rgba(0, 0, 0, 0.1), 0 6px 12px rgba(0, 0, 0, 0.06)';
+    } else if (position === displayProducts.length - 3) {
+      // Far left edge - most visible background card on left
+      style.transform = `
+        translateX(-75px) 
+        translateY(18px)
+        translateZ(10px)
+        rotateY(15deg) 
+        scale(0.82)
+      `;
+      style.zIndex = 70;
+      style.opacity = 0.55;
+      style.boxShadow = '0 10px 20px rgba(0, 0, 0, 0.08), 0 4px 8px rgba(0, 0, 0, 0.04)';
+    } else {
+      // Hidden cards - completely behind
+      style.transform = `
+        translateX(${position > displayProducts.length / 2 ? -90 : 90}px) 
+        translateY(24px)
+        translateZ(0px)
+        rotateY(${position > displayProducts.length / 2 ? 18 : -18}deg) 
+        scale(0.76)
+      `;
+      style.zIndex = 60;
+      style.opacity = 0;
+      style.boxShadow = '0 6px 12px rgba(0, 0, 0, 0.04)';
+    }
+    
+    return style;
   };
 
   return (
-    <div style={{ position: 'relative', width: '100%', padding: '0 20px' }}>
-      {/* Main carousel container */}
+    <div style={{ position: 'relative', width: '100%' }}>
+      {/* Auto-play control */}
+      <div style={{
+        position: 'absolute',
+        top: '-40px',
+        right: '20px',
+        zIndex: 200,
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        fontSize: '0.7rem',
+        color: '#666',
+      }}>
+        <button
+          onClick={() => autoPlay ? pauseAutoPlay() : resumeAutoPlay()}
+          style={{
+            background: 'rgba(255, 255, 255, 0.9)',
+            border: '1px solid rgba(0, 0, 0, 0.1)',
+            borderRadius: '20px',
+            padding: '4px 8px',
+            fontSize: '0.65rem',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+          }}
+        >
+          {autoPlay ? '⏸️ Pause' : '▶️ Play'}
+        </button>
+      </div>
+
       <div 
         ref={carouselRef}
         style={{
           position: 'relative',
           width: '100%',
-          height: '480px',
-          overflow: 'hidden',
-          borderRadius: '20px',
+          height: '420px',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          marginBottom: '3rem',
+          zIndex: 3,
+          perspective: '1000px',
+          perspectiveOrigin: 'center center',
+          transformStyle: 'preserve-3d',
         }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
+        onMouseEnter={pauseAutoPlay}
+        onMouseLeave={resumeAutoPlay}
       >
-        {/* Cards container */}
-        <div style={{
-          display: 'flex',
-          width: `${displayProducts.length * 100}%`,
-          height: '100%',
-          transform: `translateX(${(-currentIndex * 100) / displayProducts.length + (dragOffset / (typeof window !== 'undefined' ? window.innerWidth : 375)) * 100}%)`,
-          transition: isDragging ? 'none' : 'transform 0.3s ease-out',
-        }}>
-          {displayProducts.map((product, index) => (
-            <div 
-              key={product.id} 
-              style={{
-                flex: '0 0 100%',
-                width: `${100 / displayProducts.length}%`,
-                padding: '0 10px',
-                boxSizing: 'border-box',
-              }}
-            >
-              <Link href={`/products/${product.id}`} style={{
-                textDecoration: 'none',
-                display: 'block',
-                height: '100%',
-                background: '#fff',
-                borderRadius: '16px',
+        {displayProducts.map((product, index) => (
+          <div key={product.id} style={getCardStyle(index)}>
+            <Link href={`/products/${product.id}`} style={{
+              textDecoration: 'none',
+              display: 'block',
+              height: '100%',
+              width: '100%',
+              background: '#fff',
+              color: '#000',
+              borderRadius: '20px',
+              overflow: 'hidden',
+              position: 'relative',
+              border: '1px solid rgba(0, 0, 0, 0.08)',
+              boxSizing: 'border-box',
+            }}>
+              <div style={{
+                width: '100%',
+                aspectRatio: '1/1.1',
+                position: 'relative',
                 overflow: 'hidden',
-                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
-                border: '1px solid rgba(0, 0, 0, 0.06)',
-                color: '#000',
+                background: 'linear-gradient(135deg, #fafafa 0%, #f8f8f8 100%)',
               }}>
-                {/* Product image */}
-                <div style={{
-                  position: 'relative',
-                  width: '100%',
-                  height: '60%',
-                  overflow: 'hidden',
-                  background: 'linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%)',
-                }}>
-                  <img 
-                    src={product.imageUrls && product.imageUrls[0] ? product.imageUrls[0] : '/images/featured1.png'} 
-                    alt={product.name}
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover',
-                      display: 'block',
-                    }}
-                    onError={(e) => {
-                      e.currentTarget.src = 'https://placehold.co/300x300/f0f0f0/888?text=No+Image';
-                    }}
-                  />
-                  
-                  {/* Stock badges */}
-                  {product.stockQuantity === 0 && (
-                    <div style={{
-                      position: 'absolute',
-                      top: '15px',
-                      left: '15px',
-                      background: 'rgba(255, 59, 48, 0.9)',
-                      color: 'white',
-                      fontSize: '0.7rem',
-                      fontWeight: '600',
-                      padding: '6px 12px',
-                      borderRadius: '12px',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.05em',
-                    }}>
-                      Out of Stock
-                    </div>
-                  )}
-                  
-                  {product.stockQuantity > 0 && product.stockQuantity <= 5 && (
-                    <div style={{
-                      position: 'absolute',
-                      top: '15px',
-                      left: '15px',
-                      background: 'rgba(255, 149, 0, 0.9)',
-                      color: 'white',
-                      fontSize: '0.7rem',
-                      fontWeight: '600',
-                      padding: '6px 12px',
-                      borderRadius: '12px',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.05em',
-                    }}>
-                      Only {product.stockQuantity} left
-                    </div>
-                  )}
-
-                  {product.isNew && product.stockQuantity > 5 && (
-                    <div style={{
-                      position: 'absolute',
-                      top: '15px',
-                      left: '15px',
-                      background: 'rgba(52, 199, 89, 0.9)',
-                      color: 'white',
-                      fontSize: '0.7rem',
-                      fontWeight: '600',
-                      padding: '6px 12px',
-                      borderRadius: '12px',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.05em',
-                    }}>
-                      New
-                    </div>
-                  )}
-                </div>
+                <img 
+                  src={product.imageUrls[0]} 
+                  alt={product.name}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    display: 'block',
+                    transition: 'transform 0.3s ease-out',
+                  }}
+                />
                 
-                {/* Product details */}
-                <div style={{
-                  padding: '20px',
-                  height: '40%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                }}>
-                  <div>
-                    {product.category && (
-                      <div style={{
-                        fontSize: '0.7rem',
-                        color: '#888',
-                        marginBottom: '8px',
-                        fontWeight: '500',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.1em',
-                      }}>
-                        {product.category.name}
-                      </div>
-                    )}
-                    
-                    <h3 style={{
-                      fontSize: '1.1rem',
-                      fontWeight: '700',
-                      margin: '0 0 12px 0',
-                      lineHeight: 1.3,
-                      color: '#000',
-                      display: '-webkit-box',
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: 'vertical',
-                      overflow: 'hidden',
-                    }}>
-                      {product.name}
-                    </h3>
-                  </div>
-                  
+                {/* Simplified badges */}
+                {product.isNew && (
                   <div style={{
-                    fontSize: '1.3rem',
-                    fontWeight: '800',
-                    color: '#000',
-                    letterSpacing: '-0.02em',
+                    position: 'absolute',
+                    top: '15px',
+                    left: '15px',
+                    background: 'rgba(0, 0, 0, 0.85)',
+                    color: '#fff',
+                    fontSize: '0.6rem',
+                    padding: '6px 12px',
+                    borderRadius: '15px',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.1em',
+                    fontWeight: 700,
                   }}>
-                    {formatPrice(product.price)}
+                    New
                   </div>
+                )}
+                
+                {product.stockQuantity === 0 && (
+                  <div style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                    color: '#000',
+                    fontSize: '0.85rem',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.1em',
+                    fontWeight: 700,
+                  }}>
+                    Out of Stock
+                  </div>
+                )}
+                
+                {product.stockQuantity > 0 && product.stockQuantity <= 5 && (
+                  <div style={{
+                    position: 'absolute',
+                    bottom: '15px',
+                    left: '15px',
+                    backgroundColor: 'rgba(255, 107, 107, 0.9)',
+                    color: 'white',
+                    fontSize: '0.6rem',
+                    padding: '6px 12px',
+                    borderRadius: '15px',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.1em',
+                    fontWeight: 700,
+                  }}>
+                    Only {product.stockQuantity} left
+                  </div>
+                )}
+              </div>
+              
+              <div style={{
+                padding: '18px 20px 20px',
+                background: '#fff',
+                position: 'relative',
+              }}>
+                {product.category && (
+                  <div style={{
+                    fontSize: '0.65rem',
+                    color: '#888',
+                    marginBottom: '8px',
+                    fontWeight: 600,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.1em',
+                  }}>
+                    {product.category.name}
+                  </div>
+                )}
+                
+                <h3 style={{
+                  fontSize: '1rem',
+                  fontWeight: 700,
+                  margin: '0 0 12px 0',
+                  lineHeight: 1.3,
+                  color: '#000',
+                }}>
+                  {product.name}
+                </h3>
+                
+                <div style={{
+                  fontSize: '1.1rem',
+                  fontWeight: 800,
+                  color: '#000',
+                  letterSpacing: '-0.02em',
+                }}>
+                  {formatPrice(product.price)}
                 </div>
-              </Link>
-            </div>
-          ))}
-        </div>
+              </div>
+            </Link>
+          </div>
+        ))}
       </div>
       
-      {/* Navigation indicators */}
+      {/* Simplified navigation */}
       <div style={{
+        position: 'relative',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        marginTop: '24px',
-        gap: '12px',
+        gap: '20px',
+        marginTop: '10px',
       }}>
-        {displayProducts.map((_, index) => (
-          <button 
-            key={index} 
-            onClick={() => goToCard(index)}
-            disabled={isTransitioning || isDragging}
-            style={{
-              width: index === currentIndex ? '24px' : '8px',
-              height: '8px',
-              borderRadius: '4px',
-              border: 'none',
-              background: index === currentIndex 
-                ? '#000' 
-                : 'rgba(0, 0, 0, 0.2)',
-              transition: 'all 0.3s ease',
-              cursor: (isTransitioning || isDragging) ? 'not-allowed' : 'pointer',
-              opacity: (isTransitioning || isDragging) ? 0.6 : 1,
-            }}
-          />
-        ))}
-      </div>
+        {/* Progress bar */}
+        <div style={{
+          position: 'absolute',
+          top: '-20px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '80px',
+          height: '2px',
+          background: 'rgba(0, 0, 0, 0.1)',
+          borderRadius: '1px',
+          overflow: 'hidden',
+        }}>
+          <div style={{
+            width: `${((currentIndex + 1) / displayProducts.length) * 100}%`,
+            height: '100%',
+            background: 'linear-gradient(90deg, #000, #333)',
+            transition: 'width 0.3s ease',
+          }} />
+        </div>
 
-      {/* Card counter */}
-      <div style={{
-        textAlign: 'center',
-        marginTop: '12px',
-        fontSize: '0.8rem',
-        color: '#666',
-        fontWeight: '500',
-      }}>
-        {currentIndex + 1} of {displayProducts.length}
+        {/* Dot indicators */}
+        <div style={{
+          display: 'flex',
+          gap: '12px',
+          padding: '12px 20px',
+          background: 'rgba(255, 255, 255, 0.9)',
+          borderRadius: '25px',
+          border: '1px solid rgba(0, 0, 0, 0.05)',
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+        }}>
+          {displayProducts.map((_, index) => (
+            <button 
+              key={index} 
+              onClick={() => goToCard(index)}
+              disabled={isTransitioning || isDragging}
+              style={{
+                width: '10px',
+                height: '10px',
+                borderRadius: '50%',
+                border: 'none',
+                background: index === currentIndex 
+                  ? 'linear-gradient(135deg, #000 0%, #333 100%)' 
+                  : 'rgba(0,0,0,0.2)',
+                transition: 'all 0.3s ease',
+                transform: index === currentIndex ? 'scale(1.2)' : 'scale(1)',
+                boxShadow: index === currentIndex 
+                  ? '0 3px 12px rgba(0, 0, 0, 0.3)' 
+                  : '0 1px 3px rgba(0, 0, 0, 0.1)',
+                cursor: (isTransitioning || isDragging) ? 'not-allowed' : 'pointer',
+                opacity: (isTransitioning || isDragging) ? 0.6 : 1,
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Card counter */}
+        <div style={{
+          position: 'absolute',
+          bottom: '-35px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          fontSize: '0.7rem',
+          color: '#666',
+          fontWeight: 500,
+          letterSpacing: '0.05em',
+        }}>
+          {currentIndex + 1} of {displayProducts.length}
+        </div>
       </div>
     </div>
   );
@@ -861,8 +1063,6 @@ return link
 
 const handleScrollClick = () => {
 
-if (typeof window !== 'undefined') {
-
 window.scrollTo({
 
 top: window.innerHeight,
@@ -870,8 +1070,6 @@ top: window.innerHeight,
 behavior: 'smooth'
 
 })
-
-}
 
 }
 
@@ -1202,12 +1400,10 @@ Handcrafted resin art for <span id="rotator">{displayText}</span>
 <div
   className={styles.scrollIndicator}
   onClick={() => {
-    if (typeof window !== 'undefined') {
-      window.scrollTo({
-        top: window.innerHeight,
-        behavior: 'smooth'
-      })
-    }
+    window.scrollTo({
+      top: window.innerHeight,
+      behavior: 'smooth'
+    })
   }}
 />
 
