@@ -979,7 +979,7 @@ onClick={() => handleCarouselNav('next')}
         width: '100%', 
         overflow: 'hidden',
         position: 'relative',
-        paddingBottom: '100%', /* Square aspect ratio like in the image */
+        paddingBottom: '110%', /* Slightly taller than square */
         height: 0,
         backgroundColor: '#000'
       }}>
