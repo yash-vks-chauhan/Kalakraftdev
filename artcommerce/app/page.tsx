@@ -13,7 +13,6 @@ import { ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react'
 import styles from './home.module.css'
 import { getImageUrl } from '../lib/cloudinaryImages'
 import Link from 'next/link'
-import MobileVideoSection from './components/MobileVideoSection'
 
 // Add this to detect mobile view
 const isMobileView = () => {
@@ -918,77 +917,198 @@ onClick={() => handleCarouselNav('next')}
   
   </section>
   
-  {/* Mobile Video Section - Using our standalone component */}
-  <section className={`${styles.mobileOnly}`}>
-    <MobileVideoSection />
+  {/* Mobile Video Section - Instagram style video */}
+  <section className={`${styles.mobileOnly}`} style={{ 
+    padding: '2rem 0 0.5rem 0',
+    background: '#ffffff',
+    position: 'relative',
+    overflow: 'hidden'
+  }}>
+    <div style={{
+      textAlign: 'center',
+      marginBottom: '1.5rem',
+      position: 'relative',
+      padding: '0 1rem'
+    }}>
+      <div style={{ 
+        width: '40px',
+        height: '2px',
+        background: '#000',
+        margin: '0.5rem auto'
+      }} />
+      <h2 style={{
+        fontFamily: 'Cormorant Garamond, serif',
+        fontSize: '2rem',
+        fontWeight: 400,
+        color: '#000',
+        margin: 0,
+        letterSpacing: '0.05em',
+        fontStyle: 'italic'
+      }}>Behind The Scenes</h2>
+      <div style={{ 
+        width: '40px',
+        height: '2px',
+        background: '#000',
+        margin: '0.5rem auto'
+      }} />
+    </div>
+    
+    <div style={{
+      textAlign: 'center',
+      maxWidth: '90%',
+      margin: '0 auto 1rem',
+      fontSize: '0.95rem',
+      lineHeight: 1.6,
+      color: '#666',
+      padding: '0 1rem'
+    }}>
+      <p>Watch the artistry and craftsmanship that goes into creating each unique piece</p>
+    </div>
+    
+                <div style={{ 
+        width: '100vw', 
+        position: 'relative',
+        left: '50%',
+        right: '50%',
+        marginLeft: '-50vw',
+        marginRight: '-50vw',
+        marginTop: '1rem',
+        marginBottom: '1.5rem'
+      }}>
+        <div style={{ 
+        width: '100%', 
+        overflow: 'hidden',
+        position: 'relative',
+        paddingBottom: '110%', /* Slightly taller than square */
+        height: 0,
+        backgroundColor: '#000'
+      }}>
+        <video
+          style={{
+            position: 'absolute',
+            top: '0',
+            left: '0',
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            objectPosition: 'center',
+            display: 'block'
+          }}
+          playsInline
+          loop
+          autoPlay
+          muted
+          poster="/images/loading.png"
+          preload="auto"
+        >
+          <source src="https://res.cloudinary.com/downe8107/video/upload/v1752756632/Goal_make_the_202507170106_9lp5g_rosxzs.mp4" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+      </div>
+    </div>
+    
+    <div style={{
+      textAlign: 'center',
+      margin: '1.5rem auto 1rem',
+      padding: '0 1rem'
+    }}>
+      <p style={{
+        marginBottom: '1.5rem',
+        fontSize: '0.95rem',
+        color: '#666',
+        lineHeight: 1.6
+      }}>Experience the magic of resin art creation</p>
+      <Link 
+        href="/products" 
+        style={{
+          display: 'inline-block',
+          padding: '1rem 2rem',
+          backgroundColor: '#000',
+          color: '#fff',
+          fontSize: '1rem',
+          fontWeight: 400,
+          letterSpacing: '0.05em',
+          textDecoration: 'none',
+          borderRadius: '0px',
+          transition: 'all 0.3s ease',
+          position: 'relative',
+          overflow: 'hidden',
+          zIndex: 1,
+          width: '80%',
+          maxWidth: '350px'
+        }}
+      >
+        Explore Our Process
+      </Link>
+    </div>
   </section>
   
   {/* Mobile Explore Section - New section for mobile only */}
-  <section className={`${styles.mobileExploreSection} ${styles.mobileOnly}`}>
-    <div className={styles.mobileExploreHeader}>
-      <div className={styles.mobileExploreHeaderLine} />
-      <h2 className={styles.mobileExploreTitle}>Explore Our Artisan Creations</h2>
-      <div className={styles.mobileExploreHeaderLine} />
-    </div>
+<section className={`${styles.mobileExploreSection} ${styles.mobileOnly}`}>
+  <div className={styles.mobileExploreHeader}>
+    <div className={styles.mobileExploreHeaderLine} />
+    <h2 className={styles.mobileExploreTitle}>Explore Our Artisan Creations</h2>
+    <div className={styles.mobileExploreHeaderLine} />
+  </div>
 
-    <div className={styles.mobileExploreDescription}>
-      <p>Discover handcrafted masterpieces that bring elegance and artistry to your living space</p>
-    </div>
+  <div className={styles.mobileExploreDescription}>
+    <p>Discover handcrafted masterpieces that bring elegance and artistry to your living space</p>
+  </div>
 
-    <div className={styles.mobileExploreGrid}>
-      {[
-        {
-          title: 'Artistic Journals',
-          image: 'https://res.cloudinary.com/downe8107/image/upload/v1752441188/84D2D636-027E-484D-B886-1BFEE0B9F5CD_1_201_a_ca4hrv.jpg'
-        },
-        {
-          title: 'Wall Clocks',
-          image: 'https://res.cloudinary.com/downe8107/image/upload/v1752441196/F0CFF91C-3B7B-4AA9-AECE-35A6DA417194_1_201_a_w5rmde.jpg'
-        },
-        {
-          title: 'Resin Trays',
-          image: 'https://res.cloudinary.com/downe8107/image/upload/v1752441176/2E1812EC-BB3C-4C7D-8480-C1539B7A0FBB_1_201_a_xc2yjx.jpg'
-        },
-        {
-          title: 'Rangoli Art',
-          image: 'https://res.cloudinary.com/downe8107/image/upload/v1752440782/6F66291E-3673-47F4-8989-701EBB8BB8BE_1_201_a_uxx8zk.jpg'
-        },
-        {
-          title: 'Pattachitra Panels',
-          image: 'https://res.cloudinary.com/downe8107/image/upload/v1752441169/65B82642-5A77-4A31-88BC-B36E2B5DB7DE_1_201_a_e7bed1.jpg'
-        },
-        {
-          title: 'Krishna Embroidery',
-          image: 'https://res.cloudinary.com/downe8107/image/upload/v1752441212/2E077407-F784-4515-8960-988FB394B218_1_201_a_p1as8c.jpg'
-        }
-      ].map((item, index) => (
-        <div key={index} className={styles.mobileExploreCard}>
-          <div className={styles.mobileExploreCardInner}>
-            <img
-              src={item.image}
-              alt={item.title}
-              className={styles.mobileExploreImage}
-              onError={(e) => (e.currentTarget.src = 'https://placehold.co/300x300/f0f0f0/888?text=Image+Not+Found')}
-            />
-            <div className={styles.mobileExploreCardContent}>
-              <h3 className={styles.mobileExploreCardTitle}>{item.title}</h3>
-            </div>
+  <div className={styles.mobileExploreGrid}>
+    {[
+      {
+        title: 'Artistic Journals',
+        image: 'https://res.cloudinary.com/downe8107/image/upload/v1752441188/84D2D636-027E-484D-B886-1BFEE0B9F5CD_1_201_a_ca4hrv.jpg'
+      },
+      {
+        title: 'Wall Clocks',
+        image: 'https://res.cloudinary.com/downe8107/image/upload/v1752441196/F0CFF91C-3B7B-4AA9-AECE-35A6DA417194_1_201_a_w5rmde.jpg'
+      },
+      {
+        title: 'Resin Trays',
+        image: 'https://res.cloudinary.com/downe8107/image/upload/v1752441176/2E1812EC-BB3C-4C7D-8480-C1539B7A0FBB_1_201_a_xc2yjx.jpg'
+      },
+      {
+        title: 'Rangoli Art',
+        image: 'https://res.cloudinary.com/downe8107/image/upload/v1752440782/6F66291E-3673-47F4-8989-701EBB8BB8BE_1_201_a_uxx8zk.jpg'
+      },
+      {
+        title: 'Pattachitra Panels',
+        image: 'https://res.cloudinary.com/downe8107/image/upload/v1752441169/65B82642-5A77-4A31-88BC-B36E2B5DB7DE_1_201_a_e7bed1.jpg'
+      },
+      {
+        title: 'Krishna Embroidery',
+        image: 'https://res.cloudinary.com/downe8107/image/upload/v1752441212/2E077407-F784-4515-8960-988FB394B218_1_201_a_p1as8c.jpg'
+      }
+    ].map((item, index) => (
+      <div key={index} className={styles.mobileExploreCard}>
+        <div className={styles.mobileExploreCardInner}>
+          <img
+            src={item.image}
+            alt={item.title}
+            className={styles.mobileExploreImage}
+            onError={(e) => (e.currentTarget.src = 'https://placehold.co/300x300/f0f0f0/888?text=Image+Not+Found')}
+          />
+          <div className={styles.mobileExploreCardContent}>
+            <h3 className={styles.mobileExploreCardTitle}>{item.title}</h3>
           </div>
         </div>
-      ))}
-    </div>
+      </div>
+    ))}
+  </div>
 
-    <div className={styles.mobileExploreFooter}>
-      <p>Each piece is meticulously crafted with passion and precision</p>
-      <Link href="/products" className={styles.mobileExploreButton}>
-        View All Artworks
-      </Link>
-    </div>
+  <div className={styles.mobileExploreFooter}>
+    <p>Each piece is meticulously crafted with passion and precision</p>
+    <Link href="/products" className={styles.mobileExploreButton}>
+      View All Artworks
+    </Link>
+  </div>
 
-    {/* Watercolor background accents */}
-    <div className={styles.watercolorAccent1}></div>
-    <div className={styles.watercolorAccent2}></div>
-  </section>
+  {/* Watercolor background accents */}
+  <div className={styles.watercolorAccent1}></div>
+  <div className={styles.watercolorAccent2}></div>
+</section>
 
 {/* Featured Discoveries Section - Random products from API */}
 <section className={`${styles.mobileFeaturedSection} ${styles.mobileOnly}`}>
