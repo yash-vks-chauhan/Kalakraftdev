@@ -518,7 +518,7 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
     const style: React.CSSProperties = {
       position: 'absolute',
       width: '280px',
-      height: '360px',
+      height: '420px',
       borderRadius: '8px',
       overflow: 'hidden',
       transformOrigin: 'center center',
@@ -528,7 +528,7 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
       left: '50%',
       top: '50%',
       marginLeft: '-140px',
-      marginTop: '-180px',
+      marginTop: '-210px',
     };
     
     // Ultra-fast transitions
@@ -583,7 +583,7 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
         style={{
           position: 'relative',
           width: '100%',
-          height: '480px',
+          height: '540px',
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
@@ -615,7 +615,7 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
             }}>
               <div style={{
                 width: '100%',
-                aspectRatio: '1/1.1',
+                aspectRatio: '1/0.9',
                 position: 'relative',
                 overflow: 'hidden',
                 background: '#f5f5f5',
@@ -633,9 +633,13 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
               </div>
               
               <div style={{
-                padding: '16px',
+                padding: '18px',
                 background: '#fff',
                 position: 'relative',
+                minHeight: '120px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'flex-start',
               }}>
                 {product.category && (
                   <div style={{
@@ -656,9 +660,7 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
                   margin: '0 0 10px 0',
                   lineHeight: 1.4,
                   color: '#000',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
+                  flex: '1',
                 }}>
                   {product.name}
                 </h3>
