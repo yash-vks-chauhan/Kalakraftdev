@@ -499,6 +499,69 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
     )
   }
 
+  // Mobile Product Video Section component
+  const MobileProductVideoSection = () => {
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const [isVideoLoaded, setIsVideoLoaded] = useState(false);
+    
+    // Handle video loaded event
+    const handleVideoLoaded = () => {
+      setIsVideoLoaded(true);
+    };
+    
+    // Handle video error
+    const handleVideoError = () => {
+      console.error("Error loading product video");
+      setIsVideoLoaded(false);
+    };
+    
+    // Navigate to product page when button is clicked
+    const handleProductButtonClick = () => {
+      // You can change this ID to the actual product ID you want to link to
+      router.push('/products/1');
+    };
+    
+    return (
+      <section className={styles.mobileProductVideoSection}>
+        <div className={styles.mobileProductVideoContainer}>
+          {/* Video wrapper */}
+          <div className={styles.mobileProductVideoWrapper}>
+            <video
+              ref={videoRef}
+              className={styles.mobileProductVideo}
+              autoPlay
+              muted
+              loop
+              playsInline
+              onLoadedData={handleVideoLoaded}
+              onError={handleVideoError}
+            >
+              <source 
+                src="https://res.cloudinary.com/downe8107/video/upload/v1752756632/Goal_make_the_202507170106_9lp5g_rosxzs.mp4" 
+                type="video/mp4" 
+              />
+              Your browser does not support the video tag.
+            </video>
+            
+            {/* Overlay with product info and button */}
+            <div className={styles.mobileProductVideoOverlay}>
+              <h3 className={styles.mobileProductVideoTitle}>Handcrafted Resin Coaster Set</h3>
+              <p className={styles.mobileProductVideoDescription}>
+                Elegant blue ocean-inspired design, perfect for any table setting
+              </p>
+              <button 
+                className={styles.mobileProductVideoButton}
+                onClick={handleProductButtonClick}
+              >
+                See This Product
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  };
+
   const toggleViewMode = () => {
     const newMode = viewMode === 'mobile' ? 'desktop' : 'mobile'
     setViewMode(newMode)
@@ -603,26 +666,19 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
               }}
             >
               <source 
-                src={process.env.NEXT_PUBLIC_CLOUDINARY_VIDEO_URL || '/images/homepage_video.mp4'} 
+                src="https://res.cloudinary.com/downe8107/video/upload/v1752441196/homepage_video.mp4" 
                 type="video/mp4" 
               />
             </video>
             
+            {/* Curved Hero Content */}
             <div className={styles.curvedHeroContent}>
-              {/* Top text - "A HANDCRAFTED ART STUDIO" */}
-              <div className={styles.curvedHeroTopText}>A HANDCRAFTED ART STUDIO</div>
-              
-              {/* Logo */}
-              <Image
-                src={getImageUrl('logo.png')}
-                alt="Artcommerce Logo"
-                width={90}
-                height={30}
+              <div className={styles.curvedHeroTopText}>HANDCRAFTED EXCELLENCE</div>
+              <img 
+                src={getImageUrl('logo.png')} 
+                alt="Kalakraft Logo" 
                 className={styles.curvedHeroLogo}
-                priority
               />
-              
-              {/* Hero Text */}
               <h1 className={styles.curvedHeroTitle}>
                 Handcrafted resin art for {rotatingText}
               </h1>
@@ -729,6 +785,17 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
       {/* Main Content Area */}
       <main className={`${styles.mobileContent} ${isHomePage ? styles.homeContent : ''}`}>
         {children}
+        
+        {/* Add collections and product video sections on homepage */}
+        {isHomePage && (
+          <>
+            {/* Collections Section */}
+            <MobileCollectionsSection />
+            
+            {/* Product Video Section */}
+            <MobileProductVideoSection />
+          </>
+        )}
       </main>
       
       {/* Mobile Footer Navigation */}
