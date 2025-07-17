@@ -291,8 +291,8 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
     }).format(price);
   };
 
-  // Use default products if none provided
-  const displayProducts = products.length > 0 ? products : [
+  // Always ensure we have exactly 8 products for the circular carousel
+  const defaultProducts = [
     {
       id: '1',
       name: 'Handcrafted Resin Clock',
@@ -325,8 +325,55 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
       imageUrls: ['/images/category4.png', '/images/category5.png'],
       stockQuantity: 0,
       category: { name: 'Decor' }
+    },
+    {
+      id: '5',
+      name: 'Artistic Coaster Set',
+      price: 1499,
+      imageUrls: ['/images/category1.png', '/images/category6.png'],
+      stockQuantity: 12,
+      category: { name: 'Coasters' }
+    },
+    {
+      id: '6',
+      name: 'Resin Wall Art',
+      price: 5999,
+      imageUrls: ['/images/category2.png', '/images/category7.png'],
+      stockQuantity: 2,
+      category: { name: 'Wall Art' }
+    },
+    {
+      id: '7',
+      name: 'Jewelry Tray',
+      price: 2499,
+      imageUrls: ['/images/category3.png', '/images/category8.png'],
+      stockQuantity: 7,
+      category: { name: 'Trays' }
+    },
+    {
+      id: '8',
+      name: 'Custom Resin Piece',
+      price: 7999,
+      imageUrls: ['/images/category4.png', '/images/category1.png'],
+      stockQuantity: 1,
+      isNew: true,
+      category: { name: 'Custom' }
     }
   ];
+
+  let displayProducts = [];
+  if (products.length >= 8) {
+    displayProducts = products.slice(0, 8);
+  } else if (products.length > 0) {
+    // Repeat products to make 8
+    displayProducts = [...products];
+    while (displayProducts.length < 8) {
+      displayProducts = [...displayProducts, ...products];
+    }
+    displayProducts = displayProducts.slice(0, 8);
+  } else {
+    displayProducts = defaultProducts;
+  }
 
   // No auto-play functionality - user controlled only
 
@@ -380,14 +427,14 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
     const swipeTime = Date.now() - startTime.current;
     const velocity = Math.abs(totalDistance) / swipeTime; // pixels per ms
     
-    const threshold = 40;
-    const quickSwipeThreshold = 0.5; // pixels per ms
+    const threshold = 60; // Increased threshold for circular carousel
+    const quickSwipeThreshold = 0.3; // pixels per ms
     
     // Determine if we should change cards
     const shouldNext = totalDistance < -threshold || 
-                      (totalDistance < -20 && velocity > quickSwipeThreshold);
+                      (totalDistance < -30 && velocity > quickSwipeThreshold);
     const shouldPrev = totalDistance > threshold || 
-                      (totalDistance > 20 && velocity > quickSwipeThreshold);
+                      (totalDistance > 30 && velocity > quickSwipeThreshold);
     
     if (shouldNext || shouldPrev) {
       startTransition();
@@ -404,7 +451,7 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
       
       setTimeout(() => {
         endTransition();
-      }, 300);
+      }, 600);
     } else {
       // Return to center with smooth animation
       setDragOffset(0);
@@ -423,138 +470,91 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
     
     setTimeout(() => {
       endTransition();
-    }, 300);
+    }, 600);
   };
   
-  // Simplified card styling for smooth performance
+  // Circular 3D carousel styling - creates a ring of cards
   const getCardStyle = (index) => {
+    const totalCards = 8; // Always 8 cards in the ring
     let position = index - currentIndex;
-    if (position < 0) position += displayProducts.length;
-    if (position >= displayProducts.length) position -= displayProducts.length;
+    if (position < 0) position += totalCards;
+    if (position >= totalCards) position -= totalCards;
     
-    // Simple drag response
-    let cardOffset = 0;
-    let cardRotation = 0;
-    let cardScale = 1;
+    // Calculate angle for circular positioning (360° / 8 cards = 45° per card)
+    const angle = (position * 360) / totalCards;
+    const angleRad = (angle * Math.PI) / 180;
     
+    // Radius of the circle (distance from center)
+    const radius = 180;
+    
+    // Calculate 3D position in the circle
+    const x = Math.sin(angleRad) * radius;
+    const z = Math.cos(angleRad) * radius;
+    const y = Math.abs(Math.sin(angleRad)) * 10; // Slight vertical movement for depth
+    
+    // Drag offset for the center card
+    let dragOffsetX = 0;
+    let dragRotationY = 0;
     if (isDragging && position === 0) {
-      cardOffset = dragOffset;
-      cardRotation = dragOffset * 0.02; // Reduced for smoother feel
-      cardScale = 1 - Math.abs(dragOffset) * 0.0002;
-    } else if (isDragging && position === 1 && dragOffset < 0) {
-      cardOffset = Math.max(-15, dragOffset * 0.3);
-    } else if (isDragging && position === displayProducts.length - 1 && dragOffset > 0) {
-      cardOffset = Math.min(15, dragOffset * 0.3);
+      dragOffsetX = dragOffset * 0.5;
+      dragRotationY = dragOffset * 0.1;
     }
     
     const style: React.CSSProperties = {
       position: 'absolute',
-      width: '85%',
-      maxWidth: '320px',
+      width: '280px',
+      height: '360px',
       borderRadius: '20px',
       overflow: 'hidden',
       transformOrigin: 'center center',
       willChange: 'transform',
       backfaceVisibility: 'hidden',
       cursor: position === 0 ? (isDragging ? 'grabbing' : 'grab') : 'pointer',
+      left: '50%',
+      top: '50%',
+      marginLeft: '-140px',
+      marginTop: '-180px',
     };
     
-    // Improved transitions
+    // Smooth transitions
     if (isDragging && position === 0) {
       style.transition = 'none';
-    } else if (isDragging) {
-      style.transition = 'transform 0.15s ease-out';
     } else if (isTransitioning) {
-      style.transition = 'all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1)';
+      style.transition = 'all 0.6s cubic-bezier(0.4, 0.0, 0.2, 1)';
     } else {
-      style.transition = 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+      style.transition = 'all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
     }
     
-    // Simplified positioning
+    // Center card (current/active)
     if (position === 0) {
       style.transform = `
-        translateX(${cardOffset}px) 
-        translateZ(30px) 
-        rotateY(${cardRotation}deg) 
-        scale(${cardScale})
+        translateX(${dragOffsetX}px) 
+        translateY(0px)
+        translateZ(60px) 
+        rotateY(${dragRotationY}deg) 
+        scale(1)
       `;
       style.zIndex = 100;
       style.opacity = 1;
-      style.boxShadow = '0 20px 40px rgba(0, 0, 0, 0.15), 0 10px 20px rgba(0, 0, 0, 0.1)';
-    } else if (position === 1) {
-      style.transform = `
-        translateX(${8 + cardOffset}px) 
-        translateY(4px)
-        translateZ(20px) 
-        rotateY(-2deg) 
-        scale(0.96)
-      `;
-      style.zIndex = 90;
-      style.opacity = 0.9;
-      style.boxShadow = '0 12px 25px rgba(0, 0, 0, 0.1)';
-    } else if (position === 2) {
-      style.transform = `
-        translateX(14px) 
-        translateY(8px)
-        translateZ(10px) 
-        rotateY(-3deg) 
-        scale(0.92)
-      `;
-      style.zIndex = 80;
-      style.opacity = 0.75;
-      style.boxShadow = '0 8px 15px rgba(0, 0, 0, 0.08)';
-    } else if (position === 3) {
-      style.transform = `
-        translateX(18px) 
-        translateY(12px)
-        rotateY(-4deg) 
-        scale(0.88)
-      `;
-      style.zIndex = 70;
-      style.opacity = 0.6;
-      style.boxShadow = '0 6px 12px rgba(0, 0, 0, 0.06)';
-    } else if (position === displayProducts.length - 1) {
-      style.transform = `
-        translateX(${-8 + cardOffset}px) 
-        translateY(4px)
-        translateZ(20px) 
-        rotateY(2deg) 
-        scale(0.96)
-      `;
-      style.zIndex = 90;
-      style.opacity = 0.9;
-      style.boxShadow = '0 12px 25px rgba(0, 0, 0, 0.1)';
-    } else if (position === displayProducts.length - 2) {
-      style.transform = `
-        translateX(-14px) 
-        translateY(8px)
-        translateZ(10px) 
-        rotateY(3deg) 
-        scale(0.92)
-      `;
-      style.zIndex = 80;
-      style.opacity = 0.75;
-      style.boxShadow = '0 8px 15px rgba(0, 0, 0, 0.08)';
-    } else if (position === displayProducts.length - 3) {
-      style.transform = `
-        translateX(-18px) 
-        translateY(12px)
-        rotateY(4deg) 
-        scale(0.88)
-      `;
-      style.zIndex = 70;
-      style.opacity = 0.6;
-      style.boxShadow = '0 6px 12px rgba(0, 0, 0, 0.06)';
+      style.boxShadow = '0 25px 50px rgba(0, 0, 0, 0.2), 0 15px 30px rgba(0, 0, 0, 0.15)';
+      style.filter = 'brightness(1)';
     } else {
+      // Cards arranged in a circle around the center
+      const scale = 0.7 - (Math.abs(Math.sin(angleRad)) * 0.1); // Scale based on position
+      const opacity = 0.4 + (Math.cos(angleRad) * 0.3); // More visible when closer to front
+      const brightness = 0.7 + (Math.cos(angleRad) * 0.2); // Brighter when closer
+      
       style.transform = `
-        translateX(${position > displayProducts.length / 2 ? -22 : 22}px) 
-        translateY(16px)
-        rotateY(${position > displayProducts.length / 2 ? 5 : -5}deg) 
-        scale(0.84)
+        translateX(${x}px) 
+        translateY(${y}px)
+        translateZ(${z - 100}px) 
+        rotateY(${-angle}deg) 
+        scale(${scale})
       `;
-      style.zIndex = 60;
-      style.opacity = 0;
-      style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.04)';
+      style.zIndex = Math.round(50 + z); // Higher z-index for cards closer to front
+      style.opacity = Math.max(0.3, opacity);
+      style.boxShadow = `0 ${10 + z/10}px ${20 + z/5}px rgba(0, 0, 0, ${0.1 + (Math.cos(angleRad) * 0.1)})`;
+      style.filter = `brightness(${brightness})`;
     }
     
     return style;
@@ -568,15 +568,16 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
         style={{
           position: 'relative',
           width: '100%',
-          height: '420px',
+          height: '480px',
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
           marginBottom: '3rem',
           zIndex: 3,
-          perspective: '1000px',
+          perspective: '1200px',
           perspectiveOrigin: 'center center',
           transformStyle: 'preserve-3d',
+          overflow: 'visible',
         }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
@@ -738,12 +739,12 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
           borderRadius: '1px',
           overflow: 'hidden',
         }}>
-          <div style={{
-            width: `${((currentIndex + 1) / displayProducts.length) * 100}%`,
-            height: '100%',
-            background: 'linear-gradient(90deg, #000, #333)',
-            transition: 'width 0.3s ease',
-          }} />
+                  <div style={{
+          width: `${((currentIndex + 1) / 8) * 100}%`,
+          height: '100%',
+          background: 'linear-gradient(90deg, #000, #333)',
+          transition: 'width 0.6s ease',
+        }} />
         </div>
 
         {/* Dot indicators */}
@@ -792,7 +793,7 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
           fontWeight: 500,
           letterSpacing: '0.05em',
         }}>
-          {currentIndex + 1} of {displayProducts.length}
+          {currentIndex + 1} of 8
         </div>
       </div>
     </div>
@@ -1232,13 +1233,23 @@ useEffect(() => {
       
       if (data.products && Array.isArray(data.products)) {
         // Get active products with stock and images
-        const availableProducts = data.products
+        let availableProducts = data.products
           .filter(p => p.isActive && p.imageUrls && p.imageUrls.length > 0)
           .map(p => ({
             ...p,
             imageUrls: Array.isArray(p.imageUrls) ? p.imageUrls : [p.imageUrls]
-          }))
-          .slice(0, 8); // Limit to 8 products
+          }));
+          
+        // Ensure we always have exactly 8 products for the circular carousel
+        if (availableProducts.length >= 8) {
+          availableProducts = availableProducts.slice(0, 8);
+        } else if (availableProducts.length > 0) {
+          // Repeat products to make 8
+          while (availableProducts.length < 8) {
+            availableProducts = [...availableProducts, ...availableProducts];
+          }
+          availableProducts = availableProducts.slice(0, 8);
+        }
           
         setFeaturedProducts(availableProducts);
       }
