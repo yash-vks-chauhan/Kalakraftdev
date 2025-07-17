@@ -627,6 +627,16 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
                 Handcrafted resin art for {rotatingText}
               </h1>
               
+              {/* Discover All Pieces Button */}
+              <div className={styles.mobileDiscoverButtonContainer}>
+                <button 
+                  onClick={() => router.push('/products')}
+                  className={styles.mobileDiscoverButton}
+                >
+                  <span className={styles.mobileDiscoverButtonText}>Discover All Pieces</span>
+                </button>
+              </div>
+              
               {/* Scroll indicator */}
               <div className={styles.scrollIndicator}>
                 <ChevronDown size={30} />
