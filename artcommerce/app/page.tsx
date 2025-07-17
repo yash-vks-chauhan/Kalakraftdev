@@ -452,7 +452,7 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
     }, 600);
   };
   
-  // Card deck styling with visible edges - like a real stack of cards
+  // Simplified card styling for smooth performance
   const getCardStyle = (index) => {
     let position = index - currentIndex;
     if (position < 0) position += displayProducts.length;
@@ -468,9 +468,9 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
       cardRotation = dragOffset * 0.02; // Reduced for smoother feel
       cardScale = 1 - Math.abs(dragOffset) * 0.0002;
     } else if (isDragging && position === 1 && dragOffset < 0) {
-      cardOffset = Math.max(-25, dragOffset * 0.4);
+      cardOffset = Math.max(-15, dragOffset * 0.3);
     } else if (isDragging && position === displayProducts.length - 1 && dragOffset > 0) {
-      cardOffset = Math.min(25, dragOffset * 0.4);
+      cardOffset = Math.min(15, dragOffset * 0.3);
     }
     
     const style: React.CSSProperties = {
@@ -494,102 +494,91 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
       style.transition = 'all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
     }
     
-    // Realistic deck arrangement with visible card edges
+    // Simplified positioning
     if (position === 0) {
-      // Front card - full visibility
       style.transform = `
         translateX(${cardOffset}px) 
-        translateZ(40px) 
+        translateZ(30px) 
         rotateY(${cardRotation}deg) 
         scale(${cardScale})
       `;
       style.zIndex = 100;
       style.opacity = 1;
-      style.boxShadow = '0 25px 50px rgba(0, 0, 0, 0.2), 0 15px 25px rgba(0, 0, 0, 0.15)';
+      style.boxShadow = '0 20px 40px rgba(0, 0, 0, 0.15), 0 10px 20px rgba(0, 0, 0, 0.1)';
     } else if (position === 1) {
-      // Right visible edge - like cards fanned to the right
       style.transform = `
-        translateX(${30 + cardOffset}px) 
-        translateY(6px)
-        translateZ(30px) 
-        rotateY(-8deg) 
-        scale(0.94)
+        translateX(${8 + cardOffset}px) 
+        translateY(4px)
+        translateZ(20px) 
+        rotateY(-2deg) 
+        scale(0.96)
       `;
       style.zIndex = 90;
-      style.opacity = 0.85;
-      style.boxShadow = '0 15px 30px rgba(0, 0, 0, 0.12), 0 8px 15px rgba(0, 0, 0, 0.08)';
+      style.opacity = 0.9;
+      style.boxShadow = '0 12px 25px rgba(0, 0, 0, 0.1)';
     } else if (position === 2) {
-      // More visible right edge
       style.transform = `
-        translateX(55px) 
-        translateY(12px)
-        translateZ(20px) 
-        rotateY(-12deg) 
-        scale(0.88)
+        translateX(14px) 
+        translateY(8px)
+        translateZ(10px) 
+        rotateY(-3deg) 
+        scale(0.92)
       `;
       style.zIndex = 80;
-      style.opacity = 0.7;
-      style.boxShadow = '0 12px 25px rgba(0, 0, 0, 0.1), 0 6px 12px rgba(0, 0, 0, 0.06)';
+      style.opacity = 0.75;
+      style.boxShadow = '0 8px 15px rgba(0, 0, 0, 0.08)';
     } else if (position === 3) {
-      // Far right edge - most visible background card
       style.transform = `
-        translateX(75px) 
-        translateY(18px)
-        translateZ(10px)
-        rotateY(-15deg) 
-        scale(0.82)
+        translateX(18px) 
+        translateY(12px)
+        rotateY(-4deg) 
+        scale(0.88)
       `;
       style.zIndex = 70;
-      style.opacity = 0.55;
-      style.boxShadow = '0 10px 20px rgba(0, 0, 0, 0.08), 0 4px 8px rgba(0, 0, 0, 0.04)';
+      style.opacity = 0.6;
+      style.boxShadow = '0 6px 12px rgba(0, 0, 0, 0.06)';
     } else if (position === displayProducts.length - 1) {
-      // Left visible edge - cards fanned to the left
       style.transform = `
-        translateX(${-30 + cardOffset}px) 
-        translateY(6px)
-        translateZ(30px) 
-        rotateY(8deg) 
-        scale(0.94)
+        translateX(${-8 + cardOffset}px) 
+        translateY(4px)
+        translateZ(20px) 
+        rotateY(2deg) 
+        scale(0.96)
       `;
       style.zIndex = 90;
-      style.opacity = 0.85;
-      style.boxShadow = '0 15px 30px rgba(0, 0, 0, 0.12), 0 8px 15px rgba(0, 0, 0, 0.08)';
+      style.opacity = 0.9;
+      style.boxShadow = '0 12px 25px rgba(0, 0, 0, 0.1)';
     } else if (position === displayProducts.length - 2) {
-      // More visible left edge
       style.transform = `
-        translateX(-55px) 
-        translateY(12px)
-        translateZ(20px) 
-        rotateY(12deg) 
-        scale(0.88)
+        translateX(-14px) 
+        translateY(8px)
+        translateZ(10px) 
+        rotateY(3deg) 
+        scale(0.92)
       `;
       style.zIndex = 80;
-      style.opacity = 0.7;
-      style.boxShadow = '0 12px 25px rgba(0, 0, 0, 0.1), 0 6px 12px rgba(0, 0, 0, 0.06)';
+      style.opacity = 0.75;
+      style.boxShadow = '0 8px 15px rgba(0, 0, 0, 0.08)';
     } else if (position === displayProducts.length - 3) {
-      // Far left edge - most visible background card on left
       style.transform = `
-        translateX(-75px) 
-        translateY(18px)
-        translateZ(10px)
-        rotateY(15deg) 
-        scale(0.82)
+        translateX(-18px) 
+        translateY(12px)
+        rotateY(4deg) 
+        scale(0.88)
       `;
       style.zIndex = 70;
-      style.opacity = 0.55;
-      style.boxShadow = '0 10px 20px rgba(0, 0, 0, 0.08), 0 4px 8px rgba(0, 0, 0, 0.04)';
+      style.opacity = 0.6;
+      style.boxShadow = '0 6px 12px rgba(0, 0, 0, 0.06)';
     } else {
-      // Hidden cards - completely behind
       style.transform = `
-        translateX(${position > displayProducts.length / 2 ? -90 : 90}px) 
-        translateY(24px)
-        translateZ(0px)
-        rotateY(${position > displayProducts.length / 2 ? 18 : -18}deg) 
-        scale(0.76)
+        translateX(${position > displayProducts.length / 2 ? -22 : 22}px) 
+        translateY(16px)
+        rotateY(${position > displayProducts.length / 2 ? 5 : -5}deg) 
+        scale(0.84)
       `;
       style.zIndex = 60;
       style.opacity = 0;
-      style.boxShadow = '0 6px 12px rgba(0, 0, 0, 0.04)';
+      style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.04)';
     }
     
     return style;
