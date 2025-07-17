@@ -519,7 +519,7 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
       position: 'absolute',
       width: '280px',
       height: '360px',
-      borderRadius: '20px',
+      borderRadius: '8px',
       overflow: 'hidden',
       transformOrigin: 'center center',
       willChange: 'transform',
@@ -607,10 +607,10 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
               width: '100%',
               background: '#fff',
               color: '#000',
-              borderRadius: '20px',
+              borderRadius: '8px',
               overflow: 'hidden',
               position: 'relative',
-              border: '1px solid rgba(0, 0, 0, 0.08)',
+              border: '1px solid rgba(0, 0, 0, 0.1)',
               boxSizing: 'border-box',
             }}>
               <div style={{
@@ -618,7 +618,7 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
                 aspectRatio: '1/1.1',
                 position: 'relative',
                 overflow: 'hidden',
-                background: 'linear-gradient(135deg, #fafafa 0%, #f8f8f8 100%)',
+                background: '#f5f5f5',
               }}>
                 <img 
                   src={product.imageUrls[0]} 
@@ -628,102 +628,45 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
                     height: '100%',
                     objectFit: 'cover',
                     display: 'block',
-                    transition: 'transform 0.3s ease-out',
                   }}
                 />
-                
-                {/* Simplified badges */}
-                {product.isNew && (
-                  <div style={{
-                    position: 'absolute',
-                    top: '15px',
-                    left: '15px',
-                    background: 'rgba(0, 0, 0, 0.85)',
-                    color: '#fff',
-                    fontSize: '0.6rem',
-                    padding: '6px 12px',
-                    borderRadius: '15px',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.1em',
-                    fontWeight: 700,
-                  }}>
-                    New
-                  </div>
-                )}
-                
-                {product.stockQuantity === 0 && (
-                  <div style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: '100%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                    color: '#000',
-                    fontSize: '0.85rem',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.1em',
-                    fontWeight: 700,
-                  }}>
-                    Out of Stock
-                  </div>
-                )}
-                
-                {product.stockQuantity > 0 && product.stockQuantity <= 5 && (
-                  <div style={{
-                    position: 'absolute',
-                    bottom: '15px',
-                    left: '15px',
-                    backgroundColor: 'rgba(255, 107, 107, 0.9)',
-                    color: 'white',
-                    fontSize: '0.6rem',
-                    padding: '6px 12px',
-                    borderRadius: '15px',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.1em',
-                    fontWeight: 700,
-                  }}>
-                    Only {product.stockQuantity} left
-                  </div>
-                )}
               </div>
               
               <div style={{
-                padding: '18px 20px 20px',
+                padding: '16px',
                 background: '#fff',
                 position: 'relative',
               }}>
                 {product.category && (
                   <div style={{
-                    fontSize: '0.65rem',
-                    color: '#888',
+                    fontSize: '0.7rem',
+                    color: '#666',
                     marginBottom: '8px',
-                    fontWeight: 600,
+                    fontWeight: 500,
                     textTransform: 'uppercase',
-                    letterSpacing: '0.1em',
+                    letterSpacing: '0.05em',
                   }}>
                     {product.category.name}
                   </div>
                 )}
                 
                 <h3 style={{
-                  fontSize: '1rem',
-                  fontWeight: 700,
-                  margin: '0 0 12px 0',
-                  lineHeight: 1.3,
+                  fontSize: '0.95rem',
+                  fontWeight: 600,
+                  margin: '0 0 10px 0',
+                  lineHeight: 1.4,
                   color: '#000',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
                 }}>
                   {product.name}
                 </h3>
                 
                 <div style={{
-                  fontSize: '1.1rem',
-                  fontWeight: 800,
+                  fontSize: '1rem',
+                  fontWeight: 700,
                   color: '#000',
-                  letterSpacing: '-0.02em',
                 }}>
                   {formatPrice(product.price)}
                 </div>
