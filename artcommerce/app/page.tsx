@@ -535,49 +535,39 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
     }
   }, []);
 
-  // 🌀 ADVANCED ANIMATION LOOPS 🌀
+  // 🌀 OPTIMIZED ANIMATION LOOPS 🌀
   
   useEffect(() => {
+    // Reduced frequency animation loop for better performance
     const animate = () => {
-      // Update particle system
-      updateParticles();
-      
-      // Update ripples
-      setFluidRipples(prev => 
-        prev.map(ripple => ({
-          ...ripple,
-          radius: ripple.radius + 2,
-          opacity: Math.max(0, ripple.opacity - 0.02)
-        })).filter(ripple => ripple.opacity > 0)
-      );
-      
-      // Update spring tensions
-      setSpringTensions(prev => 
-        prev.map((tension, index) => {
-          const targetIndex = currentIndex;
-          const distance = Math.abs(index - targetIndex);
-          const force = calculateSpringForce(index, distance * 10);
-          return tension + force;
-        })
-      );
-      
-      // Update magnetic field
-      setMagneticField(prev => {
-        const targetField = isDragging ? 1 : 0;
-        return prev + (targetField - prev) * 0.1;
-      });
-      
-      animationFrame.current = requestAnimationFrame(animate);
-    };
-    
-    animate();
-    
-    return () => {
-      if (animationFrame.current) {
-        cancelAnimationFrame(animationFrame.current);
+      // Only run heavy calculations when actively interacting
+      if (isDragging || isLongPressing || isPinching) {
+        // Lightweight particle updates
+        setParticleSystem(prev => 
+          prev.map(particle => ({
+            ...particle,
+            x: particle.x + particle.vx * 0.5,
+            y: particle.y + particle.vy * 0.5,
+            life: particle.life + 1
+          })).filter(particle => particle.life < particle.maxLife)
+        );
+        
+        // Simple ripple updates
+        setFluidRipples(prev => 
+          prev.map(ripple => ({
+            ...ripple,
+            radius: ripple.radius + 3,
+            opacity: Math.max(0, ripple.opacity - 0.03)
+          })).filter(ripple => ripple.opacity > 0.1)
+        );
       }
     };
-  }, [currentIndex, isDragging]);
+    
+    // Use setTimeout instead of requestAnimationFrame for less intensive updates
+    const interval = setInterval(animate, 50); // 20fps instead of 60fps
+    
+    return () => clearInterval(interval);
+  }, [isDragging, isLongPressing, isPinching]);
 
   // Auto-play with advanced timing
   useEffect(() => {
@@ -622,15 +612,14 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
     }
   };
   
-  // 🎭 ULTIMATE TOUCH EVENT SYSTEM 🎭
+  // 🎭 STREAMLINED TOUCH EVENT SYSTEM 🎭
   
   const handleAdvancedTouchStart = (e) => {
     pauseAutoPlay();
     
-    // Handle multi-touch
+    // Focus on single touch for reliable swiping
     if (e.touches.length > 1) {
-      handleMultiTouch(e.touches);
-      return;
+      return; // Ignore multi-touch for now
     }
     
     setIsDragging(true);
@@ -639,57 +628,35 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
     startTime.current = Date.now();
     setDragOffset(0);
     
-    // Create ripple effect
-    const rect = carouselRef.current.getBoundingClientRect();
-    const centerX = e.touches[0].clientX - rect.left;
-    const centerY = e.touches[0].clientY - rect.top;
-    createRipple(centerX, centerY, 0.8);
-    
-    // Start long press detection
-    const cardIndex = currentIndex;
-    handleLongPressStart(cardIndex);
-    
-    // Create touch particles
-    for (let i = 0; i < 5; i++) {
-      const particle = createParticle(centerX, centerY, 'touch');
-      setParticleSystem(prev => [...prev, particle]);
+    // Simple ripple effect
+    if (carouselRef.current) {
+      const rect = carouselRef.current.getBoundingClientRect();
+      const centerX = e.touches[0].clientX - rect.left;
+      const centerY = e.touches[0].clientY - rect.top;
+      createRipple(centerX, centerY, 0.6);
     }
   };
   
   const handleAdvancedTouchMove = (e) => {
-    if (e.touches.length > 1) {
-      handleMultiTouch(e.touches);
-      return;
-    }
-    
-    if (!isDragging) return;
+    if (e.touches.length > 1 || !isDragging) return;
     
     const currentPos = e.touches[0].clientX;
     const rawOffset = currentPos - startPos.current;
-    const velocity = Math.abs(currentPos - lastPos.current);
     
-    // Apply advanced fluid resistance
-    const constrainedOffset = applyAdvancedRubberBand(rawOffset, velocity);
-    
-    // Update liquid morphing based on movement
-    setLiquidMorphIntensity(Math.min(Math.abs(velocity) * 0.05, 1));
-    
-    // Magnetic field interaction
-    const magneticInfluence = calculateMagneticForce(currentIndex, currentIndex + 1, Math.abs(rawOffset) / 50);
-    const finalOffset = constrainedOffset + magneticInfluence * magneticField;
+    // Simple rubber band effect
+    const constrainedOffset = applyAdvancedRubberBand(rawOffset);
     
     lastPos.current = currentPos;
-    setDragOffset(finalOffset);
+    setDragOffset(constrainedOffset);
     
-    // Update lighting position
-    const rect = carouselRef.current.getBoundingClientRect();
-    setLightingPosition({
-      x: ((currentPos - rect.left) / rect.width) * 100,
-      y: 50
-    });
-    
-    // Cancel long press on movement
-    handleLongPressEnd();
+    // Lightweight lighting update
+    if (carouselRef.current) {
+      const rect = carouselRef.current.getBoundingClientRect();
+      setLightingPosition({
+        x: Math.min(100, Math.max(0, ((currentPos - rect.left) / rect.width) * 100)),
+        y: 50
+      });
+    }
     
     e.preventDefault();
   };
@@ -697,32 +664,22 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
   const handleAdvancedTouchEnd = () => {
     if (!isDragging) return;
     
-    setIsPinching(false);
-    lastTouchDistance.current = 0;
-    handleLongPressEnd();
-    
     const totalDistance = lastPos.current - startPos.current;
     const swipeTime = Date.now() - startTime.current;
     const velocity = Math.abs(totalDistance) / swipeTime;
     
-    // Time warp mode affects thresholds
-    const baseThreshold = 50;
-    const threshold = timeWarpMode === 'slow' ? baseThreshold * 0.7 : 
-                     timeWarpMode === 'fast' ? baseThreshold * 1.5 : baseThreshold;
-    const quickSwipeThreshold = 0.6;
+    // Simplified threshold logic
+    const threshold = 40;
+    const quickSwipeThreshold = 0.5;
     
-    // Enhanced decision logic with physics
+    // Decision logic
     const shouldNext = totalDistance < -threshold || 
-                      (totalDistance < -25 && velocity > quickSwipeThreshold);
+                      (totalDistance < -20 && velocity > quickSwipeThreshold);
     const shouldPrev = totalDistance > threshold || 
-                      (totalDistance > 25 && velocity > quickSwipeThreshold);
+                      (totalDistance > 20 && velocity > quickSwipeThreshold);
     
     if (shouldNext || shouldPrev) {
       setIsTransitioning(true);
-      
-      // Time warp transition effect
-      const transitionDuration = timeWarpMode === 'slow' ? 1200 : 
-                                timeWarpMode === 'fast' ? 200 : 500;
       
       if (shouldNext) {
         setCurrentIndex((prev) => (prev + 1) % displayProducts.length);
@@ -730,24 +687,22 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
         setCurrentIndex((prev) => (prev - 1 + displayProducts.length) % displayProducts.length);
       }
       
-      // Advanced transition with effects
+      // Quick transition
       setTimeout(() => {
         setDragOffset(0);
         setIsDragging(false);
-        setLiquidMorphIntensity(0);
         setTimeout(() => {
           setIsTransitioning(false);
           resumeAutoPlay();
-        }, transitionDuration);
+        }, 300);
       }, 50);
     } else {
-      // Harmonic return animation
+      // Return to center
       setDragOffset(0);
-      setLiquidMorphIntensity(0);
       setTimeout(() => {
         setIsDragging(false);
         resumeAutoPlay();
-      }, 400);
+      }, 200);
     }
   };
 
@@ -765,129 +720,79 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
     }, 600);
   };
   
-  // 🎨✨ ULTIMATE ADVANCED CARD STYLING SYSTEM ✨🎨
+  // 🎨✨ STREAMLINED CARD STYLING SYSTEM ✨🎨
   const getAdvancedCardStyle = (index) => {
     let position = index - currentIndex;
     if (position < 0) position += displayProducts.length;
     if (position >= displayProducts.length) position -= displayProducts.length;
     
-    // 🧮 Advanced Physics Calculations
+    // 🧮 Simplified Physics Calculations
     let cardOffset = 0;
     let cardRotation = 0;
     let cardScale = 1;
-    let cardTiltX = deviceTilt.x * 15;
-    let cardTiltY = deviceTilt.y * 10;
     
-    // Base physics response
+    // Basic drag response
     if (isDragging && position === 0) {
       cardOffset = dragOffset;
-      cardRotation = dragOffset * 0.03;
-      cardScale = 1 - Math.abs(dragOffset) * 0.0003;
+      cardRotation = dragOffset * 0.02;
+      cardScale = 1 - Math.abs(dragOffset) * 0.0002;
     } else if (isDragging && position === 1 && dragOffset < 0) {
-      cardOffset = Math.max(-35, dragOffset * 0.5);
+      cardOffset = Math.max(-25, dragOffset * 0.3);
     } else if (isDragging && position === displayProducts.length - 1 && dragOffset > 0) {
-      cardOffset = Math.min(35, dragOffset * 0.5);
+      cardOffset = Math.min(25, dragOffset * 0.3);
     }
     
-    // Magnetic field influences
-    const magneticInfluence = magneticField * calculateMagneticForce(index, currentIndex, Math.abs(position));
-    cardOffset += magneticInfluence;
-    
-    // Spring system affects
-    const springInfluence = springTensions[index] || 0;
-    cardTiltY += springInfluence * 0.5;
-    
-    // Long press lift effect
-    const isLifted = liftedCardIndex === index;
-    const liftOffset = isLifted ? -50 : 0;
-    const liftScale = isLifted ? 1.1 : 1;
-    
-    // Liquid morphing calculations
-    const liquidDeform = calculateLiquidDeformation(dragOffset, Math.abs(cardOffset));
-    
-    // Lighting calculations
-    const lighting = calculateLightingEffects(index, position);
-    
-    // 🎭 Origami folding effect (activated on specific gestures)
-    const foldIntensity = isPinching ? liquidMorphIntensity : 0;
-    const foldRotation = foldIntensity * 180;
-    
-    // 🌈 Holographic glass calculations
-    const holographicHue = (position * 60 + Date.now() * 0.1) % 360;
-    const depthColorShift = position * 20; // Cooler colors as they go back
+    // Simple lighting position based on interaction
+    const lightIntensity = position === 0 ? 1 : 0.3 + (1 / (Math.abs(position) + 1)) * 0.5;
     
     const style: React.CSSProperties = {
       position: 'absolute',
       width: '85%',
       maxWidth: '320px',
       transformOrigin: 'center center',
-      willChange: 'transform, filter, clip-path, border-radius',
+      willChange: 'transform',
       backfaceVisibility: 'hidden',
       cursor: position === 0 ? (isDragging ? 'grabbing' : 'grab') : 'pointer',
-      // 🌊 Liquid morphing shape
-      clipPath: liquidMorphIntensity > 0.1 ? liquidDeform.clipPath : 'none',
-      borderRadius: liquidMorphIntensity > 0.1 ? liquidDeform.borderRadius : '20px',
+      borderRadius: '20px',
       overflow: 'hidden',
     };
     
-    // ⚡ Dynamic transition system
+    // ⚡ Simplified transition system
     if (isDragging && position === 0) {
       style.transition = 'none';
-    } else if (isTransitioning) {
-      const duration = timeWarpMode === 'slow' ? '1.2s' : timeWarpMode === 'fast' ? '0.2s' : '0.6s';
-      style.transition = `all ${duration} cubic-bezier(0.23, 1, 0.32, 1)`;
     } else {
-      style.transition = 'all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+      style.transition = 'all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
     }
     
-    // 🌟 Advanced positioning with all effects combined
+    // 🌟 Visible card deck arrangement
     if (position === 0) {
-      // 👑 FRONT CARD - Maximum effects
+      // Front card
       style.transform = `
         translateX(${cardOffset}px) 
-        translateY(${liftOffset}px)
-        translateZ(50px) 
-        rotateY(${cardRotation + cardTiltX + foldRotation}deg) 
-        rotateX(${cardTiltY}deg)
-        scale(${cardScale * liftScale})
+        translateZ(40px) 
+        rotateY(${cardRotation}deg) 
+        scale(${cardScale})
       `;
-      style.zIndex = 100 + (isLifted ? 50 : 0);
+      style.zIndex = 100;
       style.opacity = 1;
       style.boxShadow = `
-        ${lighting.shadowProjection},
-        ${lighting.ambientGlow},
-        0 30px 60px rgba(0, 0, 0, 0.25),
-        0 20px 30px rgba(0, 0, 0, 0.15),
-        inset 0 0 120px rgba(255, 255, 255, 0.1)
+        0 25px 50px rgba(0, 0, 0, 0.2),
+        0 15px 25px rgba(0, 0, 0, 0.15),
+        0 0 20px rgba(255, 215, 0, ${lightIntensity * 0.3})
       `;
-      // 🌈 Holographic border
-      style.border = `2px solid`;
-      style.borderImage = `linear-gradient(45deg, 
-        hsl(${holographicHue}, 70%, 60%), 
-        hsl(${holographicHue + 120}, 70%, 60%), 
-        hsl(${holographicHue + 240}, 70%, 60%)) 1`;
-      // 💡 Dynamic lighting overlay
-      style.backgroundImage = lighting.spotlight;
       
     } else if (position === 1) {
-      // Right visible edge with advanced effects
+      // Right visible edge
       style.transform = `
         translateX(${40 + cardOffset}px) 
         translateY(8px)
-        translateZ(35px) 
-        rotateY(${-12 + cardTiltX}deg) 
-        rotateX(${cardTiltY}deg)
+        translateZ(30px) 
+        rotateY(-10deg) 
         scale(0.92)
       `;
       style.zIndex = 90;
       style.opacity = 0.8;
-      style.boxShadow = `
-        ${lighting.shadowProjection},
-        0 20px 40px rgba(0, 0, 0, 0.15),
-        0 12px 20px rgba(0, 0, 0, 0.1)
-      `;
-      style.border = `1px solid hsl(${holographicHue + depthColorShift}, 50%, 70%)`;
-      style.filter = `hue-rotate(${depthColorShift}deg) brightness(0.9)`;
+      style.boxShadow = `0 15px 30px rgba(0, 0, 0, 0.12)`;
       
     } else if (position === 2) {
       // More visible right edge
@@ -895,50 +800,38 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
         translateX(65px) 
         translateY(16px)
         translateZ(20px) 
-        rotateY(${-18 + cardTiltX}deg) 
-        rotateX(${cardTiltY}deg)
+        rotateY(-15deg) 
         scale(0.84)
       `;
       style.zIndex = 80;
       style.opacity = 0.65;
-      style.boxShadow = `0 15px 30px rgba(0, 0, 0, 0.12), 0 8px 15px rgba(0, 0, 0, 0.08)`;
-      style.border = `1px solid hsl(${holographicHue + depthColorShift * 2}, 40%, 75%)`;
-      style.filter = `hue-rotate(${depthColorShift * 2}deg) brightness(0.8)`;
+      style.boxShadow = `0 12px 25px rgba(0, 0, 0, 0.1)`;
       
     } else if (position === 3) {
       // Far right edge
       style.transform = `
         translateX(85px) 
         translateY(24px)
-        translateZ(5px)
-        rotateY(${-22 + cardTiltX}deg) 
-        rotateX(${cardTiltY}deg)
+        translateZ(10px)
+        rotateY(-20deg) 
         scale(0.76)
       `;
       style.zIndex = 70;
       style.opacity = 0.4;
-      style.boxShadow = `0 12px 25px rgba(0, 0, 0, 0.1)`;
-      style.filter = `hue-rotate(${depthColorShift * 3}deg) brightness(0.7) blur(0.5px)`;
+      style.boxShadow = `0 10px 20px rgba(0, 0, 0, 0.08)`;
       
     } else if (position === displayProducts.length - 1) {
       // Left visible edge
       style.transform = `
         translateX(${-40 + cardOffset}px) 
         translateY(8px)
-        translateZ(35px) 
-        rotateY(${12 + cardTiltX}deg) 
-        rotateX(${cardTiltY}deg)
+        translateZ(30px) 
+        rotateY(10deg) 
         scale(0.92)
       `;
       style.zIndex = 90;
       style.opacity = 0.8;
-      style.boxShadow = `
-        ${lighting.shadowProjection},
-        0 20px 40px rgba(0, 0, 0, 0.15),
-        0 12px 20px rgba(0, 0, 0, 0.1)
-      `;
-      style.border = `1px solid hsl(${holographicHue - depthColorShift}, 50%, 70%)`;
-      style.filter = `hue-rotate(${-depthColorShift}deg) brightness(0.9)`;
+      style.boxShadow = `0 15px 30px rgba(0, 0, 0, 0.12)`;
       
     } else if (position === displayProducts.length - 2) {
       // More visible left edge
@@ -946,50 +839,37 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
         translateX(-65px) 
         translateY(16px)
         translateZ(20px) 
-        rotateY(${18 + cardTiltX}deg) 
-        rotateX(${cardTiltY}deg)
+        rotateY(15deg) 
         scale(0.84)
       `;
       style.zIndex = 80;
       style.opacity = 0.65;
-      style.boxShadow = `0 15px 30px rgba(0, 0, 0, 0.12), 0 8px 15px rgba(0, 0, 0, 0.08)`;
-      style.border = `1px solid hsl(${holographicHue - depthColorShift * 2}, 40%, 75%)`;
-      style.filter = `hue-rotate(${-depthColorShift * 2}deg) brightness(0.8)`;
+      style.boxShadow = `0 12px 25px rgba(0, 0, 0, 0.1)`;
       
     } else if (position === displayProducts.length - 3) {
       // Far left edge
       style.transform = `
         translateX(-85px) 
         translateY(24px)
-        translateZ(5px)
-        rotateY(${22 + cardTiltX}deg) 
-        rotateX(${cardTiltY}deg)
+        translateZ(10px)
+        rotateY(20deg) 
         scale(0.76)
       `;
       style.zIndex = 70;
       style.opacity = 0.4;
-      style.boxShadow = `0 12px 25px rgba(0, 0, 0, 0.1)`;
-      style.filter = `hue-rotate(${-depthColorShift * 3}deg) brightness(0.7) blur(0.5px)`;
+      style.boxShadow = `0 10px 20px rgba(0, 0, 0, 0.08)`;
       
     } else {
-      // Hidden cards - dimensional portal effect
+      // Hidden cards
       style.transform = `
-        translateX(${position > displayProducts.length / 2 ? -110 : 110}px) 
+        translateX(${position > displayProducts.length / 2 ? -100 : 100}px) 
         translateY(32px)
-        translateZ(-10px)
         rotateY(${position > displayProducts.length / 2 ? 25 : -25}deg) 
         scale(0.68)
       `;
       style.zIndex = 60;
       style.opacity = 0;
-      style.filter = 'blur(2px)';
-      style.boxShadow = '0 8px 16px rgba(0, 0, 0, 0.06)';
-    }
-    
-    // 🎪 Kaleidoscope mode overlay
-    if (kaleidoscopeMode) {
-      style.filter = (style.filter || '') + ` saturate(1.5) contrast(1.2) hue-rotate(${position * 90}deg)`;
-      style.background = `conic-gradient(from ${holographicHue}deg, transparent, rgba(255,255,255,0.1), transparent)`;
+      style.boxShadow = '0 6px 12px rgba(0, 0, 0, 0.04)';
     }
     
     return style;
@@ -997,177 +877,74 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
 
   return (
     <div style={{ position: 'relative', width: '100%' }}>
-      {/* 🎮 ULTIMATE CONTROL PANEL 🎮 */}
+      {/* 🎮 SIMPLIFIED CONTROL PANEL 🎮 */}
       <div style={{
         position: 'absolute',
-        top: '-70px',
-        left: '0',
-        right: '0',
+        top: '-40px',
+        right: '20px',
         zIndex: 200,
         display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start',
-        padding: '0 20px',
-        flexWrap: 'wrap',
         gap: '8px',
+        alignItems: 'center',
       }}>
-        {/* Left controls */}
+        <button
+          onClick={() => autoPlay ? pauseAutoPlay() : resumeAutoPlay()}
+          style={{
+            background: 'rgba(255, 255, 255, 0.9)',
+            border: '1px solid rgba(0, 0, 0, 0.1)',
+            borderRadius: '20px',
+            padding: '4px 8px',
+            fontSize: '0.65rem',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+          }}
+        >
+          {autoPlay ? '⏸️ Pause' : '▶️ Play'}
+        </button>
+        
+        {isDragging && (
+          <span style={{
+            fontSize: '0.6rem',
+            color: '#666',
+            background: 'rgba(255, 255, 255, 0.8)',
+            padding: '2px 6px',
+            borderRadius: '10px',
+          }}>
+            Swiping
+          </span>
+        )}
+      </div>
+
+      {/* 🎆 SIMPLIFIED EFFECTS 🎆 */}
+      {fluidRipples.length > 0 && (
         <div style={{
-          display: 'flex',
-          gap: '6px',
-          flexWrap: 'wrap',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          pointerEvents: 'none',
+          zIndex: 140,
+          overflow: 'hidden',
         }}>
-          <button
-            onClick={() => autoPlay ? pauseAutoPlay() : resumeAutoPlay()}
-            style={{
-              background: 'rgba(255, 255, 255, 0.95)',
-              border: '1px solid rgba(0, 0, 0, 0.1)',
-              borderRadius: '20px',
-              padding: '4px 10px',
-              fontSize: '0.6rem',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease',
-              backdropFilter: 'blur(10px)',
-            }}
-          >
-            {autoPlay ? '⏸️ Pause' : '▶️ Play'}
-          </button>
-          
-          <button
-            onClick={() => setTimeWarpMode(prev => 
-              prev === 'normal' ? 'slow' : prev === 'slow' ? 'fast' : 'normal'
-            )}
-            style={{
-              background: 'rgba(255, 255, 255, 0.95)',
-              border: '1px solid rgba(0, 0, 0, 0.1)',
-              borderRadius: '20px',
-              padding: '4px 10px',
-              fontSize: '0.6rem',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease',
-              backdropFilter: 'blur(10px)',
-            }}
-          >
-            {timeWarpMode === 'slow' ? '🐌 Slow' : timeWarpMode === 'fast' ? '⚡ Fast' : '🕐 Normal'}
-          </button>
-          
-          <button
-            onClick={() => setKaleidoscopeMode(!kaleidoscopeMode)}
-            style={{
-              background: kaleidoscopeMode ? 'rgba(255, 200, 0, 0.9)' : 'rgba(255, 255, 255, 0.95)',
-              border: '1px solid rgba(0, 0, 0, 0.1)',
-              borderRadius: '20px',
-              padding: '4px 10px',
-              fontSize: '0.6rem',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease',
-              backdropFilter: 'blur(10px)',
-            }}
-          >
-            🎨 Kaleid
-          </button>
+          {fluidRipples.slice(0, 3).map(ripple => (
+            <div
+              key={ripple.id}
+              style={{
+                position: 'absolute',
+                left: `${ripple.x - ripple.radius}px`,
+                top: `${ripple.y - ripple.radius}px`,
+                width: `${ripple.radius * 2}px`,
+                height: `${ripple.radius * 2}px`,
+                borderRadius: '50%',
+                border: `1px solid rgba(255, 215, 0, ${ripple.opacity * 0.3})`,
+                opacity: ripple.opacity,
+                transition: 'none',
+              }}
+            />
+          ))}
         </div>
-
-        {/* Right indicators */}
-        <div style={{
-          display: 'flex',
-          gap: '6px',
-          alignItems: 'center',
-          fontSize: '0.6rem',
-          color: '#666',
-        }}>
-          {isDragging && <span>🤏 Dragging</span>}
-          {isLongPressing && <span>📌 Lifted</span>}
-          {isPinching && <span>🔍 Pinching</span>}
-          {Math.abs(deviceTilt.x) > 0.1 && <span>📱 Tilting</span>}
-        </div>
-      </div>
-
-      {/* 🎆 PARTICLE SYSTEM CANVAS 🎆 */}
-      <div style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        pointerEvents: 'none',
-        zIndex: 150,
-        overflow: 'hidden',
-      }}>
-        {particleSystem.map(particle => (
-          <div
-            key={particle.id}
-            style={{
-              position: 'absolute',
-              left: `${particle.x}px`,
-              top: `${particle.y}px`,
-              width: `${particle.size}px`,
-              height: `${particle.size}px`,
-              borderRadius: '50%',
-              opacity: Math.max(0, 1 - particle.life / particle.maxLife),
-              transform: `rotate(${particle.angle}rad)`,
-              background: particle.type === 'golden' ? 
-                'radial-gradient(circle, rgba(255, 215, 0, 0.8), rgba(255, 165, 0, 0.4))' :
-                particle.type === 'shimmer' ? 
-                'radial-gradient(circle, rgba(255, 255, 255, 0.9), rgba(200, 200, 255, 0.5))' :
-                'radial-gradient(circle, rgba(0, 150, 255, 0.7), rgba(100, 200, 255, 0.3))',
-              boxShadow: '0 0 6px rgba(255, 255, 255, 0.3)',
-              transition: 'none',
-            }}
-          />
-        ))}
-      </div>
-
-      {/* 🌊 FLUID RIPPLE EFFECTS 🌊 */}
-      <div style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        pointerEvents: 'none',
-        zIndex: 140,
-        overflow: 'hidden',
-      }}>
-        {fluidRipples.map(ripple => (
-          <div
-            key={ripple.id}
-            style={{
-              position: 'absolute',
-              left: `${ripple.x - ripple.radius}px`,
-              top: `${ripple.y - ripple.radius}px`,
-              width: `${ripple.radius * 2}px`,
-              height: `${ripple.radius * 2}px`,
-              borderRadius: '50%',
-              border: `2px solid rgba(255, 255, 255, ${ripple.opacity * 0.4})`,
-              background: `radial-gradient(circle, 
-                rgba(255, 255, 255, ${ripple.opacity * 0.1}) 0%, 
-                transparent 70%)`,
-              opacity: ripple.opacity,
-              transform: 'scale(1)',
-              transition: 'none',
-            }}
-          />
-        ))}
-      </div>
-
-      {/* 💡 DYNAMIC LIGHTING OVERLAY 💡 */}
-      <div style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        pointerEvents: 'none',
-        zIndex: 130,
-        background: `radial-gradient(
-          circle at ${lightingPosition.x}% ${lightingPosition.y}%, 
-          rgba(255, 255, 255, 0.1) 0%, 
-          rgba(255, 255, 255, 0.05) 30%, 
-          transparent 60%
-        )`,
-        mixBlendMode: 'overlay',
-      }} />
+      )}
 
       <div 
         ref={carouselRef}
