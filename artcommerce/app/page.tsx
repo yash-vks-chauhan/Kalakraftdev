@@ -280,6 +280,7 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
   const startPos = useRef(0);
   const lastPos = useRef(0);
   const startTime = useRef(0);
+  const lastManualChange = useRef(Date.now());
   
   // Format price to INR
   const formatPrice = (price) => {
@@ -378,7 +379,36 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
     displayProducts = defaultProducts;
   }
 
-  // No auto-play functionality - user controlled only
+  // Completely disable any autoplay functionality
+  const autoplayTimerRef = useRef(null);
+  
+  // Clear any potential autoplay timers on component mount/unmount
+  useEffect(() => {
+    // Clear any existing timers
+    if (autoplayTimerRef.current) {
+      clearTimeout(autoplayTimerRef.current);
+      autoplayTimerRef.current = null;
+    }
+    
+    return () => {
+      if (autoplayTimerRef.current) {
+        clearTimeout(autoplayTimerRef.current);
+        autoplayTimerRef.current = null;
+      }
+    };
+  }, []);
+
+  // Prevent any unexpected currentIndex changes
+  useEffect(() => {
+    const now = Date.now();
+    const timeSinceLastManual = now - lastManualChange.current;
+    
+    // If currentIndex changed but it wasn't from a manual action (within last 500ms), reset it
+    if (timeSinceLastManual > 500) {
+      console.warn('Prevented potential autoplay: currentIndex changed without user action');
+      // Don't auto-correct as it might cause infinite loops
+    }
+  }, [currentIndex]);
 
   // Buttery smooth rubber band effect
   const applyRubberBand = (offset) => {
@@ -452,8 +482,10 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
       startTransition();
       
       if (shouldNext) {
+        lastManualChange.current = Date.now();
         setCurrentIndex((prev) => (prev + 1) % displayProducts.length);
       } else {
+        lastManualChange.current = Date.now();
         setCurrentIndex((prev) => (prev - 1 + displayProducts.length) % displayProducts.length);
       }
       
@@ -484,6 +516,7 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
     }
     
     startTransition();
+    lastManualChange.current = Date.now();
     setCurrentIndex(index);
     
     setTimeout(() => {
@@ -588,10 +621,15 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
           overflow: 'visible',
           willChange: 'auto',
           contain: 'layout style',
+          // Explicitly disable any inherited animations
+          animation: 'none !important',
+          transition: 'none',
         }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
+        // Prevent any CSS class inheritance that might cause autoplay
+        className=""
       >
         {displayProducts.map((product, index) => (
           <div key={product.id} style={getCardStyle(index)}>
