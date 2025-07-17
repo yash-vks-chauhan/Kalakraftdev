@@ -569,122 +569,107 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
         <div className={styles.mobileBackdrop} onClick={() => setIsAccountDropdownOpen(false)}></div>
       )}
       
-            {/* Home page specific content - Premium Magazine Layout */}
+            {/* Home page specific content - Cinematic Immersive Experience */}
       {isHomePage && (
-        <div className={styles.premiumMobileHero}>
-          {/* Background Pattern */}
-          <div className={styles.backgroundPattern}></div>
+        <div className={styles.cinematicHero}>
           
-          {/* Main Content Container */}
-          <div className={styles.heroContentWrapper}>
-            
-            {/* Header Section */}
-            <div className={styles.premiumHeader}>
-              <div className={styles.studioLabel}>HANDCRAFTED ART STUDIO</div>
-              <div className={styles.establishedYear}>EST. 2024</div>
-            </div>
-
-            {/* Video Container with Modern Frame */}
-            <div className={styles.videoFrame}>
-              <div className={styles.videoContainer}>
-                <picture>
-                  <img 
-                    src={getImageUrl('featured3.JPG')}
-                    alt="Handcrafted resin art" 
-                    className={styles.premiumVideo}
-                    style={{ display: 'none' }}
-                    id="mobileVideoFallback"
-                  />
-                </picture>
-                <video
-                  ref={videoRef}
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                  className={styles.premiumVideo}
-                  poster="/images/loading.png"
-                  preload="metadata"
-                  onError={(e) => {
-                    const videoElement = e.currentTarget;
-                    videoElement.style.display = 'none';
-                    document.getElementById('mobileVideoFallback')!.style.display = 'block';
-                  }}
-                  onLoadedData={() => {
-                    if (videoRef.current) {
-                      videoRef.current.play().catch(() => {
-                        console.log('Video autoplay failed, using fallback image');
-                      });
-                    }
-                  }}
-                >
-                  <source 
-                    src={process.env.NEXT_PUBLIC_CLOUDINARY_VIDEO_URL || '/images/homepage_video.mp4'} 
-                    type="video/mp4" 
-                  />
-                </video>
-                
-                {/* Video Controls Overlay */}
-                <div className={styles.videoOverlay}>
-                  <div className={styles.playIndicator}>
-                    <div className={styles.playDot}></div>
-                    <span>LIVE CRAFTING</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Brand Section */}
-            <div className={styles.brandSection}>
-              <Image
-                src={getImageUrl('logo.png')}
-                alt="Artcommerce Logo"
-                width={140}
-                height={46}
-                className={styles.premiumLogo}
-                priority
+          {/* Fullscreen Video Background */}
+          <div className={styles.cinematicVideoContainer}>
+            <picture>
+              <img 
+                src={getImageUrl('featured3.JPG')}
+                alt="Handcrafted resin art" 
+                className={styles.cinematicVideo}
+                style={{ display: 'none' }}
+                id="mobileVideoFallback"
               />
+            </picture>
+            <video
+              ref={videoRef}
+              autoPlay
+              muted
+              loop
+              playsInline
+              className={styles.cinematicVideo}
+              poster="/images/loading.png"
+              preload="metadata"
+              onError={(e) => {
+                const videoElement = e.currentTarget;
+                videoElement.style.display = 'none';
+                document.getElementById('mobileVideoFallback')!.style.display = 'block';
+              }}
+              onLoadedData={() => {
+                if (videoRef.current) {
+                  videoRef.current.play().catch(() => {
+                    console.log('Video autoplay failed, using fallback image');
+                  });
+                }
+              }}
+            >
+              <source 
+                src={process.env.NEXT_PUBLIC_CLOUDINARY_VIDEO_URL || '/images/homepage_video.mp4'} 
+                type="video/mp4" 
+              />
+            </video>
+          </div>
+
+          {/* Cinematic Letterbox Bars */}
+          <div className={styles.letterboxTop}></div>
+          <div className={styles.letterboxBottom}></div>
+
+          {/* Floating Story Elements */}
+          <div className={styles.storyOverlay}>
+            
+            {/* Story Progress Indicator */}
+            <div className={styles.storyProgress}>
+              <div className={styles.progressBar}></div>
             </div>
 
-            {/* Main Title Section */}
-            <div className={styles.titleSection}>
-              <h1 className={styles.mainTitle}>
-                Handcrafted resin art
-              </h1>
-              <div className={styles.subtitleContainer}>
-                <span className={styles.forText}>for</span>
-                <span className={styles.rotatingCategory} id="mobileRotator">{rotatingText}</span>
-              </div>
-            </div>
-
-            {/* Floating Info Cards */}
-            <div className={styles.floatingCards}>
-              <div className={styles.infoCard}>
-                <div className={styles.cardIcon}>✨</div>
-                <div className={styles.cardContent}>
-                  <div className={styles.cardTitle}>Premium Quality</div>
-                  <div className={styles.cardSubtitle}>Handcrafted Excellence</div>
-                </div>
-              </div>
+            {/* Central Content Area */}
+            <div className={styles.centralContent}>
               
-              <div className={styles.infoCard}>
-                <div className={styles.cardIcon}>🎨</div>
-                <div className={styles.cardContent}>
-                  <div className={styles.cardTitle}>Custom Design</div>
-                  <div className={styles.cardSubtitle}>Tailored for You</div>
+              {/* Studio Badge */}
+              <div className={styles.studioBadge}>
+                <div className={styles.badgeText}>HANDCRAFTED ART STUDIO</div>
+                <div className={styles.badgeLine}></div>
+              </div>
+
+              {/* Main Logo - Perfectly Centered */}
+              <div className={styles.logoContainer}>
+                <Image
+                  src={getImageUrl('logo.png')}
+                  alt="Artcommerce Logo"
+                  width={160}
+                  height={52}
+                  className={styles.cinematicLogo}
+                  priority
+                />
+              </div>
+
+              {/* Elegant Title */}
+              <div className={styles.titleContainer}>
+                <h1 className={styles.cinematicTitle}>
+                  Handcrafted resin art
+                </h1>
+                <div className={styles.titleSubtext}>
+                  for <span className={styles.dynamicText} id="mobileRotator">{rotatingText}</span>
                 </div>
               </div>
+
             </div>
 
-            {/* Action Section */}
-            <div className={styles.actionSection}>
-              <Link href="/products" className={styles.exploreButton}>
+            {/* Bottom Floating Elements */}
+            <div className={styles.bottomFloating}>
+              
+              {/* Explore Button */}
+              <Link href="/products" className={styles.cinematicButton}>
                 <span>Explore Collection</span>
-                <div className={styles.buttonIcon}>→</div>
+                <div className={styles.buttonRipple}></div>
               </Link>
-              
+
+              {/* Scroll Indicator */}
               <div 
-                className={styles.scrollPrompt}
+                className={styles.cinematicScroll}
                 onClick={() => {
                   window.scrollTo({
                     top: window.innerHeight,
@@ -692,8 +677,22 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
                   })
                 }}
               >
-                <div className={styles.scrollLine}></div>
-                <span>Scroll to discover</span>
+                <div className={styles.scrollDot}></div>
+                <div className={styles.scrollText}>Continue</div>
+              </div>
+
+            </div>
+
+            {/* Side Elements */}
+            <div className={styles.sideElements}>
+              <div className={styles.qualityBadge}>
+                <div className={styles.badgeIcon}>★</div>
+                <div className={styles.badgeLabel}>Premium</div>
+              </div>
+              
+              <div className={styles.craftBadge}>
+                <div className={styles.badgeIcon}>◆</div>
+                <div className={styles.badgeLabel}>Handmade</div>
               </div>
             </div>
 
