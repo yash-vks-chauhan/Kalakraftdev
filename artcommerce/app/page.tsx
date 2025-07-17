@@ -1306,6 +1306,174 @@ onClick={() => handleCarouselNav('next')}
   {/* Mobile Video Section - Using the original component */}
   <MobileVideoSection />
   
+  {/* Explore Our Artisan Creations section - Restored */}
+  <section className={`${styles.mobileExploreSection} ${styles.mobileOnly}`} style={{ padding: '5rem 1.5rem 6rem' }}>
+    {/* Architectural design elements */}
+    <div style={{
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '5px',
+      background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.05), transparent)',
+      zIndex: 2
+    }}></div>
+    
+    <div style={{
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      width: '100%',
+      height: '5px',
+      background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.05), transparent)',
+      zIndex: 2
+    }}></div>
+
+    <div className={styles.mobileExploreHeader}>
+      <div className={styles.headerLine}></div>
+      <h2 className={styles.mobileExploreTitle} style={{ 
+        fontFamily: 'Cormorant Garamond, serif',
+        fontSize: '2.2rem', 
+        fontWeight: 300, 
+        marginBottom: '1.5rem',
+        letterSpacing: '0.05em',
+        fontStyle: 'italic',
+        color: '#fff',
+        textShadow: '0 2px 10px rgba(0,0,0,0.2)'
+      }}>
+        Explore Our Artisan Creations
+      </h2>
+      <div className={styles.headerLine}></div>
+      <p style={{
+        fontFamily: 'Inter, sans-serif',
+        fontSize: '0.9rem',
+        fontWeight: 300,
+        color: 'rgba(255,255,255,0.7)',
+        maxWidth: '300px',
+        margin: '1.5rem auto 0',
+        letterSpacing: '0.03em',
+        lineHeight: 1.6
+      }}>
+        Discover our curated collection of handcrafted pieces
+      </p>
+    </div>
+
+    <div className={styles.mobileExploreGrid}>
+      {[
+        {
+          title: 'Artistic Journals',
+          image: 'https://res.cloudinary.com/downe8107/image/upload/v1752441188/84D2D636-027E-484D-B886-1BFEE0B9F5CD_1_201_a_ca4hrv.jpg'
+        },
+        {
+          title: 'Wall Clocks',
+          image: 'https://res.cloudinary.com/downe8107/image/upload/v1752441196/F0CFF91C-3B7B-4AA9-AECE-35A6DA417194_1_201_a_w5rmde.jpg'
+        },
+        {
+          title: 'Resin Trays',
+          image: 'https://res.cloudinary.com/downe8107/image/upload/v1752441176/2E1812EC-BB3C-4C7D-8480-C1539B7A0FBB_1_201_a_xc2yjx.jpg'
+        },
+        {
+          title: 'Rangoli Art',
+          image: 'https://res.cloudinary.com/downe8107/image/upload/v1752440782/6F66291E-3673-47F4-8989-701EBB8BB8BE_1_201_a_uxx8zk.jpg'
+        },
+        {
+          title: 'Pattachitra Panels',
+          image: 'https://res.cloudinary.com/downe8107/image/upload/v1752441169/65B82642-5A77-4A31-88BC-B36E2B5DB7DE_1_201_a_e7bed1.jpg'
+        },
+        {
+          title: 'Krishna Embroidery',
+          image: 'https://res.cloudinary.com/downe8107/image/upload/v1752441212/2E077407-F784-4515-8960-988FB394B218_1_201_a_p1as8c.jpg'
+        }
+      ].map((item, index) => (
+        <div key={index} className={styles.mobileExploreCard}>
+          <div className={styles.mobileExploreCardInner}>
+            <img
+              src={item.image}
+              alt={item.title}
+              className={styles.mobileExploreImage}
+              onError={(e) => (e.currentTarget.src = 'https://placehold.co/300x300/333/666?text=Image+Not+Found')}
+            />
+            <div className={styles.mobileExploreCardContent}>
+              <h3 className={styles.mobileExploreCardTitle}>{item.title}</h3>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    {/* Subtle accent elements */}
+    <div style={{
+      position: 'absolute',
+      bottom: '10%',
+      right: '5%',
+      width: '180px',
+      height: '180px',
+      background: 'radial-gradient(circle, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0) 70%)',
+      borderRadius: '50%',
+      zIndex: 1
+    }}></div>
+    
+    <div style={{
+      position: 'absolute',
+      top: '15%',
+      left: '8%',
+      width: '120px',
+      height: '120px',
+      background: 'radial-gradient(circle, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0) 70%)',
+      borderRadius: '50%',
+      zIndex: 1
+    }}></div>
+    
+    {/* Corner accent */}
+    <div style={{
+      position: 'absolute',
+      top: '40px',
+      left: '40px',
+      width: '60px',
+      height: '60px',
+      borderTop: '1px solid rgba(255,255,255,0.08)',
+      borderLeft: '1px solid rgba(255,255,255,0.08)',
+      zIndex: 2
+    }}></div>
+    
+    <div style={{
+      position: 'absolute',
+      bottom: '40px',
+      right: '40px',
+      width: '60px',
+      height: '60px',
+      borderBottom: '1px solid rgba(255,255,255,0.08)',
+      borderRight: '1px solid rgba(255,255,255,0.08)',
+      zIndex: 2
+    }}></div>
+    
+    {/* View all button */}
+    <div style={{
+      textAlign: 'center',
+      marginTop: '3.5rem',
+      position: 'relative',
+      zIndex: 2
+    }}>
+      <Link href="/products" style={{
+        display: 'inline-block',
+        padding: '0.9rem 2.5rem',
+        background: 'transparent',
+        color: '#fff',
+        fontSize: '0.85rem',
+        fontWeight: 300,
+        letterSpacing: '0.1em',
+        textDecoration: 'none',
+        textTransform: 'uppercase',
+        border: '1px solid rgba(255,255,255,0.2)',
+        position: 'relative',
+        overflow: 'hidden',
+        transition: 'all 0.4s ease'
+      }}>
+        View All Collections
+      </Link>
+    </div>
+  </section>
+  
   {/* Featured Discoveries Section - Random products from API */}
 <section className={`${styles.mobileFeaturedSection} ${styles.mobileOnly}`}>
   {/* Section header */}
