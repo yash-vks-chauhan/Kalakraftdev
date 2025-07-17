@@ -269,7 +269,7 @@ const FeaturedProductsGrid = () => {
   );
 };
 
-// Mobile Featured Carousel Component - Refined Card Deck with Smooth Transitions
+// Mobile Featured Carousel Component - Advanced Card Physics & Detailed Mechanics
 const MobileFeaturedCarousel = ({ products = [] }) => {
   // State for carousel
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -277,10 +277,15 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
   const [startX, setStartX] = useState(0);
   const [currentX, setCurrentX] = useState(0);
   const [dragOffset, setDragOffset] = useState(0);
+  const [dragVelocity, setDragVelocity] = useState(0);
+  const [lastDragTime, setLastDragTime] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [autoPlay, setAutoPlay] = useState(true);
+  const [isReturning, setIsReturning] = useState(false);
   const carouselRef = useRef(null);
   const autoPlayRef = useRef(null);
+  const velocityTracker = useRef([]);
+  const animationFrame = useRef(null);
   
   // Format price to INR
   const formatPrice = (price) => {
@@ -331,10 +336,10 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
 
   // Auto-play functionality
   useEffect(() => {
-    if (autoPlay && !isDragging && displayProducts.length > 1) {
+    if (autoPlay && !isDragging && displayProducts.length > 1 && !isTransitioning) {
       autoPlayRef.current = setInterval(() => {
         setCurrentIndex((prev) => (prev + 1) % displayProducts.length);
-      }, 4000); // Change every 4 seconds
+      }, 4000);
     }
 
     return () => {
@@ -342,7 +347,52 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
         clearInterval(autoPlayRef.current);
       }
     };
-  }, [autoPlay, isDragging, displayProducts.length]);
+  }, [autoPlay, isDragging, displayProducts.length, isTransitioning]);
+
+  // Smooth animation frame-based drag updates
+  const updateDragPosition = (newOffset) => {
+    if (animationFrame.current) {
+      cancelAnimationFrame(animationFrame.current);
+    }
+    
+    animationFrame.current = requestAnimationFrame(() => {
+      setDragOffset(newOffset);
+    });
+  };
+
+  // Calculate velocity for momentum-based interactions
+  const trackVelocity = (x, time) => {
+    velocityTracker.current.push({ x, time });
+    // Keep only last 5 points for velocity calculation
+    if (velocityTracker.current.length > 5) {
+      velocityTracker.current.shift();
+    }
+  };
+
+  const getVelocity = () => {
+    if (velocityTracker.current.length < 2) return 0;
+    
+    const recent = velocityTracker.current.slice(-2);
+    const deltaX = recent[1].x - recent[0].x;
+    const deltaTime = recent[1].time - recent[0].time;
+    
+    return deltaTime > 0 ? deltaX / deltaTime : 0;
+  };
+
+  // Rubber band effect calculation
+  const calculateRubberBandOffset = (offset) => {
+    const maxDrag = 120; // Maximum comfortable drag distance
+    const resistance = 0.7; // Resistance factor (0-1, lower = more resistance)
+    
+    if (Math.abs(offset) <= maxDrag) {
+      return offset;
+    }
+    
+    const excessOffset = Math.abs(offset) - maxDrag;
+    const rubberBandEffect = maxDrag + (excessOffset * resistance * Math.exp(-excessOffset / 100));
+    
+    return offset > 0 ? rubberBandEffect : -rubberBandEffect;
+  };
 
   // Pause auto-play on touch/hover
   const pauseAutoPlay = () => {
@@ -353,54 +403,118 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
   };
 
   const resumeAutoPlay = () => {
-    setAutoPlay(true);
+    if (!isDragging && !isTransitioning) {
+      setAutoPlay(true);
+    }
   };
   
-  // Enhanced touch events for smoother swiping
+  // Enhanced touch events with detailed physics
   const handleTouchStart = (e) => {
     pauseAutoPlay();
     setIsDragging(true);
+    setIsReturning(false);
     setStartX(e.touches[0].clientX);
     setCurrentX(e.touches[0].clientX);
     setDragOffset(0);
+    setLastDragTime(Date.now());
+    velocityTracker.current = [];
+    trackVelocity(e.touches[0].clientX, Date.now());
   };
   
   const handleTouchMove = (e) => {
     if (!isDragging) return;
+    
     const newCurrentX = e.touches[0].clientX;
+    const rawOffset = newCurrentX - startX;
+    const time = Date.now();
+    
+    // Apply rubber band effect for over-dragging
+    const constrainedOffset = calculateRubberBandOffset(rawOffset);
+    
     setCurrentX(newCurrentX);
-    const newOffset = (newCurrentX - startX) * 0.7; // Slightly constrained for better control
-    setDragOffset(newOffset);
+    trackVelocity(newCurrentX, time);
+    updateDragPosition(constrainedOffset);
+    setLastDragTime(time);
+    
     e.preventDefault();
   };
   
   const handleTouchEnd = () => {
     if (!isDragging) return;
     
+    const velocity = getVelocity();
     const diff = startX - currentX;
-    const threshold = 60; // Higher threshold for more intentional swipes
-    const velocity = Math.abs(diff) / 100;
+    const threshold = 50; // Base threshold
+    const velocityThreshold = 0.5; // Velocity threshold for momentum swipes
+    const timeThreshold = 300; // Quick swipe time threshold
+    const swipeTime = Date.now() - lastDragTime;
     
-    setIsTransitioning(true);
+    setDragVelocity(velocity);
     
-    if (diff > threshold || velocity > 2) {
-      // Swipe left - next card
-      setCurrentIndex((prev) => (prev + 1) % displayProducts.length);
-    } else if (diff < -threshold || velocity > 2) {
-      // Swipe right - previous card
-      setCurrentIndex((prev) => (prev - 1 + displayProducts.length) % displayProducts.length);
+    // Determine if we should change cards based on distance, velocity, or quick swipe
+    const shouldMoveNext = diff > threshold || 
+                          (velocity < -velocityThreshold && swipeTime < timeThreshold) ||
+                          (diff > 30 && Math.abs(velocity) > 0.3);
+                          
+    const shouldMovePrev = diff < -threshold || 
+                          (velocity > velocityThreshold && swipeTime < timeThreshold) ||
+                          (diff < -30 && Math.abs(velocity) > 0.3);
+    
+    if (shouldMoveNext || shouldMovePrev) {
+      // Commit to card change
+      setIsTransitioning(true);
+      
+      if (shouldMoveNext) {
+        setCurrentIndex((prev) => (prev + 1) % displayProducts.length);
+      } else {
+        setCurrentIndex((prev) => (prev - 1 + displayProducts.length) % displayProducts.length);
+      }
+      
+      // Smooth transition to new position
+      setTimeout(() => {
+        setDragOffset(0);
+        setTimeout(() => {
+          setIsDragging(false);
+          setIsTransitioning(false);
+          velocityTracker.current = [];
+          resumeAutoPlay();
+        }, 400);
+      }, 100);
+    } else {
+      // Return to original position with smooth rubber band effect
+      setIsReturning(true);
+      
+      // Animate back to center
+      const returnDuration = Math.min(400, Math.max(200, Math.abs(dragOffset) * 2));
+      const startOffset = dragOffset;
+      const startTime = Date.now();
+      
+      const animateReturn = () => {
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(elapsed / returnDuration, 1);
+        
+        // Smooth easing function for return animation
+        const easeOut = 1 - Math.pow(1 - progress, 3);
+        const currentOffset = startOffset * (1 - easeOut);
+        
+        setDragOffset(currentOffset);
+        
+        if (progress < 1) {
+          requestAnimationFrame(animateReturn);
+        } else {
+          setDragOffset(0);
+          setIsDragging(false);
+          setIsReturning(false);
+          velocityTracker.current = [];
+          resumeAutoPlay();
+        }
+      };
+      
+      requestAnimationFrame(animateReturn);
     }
-    
-    // Reset drag state with smooth transition
-    setDragOffset(0);
-    setTimeout(() => {
-      setIsDragging(false);
-      setIsTransitioning(false);
-      resumeAutoPlay();
-    }, 300);
   };
 
-  // Navigate to specific card
+  // Navigate to specific card with smooth momentum
   const goToCard = (index) => {
     if (index === currentIndex || isTransitioning) return;
     
@@ -414,31 +528,53 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
     }, 600);
   };
   
-  // Refined card deck styling - clean stacking like a real card deck
+  // Advanced card deck styling with progressive reveals and realistic physics
   const getCardStyle = (index) => {
     // Calculate position relative to current
     let position = index - currentIndex;
     if (position < 0) position += displayProducts.length;
     if (position >= displayProducts.length) position -= displayProducts.length;
     
-    // Calculate drag effects
+    // Enhanced drag effects with progressive card reveals
     let cardDragOffset = 0;
     let cardDragRotation = 0;
+    let cardDragScale = 1;
+    let cardRevealProgress = 0;
     
-    if (isDragging) {
+    if (isDragging || isReturning) {
+      const normalizedDrag = dragOffset / 100; // Normalize drag for calculations
+      
       if (position === 0) {
+        // Current card - full drag response with physics
         cardDragOffset = dragOffset;
-        cardDragRotation = dragOffset * 0.03; // Subtle rotation when dragging
-      } else if (position === 1 && dragOffset < 0) {
-        // Next card starts to emerge when dragging left
-        cardDragOffset = Math.max(0, dragOffset + 100) * 0.5;
-      } else if (position === displayProducts.length - 1 && dragOffset > 0) {
-        // Previous card starts to emerge when dragging right
-        cardDragOffset = Math.min(0, dragOffset - 100) * 0.5;
+        cardDragRotation = dragOffset * 0.04; // Increased rotation for more dramatic effect
+        cardDragScale = 1 - Math.abs(dragOffset) * 0.0003; // Slight scale change during drag
+      } 
+      else if (position === 1 && dragOffset < 0) {
+        // Next card emerges progressively when dragging left
+        cardRevealProgress = Math.max(0, -normalizedDrag);
+        cardDragOffset = Math.max(-20, dragOffset * 0.4);
+        cardDragRotation = cardRevealProgress * 2;
+        cardDragScale = 0.96 + (cardRevealProgress * 0.04);
+      } 
+      else if (position === displayProducts.length - 1 && dragOffset > 0) {
+        // Previous card emerges progressively when dragging right
+        cardRevealProgress = Math.max(0, normalizedDrag);
+        cardDragOffset = Math.min(20, dragOffset * 0.4);
+        cardDragRotation = -cardRevealProgress * 2;
+        cardDragScale = 0.96 + (cardRevealProgress * 0.04);
+      }
+      else if (position === 2 && dragOffset < 0) {
+        // Third card starts to move slightly
+        cardDragOffset = Math.max(-5, dragOffset * 0.1);
+      }
+      else if (position === displayProducts.length - 2 && dragOffset > 0) {
+        // Third card from other side starts to move slightly
+        cardDragOffset = Math.min(5, dragOffset * 0.1);
       }
     }
     
-    // Base card styling
+    // Base card styling with enhanced depth
     const style: React.CSSProperties = {
       position: 'absolute',
       width: '85%',
@@ -449,59 +585,64 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
       willChange: 'transform, opacity, box-shadow',
       backfaceVisibility: 'hidden',
       WebkitBackfaceVisibility: 'hidden',
-      cursor: position === 0 ? 'grab' : 'pointer',
+      cursor: position === 0 ? (isDragging ? 'grabbing' : 'grab') : 'pointer',
     };
     
-    // Smooth transitions - different timing for drag vs auto transitions
+    // Dynamic transitions based on state
     if (isDragging && position === 0) {
-      style.transition = 'transform 0.1s ease-out, box-shadow 0.1s ease-out';
+      style.transition = 'none'; // No transition during drag for immediate response
+    } else if (isReturning) {
+      style.transition = 'none'; // Handled by custom animation
     } else if (isTransitioning) {
-      style.transition = 'all 0.8s cubic-bezier(0.23, 1, 0.32, 1)'; // Smooth auto transition
+      style.transition = 'all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)'; // Smooth card change
     } else {
-      style.transition = 'all 0.6s cubic-bezier(0.23, 1, 0.32, 1)';
+      style.transition = 'all 0.6s cubic-bezier(0.23, 1, 0.32, 1)'; // Default smooth transition
     }
     
-    // Card deck arrangement - clean stacking
+    // Detailed card positioning with realistic stacking
     if (position === 0) {
-      // Current card - front and center
+      // Current card - front with full interaction
       style.transform = `
         translateX(${cardDragOffset}px) 
         translateY(0px)
-        translateZ(30px) 
+        translateZ(40px) 
         rotateY(${cardDragRotation}deg) 
-        rotateZ(${cardDragRotation * 0.5}deg)
-        scale(1)
+        rotateZ(${cardDragRotation * 0.3}deg)
+        scale(${cardDragScale})
       `;
       style.zIndex = 100;
       style.opacity = 1;
       style.boxShadow = `
-        0 20px 40px rgba(0, 0, 0, 0.15),
-        0 10px 20px rgba(0, 0, 0, 0.1),
+        0 ${20 + Math.abs(cardDragOffset) * 0.2}px ${40 + Math.abs(cardDragOffset) * 0.3}px rgba(0, 0, 0, ${0.15 + Math.abs(cardDragOffset) * 0.001}),
+        0 ${10 + Math.abs(cardDragOffset) * 0.1}px ${20 + Math.abs(cardDragOffset) * 0.2}px rgba(0, 0, 0, 0.1),
         0 5px 10px rgba(0, 0, 0, 0.05)
       `;
     } 
     else if (position === 1) {
-      // Next card - slightly behind and to the right
+      // Next card with progressive reveal
+      const baseOffset = 8;
+      const revealOffset = cardRevealProgress * 15;
+      
       style.transform = `
-        translateX(${8 + cardDragOffset}px) 
-        translateY(4px)
-        translateZ(20px) 
-        rotateY(-2deg) 
-        scale(0.96)
+        translateX(${baseOffset - revealOffset + cardDragOffset}px) 
+        translateY(${4 - cardRevealProgress * 2}px)
+        translateZ(${30 + cardRevealProgress * 10}px) 
+        rotateY(${-2 + cardDragRotation}deg) 
+        scale(${0.96 + cardRevealProgress * 0.04})
       `;
-      style.zIndex = 90;
-      style.opacity = 0.9;
+      style.zIndex = 90 + Math.floor(cardRevealProgress * 5);
+      style.opacity = 0.9 + cardRevealProgress * 0.1;
       style.boxShadow = `
-        0 12px 25px rgba(0, 0, 0, 0.1),
+        0 ${12 + cardRevealProgress * 8}px ${25 + cardRevealProgress * 15}px rgba(0, 0, 0, ${0.1 + cardRevealProgress * 0.05}),
         0 6px 12px rgba(0, 0, 0, 0.06)
       `;
     }
     else if (position === 2) {
-      // Third card - further back
+      // Third card
       style.transform = `
-        translateX(${14 + cardDragOffset * 0.1}px) 
+        translateX(${14 + cardDragOffset}px) 
         translateY(8px)
-        translateZ(10px) 
+        translateZ(20px) 
         rotateY(-3deg) 
         scale(0.92)
       `;
@@ -513,11 +654,11 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
       `;
     }
     else if (position === 3) {
-      // Fourth card - deep in stack
+      // Fourth card
       style.transform = `
-        translateX(${18 + cardDragOffset * 0.05}px) 
+        translateX(18px) 
         translateY(12px)
-        translateZ(0px) 
+        translateZ(10px) 
         rotateY(-4deg) 
         scale(0.88)
       `;
@@ -530,26 +671,29 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
     }
     // Previous cards (when swiping right)
     else if (position === displayProducts.length - 1) {
-      // Previous card - emerges from left
+      // Previous card with progressive reveal
+      const baseOffset = -8;
+      const revealOffset = cardRevealProgress * 15;
+      
       style.transform = `
-        translateX(${-8 + cardDragOffset}px) 
-        translateY(4px)
-        translateZ(20px) 
-        rotateY(2deg) 
-        scale(0.96)
+        translateX(${baseOffset + revealOffset + cardDragOffset}px) 
+        translateY(${4 - cardRevealProgress * 2}px)
+        translateZ(${30 + cardRevealProgress * 10}px) 
+        rotateY(${2 + cardDragRotation}deg) 
+        scale(${0.96 + cardRevealProgress * 0.04})
       `;
-      style.zIndex = 90;
-      style.opacity = 0.9;
+      style.zIndex = 90 + Math.floor(cardRevealProgress * 5);
+      style.opacity = 0.9 + cardRevealProgress * 0.1;
       style.boxShadow = `
-        0 12px 25px rgba(0, 0, 0, 0.1),
+        0 ${12 + cardRevealProgress * 8}px ${25 + cardRevealProgress * 15}px rgba(0, 0, 0, ${0.1 + cardRevealProgress * 0.05}),
         0 6px 12px rgba(0, 0, 0, 0.06)
       `;
     }
     else if (position === displayProducts.length - 2) {
       style.transform = `
-        translateX(${-14 + cardDragOffset * 0.1}px) 
+        translateX(${-14 + cardDragOffset}px) 
         translateY(8px)
-        translateZ(10px) 
+        translateZ(20px) 
         rotateY(3deg) 
         scale(0.92)
       `;
@@ -562,9 +706,9 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
     }
     else if (position === displayProducts.length - 3) {
       style.transform = `
-        translateX(${-18 + cardDragOffset * 0.05}px) 
+        translateX(-18px) 
         translateY(12px)
-        translateZ(0px) 
+        translateZ(10px) 
         rotateY(4deg) 
         scale(0.88)
       `;
@@ -575,7 +719,7 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
         0 3px 6px rgba(0, 0, 0, 0.03)
       `;
     }
-    // Hidden cards - stacked at bottom
+    // Hidden cards
     else {
       style.transform = `
         translateX(${position > displayProducts.length / 2 ? -22 : 22}px) 
@@ -633,7 +777,7 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
           alignItems: 'center',
           marginBottom: '3rem',
           zIndex: 3,
-          perspective: '1000px',
+          perspective: '1200px', // Enhanced perspective for better 3D depth
           perspectiveOrigin: 'center center',
           transformStyle: 'preserve-3d',
         }}
@@ -829,7 +973,7 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
             <button 
               key={index} 
               onClick={() => goToCard(index)}
-              disabled={isTransitioning}
+              disabled={isTransitioning || isDragging}
               style={{
                 width: '10px',
                 height: '10px',
@@ -843,8 +987,8 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
                 boxShadow: index === currentIndex 
                   ? '0 3px 12px rgba(0, 0, 0, 0.3)' 
                   : '0 1px 3px rgba(0, 0, 0, 0.1)',
-                cursor: isTransitioning ? 'not-allowed' : 'pointer',
-                opacity: isTransitioning ? 0.6 : 1,
+                cursor: (isTransitioning || isDragging) ? 'not-allowed' : 'pointer',
+                opacity: (isTransitioning || isDragging) ? 0.6 : 1,
               }}
             />
           ))}
