@@ -464,7 +464,7 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
           display: 'flex',
           width: `${displayProducts.length * 100}%`,
           height: '100%',
-          transform: `translateX(${(-currentIndex * 100) / displayProducts.length + (dragOffset / window.innerWidth) * 100}%)`,
+          transform: `translateX(${(-currentIndex * 100) / displayProducts.length + (dragOffset / (typeof window !== 'undefined' ? window.innerWidth : 375)) * 100}%)`,
           transition: isDragging ? 'none' : 'transform 0.3s ease-out',
         }}>
           {displayProducts.map((product, index) => (
@@ -861,6 +861,8 @@ return link
 
 const handleScrollClick = () => {
 
+if (typeof window !== 'undefined') {
+
 window.scrollTo({
 
 top: window.innerHeight,
@@ -868,6 +870,8 @@ top: window.innerHeight,
 behavior: 'smooth'
 
 })
+
+}
 
 }
 
@@ -1198,10 +1202,12 @@ Handcrafted resin art for <span id="rotator">{displayText}</span>
 <div
   className={styles.scrollIndicator}
   onClick={() => {
-    window.scrollTo({
-      top: window.innerHeight,
-      behavior: 'smooth'
-    })
+    if (typeof window !== 'undefined') {
+      window.scrollTo({
+        top: window.innerHeight,
+        behavior: 'smooth'
+      })
+    }
   }}
 />
 
