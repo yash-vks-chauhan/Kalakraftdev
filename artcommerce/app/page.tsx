@@ -269,7 +269,7 @@ const FeaturedProductsGrid = () => {
   );
 };
 
-// Mobile Featured Carousel Component - Enhanced 3D Stacked Card Design
+// Mobile Featured Carousel Component - Refined Card Deck with Smooth Transitions
 const MobileFeaturedCarousel = ({ products = [] }) => {
   // State for carousel
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -277,7 +277,10 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
   const [startX, setStartX] = useState(0);
   const [currentX, setCurrentX] = useState(0);
   const [dragOffset, setDragOffset] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [autoPlay, setAutoPlay] = useState(true);
   const carouselRef = useRef(null);
+  const autoPlayRef = useRef(null);
   
   // Format price to INR
   const formatPrice = (price) => {
@@ -287,228 +290,6 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
     }).format(price);
-  };
-  
-  // Enhanced touch events for smoother swiping
-  const handleTouchStart = (e) => {
-    setIsDragging(true);
-    setStartX(e.touches[0].clientX);
-    setCurrentX(e.touches[0].clientX);
-    setDragOffset(0);
-  };
-  
-  const handleTouchMove = (e) => {
-    if (!isDragging) return;
-    const newCurrentX = e.touches[0].clientX;
-    setCurrentX(newCurrentX);
-    setDragOffset((newCurrentX - startX) * 0.8); // More responsive but constrained
-    e.preventDefault();
-  };
-  
-  const handleTouchEnd = () => {
-    if (!isDragging) return;
-    
-    const diff = startX - currentX;
-    const threshold = 50; // Slightly higher threshold for more intentional swipes
-    const velocity = Math.abs(diff) / 100; // Consider swipe velocity
-    
-    if (diff > threshold || velocity > 2) {
-      // Swipe left - next card
-      setCurrentIndex((prev) => (prev + 1) % products.length);
-    } else if (diff < -threshold || velocity > 2) {
-      // Swipe right - previous card
-      setCurrentIndex((prev) => (prev - 1 + products.length) % products.length);
-    }
-    
-    // Reset drag state with smooth transition
-    setDragOffset(0);
-    setTimeout(() => {
-      setIsDragging(false);
-    }, 100);
-  };
-  
-  // Enhanced 3D card styling with realistic depth and shadows
-  const getCardStyle = (index) => {
-    // Calculate position relative to current (accounting for circular navigation)
-    let position = index - currentIndex;
-    if (position < 0) position += products.length;
-    if (position >= products.length) position -= products.length;
-    
-    // Calculate drag offset with decay for non-front cards
-    let cardDragOffset = 0;
-    if (isDragging) {
-      if (position === 0) {
-        cardDragOffset = dragOffset;
-      } else if (position === 1 && dragOffset < 0) {
-        // Next card slightly follows when dragging right
-        cardDragOffset = dragOffset * 0.3;
-      } else if (position === products.length - 1 && dragOffset > 0) {
-        // Previous card slightly follows when dragging left
-        cardDragOffset = dragOffset * 0.3;
-      }
-    }
-    
-    // Enhanced 3D styling with realistic physics
-    const style: React.CSSProperties = {
-      position: 'absolute',
-      width: '82%',
-      maxWidth: '340px',
-      borderRadius: '16px',
-      overflow: 'hidden',
-      opacity: 1,
-      transformOrigin: 'center bottom',
-      willChange: 'transform, opacity, box-shadow',
-      backfaceVisibility: 'hidden',
-      WebkitBackfaceVisibility: 'hidden',
-      WebkitTransformStyle: 'preserve-3d',
-      transformStyle: 'preserve-3d',
-    };
-    
-    // Enhanced transition with spring-like physics
-    if (isDragging && position === 0) {
-      style.transition = 'transform 0.1s ease-out, box-shadow 0.1s ease-out';
-    } else {
-      style.transition = 'all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)'; // Spring-like easing
-    }
-    
-    // Position-based 3D transforms with realistic depth
-    if (position === 0) {
-      // Front card - most prominent with natural drag response
-      const rotateY = cardDragOffset * 0.02; // Subtle rotation based on drag
-      const rotateX = Math.abs(cardDragOffset) * 0.01; // Slight tilt when dragging
-      
-      style.transform = `
-        translateX(${cardDragOffset}px) 
-        translateZ(40px) 
-        rotateY(${rotateY}deg) 
-        rotateX(${rotateX}deg) 
-        scale(1)
-      `;
-      style.zIndex = products.length + 10;
-      style.opacity = 1;
-      style.boxShadow = `
-        0 25px 50px rgba(0, 0, 0, 0.15),
-        0 12px 25px rgba(0, 0, 0, 0.1),
-        0 6px 12px rgba(0, 0, 0, 0.08)
-      `;
-    } 
-    else if (position === 1) {
-      // Next card - visible on the right with perspective
-      style.transform = `
-        translateX(${20 + cardDragOffset}px) 
-        translateY(8px) 
-        translateZ(20px) 
-        rotateY(-8deg) 
-        rotateX(2deg) 
-        scale(0.94)
-      `;
-      style.zIndex = products.length + 5;
-      style.opacity = 0.85;
-      style.boxShadow = `
-        0 15px 30px rgba(0, 0, 0, 0.12),
-        0 8px 15px rgba(0, 0, 0, 0.08)
-      `;
-    }
-    else if (position === 2) {
-      // Third card - more stacked
-      style.transform = `
-        translateX(${35 + cardDragOffset * 0.1}px) 
-        translateY(16px) 
-        translateZ(0px) 
-        rotateY(-12deg) 
-        rotateX(3deg) 
-        scale(0.88)
-      `;
-      style.zIndex = products.length;
-      style.opacity = 0.7;
-      style.boxShadow = `
-        0 10px 20px rgba(0, 0, 0, 0.1),
-        0 5px 10px rgba(0, 0, 0, 0.06)
-      `;
-    }
-    else if (position === 3) {
-      // Fourth card - deep stack
-      style.transform = `
-        translateX(${48 + cardDragOffset * 0.05}px) 
-        translateY(24px) 
-        translateZ(-20px) 
-        rotateY(-15deg) 
-        rotateX(4deg) 
-        scale(0.82)
-      `;
-      style.zIndex = products.length - 1;
-      style.opacity = 0.5;
-      style.boxShadow = `
-        0 8px 15px rgba(0, 0, 0, 0.08),
-        0 3px 8px rgba(0, 0, 0, 0.05)
-      `;
-    }
-    // Previous cards (when swiping right)
-    else if (position === products.length - 1) {
-      // Previous card - comes from left with perspective
-      style.transform = `
-        translateX(${-20 + cardDragOffset}px) 
-        translateY(8px) 
-        translateZ(20px) 
-        rotateY(8deg) 
-        rotateX(2deg) 
-        scale(0.94)
-      `;
-      style.zIndex = products.length + 5;
-      style.opacity = 0.85;
-      style.boxShadow = `
-        0 15px 30px rgba(0, 0, 0, 0.12),
-        0 8px 15px rgba(0, 0, 0, 0.08)
-      `;
-    }
-    else if (position === products.length - 2) {
-      style.transform = `
-        translateX(${-35 + cardDragOffset * 0.1}px) 
-        translateY(16px) 
-        translateZ(0px) 
-        rotateY(12deg) 
-        rotateX(3deg) 
-        scale(0.88)
-      `;
-      style.zIndex = products.length;
-      style.opacity = 0.7;
-      style.boxShadow = `
-        0 10px 20px rgba(0, 0, 0, 0.1),
-        0 5px 10px rgba(0, 0, 0, 0.06)
-      `;
-    }
-    else if (position === products.length - 3) {
-      style.transform = `
-        translateX(${-48 + cardDragOffset * 0.05}px) 
-        translateY(24px) 
-        translateZ(-20px) 
-        rotateY(15deg) 
-        rotateX(4deg) 
-        scale(0.82)
-      `;
-      style.zIndex = products.length - 1;
-      style.opacity = 0.5;
-      style.boxShadow = `
-        0 8px 15px rgba(0, 0, 0, 0.08),
-        0 3px 8px rgba(0, 0, 0, 0.05)
-      `;
-    }
-    // Hidden cards in deep stack
-    else {
-      style.transform = `
-        translateX(${position > products.length / 2 ? -60 : 60}px) 
-        translateY(32px) 
-        translateZ(-40px) 
-        rotateY(${position > products.length / 2 ? 18 : -18}deg) 
-        rotateX(5deg) 
-        scale(0.76)
-      `;
-      style.zIndex = 0;
-      style.opacity = 0;
-      style.boxShadow = '0 5px 10px rgba(0, 0, 0, 0.05)';
-    }
-    
-    return style;
   };
 
   // Use default products if none provided
@@ -548,206 +329,540 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
     }
   ];
 
+  // Auto-play functionality
+  useEffect(() => {
+    if (autoPlay && !isDragging && displayProducts.length > 1) {
+      autoPlayRef.current = setInterval(() => {
+        setCurrentIndex((prev) => (prev + 1) % displayProducts.length);
+      }, 4000); // Change every 4 seconds
+    }
+
+    return () => {
+      if (autoPlayRef.current) {
+        clearInterval(autoPlayRef.current);
+      }
+    };
+  }, [autoPlay, isDragging, displayProducts.length]);
+
+  // Pause auto-play on touch/hover
+  const pauseAutoPlay = () => {
+    setAutoPlay(false);
+    if (autoPlayRef.current) {
+      clearInterval(autoPlayRef.current);
+    }
+  };
+
+  const resumeAutoPlay = () => {
+    setAutoPlay(true);
+  };
+  
+  // Enhanced touch events for smoother swiping
+  const handleTouchStart = (e) => {
+    pauseAutoPlay();
+    setIsDragging(true);
+    setStartX(e.touches[0].clientX);
+    setCurrentX(e.touches[0].clientX);
+    setDragOffset(0);
+  };
+  
+  const handleTouchMove = (e) => {
+    if (!isDragging) return;
+    const newCurrentX = e.touches[0].clientX;
+    setCurrentX(newCurrentX);
+    const newOffset = (newCurrentX - startX) * 0.7; // Slightly constrained for better control
+    setDragOffset(newOffset);
+    e.preventDefault();
+  };
+  
+  const handleTouchEnd = () => {
+    if (!isDragging) return;
+    
+    const diff = startX - currentX;
+    const threshold = 60; // Higher threshold for more intentional swipes
+    const velocity = Math.abs(diff) / 100;
+    
+    setIsTransitioning(true);
+    
+    if (diff > threshold || velocity > 2) {
+      // Swipe left - next card
+      setCurrentIndex((prev) => (prev + 1) % displayProducts.length);
+    } else if (diff < -threshold || velocity > 2) {
+      // Swipe right - previous card
+      setCurrentIndex((prev) => (prev - 1 + displayProducts.length) % displayProducts.length);
+    }
+    
+    // Reset drag state with smooth transition
+    setDragOffset(0);
+    setTimeout(() => {
+      setIsDragging(false);
+      setIsTransitioning(false);
+      resumeAutoPlay();
+    }, 300);
+  };
+
+  // Navigate to specific card
+  const goToCard = (index) => {
+    if (index === currentIndex || isTransitioning) return;
+    
+    pauseAutoPlay();
+    setIsTransitioning(true);
+    setCurrentIndex(index);
+    
+    setTimeout(() => {
+      setIsTransitioning(false);
+      resumeAutoPlay();
+    }, 600);
+  };
+  
+  // Refined card deck styling - clean stacking like a real card deck
+  const getCardStyle = (index) => {
+    // Calculate position relative to current
+    let position = index - currentIndex;
+    if (position < 0) position += displayProducts.length;
+    if (position >= displayProducts.length) position -= displayProducts.length;
+    
+    // Calculate drag effects
+    let cardDragOffset = 0;
+    let cardDragRotation = 0;
+    
+    if (isDragging) {
+      if (position === 0) {
+        cardDragOffset = dragOffset;
+        cardDragRotation = dragOffset * 0.03; // Subtle rotation when dragging
+      } else if (position === 1 && dragOffset < 0) {
+        // Next card starts to emerge when dragging left
+        cardDragOffset = Math.max(0, dragOffset + 100) * 0.5;
+      } else if (position === displayProducts.length - 1 && dragOffset > 0) {
+        // Previous card starts to emerge when dragging right
+        cardDragOffset = Math.min(0, dragOffset - 100) * 0.5;
+      }
+    }
+    
+    // Base card styling
+    const style: React.CSSProperties = {
+      position: 'absolute',
+      width: '85%',
+      maxWidth: '320px',
+      borderRadius: '20px',
+      overflow: 'hidden',
+      transformOrigin: 'center center',
+      willChange: 'transform, opacity, box-shadow',
+      backfaceVisibility: 'hidden',
+      WebkitBackfaceVisibility: 'hidden',
+      cursor: position === 0 ? 'grab' : 'pointer',
+    };
+    
+    // Smooth transitions - different timing for drag vs auto transitions
+    if (isDragging && position === 0) {
+      style.transition = 'transform 0.1s ease-out, box-shadow 0.1s ease-out';
+    } else if (isTransitioning) {
+      style.transition = 'all 0.8s cubic-bezier(0.23, 1, 0.32, 1)'; // Smooth auto transition
+    } else {
+      style.transition = 'all 0.6s cubic-bezier(0.23, 1, 0.32, 1)';
+    }
+    
+    // Card deck arrangement - clean stacking
+    if (position === 0) {
+      // Current card - front and center
+      style.transform = `
+        translateX(${cardDragOffset}px) 
+        translateY(0px)
+        translateZ(30px) 
+        rotateY(${cardDragRotation}deg) 
+        rotateZ(${cardDragRotation * 0.5}deg)
+        scale(1)
+      `;
+      style.zIndex = 100;
+      style.opacity = 1;
+      style.boxShadow = `
+        0 20px 40px rgba(0, 0, 0, 0.15),
+        0 10px 20px rgba(0, 0, 0, 0.1),
+        0 5px 10px rgba(0, 0, 0, 0.05)
+      `;
+    } 
+    else if (position === 1) {
+      // Next card - slightly behind and to the right
+      style.transform = `
+        translateX(${8 + cardDragOffset}px) 
+        translateY(4px)
+        translateZ(20px) 
+        rotateY(-2deg) 
+        scale(0.96)
+      `;
+      style.zIndex = 90;
+      style.opacity = 0.9;
+      style.boxShadow = `
+        0 12px 25px rgba(0, 0, 0, 0.1),
+        0 6px 12px rgba(0, 0, 0, 0.06)
+      `;
+    }
+    else if (position === 2) {
+      // Third card - further back
+      style.transform = `
+        translateX(${14 + cardDragOffset * 0.1}px) 
+        translateY(8px)
+        translateZ(10px) 
+        rotateY(-3deg) 
+        scale(0.92)
+      `;
+      style.zIndex = 80;
+      style.opacity = 0.75;
+      style.boxShadow = `
+        0 8px 15px rgba(0, 0, 0, 0.08),
+        0 4px 8px rgba(0, 0, 0, 0.04)
+      `;
+    }
+    else if (position === 3) {
+      // Fourth card - deep in stack
+      style.transform = `
+        translateX(${18 + cardDragOffset * 0.05}px) 
+        translateY(12px)
+        translateZ(0px) 
+        rotateY(-4deg) 
+        scale(0.88)
+      `;
+      style.zIndex = 70;
+      style.opacity = 0.6;
+      style.boxShadow = `
+        0 6px 12px rgba(0, 0, 0, 0.06),
+        0 3px 6px rgba(0, 0, 0, 0.03)
+      `;
+    }
+    // Previous cards (when swiping right)
+    else if (position === displayProducts.length - 1) {
+      // Previous card - emerges from left
+      style.transform = `
+        translateX(${-8 + cardDragOffset}px) 
+        translateY(4px)
+        translateZ(20px) 
+        rotateY(2deg) 
+        scale(0.96)
+      `;
+      style.zIndex = 90;
+      style.opacity = 0.9;
+      style.boxShadow = `
+        0 12px 25px rgba(0, 0, 0, 0.1),
+        0 6px 12px rgba(0, 0, 0, 0.06)
+      `;
+    }
+    else if (position === displayProducts.length - 2) {
+      style.transform = `
+        translateX(${-14 + cardDragOffset * 0.1}px) 
+        translateY(8px)
+        translateZ(10px) 
+        rotateY(3deg) 
+        scale(0.92)
+      `;
+      style.zIndex = 80;
+      style.opacity = 0.75;
+      style.boxShadow = `
+        0 8px 15px rgba(0, 0, 0, 0.08),
+        0 4px 8px rgba(0, 0, 0, 0.04)
+      `;
+    }
+    else if (position === displayProducts.length - 3) {
+      style.transform = `
+        translateX(${-18 + cardDragOffset * 0.05}px) 
+        translateY(12px)
+        translateZ(0px) 
+        rotateY(4deg) 
+        scale(0.88)
+      `;
+      style.zIndex = 70;
+      style.opacity = 0.6;
+      style.boxShadow = `
+        0 6px 12px rgba(0, 0, 0, 0.06),
+        0 3px 6px rgba(0, 0, 0, 0.03)
+      `;
+    }
+    // Hidden cards - stacked at bottom
+    else {
+      style.transform = `
+        translateX(${position > displayProducts.length / 2 ? -22 : 22}px) 
+        translateY(16px)
+        translateZ(-10px) 
+        rotateY(${position > displayProducts.length / 2 ? 5 : -5}deg) 
+        scale(0.84)
+      `;
+      style.zIndex = 60;
+      style.opacity = 0;
+      style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.04)';
+    }
+    
+    return style;
+  };
+
   return (
-    <div 
-      ref={carouselRef}
-      style={{
+    <div style={{ position: 'relative', width: '100%' }}>
+      {/* Auto-play control */}
+      <div style={{
+        position: 'absolute',
+        top: '-40px',
+        right: '20px',
+        zIndex: 200,
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        fontSize: '0.7rem',
+        color: '#666',
+      }}>
+        <button
+          onClick={() => autoPlay ? pauseAutoPlay() : resumeAutoPlay()}
+          style={{
+            background: 'rgba(255, 255, 255, 0.9)',
+            border: '1px solid rgba(0, 0, 0, 0.1)',
+            borderRadius: '20px',
+            padding: '4px 8px',
+            fontSize: '0.65rem',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+          }}
+        >
+          {autoPlay ? '⏸️ Pause' : '▶️ Play'}
+        </button>
+      </div>
+
+      <div 
+        ref={carouselRef}
+        style={{
+          position: 'relative',
+          width: '100%',
+          height: '420px',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          marginBottom: '3rem',
+          zIndex: 3,
+          perspective: '1000px',
+          perspectiveOrigin: 'center center',
+          transformStyle: 'preserve-3d',
+        }}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onMouseEnter={pauseAutoPlay}
+        onMouseLeave={resumeAutoPlay}
+      >
+        {displayProducts.map((product, index) => (
+          <div key={product.id} style={getCardStyle(index)}>
+            <Link href={`/products/${product.id}`} style={{
+              textDecoration: 'none',
+              display: 'block',
+              height: '100%',
+              width: '100%',
+              background: '#fff',
+              color: '#000',
+              borderRadius: '20px',
+              overflow: 'hidden',
+              position: 'relative',
+              border: '1px solid rgba(0, 0, 0, 0.08)',
+              boxSizing: 'border-box',
+            }}>
+              <div style={{
+                width: '100%',
+                aspectRatio: '1/1.1',
+                position: 'relative',
+                overflow: 'hidden',
+                background: 'linear-gradient(135deg, #fafafa 0%, #f8f8f8 100%)',
+              }}>
+                <img 
+                  src={product.imageUrls[0]} 
+                  alt={product.name}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    display: 'block',
+                    transition: 'transform 0.4s ease-out',
+                  }}
+                />
+                
+                {/* Premium product badges */}
+                {product.isNew && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '15px',
+                    left: '15px',
+                    background: 'linear-gradient(135deg, #000 0%, #333 100%)',
+                    backdropFilter: 'blur(10px)',
+                    color: '#fff',
+                    fontSize: '0.6rem',
+                    padding: '6px 12px',
+                    borderRadius: '15px',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.1em',
+                    fontWeight: 700,
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
+                  }}>
+                    New
+                  </div>
+                )}
+                
+                {product.stockQuantity === 0 && (
+                  <div style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: 'rgba(255, 255, 255, 0.92)',
+                    backdropFilter: 'blur(6px)',
+                    color: '#000',
+                    fontSize: '0.85rem',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.1em',
+                    fontWeight: 700,
+                  }}>
+                    Out of Stock
+                  </div>
+                )}
+                
+                {product.stockQuantity > 0 && product.stockQuantity <= 5 && (
+                  <div style={{
+                    position: 'absolute',
+                    bottom: '15px',
+                    left: '15px',
+                    backgroundColor: 'rgba(255, 107, 107, 0.9)',
+                    backdropFilter: 'blur(10px)',
+                    color: 'white',
+                    fontSize: '0.6rem',
+                    padding: '6px 12px',
+                    borderRadius: '15px',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.1em',
+                    fontWeight: 700,
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    boxShadow: '0 2px 8px rgba(255, 107, 107, 0.3)',
+                  }}>
+                    Only {product.stockQuantity} left
+                  </div>
+                )}
+              </div>
+              
+              <div style={{
+                padding: '18px 20px 20px',
+                background: '#fff',
+                position: 'relative',
+              }}>
+                {product.category && (
+                  <div style={{
+                    fontSize: '0.65rem',
+                    color: '#888',
+                    marginBottom: '8px',
+                    fontWeight: 600,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.1em',
+                  }}>
+                    {product.category.name}
+                  </div>
+                )}
+                
+                <h3 style={{
+                  fontSize: '1rem',
+                  fontWeight: 700,
+                  margin: '0 0 12px 0',
+                  lineHeight: 1.3,
+                  color: '#000',
+                }}>
+                  {product.name}
+                </h3>
+                
+                <div style={{
+                  fontSize: '1.1rem',
+                  fontWeight: 800,
+                  color: '#000',
+                  letterSpacing: '-0.02em',
+                }}>
+                  {formatPrice(product.price)}
+                </div>
+              </div>
+            </Link>
+          </div>
+        ))}
+      </div>
+      
+      {/* Enhanced navigation indicators */}
+      <div style={{
         position: 'relative',
-        width: '100%',
-        height: '450px', // Increased height for better 3D presentation
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: '3rem',
-        zIndex: 3,
-        perspective: '1200px', // Enhanced perspective for more pronounced 3D effect
-        perspectiveOrigin: 'center center',
-        transformStyle: 'preserve-3d',
-        overflow: 'visible', // Allow 3D transforms to show outside bounds
-      }}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-    >
-      {displayProducts.map((product, index) => (
-        <div key={product.id} style={getCardStyle(index)}>
-          <Link href={`/products/${product.id}`} style={{
-            textDecoration: 'none',
-            display: 'block',
-            height: '100%',
-            width: '100%',
-            background: '#fff',
-            color: '#000',
-            borderRadius: '16px',
-            overflow: 'hidden',
-            position: 'relative',
-            border: '1px solid rgba(0, 0, 0, 0.05)', // Subtle border for definition
-          }}>
-            <div style={{
-              width: '100%',
-              aspectRatio: '1/1',
-              position: 'relative',
-              overflow: 'hidden',
-              background: 'linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%)', // Subtle gradient background
-            }}>
-              <img 
-                src={product.imageUrls[0]} 
-                alt={product.name}
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover',
-                  display: 'block',
-                  transition: 'transform 0.3s ease-out',
-                }}
-                onMouseOver={(e) => {
-                  if (index === currentIndex) {
-                    e.currentTarget.style.transform = 'scale(1.05)';
-                  }
-                }}
-                onMouseOut={(e) => {
-                  e.currentTarget.style.transform = 'scale(1)';
-                }}
-              />
-              
-              {/* Enhanced product badges with glass morphism */}
-              {product.isNew && (
-                <div style={{
-                  position: 'absolute',
-                  top: '12px',
-                  left: '12px',
-                  background: 'rgba(0, 0, 0, 0.8)',
-                  backdropFilter: 'blur(8px)',
-                  color: '#fff',
-                  fontSize: '0.65rem',
-                  padding: '6px 10px',
-                  borderRadius: '20px',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.05em',
-                  fontWeight: 600,
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                }}>
-                  New
-                </div>
-              )}
-              
-              {product.stockQuantity === 0 && (
-                <div style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  width: '100%',
-                  height: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  backgroundColor: 'rgba(255, 255, 255, 0.85)',
-                  backdropFilter: 'blur(4px)',
-                  color: '#000',
-                  fontSize: '0.8rem',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.05em',
-                  fontWeight: 600,
-                }}>
-                  Out of Stock
-                </div>
-              )}
-              
-              {product.stockQuantity > 0 && product.stockQuantity <= 5 && (
-                <div style={{
-                  position: 'absolute',
-                  bottom: '12px',
-                  left: '12px',
-                  backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                  backdropFilter: 'blur(8px)',
-                  color: 'white',
-                  fontSize: '0.65rem',
-                  padding: '6px 10px',
-                  borderRadius: '20px',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.05em',
-                  fontWeight: 600,
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                }}>
-                  Only {product.stockQuantity} left
-                </div>
-              )}
-            </div>
-            
-            <div style={{
-              padding: '16px 18px 18px',
-              background: '#fff',
-              position: 'relative',
-            }}>
-              {product.category && (
-                <div style={{
-                  fontSize: '0.7rem',
-                  color: '#666',
-                  marginBottom: '6px',
-                  fontWeight: 500,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.05em',
-                }}>
-                  {product.category.name}
-                </div>
-              )}
-              
-              <h3 style={{
-                fontSize: '0.95rem',
-                fontWeight: 600,
-                margin: '0 0 10px 0',
-                lineHeight: 1.3,
-                color: '#000',
-              }}>
-                {product.name}
-              </h3>
-              
-              <div style={{
-                fontSize: '1rem',
-                fontWeight: 700,
-                color: '#000',
-              }}>
-                {formatPrice(product.price)}
-              </div>
-            </div>
-          </Link>
-        </div>
-      ))}
-      
-      {/* Enhanced swipe indicators with 3D styling */}
-      <div style={{
-        position: 'absolute',
-        bottom: '-50px',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        display: 'flex',
-        gap: '10px',
-        padding: '8px 16px',
-        background: 'rgba(255, 255, 255, 0.8)',
-        backdropFilter: 'blur(10px)',
-        borderRadius: '20px',
-        border: '1px solid rgba(0, 0, 0, 0.05)',
+        gap: '20px',
+        marginTop: '10px',
       }}>
-        {displayProducts.map((_, index) => (
-          <div 
-            key={index} 
-            style={{
-              width: '8px',
-              height: '8px',
-              borderRadius: '50%',
-              background: index === currentIndex 
-                ? 'linear-gradient(135deg, #000 0%, #333 100%)' 
-                : 'rgba(0,0,0,0.2)',
-              transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-              transform: index === currentIndex ? 'scale(1.3)' : 'scale(1)',
-              boxShadow: index === currentIndex 
-                ? '0 2px 8px rgba(0, 0, 0, 0.2)' 
-                : '0 1px 3px rgba(0, 0, 0, 0.1)',
-              cursor: 'pointer',
-            }}
-            onClick={() => setCurrentIndex(index)}
-          />
-        ))}
+        {/* Progress bar */}
+        <div style={{
+          position: 'absolute',
+          top: '-20px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '80px',
+          height: '2px',
+          background: 'rgba(0, 0, 0, 0.1)',
+          borderRadius: '1px',
+          overflow: 'hidden',
+        }}>
+          <div style={{
+            width: `${((currentIndex + 1) / displayProducts.length) * 100}%`,
+            height: '100%',
+            background: 'linear-gradient(90deg, #000, #333)',
+            transition: 'width 0.3s ease',
+          }} />
+        </div>
+
+        {/* Dot indicators */}
+        <div style={{
+          display: 'flex',
+          gap: '12px',
+          padding: '12px 20px',
+          background: 'rgba(255, 255, 255, 0.9)',
+          backdropFilter: 'blur(15px)',
+          borderRadius: '25px',
+          border: '1px solid rgba(0, 0, 0, 0.05)',
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+        }}>
+          {displayProducts.map((_, index) => (
+            <button 
+              key={index} 
+              onClick={() => goToCard(index)}
+              disabled={isTransitioning}
+              style={{
+                width: '10px',
+                height: '10px',
+                borderRadius: '50%',
+                border: 'none',
+                background: index === currentIndex 
+                  ? 'linear-gradient(135deg, #000 0%, #333 100%)' 
+                  : 'rgba(0,0,0,0.2)',
+                transition: 'all 0.4s cubic-bezier(0.23, 1, 0.32, 1)',
+                transform: index === currentIndex ? 'scale(1.2)' : 'scale(1)',
+                boxShadow: index === currentIndex 
+                  ? '0 3px 12px rgba(0, 0, 0, 0.3)' 
+                  : '0 1px 3px rgba(0, 0, 0, 0.1)',
+                cursor: isTransitioning ? 'not-allowed' : 'pointer',
+                opacity: isTransitioning ? 0.6 : 1,
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Card counter */}
+        <div style={{
+          position: 'absolute',
+          bottom: '-35px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          fontSize: '0.7rem',
+          color: '#666',
+          fontWeight: 500,
+          letterSpacing: '0.05em',
+        }}>
+          {currentIndex + 1} of {displayProducts.length}
+        </div>
       </div>
     </div>
   );
