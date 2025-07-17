@@ -569,69 +569,84 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
         <div className={styles.mobileBackdrop} onClick={() => setIsAccountDropdownOpen(false)}></div>
       )}
       
-      {/* Home page specific content - Put at the top */}
+      {/* Home page specific content - Modern fullscreen video hero */}
       {isHomePage && (
-        <div className={styles.curvedCardContainer}>
-          <div className={styles.curvedHeroCard}>
-            <div className={styles.curvedHeroBackground}></div>
-            
-            {/* Video background with fallback */}
-            <picture>
-              {/* Fallback image that will be shown if video fails */}
-              <img 
-                src={getImageUrl('featured3.JPG')}
-                alt="Handcrafted resin art" 
-                className={styles.curvedHeroVideo}
-                style={{ display: 'none' }}
-                id="mobileVideoFallback"
-              />
-            </picture>
-            <video
-              ref={videoRef}
-              autoPlay
-              muted
-              loop
-              playsInline
-              className={styles.curvedHeroVideo}
-              poster="/images/loading.png"
-              preload="metadata"
-              onError={(e) => {
-                // If video fails to load, show the fallback image
-                const videoElement = e.currentTarget;
-                videoElement.style.display = 'none';
-                document.getElementById('mobileVideoFallback')!.style.display = 'block';
-              }}
-            >
-              <source 
-                src={process.env.NEXT_PUBLIC_CLOUDINARY_VIDEO_URL || '/images/homepage_video.mp4'} 
-                type="video/mp4" 
-              />
-            </video>
-            
-            <div className={styles.curvedHeroContent}>
-              {/* Top text - "A HANDCRAFTED ART STUDIO" */}
-              <div className={styles.curvedHeroTopText}>A HANDCRAFTED ART STUDIO</div>
+        <div className={styles.mobileHeroSection}>
+          {/* Video background with fallback */}
+          <picture>
+            <img 
+              src={getImageUrl('featured3.JPG')}
+              alt="Handcrafted resin art" 
+              className={styles.mobileHeroVideo}
+              style={{ display: 'none' }}
+              id="mobileVideoFallback"
+            />
+          </picture>
+                     <video
+             ref={videoRef}
+             autoPlay
+             muted
+             loop
+             playsInline
+             className={styles.mobileHeroVideo}
+             poster="/images/loading.png"
+             preload="metadata"
+             onError={(e) => {
+               const videoElement = e.currentTarget;
+               videoElement.style.display = 'none';
+               document.getElementById('mobileVideoFallback')!.style.display = 'block';
+             }}
+             onLoadedData={() => {
+               // Ensure video is playing and smooth
+               if (videoRef.current) {
+                 videoRef.current.play().catch(() => {
+                   // Fallback if autoplay fails
+                   console.log('Video autoplay failed, using fallback image');
+                 });
+               }
+             }}
+           >
+             <source 
+               src={process.env.NEXT_PUBLIC_CLOUDINARY_VIDEO_URL || '/images/homepage_video.mp4'} 
+               type="video/mp4" 
+             />
+           </video>
+          
+          {/* Gradient overlay for better text readability */}
+          <div className={styles.mobileHeroOverlay}></div>
+          
+          {/* Content overlay */}
+          <div className={styles.mobileHeroContent}>
+            <div className={styles.mobileHeroText}>
+              <div className={styles.mobileHeroTopText}>A HANDCRAFTED ART STUDIO</div>
               
-              {/* Logo */}
               <Image
                 src={getImageUrl('logo.png')}
                 alt="Artcommerce Logo"
-                width={90}
-                height={30}
-                className={styles.curvedHeroLogo}
+                width={120}
+                height={40}
+                className={styles.mobileHeroLogo}
                 priority
               />
               
-              {/* Hero Text */}
-              <h1 className={styles.curvedHeroTitle}>
-                Handcrafted resin art for {rotatingText}
+              <h1 className={styles.mobileHeroTitle}>
+                Handcrafted resin art for <span className={styles.rotatingText} id="mobileRotator">{rotatingText}</span>
               </h1>
-              
-              {/* Scroll indicator */}
-              <div className={styles.scrollIndicator}>
-                <ChevronDown size={30} />
-              </div>
             </div>
+            
+                         {/* Scroll indicator */}
+             <div 
+               className={styles.mobileScrollIndicator}
+               onClick={() => {
+                 window.scrollTo({
+                   top: window.innerHeight,
+                   behavior: 'smooth'
+                 })
+               }}
+             >
+               <div className={styles.scrollText}>Explore</div>
+               <ChevronDown size={20} />
+             </div>
           </div>
         </div>
       )}
