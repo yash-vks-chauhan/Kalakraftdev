@@ -377,13 +377,13 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
 
   // No auto-play functionality - user controlled only
 
-  // Responsive rubber band effect
+  // Ultra-responsive rubber band effect
   const applyRubberBand = (offset) => {
-    const maxDrag = 120; // Slightly increased for better feel
+    const maxDrag = 150; // More range for smoother feel
     if (Math.abs(offset) <= maxDrag) return offset;
     
     const excess = Math.abs(offset) - maxDrag;
-    const damped = maxDrag + excess * 0.2; // Less resistance
+    const damped = maxDrag + excess * 0.15; // Minimal resistance
     return offset > 0 ? damped : -damped;
   };
 
@@ -396,8 +396,11 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
     setIsTransitioning(false);
   };
   
-  // Immediate touch response
+  // Ultra-immediate touch response
   const handleTouchStart = (e) => {
+    // Don't start new drag if transitioning
+    if (isTransitioning) return;
+    
     setIsDragging(true);
     startPos.current = e.touches[0].clientX;
     lastPos.current = e.touches[0].clientX;
@@ -406,15 +409,16 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
     
     // Prevent any delays or conflicts
     e.preventDefault();
+    e.stopPropagation();
   };
   
   const handleTouchMove = (e) => {
-    if (!isDragging) return;
+    if (!isDragging || isTransitioning) return;
     
     const currentPos = e.touches[0].clientX;
     const rawOffset = currentPos - startPos.current;
     
-    // Apply responsive rubber band
+    // Apply ultra-responsive rubber band
     const constrainedOffset = applyRubberBand(rawOffset);
     
     lastPos.current = currentPos;
@@ -432,14 +436,14 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
     const swipeTime = Date.now() - startTime.current;
     const velocity = Math.abs(totalDistance) / swipeTime; // pixels per ms
     
-    const threshold = 35; // Reduced for more responsive transitions
-    const quickSwipeThreshold = 0.4; // pixels per ms - more sensitive
+    const threshold = 25; // Ultra responsive
+    const quickSwipeThreshold = 0.3; // pixels per ms - very sensitive
     
-    // Determine if we should change cards - more responsive
+    // Determine if we should change cards - ultra responsive
     const shouldNext = totalDistance < -threshold || 
-                      (totalDistance < -15 && velocity > quickSwipeThreshold);
+                      (totalDistance < -10 && velocity > quickSwipeThreshold);
     const shouldPrev = totalDistance > threshold || 
-                      (totalDistance > 15 && velocity > quickSwipeThreshold);
+                      (totalDistance > 10 && velocity > quickSwipeThreshold);
     
     if (shouldNext || shouldPrev) {
       startTransition();
@@ -450,32 +454,38 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
         setCurrentIndex((prev) => (prev - 1 + displayProducts.length) % displayProducts.length);
       }
       
-      // Quick and smooth transition
+      // Instant transition
       setDragOffset(0);
       setIsDragging(false);
       
       setTimeout(() => {
         endTransition();
-      }, 350);
+      }, 250);
           } else {
-        // Return to center with smooth animation
+        // Return to center instantly
         setDragOffset(0);
         setTimeout(() => {
           setIsDragging(false);
-        }, 150);
+        }, 100);
       }
   };
 
-  // Navigate to specific card
+  // Navigate to specific card - instant response
   const goToCard = (index) => {
-    if (index === currentIndex || isTransitioning || isDragging) return;
+    if (index === currentIndex || isTransitioning) return;
+    
+    // Stop any ongoing drag
+    if (isDragging) {
+      setIsDragging(false);
+      setDragOffset(0);
+    }
     
     startTransition();
     setCurrentIndex(index);
     
     setTimeout(() => {
       endTransition();
-    }, 350);
+    }, 250);
   };
   
   // Circular 3D carousel styling - creates a ring of cards
@@ -497,12 +507,12 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
     const z = Math.cos(angleRad) * radius;
     const y = Math.abs(Math.sin(angleRad)) * 10; // Slight vertical movement for depth
     
-         // Drag offset for the center card - more responsive
+         // Drag offset for the center card - ultra responsive
      let dragOffsetX = 0;
      let dragRotationY = 0;
      if (isDragging && position === 0) {
-       dragOffsetX = dragOffset * 0.8; // More responsive drag
-       dragRotationY = dragOffset * 0.15; // Slightly more rotation
+       dragOffsetX = dragOffset * 1.0; // Full responsiveness
+       dragRotationY = dragOffset * 0.2; // More rotation feedback
      }
     
     const style: React.CSSProperties = {
@@ -521,13 +531,13 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
       marginTop: '-180px',
     };
     
-    // Fast and smooth transitions
+    // Ultra-fast transitions
     if (isDragging && position === 0) {
       style.transition = 'none';
     } else if (isTransitioning) {
-      style.transition = 'all 0.35s cubic-bezier(0.4, 0.0, 0.2, 1)';
+      style.transition = 'all 0.25s cubic-bezier(0.25, 0.1, 0.25, 1)';
     } else {
-      style.transition = 'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+      style.transition = 'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)';
     }
     
     // Center card (current/active)
@@ -748,7 +758,7 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
           width: `${((currentIndex + 1) / 8) * 100}%`,
           height: '100%',
           background: 'linear-gradient(90deg, #000, #333)',
-          transition: 'width 0.35s ease',
+          transition: 'width 0.25s ease',
         }} />
         </div>
 
