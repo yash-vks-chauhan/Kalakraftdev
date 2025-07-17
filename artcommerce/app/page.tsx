@@ -269,13 +269,14 @@ const FeaturedProductsGrid = () => {
   );
 };
 
-// Mobile Featured Carousel Component - Stacked Card Design
+// Mobile Featured Carousel Component - Enhanced 3D Stacked Card Design
 const MobileFeaturedCarousel = ({ products = [] }) => {
   // State for carousel
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const [currentX, setCurrentX] = useState(0);
+  const [dragOffset, setDragOffset] = useState(0);
   const carouselRef = useRef(null);
   
   // Format price to INR
@@ -288,16 +289,19 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
     }).format(price);
   };
   
-  // Handle touch events for swiping
+  // Enhanced touch events for smoother swiping
   const handleTouchStart = (e) => {
     setIsDragging(true);
     setStartX(e.touches[0].clientX);
     setCurrentX(e.touches[0].clientX);
+    setDragOffset(0);
   };
   
   const handleTouchMove = (e) => {
     if (!isDragging) return;
-    setCurrentX(e.touches[0].clientX);
+    const newCurrentX = e.touches[0].clientX;
+    setCurrentX(newCurrentX);
+    setDragOffset((newCurrentX - startX) * 0.8); // More responsive but constrained
     e.preventDefault();
   };
   
@@ -305,89 +309,203 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
     if (!isDragging) return;
     
     const diff = startX - currentX;
-    const threshold = 40; // Reduced threshold for more responsive swiping
+    const threshold = 50; // Slightly higher threshold for more intentional swipes
+    const velocity = Math.abs(diff) / 100; // Consider swipe velocity
     
-    if (diff > threshold) {
+    if (diff > threshold || velocity > 2) {
       // Swipe left - next card
       setCurrentIndex((prev) => (prev + 1) % products.length);
-    } else if (diff < -threshold) {
+    } else if (diff < -threshold || velocity > 2) {
       // Swipe right - previous card
       setCurrentIndex((prev) => (prev - 1 + products.length) % products.length);
     }
     
-    // Reset drag state with a small delay to ensure smooth transition
+    // Reset drag state with smooth transition
+    setDragOffset(0);
     setTimeout(() => {
       setIsDragging(false);
-    }, 50);
+    }, 100);
   };
   
-  // Calculate transform for each card based on its position relative to current
+  // Enhanced 3D card styling with realistic depth and shadows
   const getCardStyle = (index) => {
     // Calculate position relative to current (accounting for circular navigation)
     let position = index - currentIndex;
     if (position < 0) position += products.length;
     if (position >= products.length) position -= products.length;
     
-    // Calculate drag offset only for the front card (position 0)
-    let dragOffset = 0;
-    if (isDragging && position === 0) {
-      dragOffset = (currentX - startX) * 0.6; // Slightly more responsive movement
+    // Calculate drag offset with decay for non-front cards
+    let cardDragOffset = 0;
+    if (isDragging) {
+      if (position === 0) {
+        cardDragOffset = dragOffset;
+      } else if (position === 1 && dragOffset < 0) {
+        // Next card slightly follows when dragging right
+        cardDragOffset = dragOffset * 0.3;
+      } else if (position === products.length - 1 && dragOffset > 0) {
+        // Previous card slightly follows when dragging left
+        cardDragOffset = dragOffset * 0.3;
+      }
     }
     
-    // Base styles with proper TypeScript annotations
+    // Enhanced 3D styling with realistic physics
     const style: React.CSSProperties = {
       position: 'absolute',
-      width: '85%',
-      maxWidth: '350px',
-      transition: isDragging && position === 0 ? 'none' : 'all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-      borderRadius: '0px',
+      width: '82%',
+      maxWidth: '340px',
+      borderRadius: '16px',
       overflow: 'hidden',
-      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
       opacity: 1,
-      zIndex: products.length - position,
-      transformOrigin: 'center center',
-      willChange: 'transform, opacity', // Optimize for GPU acceleration
-      backfaceVisibility: 'hidden' // Prevent flickering
+      transformOrigin: 'center bottom',
+      willChange: 'transform, opacity, box-shadow',
+      backfaceVisibility: 'hidden',
+      WebkitBackfaceVisibility: 'hidden',
+      WebkitTransformStyle: 'preserve-3d',
+      transformStyle: 'preserve-3d',
     };
     
-    // Position 0 is current (front) card - only this card moves with drag
+    // Enhanced transition with spring-like physics
+    if (isDragging && position === 0) {
+      style.transition = 'transform 0.1s ease-out, box-shadow 0.1s ease-out';
+    } else {
+      style.transition = 'all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)'; // Spring-like easing
+    }
+    
+    // Position-based 3D transforms with realistic depth
     if (position === 0) {
-      style.transform = `translateX(${dragOffset}px) scale(1)`;
-      style.zIndex = products.length + 1;
+      // Front card - most prominent with natural drag response
+      const rotateY = cardDragOffset * 0.02; // Subtle rotation based on drag
+      const rotateX = Math.abs(cardDragOffset) * 0.01; // Slight tilt when dragging
+      
+      style.transform = `
+        translateX(${cardDragOffset}px) 
+        translateZ(40px) 
+        rotateY(${rotateY}deg) 
+        rotateX(${rotateX}deg) 
+        scale(1)
+      `;
+      style.zIndex = products.length + 10;
       style.opacity = 1;
+      style.boxShadow = `
+        0 25px 50px rgba(0, 0, 0, 0.15),
+        0 12px 25px rgba(0, 0, 0, 0.1),
+        0 6px 12px rgba(0, 0, 0, 0.08)
+      `;
     } 
-    // Position 1 is next card (comes from right when swiping left)
     else if (position === 1) {
-      style.transform = `translateX(15px) scale(0.95) translateY(5px)`;
-      style.opacity = 0.8;
+      // Next card - visible on the right with perspective
+      style.transform = `
+        translateX(${20 + cardDragOffset}px) 
+        translateY(8px) 
+        translateZ(20px) 
+        rotateY(-8deg) 
+        rotateX(2deg) 
+        scale(0.94)
+      `;
+      style.zIndex = products.length + 5;
+      style.opacity = 0.85;
+      style.boxShadow = `
+        0 15px 30px rgba(0, 0, 0, 0.12),
+        0 8px 15px rgba(0, 0, 0, 0.08)
+      `;
     }
-    // Position 2 is two cards back
     else if (position === 2) {
-      style.transform = `translateX(25px) scale(0.9) translateY(10px)`;
-      style.opacity = 0.6;
+      // Third card - more stacked
+      style.transform = `
+        translateX(${35 + cardDragOffset * 0.1}px) 
+        translateY(16px) 
+        translateZ(0px) 
+        rotateY(-12deg) 
+        rotateX(3deg) 
+        scale(0.88)
+      `;
+      style.zIndex = products.length;
+      style.opacity = 0.7;
+      style.boxShadow = `
+        0 10px 20px rgba(0, 0, 0, 0.1),
+        0 5px 10px rgba(0, 0, 0, 0.06)
+      `;
     }
-    // Position 3 is three cards back (barely visible)
     else if (position === 3) {
-      style.transform = `translateX(35px) scale(0.85) translateY(15px)`;
-      style.opacity = 0.4;
+      // Fourth card - deep stack
+      style.transform = `
+        translateX(${48 + cardDragOffset * 0.05}px) 
+        translateY(24px) 
+        translateZ(-20px) 
+        rotateY(-15deg) 
+        rotateX(4deg) 
+        scale(0.82)
+      `;
+      style.zIndex = products.length - 1;
+      style.opacity = 0.5;
+      style.boxShadow = `
+        0 8px 15px rgba(0, 0, 0, 0.08),
+        0 3px 8px rgba(0, 0, 0, 0.05)
+      `;
     }
-    // Previous cards (when swiping right, these come from left)
+    // Previous cards (when swiping right)
     else if (position === products.length - 1) {
-      style.transform = `translateX(-15px) scale(0.95) translateY(5px)`;
-      style.opacity = 0.8;
+      // Previous card - comes from left with perspective
+      style.transform = `
+        translateX(${-20 + cardDragOffset}px) 
+        translateY(8px) 
+        translateZ(20px) 
+        rotateY(8deg) 
+        rotateX(2deg) 
+        scale(0.94)
+      `;
+      style.zIndex = products.length + 5;
+      style.opacity = 0.85;
+      style.boxShadow = `
+        0 15px 30px rgba(0, 0, 0, 0.12),
+        0 8px 15px rgba(0, 0, 0, 0.08)
+      `;
     }
     else if (position === products.length - 2) {
-      style.transform = `translateX(-25px) scale(0.9) translateY(10px)`;
-      style.opacity = 0.6;
+      style.transform = `
+        translateX(${-35 + cardDragOffset * 0.1}px) 
+        translateY(16px) 
+        translateZ(0px) 
+        rotateY(12deg) 
+        rotateX(3deg) 
+        scale(0.88)
+      `;
+      style.zIndex = products.length;
+      style.opacity = 0.7;
+      style.boxShadow = `
+        0 10px 20px rgba(0, 0, 0, 0.1),
+        0 5px 10px rgba(0, 0, 0, 0.06)
+      `;
     }
     else if (position === products.length - 3) {
-      style.transform = `translateX(-35px) scale(0.85) translateY(15px)`;
-      style.opacity = 0.4;
+      style.transform = `
+        translateX(${-48 + cardDragOffset * 0.05}px) 
+        translateY(24px) 
+        translateZ(-20px) 
+        rotateY(15deg) 
+        rotateX(4deg) 
+        scale(0.82)
+      `;
+      style.zIndex = products.length - 1;
+      style.opacity = 0.5;
+      style.boxShadow = `
+        0 8px 15px rgba(0, 0, 0, 0.08),
+        0 3px 8px rgba(0, 0, 0, 0.05)
+      `;
     }
-    // All other cards are stacked behind
+    // Hidden cards in deep stack
     else {
-      style.transform = `translateX(45px) scale(0.8) translateY(20px)`;
+      style.transform = `
+        translateX(${position > products.length / 2 ? -60 : 60}px) 
+        translateY(32px) 
+        translateZ(-40px) 
+        rotateY(${position > products.length / 2 ? 18 : -18}deg) 
+        rotateX(5deg) 
+        scale(0.76)
+      `;
+      style.zIndex = 0;
       style.opacity = 0;
+      style.boxShadow = '0 5px 10px rgba(0, 0, 0, 0.05)';
     }
     
     return style;
@@ -436,14 +554,16 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
       style={{
         position: 'relative',
         width: '100%',
-        height: '420px',
+        height: '450px', // Increased height for better 3D presentation
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: '2rem',
+        marginBottom: '3rem',
         zIndex: 3,
-        perspective: '1000px', // Add 3D perspective for smoother transforms
-        transformStyle: 'preserve-3d'
+        perspective: '1200px', // Enhanced perspective for more pronounced 3D effect
+        perspectiveOrigin: 'center center',
+        transformStyle: 'preserve-3d',
+        overflow: 'visible', // Allow 3D transforms to show outside bounds
       }}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
@@ -457,13 +577,18 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
             height: '100%',
             width: '100%',
             background: '#fff',
-            color: '#000'
+            color: '#000',
+            borderRadius: '16px',
+            overflow: 'hidden',
+            position: 'relative',
+            border: '1px solid rgba(0, 0, 0, 0.05)', // Subtle border for definition
           }}>
             <div style={{
               width: '100%',
               aspectRatio: '1/1',
               position: 'relative',
-              overflow: 'hidden'
+              overflow: 'hidden',
+              background: 'linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%)', // Subtle gradient background
             }}>
               <img 
                 src={product.imageUrls[0]} 
@@ -472,23 +597,35 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
                   width: '100%',
                   height: '100%',
                   objectFit: 'cover',
-                  display: 'block'
+                  display: 'block',
+                  transition: 'transform 0.3s ease-out',
+                }}
+                onMouseOver={(e) => {
+                  if (index === currentIndex) {
+                    e.currentTarget.style.transform = 'scale(1.05)';
+                  }
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)';
                 }}
               />
               
-              {/* Product badges */}
+              {/* Enhanced product badges with glass morphism */}
               {product.isNew && (
                 <div style={{
                   position: 'absolute',
-                  top: '10px',
-                  left: '10px',
-                  background: '#000',
+                  top: '12px',
+                  left: '12px',
+                  background: 'rgba(0, 0, 0, 0.8)',
+                  backdropFilter: 'blur(8px)',
                   color: '#fff',
                   fontSize: '0.65rem',
-                  padding: '4px 8px',
+                  padding: '6px 10px',
+                  borderRadius: '20px',
                   textTransform: 'uppercase',
                   letterSpacing: '0.05em',
-                  fontWeight: 500
+                  fontWeight: 600,
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
                 }}>
                   New
                 </div>
@@ -504,13 +641,13 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                  backgroundColor: 'rgba(255, 255, 255, 0.85)',
+                  backdropFilter: 'blur(4px)',
                   color: '#000',
                   fontSize: '0.8rem',
                   textTransform: 'uppercase',
                   letterSpacing: '0.05em',
                   fontWeight: 600,
-                  backdropFilter: 'blur(2px)'
                 }}>
                   Out of Stock
                 </div>
@@ -519,16 +656,18 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
               {product.stockQuantity > 0 && product.stockQuantity <= 5 && (
                 <div style={{
                   position: 'absolute',
-                  bottom: '10px',
-                  left: '10px',
-                  backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                  bottom: '12px',
+                  left: '12px',
+                  backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                  backdropFilter: 'blur(8px)',
                   color: 'white',
                   fontSize: '0.65rem',
-                  padding: '4px 8px',
+                  padding: '6px 10px',
+                  borderRadius: '20px',
                   textTransform: 'uppercase',
                   letterSpacing: '0.05em',
-                  fontWeight: 500,
-                  backdropFilter: 'blur(2px)'
+                  fontWeight: 600,
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
                 }}>
                   Only {product.stockQuantity} left
                 </div>
@@ -536,34 +675,37 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
             </div>
             
             <div style={{
-              padding: '12px 16px 16px',
-              background: '#fff'
+              padding: '16px 18px 18px',
+              background: '#fff',
+              position: 'relative',
             }}>
               {product.category && (
                 <div style={{
                   fontSize: '0.7rem',
                   color: '#666',
-                  marginBottom: '4px',
-                  fontWeight: 400
+                  marginBottom: '6px',
+                  fontWeight: 500,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
                 }}>
                   {product.category.name}
                 </div>
               )}
               
               <h3 style={{
-                fontSize: '0.9rem',
-                fontWeight: 500,
-                margin: '0 0 8px 0',
+                fontSize: '0.95rem',
+                fontWeight: 600,
+                margin: '0 0 10px 0',
                 lineHeight: 1.3,
-                color: '#000'
+                color: '#000',
               }}>
                 {product.name}
               </h3>
               
               <div style={{
-                fontSize: '0.95rem',
-                fontWeight: 600,
-                color: '#000'
+                fontSize: '1rem',
+                fontWeight: 700,
+                color: '#000',
               }}>
                 {formatPrice(product.price)}
               </div>
@@ -572,26 +714,38 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
         </div>
       ))}
       
-      {/* Swipe indicator */}
+      {/* Enhanced swipe indicators with 3D styling */}
       <div style={{
         position: 'absolute',
-        bottom: '-40px',
+        bottom: '-50px',
         left: '50%',
         transform: 'translateX(-50%)',
         display: 'flex',
-        gap: '6px'
+        gap: '10px',
+        padding: '8px 16px',
+        background: 'rgba(255, 255, 255, 0.8)',
+        backdropFilter: 'blur(10px)',
+        borderRadius: '20px',
+        border: '1px solid rgba(0, 0, 0, 0.05)',
       }}>
         {displayProducts.map((_, index) => (
           <div 
             key={index} 
             style={{
-              width: '6px',
-              height: '6px',
+              width: '8px',
+              height: '8px',
               borderRadius: '50%',
-              background: index === currentIndex ? '#000' : 'rgba(0,0,0,0.2)',
-              transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-              transform: index === currentIndex ? 'scale(1.2)' : 'scale(1)'
+              background: index === currentIndex 
+                ? 'linear-gradient(135deg, #000 0%, #333 100%)' 
+                : 'rgba(0,0,0,0.2)',
+              transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+              transform: index === currentIndex ? 'scale(1.3)' : 'scale(1)',
+              boxShadow: index === currentIndex 
+                ? '0 2px 8px rgba(0, 0, 0, 0.2)' 
+                : '0 1px 3px rgba(0, 0, 0, 0.1)',
+              cursor: 'pointer',
             }}
+            onClick={() => setCurrentIndex(index)}
           />
         ))}
       </div>
