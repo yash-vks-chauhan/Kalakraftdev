@@ -499,6 +499,152 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
     )
   }
 
+  // Mobile Video Section component - Instagram style video showcase
+  const MobileVideoSection = () => {
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const videoContainerRef = useRef<HTMLDivElement>(null);
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [isMuted, setIsMuted] = useState(true);
+    const [isVisible, setIsVisible] = useState(false);
+    
+    // Video URL from environment variable or direct URL
+    const videoUrl = process.env.NEXT_PUBLIC_INSTAGRAM_VIDEO_URL || "https://res.cloudinary.com/downe8107/video/upload/v1752756632/Goal_make_the_202507170106_9lp5g_rosxzs.mp4";
+    
+    // Use Intersection Observer to auto-play when video is visible
+    useEffect(() => {
+      if (!videoContainerRef.current) return;
+      
+      const observer = new IntersectionObserver(
+        (entries) => {
+          const [entry] = entries;
+          setIsVisible(entry.isIntersecting);
+          
+          if (entry.isIntersecting && videoRef.current) {
+            videoRef.current.play()
+              .then(() => setIsPlaying(true))
+              .catch(err => console.error('Video play failed:', err));
+          } else if (!entry.isIntersecting && videoRef.current) {
+            videoRef.current.pause();
+            setIsPlaying(false);
+          }
+        },
+        { threshold: 0.5 } // Trigger when 50% of the video is visible
+      );
+      
+      observer.observe(videoContainerRef.current);
+      
+      return () => {
+        if (videoContainerRef.current) {
+          observer.unobserve(videoContainerRef.current);
+        }
+      };
+    }, []);
+    
+    // Toggle play/pause
+    const togglePlayPause = () => {
+      if (videoRef.current) {
+        if (videoRef.current.paused) {
+          videoRef.current.play();
+          setIsPlaying(true);
+        } else {
+          videoRef.current.pause();
+          setIsPlaying(false);
+        }
+      }
+    };
+    
+    // Toggle mute/unmute
+    const toggleMute = (e: React.MouseEvent) => {
+      e.stopPropagation(); // Prevent triggering play/pause
+      if (videoRef.current) {
+        videoRef.current.muted = !videoRef.current.muted;
+        setIsMuted(!isMuted);
+      }
+    };
+    
+    // Handle video end
+    const handleVideoEnd = () => {
+      if (videoRef.current) {
+        videoRef.current.currentTime = 0;
+        videoRef.current.play();
+      }
+    };
+    
+    return (
+      <section className={styles.mobileVideoSection}>
+        <div className={styles.mobileSectionHeader}>
+          <div className={styles.mobileHeaderLine} />
+          <h2 className={styles.mobileSectionTitle}>Behind The Scenes</h2>
+          <div className={styles.mobileHeaderLine} />
+        </div>
+        
+        <div className={styles.mobileVideoDescription}>
+          <p>Watch the artistry and craftsmanship that goes into creating each unique piece</p>
+        </div>
+        
+        <div className={styles.mobileVideoContainer} ref={videoContainerRef}>
+          <div className={styles.mobileVideoCard} onClick={togglePlayPause}>
+            <video
+              ref={videoRef}
+              className={styles.mobileVideo}
+              playsInline
+              loop
+              autoPlay
+              muted={isMuted}
+              poster="/images/loading.png"
+              onEnded={handleVideoEnd}
+              onLoadedData={() => setIsPlaying(true)}
+            >
+              <source src={videoUrl} type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+            
+            {/* Play/Pause Overlay */}
+            <div className={`${styles.videoControlOverlay} ${isPlaying ? styles.playing : ''}`}>
+              {!isPlaying && (
+                <div className={styles.playButton}>
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                  </svg>
+                </div>
+              )}
+            </div>
+            
+            {/* Video Controls */}
+            <div className={styles.videoControls}>
+              <button 
+                className={styles.muteButton} 
+                onClick={toggleMute}
+                aria-label={isMuted ? "Unmute video" : "Mute video"}
+              >
+                {isMuted ? (
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                    <line x1="23" y1="9" x2="17" y2="15"></line>
+                    <line x1="17" y1="9" x2="23" y2="15"></line>
+                  </svg>
+                ) : (
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                    <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                  </svg>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <div className={styles.mobileVideoFooter}>
+          <p>Experience the magic of resin art creation</p>
+          <Link href="/products" className={styles.mobileExploreButton}>
+            Explore Our Process
+          </Link>
+        </div>
+      </section>
+    );
+  };
+
   const toggleViewMode = () => {
     const newMode = viewMode === 'mobile' ? 'desktop' : 'mobile'
     setViewMode(newMode)
@@ -729,6 +875,14 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
       {/* Main Content Area */}
       <main className={`${styles.mobileContent} ${isHomePage ? styles.homeContent : ''}`}>
         {children}
+        
+        {/* Add Collections Section and Video Section for home page only */}
+        {isHomePage && (
+          <>
+            <MobileCollectionsSection />
+            <MobileVideoSection />
+          </>
+        )}
       </main>
       
       {/* Mobile Footer Navigation */}
