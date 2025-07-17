@@ -269,6 +269,315 @@ const FeaturedProductsGrid = () => {
   );
 };
 
+// Mobile Featured Carousel Component - Stacked Card Design
+const MobileFeaturedCarousel = ({ products = [] }) => {
+  // State for carousel
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [currentX, setCurrentX] = useState(0);
+  const carouselRef = useRef(null);
+  
+  // Format price to INR
+  const formatPrice = (price) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(price);
+  };
+  
+  // Handle touch events for swiping
+  const handleTouchStart = (e) => {
+    setIsDragging(true);
+    setStartX(e.touches[0].clientX);
+    setCurrentX(e.touches[0].clientX);
+  };
+  
+  const handleTouchMove = (e) => {
+    if (!isDragging) return;
+    setCurrentX(e.touches[0].clientX);
+    e.preventDefault();
+  };
+  
+  const handleTouchEnd = () => {
+    if (!isDragging) return;
+    
+    const diff = startX - currentX;
+    const threshold = 50; // Minimum swipe distance
+    
+    if (diff > threshold) {
+      // Swipe left - next card
+      setCurrentIndex((prev) => (prev + 1) % products.length);
+    } else if (diff < -threshold) {
+      // Swipe right - previous card
+      setCurrentIndex((prev) => (prev - 1 + products.length) % products.length);
+    }
+    
+    setIsDragging(false);
+  };
+  
+  // Calculate transform for each card based on its position relative to current
+  const getCardStyle = (index) => {
+    // Calculate position relative to current (accounting for circular navigation)
+    let position = index - currentIndex;
+    if (position < 0) position += products.length;
+    if (position >= products.length) position -= products.length;
+    
+    // If dragging, calculate the drag offset
+    let dragOffset = 0;
+    if (isDragging) {
+      dragOffset = (currentX - startX) * 0.5; // Reduce movement for smoother effect
+    }
+    
+    // Base styles with proper TypeScript annotations
+    const style: React.CSSProperties = {
+      position: 'absolute',
+      width: '85%',
+      maxWidth: '350px',
+      transition: isDragging ? 'none' : 'all 0.4s ease',
+      borderRadius: '0px',
+      overflow: 'hidden',
+      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+      opacity: 1,
+      zIndex: products.length - position,
+      transformOrigin: 'center center'
+    };
+    
+    // Position 0 is current (front) card
+    if (position === 0) {
+      style.transform = `translateX(${dragOffset}px) scale(1)`;
+      style.zIndex = products.length + 1;
+      style.opacity = 1;
+    } 
+    // Position 1 is next card (slightly behind and to the right)
+    else if (position === 1) {
+      style.transform = `translateX(${30 + dragOffset}px) scale(0.95) translateY(10px)`;
+      style.opacity = 0.8;
+    }
+    // Position 2 is two cards back
+    else if (position === 2) {
+      style.transform = `translateX(${60 + dragOffset}px) scale(0.9) translateY(20px)`;
+      style.opacity = 0.6;
+    }
+    // Position 3 is three cards back (barely visible)
+    else if (position === 3) {
+      style.transform = `translateX(${90 + dragOffset}px) scale(0.85) translateY(30px)`;
+      style.opacity = 0.4;
+    }
+    // All other cards are stacked behind
+    else {
+      style.transform = `translateX(${120 + dragOffset}px) scale(0.8) translateY(40px)`;
+      style.opacity = 0;
+    }
+    
+    return style;
+  };
+
+  // Use default products if none provided
+  const displayProducts = products.length > 0 ? products : [
+    {
+      id: '1',
+      name: 'Handcrafted Resin Clock',
+      price: 4999,
+      imageUrls: ['/images/featured1.png', '/images/category1.png'],
+      stockQuantity: 5,
+      isNew: true,
+      category: { name: 'Clocks' }
+    },
+    {
+      id: '2',
+      name: 'Decorative Wall Piece',
+      price: 3499,
+      imageUrls: ['/images/featured2.png', '/images/category2.png'],
+      stockQuantity: 8,
+      category: { name: 'Wall Decor' }
+    },
+    {
+      id: '3',
+      name: 'Resin Tray Set',
+      price: 2999,
+      imageUrls: ['/images/featured3.JPG', '/images/category3.png'],
+      stockQuantity: 3,
+      category: { name: 'Trays' }
+    },
+    {
+      id: '4',
+      name: 'Designer Flower Vase',
+      price: 1999,
+      imageUrls: ['/images/category4.png', '/images/category5.png'],
+      stockQuantity: 0,
+      category: { name: 'Decor' }
+    }
+  ];
+
+  return (
+    <div 
+      ref={carouselRef}
+      style={{
+        position: 'relative',
+        width: '100%',
+        height: '420px',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: '2rem',
+        zIndex: 3
+      }}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
+      {displayProducts.map((product, index) => (
+        <div key={product.id} style={getCardStyle(index)}>
+          <Link href={`/products/${product.id}`} style={{
+            textDecoration: 'none',
+            display: 'block',
+            height: '100%',
+            width: '100%',
+            background: '#fff',
+            color: '#000'
+          }}>
+            <div style={{
+              width: '100%',
+              aspectRatio: '1/1',
+              position: 'relative',
+              overflow: 'hidden'
+            }}>
+              <img 
+                src={product.imageUrls[0]} 
+                alt={product.name}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  display: 'block'
+                }}
+              />
+              
+              {/* Product badges */}
+              {product.isNew && (
+                <div style={{
+                  position: 'absolute',
+                  top: '10px',
+                  left: '10px',
+                  background: '#000',
+                  color: '#fff',
+                  fontSize: '0.65rem',
+                  padding: '4px 8px',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                  fontWeight: 500
+                }}>
+                  New
+                </div>
+              )}
+              
+              {product.stockQuantity === 0 && (
+                <div style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                  color: '#000',
+                  fontSize: '0.8rem',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                  fontWeight: 600,
+                  backdropFilter: 'blur(2px)'
+                }}>
+                  Out of Stock
+                </div>
+              )}
+              
+              {product.stockQuantity > 0 && product.stockQuantity <= 5 && (
+                <div style={{
+                  position: 'absolute',
+                  bottom: '10px',
+                  left: '10px',
+                  backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                  color: 'white',
+                  fontSize: '0.65rem',
+                  padding: '4px 8px',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                  fontWeight: 500,
+                  backdropFilter: 'blur(2px)'
+                }}>
+                  Only {product.stockQuantity} left
+                </div>
+              )}
+            </div>
+            
+            <div style={{
+              padding: '12px 16px 16px',
+              background: '#fff'
+            }}>
+              {product.category && (
+                <div style={{
+                  fontSize: '0.7rem',
+                  color: '#666',
+                  marginBottom: '4px',
+                  fontWeight: 400
+                }}>
+                  {product.category.name}
+                </div>
+              )}
+              
+              <h3 style={{
+                fontSize: '0.9rem',
+                fontWeight: 500,
+                margin: '0 0 8px 0',
+                lineHeight: 1.3,
+                color: '#000'
+              }}>
+                {product.name}
+              </h3>
+              
+              <div style={{
+                fontSize: '0.95rem',
+                fontWeight: 600,
+                color: '#000'
+              }}>
+                {formatPrice(product.price)}
+              </div>
+            </div>
+          </Link>
+        </div>
+      ))}
+      
+      {/* Swipe indicator */}
+      <div style={{
+        position: 'absolute',
+        bottom: '-40px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        display: 'flex',
+        gap: '6px'
+      }}>
+        {displayProducts.map((_, index) => (
+          <div 
+            key={index} 
+            style={{
+              width: '6px',
+              height: '6px',
+              borderRadius: '50%',
+              background: index === currentIndex ? '#000' : 'rgba(0,0,0,0.2)',
+              transition: 'background 0.3s ease'
+            }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
 export default function Home() {
 
 const [message, setMessage] = useState<string|null>(null)
@@ -994,178 +1303,10 @@ onClick={() => handleCarouselNav('next')}
   
   </section>
   
-  {/* Mobile Video Section - Using the new component */}
-  <MobileVideoSection featuredProducts={featuredProducts} />
+  {/* Mobile Video Section - Using the original component */}
+  <MobileVideoSection />
   
-  {/* Mobile Explore Section - New section for mobile only */}
-<section className={`${styles.mobileExploreSection} ${styles.mobileOnly}`} style={{ padding: '5rem 1.5rem 6rem' }}>
-  {/* Architectural design elements */}
-  <div style={{
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: '100%',
-    height: '5px',
-    background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.05), transparent)',
-    zIndex: 2
-  }}></div>
-  
-  <div style={{
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    width: '100%',
-    height: '5px',
-    background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.05), transparent)',
-    zIndex: 2
-  }}></div>
-
-  <div className={styles.mobileExploreHeader}>
-    <div className={styles.headerLine}></div>
-    <h2 className={styles.mobileExploreTitle} style={{ 
-      fontFamily: 'Cormorant Garamond, serif',
-      fontSize: '2.2rem', 
-      fontWeight: 300, 
-      marginBottom: '1.5rem',
-      letterSpacing: '0.05em',
-      fontStyle: 'italic',
-      color: '#fff',
-      textShadow: '0 2px 10px rgba(0,0,0,0.2)'
-    }}>
-      Explore Our Artisan Creations
-    </h2>
-    <div className={styles.headerLine}></div>
-    <p style={{
-      fontFamily: 'Inter, sans-serif',
-      fontSize: '0.9rem',
-      fontWeight: 300,
-      color: 'rgba(255,255,255,0.7)',
-      maxWidth: '300px',
-      margin: '1.5rem auto 0',
-      letterSpacing: '0.03em',
-      lineHeight: 1.6
-    }}>
-      Discover our curated collection of handcrafted pieces
-    </p>
-  </div>
-
-  <div className={styles.mobileExploreGrid}>
-    {[
-      {
-        title: 'Artistic Journals',
-        image: 'https://res.cloudinary.com/downe8107/image/upload/v1752441188/84D2D636-027E-484D-B886-1BFEE0B9F5CD_1_201_a_ca4hrv.jpg'
-      },
-      {
-        title: 'Wall Clocks',
-        image: 'https://res.cloudinary.com/downe8107/image/upload/v1752441196/F0CFF91C-3B7B-4AA9-AECE-35A6DA417194_1_201_a_w5rmde.jpg'
-      },
-      {
-        title: 'Resin Trays',
-        image: 'https://res.cloudinary.com/downe8107/image/upload/v1752441176/2E1812EC-BB3C-4C7D-8480-C1539B7A0FBB_1_201_a_xc2yjx.jpg'
-      },
-      {
-        title: 'Rangoli Art',
-        image: 'https://res.cloudinary.com/downe8107/image/upload/v1752440782/6F66291E-3673-47F4-8989-701EBB8BB8BE_1_201_a_uxx8zk.jpg'
-      },
-      {
-        title: 'Pattachitra Panels',
-        image: 'https://res.cloudinary.com/downe8107/image/upload/v1752441169/65B82642-5A77-4A31-88BC-B36E2B5DB7DE_1_201_a_e7bed1.jpg'
-      },
-      {
-        title: 'Krishna Embroidery',
-        image: 'https://res.cloudinary.com/downe8107/image/upload/v1752441212/2E077407-F784-4515-8960-988FB394B218_1_201_a_p1as8c.jpg'
-      }
-    ].map((item, index) => (
-      <div key={index} className={styles.mobileExploreCard}>
-        <div className={styles.mobileExploreCardInner}>
-          <img
-            src={item.image}
-            alt={item.title}
-            className={styles.mobileExploreImage}
-            onError={(e) => (e.currentTarget.src = 'https://placehold.co/300x300/333/666?text=Image+Not+Found')}
-          />
-          <div className={styles.mobileExploreCardContent}>
-            <h3 className={styles.mobileExploreCardTitle}>{item.title}</h3>
-          </div>
-        </div>
-      </div>
-    ))}
-  </div>
-
-  {/* Subtle accent elements */}
-  <div style={{
-    position: 'absolute',
-    bottom: '10%',
-    right: '5%',
-    width: '180px',
-    height: '180px',
-    background: 'radial-gradient(circle, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0) 70%)',
-    borderRadius: '50%',
-    zIndex: 1
-  }}></div>
-  
-  <div style={{
-    position: 'absolute',
-    top: '15%',
-    left: '8%',
-    width: '120px',
-    height: '120px',
-    background: 'radial-gradient(circle, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0) 70%)',
-    borderRadius: '50%',
-    zIndex: 1
-  }}></div>
-  
-  {/* Corner accent */}
-  <div style={{
-    position: 'absolute',
-    top: '40px',
-    left: '40px',
-    width: '60px',
-    height: '60px',
-    borderTop: '1px solid rgba(255,255,255,0.08)',
-    borderLeft: '1px solid rgba(255,255,255,0.08)',
-    zIndex: 2
-  }}></div>
-  
-  <div style={{
-    position: 'absolute',
-    bottom: '40px',
-    right: '40px',
-    width: '60px',
-    height: '60px',
-    borderBottom: '1px solid rgba(255,255,255,0.08)',
-    borderRight: '1px solid rgba(255,255,255,0.08)',
-    zIndex: 2
-  }}></div>
-  
-  {/* View all button */}
-  <div style={{
-    textAlign: 'center',
-    marginTop: '3.5rem',
-    position: 'relative',
-    zIndex: 2
-  }}>
-    <Link href="/products" style={{
-      display: 'inline-block',
-      padding: '0.9rem 2.5rem',
-      background: 'transparent',
-      color: '#fff',
-      fontSize: '0.85rem',
-      fontWeight: 300,
-      letterSpacing: '0.1em',
-      textDecoration: 'none',
-      textTransform: 'uppercase',
-      border: '1px solid rgba(255,255,255,0.2)',
-      position: 'relative',
-      overflow: 'hidden',
-      transition: 'all 0.4s ease'
-    }}>
-      View All Collections
-    </Link>
-  </div>
-</section>
-
-{/* Featured Discoveries Section - Random products from API */}
+  {/* Featured Discoveries Section - Random products from API */}
 <section className={`${styles.mobileFeaturedSection} ${styles.mobileOnly}`}>
   {/* Section header */}
   <div className={styles.mobileFeaturedHeader}>
@@ -1177,10 +1318,8 @@ onClick={() => handleCarouselNav('next')}
     </p>
   </div>
 
-  {/* Products grid */}
-  <div className={styles.mobileFeaturedGrid}>
-    <FeaturedProductsGrid />
-  </div>
+  {/* Replace the grid with our new stacked carousel */}
+  <MobileFeaturedCarousel products={featuredProducts} />
 
   {/* View all button */}
   <div style={{
