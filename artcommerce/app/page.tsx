@@ -49,6 +49,23 @@ const FeaturedProductsGrid = () => {
       }
     };
 
+    // Format stock status
+    const getStockStatus = () => {
+      if (product.stockQuantity <= 0) return "Out of Stock";
+      if (product.stockQuantity <= 5) return "Low Stock";
+      return "In Stock";
+    };
+
+    // Check if product is new (within 14 days)
+    const isNewProduct = () => {
+      if (!product.createdAt) return false;
+      const createdDate = new Date(product.createdAt);
+      const now = new Date();
+      const diffTime = Math.abs(now.getTime() - createdDate.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return diffDays <= 14;
+    };
+
     return (
       <Link href={`/products/${product.id}`} className={styles.mobileFeaturedCard}>
         <div className={styles.mobileFeaturedCardInner}>
@@ -67,14 +84,27 @@ const FeaturedProductsGrid = () => {
               <div className={styles.mobileFeaturedNoImage}>No Image</div>
             )}
             
+            {/* Stock badges */}
             {product.stockQuantity === 0 && (
-              <div className={styles.mobileFeaturedOutOfStock}>Out of Stock</div>
+              <div className={`${styles.mobileFeaturedBadge} ${styles.mobileFeaturedOutOfStock}`}>
+                Out of Stock
+              </div>
             )}
             
             {product.stockQuantity > 0 && product.stockQuantity <= 5 && (
-              <div className={styles.mobileFeaturedLowStock}>Only {product.stockQuantity} left</div>
+              <div className={`${styles.mobileFeaturedBadge} ${styles.mobileFeaturedLowStock}`}>
+                Only {product.stockQuantity} left
+              </div>
+            )}
+
+            {isNewProduct() && product.stockQuantity > 0 && (
+              <div className={`${styles.mobileFeaturedBadge} ${styles.mobileFeaturedNew}`}
+                   style={{ top: product.stockQuantity <= 5 ? '40px' : '10px' }}>
+                New
+              </div>
             )}
             
+            {/* Image indicators */}
             {product.imageUrls && product.imageUrls.length > 1 && (
               <div className={styles.mobileFeaturedImageIndicators}>
                 {product.imageUrls.map((_, index) => (
@@ -87,6 +117,47 @@ const FeaturedProductsGrid = () => {
                 ))}
               </div>
             )}
+
+            {/* Quick action buttons */}
+            <div className={styles.mobileFeaturedQuickActions}>
+              <button 
+                className={styles.mobileFeaturedActionButton}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  // Wishlist functionality would go here
+                }}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" stroke="currentColor" strokeWidth="1.5" fill="none" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Product details overlay */}
+            <div className={styles.mobileFeaturedDetails}>
+              <div className={styles.mobileFeaturedDetailsContent}>
+                <div className={styles.mobileFeaturedDetailRow}>
+                  <span className={styles.mobileFeaturedDetailLabel}>Status</span>
+                  <span className={styles.mobileFeaturedDetailValue}>{getStockStatus()}</span>
+                </div>
+                {product.material && (
+                  <div className={styles.mobileFeaturedDetailRow}>
+                    <span className={styles.mobileFeaturedDetailLabel}>Material</span>
+                    <span className={styles.mobileFeaturedDetailValue}>{product.material}</span>
+                  </div>
+                )}
+                {product.dimensions && (
+                  <div className={styles.mobileFeaturedDetailRow}>
+                    <span className={styles.mobileFeaturedDetailLabel}>Dimensions</span>
+                    <span className={styles.mobileFeaturedDetailValue}>{product.dimensions}</span>
+                  </div>
+                )}
+                <div className={styles.mobileFeaturedViewButton}>
+                  View Details
+                </div>
+              </div>
+            </div>
           </div>
           
           <div className={styles.mobileFeaturedCardInfo}>
@@ -192,32 +263,7 @@ const FeaturedProductsGrid = () => {
   return (
     <div className={styles.mobileFeaturedProductsGrid}>
       {products.map((product, index) => (
-        <div key={product.id} style={{animationDelay: `${0.1 * (index + 1)}s`}}>
-          <Link 
-            href={`/products/${product.id}`} 
-            className={styles.mobileFeaturedCard}
-          >
-            <div className={styles.mobileFeaturedCardInner}>
-              <div className={styles.mobileFeaturedImageContainer}>
-                {product.imageUrls && product.imageUrls.length > 0 ? (
-                  <img
-                    src={product.imageUrls[imageIndices[product.id] || 0]}
-                    alt={product.name}
-                    className={styles.mobileFeaturedImage}
-                    onError={(e) => (e.currentTarget.src = 'https://placehold.co/300x300/f0f0f0/888?text=No+Image')}
-                  />
-                ) : (
-                  <div className={styles.mobileFeaturedNoImage}>No Image</div>
-                )}
-              </div>
-              
-              <div className={styles.mobileFeaturedCardInfo}>
-                <h3 className={styles.mobileFeaturedProductName}>{product.name}</h3>
-                <p className={styles.mobileFeaturedPrice}>{formatPrice(product.price)}</p>
-              </div>
-            </div>
-          </Link>
-        </div>
+        <ProductCard key={product.id} product={product} />
       ))}
     </div>
   );
@@ -1091,23 +1137,68 @@ onClick={() => handleCarouselNav('next')}
 
 {/* Featured Discoveries Section - Random products from API */}
 <section className={`${styles.mobileFeaturedSection} ${styles.mobileOnly}`}>
+  {/* Section header */}
   <div className={styles.mobileFeaturedHeader}>
     <div className={styles.mobileFeaturedHeaderLine} />
     <h2 className={styles.mobileFeaturedTitle}>Featured Discoveries</h2>
     <div className={styles.mobileFeaturedHeaderLine} />
+    <p className={styles.mobileFeaturedDescription}>
+      Handpicked selections from our latest collection, curated just for you
+    </p>
   </div>
 
-  <div className={styles.mobileFeaturedDescription}>
-    <p>Handpicked selections from our latest collection, curated just for you</p>
-  </div>
-
+  {/* Products grid */}
   <div className={styles.mobileFeaturedGrid}>
     <FeaturedProductsGrid />
   </div>
 
-  {/* Watercolor background accents */}
-  <div className={styles.watercolorAccent1}></div>
-  <div className={styles.watercolorAccent2}></div>
+  {/* View all button */}
+  <div style={{
+    textAlign: 'center',
+    marginTop: '2.5rem',
+    position: 'relative',
+    zIndex: 2
+  }}>
+    <Link href="/products" style={{
+      display: 'inline-block',
+      padding: '0.9rem 2.5rem',
+      background: '#000',
+      color: '#fff',
+      fontSize: '0.85rem',
+      fontWeight: 400,
+      letterSpacing: '0.1em',
+      textDecoration: 'none',
+      textTransform: 'uppercase',
+      position: 'relative',
+      overflow: 'hidden',
+      transition: 'all 0.4s ease'
+    }}>
+      View All Products
+    </Link>
+  </div>
+
+  {/* Subtle accent elements */}
+  <div style={{
+    position: 'absolute',
+    bottom: '10%',
+    right: '5%',
+    width: '150px',
+    height: '150px',
+    background: 'radial-gradient(circle, rgba(0,0,0,0.02) 0%, rgba(0,0,0,0) 70%)',
+    borderRadius: '50%',
+    zIndex: 1
+  }}></div>
+  
+  <div style={{
+    position: 'absolute',
+    top: '15%',
+    left: '8%',
+    width: '100px',
+    height: '100px',
+    background: 'radial-gradient(circle, rgba(0,0,0,0.01) 0%, rgba(0,0,0,0) 70%)',
+    borderRadius: '50%',
+    zIndex: 1
+  }}></div>
 </section>
 
 
