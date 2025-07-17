@@ -353,7 +353,7 @@
   left: 0;
   right: 0;
   height: 64px;
-  background-color: rgba(255, 255, 255, 0.95);
+  background-color: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(30px) saturate(250%);
   -webkit-backdrop-filter: blur(30px) saturate(250%);
   display: flex;
@@ -398,47 +398,35 @@
   padding: 8px;
   flex: 1;
   text-decoration: none;
-  color: rgba(0, 0, 0, 0.6);
+  color: rgba(0, 0, 0, 0.7);
   font-size: 11px;
-  transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
   background: none;
   border: none;
   cursor: pointer;
   width: 100%;
-  font-weight: 500;
-  letter-spacing: 0.02em;
 }
 
-/* Sliding indicator background */
-.mobileFooter::before {
+.footerNavItem::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 25%;
-  height: 3px;
-  background: linear-gradient(90deg, #111827, #374151, #111827);
-  border-radius: 0 0 6px 6px;
-  transition: transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
-  transform: translateX(0);
-  z-index: 1;
+  top: -1px;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #111827, transparent);
+  transform: translateX(-50%);
+  transition: width 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  opacity: 0;
 }
 
-/* Active state positions for sliding indicator */
-.mobileFooter[data-active="home"]::before {
-  transform: translateX(0);
+.footerNavItem.active {
+  color: #111827;
 }
 
-.mobileFooter[data-active="products"]::before {
-  transform: translateX(100%);
-}
-
-.mobileFooter[data-active="wishlist"]::before {
-  transform: translateX(200%);
-}
-
-.mobileFooter[data-active="account"]::before {
-  transform: translateX(300%);
+.footerNavItem.active::before {
+  width: 100%;
+  opacity: 1;
 }
 
 .footerNavItem span {
@@ -446,56 +434,30 @@
   font-weight: 500;
   letter-spacing: 0.02em;
   transform: translateY(0);
-  transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  transition: transform 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
 }
 
 .footerNavItem svg {
-  transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
-  stroke-width: 1.5;
+  transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
 }
 
-/* Active state styles */
-.footerNavItem.active {
-  color: #111827;
-}
-
-.footerNavItem.active svg {
-  fill: #111827;
-  stroke: #111827;
-  stroke-width: 2;
-  transform: scale(1.1);
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
-}
-
-.footerNavItem.active span {
-  font-weight: 600;
-  transform: translateY(-1px);
-}
-
-/* Hover effects */
-.footerNavItem:hover:not(.active) {
-  color: rgba(0, 0, 0, 0.8);
-}
-
-.footerNavItem:hover:not(.active) svg {
-  transform: scale(1.05);
-}
-
-/* Touch feedback */
 .footerNavItem:active {
   color: #111827;
-  transform: scale(0.95);
 }
 
 .footerNavItem:active svg {
-  transform: scale(1.05);
+  transform: translateY(-2px) scale(1.1);
 }
 
 .footerNavItem:active span {
   transform: translateY(-1px);
 }
 
-/* Badge styling */
+.footerNavItem.active svg {
+  transform: scale(1.1);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
 .badge {
   position: absolute;
   top: -2px;
@@ -510,7 +472,6 @@
   align-items: center;
   justify-content: center;
   box-shadow: 0 2px 4px rgba(244, 67, 54, 0.3);
-  font-weight: 600;
 }
 
 /* Mobile Menu Panel - slides from right */
@@ -1096,20 +1057,76 @@
 }
 
 /* Curved Hero Card for Mobile */
-.curvedCardContainer {
-  position: relative;
-  width: 100%;
-  height: 100vh;
-  overflow: hidden;
-  background-color: #000;
-  margin-top: 0;
-}
-
 .curvedHeroCard {
   position: relative;
   width: 100%;
-  height: 100%;
+  margin-top: 0;
+  border-radius: 20px;
   overflow: hidden;
+  background: linear-gradient(135deg, #d68c45 0%, #4a8c2f 100%);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Add a top gradient overlay for better text visibility */
+.curvedHeroCard:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 80px;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.4), transparent);
+  z-index: 2;
+}
+
+.curvedHeroContent {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+  color: white;
+  z-index: 2;
+  height: calc(100vh - 120px);
+}
+
+.curvedHeroTopText {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.3em;
+  font-size: 0.8rem;
+  margin-bottom: 1.5rem;
+  color: rgba(255, 255, 255, 0.9);
+  text-transform: uppercase;
+}
+
+.curvedHeroLogo {
+  width: 90px;
+  height: auto;
+  margin-bottom: 1.5rem;
+  filter: brightness(0) invert(1) drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.curvedHeroTitle {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 500;
+  font-size: 2.2rem;
+  line-height: 1.3;
+  letter-spacing: 0.02em;
+  color: #fff;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  margin: 0;
+  max-width: 85%;
+  font-style: italic;
+}
+
+.curvedHeroSubtitle {
+  font-size: 1.2rem;
+  max-width: 80%;
+  margin-bottom: 30px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .curvedHeroBackground {
@@ -1118,11 +1135,41 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6));
-  z-index: 2;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.2));
+  z-index: 1;
 }
 
-/* Video specific styling */
+/* Container for the curved card */
+.curvedCardContainer {
+  padding: 16px;
+  margin-top: 70px; /* Increase space for the header */
+  position: relative;
+  z-index: 10;
+}
+
+/* Scroll indicator */
+.scrollIndicator {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  animation: bounce 2s infinite;
+  color: white;
+  opacity: 0.8;
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0) translateX(-50%);
+  }
+  40% {
+    transform: translateY(-10px) translateX(-50%);
+  }
+  60% {
+    transform: translateY(-5px) translateX(-50%);
+  }
+}
+
 .curvedHeroVideo {
   position: absolute;
   top: 0;
@@ -1131,199 +1178,7 @@
   height: 100%;
   object-fit: cover;
   z-index: 1;
-  transform: scale(1.02);
-  filter: contrast(1.1) saturate(1.2) brightness(0.9);
-  will-change: transform;
-  transition: transform 0.3s ease;
-}
-
-.curvedHeroContent {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-  z-index: 3;
-  color: white;
-  width: 90%;
-  max-width: 400px;
-}
-
-.curvedHeroTopText {
-  font-family: 'Inter', sans-serif;
-  font-weight: 300;
-  letter-spacing: 0.3em;
-  font-size: 0.7rem;
-  margin-bottom: 1.5rem;
-  color: rgba(255, 255, 255, 0.9);
-  text-transform: uppercase;
-  opacity: 0;
-  transform: translateY(20px);
-  animation: fadeInUp 0.8s ease forwards 0.3s;
-}
-
-.curvedHeroLogo {
-  opacity: 0;
-  transform: translateY(20px);
-  animation: fadeInUp 0.8s ease forwards 0.6s;
-  margin-bottom: 1.5rem;
-  filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
-}
-
-.curvedHeroTitle {
-  font-family: 'Cormorant Garamond', serif;
-  font-weight: 500;
-  font-size: 2rem;
-  line-height: 1.3;
-  letter-spacing: 0.02em;
-  color: #fff;
-  text-shadow: 0 2px 10px rgba(0,0,0,0.3);
-  margin: 0 0 2rem 0;
-  opacity: 0;
-  transform: translateY(20px);
-  animation: fadeInUp 0.8s ease forwards 0.9s;
-  font-style: italic;
-}
-
-/* Discover All Pieces Button */
-.discoverAllButton {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.875rem 2rem;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 50px;
-  color: #fff;
-  text-decoration: none;
-  font-family: 'Inter', sans-serif;
-  font-weight: 500;
-  font-size: 0.875rem;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  opacity: 0;
-  transform: translateY(20px);
-  animation: fadeInUp 0.8s ease forwards 1.2s;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
-  margin-bottom: 3rem;
-  box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-}
-
-.discoverAllButton::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: left 0.7s ease;
-}
-
-.discoverAllButton:hover {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.3);
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 
-    0 12px 40px rgba(0, 0, 0, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
-}
-
-.discoverAllButton:hover::before {
-  left: 100%;
-}
-
-.discoverAllButton:active {
-  transform: translateY(-1px) scale(1.01);
-}
-
-.buttonText {
-  position: relative;
-  z-index: 1;
-}
-
-.buttonIcon {
-  position: relative;
-  z-index: 1;
-  transition: transform 0.3s ease;
-}
-
-.discoverAllButton:hover .buttonIcon {
-  transform: translateX(4px);
-}
-
-/* Enhanced scroll indicator */
-.scrollIndicator {
-  position: absolute;
-  bottom: 2rem;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 10;
-  opacity: 0;
-  animation: fadeInUpStagger 1.2s ease forwards 1.7s;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  cursor: pointer;
-  padding: 15px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  transition: all 0.3s ease;
-}
-
-.scrollIndicator:hover {
-  background: rgba(255, 255, 255, 0.15);
-  transform: translateX(-50%) translateY(-5px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-}
-
-.scrollIndicator svg {
-  color: rgba(255, 255, 255, 0.8);
-  animation: bounce 2s infinite;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
-}
-
-/* Enhanced animations */
-@keyframes fadeInUpStagger {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes fadeInUpScaleStagger {
-  from {
-    opacity: 0;
-    transform: translateY(30px) scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-@keyframes bounce {
-  0%, 20%, 50%, 80%, 100% {
-    transform: translateY(0);
-  }
-  40% {
-    transform: translateY(-8px);
-  }
-  60% {
-    transform: translateY(-4px);
-  }
+  opacity: 0.85;
 }
 
 /* Account Dropdown */
@@ -1490,7 +1345,7 @@
 
 /* Button pulse animation for feedback */
 .buttonPulse {
-  animation: buttonPulse 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  animation: buttonPulse 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @keyframes buttonPulse {
@@ -1550,7 +1405,7 @@
   height: calc(100% - 8px);
   background: #1a202c;
   border-radius: 8px;
-  transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 1;
 }
 

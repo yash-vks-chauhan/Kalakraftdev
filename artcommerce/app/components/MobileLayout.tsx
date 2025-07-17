@@ -7,7 +7,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '../contexts/AuthContext'
 import { useCart } from '../contexts/CartContext'
 import { useWishlist } from '../contexts/WishlistContext'
-import { Search, Home, ShoppingBag, User, Menu, X, Heart, ShoppingCart, Monitor, ChevronDown, Grid, HelpCircle, LogOut, ArrowLeft, Share, ChevronRight } from 'lucide-react'
+import { Search, Home, ShoppingBag, User, Menu, X, Heart, ShoppingCart, Monitor, ChevronDown, Grid, HelpCircle, LogOut, ArrowLeft, Share } from 'lucide-react'
 import { useMobileMenu } from '../contexts/MobileMenuContext'
 import { getImageUrl } from '../../lib/cloudinaryImages'
 import styles from './MobileLayout.module.css'
@@ -526,15 +526,6 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
     return pathname.startsWith(path)
   }
 
-  // Function to get active section for sliding indicator
-  const getActiveSection = () => {
-    if (pathname === '/') return 'home'
-    if (pathname.startsWith('/products')) return 'products'
-    if (pathname.startsWith('/dashboard/wishlist')) return 'wishlist'
-    if (pathname.startsWith('/dashboard/profile') || pathname.startsWith('/auth/login')) return 'account'
-    return 'home'
-  }
-
   useEffect(() => {
     console.log('Current path:', pathname);
     console.log('Is product page:', isProductPage);
@@ -636,12 +627,6 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
                 Handcrafted resin art for {rotatingText}
               </h1>
               
-              {/* Discover All Pieces Button */}
-              <Link href="/products" className={styles.discoverAllButton}>
-                <span className={styles.buttonText}>Discover All Pieces</span>
-                <ChevronRight size={18} className={styles.buttonIcon} />
-              </Link>
-              
               {/* Scroll indicator */}
               <div className={styles.scrollIndicator}>
                 <ChevronDown size={30} />
@@ -737,7 +722,7 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
       </main>
       
       {/* Mobile Footer Navigation */}
-      <nav className={`${styles.mobileFooter} ${isFooterVisible ? styles.footerVisible : styles.footerHidden}`} data-active={getActiveSection()}>
+      <nav className={`${styles.mobileFooter} ${isFooterVisible ? styles.footerVisible : styles.footerHidden}`}>
         <button 
           onClick={handleHomeClick}
           className={`${styles.footerNavItem} ${isActivePath('/') ? styles.active : ''}`}
