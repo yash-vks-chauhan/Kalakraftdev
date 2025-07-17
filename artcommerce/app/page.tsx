@@ -269,43 +269,18 @@ const FeaturedProductsGrid = () => {
   );
 };
 
-// 🌟 ULTIMATE ADVANCED MOBILE CAROUSEL - With Cutting-Edge Innovations 🌟
+// Simple, reliable mobile carousel for featured products
 const MobileFeaturedCarousel = ({ products = [] }) => {
-  // Core state management
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [autoPlay, setAutoPlay] = useState(true);
   
-  // Advanced interaction states
-  const [isPinching, setIsPinching] = useState(false);
-  const [isLongPressing, setIsLongPressing] = useState(false);
-  const [liftedCardIndex, setLiftedCardIndex] = useState(null);
-  const [rotationAngle, setRotationAngle] = useState(0);
-  const [deviceTilt, setDeviceTilt] = useState({ x: 0, y: 0 });
-  const [timeWarpMode, setTimeWarpMode] = useState('normal');
-  const [kaleidoscopeMode, setKaleidoscopeMode] = useState(false);
-  const [liquidMorphIntensity, setLiquidMorphIntensity] = useState(0);
-  
-  // Physics simulation states
-  const [magneticField, setMagneticField] = useState(0);
-  const [fluidRipples, setFluidRipples] = useState([]);
-  const [springTensions, setSpringTensions] = useState(new Array(4).fill(0));
-  const [particleSystem, setParticleSystem] = useState([]);
-  const [lightingPosition, setLightingPosition] = useState({ x: 0, y: 0 });
-  
-  // Refs for advanced interactions
   const carouselRef = useRef(null);
   const autoPlayRef = useRef(null);
   const startPos = useRef(0);
-  const lastPos = useRef(0);
   const startTime = useRef(0);
-  const longPressTimer = useRef(null);
-  const animationFrame = useRef(null);
-  const particleCanvas = useRef(null);
-  const lastTouchDistance = useRef(0);
-  const gestureCenter = useRef({ x: 0, y: 0 });
   
   // Format price to INR
   const formatPrice = (price) => {
@@ -317,106 +292,13 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
     }).format(price);
   };
 
-  // 🌊 ADVANCED PHYSICS SIMULATIONS 🌊
-  
-  // Magnetic Field Simulation
-  const calculateMagneticForce = (cardIndex, targetIndex, distance) => {
-    const strength = 150 / (distance + 1);
-    const direction = cardIndex < targetIndex ? 1 : -1;
-    return strength * direction * Math.exp(-distance * 0.5);
-  };
-
-  // Fluid Dynamics Simulation
-  const createRipple = (centerX, centerY, intensity = 1) => {
-    const newRipple = {
-      id: Date.now() + Math.random(),
-      x: centerX,
-      y: centerY,
-      radius: 0,
-      intensity,
-      opacity: 1,
-      createdAt: Date.now()
-    };
-    setFluidRipples(prev => [...prev, newRipple]);
-  };
-
-  // Spring-Mass System
-  const calculateSpringForce = (cardIndex, displacement) => {
-    const k = 0.1; // Spring constant
-    const damping = 0.95;
-    return -k * displacement * damping;
-  };
-
-  // Liquid Morphing Mathematics
-  const calculateLiquidDeformation = (offset, velocity) => {
-    const amplitude = Math.min(Math.abs(offset) * 0.1, 20);
-    const frequency = velocity * 0.01;
-    return {
-      clipPath: `polygon(
-        ${5 + amplitude * Math.sin(frequency)}% ${2 + amplitude * 0.3}%,
-        ${95 - amplitude * Math.sin(frequency + 1)}% ${3 + amplitude * 0.2}%,
-        ${97 - amplitude * Math.sin(frequency + 2)}% ${97 - amplitude * 0.4}%,
-        ${3 + amplitude * Math.sin(frequency + 3)}% ${98 - amplitude * 0.1}%
-      )`,
-      borderRadius: `${20 + amplitude * 0.5}px ${20 - amplitude * 0.3}px ${20 + amplitude * 0.4}px ${20 - amplitude * 0.2}px`
-    };
-  };
-
-  // 🎆 PARTICLE SYSTEM 🎆
-  
-  const createParticle = (x, y, type = 'golden') => {
-    return {
-      id: Math.random(),
-      x,
-      y,
-      vx: (Math.random() - 0.5) * 4,
-      vy: (Math.random() - 0.5) * 4,
-      life: 1,
-      maxLife: 60 + Math.random() * 40,
-      size: 2 + Math.random() * 3,
-      type,
-      angle: Math.random() * Math.PI * 2,
-      rotation: Math.random() * 0.1 - 0.05
-    };
-  };
-
-  const updateParticles = () => {
-    setParticleSystem(prev => 
-      prev.map(particle => ({
-        ...particle,
-        x: particle.x + particle.vx,
-        y: particle.y + particle.vy,
-        vx: particle.vx * 0.99,
-        vy: particle.vy * 0.99 + 0.1, // Gravity
-        life: particle.life + 1,
-        angle: particle.angle + particle.rotation
-      })).filter(particle => particle.life < particle.maxLife)
-    );
-  };
-
-  // 💡 DYNAMIC LIGHTING SYSTEM 💡
-  
-  const calculateLightingEffects = (cardIndex, cardPosition) => {
-    const isActive = cardIndex === currentIndex;
-    const intensity = isActive ? 1 : 0.3 + (1 / (Math.abs(cardIndex - currentIndex) + 1)) * 0.7;
-    
-    return {
-      spotlight: `radial-gradient(circle at ${lightingPosition.x}% ${lightingPosition.y}%, 
-        rgba(255, 255, 255, ${intensity * 0.3}) 0%, 
-        rgba(255, 255, 255, ${intensity * 0.1}) 30%, 
-        transparent 60%)`,
-      ambientGlow: `0 0 ${30 * intensity}px rgba(255, 215, 0, ${intensity * 0.4})`,
-      shadowProjection: `0 ${50 + 20 * intensity}px ${80 * intensity}px rgba(0, 0, 0, ${0.3 * intensity})`
-    };
-  };
-
   // Use default products if none provided
   const displayProducts = products.length > 0 ? products : [
     {
       id: '1',
       name: 'Handcrafted Resin Clock',
       price: 4999,
-      imageUrls: ['/images/featured1.png', '/images/category1.png'],
+      imageUrls: ['/images/featured1.png'],
       stockQuantity: 5,
       isNew: true,
       category: { name: 'Clocks' }
@@ -425,7 +307,7 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
       id: '2',
       name: 'Decorative Wall Piece',
       price: 3499,
-      imageUrls: ['/images/featured2.png', '/images/category2.png'],
+      imageUrls: ['/images/featured2.png'],
       stockQuantity: 8,
       category: { name: 'Wall Decor' }
     },
@@ -433,7 +315,7 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
       id: '3',
       name: 'Resin Tray Set',
       price: 2999,
-      imageUrls: ['/images/featured3.JPG', '/images/category3.png'],
+      imageUrls: ['/images/featured3.JPG'],
       stockQuantity: 3,
       category: { name: 'Trays' }
     },
@@ -441,141 +323,18 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
       id: '4',
       name: 'Designer Flower Vase',
       price: 1999,
-      imageUrls: ['/images/category4.png', '/images/category5.png'],
+      imageUrls: ['/images/category4.png'],
       stockQuantity: 0,
       category: { name: 'Decor' }
     }
   ];
 
-  // 🎭 ADVANCED GESTURE & INTERACTION SYSTEMS 🎭
-  
-  // Multi-Touch Gesture Detection
-  const handleMultiTouch = (touches) => {
-    if (touches.length === 2) {
-      const touch1 = touches[0];
-      const touch2 = touches[1];
-      const distance = Math.sqrt(
-        Math.pow(touch2.clientX - touch1.clientX, 2) + 
-        Math.pow(touch2.clientY - touch1.clientY, 2)
-      );
-      
-      const centerX = (touch1.clientX + touch2.clientX) / 2;
-      const centerY = (touch1.clientY + touch2.clientY) / 2;
-      
-      gestureCenter.current = { x: centerX, y: centerY };
-      
-      if (lastTouchDistance.current > 0) {
-        const pinchDelta = distance - lastTouchDistance.current;
-        if (Math.abs(pinchDelta) > 5) {
-          setIsPinching(true);
-          if (pinchDelta > 0) {
-            // Pinch out - peek behind cards
-            setLiquidMorphIntensity(prev => Math.min(prev + 0.1, 1));
-          } else {
-            // Pinch in - return to normal
-            setLiquidMorphIntensity(prev => Math.max(prev - 0.1, 0));
-          }
-        }
-        
-        // Two-finger rotation
-        const angle = Math.atan2(touch2.clientY - touch1.clientY, touch2.clientX - touch1.clientX);
-        setRotationAngle(angle);
-      }
-      
-      lastTouchDistance.current = distance;
-    }
-  };
-
-  // Long Press Detection
-  const handleLongPressStart = (cardIndex) => {
-    longPressTimer.current = setTimeout(() => {
-      setIsLongPressing(true);
-      setLiftedCardIndex(cardIndex);
-      // Create particles around lifted card
-      for (let i = 0; i < 20; i++) {
-        const particle = createParticle(
-          gestureCenter.current.x + (Math.random() - 0.5) * 100,
-          gestureCenter.current.y + (Math.random() - 0.5) * 100,
-          'shimmer'
-        );
-        setParticleSystem(prev => [...prev, particle]);
-      }
-    }, 500);
-  };
-
-  const handleLongPressEnd = () => {
-    if (longPressTimer.current) {
-      clearTimeout(longPressTimer.current);
-    }
-    setIsLongPressing(false);
-    setLiftedCardIndex(null);
-  };
-
-  // 📱 DEVICE ORIENTATION & TILT NAVIGATION 📱
-  
+  // Auto-play functionality
   useEffect(() => {
-    const handleDeviceOrientation = (event) => {
-      if (event.gamma && event.beta) {
-        setDeviceTilt({
-          x: Math.max(-30, Math.min(30, event.gamma)) / 30, // Normalize to -1 to 1
-          y: Math.max(-30, Math.min(30, event.beta - 90)) / 30
-        });
-        
-        // Update lighting position based on tilt
-        setLightingPosition({
-          x: 50 + (event.gamma || 0) * 1.5,
-          y: 50 + ((event.beta || 90) - 90) * 1.5
-        });
-      }
-    };
-
-    if (typeof window !== 'undefined' && 'DeviceOrientationEvent' in window) {
-      window.addEventListener('deviceorientation', handleDeviceOrientation);
-      return () => window.removeEventListener('deviceorientation', handleDeviceOrientation);
-    }
-  }, []);
-
-  // 🌀 OPTIMIZED ANIMATION LOOPS 🌀
-  
-  useEffect(() => {
-    // Reduced frequency animation loop for better performance
-    const animate = () => {
-      // Only run heavy calculations when actively interacting
-      if (isDragging || isLongPressing || isPinching) {
-        // Lightweight particle updates
-        setParticleSystem(prev => 
-          prev.map(particle => ({
-            ...particle,
-            x: particle.x + particle.vx * 0.5,
-            y: particle.y + particle.vy * 0.5,
-            life: particle.life + 1
-          })).filter(particle => particle.life < particle.maxLife)
-        );
-        
-        // Simple ripple updates
-        setFluidRipples(prev => 
-          prev.map(ripple => ({
-            ...ripple,
-            radius: ripple.radius + 3,
-            opacity: Math.max(0, ripple.opacity - 0.03)
-          })).filter(ripple => ripple.opacity > 0.1)
-        );
-      }
-    };
-    
-    // Use setTimeout instead of requestAnimationFrame for less intensive updates
-    const interval = setInterval(animate, 50); // 20fps instead of 60fps
-    
-    return () => clearInterval(interval);
-  }, [isDragging, isLongPressing, isPinching]);
-
-  // Auto-play with advanced timing
-  useEffect(() => {
-    if (autoPlay && !isDragging && displayProducts.length > 1 && !isTransitioning && !isLongPressing) {
-      const interval = timeWarpMode === 'slow' ? 8000 : timeWarpMode === 'fast' ? 2000 : 4000;
+    if (autoPlay && !isDragging && !isTransitioning && displayProducts.length > 1) {
       autoPlayRef.current = setInterval(() => {
         setCurrentIndex((prev) => (prev + 1) % displayProducts.length);
-      }, interval);
+      }, 4000);
     }
 
     return () => {
@@ -583,22 +342,19 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
         clearInterval(autoPlayRef.current);
       }
     };
-  }, [autoPlay, isDragging, displayProducts.length, isTransitioning, isLongPressing, timeWarpMode]);
+  }, [autoPlay, isDragging, isTransitioning, displayProducts.length]);
 
-  // 🌊 ADVANCED FLUID & PHYSICS INTERACTIONS 🌊
-  
-  // Enhanced rubber band with fluid dynamics
-  const applyAdvancedRubberBand = (offset, velocity = 0) => {
-    const maxDrag = 120;
+  // Simple rubber band effect
+  const applyRubberBand = (offset) => {
+    const maxDrag = 100;
     if (Math.abs(offset) <= maxDrag) return offset;
     
     const excess = Math.abs(offset) - maxDrag;
-    const fluidResistance = Math.pow(excess / 100, 0.7);
-    const damped = maxDrag + excess * (0.2 + fluidResistance * 0.1);
+    const damped = maxDrag + excess * 0.3;
     return offset > 0 ? damped : -damped;
   };
 
-  // Pause/resume with advanced controls
+  // Pause/resume auto-play
   const pauseAutoPlay = () => {
     setAutoPlay(false);
     if (autoPlayRef.current) {
@@ -607,76 +363,47 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
   };
 
   const resumeAutoPlay = () => {
-    if (!isDragging && !isTransitioning && !isLongPressing && !isPinching) {
+    if (!isDragging && !isTransitioning) {
       setAutoPlay(true);
     }
   };
   
-  // 🎭 STREAMLINED TOUCH EVENT SYSTEM 🎭
-  
-  const handleAdvancedTouchStart = (e) => {
+  // Touch event handlers
+  const handleTouchStart = (e) => {
+    if (e.touches.length > 1) return; // Ignore multi-touch
+    
     pauseAutoPlay();
-    
-    // Focus on single touch for reliable swiping
-    if (e.touches.length > 1) {
-      return; // Ignore multi-touch for now
-    }
-    
     setIsDragging(true);
     startPos.current = e.touches[0].clientX;
-    lastPos.current = e.touches[0].clientX;
     startTime.current = Date.now();
     setDragOffset(0);
-    
-    // Simple ripple effect
-    if (carouselRef.current) {
-      const rect = carouselRef.current.getBoundingClientRect();
-      const centerX = e.touches[0].clientX - rect.left;
-      const centerY = e.touches[0].clientY - rect.top;
-      createRipple(centerX, centerY, 0.6);
-    }
   };
   
-  const handleAdvancedTouchMove = (e) => {
+  const handleTouchMove = (e) => {
     if (e.touches.length > 1 || !isDragging) return;
     
     const currentPos = e.touches[0].clientX;
     const rawOffset = currentPos - startPos.current;
+    const constrainedOffset = applyRubberBand(rawOffset);
     
-    // Simple rubber band effect
-    const constrainedOffset = applyAdvancedRubberBand(rawOffset);
-    
-    lastPos.current = currentPos;
     setDragOffset(constrainedOffset);
-    
-    // Lightweight lighting update
-    if (carouselRef.current) {
-      const rect = carouselRef.current.getBoundingClientRect();
-      setLightingPosition({
-        x: Math.min(100, Math.max(0, ((currentPos - rect.left) / rect.width) * 100)),
-        y: 50
-      });
-    }
-    
     e.preventDefault();
   };
   
-  const handleAdvancedTouchEnd = () => {
+  const handleTouchEnd = () => {
     if (!isDragging) return;
     
-    const totalDistance = lastPos.current - startPos.current;
+    const totalDistance = dragOffset;
     const swipeTime = Date.now() - startTime.current;
     const velocity = Math.abs(totalDistance) / swipeTime;
     
-    // Simplified threshold logic
-    const threshold = 40;
-    const quickSwipeThreshold = 0.5;
+    const threshold = 50;
+    const quickSwipeThreshold = 0.3;
     
-    // Decision logic
     const shouldNext = totalDistance < -threshold || 
-                      (totalDistance < -20 && velocity > quickSwipeThreshold);
+                      (totalDistance < -25 && velocity > quickSwipeThreshold);
     const shouldPrev = totalDistance > threshold || 
-                      (totalDistance > 20 && velocity > quickSwipeThreshold);
+                      (totalDistance > 25 && velocity > quickSwipeThreshold);
     
     if (shouldNext || shouldPrev) {
       setIsTransitioning(true);
@@ -686,23 +413,19 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
       } else {
         setCurrentIndex((prev) => (prev - 1 + displayProducts.length) % displayProducts.length);
       }
-      
-      // Quick transition
+    }
+    
+    // Reset drag state
+    setDragOffset(0);
+    setIsDragging(false);
+    
+    if (shouldNext || shouldPrev) {
       setTimeout(() => {
-        setDragOffset(0);
-        setIsDragging(false);
-        setTimeout(() => {
-          setIsTransitioning(false);
-          resumeAutoPlay();
-        }, 300);
-      }, 50);
-    } else {
-      // Return to center
-      setDragOffset(0);
-      setTimeout(() => {
-        setIsDragging(false);
+        setIsTransitioning(false);
         resumeAutoPlay();
-      }, 200);
+      }, 300);
+    } else {
+      resumeAutoPlay();
     }
   };
 
@@ -717,476 +440,222 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
     setTimeout(() => {
       setIsTransitioning(false);
       resumeAutoPlay();
-    }, 600);
-  };
-  
-  // 🎨✨ STREAMLINED CARD STYLING SYSTEM ✨🎨
-  const getAdvancedCardStyle = (index) => {
-    let position = index - currentIndex;
-    if (position < 0) position += displayProducts.length;
-    if (position >= displayProducts.length) position -= displayProducts.length;
-    
-    // 🧮 Simplified Physics Calculations
-    let cardOffset = 0;
-    let cardRotation = 0;
-    let cardScale = 1;
-    
-    // Basic drag response
-    if (isDragging && position === 0) {
-      cardOffset = dragOffset;
-      cardRotation = dragOffset * 0.02;
-      cardScale = 1 - Math.abs(dragOffset) * 0.0002;
-    } else if (isDragging && position === 1 && dragOffset < 0) {
-      cardOffset = Math.max(-25, dragOffset * 0.3);
-    } else if (isDragging && position === displayProducts.length - 1 && dragOffset > 0) {
-      cardOffset = Math.min(25, dragOffset * 0.3);
-    }
-    
-    // Simple lighting position based on interaction
-    const lightIntensity = position === 0 ? 1 : 0.3 + (1 / (Math.abs(position) + 1)) * 0.5;
-    
-    const style: React.CSSProperties = {
-      position: 'absolute',
-      width: '85%',
-      maxWidth: '320px',
-      transformOrigin: 'center center',
-      willChange: 'transform',
-      backfaceVisibility: 'hidden',
-      cursor: position === 0 ? (isDragging ? 'grabbing' : 'grab') : 'pointer',
-      borderRadius: '20px',
-      overflow: 'hidden',
-    };
-    
-    // ⚡ Simplified transition system
-    if (isDragging && position === 0) {
-      style.transition = 'none';
-    } else {
-      style.transition = 'all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-    }
-    
-    // 🌟 Well-Spaced Card Deck Arrangement
-    if (position === 0) {
-      // Front card - main spotlight
-      style.transform = `
-        translateX(${cardOffset}px) 
-        translateZ(50px) 
-        rotateY(${cardRotation}deg) 
-        scale(${cardScale})
-      `;
-      style.zIndex = 100;
-      style.opacity = 1;
-      style.boxShadow = `
-        0 30px 60px rgba(0, 0, 0, 0.25),
-        0 20px 35px rgba(0, 0, 0, 0.18),
-        0 0 25px rgba(255, 215, 0, ${lightIntensity * 0.4})
-      `;
-      
-    } else if (position === 1) {
-      // Right visible edge - well spaced
-      style.transform = `
-        translateX(${60 + cardOffset}px) 
-        translateY(12px)
-        translateZ(40px) 
-        rotateY(-8deg) 
-        scale(0.90)
-      `;
-      style.zIndex = 90;
-      style.opacity = 0.85;
-      style.boxShadow = `
-        0 20px 40px rgba(0, 0, 0, 0.15),
-        0 10px 20px rgba(0, 0, 0, 0.1)
-      `;
-      
-    } else if (position === 2) {
-      // Second right edge - more spaced
-      style.transform = `
-        translateX(110px) 
-        translateY(24px)
-        translateZ(30px) 
-        rotateY(-12deg) 
-        scale(0.80)
-      `;
-      style.zIndex = 80;
-      style.opacity = 0.7;
-      style.boxShadow = `0 15px 30px rgba(0, 0, 0, 0.12)`;
-      
-    } else if (position === 3) {
-      // Third right edge - clearly separated
-      style.transform = `
-        translateX(150px) 
-        translateY(36px)
-        translateZ(20px)
-        rotateY(-16deg) 
-        scale(0.70)
-      `;
-      style.zIndex = 70;
-      style.opacity = 0.5;
-      style.boxShadow = `0 12px 25px rgba(0, 0, 0, 0.1)`;
-      
-    } else if (position === displayProducts.length - 1) {
-      // Left visible edge - well spaced
-      style.transform = `
-        translateX(${-60 + cardOffset}px) 
-        translateY(12px)
-        translateZ(40px) 
-        rotateY(8deg) 
-        scale(0.90)
-      `;
-      style.zIndex = 90;
-      style.opacity = 0.85;
-      style.boxShadow = `
-        0 20px 40px rgba(0, 0, 0, 0.15),
-        0 10px 20px rgba(0, 0, 0, 0.1)
-      `;
-      
-    } else if (position === displayProducts.length - 2) {
-      // Second left edge - more spaced
-      style.transform = `
-        translateX(-110px) 
-        translateY(24px)
-        translateZ(30px) 
-        rotateY(12deg) 
-        scale(0.80)
-      `;
-      style.zIndex = 80;
-      style.opacity = 0.7;
-      style.boxShadow = `0 15px 30px rgba(0, 0, 0, 0.12)`;
-      
-    } else if (position === displayProducts.length - 3) {
-      // Third left edge - clearly separated
-      style.transform = `
-        translateX(-150px) 
-        translateY(36px)
-        translateZ(20px)
-        rotateY(16deg) 
-        scale(0.70)
-      `;
-      style.zIndex = 70;
-      style.opacity = 0.5;
-      style.boxShadow = `0 12px 25px rgba(0, 0, 0, 0.1)`;
-      
-    } else {
-      // Hidden cards - far behind
-      style.transform = `
-        translateX(${position > displayProducts.length / 2 ? -200 : 200}px) 
-        translateY(50px)
-        translateZ(0px)
-        rotateY(${position > displayProducts.length / 2 ? 20 : -20}deg) 
-        scale(0.60)
-      `;
-      style.zIndex = 60;
-      style.opacity = 0;
-      style.boxShadow = '0 8px 16px rgba(0, 0, 0, 0.05)';
-    }
-    
-    return style;
+    }, 300);
   };
 
   return (
-    <div style={{ position: 'relative', width: '100%' }}>
-      {/* 🎮 SIMPLIFIED CONTROL PANEL 🎮 */}
-      <div style={{
-        position: 'absolute',
-        top: '-40px',
-        right: '20px',
-        zIndex: 200,
-        display: 'flex',
-        gap: '8px',
-        alignItems: 'center',
-      }}>
-        <button
-          onClick={() => autoPlay ? pauseAutoPlay() : resumeAutoPlay()}
-          style={{
-            background: 'rgba(255, 255, 255, 0.9)',
-            border: '1px solid rgba(0, 0, 0, 0.1)',
-            borderRadius: '20px',
-            padding: '4px 8px',
-            fontSize: '0.65rem',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease',
-          }}
-        >
-          {autoPlay ? '⏸️ Pause' : '▶️ Play'}
-        </button>
-        
-        {isDragging && (
-          <span style={{
-            fontSize: '0.6rem',
-            color: '#666',
-            background: 'rgba(255, 255, 255, 0.8)',
-            padding: '2px 6px',
-            borderRadius: '10px',
-          }}>
-            Swiping
-          </span>
-        )}
-      </div>
-
-      {/* 🎆 SIMPLIFIED EFFECTS 🎆 */}
-      {fluidRipples.length > 0 && (
-        <div style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
+    <div style={{ position: 'relative', width: '100%', padding: '0 20px' }}>
+      {/* Main carousel container */}
+      <div 
+        ref={carouselRef}
+        style={{
+          position: 'relative',
           width: '100%',
-          height: '100%',
-          pointerEvents: 'none',
-          zIndex: 140,
+          height: '480px',
           overflow: 'hidden',
+          borderRadius: '20px',
+        }}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
+        {/* Cards container */}
+        <div style={{
+          display: 'flex',
+          width: `${displayProducts.length * 100}%`,
+          height: '100%',
+          transform: `translateX(${(-currentIndex * 100) / displayProducts.length + (dragOffset / window.innerWidth) * 100}%)`,
+          transition: isDragging ? 'none' : 'transform 0.3s ease-out',
         }}>
-          {fluidRipples.slice(0, 3).map(ripple => (
-            <div
-              key={ripple.id}
+          {displayProducts.map((product, index) => (
+            <div 
+              key={product.id} 
               style={{
-                position: 'absolute',
-                left: `${ripple.x - ripple.radius}px`,
-                top: `${ripple.y - ripple.radius}px`,
-                width: `${ripple.radius * 2}px`,
-                height: `${ripple.radius * 2}px`,
-                borderRadius: '50%',
-                border: `1px solid rgba(255, 215, 0, ${ripple.opacity * 0.3})`,
-                opacity: ripple.opacity,
-                transition: 'none',
+                flex: '0 0 100%',
+                width: `${100 / displayProducts.length}%`,
+                padding: '0 10px',
+                boxSizing: 'border-box',
               }}
-            />
+            >
+              <Link href={`/products/${product.id}`} style={{
+                textDecoration: 'none',
+                display: 'block',
+                height: '100%',
+                background: '#fff',
+                borderRadius: '16px',
+                overflow: 'hidden',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
+                border: '1px solid rgba(0, 0, 0, 0.06)',
+                color: '#000',
+              }}>
+                {/* Product image */}
+                <div style={{
+                  position: 'relative',
+                  width: '100%',
+                  height: '60%',
+                  overflow: 'hidden',
+                  background: 'linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%)',
+                }}>
+                  <img 
+                    src={product.imageUrls && product.imageUrls[0] ? product.imageUrls[0] : '/images/featured1.png'} 
+                    alt={product.name}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      display: 'block',
+                    }}
+                    onError={(e) => {
+                      e.currentTarget.src = 'https://placehold.co/300x300/f0f0f0/888?text=No+Image';
+                    }}
+                  />
+                  
+                  {/* Stock badges */}
+                  {product.stockQuantity === 0 && (
+                    <div style={{
+                      position: 'absolute',
+                      top: '15px',
+                      left: '15px',
+                      background: 'rgba(255, 59, 48, 0.9)',
+                      color: 'white',
+                      fontSize: '0.7rem',
+                      fontWeight: '600',
+                      padding: '6px 12px',
+                      borderRadius: '12px',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                    }}>
+                      Out of Stock
+                    </div>
+                  )}
+                  
+                  {product.stockQuantity > 0 && product.stockQuantity <= 5 && (
+                    <div style={{
+                      position: 'absolute',
+                      top: '15px',
+                      left: '15px',
+                      background: 'rgba(255, 149, 0, 0.9)',
+                      color: 'white',
+                      fontSize: '0.7rem',
+                      fontWeight: '600',
+                      padding: '6px 12px',
+                      borderRadius: '12px',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                    }}>
+                      Only {product.stockQuantity} left
+                    </div>
+                  )}
+
+                  {product.isNew && product.stockQuantity > 5 && (
+                    <div style={{
+                      position: 'absolute',
+                      top: '15px',
+                      left: '15px',
+                      background: 'rgba(52, 199, 89, 0.9)',
+                      color: 'white',
+                      fontSize: '0.7rem',
+                      fontWeight: '600',
+                      padding: '6px 12px',
+                      borderRadius: '12px',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                    }}>
+                      New
+                    </div>
+                  )}
+                </div>
+                
+                {/* Product details */}
+                <div style={{
+                  padding: '20px',
+                  height: '40%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                }}>
+                  <div>
+                    {product.category && (
+                      <div style={{
+                        fontSize: '0.7rem',
+                        color: '#888',
+                        marginBottom: '8px',
+                        fontWeight: '500',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.1em',
+                      }}>
+                        {product.category.name}
+                      </div>
+                    )}
+                    
+                    <h3 style={{
+                      fontSize: '1.1rem',
+                      fontWeight: '700',
+                      margin: '0 0 12px 0',
+                      lineHeight: 1.3,
+                      color: '#000',
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden',
+                    }}>
+                      {product.name}
+                    </h3>
+                  </div>
+                  
+                  <div style={{
+                    fontSize: '1.3rem',
+                    fontWeight: '800',
+                    color: '#000',
+                    letterSpacing: '-0.02em',
+                  }}>
+                    {formatPrice(product.price)}
+                  </div>
+                </div>
+              </Link>
+            </div>
           ))}
         </div>
-      )}
-
-              <div 
-          ref={carouselRef}
-          style={{
-            position: 'relative',
-            width: '100%',
-            height: '420px',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            marginBottom: '3rem',
-            zIndex: 3,
-            perspective: '1500px',
-            perspectiveOrigin: 'center center',
-            transformStyle: 'preserve-3d',
-            overflow: 'visible', // Allow cards to extend beyond container
-          }}
-        onTouchStart={handleAdvancedTouchStart}
-        onTouchMove={handleAdvancedTouchMove}
-        onTouchEnd={handleAdvancedTouchEnd}
-        onMouseEnter={pauseAutoPlay}
-        onMouseLeave={resumeAutoPlay}
-      >
-        {displayProducts.map((product, index) => (
-          <div key={product.id} style={getAdvancedCardStyle(index)}>
-            <Link href={`/products/${product.id}`} style={{
-              textDecoration: 'none',
-              display: 'block',
-              height: '100%',
-              width: '100%',
-              background: '#fff',
-              color: '#000',
-              borderRadius: '20px',
-              overflow: 'hidden',
-              position: 'relative',
-              border: '1px solid rgba(0, 0, 0, 0.08)',
-              boxSizing: 'border-box',
-            }}>
-              <div style={{
-                width: '100%',
-                aspectRatio: '1/1.1',
-                position: 'relative',
-                overflow: 'hidden',
-                background: 'linear-gradient(135deg, #fafafa 0%, #f8f8f8 100%)',
-              }}>
-                <img 
-                  src={product.imageUrls[0]} 
-                  alt={product.name}
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                    display: 'block',
-                    transition: 'transform 0.3s ease-out',
-                  }}
-                />
-                
-                {/* Simplified badges */}
-                {product.isNew && (
-                  <div style={{
-                    position: 'absolute',
-                    top: '15px',
-                    left: '15px',
-                    background: 'rgba(0, 0, 0, 0.85)',
-                    color: '#fff',
-                    fontSize: '0.6rem',
-                    padding: '6px 12px',
-                    borderRadius: '15px',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.1em',
-                    fontWeight: 700,
-                  }}>
-                    New
-                  </div>
-                )}
-                
-                {product.stockQuantity === 0 && (
-                  <div style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: '100%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                    color: '#000',
-                    fontSize: '0.85rem',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.1em',
-                    fontWeight: 700,
-                  }}>
-                    Out of Stock
-                  </div>
-                )}
-                
-                {product.stockQuantity > 0 && product.stockQuantity <= 5 && (
-                  <div style={{
-                    position: 'absolute',
-                    bottom: '15px',
-                    left: '15px',
-                    backgroundColor: 'rgba(255, 107, 107, 0.9)',
-                    color: 'white',
-                    fontSize: '0.6rem',
-                    padding: '6px 12px',
-                    borderRadius: '15px',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.1em',
-                    fontWeight: 700,
-                  }}>
-                    Only {product.stockQuantity} left
-                  </div>
-                )}
-              </div>
-              
-              <div style={{
-                padding: '18px 20px 20px',
-                background: '#fff',
-                position: 'relative',
-              }}>
-                {product.category && (
-                  <div style={{
-                    fontSize: '0.65rem',
-                    color: '#888',
-                    marginBottom: '8px',
-                    fontWeight: 600,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.1em',
-                  }}>
-                    {product.category.name}
-                  </div>
-                )}
-                
-                <h3 style={{
-                  fontSize: '1rem',
-                  fontWeight: 700,
-                  margin: '0 0 12px 0',
-                  lineHeight: 1.3,
-                  color: '#000',
-                }}>
-                  {product.name}
-                </h3>
-                
-                <div style={{
-                  fontSize: '1.1rem',
-                  fontWeight: 800,
-                  color: '#000',
-                  letterSpacing: '-0.02em',
-                }}>
-                  {formatPrice(product.price)}
-                </div>
-              </div>
-            </Link>
-          </div>
-        ))}
       </div>
       
-      {/* Simplified navigation */}
+      {/* Navigation indicators */}
       <div style={{
-        position: 'relative',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        gap: '20px',
-        marginTop: '10px',
+        marginTop: '24px',
+        gap: '12px',
       }}>
-        {/* Progress bar */}
-        <div style={{
-          position: 'absolute',
-          top: '-20px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: '80px',
-          height: '2px',
-          background: 'rgba(0, 0, 0, 0.1)',
-          borderRadius: '1px',
-          overflow: 'hidden',
-        }}>
-          <div style={{
-            width: `${((currentIndex + 1) / displayProducts.length) * 100}%`,
-            height: '100%',
-            background: 'linear-gradient(90deg, #000, #333)',
-            transition: 'width 0.3s ease',
-          }} />
-        </div>
+        {displayProducts.map((_, index) => (
+          <button 
+            key={index} 
+            onClick={() => goToCard(index)}
+            disabled={isTransitioning || isDragging}
+            style={{
+              width: index === currentIndex ? '24px' : '8px',
+              height: '8px',
+              borderRadius: '4px',
+              border: 'none',
+              background: index === currentIndex 
+                ? '#000' 
+                : 'rgba(0, 0, 0, 0.2)',
+              transition: 'all 0.3s ease',
+              cursor: (isTransitioning || isDragging) ? 'not-allowed' : 'pointer',
+              opacity: (isTransitioning || isDragging) ? 0.6 : 1,
+            }}
+          />
+        ))}
+      </div>
 
-        {/* Dot indicators */}
-        <div style={{
-          display: 'flex',
-          gap: '12px',
-          padding: '12px 20px',
-          background: 'rgba(255, 255, 255, 0.9)',
-          borderRadius: '25px',
-          border: '1px solid rgba(0, 0, 0, 0.05)',
-          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
-        }}>
-          {displayProducts.map((_, index) => (
-            <button 
-              key={index} 
-              onClick={() => goToCard(index)}
-              disabled={isTransitioning || isDragging}
-              style={{
-                width: '10px',
-                height: '10px',
-                borderRadius: '50%',
-                border: 'none',
-                background: index === currentIndex 
-                  ? 'linear-gradient(135deg, #000 0%, #333 100%)' 
-                  : 'rgba(0,0,0,0.2)',
-                transition: 'all 0.3s ease',
-                transform: index === currentIndex ? 'scale(1.2)' : 'scale(1)',
-                boxShadow: index === currentIndex 
-                  ? '0 3px 12px rgba(0, 0, 0, 0.3)' 
-                  : '0 1px 3px rgba(0, 0, 0, 0.1)',
-                cursor: (isTransitioning || isDragging) ? 'not-allowed' : 'pointer',
-                opacity: (isTransitioning || isDragging) ? 0.6 : 1,
-              }}
-            />
-          ))}
-        </div>
-
-        {/* Card counter */}
-        <div style={{
-          position: 'absolute',
-          bottom: '-35px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          fontSize: '0.7rem',
-          color: '#666',
-          fontWeight: 500,
-          letterSpacing: '0.05em',
-        }}>
-          {currentIndex + 1} of {displayProducts.length}
-        </div>
+      {/* Card counter */}
+      <div style={{
+        textAlign: 'center',
+        marginTop: '12px',
+        fontSize: '0.8rem',
+        color: '#666',
+        fontWeight: '500',
+      }}>
+        {currentIndex + 1} of {displayProducts.length}
       </div>
     </div>
   );
