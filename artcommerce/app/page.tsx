@@ -965,47 +965,44 @@ onClick={() => handleCarouselNav('next')}
       <p>Watch the artistry and craftsmanship that goes into creating each unique piece</p>
     </div>
     
-                <div style={{ 
-        width: '100vw', 
-        position: 'relative',
-        left: '50%',
-        right: '50%',
-        marginLeft: '-50vw',
-        marginRight: '-50vw',
-        marginTop: '1rem',
-        marginBottom: '1.5rem'
-      }}>
-        <div style={{ 
-        width: '100%', 
-        overflow: 'hidden',
-        position: 'relative',
-        paddingBottom: '110%', /* Slightly taller than square */
-        height: 0,
-        backgroundColor: '#000'
-      }}>
-        <video
-          style={{
-            position: 'absolute',
-            top: '0',
-            left: '0',
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            objectPosition: 'center',
-            display: 'block'
-          }}
-          playsInline
-          loop
-          autoPlay
-          muted
-          poster="/images/loading.png"
-          preload="auto"
-        >
-          <source src="https://res.cloudinary.com/downe8107/video/upload/v1752756632/Goal_make_the_202507170106_9lp5g_rosxzs.mp4" type="video/mp4" />
-          Your browser does not support the video tag.
-        </video>
+                            <div className={styles.mobileCarouselContainer}>
+        <div className={styles.mobileCarouselTrack} style={{ justifyContent: 'center' }}>
+          <Link href="/products" className={styles.mobileProductCard} style={{ flex: '0 0 85%', maxWidth: '400px' }}>
+            <div className={styles.mobileCardInner}>
+              <video
+                style={{
+                  position: 'absolute',
+                  top: '0',
+                  left: '0',
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  objectPosition: 'center',
+                  display: 'block',
+                  transition: 'transform 0.3s ease'
+                }}
+                className={styles.mobileProductImage}
+                playsInline
+                loop
+                autoPlay
+                muted
+                poster="/images/loading.png"
+                preload="auto"
+              >
+                <source src="https://res.cloudinary.com/downe8107/video/upload/v1752756632/Goal_make_the_202507170106_9lp5g_rosxzs.mp4" type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+              
+              {/* Overlay with button that appears on hover */}
+              <div className={styles.mobileCardOverlay}>
+                <button className={styles.mobileViewButton}>
+                  Explore Our Process
+                </button>
+              </div>
+            </div>
+          </Link>
+        </div>
       </div>
-    </div>
     
     <div style={{
       textAlign: 'center',
@@ -1013,33 +1010,11 @@ onClick={() => handleCarouselNav('next')}
       padding: '0 1rem'
     }}>
       <p style={{
-        marginBottom: '1.5rem',
+        marginBottom: '1rem',
         fontSize: '0.95rem',
         color: '#666',
         lineHeight: 1.6
       }}>Experience the magic of resin art creation</p>
-      <Link 
-        href="/products" 
-        style={{
-          display: 'inline-block',
-          padding: '1rem 2rem',
-          backgroundColor: '#000',
-          color: '#fff',
-          fontSize: '1rem',
-          fontWeight: 400,
-          letterSpacing: '0.05em',
-          textDecoration: 'none',
-          borderRadius: '0px',
-          transition: 'all 0.3s ease',
-          position: 'relative',
-          overflow: 'hidden',
-          zIndex: 1,
-          width: '80%',
-          maxWidth: '350px'
-        }}
-      >
-        Explore Our Process
-      </Link>
     </div>
   </section>
   
