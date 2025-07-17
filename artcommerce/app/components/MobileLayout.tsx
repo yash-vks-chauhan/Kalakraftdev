@@ -569,17 +569,19 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
         <div className={styles.mobileBackdrop} onClick={() => setIsAccountDropdownOpen(false)}></div>
       )}
       
-            {/* Home page specific content - Cinematic Immersive Experience */}
+      {/* Home page specific content - Put at the top */}
       {isHomePage && (
-        <div className={styles.cinematicHero}>
-          
-          {/* Fullscreen Video Background */}
-          <div className={styles.cinematicVideoContainer}>
+        <div className={styles.curvedCardContainer}>
+          <div className={styles.curvedHeroCard}>
+            <div className={styles.curvedHeroBackground}></div>
+            
+            {/* Video background with fallback */}
             <picture>
+              {/* Fallback image that will be shown if video fails */}
               <img 
                 src={getImageUrl('featured3.JPG')}
                 alt="Handcrafted resin art" 
-                className={styles.cinematicVideo}
+                className={styles.curvedHeroVideo}
                 style={{ display: 'none' }}
                 id="mobileVideoFallback"
               />
@@ -590,20 +592,14 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
               muted
               loop
               playsInline
-              className={styles.cinematicVideo}
+              className={styles.curvedHeroVideo}
               poster="/images/loading.png"
               preload="metadata"
               onError={(e) => {
+                // If video fails to load, show the fallback image
                 const videoElement = e.currentTarget;
                 videoElement.style.display = 'none';
                 document.getElementById('mobileVideoFallback')!.style.display = 'block';
-              }}
-              onLoadedData={() => {
-                if (videoRef.current) {
-                  videoRef.current.play().catch(() => {
-                    console.log('Video autoplay failed, using fallback image');
-                  });
-                }
               }}
             >
               <source 
@@ -611,91 +607,31 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
                 type="video/mp4" 
               />
             </video>
-          </div>
-
-          {/* Cinematic Letterbox Bars */}
-          <div className={styles.letterboxTop}></div>
-          <div className={styles.letterboxBottom}></div>
-
-          {/* Floating Story Elements */}
-          <div className={styles.storyOverlay}>
             
-            {/* Story Progress Indicator */}
-            <div className={styles.storyProgress}>
-              <div className={styles.progressBar}></div>
-            </div>
-
-            {/* Central Content Area */}
-            <div className={styles.centralContent}>
+            <div className={styles.curvedHeroContent}>
+              {/* Top text - "A HANDCRAFTED ART STUDIO" */}
+              <div className={styles.curvedHeroTopText}>A HANDCRAFTED ART STUDIO</div>
               
-              {/* Studio Badge */}
-              <div className={styles.studioBadge}>
-                <div className={styles.badgeText}>HANDCRAFTED ART STUDIO</div>
-                <div className={styles.badgeLine}></div>
-              </div>
-
-              {/* Main Logo - Perfectly Centered */}
-              <div className={styles.logoContainer}>
-                <Image
-                  src={getImageUrl('logo.png')}
-                  alt="Artcommerce Logo"
-                  width={160}
-                  height={52}
-                  className={styles.cinematicLogo}
-                  priority
-                />
-              </div>
-
-              {/* Elegant Title */}
-              <div className={styles.titleContainer}>
-                <h1 className={styles.cinematicTitle}>
-                  Handcrafted resin art
-                </h1>
-                <div className={styles.titleSubtext}>
-                  for <span className={styles.dynamicText} id="mobileRotator">{rotatingText}</span>
-                </div>
-              </div>
-
-            </div>
-
-            {/* Bottom Floating Elements */}
-            <div className={styles.bottomFloating}>
+              {/* Logo */}
+              <Image
+                src={getImageUrl('logo.png')}
+                alt="Artcommerce Logo"
+                width={90}
+                height={30}
+                className={styles.curvedHeroLogo}
+                priority
+              />
               
-              {/* Explore Button */}
-              <Link href="/products" className={styles.cinematicButton}>
-                <span>Explore Collection</span>
-                <div className={styles.buttonRipple}></div>
-              </Link>
-
-              {/* Scroll Indicator */}
-              <div 
-                className={styles.cinematicScroll}
-                onClick={() => {
-                  window.scrollTo({
-                    top: window.innerHeight,
-                    behavior: 'smooth'
-                  })
-                }}
-              >
-                <div className={styles.scrollDot}></div>
-                <div className={styles.scrollText}>Continue</div>
-              </div>
-
-            </div>
-
-            {/* Side Elements */}
-            <div className={styles.sideElements}>
-              <div className={styles.qualityBadge}>
-                <div className={styles.badgeIcon}>★</div>
-                <div className={styles.badgeLabel}>Premium</div>
-              </div>
+              {/* Hero Text */}
+              <h1 className={styles.curvedHeroTitle}>
+                Handcrafted resin art for {rotatingText}
+              </h1>
               
-              <div className={styles.craftBadge}>
-                <div className={styles.badgeIcon}>◆</div>
-                <div className={styles.badgeLabel}>Handmade</div>
+              {/* Scroll indicator */}
+              <div className={styles.scrollIndicator}>
+                <ChevronDown size={30} />
               </div>
             </div>
-
           </div>
         </div>
       )}
