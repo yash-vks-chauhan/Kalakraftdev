@@ -922,17 +922,18 @@ onClick={() => handleCarouselNav('next')}
   <MobileVideoSection />
   
   {/* Mobile Explore Section - New section for mobile only */}
-<section className={`${styles.mobileExploreSection} ${styles.mobileOnly}`} style={{ padding: '3rem 1.5rem 4rem' }}>
+<section className={`${styles.mobileExploreSection} ${styles.mobileOnly}`} style={{ padding: '4rem 1.5rem 5rem' }}>
   <div className={styles.mobileExploreHeader}>
     <div className={styles.headerLine}></div>
     <h2 className={styles.mobileExploreTitle} style={{ 
       fontFamily: 'Cormorant Garamond, serif',
-      fontSize: '1.75rem', 
-      fontWeight: 400, 
+      fontSize: '2rem', 
+      fontWeight: 300, 
       marginBottom: '1.5rem',
-      letterSpacing: '0.02em',
+      letterSpacing: '0.05em',
       fontStyle: 'italic',
-      color: '#000'
+      color: '#fff',
+      textShadow: '0 2px 10px rgba(0,0,0,0.2)'
     }}>
       Explore Our Artisan Creations
     </h2>
@@ -972,7 +973,7 @@ onClick={() => handleCarouselNav('next')}
             src={item.image}
             alt={item.title}
             className={styles.mobileExploreImage}
-            onError={(e) => (e.currentTarget.src = 'https://placehold.co/300x300/f0f0f0/888?text=Image+Not+Found')}
+            onError={(e) => (e.currentTarget.src = 'https://placehold.co/300x300/333/666?text=Image+Not+Found')}
           />
           <div className={styles.mobileExploreCardContent}>
             <h3 className={styles.mobileExploreCardTitle}>{item.title}</h3>
@@ -982,9 +983,28 @@ onClick={() => handleCarouselNav('next')}
     ))}
   </div>
 
-  {/* Watercolor background accents */}
-  <div className={styles.watercolorAccent1}></div>
-  <div className={styles.watercolorAccent2}></div>
+  {/* Add subtle accent elements */}
+  <div style={{
+    position: 'absolute',
+    bottom: '10%',
+    right: '5%',
+    width: '150px',
+    height: '150px',
+    background: 'radial-gradient(circle, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0) 70%)',
+    borderRadius: '50%',
+    zIndex: 1
+  }}></div>
+  
+  <div style={{
+    position: 'absolute',
+    top: '15%',
+    left: '8%',
+    width: '100px',
+    height: '100px',
+    background: 'radial-gradient(circle, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0) 70%)',
+    borderRadius: '50%',
+    zIndex: 1
+  }}></div>
 </section>
 
 {/* Featured Discoveries Section - Random products from API */}
