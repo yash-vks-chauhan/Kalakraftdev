@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useMemo } from 'react'
 import AOS from 'aos'
 import 'aos/dist/aos.css'
 
@@ -362,23 +362,21 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
     }
   ];
 
-  let displayProducts = [];
-  if (products.length >= 8) {
-    // Shuffle and take 8 random products
-    const shuffled = [...products].sort(() => Math.random() - 0.5);
-    displayProducts = shuffled.slice(0, 8);
-  } else if (products.length > 0) {
-    // Shuffle available products first, then repeat to make 8
-    const shuffled = [...products].sort(() => Math.random() - 0.5);
-    displayProducts = [...shuffled];
-    while (displayProducts.length < 8) {
-      displayProducts = [...displayProducts, ...shuffled];
+  // Memoize displayProducts so it doesn't reshuffle on every render
+  const displayProducts = useMemo(() => {
+    if (products.length >= 8) {
+      return [...products].sort(() => Math.random() - 0.5).slice(0, 8);
+    } else if (products.length > 0) {
+      const shuffled = [...products].sort(() => Math.random() - 0.5);
+      let arr = [...shuffled];
+      while (arr.length < 8) {
+        arr = [...arr, ...shuffled];
+      }
+      return arr.slice(0, 8);
+    } else {
+      return defaultProducts;
     }
-    displayProducts = displayProducts.slice(0, 8);
-  } else {
-    displayProducts = defaultProducts;
-  }
-
+  }, [products]);
   // Completely disable any autoplay functionality
   const autoplayTimerRef = useRef(null);
   
