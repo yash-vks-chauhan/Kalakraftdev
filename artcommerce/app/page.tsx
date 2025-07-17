@@ -276,9 +276,7 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const [autoPlay, setAutoPlay] = useState(true);
   const carouselRef = useRef(null);
-  const autoPlayRef = useRef(null);
   const startPos = useRef(0);
   const lastPos = useRef(0);
   const startTime = useRef(0);
@@ -330,20 +328,7 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
     }
   ];
 
-  // Auto-play functionality
-  useEffect(() => {
-    if (autoPlay && !isDragging && displayProducts.length > 1 && !isTransitioning) {
-      autoPlayRef.current = setInterval(() => {
-        setCurrentIndex((prev) => (prev + 1) % displayProducts.length);
-      }, 4000);
-    }
-
-    return () => {
-      if (autoPlayRef.current) {
-        clearInterval(autoPlayRef.current);
-      }
-    };
-  }, [autoPlay, isDragging, displayProducts.length, isTransitioning]);
+  // No auto-play functionality - user controlled only
 
   // Simple rubber band effect
   const applyRubberBand = (offset) => {
@@ -355,23 +340,17 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
     return offset > 0 ? damped : -damped;
   };
 
-  // Pause/resume auto-play
-  const pauseAutoPlay = () => {
-    setAutoPlay(false);
-    if (autoPlayRef.current) {
-      clearInterval(autoPlayRef.current);
-    }
+  // Simple transition management
+  const startTransition = () => {
+    setIsTransitioning(true);
   };
 
-  const resumeAutoPlay = () => {
-    if (!isDragging && !isTransitioning) {
-      setAutoPlay(true);
-    }
+  const endTransition = () => {
+    setIsTransitioning(false);
   };
   
   // Simplified touch events
   const handleTouchStart = (e) => {
-    pauseAutoPlay();
     setIsDragging(true);
     startPos.current = e.touches[0].clientX;
     lastPos.current = e.touches[0].clientX;
@@ -411,7 +390,7 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
                       (totalDistance > 20 && velocity > quickSwipeThreshold);
     
     if (shouldNext || shouldPrev) {
-      setIsTransitioning(true);
+      startTransition();
       
       if (shouldNext) {
         setCurrentIndex((prev) => (prev + 1) % displayProducts.length);
@@ -419,22 +398,19 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
         setCurrentIndex((prev) => (prev - 1 + displayProducts.length) % displayProducts.length);
       }
       
-      // Quick transition
+      // Smooth transition with improved timing
+      setDragOffset(0);
+      setIsDragging(false);
+      
       setTimeout(() => {
-        setDragOffset(0);
-        setIsDragging(false);
-        setTimeout(() => {
-          setIsTransitioning(false);
-          resumeAutoPlay();
-        }, 400);
-      }, 50);
+        endTransition();
+      }, 300);
     } else {
       // Return to center with smooth animation
       setDragOffset(0);
       setTimeout(() => {
         setIsDragging(false);
-        resumeAutoPlay();
-      }, 300);
+      }, 200);
     }
   };
 
@@ -442,14 +418,12 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
   const goToCard = (index) => {
     if (index === currentIndex || isTransitioning || isDragging) return;
     
-    pauseAutoPlay();
-    setIsTransitioning(true);
+    startTransition();
     setCurrentIndex(index);
     
     setTimeout(() => {
-      setIsTransitioning(false);
-      resumeAutoPlay();
-    }, 600);
+      endTransition();
+    }, 300);
   };
   
   // Simplified card styling for smooth performance
@@ -485,13 +459,15 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
       cursor: position === 0 ? (isDragging ? 'grabbing' : 'grab') : 'pointer',
     };
     
-    // Simple transitions
+    // Improved transitions
     if (isDragging && position === 0) {
       style.transition = 'none';
     } else if (isDragging) {
-      style.transition = 'transform 0.2s ease-out';
+      style.transition = 'transform 0.15s ease-out';
+    } else if (isTransitioning) {
+      style.transition = 'all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1)';
     } else {
-      style.transition = 'all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+      style.transition = 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
     }
     
     // Simplified positioning
@@ -586,33 +562,6 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
 
   return (
     <div style={{ position: 'relative', width: '100%' }}>
-      {/* Auto-play control */}
-      <div style={{
-        position: 'absolute',
-        top: '-40px',
-        right: '20px',
-        zIndex: 200,
-        display: 'flex',
-        alignItems: 'center',
-        gap: '8px',
-        fontSize: '0.7rem',
-        color: '#666',
-      }}>
-        <button
-          onClick={() => autoPlay ? pauseAutoPlay() : resumeAutoPlay()}
-          style={{
-            background: 'rgba(255, 255, 255, 0.9)',
-            border: '1px solid rgba(0, 0, 0, 0.1)',
-            borderRadius: '20px',
-            padding: '4px 8px',
-            fontSize: '0.65rem',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease',
-          }}
-        >
-          {autoPlay ? '⏸️ Pause' : '▶️ Play'}
-        </button>
-      </div>
 
       <div 
         ref={carouselRef}
@@ -632,8 +581,6 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        onMouseEnter={pauseAutoPlay}
-        onMouseLeave={resumeAutoPlay}
       >
         {displayProducts.map((product, index) => (
           <div key={product.id} style={getCardStyle(index)}>
