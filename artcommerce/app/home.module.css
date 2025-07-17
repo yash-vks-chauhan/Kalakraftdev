@@ -1658,8 +1658,8 @@
 
 /* Mobile Explore Section Styles */
 .mobileExploreSection {
-  padding: 4rem 1rem;
-  background: #1a1a1a;
+  padding: 5rem 1rem 6rem;
+  background: #111111;
   position: relative;
   overflow: hidden;
   color: #fff;
@@ -1675,7 +1675,7 @@
   bottom: 0;
   background-image: 
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.15' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E"),
-    linear-gradient(135deg, rgba(40, 40, 40, 0.4) 0%, rgba(20, 20, 20, 0.8) 100%);
+    linear-gradient(135deg, rgba(30, 30, 30, 0.6) 0%, rgba(10, 10, 10, 0.9) 100%);
   opacity: 1;
   pointer-events: none;
   z-index: 1;
@@ -1690,35 +1690,54 @@
   right: 0;
   bottom: 0;
   background-image: 
-    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.03) 0px, rgba(255, 255, 255, 0.03) 1px, transparent 1px, transparent 15px);
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.02) 0px, rgba(255, 255, 255, 0.02) 1px, transparent 1px, transparent 20px);
   pointer-events: none;
   z-index: 1;
 }
 
 .mobileExploreHeader {
   text-align: center;
-  margin-bottom: 2.5rem;
+  margin-bottom: 3.5rem;
   position: relative;
   z-index: 2;
 }
 
 /* Style for header line to match website */
 .mobileExploreHeader .headerLine {
-  width: 40px;
+  width: 30px;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
-  margin: 0.8rem auto;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  margin: 1rem auto;
 }
 
+/* Add a new grid layout with staggered design */
 .mobileExploreGrid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   gap: 1.5rem;
-  margin: 0 auto 2rem;
+  margin: 0 auto;
   position: relative;
   z-index: 2;
   max-width: 90%;
-  padding: 0 0.5rem;
+  padding: 0;
+}
+
+/* Large card that spans 4 columns */
+.mobileExploreCard:nth-child(1),
+.mobileExploreCard:nth-child(4) {
+  grid-column: span 4;
+}
+
+/* Medium card that spans 3 columns */
+.mobileExploreCard:nth-child(2),
+.mobileExploreCard:nth-child(5) {
+  grid-column: span 3;
+}
+
+/* Small card that spans 2 columns */
+.mobileExploreCard:nth-child(3),
+.mobileExploreCard:nth-child(6) {
+  grid-column: span 3;
 }
 
 .mobileExploreCard {
@@ -1728,13 +1747,15 @@
   background: transparent;
   box-shadow: none;
   border: none;
-  transition: transform 0.3s ease;
+  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   opacity: 1;
   transform: translateY(0);
+  margin-bottom: 0.5rem;
 }
 
 .mobileExploreCard:hover {
-  transform: translateY(-3px);
+  transform: translateY(-4px);
+  z-index: 3;
 }
 
 .mobileExploreCardInner {
@@ -1743,39 +1764,45 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(0, 0, 0, 0.2);
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  overflow: hidden;
 }
 
 .mobileExploreImage {
   width: 100%;
-  aspect-ratio: 1/1;
+  aspect-ratio: 1/1.2;
   object-fit: cover;
   object-position: center;
   display: block;
-  transition: transform 0.4s ease;
-  opacity: 0.9;
-  filter: brightness(0.9);
+  transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  opacity: 0.85;
+  filter: brightness(0.9) contrast(1.05);
 }
 
 .mobileExploreCard:hover .mobileExploreImage {
-  transform: scale(1.05);
+  transform: scale(1.08);
   opacity: 1;
-  filter: brightness(1);
+  filter: brightness(1.05) contrast(1.1);
 }
 
 .mobileExploreCardContent {
-  padding: 0.8rem 0.5rem;
+  padding: 1rem 0.8rem;
   text-align: center;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.6);
   border-top: none;
   flex-grow: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
+  transition: background 0.3s ease;
+}
+
+.mobileExploreCard:hover .mobileExploreCardContent {
+  background: rgba(0, 0, 0, 0.75);
 }
 
 .mobileExploreCardContent::before {
@@ -1784,217 +1811,70 @@
   top: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: 30px;
+  width: 20px;
   height: 1px;
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.15);
+  transition: width 0.3s ease;
+}
+
+.mobileExploreCard:hover .mobileExploreCardContent::before {
+  width: 40px;
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .mobileExploreCardTitle {
   font-family: 'Inter', sans-serif;
   font-size: 0.85rem;
-  font-weight: 400;
+  font-weight: 300;
   margin: 0;
-  color: rgba(255, 255, 255, 0.9);
-  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.85);
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-}
-
-/* Hide the watercolor accents */
-.mobileExploreSection .watercolorAccent1,
-.mobileExploreSection .watercolorAccent2 {
-  display: none;
-}
-
-.mobileExploreTitle {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 1.75rem;
-  font-weight: 500;
-  color: #000;
-  margin: 0;
-  letter-spacing: 0.02em;
-  font-style: italic;
-  position: relative;
-}
-
-.mobileExploreTitle::before {
-  content: '';
-  position: absolute;
-  bottom: -8px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 80px;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(179, 138, 88, 0.5), transparent);
-}
-
-.mobileExploreDescription {
-  text-align: center;
-  max-width: 300px;
-  margin: 1rem auto 2rem;
-  font-size: 0.875rem;
-  line-height: 1.6;
-  color: rgba(0, 0, 0, 0.7);
-  position: relative;
-  z-index: 2;
-}
-
-.mobileExploreCard {
-  position: relative;
-  border-radius: 0;
-  overflow: hidden;
-  background: #fff;
-  box-shadow: none; /* Remove shadow */
-  border: none;
-  transition: transform 0.3s ease;
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.mobileExploreCard:hover {
-  transform: translateY(-2px);
-  box-shadow: none; /* Remove shadow on hover too */
-}
-
-.mobileExploreCardInner {
-  position: relative;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  border: 1px solid rgba(0, 0, 0, 0.05);
-}
-
-.mobileExploreImage {
-  width: 100%;
-  aspect-ratio: 1/1;
-  object-fit: cover;
-  object-position: center;
-  display: block;
-  transition: transform 0.3s ease;
-}
-
-.mobileExploreCard:hover .mobileExploreImage {
-  transform: scale(1.02);
-}
-
-.mobileExploreCardContent {
-  padding: 0.8rem 0.5rem;
-  text-align: center;
-  background: #fff;
-  border-top: none;
-  flex-grow: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.mobileExploreCardTitle {
-  font-family: 'Inter', sans-serif;
-  font-size: 0.85rem;
-  font-weight: 500;
-  margin: 0;
-  color: #000;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-}
-
-.mobileExploreFooter {
-  text-align: center;
-  margin-top: 2rem;
-  padding: 0 1rem;
-  position: relative;
-  z-index: 2;
-}
-
-.mobileExploreFooter p {
-  font-family: 'Inter', sans-serif;
-  font-size: 0.85rem;
-  color: rgba(0, 0, 0, 0.7);
-  margin-bottom: 1.5rem;
-  line-height: 1.6;
-}
-
-.mobileExploreButton {
-  display: inline-block;
-  padding: 0.875rem 2rem;
-  background: linear-gradient(135deg, #000 0%, #333 100%);
-  color: #fff;
-  border: none;
-  border-radius: 0;
-  font-size: 0.875rem;
-  font-weight: 500;
-  letter-spacing: 0.05em;
-  text-decoration: none;
   transition: all 0.3s ease;
-  font-family: 'Inter', sans-serif;
-  text-transform: uppercase;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
-.mobileExploreButton::before {
+.mobileExploreCard:hover .mobileExploreCardTitle {
+  color: rgba(255, 255, 255, 1);
+  letter-spacing: 0.1em;
+}
+
+/* Add a subtle overlay gradient to images */
+.mobileExploreCardInner::after {
   content: '';
   position: absolute;
   top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-  transition: left 0.6s ease;
-}
-
-.mobileExploreButton:hover {
-  background: linear-gradient(135deg, #222 0%, #555 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-}
-
-.mobileExploreButton:hover::before {
-  left: 100%;
-}
-
-/* Remove animation delays and keyframes */
-.mobileExploreCard:nth-child(1),
-.mobileExploreCard:nth-child(2),
-.mobileExploreCard:nth-child(3),
-.mobileExploreCard:nth-child(4),
-.mobileExploreCard:nth-child(5),
-.mobileExploreCard:nth-child(6) {
-  animation: none;
-}
-
-/* Watercolor background accents for mobile explore */
-.mobileExploreSection .watercolorAccent1 {
-  position: absolute;
-  width: 200px;
-  height: 200px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cpath d='M50,100 Q70,70 90,90 T130,80 T170,100 T150,130 T110,140 T70,120 T50,100' fill='%23b38a58' fill-opacity='0.04'/%3E%3C/svg%3E");
-  background-size: contain;
-  background-repeat: no-repeat;
-  top: 15%;
-  right: 10%;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.3) 100%);
+  pointer-events: none;
   z-index: 1;
   opacity: 0.6;
-  transform: rotate(-20deg);
-  pointer-events: none;
-  animation: gentle-float 18s infinite alternate ease-in-out;
+  transition: opacity 0.3s ease;
 }
 
-.mobileExploreSection .watercolorAccent2 {
-  position: absolute;
-  width: 150px;
-  height: 150px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cpath d='M70,100 Q90,60 110,80 T150,70 T180,110 T160,140 T120,150 T80,130 T70,100' fill='%23000000' fill-opacity='0.02'/%3E%3C/svg%3E");
-  background-size: contain;
-  background-repeat: no-repeat;
-  bottom: 20%;
-  left: 5%;
-  z-index: 1;
-  opacity: 0.5;
-  transform: rotate(15deg);
-  pointer-events: none;
-  animation: gentle-float 22s infinite alternate-reverse ease-in-out;
+.mobileExploreCard:hover .mobileExploreCardInner::after {
+  opacity: 0.2;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .mobileExploreGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .mobileExploreCard:nth-child(1),
+  .mobileExploreCard:nth-child(2),
+  .mobileExploreCard:nth-child(3),
+  .mobileExploreCard:nth-child(4),
+  .mobileExploreCard:nth-child(5),
+  .mobileExploreCard:nth-child(6) {
+    grid-column: span 1;
+  }
+  
+  .mobileExploreImage {
+    aspect-ratio: 1/1.1;
+  }
 }
 
 /* Mobile Featured Discoveries Section Styles */
