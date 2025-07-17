@@ -920,7 +920,7 @@ onClick={() => handleCarouselNav('next')}
   {/* Mobile Video Section - Instagram style video */}
   <section className={`${styles.mobileOnly}`} style={{ 
     padding: '2rem 0 0.5rem 0',
-    background: '#fafafa',
+    background: '#ffffff',
     position: 'relative',
     overflow: 'hidden'
   }}>
@@ -938,11 +938,11 @@ onClick={() => handleCarouselNav('next')}
       }} />
       <h2 style={{
         fontFamily: 'Cormorant Garamond, serif',
-        fontSize: '1.75rem',
-        fontWeight: 500,
+        fontSize: '2rem',
+        fontWeight: 400,
         color: '#000',
         margin: 0,
-        letterSpacing: '0.02em',
+        letterSpacing: '0.05em',
         fontStyle: 'italic'
       }}>Behind The Scenes</h2>
       <div style={{ 
@@ -965,23 +965,23 @@ onClick={() => handleCarouselNav('next')}
       <p>Watch the artistry and craftsmanship that goes into creating each unique piece</p>
     </div>
     
-          <div style={{ 
-        width: '100%', 
+                <div style={{ 
+        width: '100vw', 
         position: 'relative',
+        left: '50%',
+        right: '50%',
+        marginLeft: '-50vw',
+        marginRight: '-50vw',
         marginTop: '1rem',
-        marginBottom: '1.5rem',
-        padding: '0 1rem'
+        marginBottom: '1.5rem'
       }}>
-      <div style={{ 
+        <div style={{ 
         width: '100%', 
         overflow: 'hidden',
         position: 'relative',
-        paddingBottom: '125%', /* Instagram post aspect ratio (4:5) */
+        paddingBottom: '100%', /* Square aspect ratio like in the image */
         height: 0,
-        backgroundColor: '#000',
-        maxWidth: '450px',
-        margin: '0 auto',
-        borderRadius: '3px'
+        backgroundColor: '#000'
       }}>
         <video
           style={{
@@ -991,7 +991,8 @@ onClick={() => handleCarouselNav('next')}
             width: '100%',
             height: '100%',
             objectFit: 'cover',
-            objectPosition: 'center'
+            objectPosition: 'center',
+            display: 'block'
           }}
           playsInline
           loop
@@ -1021,18 +1022,20 @@ onClick={() => handleCarouselNav('next')}
         href="/products" 
         style={{
           display: 'inline-block',
-          padding: '0.85rem 1.8rem',
+          padding: '1rem 2rem',
           backgroundColor: '#000',
           color: '#fff',
-          fontSize: '0.9rem',
-          fontWeight: 500,
+          fontSize: '1rem',
+          fontWeight: 400,
           letterSpacing: '0.05em',
           textDecoration: 'none',
-          borderRadius: '2px',
+          borderRadius: '0px',
           transition: 'all 0.3s ease',
           position: 'relative',
           overflow: 'hidden',
-          zIndex: 1
+          zIndex: 1,
+          width: '80%',
+          maxWidth: '350px'
         }}
       >
         Explore Our Process
