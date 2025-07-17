@@ -1756,16 +1756,16 @@
   border-radius: 0;
   overflow: hidden;
   background: #fff;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: none; /* Remove shadow */
   border: none;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: transform 0.3s ease;
   opacity: 1;
   transform: translateY(0);
 }
 
 .mobileExploreCard:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+  box-shadow: none; /* Remove shadow on hover too */
 }
 
 .mobileExploreCardInner {

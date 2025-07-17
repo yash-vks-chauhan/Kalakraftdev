@@ -13,6 +13,7 @@ import { ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react'
 import styles from './home.module.css'
 import { getImageUrl } from '../lib/cloudinaryImages'
 import Link from 'next/link'
+import MobileVideoSection from './components/MobileVideoSection';
 
 // Add this to detect mobile view
 const isMobileView = () => {
@@ -917,131 +918,8 @@ onClick={() => handleCarouselNav('next')}
   
   </section>
   
-  {/* Mobile Video Section - Instagram style video */}
-  <section className={`${styles.mobileOnly}`} style={{ 
-    padding: '2rem 0 0.5rem 0',
-    background: '#ffffff',
-    position: 'relative',
-    overflow: 'hidden'
-  }}>
-    <div style={{
-      textAlign: 'center',
-      marginBottom: '1.5rem',
-      position: 'relative',
-      padding: '0 1rem'
-    }}>
-      <div style={{ 
-        width: '40px',
-        height: '2px',
-        background: '#000',
-        margin: '0.5rem auto'
-      }} />
-      <h2 style={{
-        fontFamily: 'Cormorant Garamond, serif',
-        fontSize: '2rem',
-        fontWeight: 400,
-        color: '#000',
-        margin: 0,
-        letterSpacing: '0.05em',
-        fontStyle: 'italic'
-      }}>Behind The Scenes</h2>
-      <div style={{ 
-        width: '40px',
-        height: '2px',
-        background: '#000',
-        margin: '0.5rem auto'
-      }} />
-    </div>
-    
-    <div style={{
-      textAlign: 'center',
-      maxWidth: '90%',
-      margin: '0 auto 1rem',
-      fontSize: '0.95rem',
-      lineHeight: 1.6,
-      color: '#666',
-      padding: '0 1rem'
-    }}>
-      <p>Watch the artistry and craftsmanship that goes into creating each unique piece</p>
-    </div>
-    
-                <div style={{ 
-        width: '100vw', 
-        position: 'relative',
-        left: '50%',
-        right: '50%',
-        marginLeft: '-50vw',
-        marginRight: '-50vw',
-        marginTop: '1rem',
-        marginBottom: '1.5rem'
-      }}>
-        <div style={{ 
-        width: '100%', 
-        overflow: 'hidden',
-        position: 'relative',
-        paddingBottom: '110%', /* Slightly taller than square */
-        height: 0,
-        backgroundColor: '#000'
-      }}>
-        <video
-          style={{
-            position: 'absolute',
-            top: '0',
-            left: '0',
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            objectPosition: 'center',
-            display: 'block'
-          }}
-          playsInline
-          loop
-          autoPlay
-          muted
-          poster="/images/loading.png"
-          preload="auto"
-        >
-          <source src="https://res.cloudinary.com/downe8107/video/upload/v1752756632/Goal_make_the_202507170106_9lp5g_rosxzs.mp4" type="video/mp4" />
-          Your browser does not support the video tag.
-        </video>
-      </div>
-    </div>
-    
-    <div style={{
-      textAlign: 'center',
-      margin: '1.5rem auto 1rem',
-      padding: '0 1rem'
-    }}>
-      <p style={{
-        marginBottom: '1.5rem',
-        fontSize: '0.95rem',
-        color: '#666',
-        lineHeight: 1.6
-      }}>Experience the magic of resin art creation</p>
-      <Link 
-        href="/products" 
-        style={{
-          display: 'inline-block',
-          padding: '1rem 2rem',
-          backgroundColor: '#000',
-          color: '#fff',
-          fontSize: '1rem',
-          fontWeight: 400,
-          letterSpacing: '0.05em',
-          textDecoration: 'none',
-          borderRadius: '0px',
-          transition: 'all 0.3s ease',
-          position: 'relative',
-          overflow: 'hidden',
-          zIndex: 1,
-          width: '80%',
-          maxWidth: '350px'
-        }}
-      >
-        Explore Our Process
-      </Link>
-    </div>
-  </section>
+  {/* Mobile Video Section - Using the new component */}
+  <MobileVideoSection />
   
   {/* Mobile Explore Section - New section for mobile only */}
 <section className={`${styles.mobileExploreSection} ${styles.mobileOnly}`}>
