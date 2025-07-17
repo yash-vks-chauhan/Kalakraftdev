@@ -363,12 +363,15 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
 
   let displayProducts = [];
   if (products.length >= 8) {
-    displayProducts = products.slice(0, 8);
+    // Shuffle and take 8 random products
+    const shuffled = [...products].sort(() => Math.random() - 0.5);
+    displayProducts = shuffled.slice(0, 8);
   } else if (products.length > 0) {
-    // Repeat products to make 8
-    displayProducts = [...products];
+    // Shuffle available products first, then repeat to make 8
+    const shuffled = [...products].sort(() => Math.random() - 0.5);
+    displayProducts = [...shuffled];
     while (displayProducts.length < 8) {
-      displayProducts = [...displayProducts, ...products];
+      displayProducts = [...displayProducts, ...shuffled];
     }
     displayProducts = displayProducts.slice(0, 8);
   } else {
@@ -1205,11 +1208,15 @@ useEffect(() => {
           
         // Ensure we always have exactly 8 products for the circular carousel
         if (availableProducts.length >= 8) {
-          availableProducts = availableProducts.slice(0, 8);
+          // Shuffle products randomly and take 8
+          const shuffled = [...availableProducts].sort(() => Math.random() - 0.5);
+          availableProducts = shuffled.slice(0, 8);
         } else if (availableProducts.length > 0) {
-          // Repeat products to make 8
+          // Shuffle available products first, then repeat to make 8
+          const shuffled = [...availableProducts].sort(() => Math.random() - 0.5);
+          availableProducts = [...shuffled];
           while (availableProducts.length < 8) {
-            availableProducts = [...availableProducts, ...availableProducts];
+            availableProducts = [...availableProducts, ...shuffled];
           }
           availableProducts = availableProducts.slice(0, 8);
         }
