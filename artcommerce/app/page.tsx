@@ -356,24 +356,37 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
       style.zIndex = products.length + 1;
       style.opacity = 1;
     } 
-    // Position 1 is next card (slightly behind and to the right) - fixed position
+    // Position 1 is next card (comes from right when swiping left)
     else if (position === 1) {
-      style.transform = `translateX(30px) scale(0.95) translateY(10px)`;
+      style.transform = `translateX(15px) scale(0.95) translateY(5px)`;
       style.opacity = 0.8;
     }
-    // Position 2 is two cards back - fixed position
+    // Position 2 is two cards back
     else if (position === 2) {
-      style.transform = `translateX(60px) scale(0.9) translateY(20px)`;
+      style.transform = `translateX(25px) scale(0.9) translateY(10px)`;
       style.opacity = 0.6;
     }
-    // Position 3 is three cards back (barely visible) - fixed position
+    // Position 3 is three cards back (barely visible)
     else if (position === 3) {
-      style.transform = `translateX(90px) scale(0.85) translateY(30px)`;
+      style.transform = `translateX(35px) scale(0.85) translateY(15px)`;
       style.opacity = 0.4;
     }
-    // All other cards are stacked behind - fixed position
+    // Previous cards (when swiping right, these come from left)
+    else if (position === products.length - 1) {
+      style.transform = `translateX(-15px) scale(0.95) translateY(5px)`;
+      style.opacity = 0.8;
+    }
+    else if (position === products.length - 2) {
+      style.transform = `translateX(-25px) scale(0.9) translateY(10px)`;
+      style.opacity = 0.6;
+    }
+    else if (position === products.length - 3) {
+      style.transform = `translateX(-35px) scale(0.85) translateY(15px)`;
+      style.opacity = 0.4;
+    }
+    // All other cards are stacked behind
     else {
-      style.transform = `translateX(120px) scale(0.8) translateY(40px)`;
+      style.transform = `translateX(45px) scale(0.8) translateY(20px)`;
       style.opacity = 0;
     }
     
