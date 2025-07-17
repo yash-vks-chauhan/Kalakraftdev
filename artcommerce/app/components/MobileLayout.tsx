@@ -503,32 +503,27 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
   const MobileVideoSection = () => {
     const videoRef = useRef<HTMLVideoElement>(null);
     const videoContainerRef = useRef<HTMLDivElement>(null);
-    const [isPlaying, setIsPlaying] = useState(false);
     const [isMuted, setIsMuted] = useState(true);
-    const [isVisible, setIsVisible] = useState(false);
     
     // Video URL from environment variable or direct URL
     const videoUrl = process.env.NEXT_PUBLIC_INSTAGRAM_VIDEO_URL || "https://res.cloudinary.com/downe8107/video/upload/v1752756632/Goal_make_the_202507170106_9lp5g_rosxzs.mp4";
     
     // Use Intersection Observer to auto-play when video is visible
     useEffect(() => {
-      if (!videoContainerRef.current) return;
+      if (!videoContainerRef.current || !videoRef.current) return;
       
       const observer = new IntersectionObserver(
         (entries) => {
           const [entry] = entries;
-          setIsVisible(entry.isIntersecting);
           
           if (entry.isIntersecting && videoRef.current) {
             videoRef.current.play()
-              .then(() => setIsPlaying(true))
               .catch(err => console.error('Video play failed:', err));
           } else if (!entry.isIntersecting && videoRef.current) {
             videoRef.current.pause();
-            setIsPlaying(false);
           }
         },
-        { threshold: 0.5 } // Trigger when 50% of the video is visible
+        { threshold: 0.3 } // Trigger when 30% of the video is visible
       );
       
       observer.observe(videoContainerRef.current);
@@ -540,33 +535,12 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
       };
     }, []);
     
-    // Toggle play/pause
-    const togglePlayPause = () => {
-      if (videoRef.current) {
-        if (videoRef.current.paused) {
-          videoRef.current.play();
-          setIsPlaying(true);
-        } else {
-          videoRef.current.pause();
-          setIsPlaying(false);
-        }
-      }
-    };
-    
     // Toggle mute/unmute
     const toggleMute = (e: React.MouseEvent) => {
-      e.stopPropagation(); // Prevent triggering play/pause
+      e.stopPropagation();
       if (videoRef.current) {
         videoRef.current.muted = !videoRef.current.muted;
         setIsMuted(!isMuted);
-      }
-    };
-    
-    // Handle video end
-    const handleVideoEnd = () => {
-      if (videoRef.current) {
-        videoRef.current.currentTime = 0;
-        videoRef.current.play();
       }
     };
     
@@ -583,7 +557,7 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
         </div>
         
         <div className={styles.mobileVideoContainer} ref={videoContainerRef}>
-          <div className={styles.mobileVideoCard} onClick={togglePlayPause}>
+          <div className={styles.mobileVideoCard}>
             <video
               ref={videoRef}
               className={styles.mobileVideo}
@@ -592,25 +566,12 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
               autoPlay
               muted={isMuted}
               poster="/images/loading.png"
-              onEnded={handleVideoEnd}
-              onLoadedData={() => setIsPlaying(true)}
             >
               <source src={videoUrl} type="video/mp4" />
               Your browser does not support the video tag.
             </video>
             
-            {/* Play/Pause Overlay */}
-            <div className={`${styles.videoControlOverlay} ${isPlaying ? styles.playing : ''}`}>
-              {!isPlaying && (
-                <div className={styles.playButton}>
-                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                  </svg>
-                </div>
-              )}
-            </div>
-            
-            {/* Video Controls */}
+            {/* Video Controls - only mute/unmute */}
             <div className={styles.videoControls}>
               <button 
                 className={styles.muteButton} 
@@ -875,14 +836,6 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
       {/* Main Content Area */}
       <main className={`${styles.mobileContent} ${isHomePage ? styles.homeContent : ''}`}>
         {children}
-        
-        {/* Add Collections Section and Video Section for home page only */}
-        {isHomePage && (
-          <>
-            <MobileCollectionsSection />
-            <MobileVideoSection />
-          </>
-        )}
       </main>
       
       {/* Mobile Footer Navigation */}
