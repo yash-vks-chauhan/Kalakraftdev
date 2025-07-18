@@ -1534,10 +1534,12 @@ onClick={() => handleCarouselNav('next')}
   </section>
   
   {/* Mobile Video Section - Using the original component */}
-  <MobileVideoSection />
+  <div data-aos="fade-up" data-aos-delay="400">
+    <MobileVideoSection />
+  </div>
   
   {/* Explore Our Artisan Creations section - Restored */}
-  <section className={`${styles.mobileExploreSection} ${styles.mobileOnly}`} style={{ padding: '5rem 1.5rem 6rem' }}>
+  <section className={`${styles.mobileExploreSection} ${styles.mobileOnly}`} style={{ padding: '5rem 1.5rem 6rem' }} data-aos="fade-up" data-aos-delay="500">
     {/* Architectural design elements */}
     <div style={{
       position: 'absolute',
@@ -1559,7 +1561,7 @@ onClick={() => handleCarouselNav('next')}
       zIndex: 2
     }}></div>
 
-    <div className={styles.mobileExploreHeader}>
+    <div className={styles.mobileExploreHeader} data-aos="fade-in" data-aos-delay="200">
       <div className={styles.headerLine}></div>
       <h2 className={styles.mobileExploreTitle} style={{ 
         fontFamily: 'Cormorant Garamond, serif',
@@ -1588,7 +1590,7 @@ onClick={() => handleCarouselNav('next')}
       </p>
     </div>
 
-    <div className={styles.mobileExploreGrid}>
+    <div className={styles.mobileExploreGrid} data-aos="fade-up" data-aos-delay="300">
       {[
         {
           title: 'Artistic Journals',
@@ -1615,7 +1617,7 @@ onClick={() => handleCarouselNav('next')}
           image: 'https://res.cloudinary.com/downe8107/image/upload/v1752441212/2E077407-F784-4515-8960-988FB394B218_1_201_a_p1as8c.jpg'
         }
       ].map((item, index) => (
-        <div key={index} className={styles.mobileExploreCard}>
+        <div key={index} className={styles.mobileExploreCard} data-aos="fade-up" data-aos-delay={`${400 + (index * 100)}`}>
           <div className={styles.mobileExploreCardInner}>
             <img
               src={item.image}
@@ -1683,7 +1685,7 @@ onClick={() => handleCarouselNav('next')}
       marginTop: '3.5rem',
       position: 'relative',
       zIndex: 2
-    }}>
+    }} data-aos="fade-up" data-aos-delay="1000">
       <Link href="/products" style={{
         display: 'inline-block',
         padding: '0.9rem 2.5rem',
@@ -1705,9 +1707,9 @@ onClick={() => handleCarouselNav('next')}
   </section>
   
   {/* Featured Discoveries Section - Random products from API */}
-<section className={`${styles.mobileFeaturedSection} ${styles.mobileOnly}`}>
+<section className={`${styles.mobileFeaturedSection} ${styles.mobileOnly}`} data-aos="fade-up" data-aos-delay="600">
   {/* Section header */}
-  <div className={styles.mobileFeaturedHeader}>
+  <div className={styles.mobileFeaturedHeader} data-aos="fade-in" data-aos-delay="200">
     <div className={styles.mobileFeaturedHeaderLine} />
     <h2 className={styles.mobileFeaturedTitle}>Featured Discoveries</h2>
     <div className={styles.mobileFeaturedHeaderLine} />
@@ -1717,7 +1719,9 @@ onClick={() => handleCarouselNav('next')}
   </div>
 
   {/* Replace the grid with our new stacked carousel */}
-  <MobileFeaturedCarousel products={featuredProducts} />
+  <div data-aos="fade-up" data-aos-delay="300">
+    <MobileFeaturedCarousel products={featuredProducts} />
+  </div>
 
   {/* View all button */}
   <div style={{
@@ -1725,7 +1729,7 @@ onClick={() => handleCarouselNav('next')}
     marginTop: '2.5rem',
     position: 'relative',
     zIndex: 2
-  }}>
+  }} data-aos="fade-up" data-aos-delay="400">
     <Link href="/products" style={{
       display: 'inline-block',
       padding: '0.9rem 2.5rem',
