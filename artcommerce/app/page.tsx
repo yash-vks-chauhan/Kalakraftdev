@@ -594,27 +594,6 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
   return (
     <div style={{ position: 'relative', width: '100%' }}>
 
-      {/* Brighter, more professional spotlight */}
-      <style>{`
-        @keyframes spotlight-flicker {
-          0%, 100% { opacity: 0.9; }
-          50% { opacity: 1; }
-        }
-      `}</style>
-      <div style={{
-        position: 'absolute',
-        top: '-150px',
-        left: '50%',
-        width: '350px', // A bit wider for better coverage
-        height: '450px',
-        background: 'radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.1) 40%, transparent 70%)',
-        transform: `translateX(-50%) translateX(${dragOffset * -0.3}px)`,
-        transition: isDragging ? 'none' : 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-        zIndex: 4,
-        pointerEvents: 'none',
-        animation: 'spotlight-flicker 3s ease-in-out infinite',
-      }}/>
-
       <div 
         ref={carouselRef}
         style={{
@@ -797,6 +776,51 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
           {currentIndex + 1} of 8
         </div>
       </div>
+    </div>
+  );
+};
+
+// A component for a detailed, falling particle effect
+const FallingParticles = ({ count = 50 }) => {
+  const particles = useMemo(() => {
+    return Array.from({ length: count }).map((_, i) => {
+      const size = Math.random() * 2 + 1; // Finer particles
+      const initialX = Math.random() * 100;
+      const duration = Math.random() * 3 + 4; // Slower, more graceful fall
+      const delay = Math.random() * 5;
+      
+      return {
+        id: i,
+        style: {
+          position: 'absolute',
+          top: '-10px', // Start above the container
+          left: `${initialX}%`,
+          width: `${size}px`,
+          height: `${size}px`,
+          backgroundColor: 'rgba(255, 255, 255, 0.7)',
+          borderRadius: '50%',
+          boxShadow: '0 0 5px rgba(255, 255, 255, 0.5)',
+          animation: `fall ${duration}s linear ${delay}s infinite`,
+        }
+      };
+    });
+  }, [count]);
+
+  return (
+    <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+      <style>{`
+        @keyframes fall {
+          0% {
+            transform: translateY(0) translateX(0);
+            opacity: 1;
+          }
+          100% {
+            transform: translateY(200px) translateX(${(Math.random() - 0.5) * 50}px);
+            opacity: 0;
+          }
+        }
+      `}</style>
+      {particles.map(p => <div key={p.id} style={p.style as React.CSSProperties} />)}
     </div>
   );
 };
@@ -1723,6 +1747,26 @@ onClick={() => handleCarouselNav('next')}
     <p className={styles.mobileFeaturedDescription}>
       Handpicked selections from our latest collection, curated just for you
     </p>
+
+    {/* V-shaped spotlight with particles */}
+    <div style={{
+      position: 'absolute',
+      bottom: '-150px', // Position below the text
+      left: '50%',
+      width: '400px',
+      height: '300px',
+      transform: 'translateX(-50%)',
+      pointerEvents: 'none',
+    }}>
+      <div style={{
+        width: '100%',
+        height: '100%',
+        background: 'linear-gradient(to top, rgba(255, 255, 255, 0.25), transparent 60%)',
+        clipPath: 'polygon(25% 100%, 50% 0, 75% 100%)',
+      }}>
+        <FallingParticles count={30} />
+      </div>
+    </div>
   </div>
 
   {/* Replace the grid with our new stacked carousel */}
