@@ -109,16 +109,16 @@ export default function NewProductPage() {
     }
     
     for (const file of acceptedFiles) {
-      // Check file size - 10MB limit
-      if (file.size > 10 * 1024 * 1024) {
+      // Check file size - 20MB limit
+      if (file.size > 20 * 1024 * 1024) {
         const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
         setUploadErrors(prev => ({
           ...prev,
-          [`${file.name}-size`]: `File ${file.name} exceeds the 10MB size limit (size: ${fileSizeMB}MB)`
+          [`${file.name}-size`]: `File ${file.name} exceeds the 20MB size limit (size: ${fileSizeMB}MB)`
         }));
         
         // Show error notification
-        setNotificationMessage(`File ${file.name} exceeds the 10MB size limit (size: ${fileSizeMB}MB)`);
+        setNotificationMessage(`File ${file.name} exceeds the 20MB size limit (size: ${fileSizeMB}MB)`);
         setNotificationType('error');
         setShowNotification(true);
         
@@ -211,10 +211,10 @@ export default function NewProductPage() {
 
   const onDropStyling = useCallback(async (acceptedFiles: File[]) => {
     for (const file of acceptedFiles) {
-      // Check file size - 10MB limit
-      if (file.size > 10 * 1024 * 1024) {
+      // Check file size - 20MB limit
+      if (file.size > 20 * 1024 * 1024) {
         const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
-        setNotificationMessage(`File ${file.name} exceeds the 10MB size limit (size: ${fileSizeMB}MB)`);
+        setNotificationMessage(`File ${file.name} exceeds the 20MB size limit (size: ${fileSizeMB}MB)`);
         setNotificationType('error');
         setShowNotification(true);
         
@@ -293,7 +293,7 @@ export default function NewProductPage() {
       'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.webp']
     },
     maxFiles: 5 - imageUrls.length,
-    maxSize: 10 * 1024 * 1024, // 10MB in bytes
+    maxSize: 20 * 1024 * 1024, // 20MB in bytes
     multiple: true,
   })
 
@@ -302,7 +302,7 @@ export default function NewProductPage() {
     accept: {
       'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.webp']
     },
-    maxSize: 10 * 1024 * 1024, // 10MB in bytes
+    maxSize: 20 * 1024 * 1024, // 20MB in bytes
     multiple: true,
   })
 
@@ -313,7 +313,7 @@ export default function NewProductPage() {
         errors.forEach(error => {
           if (error.code === 'file-too-large') {
             const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
-            setNotificationMessage(`File ${file.name} exceeds the 10MB size limit (size: ${fileSizeMB}MB)`);
+            setNotificationMessage(`File ${file.name} exceeds the 20MB size limit (size: ${fileSizeMB}MB)`);
             setNotificationType('error');
             setShowNotification(true);
           } else if (error.code === 'too-many-files') {
@@ -626,7 +626,7 @@ export default function NewProductPage() {
               <p className={styles.dropzoneText}>
                 {imageUrls.length === 5 
                   ? 'Maximum number of images reached'
-                  : `${5 - imageUrls.length} images remaining (max 10MB per image)`}
+                  : `${5 - imageUrls.length} images remaining (max 20MB per image)`}
               </p>
             </div>
 
@@ -708,7 +708,7 @@ export default function NewProductPage() {
               <p className={styles.dropzoneText}>
                 {isStylingDrag
                   ? 'Drop the images here...'
-                  : 'Drag & drop styling inspiration images here, or click to select files (max 10MB per image)'}
+                  : 'Drag & drop styling inspiration images here, or click to select files (max 20MB per image)'}
               </p>
               <button type="button" className={styles.browseButton}>
                 <FiUpload />

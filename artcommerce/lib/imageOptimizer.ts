@@ -3,12 +3,12 @@ import sharp from 'sharp';
 /**
  * Maximum file size in bytes (10MB)
  */
-export const MAX_FILE_SIZE = 10 * 1024 * 1024;
+export const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
 
 /**
- * Target size for large images (8MB)
+ * Target size for large images (18MB)
  */
-export const TARGET_SIZE = 8 * 1024 * 1024;
+export const TARGET_SIZE = 18 * 1024 * 1024;
 
 /**
  * Optimize an image buffer if it exceeds the maximum file size
