@@ -726,17 +726,18 @@ export default function MobileProductDetails({
           {/* Styling Inspiration Section */}
           {product.stylingIdeaImages && product.stylingIdeaImages.length > 0 && (
             <div className={`${styles.accordionSection} ${expandedSections.styling ? styles.expanded : ''}`}>
-              <div
+              <button
                 className={styles.accordionHeader}
                 onClick={() => toggleSection('styling')}
+                aria-expanded={expandedSections.styling}
               >
-                <h3 className={styles.accordionTitle}>Styling Inspiration Gallery</h3>
+                <span className={styles.accordionTitle}>Styling Inspiration Gallery</span>
                 <span className={styles.accordionIcon} style={{ transform: expandedSections.styling ? 'rotate(180deg)' : 'rotate(0deg)' }}>
                   <svg width="14" height="8" viewBox="0 0 14 8" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M1 1L7 7L13 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 </span>
-              </div>
+              </button>
               <div
                 className={`${styles.accordionContent} ${expandedSections.styling ? styles.expanded : ''}`}
                 style={{ padding: expandedSections.styling ? '0' : undefined }}
