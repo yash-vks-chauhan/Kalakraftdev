@@ -594,6 +594,21 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
   return (
     <div style={{ position: 'relative', width: '100%' }}>
 
+      {/* Torchlight Spotlight Effect */}
+      <div style={{
+        position: 'absolute',
+        top: '-150px', // Start above the carousel
+        left: '50%',
+        width: '300px',
+        height: '400px',
+        background: 'radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.2), transparent 70%)',
+        transform: `translateX(-50%) translateX(${dragOffset * -0.3}px)`, // Move opposite to drag
+        transition: isDragging ? 'none' : 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+        zIndex: 4,
+        pointerEvents: 'none',
+        opacity: 0.8,
+      }}/>
+
       <div 
         ref={carouselRef}
         style={{
@@ -630,19 +645,6 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
               border: '1px solid rgba(0, 0, 0, 0.1)',
               boxSizing: 'border-box',
             }}>
-              {/* Spotlight Effect */}
-              <div style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                background: 'radial-gradient(circle at center, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0) 60%)',
-                opacity: index === currentIndex ? 1 : 0,
-                transition: 'opacity 0.4s ease',
-                zIndex: 2,
-              }}/>
-              
               <div style={{
                 width: '100%',
                 aspectRatio: '1/1.1',
