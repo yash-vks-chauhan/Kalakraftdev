@@ -594,19 +594,25 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
   return (
     <div style={{ position: 'relative', width: '100%' }}>
 
-      {/* Torchlight Spotlight Effect */}
+      {/* Brighter, more professional spotlight */}
+      <style>{`
+        @keyframes spotlight-flicker {
+          0%, 100% { opacity: 0.9; }
+          50% { opacity: 1; }
+        }
+      `}</style>
       <div style={{
         position: 'absolute',
-        top: '-150px', // Start above the carousel
+        top: '-150px',
         left: '50%',
-        width: '300px',
-        height: '400px',
-        background: 'radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.2), transparent 70%)',
-        transform: `translateX(-50%) translateX(${dragOffset * -0.3}px)`, // Move opposite to drag
+        width: '350px', // A bit wider for better coverage
+        height: '450px',
+        background: 'radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.1) 40%, transparent 70%)',
+        transform: `translateX(-50%) translateX(${dragOffset * -0.3}px)`,
         transition: isDragging ? 'none' : 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
         zIndex: 4,
         pointerEvents: 'none',
-        opacity: 0.8,
+        animation: 'spotlight-flicker 3s ease-in-out infinite',
       }}/>
 
       <div 
