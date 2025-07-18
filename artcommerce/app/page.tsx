@@ -592,6 +592,8 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
     if (position === 0) {
       style.filter = 'brightness(1.1)';
       style.boxShadow = '0 25px 50px rgba(0, 0, 0, 0.3)';
+    } else {
+      style.filter = 'brightness(0.7)';
     }
 
     return style;
@@ -600,7 +602,52 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
   return (
     <div style={{ position: 'relative', width: '100%' }}>
 
-      <div 
+      {/* Stage Lighting Effect */}
+      <div style={{
+        position: 'absolute',
+        top: '-100px',
+        left: 0,
+        right: 0,
+        display: 'flex',
+        justifyContent: 'center',
+        gap: '80px',
+        zIndex: 5,
+        pointerEvents: 'none',
+      }}>
+        {[0.3, 1, 0.3].map((opacity, i) => (
+          <img key={i} src="/images/spotlight-lamp.png" alt="Spotlight" style={{ width: '60px', opacity }} />
+        ))}
+      </div>
+
+      {/* High-Intensity Light Beam */}
+      <div style={{
+        position: 'absolute',
+        top: '-40px',
+        left: '50%',
+        width: '400px',
+        height: '400px',
+        background: 'radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, 0.25) 0%, transparent 70%)',
+        transform: 'translateX(-50%)',
+        zIndex: 4,
+        pointerEvents: 'none',
+      }} />
+
+      {/* Floor Spotlight */}
+      <div style={{
+        position: 'absolute',
+        bottom: '10px',
+        left: '50%',
+        width: '450px',
+        height: '100px',
+        background: 'radial-gradient(ellipse at center, rgba(255, 255, 255, 0.2) 0%, transparent 60%)',
+        borderRadius: '50%',
+        transform: 'translateX(-50%)',
+        filter: 'blur(10px)',
+        zIndex: 3,
+        pointerEvents: 'none',
+      }} />
+
+      <div
         ref={carouselRef}
         style={{
           position: 'relative',
@@ -782,55 +829,6 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
           {currentIndex + 1} of 8
         </div>
       </div>
-    </div>
-  );
-};
-
-// A component for a hyper-realistic, elegant particle effect
-const EtherealParticles = ({ count = 60 }) => {
-  const particles = useMemo(() => {
-    return Array.from({ length: count }).map((_, i) => {
-      const size = Math.random() * 1.2 + 0.3; // Even finer particles
-      const initialY = Math.random() * 30 - 10; // Start near the top
-      const initialX = Math.random() * 80 + 10; // Within the light cone
-      const duration = Math.random() * 12 + 10; // Slower, more elegant drift
-      const delay = Math.random() * 12;
-
-      return {
-        id: i,
-        style: {
-          position: 'absolute',
-          top: `${initialY}%`,
-          left: `${initialX}%`,
-          width: `${size}px`,
-          height: `${size}px`,
-          backgroundColor: 'rgba(255, 255, 255, 0.5)',
-          borderRadius: '50%',
-          opacity: 0,
-          animation: `ethereal-drift ${duration}s ease-in-out ${delay}s infinite`,
-        },
-      };
-    });
-  }, [count]);
-
-  return (
-    <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
-      <style>{`
-        @keyframes ethereal-drift {
-          0% {
-            transform: translate(0, 0);
-            opacity: 0;
-          }
-          20%, 70% {
-            opacity: ${Math.random() * 0.5 + 0.1};
-          }
-          100% {
-            transform: translate(${(Math.random() - 0.5) * 40}px, 150px);
-            opacity: 0;
-          }
-        }
-      `}</style>
-      {particles.map(p => <div key={p.id} style={p.style as React.CSSProperties} />)}
     </div>
   );
 };
@@ -1757,27 +1755,6 @@ onClick={() => handleCarouselNav('next')}
     <p className={styles.mobileFeaturedDescription}>
       Handpicked selections from our latest collection, curated just for you
     </p>
-
-    {/* Brighter, more realistic Volumetric Spotlight */}
-    <div style={{
-      position: 'absolute',
-      bottom: '-320px', // Lower for a longer, more dramatic cone
-      left: '50%',
-      width: '600px',
-      height: '500px',
-      transform: 'translateX(-50%) perspective(400px) rotateX(45deg)',
-      pointerEvents: 'none',
-      zIndex: 5,
-    }}>
-      <div style={{
-        width: '100%',
-        height: '100%',
-        background: 'radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, 0.2) 0%, transparent 65%)',
-        position: 'relative',
-      }}>
-        <EtherealParticles count={70} />
-      </div>
-    </div>
   </div>
 
   {/* Replace the grid with our new stacked carousel */}

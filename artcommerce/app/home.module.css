@@ -1880,7 +1880,7 @@
 /* Mobile Featured Discoveries Section Styles */
 .mobileFeaturedSection {
   padding: 4rem 1rem 5rem;
-  background: #0a0f19; /* Changed to a sophisticated dark charcoal blue */
+  background: #000; /* Reverted to pure black for a minimal UI */
   position: relative;
   overflow: hidden;
 }
