@@ -45,9 +45,7 @@ export default function NewProductPage() {
   const [availableTags, setAvailableTags] = useState<string[]>([])
   const [newTagInput, setNewTagInput] = useState('')
 
-  // Cloudinary direct upload config (ensure these env vars are set in .env.local)
-  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-  const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+  // ImageKit uploads are handled via the backend route – no client-side config needed.
 
   // State for drag-and-drop reordering
   const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
@@ -137,7 +135,7 @@ export default function NewProductPage() {
       setUploadProgress(prev => ({ ...prev, [uploadId]: 0 }))
       
       try {
-        // Upload directly to Cloudinary via unsigned upload preset
+        // Upload directly to ImageKit via the backend route
         const xhr = new XMLHttpRequest()
         xhr.upload.onprogress = (event) => {
           if (event.lengthComputable) {
@@ -145,12 +143,8 @@ export default function NewProductPage() {
             setUploadProgress(prev => ({ ...prev, [uploadId]: progress }))
           }
         }
-        const uploadPromise = new Promise<{ secure_url: string }>((resolve, reject) => {
-          xhr.open('POST', `https://api.cloudinary.com/v1_1/${cloudName}/upload`, true)
-          const formData = new FormData()
-          formData.append('file', file)
-          formData.append('upload_preset', uploadPreset)
-          formData.append('folder', 'products')
+        const uploadPromise = new Promise<{ url: string }>((resolve, reject) => {
+          xhr.open('POST', `/api/uploads/imagekit?filename=${encodeURIComponent(file.name)}&folder=products`, true)
 
           xhr.onload = () => {
             if (xhr.status >= 200 && xhr.status < 300) {
@@ -165,10 +159,10 @@ export default function NewProductPage() {
           }
           xhr.onerror = () => reject(new Error('Network error during upload'))
           xhr.ontimeout = () => reject(new Error('Upload timed out'))
-          xhr.send(formData)
+          xhr.send(file)
         })
         const result = await uploadPromise
-        setImageUrls(prev => [...prev, result.secure_url])
+        setImageUrls(prev => [...prev, result.url])
         
         // Remove from uploading files
         setUploadingFiles(prev => {
@@ -213,7 +207,7 @@ export default function NewProductPage() {
         }, 5000);
       }
     }
-  }, [imageUrls.length, setNotificationMessage, setNotificationType, setShowNotification, cloudName, uploadPreset]);
+  }, [imageUrls.length, setNotificationMessage, setNotificationType, setShowNotification]);
 
   const onDropStyling = useCallback(async (acceptedFiles: File[]) => {
     for (const file of acceptedFiles) {
@@ -239,7 +233,7 @@ export default function NewProductPage() {
       setShowNotification(true);
       
       try {
-        // Upload directly to Cloudinary via unsigned upload preset
+        // Upload directly to ImageKit via the backend route
         const xhr = new XMLHttpRequest()
         xhr.upload.onprogress = (event) => {
           if (event.lengthComputable) {
@@ -247,12 +241,8 @@ export default function NewProductPage() {
             setUploadProgress(prev => ({ ...prev, [uploadId]: progress }))
           }
         }
-        const uploadPromise = new Promise<{ secure_url: string }>((resolve, reject) => {
-          xhr.open('POST', `https://api.cloudinary.com/v1_1/${cloudName}/upload`, true)
-          const formData = new FormData()
-          formData.append('file', file)
-          formData.append('upload_preset', uploadPreset)
-          formData.append('folder', 'styling')
+        const uploadPromise = new Promise<{ url: string }>((resolve, reject) => {
+          xhr.open('POST', `/api/uploads/imagekit?filename=${encodeURIComponent(file.name)}&folder=styling`, true)
 
           xhr.onload = () => {
             if (xhr.status >= 200 && xhr.status < 300) {
@@ -267,10 +257,10 @@ export default function NewProductPage() {
           }
           xhr.onerror = () => reject(new Error('Network error during upload'))
           xhr.ontimeout = () => reject(new Error('Upload timed out'))
-          xhr.send(formData)
+          xhr.send(file)
         })
         const result = await uploadPromise
-        setStylingIdeas(prev => [...prev, { url: result.secure_url, text: '' }]);
+        setStylingIdeas(prev => [...prev, { url: result.url, text: '' }]);
         
         // Show success notification
         setNotificationMessage(`Styling image ${file.name} uploaded successfully`);
@@ -295,7 +285,7 @@ export default function NewProductPage() {
         }, 5000);
       }
     }
-  }, [setNotificationMessage, setNotificationType, setShowNotification, cloudName, uploadPreset]);
+  }, [setNotificationMessage, setNotificationType, setShowNotification]);
 
   const { getRootProps, getInputProps, isDragActive, fileRejections } = useDropzone({
     onDrop,
