@@ -630,6 +630,19 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
               border: '1px solid rgba(0, 0, 0, 0.1)',
               boxSizing: 'border-box',
             }}>
+              {/* Spotlight Effect */}
+              <div style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: 'radial-gradient(circle at center, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0) 60%)',
+                opacity: index === currentIndex ? 1 : 0,
+                transition: 'opacity 0.4s ease',
+                zIndex: 2,
+              }}/>
+              
               <div style={{
                 width: '100%',
                 aspectRatio: '1/1.1',

@@ -1880,12 +1880,12 @@
 /* Mobile Featured Discoveries Section Styles */
 .mobileFeaturedSection {
   padding: 4rem 1rem 5rem;
-  background: #f8f8f8;
+  background: #000; /* Changed from #f8f8f8 to black */
   position: relative;
   overflow: hidden;
 }
 
-/* Subtle background pattern */
+/* Subtle background pattern - adjust for dark background */
 .mobileFeaturedSection::before {
   content: '';
   position: absolute;
@@ -1894,8 +1894,8 @@
   right: 0;
   bottom: 0;
   background-image: 
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.015'/%3E%3C/svg%3E");
-  opacity: 0.7;
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.025'/%3E%3C/svg%3E"); /* Increased opacity slightly for visibility */
+  opacity: 0.5;
   pointer-events: none;
   z-index: 1;
 }
@@ -1915,7 +1915,7 @@
 .mobileFeaturedHeaderLine {
   width: 40px;
   height: 2px;
-  background: linear-gradient(90deg, transparent, #000, transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent); /* Changed to white */
   margin: 0.5rem auto;
 }
 
@@ -1923,11 +1923,17 @@
   font-family: 'Cormorant Garamond', serif;
   font-size: 2rem;
   font-weight: 400;
-  color: #000;
+  color: #fff; /* Changed from #000 to white */
   margin: 0;
   letter-spacing: 0.02em;
   font-style: italic;
   position: relative;
+  max-width: 300px;
+  margin: 1rem auto 2rem;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.7); /* Changed to light grey */
+  z-index: 2;
 }
 
 .mobileFeaturedTitle::before {
