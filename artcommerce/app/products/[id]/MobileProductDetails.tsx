@@ -725,16 +725,17 @@ export default function MobileProductDetails({
 
           {/* Styling Inspiration Section */}
           {product.stylingIdeaImages && product.stylingIdeaImages.length > 0 && (
-            <div className={styles.accordionSection}>
+            <div className={`${styles.accordionSection} ${expandedSections.styling ? styles.expanded : ''}`}>
               <div
                 className={styles.accordionHeader}
                 onClick={() => toggleSection('styling')}
               >
-                <h3 className={styles.accordionTitle}>Styling Inspiration</h3>
-                <div className={`${styles.accordionIcon} ${expandedSections.styling ? styles.expanded : ''}`}>
-                  <span></span>
-                  <span></span>
-                </div>
+                <h3 className={styles.accordionTitle}>Styling Inspiration Gallery</h3>
+                <span className={styles.accordionIcon} style={{ transform: expandedSections.styling ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+                  <svg width="14" height="8" viewBox="0 0 14 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M1 1L7 7L13 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </span>
               </div>
               <div
                 className={`${styles.accordionContent} ${expandedSections.styling ? styles.expanded : ''}`}
@@ -744,16 +745,25 @@ export default function MobileProductDetails({
                   <div className={styles.stylingGallery}>
                       {product.stylingIdeaImages.map((idea, index) => {
                         const image = typeof idea === 'string' ? { url: idea } : idea;
+                        const defaultCaptions = [
+                          "Tradition reimagined – detailed Indian craftsmanship in its purest form.",
+                          "Elevate your table setting with this elegant piece, adorned with gold accents and crystal embellishments — the perfect blend of art and function.",
+                          "Delicate beauty meets functionality — a handcrafted piece paired with soft-toned tableware and dried florals for a refined, romantic aesthetic."
+                        ];
+
                         return (
                           <div key={index} className={styles.galleryItem}>
                             <div className={styles.galleryImageWrap}>
                               <img src={image.url} alt={`Styling idea ${index + 1}`} className={styles.galleryImage} />
                             </div>
-                            {image.text && (
-                              <div className={styles.galleryOverlay}>
-                                <p className={styles.galleryCaption}>{image.text}</p>
-                              </div>
-                            )}
+                            <div className={styles.galleryText}>
+                              <span className={styles.galleryLabel}>
+                                Featured Styling
+                              </span>
+                              <p className={styles.galleryCaption}>
+                                {image.text || defaultCaptions[index % defaultCaptions.length]}
+                              </p>
+                            </div>
                           </div>
                         );
                       })}

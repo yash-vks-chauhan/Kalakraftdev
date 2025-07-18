@@ -430,6 +430,7 @@
   max-height: 2000px; /* Large enough to contain content */
   opacity: 1;
   padding: 0 0 16px;
+  transition: max-height 0.7s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
 /* Description */
@@ -577,6 +578,11 @@
 
 .galleryItem:hover .galleryImage {
   transform: scale(1.03);
+}
+
+.galleryText {
+  padding: 16px;
+  background-color: #ffffff;
 }
 
 /* Styling for the text overlay */
