@@ -487,20 +487,18 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
         setCurrentIndex((prev) => (prev - 1 + displayProducts.length) % displayProducts.length);
       }
       
-      // Instant transition
+      // Reset drag state immediately
       setDragOffset(0);
       setIsDragging(false);
       
-      setTimeout(() => {
-        endTransition();
-      }, 300);
-          } else {
-        // Return to center instantly
-        setDragOffset(0);
-        setTimeout(() => {
-          setIsDragging(false);
-        }, 100);
-      }
+      // Let the CSS transition handle the animation
+      // No need for a delayed endTransition call here
+
+    } else {
+      // Return to center with a smooth transition
+      setDragOffset(0);
+      setIsDragging(false);
+    }
   };
 
   // Navigate to specific card - instant response
@@ -522,33 +520,16 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
     }, 300);
   };
   
-  // Circular 3D carousel styling - creates a ring of cards
+  // Simple, smooth 2D carousel styling
   const getCardStyle = (index) => {
-    const totalCards = 8; // Always 8 cards in the ring
+    const totalCards = 8;
     let position = index - currentIndex;
-    if (position < 0) position += totalCards;
-    if (position >= totalCards) position -= totalCards;
-    
-    // Calculate angle for circular positioning (360° / 8 cards = 45° per card)
-    const angle = (position * 360) / totalCards;
-    const angleRad = (angle * Math.PI) / 180;
-    
-    // Radius of the circle (distance from center)
-    const radius = 180;
-    
-    // Calculate 3D position in the circle
-    const x = Math.sin(angleRad) * radius;
-    const z = Math.cos(angleRad) * radius;
-    const y = Math.abs(Math.sin(angleRad)) * 10; // Slight vertical movement for depth
-    
-         // Drag offset for the center card - ultra responsive
-     let dragOffsetX = 0;
-     let dragRotationY = 0;
-     if (isDragging && position === 0) {
-       dragOffsetX = dragOffset * 1.0; // Full responsiveness
-       dragRotationY = dragOffset * 0.2; // More rotation feedback
-     }
-    
+
+    // Handle wrapping for circular effect
+    if (position < -totalCards / 2) position += totalCards;
+    if (position > totalCards / 2) position -= totalCards;
+
+    // Base properties for all cards
     const style: React.CSSProperties = {
       position: 'absolute',
       width: '280px',
@@ -558,44 +539,53 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
       transformOrigin: 'center center',
       willChange: 'transform, opacity, filter',
       backfaceVisibility: 'hidden',
-      transform: 'translateZ(0)', // Force hardware acceleration
-      cursor: position === 0 ? (isDragging ? 'grabbing' : 'grab') : 'pointer',
+      cursor: 'pointer',
       left: '50%',
       top: '50%',
       marginLeft: '-140px',
       marginTop: '-210px',
       contain: 'layout style paint',
+      transition: 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.4s ease, filter 0.4s ease',
     };
-    
-    // Silky smooth transitions - only animate transform and opacity
+
+    // Apply drag offset only to the current card
+    let dragOffsetX = 0;
     if (isDragging && position === 0) {
-      style.transition = 'none';
-    } else if (isTransitioning) {
-      style.transition = 'transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1), opacity 0.3s ease, filter 0.3s ease';
-    } else {
-      style.transition = 'transform 0.25s cubic-bezier(0.4, 0.0, 0.2, 1), opacity 0.25s ease, filter 0.25s ease';
+      dragOffsetX = dragOffset;
+      style.transition = 'none'; // No transition while dragging
     }
-    
-    // Center card (current/active)
+
+    // Main card (center)
     if (position === 0) {
-      style.transform = `translate3d(${dragOffsetX}px, 0px, 60px) rotateY(${dragRotationY}deg) scale3d(1, 1, 1)`;
+      style.transform = `translateX(${dragOffsetX}px) scale(1)`;
       style.zIndex = 100;
       style.opacity = 1;
-      style.boxShadow = '0 25px 50px rgba(0, 0, 0, 0.2), 0 15px 30px rgba(0, 0, 0, 0.15)';
       style.filter = 'brightness(1)';
-    } else {
-      // Cards arranged in a circle around the center
-      const scale = 0.7 - (Math.abs(Math.sin(angleRad)) * 0.1); // Scale based on position
-      const opacity = 0.4 + (Math.cos(angleRad) * 0.3); // More visible when closer to front
-      const brightness = 0.7 + (Math.cos(angleRad) * 0.2); // Brighter when closer
-      
-      style.transform = `translate3d(${x}px, ${y}px, ${z - 100}px) rotateY(${-angle}deg) scale3d(${scale}, ${scale}, 1)`;
-      style.zIndex = Math.round(50 + z); // Higher z-index for cards closer to front
-      style.opacity = Math.max(0.3, opacity);
-      style.boxShadow = `0 ${10 + z/10}px ${20 + z/5}px rgba(0, 0, 0, ${0.1 + (Math.cos(angleRad) * 0.1)})`;
-      style.filter = `brightness(${brightness})`;
+      style.boxShadow = '0 15px 40px rgba(0, 0, 0, 0.15)';
     }
-    
+    // Next card (right)
+    else if (position === 1) {
+      style.transform = 'translateX(120px) scale(0.85)';
+      style.zIndex = 90;
+      style.opacity = 0.7;
+      style.filter = 'brightness(0.9)';
+    }
+    // Previous card (left)
+    else if (position === -1) {
+      style.transform = 'translateX(-120px) scale(0.85)';
+      style.zIndex = 90;
+      style.opacity = 0.7;
+      style.filter = 'brightness(0.9)';
+    }
+    // Other cards (hidden)
+    else {
+      const direction = position > 0 ? 1 : -1;
+      style.transform = `translateX(${direction * 180}px) scale(0.7)`;
+      style.zIndex = 80;
+      style.opacity = 0;
+      style.filter = 'brightness(0.8)';
+    }
+
     return style;
   };
 
@@ -607,21 +597,15 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
         style={{
           position: 'relative',
           width: '100%',
-          height: '540px',
+          height: '500px', // Adjusted height
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          marginBottom: '3rem',
+          marginBottom: '2rem',
           zIndex: 3,
-          perspective: '1200px',
-          perspectiveOrigin: 'center center',
-          transformStyle: 'preserve-3d',
-          overflow: 'visible',
-          willChange: 'auto',
-          contain: 'layout style',
-          // Explicitly disable any inherited animations
-          animation: 'none !important',
-          transition: 'none',
+          overflow: 'hidden', // Contain cards within the viewport
+          WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 20%, black 80%, transparent 100%)',
+          maskImage: 'linear-gradient(to right, transparent 0%, black 20%, black 80%, transparent 100%)',
         }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
