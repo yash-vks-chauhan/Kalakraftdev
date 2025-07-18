@@ -588,6 +588,12 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
       style.filter = 'brightness(0.8)';
     }
 
+    // Illuminate the centered card as if hit by the spotlight
+    if (position === 0) {
+      style.filter = 'brightness(1.1)';
+      style.boxShadow = '0 25px 50px rgba(0, 0, 0, 0.3)';
+    }
+
     return style;
   };
 
@@ -780,15 +786,15 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
   );
 };
 
-// A component for a realistic, elegant particle effect
-const EtherealParticles = ({ count = 40 }) => {
+// A component for a hyper-realistic, elegant particle effect
+const EtherealParticles = ({ count = 60 }) => {
   const particles = useMemo(() => {
     return Array.from({ length: count }).map((_, i) => {
-      const size = Math.random() * 1.5 + 0.5; // Very fine particles
-      const initialY = Math.random() * 100;
-      const initialX = Math.random() * 100;
-      const duration = Math.random() * 10 + 8; // Slow, long-lasting drift
-      const delay = Math.random() * 10;
+      const size = Math.random() * 1.2 + 0.3; // Even finer particles
+      const initialY = Math.random() * 30 - 10; // Start near the top
+      const initialX = Math.random() * 80 + 10; // Within the light cone
+      const duration = Math.random() * 12 + 10; // Slower, more elegant drift
+      const delay = Math.random() * 12;
 
       return {
         id: i,
@@ -798,10 +804,10 @@ const EtherealParticles = ({ count = 40 }) => {
           left: `${initialX}%`,
           width: `${size}px`,
           height: `${size}px`,
-          backgroundColor: 'rgba(255, 255, 255, 0.6)',
+          backgroundColor: 'rgba(255, 255, 255, 0.5)',
           borderRadius: '50%',
-          opacity: 0, // Start invisible
-          animation: `drift ${duration}s ease-in-out ${delay}s infinite`,
+          opacity: 0,
+          animation: `ethereal-drift ${duration}s ease-in-out ${delay}s infinite`,
         },
       };
     });
@@ -810,19 +816,16 @@ const EtherealParticles = ({ count = 40 }) => {
   return (
     <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
       <style>{`
-        @keyframes drift {
+        @keyframes ethereal-drift {
           0% {
-            transform: translateX(0px) translateY(0px);
+            transform: translate(0, 0);
             opacity: 0;
           }
-          20% {
-            opacity: ${Math.random() * 0.4 + 0.2};
-          }
-          80% {
-            opacity: ${Math.random() * 0.4 + 0.2};
+          20%, 70% {
+            opacity: ${Math.random() * 0.5 + 0.1};
           }
           100% {
-            transform: translateX(${(Math.random() - 0.5) * 30}px) translateY(${(Math.random() - 0.5) * 30}px);
+            transform: translate(${(Math.random() - 0.5) * 40}px, 150px);
             opacity: 0;
           }
         }
@@ -1755,23 +1758,24 @@ onClick={() => handleCarouselNav('next')}
       Handpicked selections from our latest collection, curated just for you
     </p>
 
-    {/* Elegant Volumetric Spotlight */}
+    {/* Brighter, more realistic Volumetric Spotlight */}
     <div style={{
       position: 'absolute',
-      bottom: '-250px', // Start lower to create a longer cone
+      bottom: '-320px', // Lower for a longer, more dramatic cone
       left: '50%',
-      width: '500px', // Wider for a more dramatic effect
-      height: '400px',
-      transform: 'translateX(-50%) perspective(500px) rotateX(45deg)',
+      width: '600px',
+      height: '500px',
+      transform: 'translateX(-50%) perspective(400px) rotateX(45deg)',
       pointerEvents: 'none',
+      zIndex: 5,
     }}>
       <div style={{
         width: '100%',
         height: '100%',
-        background: 'radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, 0.15) 0%, transparent 70%)',
+        background: 'radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, 0.2) 0%, transparent 65%)',
         position: 'relative',
       }}>
-        <EtherealParticles count={50} />
+        <EtherealParticles count={70} />
       </div>
     </div>
   </div>
