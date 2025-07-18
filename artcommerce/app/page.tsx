@@ -588,12 +588,12 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
       style.filter = 'brightness(0.8)';
     }
 
-    // Illuminate the centered card as if hit by the spotlight
+    // Adjust brightness to simulate spotlight
     if (position === 0) {
-      style.filter = 'brightness(1.1)';
-      style.boxShadow = '0 25px 50px rgba(0, 0, 0, 0.3)';
+      style.filter = 'brightness(1.15)';
+      style.boxShadow = '0 25px 50px rgba(0, 0, 0, 0.25)';
     } else {
-      style.filter = 'brightness(0.7)';
+      style.filter = 'brightness(0.6)';
     }
 
     return style;
@@ -602,52 +602,7 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
   return (
     <div style={{ position: 'relative', width: '100%' }}>
 
-      {/* Stage Lighting Effect */}
-      <div style={{
-        position: 'absolute',
-        top: '-100px',
-        left: 0,
-        right: 0,
-        display: 'flex',
-        justifyContent: 'center',
-        gap: '80px',
-        zIndex: 5,
-        pointerEvents: 'none',
-      }}>
-        {[0.3, 1, 0.3].map((opacity, i) => (
-          <img key={i} src="/images/spotlight-lamp.png" alt="Spotlight" style={{ width: '60px', opacity }} />
-        ))}
-      </div>
-
-      {/* High-Intensity Light Beam */}
-      <div style={{
-        position: 'absolute',
-        top: '-40px',
-        left: '50%',
-        width: '400px',
-        height: '400px',
-        background: 'radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, 0.25) 0%, transparent 70%)',
-        transform: 'translateX(-50%)',
-        zIndex: 4,
-        pointerEvents: 'none',
-      }} />
-
-      {/* Floor Spotlight */}
-      <div style={{
-        position: 'absolute',
-        bottom: '10px',
-        left: '50%',
-        width: '450px',
-        height: '100px',
-        background: 'radial-gradient(ellipse at center, rgba(255, 255, 255, 0.2) 0%, transparent 60%)',
-        borderRadius: '50%',
-        transform: 'translateX(-50%)',
-        filter: 'blur(10px)',
-        zIndex: 3,
-        pointerEvents: 'none',
-      }} />
-
-      <div
+      <div 
         ref={carouselRef}
         style={{
           position: 'relative',
@@ -668,6 +623,23 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
         // Prevent any CSS class inheritance that might cause autoplay
         className=""
       >
+        <img
+          src="https://ik.imagekit.io/4pjvf8k9u/products/imagespotligh.png?updatedAt=1752825274382"
+          alt="Spotlight"
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: '150%',
+            maxWidth: '800px',
+            height: 'auto',
+            zIndex: 1, // Behind cards
+            pointerEvents: 'none',
+            opacity: 0.9,
+            mixBlendMode: 'lighten',
+          }}
+        />
         {displayProducts.map((product, index) => (
           <div key={product.id} style={getCardStyle(index)}>
             <Link href={`/products/${product.id}`} style={{
