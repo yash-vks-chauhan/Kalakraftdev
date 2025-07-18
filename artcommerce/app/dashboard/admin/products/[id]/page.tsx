@@ -702,4 +702,115 @@ export default function EditProductPage() {
                 >
                   <img
                     src={url}
-                    alt={`Product preview ${i + 1}`
+                    alt={`Product preview ${i + 1}`}
+                    className={styles.imagePreview}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveImage(i)}
+                    className={styles.removeImageButton}
+                    title="Remove image"
+                  >
+                    <FiX />
+                  </button>
+                </div>
+              ))}
+              {/* Show uploading files with progress */}
+              {Object.entries(uploadingFiles).map(([uploadId, file]) => (
+                <div key={uploadId} className={styles.imagePreviewContainer}>
+                  <div className={styles.uploadingOverlay}>
+                    <FiUpload className={styles.uploadingIcon} />
+                    <div className={styles.uploadProgress}>
+                      <div
+                        className={styles.uploadProgressBar}
+                        style={{ width: `${uploadProgress[uploadId] || 0}%` }}
+                      />
+                    </div>
+                    <div className={styles.uploadProgressText}>
+                      {uploadProgress[uploadId] || 0}%
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {Object.entries(uploadErrors).map(([uploadId, error]) => (
+              <p key={uploadId} className={styles.uploadError}>
+                <FiAlertCircle /> {error}
+              </p>
+            ))}
+          </div>
+        </div>
+
+        {/* ------------ Styling Ideas Section ------------- */}
+        <div className={styles.card}>
+          <h2 className={styles.sectionTitle}>
+            <FiImage className={styles.sectionIcon} /> Artful Styling Ideas Images
+          </h2>
+          <div className={styles.formGroup}>
+            <label className={styles.label}>Styling Inspiration Images</label>
+
+            <div
+              {...getStylingRootProps()}
+              className={`${styles.dropzone} ${isStylingDrag ? styles.dropzoneDragActive : ''}`}
+            >
+              <input {...getStylingInputProps()} />
+              <FiUpload className={styles.dropzoneIcon} />
+              <p className={styles.dropzoneText}>
+                {isStylingDrag
+                  ? 'Drop the images here...'
+                  : 'Drag & drop styling inspiration images here, or click to select files (max 10MB per image)'}
+              </p>
+              <button type="button" className={styles.browseButton}>
+                <FiUpload /> Browse Files
+              </button>
+            </div>
+
+            {stylingIdeas.length > 0 && (
+              <div className={styles.imagePreviewGrid}>
+                {stylingIdeas.map((idea, idx) => (
+                  <div key={idea.url} className={styles.previewItem}>
+                    <img src={idea.url} alt="styling idea" className={styles.previewImg} />
+                    <input
+                      type="text"
+                      value={idea.text}
+                      onChange={e => {
+                        const val = e.target.value;
+                        setStylingIdeas(prev => prev.map((it, i) => (i === idx ? { ...it, text: val } : it)));
+                      }}
+                      placeholder="Add a caption for this styling idea"
+                      className={styles.stylingCaptionInput}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveStylingImage(idx)}
+                      className={styles.removeBtn}
+                    >
+                      <FiX /> Remove Image
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className={styles.buttonGroup}>
+          <button type="submit" className={styles.saveButton} disabled={submitting}>
+            <FiSave /> {submitting ? 'Saving...' : 'Save Changes'}
+            <FiArrowRight className={styles.arrowIcon} />
+          </button>
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className={styles.cancelButton}
+            disabled={submitting}
+          >
+            <FiX /> Cancel
+            <FiArrowRight className={styles.arrowIcon} />
+          </button>
+        </div>
+      </form>
+    </main>
+  );
+}
