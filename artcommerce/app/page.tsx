@@ -780,42 +780,49 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
   );
 };
 
-// A component for a detailed, falling particle effect
-const FallingParticles = ({ count = 50 }) => {
+// A component for a realistic, elegant particle effect
+const EtherealParticles = ({ count = 40 }) => {
   const particles = useMemo(() => {
     return Array.from({ length: count }).map((_, i) => {
-      const size = Math.random() * 2 + 1; // Finer particles
+      const size = Math.random() * 1.5 + 0.5; // Very fine particles
+      const initialY = Math.random() * 100;
       const initialX = Math.random() * 100;
-      const duration = Math.random() * 3 + 4; // Slower, more graceful fall
-      const delay = Math.random() * 5;
-      
+      const duration = Math.random() * 10 + 8; // Slow, long-lasting drift
+      const delay = Math.random() * 10;
+
       return {
         id: i,
         style: {
           position: 'absolute',
-          top: '-10px', // Start above the container
+          top: `${initialY}%`,
           left: `${initialX}%`,
           width: `${size}px`,
           height: `${size}px`,
-          backgroundColor: 'rgba(255, 255, 255, 0.7)',
+          backgroundColor: 'rgba(255, 255, 255, 0.6)',
           borderRadius: '50%',
-          boxShadow: '0 0 5px rgba(255, 255, 255, 0.5)',
-          animation: `fall ${duration}s linear ${delay}s infinite`,
-        }
+          opacity: 0, // Start invisible
+          animation: `drift ${duration}s ease-in-out ${delay}s infinite`,
+        },
       };
     });
   }, [count]);
 
   return (
-    <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+    <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
       <style>{`
-        @keyframes fall {
+        @keyframes drift {
           0% {
-            transform: translateY(0) translateX(0);
-            opacity: 1;
+            transform: translateX(0px) translateY(0px);
+            opacity: 0;
+          }
+          20% {
+            opacity: ${Math.random() * 0.4 + 0.2};
+          }
+          80% {
+            opacity: ${Math.random() * 0.4 + 0.2};
           }
           100% {
-            transform: translateY(200px) translateX(${(Math.random() - 0.5) * 50}px);
+            transform: translateX(${(Math.random() - 0.5) * 30}px) translateY(${(Math.random() - 0.5) * 30}px);
             opacity: 0;
           }
         }
@@ -1748,23 +1755,23 @@ onClick={() => handleCarouselNav('next')}
       Handpicked selections from our latest collection, curated just for you
     </p>
 
-    {/* V-shaped spotlight with particles */}
+    {/* Elegant Volumetric Spotlight */}
     <div style={{
       position: 'absolute',
-      bottom: '-150px', // Position below the text
+      bottom: '-250px', // Start lower to create a longer cone
       left: '50%',
-      width: '400px',
-      height: '300px',
-      transform: 'translateX(-50%)',
+      width: '500px', // Wider for a more dramatic effect
+      height: '400px',
+      transform: 'translateX(-50%) perspective(500px) rotateX(45deg)',
       pointerEvents: 'none',
     }}>
       <div style={{
         width: '100%',
         height: '100%',
-        background: 'linear-gradient(to top, rgba(255, 255, 255, 0.25), transparent 60%)',
-        clipPath: 'polygon(25% 100%, 50% 0, 75% 100%)',
+        background: 'radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, 0.15) 0%, transparent 70%)',
+        position: 'relative',
       }}>
-        <FallingParticles count={30} />
+        <EtherealParticles count={50} />
       </div>
     </div>
   </div>
