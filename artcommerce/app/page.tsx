@@ -1710,21 +1710,7 @@ onClick={() => handleCarouselNav('next')}
       position: 'relative',
       zIndex: 2
     }} data-aos="fade-up" data-aos-delay="1000">
-      <Link href="/products" style={{
-        display: 'inline-block',
-        padding: '0.9rem 2.5rem',
-        background: 'transparent',
-        color: '#fff',
-        fontSize: '0.85rem',
-        fontWeight: 300,
-        letterSpacing: '0.1em',
-        textDecoration: 'none',
-        textTransform: 'uppercase',
-        border: '1px solid rgba(255,255,255,0.2)',
-        position: 'relative',
-        overflow: 'hidden',
-        transition: 'all 0.4s ease'
-      }}>
+      <Link href="/products" className={styles.exploreAllButton}>
         View All Collections
       </Link>
     </div>
@@ -1741,7 +1727,7 @@ onClick={() => handleCarouselNav('next')}
       fontWeight: 300,
       fontStyle: 'italic',
       letterSpacing: '0.05em',
-      color: '#1a1a1a',
+      color: '#ffffff',
     }}>Featured Discoveries</h2>
     <div className={styles.mobileFeaturedHeaderLine} />
     <p className={styles.mobileFeaturedDescription}>

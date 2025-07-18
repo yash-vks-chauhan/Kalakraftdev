@@ -179,23 +179,7 @@ const MobileVideoSection: React.FC = () => {
         }}>Experience the magic of resin art creation</p>
         <Link 
           href="/products" 
-          style={{
-            display: 'inline-block',
-            padding: '1rem 2rem',
-            backgroundColor: '#000',
-            color: '#fff',
-            fontSize: '1rem',
-            fontWeight: 400,
-            letterSpacing: '0.05em',
-            textDecoration: 'none',
-            borderRadius: '0px',
-            transition: 'all 0.3s ease',
-            position: 'relative',
-            overflow: 'hidden',
-            zIndex: 1,
-            width: '80%',
-            maxWidth: '350px'
-          }}
+          className={styles.exploreAllButton}
         >
           Explore Our Process
         </Link>
