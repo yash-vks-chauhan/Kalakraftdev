@@ -607,7 +607,7 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
         style={{
           position: 'relative',
           width: '100%',
-          height: '500px', // Adjusted height
+          height: '700px', // Adjusted height to show full spotlight
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
@@ -632,7 +632,7 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
             left: '0',
             width: '100%',
             height: '100%',
-            objectFit: 'contain',
+            objectFit: 'cover',
             zIndex: 1, // Behind cards
             pointerEvents: 'none',
             opacity: 0.9,
