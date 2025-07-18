@@ -654,6 +654,20 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
               border: '1px solid rgba(0, 0, 0, 0.1)',
               boxSizing: 'border-box',
             }}>
+              {/* Spotlight effect on the card */}
+              {index === currentIndex && (
+                <div style={{
+                  position: 'absolute',
+                  top: '-20%',
+                  left: '0',
+                  width: '100%',
+                  height: '100%',
+                  background: 'radial-gradient(circle at 50% 0%, rgba(255, 255, 240, 0.5) 0%, transparent 50%)',
+                  pointerEvents: 'none',
+                  zIndex: 2,
+                  mixBlendMode: 'lighten',
+                }} />
+              )}
               <div style={{
                 width: '100%',
                 aspectRatio: '1/1.1',
@@ -1721,7 +1735,14 @@ onClick={() => handleCarouselNav('next')}
   {/* Section header */}
   <div className={styles.mobileFeaturedHeader} data-aos="fade-in" data-aos-delay="200">
     <div className={styles.mobileFeaturedHeaderLine} />
-    <h2 className={styles.mobileFeaturedTitle}>Featured Discoveries</h2>
+    <h2 className={styles.mobileFeaturedTitle} style={{
+      fontFamily: 'Cormorant Garamond, serif',
+      fontSize: '2.2rem',
+      fontWeight: 300,
+      fontStyle: 'italic',
+      letterSpacing: '0.05em',
+      color: '#1a1a1a',
+    }}>Featured Discoveries</h2>
     <div className={styles.mobileFeaturedHeaderLine} />
     <p className={styles.mobileFeaturedDescription}>
       Handpicked selections from our latest collection, curated just for you
