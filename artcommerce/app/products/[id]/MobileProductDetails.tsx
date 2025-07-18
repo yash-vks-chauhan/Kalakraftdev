@@ -722,73 +722,40 @@ export default function MobileProductDetails({
               </div>
             </div>
           )}
-          
-          {/* Styling Inspiration Gallery Section */}
+
+          {/* Styling Inspiration - Full Width */}
           {product.stylingIdeaImages && product.stylingIdeaImages.length > 0 && (
-            <div className={`${styles.accordionSection} ${expandedSections.styling ? styles.expanded : ''}`}>
-              <button 
-                className={styles.accordionHeader} 
-                onClick={() => toggleSection('styling')}
-                aria-expanded={expandedSections.styling}
-              >
-                <span className={styles.accordionTitle}>Styling Inspiration Gallery</span>
-                <span className={styles.accordionIcon} style={{ transform: expandedSections.styling ? 'rotate(180deg)' : 'rotate(0deg)' }}>
-                  <svg width="14" height="8" viewBox="0 0 14 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M1 1L7 7L13 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </span>
-              </button>
-              
-              <div className={`${styles.accordionContent} ${expandedSections.styling ? styles.expanded : ''}`}>
-                <div style={{ 
-                  transform: expandedSections.styling ? 'translateY(0)' : 'translateY(10px)',
-                  transition: 'transform 0.6s cubic-bezier(0.25, 0.1, 0.25, 1)',
-                  transitionDelay: expandedSections.styling ? '0.1s' : '0s'
-                }}>
+            <div className={styles.fullWidthSection}>
+              <div className={styles.accordionSection}>
+                <div 
+                  className={styles.accordionHeader}
+                  onClick={() => toggleSection('styling')}
+                >
+                  <h3 className={styles.accordionTitle}>Styling Inspiration</h3>
+                  <div className={`${styles.accordionIcon} ${expandedSections.styling ? styles.expanded : ''}`}>
+                    <span></span>
+                    <span></span>
+                  </div>
+                </div>
+                <div 
+                  className={`${styles.accordionContent} ${expandedSections.styling ? styles.expanded : ''}`}
+                >
                   <div className={styles.stylingGallery}>
-                    {product.stylingIdeaImages.map((item, index) => {
-                      const imageObj = typeof item === 'string' ? { url: item, text: '' } : item;
-                      const defaultCaptions = [
-                        "Elevate your table setting with this elegant piece, adorned with gold accents and crystal embellishments — the perfect blend of art and function.",
-                        "Delicate beauty meets functionality — a handcrafted piece paired with soft-toned tableware and dried florals for a refined, romantic aesthetic.",
-                        "Bring warmth and artistic flair to your space with thoughtful placement that complements your existing decor."
-                      ];
-                      
-                      // Determine the label based on image count
-                      let spaceLabel = "Living Space";
-                      const imageCount = product.stylingIdeaImages?.length || 0;
-                      if (imageCount === 1) {
-                        spaceLabel = "Featured Styling";
-                      } else if (imageCount === 2) {
-                        spaceLabel = index === 0 ? "Living Space" : "Workspace";
-                      } else {
-                        spaceLabel = index === 0 ? "Living Space" : index === 1 ? "Workspace" : "Dining Area";
-                      }
-                      
+                    {product.stylingIdeaImages.map((idea, index) => {
+                      const image = typeof idea === 'string' ? { url: idea } : idea;
                       return (
                         <div key={index} className={styles.galleryItem}>
                           <div className={styles.galleryImageWrap}>
-                            <img 
-                              src={imageObj.url} 
-                              alt={`Styling inspiration ${index + 1}`} 
-                              className={styles.galleryImage} 
-                              loading="lazy" 
-                            />
+                            <img src={image.url} alt={`Styling idea ${index + 1}`} className={styles.galleryImage} />
+                          </div>
+                          {image.text && (
                             <div className={styles.galleryOverlay}>
-                              <span className={styles.galleryLabel}>
-                                {spaceLabel}
-                              </span>
+                              <p className={styles.galleryCaption}>{image.text}</p>
                             </div>
-                          </div>
-                          <div className={styles.galleryCaption}>
-                            <p>{imageObj.text || defaultCaptions[index % defaultCaptions.length]}</p>
-                          </div>
+                          )}
                         </div>
                       );
                     })}
-                  </div>
-                  <div className={styles.stylingFooter}>
-                    <p>Bring art into your everyday life with thoughtful placement and styling</p>
                   </div>
                 </div>
               </div>
