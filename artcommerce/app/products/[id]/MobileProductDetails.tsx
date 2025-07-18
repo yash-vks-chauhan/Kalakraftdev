@@ -723,39 +723,40 @@ export default function MobileProductDetails({
             </div>
           )}
 
-          {/* Styling Inspiration - Full Width */}
+          {/* Styling Inspiration Section */}
           {product.stylingIdeaImages && product.stylingIdeaImages.length > 0 && (
-            <div className={styles.fullWidthSection}>
-              <div className={styles.accordionSection}>
-                <div 
-                  className={styles.accordionHeader}
-                  onClick={() => toggleSection('styling')}
-                >
-                  <h3 className={styles.accordionTitle}>Styling Inspiration</h3>
-                  <div className={`${styles.accordionIcon} ${expandedSections.styling ? styles.expanded : ''}`}>
-                    <span></span>
-                    <span></span>
-                  </div>
+            <div className={styles.accordionSection}>
+              <div
+                className={styles.accordionHeader}
+                onClick={() => toggleSection('styling')}
+              >
+                <h3 className={styles.accordionTitle}>Styling Inspiration</h3>
+                <div className={`${styles.accordionIcon} ${expandedSections.styling ? styles.expanded : ''}`}>
+                  <span></span>
+                  <span></span>
                 </div>
-                <div 
-                  className={`${styles.accordionContent} ${expandedSections.styling ? styles.expanded : ''}`}
-                >
+              </div>
+              <div
+                className={`${styles.accordionContent} ${expandedSections.styling ? styles.expanded : ''}`}
+                style={{ padding: expandedSections.styling ? '0' : undefined }}
+              >
+                <div className={styles.fullWidthSection}>
                   <div className={styles.stylingGallery}>
-                    {product.stylingIdeaImages.map((idea, index) => {
-                      const image = typeof idea === 'string' ? { url: idea } : idea;
-                      return (
-                        <div key={index} className={styles.galleryItem}>
-                          <div className={styles.galleryImageWrap}>
-                            <img src={image.url} alt={`Styling idea ${index + 1}`} className={styles.galleryImage} />
-                          </div>
-                          {image.text && (
-                            <div className={styles.galleryOverlay}>
-                              <p className={styles.galleryCaption}>{image.text}</p>
+                      {product.stylingIdeaImages.map((idea, index) => {
+                        const image = typeof idea === 'string' ? { url: idea } : idea;
+                        return (
+                          <div key={index} className={styles.galleryItem}>
+                            <div className={styles.galleryImageWrap}>
+                              <img src={image.url} alt={`Styling idea ${index + 1}`} className={styles.galleryImage} />
                             </div>
-                          )}
-                        </div>
-                      );
-                    })}
+                            {image.text && (
+                              <div className={styles.galleryOverlay}>
+                                <p className={styles.galleryCaption}>{image.text}</p>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
                   </div>
                 </div>
               </div>

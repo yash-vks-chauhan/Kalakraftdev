@@ -536,9 +536,9 @@
   width: 100vw;
   margin-left: 50%;
   transform: translateX(-50%);
-  background-color: #ffffff; /* Or whatever background is desired */
-  padding: 24px 0; /* Vertical padding */
-  overflow: hidden; /* Prevent horizontal scrollbar issues */
+  background-color: #ffffff;
+  padding: 16px 0;
+  overflow: hidden;
 }
 
 /* Styling Inspiration Gallery */
@@ -559,23 +559,19 @@
   background-color: #f9f9f9;
 }
 
-/* Image wrapper with aspect ratio */
+/* Image wrapper */
 .galleryImageWrap {
   width: 100%;
   position: relative;
   overflow: hidden;
-  /* You can adjust the aspect ratio as needed */
-  padding-top: 125%; /* 4:5 aspect ratio */
+  line-height: 0; /* To remove any space below the image */
 }
 
-/* The actual image, positioned absolutely within the wrapper */
+/* The actual image */
 .galleryImage {
-  position: absolute;
-  top: 0;
-  left: 0;
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: auto; /* Let image determine its own height */
+  display: block;
   transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
