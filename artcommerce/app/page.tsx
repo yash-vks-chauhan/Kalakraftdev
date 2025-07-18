@@ -491,8 +491,10 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
       setDragOffset(0);
       setIsDragging(false);
       
-      // Let the CSS transition handle the animation
-      // No need for a delayed endTransition call here
+      // Unlock the carousel after the CSS transition completes
+      setTimeout(() => {
+        endTransition();
+      }, 400); // Must match the CSS transition duration (0.4s)
 
     } else {
       // Return to center with a smooth transition
