@@ -1747,20 +1747,7 @@ onClick={() => handleCarouselNav('next')}
     position: 'relative',
     zIndex: 2
   }} data-aos="fade-up" data-aos-delay="400">
-    <Link href="/products" style={{
-      display: 'inline-block',
-      padding: '0.9rem 2.5rem',
-      background: '#000',
-      color: '#fff',
-      fontSize: '0.85rem',
-      fontWeight: 400,
-      letterSpacing: '0.1em',
-      textDecoration: 'none',
-      textTransform: 'uppercase',
-      position: 'relative',
-      overflow: 'hidden',
-      transition: 'all 0.4s ease'
-    }}>
+    <Link href="/products" className={styles.mobileFeaturedViewAllButton}>
       View All Products
     </Link>
   </div>

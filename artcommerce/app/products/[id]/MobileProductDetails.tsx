@@ -756,11 +756,13 @@ export default function MobileProductDetails({
                           <div key={index} className={styles.galleryItem}>
                             <div className={styles.galleryImageWrap}>
                               <img src={image.url} alt={`Styling idea ${index + 1}`} className={styles.galleryImage} />
+                              <div className={styles.galleryOverlay}>
+                                <span className={styles.galleryLabel}>
+                                  Featured Styling
+                                </span>
+                              </div>
                             </div>
                             <div className={styles.galleryText}>
-                              <span className={styles.galleryLabel}>
-                                Featured Styling
-                              </span>
                               <p className={styles.galleryCaption}>
                                 {image.text || defaultCaptions[index % defaultCaptions.length]}
                               </p>

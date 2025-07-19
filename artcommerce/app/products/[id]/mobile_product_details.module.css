@@ -580,30 +580,6 @@
   transform: scale(1.03);
 }
 
-.galleryText {
-  padding: 16px;
-  background-color: #ffffff;
-}
-
-/* Optional label for the text */
-.galleryLabel {
-  font-size: 0.8rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #333;
-  margin-bottom: 8px;
-  display: block;
-}
-
-/* The main caption text */
-.galleryCaption {
-  font-size: 0.95rem;
-  font-weight: 400;
-  line-height: 1.5;
-  color: #000;
-}
-
 /* Styling for the text overlay */
 .galleryOverlay {
   position: absolute;
@@ -617,6 +593,35 @@
   flex-direction: column;
   justify-content: flex-end;
   color: #fff;
+}
+
+.galleryText {
+  padding: 16px;
+  background-color: #ffffff;
+}
+
+/* Optional label for the text */
+.galleryLabel {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #fff;
+  margin-bottom: 8px;
+  display: block;
+  background-color: rgba(255, 255, 255, 0.9);
+  color: #000;
+  padding: 4px 8px;
+  border-radius: 0;
+  width: fit-content;
+}
+
+/* The main caption text */
+.galleryCaption {
+  font-size: 0.95rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #000;
 }
 
 .stylingFooter {
