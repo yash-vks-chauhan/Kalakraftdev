@@ -12,7 +12,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #f0f0f0; /* Gray background only for image section */
+  background-color: #f0f0f0 !important; /* Gray background only for image section */
   padding: 0; /* Remove padding to maximize image size */
   margin-bottom: 0; /* Remove negative margin */
   height: auto; /* Let the height be determined by the content */
@@ -566,6 +566,7 @@
   position: relative;
   overflow: hidden;
   line-height: 0; /* To remove any space below the image */
+  background-color: #f0f0f0 !important;
 }
 
 /* The actual image */
@@ -574,6 +575,7 @@
   height: auto; /* Let image determine its own height */
   display: block;
   transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  background-color: transparent !important;
 }
 
 .galleryItem:hover .galleryImage {
