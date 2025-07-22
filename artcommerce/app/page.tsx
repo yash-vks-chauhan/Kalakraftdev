@@ -279,6 +279,8 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
   const carouselRef = useRef(null);
   const startPos = useRef(0);
   const lastPos = useRef(0);
+  const startY = useRef(0); // For vertical scroll detection
+  const lastY = useRef(0);  // For vertical scroll detection
   const startTime = useRef(0);
   const lastManualChange = useRef(Date.now());
   
@@ -431,13 +433,13 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
   const handleTouchStart = (e) => {
     // Don't start new drag if transitioning
     if (isTransitioning) return;
-    
     setIsDragging(true);
     startPos.current = e.touches[0].clientX;
     lastPos.current = e.touches[0].clientX;
+    startY.current = e.touches[0].clientY;
+    lastY.current = e.touches[0].clientY;
     startTime.current = Date.now();
     setDragOffset(0);
-    
     // Prevent any delays or conflicts
     e.preventDefault();
     e.stopPropagation();
@@ -445,19 +447,24 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
   
   const handleTouchMove = (e) => {
     if (!isDragging || isTransitioning) return;
-    
     const currentPos = e.touches[0].clientX;
+    const currentPosY = e.touches[0].clientY;
     const rawOffset = currentPos - startPos.current;
-    
-    // Apply ultra-responsive rubber band
-    const constrainedOffset = applyRubberBand(rawOffset);
-    
-    lastPos.current = currentPos;
-    setDragOffset(constrainedOffset);
-    
-    // Prevent scrolling and improve responsiveness
-    e.preventDefault();
-    e.stopPropagation();
+    const rawOffsetY = currentPosY - startY.current;
+    // Only prevent default if horizontal movement is greater than vertical
+    if (Math.abs(rawOffset) > Math.abs(rawOffsetY)) {
+      // Apply ultra-responsive rubber band
+      const constrainedOffset = applyRubberBand(rawOffset);
+      lastPos.current = currentPos;
+      lastY.current = currentPosY;
+      setDragOffset(constrainedOffset);
+      e.preventDefault();
+      e.stopPropagation();
+    } else {
+      // If vertical scroll, end dragging so user can scroll page
+      setIsDragging(false);
+      setDragOffset(0);
+    }
   };
   
   const handleTouchEnd = () => {
