@@ -23,6 +23,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable}`}>
       <head>
+        <link rel="preload" href="/images/featured1.png" as="image" />
+        <link rel="preload" href="/images/featured2.png" as="image" />
+        <link rel="preload" href="/images/featured3.JPG" as="image" />
         <style>{`
           :root {
             --cosmos-z-index: 50;

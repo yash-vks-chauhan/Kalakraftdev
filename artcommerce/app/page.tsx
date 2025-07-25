@@ -507,23 +507,24 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
       marginTop: '-210px',
       contain: 'layout style paint',
       transition: 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.4s ease',
+      transform: 'translateZ(0)', // Force GPU acceleration
     };
 
     if (position === 0) {
-      style.transform = 'translateX(0px) scale(1)';
+      style.transform = 'translateX(0px) scale(1) translateZ(0)';
       style.zIndex = 100;
       style.opacity = 1;
       style.filter = 'brightness(1.05)';
       style.boxShadow = '0 12px 30px rgba(0, 0, 0, 0.15)';
     } else if (Math.abs(position) === 1) {
       const direction = Math.sign(position);
-      style.transform = `translateX(${direction * 120}px) scale(0.85)`;
+      style.transform = `translateX(${direction * 120}px) scale(0.85) translateZ(0)`;
       style.zIndex = 90;
       style.opacity = 0.6;
       style.filter = 'brightness(0.7)';
     } else {
       const direction = position > 0 ? 1 : -1;
-      style.transform = `translateX(${direction * 180}px) scale(0.7)`;
+      style.transform = `translateX(${direction * 180}px) scale(0.7) translateZ(0)`;
       style.zIndex = 80;
       style.opacity = 0;
       style.filter = 'brightness(0.5)';
@@ -610,6 +611,7 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
                 <img 
                   src={product.imageUrls[0]} 
                   alt={product.name}
+                  decoding="async"
                   style={{
                     width: '100%',
                     height: '100%',
