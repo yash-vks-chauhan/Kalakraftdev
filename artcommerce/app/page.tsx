@@ -1515,12 +1515,10 @@ onClick={() => handleCarouselNav('next')}
   </section>
   
   {/* Mobile Video Section - Using the original component */}
-  <div data-aos="fade-up" data-aos-delay="400">
-    <MobileVideoSection />
-  </div>
+  <MobileVideoSection />
   
   {/* Explore Our Artisan Creations section - Restored */}
-  <section className={`${styles.mobileExploreSection} ${styles.mobileOnly}`} style={{ padding: '5rem 1.5rem 6rem' }} data-aos="fade-up" data-aos-delay="500">
+  <section className={styles.mobileExploreSection} style={{ padding: '5rem 1.5rem 6rem' }} data-aos="fade-up" data-aos-delay="500">
     {/* Architectural design elements */}
     <div style={{
       position: 'absolute',
@@ -1674,7 +1672,7 @@ onClick={() => handleCarouselNav('next')}
   </section>
   
   {/* Featured Discoveries Section - Random products from API */}
-<section className={`${styles.mobileFeaturedSection} ${styles.mobileOnly}`} data-aos="fade-up" data-aos-delay="600">
+<section className={styles.mobileFeaturedSection} data-aos="fade-up" data-aos-delay="600">
   {/* Section header */}
   <div className={styles.mobileFeaturedHeader} data-aos="fade-in" data-aos-delay="200">
     <div className={styles.mobileFeaturedHeaderLine} />
