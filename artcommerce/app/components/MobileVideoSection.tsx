@@ -4,7 +4,7 @@ import styles from '../home.module.css';
 
 const MobileVideoSection: React.FC = () => {
   return (
-    <section style={{ 
+    <section className={`${styles.mobileOnly}`} style={{ 
       padding: '2rem 0 0.5rem 0',
       background: '#f9f9f9', // Match collections section background
       position: 'relative',

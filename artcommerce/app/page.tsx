@@ -15,6 +15,12 @@ import { getImageUrl } from '../lib/cloudinaryImages'
 import Link from 'next/link'
 import MobileVideoSection from './components/MobileVideoSection';
 
+// Add this to detect mobile view
+const isMobileView = () => {
+  if (typeof window === 'undefined') return false;
+  return window.innerWidth <= 1024;
+};
+
 // Featured Products Grid Component
 const FeaturedProductsGrid = () => {
   const [products, setProducts] = useState([]);
@@ -35,21 +41,13 @@ const FeaturedProductsGrid = () => {
   // Product Card Component (similar to ProductsMobileClient)
   const ProductCard = ({ product }) => {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
-    const [showDetails, setShowDetails] = useState(false);
     
     const handleImageTap = (e) => {
       e.preventDefault();
-      // Only cycle images if details are not shown
-      if (!showDetails && product.imageUrls && product.imageUrls.length > 1) {
+      if (product.imageUrls && product.imageUrls.length > 1) {
         setCurrentImageIndex((prev) => (prev + 1) % product.imageUrls.length);
       }
     };
-
-    const toggleDetails = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      setShowDetails(!showDetails);
-    }
 
     // Format stock status
     const getStockStatus = () => {
@@ -72,7 +70,7 @@ const FeaturedProductsGrid = () => {
       <Link href={`/products/${product.id}`} className={styles.mobileFeaturedCard}>
         <div className={styles.mobileFeaturedCardInner}>
           <div 
-            className={`${styles.mobileFeaturedImageContainer} ${showDetails ? styles.detailsVisible : ''}`}
+            className={styles.mobileFeaturedImageContainer}
             onClick={handleImageTap}
           >
             {product.imageUrls && product.imageUrls.length > 0 ? (
@@ -120,10 +118,6 @@ const FeaturedProductsGrid = () => {
               </div>
             )}
 
-            {product.imageUrls && product.imageUrls.length > 1 && (
-              <div className={styles.mobileFeaturedTapIndicator}>Tap to see more</div>
-            )}
-
             {/* Quick action buttons */}
             <div className={styles.mobileFeaturedQuickActions}>
               <button 
@@ -138,19 +132,10 @@ const FeaturedProductsGrid = () => {
                   <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" stroke="currentColor" strokeWidth="1.5" fill="none" />
                 </svg>
               </button>
-              <button
-                className={styles.mobileFeaturedActionButton}
-                onClick={toggleDetails}
-                style={{ top: '54px' }}
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zm0 12.5c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" fill="currentColor"/>
-                </svg>
-              </button>
             </div>
 
             {/* Product details overlay */}
-            <div className={`${styles.mobileFeaturedDetails} ${showDetails ? styles.visible : ''}`}>
+            <div className={styles.mobileFeaturedDetails}>
               <div className={styles.mobileFeaturedDetailsContent}>
                 <div className={styles.mobileFeaturedDetailRow}>
                   <span className={styles.mobileFeaturedDetailLabel}>Status</span>
@@ -168,8 +153,8 @@ const FeaturedProductsGrid = () => {
                     <span className={styles.mobileFeaturedDetailValue}>{product.dimensions}</span>
                   </div>
                 )}
-                <div className={styles.mobileFeaturedViewButton} onClick={toggleDetails}>
-                  {showDetails ? 'Hide Details' : 'View Details'}
+                <div className={styles.mobileFeaturedViewButton}>
+                  View Details
                 </div>
               </div>
             </div>
@@ -310,10 +295,8 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
 
   const getOptimizedUrl = (url) => {
     if (!url) return '';
-    const screenWidth = typeof window !== 'undefined' ? window.innerWidth : 800;
-    const width = screenWidth <= 480 ? 400 : 800;
     // Fetching high-resolution images for maximum quality on all devices.
-    return url.replace('/upload/', `/upload/w_${width},q_auto:best,f_auto/`);
+    return url.replace('/upload/', '/upload/w_800,q_auto:best,f_auto/');
   };
 
   const defaultProducts = [
@@ -429,7 +412,7 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
   };
   
   const handleTouchMove = (e) => {
-    if (!isDragging.current) return;
+    if (!isDragging.current || isTransitioning) return;
     
     const currentPos = e.touches[0].clientX;
     const currentPosY = e.touches[0].clientY;
@@ -437,7 +420,7 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
     const rawOffsetY = currentPosY - startY.current;
 
     // Prioritize horizontal swipe over vertical scroll
-    if (Math.abs(rawOffset) > Math.abs(rawOffsetY) * 1.5) {
+    if (Math.abs(rawOffset) > Math.abs(rawOffsetY) * 1.2) {
       e.preventDefault();
       const constrainedOffset = applyRubberBand(rawOffset);
       lastPos.current = currentPos;
@@ -507,7 +490,7 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
     setTimeout(() => setIsTransitioning(false), 300);
   };
   
-  const getCardStyle = useMemo(() => (index) => {
+  const getCardStyle = (index) => {
     const totalCards = 8;
     let position = index - currentIndex;
 
@@ -516,10 +499,8 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
 
     const style: React.CSSProperties = {
       position: 'absolute',
-      width: '75vw',
-      height: '110vw',
-      maxWidth: '320px',
-      maxHeight: '480px',
+      width: '280px',
+      height: '420px',
       borderRadius: '8px',
       overflow: 'hidden',
       transformOrigin: 'center center',
@@ -528,8 +509,8 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
       cursor: 'pointer',
       left: '50%',
       top: '50%',
-      marginLeft: '-37.5vw',
-      marginTop: '-55vw',
+      marginLeft: '-140px',
+      marginTop: '-210px',
       contain: 'layout style paint',
       transition: 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.4s ease',
       transform: 'translateZ(0)', // Force GPU acceleration
@@ -557,7 +538,7 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
       // Removed filter
     }
     return style;
-  }, [currentIndex]);
+  };
 
   return (
     <div style={{ position: 'relative', width: '100%' }}>
@@ -1154,13 +1135,17 @@ clearTimeout(resumeTimerRef.current)
 
 
 useEffect(() => {
-  if (typeof window !== 'undefined' && window.innerWidth > 768) {
-    AOS.init({
-      duration: 800,
-      once: true,
-      easing: 'ease-in-out',
-    });
-  }
+
+AOS.init({
+
+duration: 800,
+
+once: true,
+
+easing: 'ease-in-out',
+
+})
+
 }, [])
 
 
@@ -1515,10 +1500,12 @@ onClick={() => handleCarouselNav('next')}
   </section>
   
   {/* Mobile Video Section - Using the original component */}
-  <MobileVideoSection />
+  <div data-aos="fade-up" data-aos-delay="400">
+    <MobileVideoSection />
+  </div>
   
   {/* Explore Our Artisan Creations section - Restored */}
-  <section className={styles.mobileExploreSection} style={{ padding: '5rem 1.5rem 6rem' }} data-aos="fade-up" data-aos-delay="500">
+  <section className={`${styles.mobileExploreSection} ${styles.mobileOnly}`} style={{ padding: '5rem 1.5rem 6rem' }} data-aos="fade-up" data-aos-delay="500">
     {/* Architectural design elements */}
     <div style={{
       position: 'absolute',
@@ -1672,7 +1659,7 @@ onClick={() => handleCarouselNav('next')}
   </section>
   
   {/* Featured Discoveries Section - Random products from API */}
-<section className={styles.mobileFeaturedSection} data-aos="fade-up" data-aos-delay="600">
+<section className={`${styles.mobileFeaturedSection} ${styles.mobileOnly}`} data-aos="fade-up" data-aos-delay="600">
   {/* Section header */}
   <div className={styles.mobileFeaturedHeader} data-aos="fade-in" data-aos-delay="200">
     <div className={styles.mobileFeaturedHeaderLine} />
