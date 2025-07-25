@@ -293,6 +293,12 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
     }).format(price);
   };
 
+  const getOptimizedUrl = (url) => {
+    if (!url) return '';
+    // Use Cloudinary's optimization features to serve smaller, faster images
+    return url.replace('/upload/', '/upload/w_300,q_auto,f_auto/');
+  };
+
   const defaultProducts = [
     {
       id: '1',
@@ -514,20 +520,19 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
       style.transform = 'translateX(0px) scale(1) translateZ(0)';
       style.zIndex = 100;
       style.opacity = 1;
-      style.filter = 'brightness(1.05)';
-      style.boxShadow = '0 12px 30px rgba(0, 0, 0, 0.15)';
+      // Removed filter and box-shadow for performance
     } else if (Math.abs(position) === 1) {
       const direction = Math.sign(position);
       style.transform = `translateX(${direction * 120}px) scale(0.85) translateZ(0)`;
       style.zIndex = 90;
       style.opacity = 0.6;
-      style.filter = 'brightness(0.7)';
+      // Removed filter
     } else {
       const direction = position > 0 ? 1 : -1;
       style.transform = `translateX(${direction * 180}px) scale(0.7) translateZ(0)`;
       style.zIndex = 80;
       style.opacity = 0;
-      style.filter = 'brightness(0.5)';
+      // Removed filter
     }
     return style;
   };
@@ -609,7 +614,7 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
                 background: '#f5f5f5',
               }}>
                 <img 
-                  src={product.imageUrls[0]} 
+                  src={getOptimizedUrl(product.imageUrls[0])} 
                   alt={product.name}
                   decoding="async"
                   style={{
