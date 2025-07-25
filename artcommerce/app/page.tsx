@@ -271,18 +271,15 @@ const FeaturedProductsGrid = () => {
 
 // Mobile Featured Carousel Component - Optimized for Smooth Performance
 const MobileFeaturedCarousel = ({ products = [] }) => {
-  // Simplified state for better performance
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragOffset, setDragOffset] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  
   const carouselRef = useRef(null);
-  const cardRefs = useRef([]); // To hold refs for each card
-
+  const cardRefs = useRef([]);
+  const isDragging = useRef(false);
   const startPos = useRef(0);
   const lastPos = useRef(0);
-  const startY = useRef(0); // For vertical scroll detection
-  const lastY = useRef(0);  // For vertical scroll detection
+  const startY = useRef(0);
   const startTime = useRef(0);
   const lastManualChange = useRef(Date.now());
   
@@ -296,7 +293,6 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
     }).format(price);
   };
 
-  // Always ensure we have exactly 8 products for the circular carousel
   const defaultProducts = [
     {
       id: '1',
@@ -381,185 +377,120 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
       return defaultProducts;
     }
   }, [products]);
-  // Completely disable any autoplay functionality
-  const autoplayTimerRef = useRef(null);
-  
-  // Clear any potential autoplay timers on component mount/unmount
-  useEffect(() => {
-    // Clear any existing timers
-    if (autoplayTimerRef.current) {
-      clearTimeout(autoplayTimerRef.current);
-      autoplayTimerRef.current = null;
-    }
-    
-    return () => {
-      if (autoplayTimerRef.current) {
-        clearTimeout(autoplayTimerRef.current);
-        autoplayTimerRef.current = null;
-      }
-    };
-  }, []);
 
-  // Prevent any unexpected currentIndex changes
-  useEffect(() => {
-    const now = Date.now();
-    const timeSinceLastManual = now - lastManualChange.current;
-    
-    // If currentIndex changed but it wasn't from a manual action (within last 500ms), reset it
-    if (timeSinceLastManual > 500) {
-      console.warn('Prevented potential autoplay: currentIndex changed without user action');
-      // Don't auto-correct as it might cause infinite loops
-    }
-  }, [currentIndex]);
-
-  // Buttery smooth rubber band effect
+  // Buttery smooth rubber band effect with more damping
   const applyRubberBand = (offset) => {
-    const maxDrag = 160; // Slightly more range for ultra-smooth feel
+    const maxDrag = 150; // Maximum drag distance before resistance
     if (Math.abs(offset) <= maxDrag) return offset;
     
     const excess = Math.abs(offset) - maxDrag;
-    const damped = maxDrag + excess * 0.12; // Even less resistance for smoothness
+    // Apply more resistance for a 'tighter' rubber band feel
+    const damped = maxDrag + (1 - Math.exp(-excess / 200)) * 50; 
     return offset > 0 ? damped : -damped;
   };
 
-  // Simple transition management
-  const startTransition = () => {
-    setIsTransitioning(true);
-  };
-
-  const endTransition = () => {
-    setIsTransitioning(false);
-  };
-  
-  // Ultra-immediate touch response
   const handleTouchStart = (e) => {
-    // Don't start new drag if transitioning
     if (isTransitioning) return;
 
-    // A card is about to be dragged, so remove its transition.
-    if (cardRefs.current[currentIndex]) {
-      cardRefs.current[currentIndex].style.transition = 'none';
+    const currentCard = cardRefs.current[currentIndex];
+    if (currentCard) {
+      currentCard.style.transition = 'none';
     }
 
-    setIsDragging(true);
+    isDragging.current = true;
     startPos.current = e.touches[0].clientX;
     lastPos.current = e.touches[0].clientX;
     startY.current = e.touches[0].clientY;
-    lastY.current = e.touches[0].clientY;
     startTime.current = Date.now();
-    setDragOffset(0);
     e.stopPropagation();
   };
   
   const handleTouchMove = (e) => {
-    if (!isDragging || isTransitioning) return;
+    if (!isDragging.current || isTransitioning) return;
+    
     const currentPos = e.touches[0].clientX;
     const currentPosY = e.touches[0].clientY;
     const rawOffset = currentPos - startPos.current;
     const rawOffsetY = currentPosY - startY.current;
 
-    if (Math.abs(rawOffset) > Math.abs(rawOffsetY)) {
+    // Prioritize horizontal swipe over vertical scroll
+    if (Math.abs(rawOffset) > Math.abs(rawOffsetY) * 1.2) {
       e.preventDefault();
       const constrainedOffset = applyRubberBand(rawOffset);
       lastPos.current = currentPos;
       
-      // Directly update the card's style using its ref to avoid re-renders.
-      // This is the core of the performance improvement.
-      window.requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
         const currentCard = cardRefs.current[currentIndex];
         if (currentCard) {
           currentCard.style.transform = `translateX(${constrainedOffset}px) scale(1)`;
         }
       });
-      
     } else {
-      // If the user is scrolling vertically, stop the drag gesture.
-      setIsDragging(false);
-      const currentCard = cardRefs.current[currentIndex];
-      if (currentCard) {
-          currentCard.style.transition = 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-          currentCard.style.transform = ''; 
+      // User is scrolling vertically, so cancel the drag
+      if (isDragging.current) {
+        isDragging.current = false;
+        const currentCard = cardRefs.current[currentIndex];
+        if (currentCard) {
+            currentCard.style.transition = 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+            currentCard.style.transform = ''; 
+        }
       }
     }
   };
   
   const handleTouchEnd = () => {
-    if (!isDragging) return;
-    
-    setIsDragging(false);
+    if (!isDragging.current) return;
+    isDragging.current = false;
 
     const currentCard = cardRefs.current[currentIndex];
     if (currentCard) {
-      currentCard.style.transition = 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.4s ease, filter 0.4s ease';
+      // Restore transition for the snap-back effect
+      currentCard.style.transition = 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.4s ease';
     }
     
     const totalDistance = lastPos.current - startPos.current;
     const swipeTime = Date.now() - startTime.current;
-    const velocity = Math.abs(totalDistance) / swipeTime; // pixels per ms
+    const velocity = Math.abs(totalDistance) / swipeTime;
     
-    const threshold = 25; // Ultra responsive
-    const quickSwipeThreshold = 0.3; // pixels per ms - very sensitive
+    const swipeThreshold = 50; // A more generous threshold
+    const velocityThreshold = 0.3;
     
-    const shouldNext = totalDistance < -threshold || 
-                      (totalDistance < -10 && velocity > quickSwipeThreshold);
-    const shouldPrev = totalDistance > threshold || 
-                      (totalDistance > 10 && velocity > quickSwipeThreshold);
+    const shouldNext = totalDistance < -swipeThreshold || (totalDistance < -10 && velocity > velocityThreshold);
+    const shouldPrev = totalDistance > swipeThreshold || (totalDistance > 10 && velocity > velocityThreshold);
     
     if (shouldNext || shouldPrev) {
-      startTransition();
+      setIsTransitioning(true);
+      if (currentCard) currentCard.style.transform = ''; // Clear inline transform before state change
       
-      if (currentCard) {
-        currentCard.style.transform = '';
-      }
-      
-      if (shouldNext) {
-        lastManualChange.current = Date.now();
-        setCurrentIndex((prev) => (prev + 1) % displayProducts.length);
-      } else {
-        lastManualChange.current = Date.now();
-        setCurrentIndex((prev) => (prev - 1 + displayProducts.length) % displayProducts.length);
-      }
-      
-      setTimeout(() => {
-        endTransition();
-      }, 400); // Must match the CSS transition duration (0.4s)
+      const newIndex = shouldNext 
+        ? (currentIndex + 1) % displayProducts.length 
+        : (currentIndex - 1 + displayProducts.length) % displayProducts.length;
 
+      lastManualChange.current = Date.now();
+      setCurrentIndex(newIndex);
+      
+      setTimeout(() => setIsTransitioning(false), 400); // Sync with CSS transition
     } else {
-      if (currentCard) {
-        currentCard.style.transform = '';
-      }
+      // Snap back to center
+      if (currentCard) currentCard.style.transform = '';
     }
   };
 
-  // Navigate to specific card - instant response
   const goToCard = (index) => {
     if (index === currentIndex || isTransitioning) return;
-    
-    // Stop any ongoing drag
-    if (isDragging) {
-      setIsDragging(false);
-      setDragOffset(0);
-    }
-    
-    startTransition();
+    setIsTransitioning(true);
     lastManualChange.current = Date.now();
     setCurrentIndex(index);
-    
-    setTimeout(() => {
-      endTransition();
-    }, 300);
+    setTimeout(() => setIsTransitioning(false), 300);
   };
   
-  // Simple, smooth 2D carousel styling
   const getCardStyle = (index) => {
     const totalCards = 8;
     let position = index - currentIndex;
 
-    // Handle wrapping for circular effect
     if (position < -totalCards / 2) position += totalCards;
     if (position > totalCards / 2) position -= totalCards;
 
-    // Base properties for all cards
     const style: React.CSSProperties = {
       position: 'absolute',
       width: '280px',
@@ -567,7 +498,7 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
       borderRadius: '8px',
       overflow: 'hidden',
       transformOrigin: 'center center',
-      willChange: 'transform, opacity, filter',
+      willChange: 'transform, opacity',
       backfaceVisibility: 'hidden',
       cursor: 'pointer',
       left: '50%',
@@ -575,51 +506,28 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
       marginLeft: '-140px',
       marginTop: '-210px',
       contain: 'layout style paint',
-      transition: isDragging ? 'none' : 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.4s ease, filter 0.4s ease',
+      transition: 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.4s ease',
     };
 
-    // The drag offset is now handled by direct DOM manipulation,
-    // so we can remove the logic that used the `dragOffset` state.
-    
-    // Main card (center)
     if (position === 0) {
-      style.transform = `translateX(0px) scale(1)`;
+      style.transform = 'translateX(0px) scale(1)';
       style.zIndex = 100;
       style.opacity = 1;
-      style.filter = 'brightness(1)';
-      style.boxShadow = '0 15px 40px rgba(0, 0, 0, 0.15)';
-    }
-    // Next card (right)
-    else if (position === 1) {
-      style.transform = 'translateX(120px) scale(0.85)';
+      style.filter = 'brightness(1.05)';
+      style.boxShadow = '0 12px 30px rgba(0, 0, 0, 0.15)';
+    } else if (Math.abs(position) === 1) {
+      const direction = Math.sign(position);
+      style.transform = `translateX(${direction * 120}px) scale(0.85)`;
       style.zIndex = 90;
-      style.opacity = 0.7;
-      style.filter = 'brightness(0.9)';
-    }
-    // Previous card (left)
-    else if (position === -1) {
-      style.transform = 'translateX(-120px) scale(0.85)';
-      style.zIndex = 90;
-      style.opacity = 0.7;
-      style.filter = 'brightness(0.9)';
-    }
-    // Other cards (hidden)
-    else {
+      style.opacity = 0.6;
+      style.filter = 'brightness(0.7)';
+    } else {
       const direction = position > 0 ? 1 : -1;
       style.transform = `translateX(${direction * 180}px) scale(0.7)`;
       style.zIndex = 80;
       style.opacity = 0;
-      style.filter = 'brightness(0.8)';
+      style.filter = 'brightness(0.5)';
     }
-
-    // Adjust brightness to simulate spotlight
-    if (position === 0) {
-      style.filter = 'brightness(1.15)';
-      style.boxShadow = '0 25px 50px rgba(0, 0, 0, 0.25)';
-    } else {
-      style.filter = 'brightness(0.6)';
-    }
-
     return style;
   };
 
@@ -803,7 +711,7 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
             <button 
               key={index} 
               onClick={() => goToCard(index)}
-              disabled={isTransitioning || isDragging}
+              disabled={isTransitioning}
               style={{
                 width: '10px',
                 height: '10px',
@@ -817,8 +725,8 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
                 boxShadow: index === currentIndex 
                   ? '0 3px 12px rgba(0, 0, 0, 0.3)' 
                   : '0 1px 3px rgba(0, 0, 0, 0.1)',
-                cursor: (isTransitioning || isDragging) ? 'not-allowed' : 'pointer',
-                opacity: (isTransitioning || isDragging) ? 0.6 : 1,
+                cursor: isTransitioning ? 'not-allowed' : 'pointer',
+                opacity: isTransitioning ? 0.6 : 1,
               }}
             />
           ))}
