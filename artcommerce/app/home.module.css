@@ -1710,37 +1710,20 @@
   margin: 1rem auto;
 }
 
-/* Add a new grid layout with staggered design */
+/* A standard 2-column grid for better readability on mobile */
 .mobileExploreGrid {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 1.5rem;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
   margin: 0 auto;
   position: relative;
   z-index: 2;
-  max-width: 90%;
+  max-width: 95%;
   padding: 0;
 }
 
-/* Large card that spans 4 columns */
-.mobileExploreCard:nth-child(1),
-.mobileExploreCard:nth-child(4) {
-  grid-column: span 4;
-}
-
-/* Medium card that spans 3 columns */
-.mobileExploreCard:nth-child(2),
-.mobileExploreCard:nth-child(5) {
-  grid-column: span 3;
-}
-
-/* Small card that spans 2 columns */
-.mobileExploreCard:nth-child(3),
-.mobileExploreCard:nth-child(6) {
-  grid-column: span 3;
-}
-
 .mobileExploreCard {
+  grid-column: span 1; /* Each card takes one column */
   position: relative;
   border-radius: 0;
   overflow: hidden;
@@ -1855,26 +1838,6 @@
 
 .mobileExploreCard:hover .mobileExploreCardInner::after {
   opacity: 0.2;
-}
-
-/* Responsive adjustments */
-@media (max-width: 480px) {
-  .mobileExploreGrid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
-  .mobileExploreCard:nth-child(1),
-  .mobileExploreCard:nth-child(2),
-  .mobileExploreCard:nth-child(3),
-  .mobileExploreCard:nth-child(4),
-  .mobileExploreCard:nth-child(5),
-  .mobileExploreCard:nth-child(6) {
-    grid-column: span 1;
-  }
-  
-  .mobileExploreImage {
-    aspect-ratio: 1/1.1;
-  }
 }
 
 /* Mobile Featured Discoveries Section Styles */
@@ -2115,6 +2078,28 @@
   transform: scale(1.2);
 }
 
+.mobileFeaturedTapIndicator {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  z-index: 5;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  font-family: 'Inter', sans-serif;
+}
+
+.mobileFeaturedCard:hover .mobileFeaturedTapIndicator {
+  opacity: 1;
+}
+
 .mobileFeaturedCardInfo {
   padding: 16px;
   display: flex;
@@ -2197,6 +2182,15 @@
 
 .mobileFeaturedCard:hover .mobileFeaturedDetails {
   transform: translateY(0);
+}
+
+.mobileFeaturedDetails.visible {
+  transform: translateY(0);
+}
+
+.mobileFeaturedImageContainer.detailsVisible .mobileFeaturedImage {
+  filter: blur(4px) brightness(0.8);
+  transform: scale(1.1);
 }
 
 .mobileFeaturedDetailsContent {
@@ -2448,4 +2442,8 @@
 
 .mobileFeaturedViewAllButton:active {
   transform: translateY(0);
+}
+
+.mobileExploreCard:hover .mobileExploreCardInner::after {
+  opacity: 0.2;
 }
