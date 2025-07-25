@@ -277,6 +277,8 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
   const [dragOffset, setDragOffset] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const carouselRef = useRef(null);
+  const cardRefs = useRef([]); // To hold refs for each card
+
   const startPos = useRef(0);
   const lastPos = useRef(0);
   const startY = useRef(0); // For vertical scroll detection
@@ -433,6 +435,12 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
   const handleTouchStart = (e) => {
     // Don't start new drag if transitioning
     if (isTransitioning) return;
+
+    // A card is about to be dragged, so remove its transition.
+    if (cardRefs.current[currentIndex]) {
+      cardRefs.current[currentIndex].style.transition = 'none';
+    }
+
     setIsDragging(true);
     startPos.current = e.touches[0].clientX;
     lastPos.current = e.touches[0].clientX;
@@ -440,8 +448,6 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
     lastY.current = e.touches[0].clientY;
     startTime.current = Date.now();
     setDragOffset(0);
-    // Prevent any delays or conflicts
-    e.preventDefault();
     e.stopPropagation();
   };
   
@@ -451,24 +457,41 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
     const currentPosY = e.touches[0].clientY;
     const rawOffset = currentPos - startPos.current;
     const rawOffsetY = currentPosY - startY.current;
-    // Only prevent default if horizontal movement is greater than vertical
+
     if (Math.abs(rawOffset) > Math.abs(rawOffsetY)) {
-      // Apply ultra-responsive rubber band
+      e.preventDefault();
       const constrainedOffset = applyRubberBand(rawOffset);
       lastPos.current = currentPos;
-      lastY.current = currentPosY;
-      setDragOffset(constrainedOffset);
-      e.preventDefault();
-      e.stopPropagation();
+      
+      // Directly update the card's style using its ref to avoid re-renders.
+      // This is the core of the performance improvement.
+      window.requestAnimationFrame(() => {
+        const currentCard = cardRefs.current[currentIndex];
+        if (currentCard) {
+          currentCard.style.transform = `translateX(${constrainedOffset}px) scale(1)`;
+        }
+      });
+      
     } else {
-      // If vertical scroll, end dragging so user can scroll page
+      // If the user is scrolling vertically, stop the drag gesture.
       setIsDragging(false);
-      setDragOffset(0);
+      const currentCard = cardRefs.current[currentIndex];
+      if (currentCard) {
+          currentCard.style.transition = 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+          currentCard.style.transform = ''; 
+      }
     }
   };
   
   const handleTouchEnd = () => {
     if (!isDragging) return;
+    
+    setIsDragging(false);
+
+    const currentCard = cardRefs.current[currentIndex];
+    if (currentCard) {
+      currentCard.style.transition = 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.4s ease, filter 0.4s ease';
+    }
     
     const totalDistance = lastPos.current - startPos.current;
     const swipeTime = Date.now() - startTime.current;
@@ -477,7 +500,6 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
     const threshold = 25; // Ultra responsive
     const quickSwipeThreshold = 0.3; // pixels per ms - very sensitive
     
-    // Determine if we should change cards - ultra responsive
     const shouldNext = totalDistance < -threshold || 
                       (totalDistance < -10 && velocity > quickSwipeThreshold);
     const shouldPrev = totalDistance > threshold || 
@@ -485,6 +507,10 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
     
     if (shouldNext || shouldPrev) {
       startTransition();
+      
+      if (currentCard) {
+        currentCard.style.transform = '';
+      }
       
       if (shouldNext) {
         lastManualChange.current = Date.now();
@@ -494,19 +520,14 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
         setCurrentIndex((prev) => (prev - 1 + displayProducts.length) % displayProducts.length);
       }
       
-      // Reset drag state immediately
-      setDragOffset(0);
-      setIsDragging(false);
-      
-      // Unlock the carousel after the CSS transition completes
       setTimeout(() => {
         endTransition();
       }, 400); // Must match the CSS transition duration (0.4s)
 
     } else {
-      // Return to center with a smooth transition
-      setDragOffset(0);
-      setIsDragging(false);
+      if (currentCard) {
+        currentCard.style.transform = '';
+      }
     }
   };
 
@@ -554,19 +575,15 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
       marginLeft: '-140px',
       marginTop: '-210px',
       contain: 'layout style paint',
-      transition: 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.4s ease, filter 0.4s ease',
+      transition: isDragging ? 'none' : 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.4s ease, filter 0.4s ease',
     };
 
-    // Apply drag offset only to the current card
-    let dragOffsetX = 0;
-    if (isDragging && position === 0) {
-      dragOffsetX = dragOffset;
-      style.transition = 'none'; // No transition while dragging
-    }
-
+    // The drag offset is now handled by direct DOM manipulation,
+    // so we can remove the logic that used the `dragOffset` state.
+    
     // Main card (center)
     if (position === 0) {
-      style.transform = `translateX(${dragOffsetX}px) scale(1)`;
+      style.transform = `translateX(0px) scale(1)`;
       style.zIndex = 100;
       style.opacity = 1;
       style.filter = 'brightness(1)';
@@ -647,7 +664,7 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
           }}
         />
         {displayProducts.map((product, index) => (
-          <div key={product.id} style={getCardStyle(index)}>
+          <div key={product.id} style={getCardStyle(index)} ref={el => cardRefs.current[index] = el}>
             <Link href={`/products/${product.id}`} style={{
               textDecoration: 'none',
               display: 'block',
