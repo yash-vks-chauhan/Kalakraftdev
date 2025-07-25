@@ -295,8 +295,8 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
 
   const getOptimizedUrl = (url) => {
     if (!url) return '';
-    // Use Cloudinary's optimization features to serve smaller, faster images
-    return url.replace('/upload/', '/upload/w_300,q_auto,f_auto/');
+    // Fetching high-resolution images for maximum quality on all devices.
+    return url.replace('/upload/', '/upload/w_800,q_auto:best,f_auto/');
   };
 
   const defaultProducts = [
@@ -514,12 +514,15 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
       contain: 'layout style paint',
       transition: 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.4s ease',
       transform: 'translateZ(0)', // Force GPU acceleration
+      border: '1px solid rgba(0, 0, 0, 0.08)', // Add an elegant border
+      boxShadow: '0 5px 15px rgba(0, 0, 0, 0.05)', // Add a subtle, static shadow
     };
 
     if (position === 0) {
       style.transform = 'translateX(0px) scale(1) translateZ(0)';
       style.zIndex = 100;
       style.opacity = 1;
+      style.boxShadow = '0 12px 30px rgba(0, 0, 0, 0.12)'; // Enhance shadow for the main card
       // Removed filter and box-shadow for performance
     } else if (Math.abs(position) === 1) {
       const direction = Math.sign(position);
