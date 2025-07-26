@@ -3,6 +3,15 @@
   padding: 0;
   background-color: #fff;
   position: relative;
+  /* Mobile scroll optimizations */
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  will-change: scroll-position;
+  /* Improve scroll performance */
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  /* Reduce repaints during scroll */
+  contain: layout style paint;
 }
 
 .pageHeader {
@@ -10,6 +19,9 @@
   background-color: #fff;
   border-bottom: none;
   margin-bottom: 1px;
+  /* Optimize for scroll performance */
+  transform: translateZ(0);
+  will-change: transform;
 }
 
 .pageTitle {
@@ -36,6 +48,14 @@
   max-width: 100%;
   background-color: #fff;
   box-sizing: border-box;
+  /* Critical mobile scroll optimizations */
+  -webkit-overflow-scrolling: touch;
+  transform: translateZ(0);
+  will-change: scroll-position;
+  /* Improve rendering performance */
+  contain: layout style paint;
+  /* Reduce layout thrashing */
+  overflow-anchor: none;
 }
 
 @media (max-width: 360px) {
@@ -45,25 +65,29 @@
   }
 }
 
-/* Update cardWrapper to remove border-radius */
+/* Optimized cardWrapper for smooth scrolling */
 .cardWrapper {
   position: relative;
-  will-change: transform;
-  transition: transform 0.2s ease;
+  /* Remove will-change and heavy transitions during scroll */
+  transform: translateZ(0);
   background-color: #fff;
   aspect-ratio: auto;
   display: flex;
   flex-direction: column;
-  border-radius: 0; /* Remove rounded corners */
+  border-radius: 0;
   overflow: hidden;
   box-shadow: none;
   border: none;
+  /* Optimize for scroll performance */
+  contain: layout style paint;
+  /* Lighter touch feedback - reduced transition */
+  transition: opacity 0.15s ease;
 }
 
-/* Update card to remove border-radius */
+/* Lighter card interactions for better scroll performance */
 .card {
   background: #fff;
-  border-radius: 0; /* Remove rounded corners */
+  border-radius: 0;
   overflow: hidden;
   text-decoration: none;
   color: inherit;
@@ -71,36 +95,55 @@
   flex-direction: column;
   position: relative;
   box-shadow: none;
-  transition: all 0.3s ease;
+  /* Reduced transition for smoother scrolling */
+  transition: transform 0.15s ease;
   margin-bottom: 0;
   height: 100%;
   width: 100%;
+  /* Hardware acceleration */
+  transform: translateZ(0);
+  will-change: transform;
+  /* Optimize touch interactions */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .card:active {
-  transform: translateY(1px);
+  /* Lighter touch feedback */
+  transform: translateZ(0) scale(0.98);
 }
 
-/* Update imageContainer to remove border-radius */
+/* Optimized imageContainer for smooth scrolling */
 .imageContainer {
   width: 100%;
   aspect-ratio: 1/1.05;
   background: #fff;
   position: relative;
   overflow: hidden;
-  touch-action: none;
+  /* Critical touch optimizations */
+  touch-action: pan-y pinch-zoom;
   -webkit-user-select: none;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
   border-radius: 0;
+  /* Hardware acceleration for images */
+  transform: translateZ(0);
+  will-change: transform;
+  /* Improve rendering */
+  contain: layout style paint;
 }
 
 .imageSlider {
   display: flex;
   width: 100%;
   height: 100%;
-  transition: transform 0.3s ease;
+  /* Smoother image transitions */
+  transition: transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  /* Hardware acceleration */
+  transform: translateZ(0);
   will-change: transform;
+  /* Optimize for sliding */
+  backface-visibility: hidden;
 }
 
 .imageSlide {
@@ -110,6 +153,9 @@
   flex-shrink: 0;
   position: relative;
   overflow: hidden;
+  /* Optimize individual slides */
+  transform: translateZ(0);
+  contain: layout style paint;
 }
 
 .image {
@@ -119,6 +165,12 @@
   display: block;
   pointer-events: none;
   -webkit-user-drag: none;
+  /* Image rendering optimizations */
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: optimize-contrast;
+  transform: translateZ(0);
+  /* Improve loading performance */
+  will-change: auto;
 }
 
 .noImage {
@@ -130,6 +182,7 @@
   color: #888;
   font-size: 0.9rem;
   background-color: #f9f9f9;
+  transform: translateZ(0);
 }
 
 .wishlistContainer {
@@ -137,8 +190,11 @@
   top: 0;
   right: 0;
   z-index: 10;
+  /* Optimize for touch */
+  transform: translateZ(0);
 }
 
+/* Lighter wishlist button interactions */
 .wishlistButton {
   background: transparent;
   border: none;
@@ -151,30 +207,38 @@
   cursor: pointer;
   box-shadow: none;
   color: #000;
-  transition: all 0.2s ease;
+  /* Reduced transition for better scroll performance */
+  transition: transform 0.1s ease;
   backdrop-filter: none;
   position: absolute;
   top: 10px;
   right: 10px;
   z-index: 10;
+  /* Touch optimizations */
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transform: translateZ(0);
 }
 
 .wishlistButton:hover {
-  transform: scale(1.05);
+  transform: translateZ(0) scale(1.05);
 }
 
+/* Simplified SVG animations for better performance */
 .wishlistButton svg {
-  transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transform: translateZ(0);
 }
 
 .wishlistButton:active svg {
-  transform: rotate(360deg) scale(1.1);
+  transform: translateZ(0) scale(1.1);
 }
 
+/* Remove heavy keyframe animation - replaced with simpler transition */
 @keyframes wishlistRotate {
-  0% { transform: scale(1); }
-  50% { transform: rotate(180deg) scale(1.2); }
-  100% { transform: rotate(360deg) scale(1); }
+  0% { transform: translateZ(0) scale(1); }
+  50% { transform: translateZ(0) scale(1.1); }
+  100% { transform: translateZ(0) scale(1); }
 }
 
 /* Update the active wishlist button to be solid black */
@@ -213,6 +277,9 @@
   z-index: 2;
   backdrop-filter: blur(2px);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  /* Optimize overlay */
+  transform: translateZ(0);
+  contain: layout style paint;
 }
 
 .lowStock {
@@ -230,6 +297,8 @@
   border-radius: 0;
   backdrop-filter: blur(2px);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  /* Optimize badge */
+  transform: translateZ(0);
 }
 
 .info {
@@ -242,6 +311,9 @@
   min-height: 80px;
   box-sizing: border-box;
   justify-content: space-between;
+  /* Optimize text rendering */
+  transform: translateZ(0);
+  contain: layout style paint;
 }
 
 .categoryTag {
@@ -344,9 +416,11 @@
   font-weight: 500;
   border-radius: 0;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  /* Optimize badge */
+  transform: translateZ(0);
 }
 
-/* Update image indicators to black */
+/* Optimized image indicators */
 .imageIndicators {
   position: absolute;
   bottom: 10px;
@@ -356,6 +430,9 @@
   justify-content: center;
   gap: 4px;
   z-index: 3;
+  /* Optimize indicators */
+  transform: translateZ(0);
+  will-change: transform;
 }
 
 .indicator {
@@ -364,7 +441,9 @@
   background-color: rgba(0, 0, 0, 0.3);
   margin: 0 1px;
   border-radius: 0;
-  transition: all 0.3s ease;
+  /* Smoother indicator transitions */
+  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transform: translateZ(0);
 }
 
 .activeIndicator {
@@ -379,7 +458,7 @@
   display: none;
 }
 
-/* Loading and error states */
+/* Optimized loading and error states */
 .loading,
 .error {
   padding: 16px;
@@ -393,6 +472,9 @@
   justify-content: center;
   font-size: 0.9rem;
   gap: 12px;
+  /* Optimize for rendering */
+  transform: translateZ(0);
+  contain: layout style paint;
 }
 
 .loadingSpinner {
@@ -402,20 +484,23 @@
   border-radius: 50%;
   border-top-color: #000;
   animation: spin 0.8s linear infinite;
+  /* Hardware accelerate spinner */
+  transform: translateZ(0);
+  will-change: transform;
 }
 
 @keyframes spin {
   to {
-    transform: rotate(360deg);
+    transform: translateZ(0) rotate(360deg);
   }
 }
 
-/* Mobile filter styles */
+/* Optimized mobile filter button */
 .mobileFilterButton {
   position: fixed;
   bottom: 70px;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translateX(-50%) translateZ(0);
   background: #333;
   color: white;
   border: none;
@@ -431,17 +516,22 @@
   z-index: 100;
   cursor: pointer;
   width: 120px;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
-              background-color 0.3s ease,
-              box-shadow 0.3s ease;
+  /* Lighter transitions for better performance */
+  transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94), 
+              background-color 0.2s ease,
+              box-shadow 0.2s ease;
+  /* Optimize for interaction */
+  touch-action: manipulation;
+  will-change: transform;
 }
 
 .mobileFilterButton:active {
-  transform: translateX(-50%) scale(0.96);
+  transform: translateX(-50%) translateZ(0) scale(0.96);
   background-color: #000;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
 }
 
+/* Optimized mobile filter drawer */
 .mobileFilterDrawer {
   position: fixed;
   bottom: 0;
@@ -451,18 +541,23 @@
   max-height: 90vh;
   background: white;
   z-index: 1000;
-  transform: translateY(100%);
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translateY(100%) translateZ(0);
+  /* Smoother drawer animation */
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   display: flex;
   flex-direction: column;
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
   border-top-left-radius: 16px;
   border-top-right-radius: 16px;
+  /* Optimize drawer performance */
+  will-change: transform;
+  contain: layout style paint;
 }
 
 .mobileFilterDrawerOpen {
-  transform: translateY(0);
+  transform: translateY(0) translateZ(0);
 }
 
 .mobileFilterHeader {
@@ -477,6 +572,9 @@
   z-index: 10;
   border-top-left-radius: 16px;
   border-top-right-radius: 16px;
+  /* Optimize header */
+  transform: translateZ(0);
+  contain: layout style paint;
 }
 
 .mobileFilterHeader h2 {
@@ -497,20 +595,28 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  transition: background-color 0.2s ease, transform 0.2s ease;
+  /* Lighter button transitions */
+  transition: background-color 0.15s ease, transform 0.15s ease;
+  touch-action: manipulation;
+  transform: translateZ(0);
 }
 
 .mobileFilterCloseButton:active {
   background-color: rgba(226, 232, 240, 0.5);
-  transform: scale(0.95);
+  transform: translateZ(0) scale(0.95);
 }
 
 .mobileFilterContent {
   padding: 1.5rem;
   flex: 1;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  /* Optimize content scrolling */
+  transform: translateZ(0);
+  contain: layout style paint;
 }
 
+/* Optimized overlay */
 .mobileFilterOverlay {
   position: fixed;
   top: 0;
@@ -521,8 +627,11 @@
   z-index: 999;
   backdrop-filter: blur(2px);
   opacity: 0;
-  transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  /* Smoother overlay transition */
+  transition: opacity 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   will-change: opacity;
+  /* Optimize overlay performance */
+  transform: translateZ(0);
 }
 
 .mobileFilterOverlayVisible {
@@ -536,6 +645,9 @@
   margin: 0 0 1rem 0;
   padding: 12px;
   background-color: #fff;
+  /* Optimize filter tags container */
+  transform: translateZ(0);
+  contain: layout style paint;
 }
 
 .mobileFilterTag {
@@ -549,11 +661,14 @@
   font-size: 0.75rem;
   color: #1a202c;
   font-weight: 500;
-  transition: transform 0.2s ease, background-color 0.2s ease;
+  /* Lighter tag transitions */
+  transition: transform 0.15s ease, background-color 0.15s ease;
+  touch-action: manipulation;
+  transform: translateZ(0);
 }
 
 .mobileFilterTag:active {
-  transform: scale(0.97);
+  transform: translateZ(0) scale(0.97);
   background-color: #f0f4f8;
 }
 
@@ -569,22 +684,26 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: color 0.2s ease;
+  transition: color 0.15s ease;
+  touch-action: manipulation;
 }
 
 .mobileFilterTag button:active {
   color: #000;
 }
 
-/* Filter component styles */
+/* Optimized filter sections */
 .filterSection {
   border: none;
   padding: 0;
   margin-bottom: 1.5rem;
   background: rgba(255, 255, 255, 0.5);
   border-radius: 12px;
-  transition: all 0.3s ease;
+  /* Lighter section transitions */
+  transition: all 0.2s ease;
   overflow: hidden;
+  transform: translateZ(0);
+  contain: layout style paint;
 }
 
 .filterSection[open] {
@@ -603,9 +722,12 @@
   user-select: none;
   font-size: 0.95rem;
   border-radius: 8px;
-  transition: all 0.2s ease;
+  /* Lighter header transitions */
+  transition: all 0.15s ease;
   border: 1px solid rgba(226, 232, 240, 0.8);
   background: rgba(255, 255, 255, 0.8);
+  touch-action: manipulation;
+  transform: translateZ(0);
 }
 
 .filterHeader:hover {
@@ -614,7 +736,7 @@
 }
 
 .filterHeader:active {
-  transform: scale(0.99);
+  transform: translateZ(0) scale(0.99);
 }
 
 .filterHeader::-webkit-details-marker {
@@ -627,17 +749,19 @@
   flex-direction: column;
   gap: 0.5rem;
   padding: 0 1rem;
-  animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  /* Smoother content animation */
+  animation: slideDown 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transform: translateZ(0);
 }
 
 @keyframes slideDown {
   from {
     opacity: 0;
-    transform: translateY(-10px);
+    transform: translateZ(0) translateY(-10px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateZ(0) translateY(0);
   }
 }
 
@@ -647,9 +771,12 @@
   gap: 0.75rem;
   padding: 0.5rem;
   color: #4a5568;
-  transition: all 0.2s ease;
+  /* Lighter option transitions */
+  transition: all 0.15s ease;
   font-size: 0.9rem;
   border-radius: 6px;
+  touch-action: manipulation;
+  transform: translateZ(0);
 }
 
 .filterOption:hover {
@@ -669,7 +796,9 @@
   border-radius: 4px;
   cursor: pointer;
   accent-color: #1a202c;
-  transition: all 0.2s ease;
+  /* Lighter input transitions */
+  transition: all 0.15s ease;
+  transform: translateZ(0);
 }
 
 .filterOption input[type="radio"]:checked,
@@ -688,10 +817,13 @@
   border: 1px solid #1a202c;
   border-radius: 6px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  /* Lighter button transitions */
+  transition: all 0.2s ease;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   width: 100%;
+  touch-action: manipulation;
+  transform: translateZ(0);
 }
 
 .clearButton:hover {
@@ -700,22 +832,25 @@
 }
 
 .clearButton:active {
-  transform: scale(0.98);
+  transform: translateZ(0) scale(0.98);
 }
 
 .arrow {
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Smoother arrow transition */
+  transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   opacity: 0.7;
+  transform: translateZ(0);
 }
 
 details[open] .arrow {
-  transform: rotate(90deg);
+  transform: translateZ(0) rotate(90deg);
 }
 
 .filterHeader:hover .arrow {
   opacity: 1;
 }
 
+/* Optimized image container effect */
 .imageContainer::after {
   content: '';
   position: absolute;
@@ -732,26 +867,28 @@ details[open] .arrow {
   );
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.2s ease;
+  /* Lighter after effect transition */
+  transition: opacity 0.1s ease;
   z-index: 2;
+  transform: translateZ(0);
 }
 
 .imageContainer:active::after {
   opacity: 1;
 }
 
-/* Swipe hint arrows - only show on first render */
+/* Optimized swipe hint animations */
 @keyframes swipeHint {
-  0%, 100% { opacity: 0; transform: translateX(0); }
+  0%, 100% { opacity: 0; transform: translateZ(0) translateX(0); }
   20%, 80% { opacity: 0.7; }
-  50% { transform: translateX(10px); }
+  50% { transform: translateZ(0) translateX(10px); }
 }
 
 .swipeLeftHint,
 .swipeRightHint {
   position: absolute;
   top: 50%;
-  transform: translateY(-50%);
+  transform: translateY(-50%) translateZ(0);
   width: 30px;
   height: 30px;
   border-radius: 50%;
@@ -763,6 +900,7 @@ details[open] .arrow {
   pointer-events: none;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   opacity: 0;
+  will-change: transform, opacity;
 }
 
 .swipeLeftHint {
@@ -773,5 +911,5 @@ details[open] .arrow {
 .swipeRightHint {
   right: 10px;
   animation: swipeHint 2s ease-in-out 1s forwards;
-  transform: translateY(-50%) scaleX(-1);
+  transform: translateY(-50%) translateZ(0) scaleX(-1);
 } 
