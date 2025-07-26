@@ -21,7 +21,11 @@ import {
   ChevronDown,
   ChevronUp,
   RefreshCw,
-  Calendar
+  Calendar,
+  DollarSign,
+  CheckCircle,
+  Clock,
+  Truck
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import styles from './google-inspired-dashboard.module.css'
@@ -122,6 +126,17 @@ export default function GoogleInspiredDashboard() {
     } else {
       setShowLogoutConfirm(true)
       setTimeout(() => setShowLogoutConfirm(false), 3000)
+    }
+  }
+
+  const getMetricIcon = (metric: string) => {
+    switch(metric.toLowerCase()) {
+      case 'revenue': return <DollarSign size={20} className={styles.metricIcon} />;
+      case 'orders': return <Package size={20} className={styles.metricIcon} />;
+      case 'completed': return <CheckCircle size={20} className={styles.metricIcon} />;
+      case 'processing': return <Clock size={20} className={styles.metricIcon} />;
+      case 'shipped': return <Truck size={20} className={styles.metricIcon} />;
+      default: return <Package size={20} className={styles.metricIcon} />;
     }
   }
 
@@ -259,17 +274,26 @@ export default function GoogleInspiredDashboard() {
             <div className={styles.metricsScrollContainer}>
               <div className={styles.metricsRow} ref={metricsRowRef}>
                 <div className={styles.metricCard}>
-                  <h3 className={styles.metricTitle}>Revenue</h3>
-                  <p className={styles.metricValue}>₹{metrics?.revenue ? metrics.revenue.toFixed(2) : '0.00'}</p>
+                  {getMetricIcon('revenue')}
+                  <div className={styles.metricText}>
+                    <h3 className={styles.metricTitle}>Revenue</h3>
+                    <p className={styles.metricValue}>₹{metrics?.revenue ? metrics.revenue.toFixed(2) : '0.00'}</p>
+                  </div>
                 </div>
                 <div className={styles.metricCard}>
-                  <h3 className={styles.metricTitle}>Orders</h3>
-                  <p className={styles.metricValue}>{metrics?.totalOrders || '0'}</p>
+                  {getMetricIcon('orders')}
+                  <div className={styles.metricText}>
+                    <h3 className={styles.metricTitle}>Orders</h3>
+                    <p className={styles.metricValue}>{metrics?.totalOrders || '0'}</p>
+                  </div>
                 </div>
                 {metrics?.statusCounts?.map((sc: any) => (
                   <div key={sc.status} className={styles.metricCard}>
-                    <h3 className={styles.metricTitle}>{sc.status}</h3>
-                    <p className={styles.metricValue}>{sc._count.status}</p>
+                    {getMetricIcon(sc.status)}
+                    <div className={styles.metricText}>
+                      <h3 className={styles.metricTitle}>{sc.status}</h3>
+                      <p className={styles.metricValue}>{sc._count.status}</p>
+                    </div>
                   </div>
                 ))}
               </div>
