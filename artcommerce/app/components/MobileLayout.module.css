@@ -19,9 +19,6 @@
   left: 0;
   z-index: 200;
   transition: background-color 0.3s ease, box-shadow 0.3s ease;
-  /* Performance optimizations for smooth transform during scroll */
-  backface-visibility: hidden;
-  will-change: transform;
 }
 
 /* Home page specific header styling */
@@ -371,9 +368,6 @@
     inset 0 0 20px rgba(255, 255, 255, 0.2);
   outline: 1px solid rgba(255, 255, 255, 0.1);
   outline-offset: -2px;
-  will-change: transform;
-  /* Performance optimizations for smooth transform during scroll */
-  backface-visibility: hidden;
   will-change: transform;
 }
 

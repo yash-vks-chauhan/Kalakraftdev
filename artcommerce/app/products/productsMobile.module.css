@@ -48,6 +48,10 @@
   box-sizing: border-box;
   /* Critical mobile scroll optimizations */
   -webkit-overflow-scrolling: touch;
+  transform: translateZ(0);
+  will-change: scroll-position;
+  /* Improve rendering performance */
+  contain: layout style paint;
   /* Reduce layout thrashing */
   overflow-anchor: none;
 }
@@ -62,6 +66,8 @@
 /* Optimized cardWrapper for smooth scrolling */
 .cardWrapper {
   position: relative;
+  /* Remove will-change and heavy transitions during scroll */
+  transform: translateZ(0);
   background-color: #fff;
   aspect-ratio: auto;
   display: flex;
@@ -70,6 +76,8 @@
   overflow: hidden;
   box-shadow: none;
   border: none;
+  /* Optimize for scroll performance */
+  contain: layout style paint;
   /* Lighter touch feedback - reduced transition */
   transition: opacity 0.15s ease;
 }
