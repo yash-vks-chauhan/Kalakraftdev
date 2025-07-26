@@ -1,0 +1,255 @@
+.ordersSection {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  padding: 1rem;
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.sectionHeader.clickable {
+  cursor: pointer;
+}
+
+.sectionTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #64748b;
+}
+
+.refreshButton {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.refreshing {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.expandableSection {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-in-out;
+}
+
+.expanded {
+  max-height: 500px;
+}
+
+.ordersScrollContainer {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  padding: 0.5rem 0;
+  scrollbar-width: none;
+}
+
+.ordersScrollContainer::-webkit-scrollbar {
+  display: none;
+}
+
+.orderCard {
+  flex: 0 0 220px;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.orderCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(17, 24, 39, 0.08);
+}
+
+.orderCardLink {
+  text-decoration: none;
+  color: inherit;
+}
+
+.orderImageContainer {
+  height: 120px;
+  background-color: #f1f5f9;
+}
+
+.orderImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.noOrderImage {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+}
+
+.orderContent {
+  padding: 0.75rem;
+}
+
+.productName {
+  font-size: 0.9rem;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 0.5rem;
+  color: #1e293b;
+}
+
+.orderMeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.orderDate {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.orderStatus {
+  padding: 0.2rem 0.5rem;
+  border-radius: 1rem;
+  font-weight: 500;
+  font-size: 0.7rem;
+}
+
+.statusPending {
+  background-color: #fffbeb;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+.statusProcessing {
+  background-color: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+.statusCompleted {
+  background-color: #f0fdf4;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 2rem 0;
+  color: #64748b;
+}
+
+.emptyStateIcon {
+  color: #94a3b8;
+  margin-bottom: 1rem;
+}
+
+.emptyStateTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 0.5rem;
+}
+
+.emptyStateDescription {
+  margin-bottom: 1.5rem;
+}
+
+.emptyStateButton {
+  background-color: #1e293b;
+  color: white;
+  padding: 0.6rem 1.2rem;
+  border-radius: 0.5rem;
+  text-decoration: none;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.emptyStateButton:hover {
+  background-color: #334155;
+}
+
+.errorState {
+  text-align: center;
+  padding: 2rem;
+  color: #ef4444;
+}
+
+.retryButton {
+  background-color: #ef4444;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: background-color 0.2s;
+}
+
+.retryButton:hover {
+  background-color: #dc2626;
+}
+
+.skeleton {
+  cursor: progress;
+  animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: .5;
+  }
+}
+
+.skeletonImage {
+  height: 120px;
+  background-color: #e2e8f0;
+}
+
+.skeletonContent {
+  padding: 0.75rem;
+}
+
+.skeletonText {
+  height: 14px;
+  width: 80%;
+  border-radius: 0.25rem;
+  background-color: #e2e8f0;
+  margin-bottom: 0.75rem;
+}
+
+.skeletonMeta {
+  height: 12px;
+  width: 50%;
+  border-radius: 0.25rem;
+  background-color: #e2e8f0;
+} 
