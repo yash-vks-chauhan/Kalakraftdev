@@ -462,8 +462,22 @@
 }
 
 .subMenuContainer {
-  padding: 0.5rem 0 0;
-  margin-top: 0.5rem;
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.4s ease-in-out;
+  overflow: hidden;
+}
+
+.subMenuOpen {
+  grid-template-rows: 1fr;
+}
+
+.subMenuItemWrapper {
+  overflow: hidden;
+}
+
+.subMenuContainer > div {
+  padding-top: 0.75rem;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;

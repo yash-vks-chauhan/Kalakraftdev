@@ -405,19 +405,17 @@ export default function GoogleInspiredDashboard() {
                         <ChevronDown size={24} className={styles.menuArrow} />
                       )}
                     </div>
-                    {showAdminSubMenu === item.subMenuKey && (
-                      <div className={styles.subMenuContainer}>
-                        {item.subItems.map((subItem: any, subIndex: number) => (
-                          <Link href={subItem.href} key={subIndex} className={styles.subMenuItem}>
-                             <div className={styles.menuIconWrapper}>
+                    <div className={`${styles.subMenuContainer} ${showAdminSubMenu === item.subMenuKey ? styles.subMenuOpen : ''}`}>
+                      {item.subItems.map((subItem: any, subIndex: number) => (
+                        <Link href={subItem.href} key={subIndex} className={styles.subMenuItem}>
+                           <div className={styles.menuIconWrapper}>
                                 <subItem.icon size={20} />
                             </div>
                             <span className={styles.subMenuLabel}>{subItem.label}</span>
                             <ChevronRight size={20} className={styles.menuArrow} />
                           </Link>
-                        ))}
-                      </div>
-                    )}
+                      ))}
+                    </div>
                   </div>
                 ) : (
                   <Link href={item.href} key={index} className={styles.menuItem}>
