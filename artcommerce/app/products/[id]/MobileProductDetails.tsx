@@ -7,6 +7,7 @@ import ProductImagesMobile from '../../components/ProductImagesMobile';
 import { useCart } from '../../contexts/CartContext';
 import WishlistButton from '../../components/WishlistButton';
 import styles from './mobile_product_details.module.css';
+import { motion } from 'framer-motion';
 
 interface Product {
   id: number;
@@ -503,7 +504,7 @@ export default function MobileProductDetails({
   return (
     <div className={styles.mobileProductContainer}>
       {/* Product Images - Full width with transparent background */}
-      <div className={styles.productImageWrapper}>
+      <motion.div className={styles.productImageWrapper} layoutId={`product-image-${product.id}`}>
         <ProductImagesMobile 
           imageUrls={product.imageUrls} 
           name={product.name} 
@@ -514,7 +515,7 @@ export default function MobileProductDetails({
             Only {product.stockQuantity} left
           </div>
         )}
-      </div>
+      </motion.div>
       
       {/* Share feedback toast */}
       <div className={`${styles.shareToast} ${shareSuccess !== null ? styles.shareToastVisible : ''}`}>
