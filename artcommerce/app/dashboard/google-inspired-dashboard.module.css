@@ -1,13 +1,20 @@
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 .container {
-  background-color: #000000;
-  color: #ffffff;
+  background-color: #ffffff;
+  color: #1a202c;
   min-height: 100vh;
   padding-bottom: 2rem;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  animation: fadeIn 0.5s ease-out;
 }
 
 .header {
   padding: 1.5rem 1rem;
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .headerContent {
@@ -26,7 +33,7 @@
 .logoutConfirm {
   background: none;
   border: none;
-  color: #a0a0a0;
+  color: #64748b;
   cursor: pointer;
   padding: 0.5rem;
 }
@@ -36,25 +43,30 @@
 }
 
 .profileSection {
-  background-color: #1a1a1a;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
   border-radius: 1rem;
   padding: 1rem;
   display: flex;
   align-items: center;
   gap: 1rem;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s, border-color 0.2s, transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .profileSection:hover {
-  background-color: #2a2a2a;
+  background-color: #f1f5f9;
+  border-color: #cbd5e1;
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(17, 24, 39, 0.08);
 }
 
 .avatar {
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background-color: #333;
+  background-color: #e2e8f0;
+  color: #475569;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -75,15 +87,16 @@
 .profileName {
   font-size: 1.1rem;
   font-weight: 500;
+  color: #1e293b;
 }
 
 .profileEmail {
   font-size: 0.875rem;
-  color: #a0a0a0;
+  color: #64748b;
 }
 
 .profileArrow {
-  color: #a0a0a0;
+  color: #94a3b8;
   flex-shrink: 0;
 }
 
@@ -96,7 +109,8 @@
 
 /* Metrics Section */
 .metricsSection {
-  background-color: #1a1a1a;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
   border-radius: 1rem;
   padding: 1rem;
 }
@@ -115,6 +129,7 @@
 .sectionTitle {
   font-size: 1.1rem;
   font-weight: 600;
+  color: #334155;
 }
 
 .periodSelector {
@@ -124,9 +139,9 @@
 }
 
 .periodSelect {
-  background-color: #333;
-  color: #fff;
-  border: 1px solid #444;
+  background-color: #ffffff;
+  color: #334155;
+  border: 1px solid #cbd5e1;
   border-radius: 0.5rem;
   padding: 0.25rem 0.5rem;
   font-size: 0.875rem;
@@ -135,7 +150,7 @@
 .refreshButton {
   background: none;
   border: none;
-  color: #a0a0a0;
+  color: #64748b;
   cursor: pointer;
 }
 
@@ -150,10 +165,10 @@
 
 .metricsScrollContainer {
   overflow-x: auto;
-  scrollbar-width: none; /* Firefox */
+  scrollbar-width: none;
 }
 .metricsScrollContainer::-webkit-scrollbar {
-  display: none; /* Safari and Chrome */
+  display: none;
 }
 
 .metricsRow {
@@ -163,16 +178,23 @@
 }
 
 .metricCard {
-  background-color: #2c2c2c;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
   border-radius: 0.75rem;
   padding: 1rem;
   min-width: 120px;
   text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.metricCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(17, 24, 39, 0.08);
 }
 
 .metricTitle {
   font-size: 0.8rem;
-  color: #a0a0a0;
+  color: #64748b;
   margin-bottom: 0.25rem;
   text-transform: capitalize;
 }
@@ -180,6 +202,7 @@
 .metricValue {
   font-size: 1.25rem;
   font-weight: 600;
+  color: #1e293b;
 }
 
 .scrollIndicator {
@@ -193,19 +216,20 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background-color: #444;
+  background-color: #cbd5e1;
   cursor: pointer;
   transition: background-color 0.2s;
 }
 
 .activeDot {
-  background-color: #fff;
+  background-color: #334155;
 }
 
 
 /* Orders Section */
 .ordersSection {
-  background-color: #1a1a1a;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
   border-radius: 1rem;
   padding: 1rem;
 }
@@ -217,7 +241,7 @@
 }
 
 .expanded {
-  max-height: 500px; /* Adjust as needed */
+  max-height: 500px;
 }
 
 .ordersScrollContainer {
@@ -234,9 +258,16 @@
 
 .orderCard {
   flex: 0 0 220px;
-  background-color: #2c2c2c;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
   border-radius: 0.75rem;
   overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.orderCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(17, 24, 39, 0.08);
 }
 
 .orderCardLink {
@@ -246,7 +277,7 @@
 
 .orderImageContainer {
   height: 120px;
-  background-color: #333;
+  background-color: #f1f5f9;
 }
 
 .orderImage {
@@ -261,7 +292,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #a0a0a0;
+  color: #94a3b8;
 }
 
 .orderContent {
@@ -275,6 +306,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   margin-bottom: 0.5rem;
+  color: #1e293b;
 }
 
 .orderMeta {
@@ -282,7 +314,7 @@
   justify-content: space-between;
   align-items: center;
   font-size: 0.75rem;
-  color: #a0a0a0;
+  color: #64748b;
 }
 
 .orderDate {
@@ -299,22 +331,25 @@
 }
 
 .statusPending {
-  background-color: #4a3d2b;
-  color: #f7c579;
+  background-color: #fffbeb;
+  color: #b45309;
+  border: 1px solid #fde68a;
 }
 .statusProcessing {
-  background-color: #2b3e4a;
-  color: #79c5f7;
+  background-color: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
 }
 .statusCompleted {
-  background-color: #2b4a3c;
-  color: #79f7b8;
+  background-color: #f0fdf4;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
 }
 
 .emptyState {
   text-align: center;
   padding: 2rem 0;
-  color: #a0a0a0;
+  color: #64748b;
 }
 .emptyStateIcon {
   margin-bottom: 0.5rem;
@@ -327,29 +362,24 @@
 }
 
 .menuItem {
-  background-color: #1a1a1a;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
   border-radius: 1rem;
   padding: 1rem;
   display: flex;
   align-items: center;
   gap: 1rem;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s, border-color 0.2s, transform 0.3s ease, box-shadow 0.3s ease;
   text-decoration: none;
   color: inherit;
 }
 
-.menuItem:first-child {
-  border-top-left-radius: 1rem;
-  border-top-right-radius: 1rem;
-}
-.menuItem:last-child {
-  border-bottom-left-radius: 1rem;
-  border-bottom-right-radius: 1rem;
-}
-
 .menuItem:hover {
-  background-color: #2a2a2a;
+  background-color: #f1f5f9;
+  border-color: #cbd5e1;
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(17, 24, 39, 0.08);
 }
 
 .menuIconWrapper {
@@ -360,7 +390,16 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  background-color: #333;
+  background-color: #e2e8f0;
+  color: #475569;
+  transition: transform 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+}
+
+.menuItem:hover .menuIconWrapper,
+.subMenuItem:hover .menuIconWrapper {
+  transform: scale(1.1) rotate(-5deg);
+  background-color: #dbeafe;
+  color: #1e3a8a;
 }
 
 .menuText {
@@ -371,38 +410,46 @@
   display: block;
   font-size: 1rem;
   font-weight: 500;
+  color: #1e293b;
 }
 
 .menuDescription {
   display: block;
   font-size: 0.8rem;
-  color: #a0a0a0;
+  color: #64748b;
 }
 
 .menuArrow {
-  color: #a0a0a0;
+  color: #94a3b8;
   flex-shrink: 0;
+  transition: transform 0.3s ease;
+}
+
+.menuItem:hover .menuArrow {
+  transform: translateX(4px);
 }
 
 .adminSection {
-  margin-top: 2.5rem;
+  margin-top: 1.5rem;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  padding: 1rem;
 }
 
 .adminTitle {
   font-size: 1.25rem;
   font-weight: 600;
-  padding: 0 1rem;
   margin-bottom: 1rem;
+  color: #334155;
 }
 
 .menuItemGroup {
-  background-color: #1a1a1a;
-  border-radius: 1rem;
+  background-color: transparent;
 }
 
 .subMenuContainer {
-  padding: 0.5rem 1rem 1rem;
-  border-top: 1px solid #333;
+  padding: 0.5rem 0 0;
   margin-top: 0.5rem;
   display: flex;
   flex-direction: column;
@@ -413,16 +460,20 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 0.5rem;
+  padding: 0.75rem;
   border-radius: 0.5rem;
   cursor: pointer;
   text-decoration: none;
-  color: #e0e0e0;
-  transition: background-color 0.2s;
+  color: #334155;
+  transition: background-color 0.2s, transform 0.3s ease, box-shadow 0.3s ease;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
 }
 
 .subMenuItem:hover {
-  background-color: #2c2c2c;
+  background-color: #f1f5f9;
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(17, 24, 39, 0.08);
 }
 
 .subMenuLabel {
