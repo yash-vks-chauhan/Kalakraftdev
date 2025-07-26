@@ -157,7 +157,7 @@ const MobileVideoSection: React.FC = () => {
             poster="/images/loading.png"
             preload="auto"
           >
-            <source src="https://res.cloudinary.com/downe8107/video/upload/v1752756632/Goal_make_the_202507170106_9lp5g_rosxzs.mp4" type="video/mp4" />
+            <source src="https://ik.imagekit.io/4pjvf8k9u/Videos/Goal_make_the_202507170106_9k568.mp4?updatedAt=1753532002957" type="video/mp4" />
             Your browser does not support the video tag.
           </video>
         </div>
