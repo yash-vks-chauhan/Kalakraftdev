@@ -6,7 +6,6 @@ import styles from './productsMobile.module.css'
 import WishlistButton from '../components/WishlistButton'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { FiFilter, FiX, FiChevronRight, FiStar, FiPackage, FiTrendingUp, FiGrid, FiHeart } from 'react-icons/fi'
-import { motion, LayoutGroup } from 'framer-motion'
 
 // Define known categories similar to desktop version
 const KNOWN_CATEGORIES = [
@@ -172,9 +171,8 @@ const ProductCard = ({ product, formatPrice }) => {
   return (
     <div className={styles.cardWrapper}>
       <Link href={`/products/${product.id}`} className={styles.card}>
-        <motion.div
+        <div 
           className={styles.imageContainer}
-          layoutId={`product-image-${product.id}`}
           ref={imageContainerRef}
           onClick={handleImageTap}
           onTouchStart={handleTouchStart}
@@ -239,7 +237,7 @@ const ProductCard = ({ product, formatPrice }) => {
               )}
             </>
           )}
-        </motion.div>
+        </div>
         
         <div className={styles.info}>
           {product.category && (
@@ -724,7 +722,6 @@ export default function ProductsMobileClient() {
           </button>
         </div>
       ) : (
-        <LayoutGroup>
         <div className={styles.list}>
           {products.map(product => (
             <ProductCard 
@@ -734,7 +731,6 @@ export default function ProductsMobileClient() {
             />
           ))}
         </div>
-        </LayoutGroup>
       )}
       
       {/* Filter button */}

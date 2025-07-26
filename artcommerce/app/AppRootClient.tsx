@@ -6,7 +6,6 @@ import Navbar from './components/Navbar'
 import NotificationContainer from './components/NotificationContainer'
 import AdminNotifications from './components/AdminNotifications'
 import Providers from './Providers'
-import { AnimatePresence, LayoutGroup, motion } from 'framer-motion'
 import { useMobileMenu } from './contexts/MobileMenuContext'
 import MobileMenuPanel from './components/MobileMenuPanel'
 import MobileLayout from './components/MobileLayout'
@@ -123,15 +122,7 @@ export default function AppRootClient({ children }: { children: React.ReactNode 
       <Providers>
         {!showDesktopView ? (
           // Mobile Layout
-          <MobileLayout onSwitchToDesktop={switchToDesktopView}>
-            <LayoutGroup>
-              <AnimatePresence mode="wait" initial={false}>
-                <motion.div key={pathname} layout>
-                  {children}
-                </motion.div>
-              </AnimatePresence>
-            </LayoutGroup>
-          </MobileLayout>
+          <MobileLayout onSwitchToDesktop={switchToDesktopView}>{children}</MobileLayout>
         ) : (
           // Desktop Layout
           <>
