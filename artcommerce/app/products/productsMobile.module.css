@@ -467,7 +467,7 @@
   text-align: center;
   color: #555;
   width: 100%;
-  min-height: 100vh; /* Full viewport height to ensure proper layout */
+  height: 200px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -477,9 +477,6 @@
   /* Optimize for rendering */
   transform: translateZ(0);
   contain: layout style paint;
-  /* Ensure proper background */
-  background-color: #fff;
-  position: relative;
 }
 
 .loadingSpinner {
