@@ -12,8 +12,6 @@
   -webkit-backface-visibility: hidden;
   /* Reduce repaints during scroll */
   contain: layout style paint;
-  /* Ensure filter button stays on top */
-  z-index: 1;
 }
 
 .pageHeader {
