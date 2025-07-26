@@ -66,16 +66,21 @@
 /* Optimized cardWrapper for smooth scrolling */
 .cardWrapper {
   position: relative;
-  /* Remove will-change and heavy transitions during scroll */
-  transform: translateZ(0);
+  will-change: transform;
+  transition: transform 0.2s ease;
   background-color: #fff;
   aspect-ratio: auto;
   display: flex;
   flex-direction: column;
   border-radius: 0;
-  overflow: hidden;
+  overflow: visible;
   box-shadow: none;
   border: none;
+  flex: 0 0 auto;
+  width: 50%; /* Half viewport width for two cards side by side */
+  min-width: 160px; /* Minimum width for very small screens */
+  margin: 0; /* Remove any margin */
+  padding: 0; /* Remove any padding */
   /* Optimize for scroll performance */
   contain: layout style paint;
   /* Lighter touch feedback - reduced transition */
@@ -86,18 +91,18 @@
 .card {
   background: #fff;
   border-radius: 0;
-  overflow: hidden;
+  overflow: visible;
   text-decoration: none;
   color: inherit;
   display: flex;
   flex-direction: column;
   position: relative;
   box-shadow: none;
-  /* Reduced transition for smoother scrolling */
-  transition: transform 0.15s ease;
+  transition: all 0.3s ease;
   margin-bottom: 0;
   height: 100%;
   width: 100%;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   /* Hardware acceleration */
   transform: translateZ(0);
   will-change: transform;
