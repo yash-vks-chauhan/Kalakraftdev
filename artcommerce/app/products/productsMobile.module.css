@@ -10,8 +10,6 @@
   /* Improve scroll performance */
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
-  /* Reduce repaints during scroll */
-  contain: layout style paint;
 }
 
 .pageHeader {
