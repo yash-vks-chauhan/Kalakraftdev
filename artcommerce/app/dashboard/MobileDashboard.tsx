@@ -72,6 +72,10 @@ export default function MobileDashboard() {
           <Home size={24} />
           <span>Dashboard</span>
         </button>
+        <button onClick={() => router.push('/dashboard/admin/orders')} className={styles.navItem}>
+          <ShoppingCart size={24} />
+          <span>Orders</span>
+        </button>
         <button onClick={() => setActiveTab('products')} className={`${styles.navItem} ${activeTab === 'products' ? styles.active : ''}`}>
           <Box size={24} />
           <span>Products</span>
@@ -80,9 +84,9 @@ export default function MobileDashboard() {
           <Users size={24} />
           <span>Users</span>
         </button>
-        <button onClick={() => router.push('/dashboard/admin/orders')} className={styles.navItem}>
-          <ShoppingCart size={24} />
-          <span>Orders</span>
+        <button onClick={() => router.push('/dashboard/admin/analytics')} className={styles.navItem}>
+          <BarChart2 size={24} />
+          <span>Analytics</span>
         </button>
       </nav>
     </div>
@@ -91,23 +95,35 @@ export default function MobileDashboard() {
 
 const DashboardHome = () => {
   const { user, token } = useAuth()
+  const [isActivityVisible, setIsActivityVisible] = useState(false)
 
   return (
     <>
       <AdminMetrics token={token} user={user} />
       <div className={styles.section}>
-        <h2 className={styles.sectionTitle}>Recent Activity</h2>
-        {/* Placeholder for recent activities/notifications */}
-        <div className={styles.activityFeed}>
-          <div className={styles.activityItem}>
-            <p>New order #1234 placed.</p>
-            <span>5m ago</span>
-          </div>
-          <div className={styles.activityItem}>
-            <p>Low stock warning for "Product Name".</p>
-            <span>1h ago</span>
-          </div>
+        <div className={styles.sectionHeader} onClick={() => setIsActivityVisible(!isActivityVisible)}>
+          <h2 className={styles.sectionTitle}>Recent Activity</h2>
+          <ChevronDown size={20} className={`${styles.chevron} ${isActivityVisible ? styles.chevronOpen : ''}`} />
         </div>
+        <AnimatePresence>
+          {isActivityVisible && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className={styles.activityFeed}
+            >
+              <div className={styles.activityItem}>
+                <p>New order #1234 placed.</p>
+                <span>5m ago</span>
+              </div>
+              <div className={styles.activityItem}>
+                <p>Low stock warning for "Product Name".</p>
+                <span>1h ago</span>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
       <RecentOrders token={token} user={user} />
     </>

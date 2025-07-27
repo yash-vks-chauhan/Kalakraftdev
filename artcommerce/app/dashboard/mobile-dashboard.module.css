@@ -82,14 +82,15 @@
 }
 
 .userName {
-  font-size: 1.25rem;
-  font-weight: 600;
+  font-size: 1.5rem;
+  font-weight: 700;
   color: #1a202c;
+  line-height: 1.2;
 }
 
 .userRole {
-  font-size: 0.85rem;
-  color: #64748b;
+  font-size: 0.9rem;
+  color: #4a5568;
   text-transform: capitalize;
 }
 
@@ -946,4 +947,37 @@
 
 .actionMenuItem:not(:last-child) {
   border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+} 
+
+.button {
+  padding: 0.75rem 1.25rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.actionButton {
+  composes: button;
+  background-color: transparent;
+  color: #4a5568;
+}
+
+.actionButton:hover {
+  background-color: #f0f4f8;
+}
+
+.navItem {
+  composes: button;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  color: #4a5568;
+  background-color: transparent;
+}
+
+.navItem.active {
+  color: #1a202c;
 } 
