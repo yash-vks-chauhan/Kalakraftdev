@@ -84,6 +84,17 @@ export default function GoogleInspiredDashboard() {
   return (
     <div className={styles.container}>
       <header className={styles.header}>
+        <div className={styles.headerContent}>
+          <h1 className={styles.title}>Account</h1>
+          <div className={styles.headerActions}>
+            <button
+              onClick={handleLogout}
+              className={showLogoutConfirm ? styles.logoutConfirm : styles.logoutButton}
+            >
+              <LogOut size={22} />
+            </button>
+          </div>
+        </div>
         <div className={styles.profileSection}>
           <div className={styles.avatar}>
             {user.avatarUrl ? (
@@ -98,14 +109,6 @@ export default function GoogleInspiredDashboard() {
           </div>
           <ChevronRight size={24} className={styles.profileArrow} />
         </div>
-        <div className={styles.headerActions}>
-          <button
-            onClick={handleLogout}
-            className={showLogoutConfirm ? styles.logoutConfirm : styles.logoutButton}
-          >
-            <LogOut size={22} />
-          </button>
-        </div>
       </header>
 
       <main className={styles.mainContent}>
@@ -115,45 +118,70 @@ export default function GoogleInspiredDashboard() {
         <RecentOrders token={token} user={user} />
 
         <div className={styles.menuContainer}>
-          <h2 className={styles.menuTitle}>Account</h2>
-          <div className={styles.cardGrid}>
-            {menuItems.map((item, index) => (
-              <div className={styles.card} key={index}>
-                <Link href={item.href} className={styles.menuItem}>
-                  <div className={styles.menuIconWrapper}>
-                    <item.icon size={24} />
-                  </div>
-                  <div className={styles.menuText}>
-                    <span className={styles.menuLabel}>{item.label}</span>
-                    <span className={styles.menuDescription}>{item.description}</span>
-                  </div>
-                  <ChevronRight size={24} className={styles.menuArrow} />
-                </Link>
+          {menuItems.map((item, index) => (
+            <Link href={item.href} key={index} className={styles.menuItem}>
+              <div className={styles.menuIconWrapper}>
+                <item.icon size={24} />
               </div>
-            ))}
-          </div>
+              <div className={styles.menuText}>
+                <span className={styles.menuLabel}>{item.label}</span>
+                <span className={styles.menuDescription}>{item.description}</span>
+              </div>
+              <ChevronRight size={24} className={styles.menuArrow} />
+            </Link>
+          ))}
         </div>
 
         {user.role === 'admin' && (
-          <div className={styles.adminControlsSection}>
-            <div className={styles.adminSection}>
-              <h2 className={styles.adminTitle}>Admin Controls</h2>
-              <div className={styles.cardGrid}>
-                {adminMenuItems.map((item: any, index: number) => (
-                  <div className={styles.card} key={index}>
-                    <Link href={item.href} className={styles.menuItem}>
+          <div className={styles.adminSection}>
+            <h2 className={styles.adminTitle}>Admin Controls</h2>
+            <div className={styles.menuContainer}>
+              {adminMenuItems.map((item: any, index: number) =>
+                item.subItems ? (
+                  <div key={index} className={styles.menuItemGroup}>
+                    <div
+                      className={styles.menuItem}
+                      onClick={() => toggleAdminSubMenu(item.subMenuKey)}
+                    >
                       <div className={styles.menuIconWrapper}>
                         <item.icon size={24} />
                       </div>
                       <div className={styles.menuText}>
                         <span className={styles.menuLabel}>{item.label}</span>
-                        <span className={styles.menuDescription}>{item.description}</span>
                       </div>
-                      <ChevronRight size={24} className={styles.menuArrow} />
-                    </Link>
+                      {showAdminSubMenu === item.subMenuKey ? (
+                        <ChevronUp size={24} className={styles.menuArrow} />
+                      ) : (
+                        <ChevronDown size={24} className={styles.menuArrow} />
+                      )}
+                    </div>
+                    <div className={`${styles.subMenuContainer} ${showAdminSubMenu === item.subMenuKey ? styles.subMenuOpen : ''}`}>
+                      <div className={styles.subMenuItemWrapper}>
+                        {item.subItems.map((subItem: any, subIndex: number) => (
+                          <Link href={subItem.href} key={subIndex} className={styles.subMenuItem}>
+                             <div className={styles.menuIconWrapper}>
+                                <subItem.icon size={20} />
+                            </div>
+                            <span className={styles.subMenuLabel}>{subItem.label}</span>
+                            <ChevronRight size={20} className={styles.menuArrow} />
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
                   </div>
-                ))}
-              </div>
+                ) : (
+                  <Link href={item.href} key={index} className={styles.menuItem}>
+                    <div className={styles.menuIconWrapper}>
+                      <item.icon size={24} />
+                    </div>
+                    <div className={styles.menuText}>
+                      <span className={styles.menuLabel}>{item.label}</span>
+                      <span className={styles.menuDescription}>{item.description}</span>
+                    </div>
+                    <ChevronRight size={24} className={styles.menuArrow} />
+                  </Link>
+                )
+              )}
             </div>
           </div>
         )}

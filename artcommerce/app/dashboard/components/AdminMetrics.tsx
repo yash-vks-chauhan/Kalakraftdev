@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { DollarSign, Package, CheckCircle, Clock, Truck, RefreshCw } from 'lucide-react'
 import styles from './AdminMetrics.module.css'
-import Link from 'next/link'
 
 interface AdminMetricsProps {
   token: string | null
@@ -135,7 +134,6 @@ export default function AdminMetrics({ token, user }: AdminMetricsProps) {
                   <h3 className={styles.metricTitle}>Revenue</h3>
                   <p className={styles.metricValue}>₹{metrics?.revenue ? metrics.revenue.toFixed(2) : '0.00'}</p>
                 </div>
-                <Link href="/dashboard/admin/orders" className={styles.detailsButton}>View Details</Link>
               </div>
               <div className={styles.metricCard}>
                 {getMetricIcon('orders')}
@@ -143,7 +141,6 @@ export default function AdminMetrics({ token, user }: AdminMetricsProps) {
                   <h3 className={styles.metricTitle}>Orders</h3>
                   <p className={styles.metricValue}>{metrics?.totalOrders || '0'}</p>
                 </div>
-                <Link href="/dashboard/admin/orders" className={styles.detailsButton}>View Details</Link>
               </div>
               {metrics?.statusCounts?.map((sc: any) => (
                 <div key={sc.status} className={styles.metricCard}>
@@ -152,7 +149,6 @@ export default function AdminMetrics({ token, user }: AdminMetricsProps) {
                     <h3 className={styles.metricTitle}>{sc.status}</h3>
                     <p className={styles.metricValue}>{sc._count.status}</p>
                   </div>
-                  <Link href={`/dashboard/admin/orders?status=${sc.status.toLowerCase()}`} className={styles.detailsButton}>View Details</Link>
                 </div>
               ))}
             </div>

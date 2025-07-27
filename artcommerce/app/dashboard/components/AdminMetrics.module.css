@@ -99,24 +99,9 @@
 }
 
 .metricValue {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #1a202c;
-}
-
-.detailsButton {
-  margin-top: 1rem;
-  padding: 0.5rem 1rem;
-  border-radius: 0.5rem;
-  background-color: #f0f4f8;
-  color: #1a202c;
+  font-size: 1.25rem;
   font-weight: 600;
-  text-align: center;
-  transition: background-color 0.2s;
-}
-
-.detailsButton:hover {
-  background-color: #e2e8f0;
+  color: #1e293b;
 }
 
 .scrollIndicator {

@@ -9,7 +9,6 @@ import { useAuth } from '../contexts/AuthContext'
 import styles from './dashboard.module.css'
 import desktopStyles from './dashboard.module.css'
 import GoogleInspiredDashboard from './GoogleInspiredDashboard'
-import MobileDashboard from './MobileDashboard'
 import { useIsMobile } from '../../lib/utils'
 
 const DashboardPage: React.FC = () => {
@@ -42,7 +41,7 @@ const DashboardPage: React.FC = () => {
   }, [token, user, period, router])
 
   if (isMobile) {
-    return <MobileDashboard />
+    return <GoogleInspiredDashboard />
   }
 
   if (!user) return null
