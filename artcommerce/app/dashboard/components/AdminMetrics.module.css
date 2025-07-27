@@ -1,108 +1,43 @@
-/* Simplified Admin Metrics - Modern Mobile Design */
 .metricsSection {
-  --primary: #007AFF;
-  --secondary: #8E8E93;
-  --background: #F2F2F7;
-  --card: #FFFFFF;
-  --text-primary: #000000;
-  --text-secondary: #6D6D70;
-  --border: #C6C6C8;
-  --border-light: #E5E5EA;
-  --touch-feedback: rgba(0, 122, 255, 0.1);
-  
-  background-color: var(--card);
-  border: 1px solid var(--border-light);
-  border-radius: 12px;
-  padding: 12px; /* Reduced from 16px */
-  margin-bottom: 8px; /* Reduced from 24px */
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.metricsSection.collapsed {
-  padding-bottom: 8px;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  padding: 1rem;
 }
 
 .sectionHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
-  cursor: pointer;
-  user-select: none;
-  padding: 4px;
-  border-radius: 8px;
-  transition: background-color 0.2s ease;
-}
-
-.sectionHeader:active {
-  background-color: var(--touch-feedback);
+  margin-bottom: 1rem;
 }
 
 .sectionTitle {
-  font-size: 20px;
+  font-size: 1.1rem;
   font-weight: 600;
-  color: var(--text-primary);
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.contextIndicator {
-  font-size: 11px;
-  font-weight: 400;
-  color: var(--primary);
-  background-color: rgba(0, 122, 255, 0.1);
-  padding: 2px 6px;
-  border-radius: 6px;
-  text-transform: capitalize;
+  color: #334155;
 }
 
 .periodSelector {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 0.5rem;
 }
 
 .periodSelect {
-  background-color: var(--background);
-  color: var(--text-primary);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 6px 12px;
-  font-size: 13px;
-  min-height: 32px;
-  outline: none;
-}
-
-.periodSelect:focus {
-  border-color: var(--primary);
+  background-color: #ffffff;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
 }
 
 .refreshButton {
   background: none;
   border: none;
-  color: var(--secondary);
+  color: #64748b;
   cursor: pointer;
-  padding: 8px;
-  border-radius: 6px;
-  min-height: 32px;
-  min-width: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background-color 0.2s ease;
-}
-
-.refreshButton:active {
-  background-color: var(--touch-feedback);
-  transform: scale(0.9);
-  transition: all 0.1s ease;
-}
-
-.refreshButton:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
 }
 
 .refreshing {
@@ -114,318 +49,140 @@
   to { transform: rotate(360deg); }
 }
 
-/* Progressive Disclosure */
-.metricsContent {
-  max-height: 0;
-  overflow: hidden;
-  opacity: 0;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.metricsContent.expanded {
-  max-height: 500px;
-  opacity: 1;
-}
-
-/* Metrics Display */
 .metricsScrollContainer {
-  position: relative;
-  margin-bottom: 16px;
   overflow-x: auto;
   scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
 }
-
 .metricsScrollContainer::-webkit-scrollbar {
   display: none;
 }
 
 .metricsRow {
   display: flex;
-  gap: 12px;
-  padding: 4px 0 16px 0;
-  min-width: min-content;
+  gap: 0.75rem;
+  padding-bottom: 1rem;
 }
 
 .metricCard {
-  background-color: var(--background);
-  border: 1px solid var(--border-light);
-  border-radius: 12px;
-  padding: 12px; /* Reduced from 16px */
-  min-width: 130px; /* Slightly smaller for mobile */
-  flex-shrink: 0;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  padding: 1rem;
+  min-width: 150px;
+  text-align: left;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
   display: flex;
   align-items: center;
-  gap: 12px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
+  gap: 0.75rem;
 }
 
-.metricCard:active {
-  background-color: var(--touch-feedback);
-  transform: scale(0.98);
-  transition: all 0.1s ease;
-}
-
-/* Enhanced Primary Metrics */
-.primaryMetric {
-  background: linear-gradient(135deg, var(--primary), #00C3F7);
-  color: white;
-  border-color: transparent;
-  box-shadow: 0 4px 16px rgba(0, 122, 255, 0.2);
-}
-
-.primaryMetric .metricIcon {
-  color: white;
-}
-
-.primaryMetric .metricTitle,
-.primaryMetric .metricValue {
-  color: white;
-}
-
-/* Insight Cards */
-.insightCard {
-  border-left: 4px solid var(--primary);
-  background: linear-gradient(135deg, rgba(0, 122, 255, 0.05), rgba(0, 195, 247, 0.05));
-}
-
-.insightCard.positive {
-  border-left-color: #34C759;
-  background: linear-gradient(135deg, rgba(52, 199, 89, 0.05), rgba(52, 199, 89, 0.1));
-}
-
-.insightCard.warning {
-  border-left-color: #FF9500;
-  background: linear-gradient(135deg, rgba(255, 149, 0, 0.05), rgba(255, 149, 0, 0.1));
-}
-
-.insightCard.positive .metricIcon {
-  color: #34C759;
-}
-
-.insightCard.warning .metricIcon {
-  color: #FF9500;
+.metricCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(17, 24, 39, 0.08);
 }
 
 .metricIcon {
-  color: var(--primary);
+  color: #64748b;
   flex-shrink: 0;
-  transition: transform 0.2s ease;
-}
-
-.metricCard:active .metricIcon {
-  transform: scale(1.1);
 }
 
 .metricText {
   display: flex;
   flex-direction: column;
-  min-width: 0;
 }
 
 .metricTitle {
-  font-size: 13px;
-  color: var(--text-secondary);
-  margin: 0 0 4px 0;
+  font-size: 0.8rem;
+  color: #64748b;
+  margin-bottom: 0.25rem;
   text-transform: capitalize;
-  line-height: 1.2;
 }
 
 .metricValue {
-  font-size: 20px;
+  font-size: 1.25rem;
   font-weight: 600;
-  color: var(--text-primary);
-  margin: 0;
-  line-height: 1.2;
+  color: #1e293b;
 }
 
-.metricDescription {
-  font-size: 11px;
-  color: var(--text-secondary);
-  margin-top: 2px;
-  opacity: 0.8;
-}
-
-/* Enhanced Scroll Indicator */
 .scrollIndicator {
   display: flex;
   justify-content: center;
-  gap: 6px;
-  margin-top: 8px;
+  gap: 0.5rem;
+  margin-top: -0.5rem;
 }
 
 .scrollDot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background-color: var(--border);
+  background-color: #cbd5e1;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.scrollDot:active {
-  transform: scale(1.2);
+  transition: background-color 0.2s;
 }
 
 .activeDot {
-  background-color: var(--primary);
-  transform: scale(1.2);
-  box-shadow: 0 0 8px rgba(0, 122, 255, 0.3);
+  background-color: #334155;
 }
 
-/* Smart Loading States */
 .skeleton {
-  background: linear-gradient(90deg, var(--background) 25%, var(--border-light) 50%, var(--background) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-  pointer-events: none;
+  cursor: progress;
+  animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: .5;
+  }
 }
 
 .skeletonIcon {
   width: 20px;
   height: 20px;
-  border-radius: 4px;
-  background-color: var(--border);
-  flex-shrink: 0;
+  border-radius: 50%;
+  background-color: #e2e8f0;
 }
 
 .skeletonTextWrapper {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  flex: 1;
+  gap: 0.5rem;
+  flex-grow: 1;
 }
 
 .skeletonText {
   height: 12px;
-  border-radius: 6px;
-  background-color: var(--border);
-  width: 60%;
+  width: 70%;
+  border-radius: 0.25rem;
+  background-color: #e2e8f0;
 }
 
 .skeletonValue {
-  height: 18px;
-  border-radius: 9px;
-  background-color: var(--border);
-  width: 80%;
+  height: 20px;
+  width: 40%;
+  border-radius: 0.25rem;
+  background-color: #e2e8f0;
 }
 
-/* Enhanced Error States */
 .errorState {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 32px 16px;
   text-align: center;
-  color: var(--text-secondary);
-  background-color: var(--background);
-  border-radius: 12px;
-  margin: 16px 0;
-}
-
-.errorState p {
-  font-size: 15px;
-  margin: 0 0 16px 0;
-  color: var(--text-secondary);
+  padding: 2rem;
+  color: #ef4444;
 }
 
 .retryButton {
-  background-color: var(--primary);
+  background-color: #ef4444;
   color: white;
   border: none;
-  border-radius: 8px;
-  padding: 12px 24px;
-  font-size: 15px;
-  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
   cursor: pointer;
-  transition: all 0.2s ease;
-  min-height: 44px;
+  margin-top: 1rem;
+  transition: background-color 0.2s;
 }
 
-.retryButton:active {
-  background-color: #0056CC;
-  transform: scale(0.98);
-  transition: all 0.1s ease;
-}
-
-/* Micro-interactions */
-.metricCard::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: 0.5s;
-}
-
-.metricCard:active::before {
-  left: 100%;
-}
-
-/* Smart Focus States */
-.sectionHeader:focus-visible,
-.metricCard:focus-visible {
-  outline: 2px solid var(--primary);
-  outline-offset: 2px;
-}
-
-/* Responsive Optimizations */
-@media (max-width: 375px) {
-  .metricCard {
-    min-width: 120px;
-    padding: 12px;
-  }
-  
-  .metricValue {
-    font-size: 18px;
-  }
-  
-  .metricTitle {
-    font-size: 12px;
-  }
-  
-  .contextIndicator {
-    font-size: 10px;
-    padding: 1px 4px;
-  }
-}
-
-@media (max-width: 320px) {
-  .sectionHeader {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-  
-  .periodSelector {
-    width: 100%;
-    justify-content: space-between;
-  }
-  
-  .periodSelect {
-    flex: 1;
-    margin-right: 8px;
-  }
-}
-
-/* Light theme enforcement for metrics */
-.metricsSection {
-  /* Ensure consistent light theme */
-  --background: #F2F2F7 !important;
-  --card: #FFFFFF !important;
-  --text-primary: #000000 !important;
-  --text-secondary: #6D6D70 !important;
-  --border: #C6C6C8 !important;
-  --border-light: #E5E5EA !important;
+.retryButton:hover {
+  background-color: #dc2626;
 } 

@@ -1,132 +1,72 @@
-/* Modern Mobile Dashboard - Simplified Design */
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .container {
-  --primary: #007AFF;
-  --secondary: #8E8E93;
-  --background: #F2F2F7;
-  --card: #FFFFFF;
-  --text-primary: #000000;
-  --text-secondary: #6D6D70;
-  --border: #C6C6C8;
-  --border-light: #E5E5EA;
-  --touch-feedback: rgba(0, 122, 255, 0.1);
-  
-  /* Typography Scale */
-  --text-heading-large: 28px;   /* Page titles */
-  --text-heading-medium: 20px;  /* Section titles */
-  --text-heading-small: 17px;   /* Card titles */
-  --text-body: 15px;            /* Body text */
-  --text-caption: 13px;         /* Secondary info */
-  --text-small: 11px;           /* Small labels */
-  
-  /* Spacing Scale - 8pt Grid */
-  --space-xs: 4px;
-  --space-sm: 8px;
-  --space-md: 16px;
-  --space-lg: 24px;
-  --space-xl: 32px;
-  --space-xxl: 48px;
-  /* Force light theme background */
-  background-color: #F2F2F7 !important;
-  background: #F2F2F7 !important;
-  color: #000000 !important;
+  background-color: #ffffff;
+  color: #1a202c;
   min-height: 100vh;
-  padding-bottom: var(--space-md); /* Reduced from --space-lg */
+  padding-bottom: 2rem;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  animation: fadeIn 0.3s ease-out;
+  animation: fadeIn 0.5s ease-out;
 }
 
-/* Header Improvements - Mobile Compact */
 .header {
-  padding: var(--space-sm) var(--space-md);
-  background-color: var(--card);
-  border-bottom: 1px solid var(--border-light);
+  padding: 1.5rem 1rem;
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .headerContent {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: var(--space-lg);
-  gap: var(--space-md);
-}
-
-.titleSection {
-  flex: 1;
+  align-items: center;
+  margin-bottom: 2rem;
 }
 
 .title {
-  font-size: var(--text-heading-large);
-  font-weight: 700;
-  color: var(--text-primary);
-  margin: 0 0 var(--space-xs) 0;
-  line-height: 1.2;
-}
-
-.subtitle {
-  font-size: var(--text-body);
-  color: var(--text-secondary);
-  margin: 0;
-  font-weight: 400;
-  line-height: 1.3;
+  font-size: 1.75rem;
+  font-weight: 600;
 }
 
 .logoutButton,
 .logoutConfirm {
   background: none;
   border: none;
-  color: var(--secondary);
+  color: #64748b;
   cursor: pointer;
-  padding: var(--space-sm);
-  border-radius: var(--space-sm);
-  min-height: 44px;
-  min-width: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.logoutButton:active {
-  background-color: var(--touch-feedback);
-  transform: scale(0.95);
-  transition: all 0.1s ease;
+  padding: 0.5rem;
 }
 
 .logoutConfirm {
-  color: #FF3B30;
+  color: #ef4444;
 }
 
 .profileSection {
-  background-color: var(--card);
-  border: 1px solid var(--border-light);
-  border-radius: 12px;
-  padding: var(--space-md);
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  padding: 1rem;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 1rem;
   cursor: pointer;
-  transition: background-color 0.2s ease;
-  text-decoration: none;
-  color: inherit;
+  transition: background-color 0.2s, border-color 0.2s, transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.profileSection:active {
-  background-color: var(--touch-feedback);
-  transform: scale(0.98);
-  transition: all 0.1s ease;
+.profileSection:hover {
+  background-color: #f1f5f9;
+  border-color: #cbd5e1;
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(17, 24, 39, 0.08);
 }
 
 .avatar {
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background-color: var(--border);
-  color: var(--secondary);
+  background-color: #e2e8f0;
+  color: #475569;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -142,972 +82,75 @@
 
 .profileInfo {
   flex-grow: 1;
-  min-width: 0;
 }
 
 .profileName {
-  font-size: var(--text-heading-small);
+  font-size: 1.1rem;
   font-weight: 500;
-  color: var(--text-primary);
-  margin: 0 0 2px 0;
-  line-height: 1.2;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  color: #1e293b;
 }
 
 .profileEmail {
-  font-size: var(--text-caption);
-  color: var(--text-secondary);
-  margin: 0;
-  line-height: 1.2;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-size: 0.875rem;
+  color: #64748b;
 }
 
 .profileArrow {
-  color: var(--secondary);
+  color: #94a3b8;
   flex-shrink: 0;
 }
 
-/* Main Content Layout - Mobile Optimized */
 .mainContent {
-  padding: var(--space-sm) var(--space-md);
+  padding: 1rem;
   display: flex;
   flex-direction: column;
-  gap: var(--space-sm); /* Reduced from --space-lg to --space-sm */
+  gap: 1.5rem;
 }
 
-/* Section Styling - Compact Mobile */
-.metricsContainer,
-.quickActionsContainer,
-.recentSection,
-.accountSection,
-.adminSection {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-xs); /* Reduced from --space-md to --space-xs */
-}
-
-.sectionTitle {
-  font-size: var(--text-heading-medium);
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0;
-  line-height: 1.2;
-}
-
-/* Quick Actions Grid */
-.quickActionsGrid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--space-sm);
-}
-
-.quickActionCard {
-  background-color: var(--card);
-  border: 1px solid var(--border-light);
-  border-radius: 12px;
-  padding: var(--space-md);
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  text-decoration: none;
-  color: inherit;
-  transition: background-color 0.2s ease;
-  min-height: 60px;
-}
-
-.quickActionCard:active {
-  background-color: var(--touch-feedback);
-  transform: scale(0.98);
-  transition: all 0.1s ease;
-}
-
-.primaryAction {
-  border-color: var(--primary);
-  background-color: rgba(0, 122, 255, 0.05);
-}
-
-.secondaryAction {
-  /* Uses default styling */
-}
-
-.actionIconWrapper {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  background-color: var(--primary);
-  color: white;
-}
-
-.secondaryAction .actionIconWrapper {
-  background-color: var(--background);
-  color: var(--primary);
-}
-
-.actionText {
-  flex: 1;
-  min-width: 0;
-}
-
-.actionLabel {
-  display: block;
-  font-size: var(--text-heading-small);
-  font-weight: 500;
-  color: var(--text-primary);
-  margin-bottom: 2px;
-  line-height: 1.2;
-}
-
-.actionDescription {
-  display: block;
-  font-size: var(--text-caption);
-  color: var(--text-secondary);
-  line-height: 1.2;
-}
-
-.actionArrow {
-  color: var(--secondary);
-  flex-shrink: 0;
-}
-
-/* Enhanced Menu Container */
-.menuContainer {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-sm);
-}
-
-.menuItem {
-  background-color: var(--card);
-  border: 1px solid var(--border-light);
-  border-radius: 12px;
-  padding: var(--space-md);
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-  text-decoration: none;
-  color: inherit;
-  min-height: 60px;
-}
-
-.menuItem:active {
-  background-color: var(--touch-feedback);
-  transform: scale(0.98);
-  transition: all 0.1s ease;
-}
-
-.menuIconWrapper {
-  width: 36px;
-  height: 36px;
-  border-radius: var(--space-sm);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  background-color: var(--background);
-  color: var(--primary);
-}
-
-.menuText {
-  flex-grow: 1;
-  min-width: 0;
-}
-
-.menuLabel {
-  display: block;
-  font-size: var(--text-heading-small);
-  font-weight: 500;
-  color: var(--text-primary);
-  margin-bottom: 2px;
-  line-height: 1.2;
-}
-
-.menuDescription {
-  display: block;
-  font-size: var(--text-caption);
-  color: var(--text-secondary);
-  line-height: 1.2;
-}
-
-.menuArrow {
-  color: var(--secondary);
-  flex-shrink: 0;
-}
-
-/* Admin Section Specific Styling */
-.adminSection {
-  background-color: var(--card);
-  border: 1px solid var(--border-light);
-  border-radius: 12px;
-  padding: var(--space-md);
-}
-
-.menuItemGroup {
-  background-color: transparent;
-}
-
-.subMenuContainer {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.3s ease-in-out;
-}
-
-.subMenuOpen {
-  max-height: 20rem;
-}
-
-.subMenuItemWrapper {
-  padding-top: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-sm);
-}
-
-.subMenuItem {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px;
-  border-radius: var(--space-sm);
-  cursor: pointer;
-  text-decoration: none;
-  color: var(--text-primary);
-  transition: background-color 0.2s ease;
-  background-color: var(--background);
-  border: 1px solid var(--border-light);
-  min-height: 48px;
-}
-
-.subMenuItem:active {
-  background-color: var(--touch-feedback);
-  transform: scale(0.98);
-  transition: all 0.1s ease;
-}
-
-.subMenuLabel {
-  flex-grow: 1;
-  font-size: var(--text-body);
-  font-weight: 500;
-  line-height: 1.2;
-}
-
-/* Bottom Spacing */
-.bottomSpacer {
-  height: var(--space-lg);
-}
-
-/* Responsive Grid for Quick Actions */
-@media (min-width: 375px) {
-  .quickActionsGrid {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
-@media (min-width: 414px) {
-  .quickActionsGrid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-/* Native Mobile Patterns */
-.pullToRefreshIndicator {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 100;
-  background: linear-gradient(135deg, var(--primary), #00C3F7);
-  color: white;
-  padding: var(--space-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-sm);
-  font-size: var(--text-caption);
-  font-weight: 500;
-  border-radius: 0 0 12px 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.refreshSpinner {
-  animation: rotate 0.8s linear infinite;
-}
-
-@keyframes rotate {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-.sectionHeaderWithActions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--space-md);
-}
-
-.quickRefreshButton {
-  background: var(--background);
-  border: 1px solid var(--border-light);
-  border-radius: 8px;
-  padding: var(--space-sm);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  min-width: 32px;
-  min-height: 32px;
-}
-
-.quickRefreshButton:active {
-  background-color: var(--touch-feedback);
-  transform: scale(0.9);
-  transition: all 0.1s ease;
-}
-
-.profileBadge {
-  background-color: var(--background);
-  border-radius: 6px;
-  padding: var(--space-xs);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--secondary);
-  transition: all 0.2s ease;
-}
-
-.profileSection:active .profileBadge {
-  background-color: var(--primary);
-  color: white;
-  transform: scale(1.1);
-}
-
-/* Enhanced Quick Action Cards */
-.quickActionCard {
-  position: relative;
-  overflow: hidden;
-}
-
-.quickActionCard::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: 0.5s;
-}
-
-.quickActionCard:active::before {
-  left: 100%;
-}
-
-.actionIndicator {
-  background-color: rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
-  padding: var(--space-xs);
-  color: var(--secondary);
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-}
-
-.primaryAction .actionIndicator {
-  background-color: rgba(255, 255, 255, 0.2);
-}
-
-.quickActionCard:active .actionIndicator {
-  background-color: var(--primary);
-  color: white;
-  transform: translateX(4px);
-}
-
-/* Enhanced Menu Interactions */
-.expandIcon {
-  background-color: var(--background);
-  border-radius: 6px;
-  padding: var(--space-xs);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--secondary);
-  transition: all 0.3s ease;
-  flex-shrink: 0;
-}
-
-.menuItem:active .expandIcon {
-  background-color: var(--primary);
-  color: white;
-  transform: rotate(180deg);
-}
-
-.subMenuContainer {
-  overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.subMenuOpen {
-  animation: slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-@keyframes slideDown {
-  from {
-    max-height: 0;
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    max-height: 20rem;
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Touch Feedback Enhancements */
-.menuItem,
-.quickActionCard,
-.orderItem {
-  -webkit-tap-highlight-color: transparent;
-  user-select: none;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-}
-
-.menuItem:active,
-.quickActionCard:active {
-  animation: pressEffect 0.15s ease;
-}
-
-@keyframes pressEffect {
-  0% { transform: scale(1); }
-  50% { transform: scale(0.98); }
-  100% { transform: scale(1); }
-}
-
-/* Accessibility Improvements */
-@media (prefers-reduced-motion: reduce) {
-  .container * {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-
-/* Focus indicators for keyboard navigation */
-.quickActionCard:focus,
-.menuItem:focus,
-.profileSection:focus {
-  outline: 2px solid var(--primary);
-  outline-offset: 2px;
-}
-
-/* Light theme enforcement - removed automatic dark mode */
-.container {
-  /* Ensure light theme always */
-  --background: #F2F2F7 !important;
-  --card: #FFFFFF !important;
-  --text-primary: #000000 !important;
-  --text-secondary: #6D6D70 !important;
-  --border: #C6C6C8 !important;
-  --border-light: #E5E5EA !important;
-}
-
-/* Small screen optimizations */
-@media (max-width: 320px) {
-  .headerContent {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--space-sm);
-  }
-  
-  .actionLabel {
-    font-size: var(--text-body);
-  }
-  
-  .menuLabel {
-    font-size: var(--text-body);
-  }
-  
-  .pullToRefreshIndicator {
-    padding: var(--space-sm);
-    font-size: var(--text-small);
-  }
-  
-  .quickActionCard {
-    min-height: 56px;
-  }
-  
-  .sectionHeaderWithActions {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--space-sm);
-  }
-}
-
-/* Advanced Week 6 Features */
-
-/* Smart Controls */
-.smartControls {
-  position: fixed;
-  top: 20px;
-  right: 16px;
-  z-index: 200;
-  display: flex;
-  gap: 8px;
-}
-
-.smartControlButton {
-  background: var(--card);
-  border: 1px solid var(--border-light);
-  border-radius: 20px;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  color: var(--secondary);
-  backdrop-filter: blur(10px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.smartControlButton:active {
-  transform: scale(0.9);
-  background-color: var(--touch-feedback);
-}
-
-.smartControlButton.active {
-  background: var(--primary);
-  color: white;
-  border-color: var(--primary);
-  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
-}
-
-/* Focus Mode Styling - Ultra Compact */
-.container.focusMode {
-  --space-md: 8px;
-  --space-lg: 12px;
-}
-
-.container.focusMode .header {
-  padding: 8px 16px;
-}
-
-.container.focusMode .mainContent {
-  padding: 8px 16px;
-  gap: 8px; /* Much more compact */
-}
-
-.container.focusMode .sectionTitle {
-  font-size: 18px;
-}
-
-.container.focusMode .profileSection {
-  padding: 12px;
-}
-
-.container.focusMode .metricCard {
-  padding: 12px;
-  min-width: 120px;
-}
-
-/* Minimized Mode - Ultra Compact */
-.container.minimized .header {
-  padding: 6px 16px;
-}
-
-.container.minimized .profileSection {
-  padding: 6px 12px;
-}
-
-.container.minimized .mainContent {
-  padding: 6px 16px;
-  gap: 6px; /* Super compact for minimized */
-}
-
-.container.minimized .avatar {
-  width: 36px;
-  height: 36px;
-}
-
-.container.minimized .profileName {
-  font-size: 15px;
-}
-
-.container.minimized .profileEmail {
-  font-size: 11px;
-}
-
-/* Layout Indicators */
-.layoutIndicator {
-  font-size: 11px;
-  color: var(--primary);
-  font-weight: 400;
-  opacity: 0.8;
-}
-
-/* Swipeable Elements */
-.swipeableSection {
-  position: relative;
-  overflow: hidden;
-}
-
-.swipeableSection::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -2px;
-  width: 2px;
-  height: 100%;
-  background: var(--primary);
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-
-.swipeableSection:active::before {
-  opacity: 0.3;
-}
-
-.swipeableCard {
-  position: relative;
-  overflow: hidden;
-}
-
-/* Enhanced Quick Actions Grid */
-.focusGrid {
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
-.focusGrid .quickActionCard {
-  min-height: 80px;
-  padding: 20px;
-}
-
-.focusGrid .actionIconWrapper {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-}
-
-.focusGrid .actionLabel {
-  font-size: 18px;
-  font-weight: 600;
-}
-
-/* Swipe Gesture Indicators */
-.container[data-swiping="left"] .swipeableSection {
-  transform: translateX(-10px);
-  transition: transform 0.2s ease;
-}
-
-.container[data-swiping="right"] .swipeableSection {
-  transform: translateX(10px);
-  transition: transform 0.2s ease;
-}
-
-/* Enhanced Touch Feedback */
-.quickActionCard:active,
-.menuItem:active {
-  transform: scale(0.97);
-  transition: all 0.1s ease;
-}
-
-/* Focus Mode Quick Actions - Light theme friendly */
-.focusMode .quickActionCard {
-  background: linear-gradient(135deg, var(--primary), #00C3F7);
-  color: white;
-  border: 1px solid var(--border-light);
-}
-
-.focusMode .quickActionCard .actionIconWrapper {
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-}
-
-.focusMode .quickActionCard .actionLabel,
-.focusMode .quickActionCard .actionDescription {
-  color: white;
-}
-
-.focusMode .quickActionCard .actionIndicator {
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
-}
-
-/* Smart Section Transitions */
-.metricsContainer,
-.quickActionsContainer,
-.recentSection,
-.accountSection,
-.adminSection {
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.container.focusMode .accountSection,
-.container.focusMode .adminSection:not([data-priority="admin"]) {
-  opacity: 0;
-  transform: translateY(20px);
-  pointer-events: none;
-}
-
-/* Advanced Micro-interactions */
-@keyframes focusPulse {
-  0%, 100% { 
-    box-shadow: 0 0 0 0 rgba(0, 122, 255, 0.4);
-  }
-  50% { 
-    box-shadow: 0 0 0 10px rgba(0, 122, 255, 0);
-  }
-}
-
-.focusMode .quickActionCard.primaryAction {
-  animation: focusPulse 2s infinite;
-}
-
-/* Swipe Navigation Hints - Light theme */
-.swipeHint {
-  position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0, 122, 255, 0.9);
-  color: white;
-  padding: 8px 16px;
-  border-radius: 20px;
-  font-size: 12px;
-  opacity: 0;
-  animation: swipeHintFade 3s ease-in-out;
-}
-
-@keyframes swipeHintFade {
-  0%, 90% { opacity: 0; }
-  10%, 80% { opacity: 1; }
-}
-
-/* Enhanced Profile Section */
-.profileSection:active {
-  background: linear-gradient(135deg, var(--touch-feedback), rgba(0, 195, 247, 0.1));
-}
-
-/* Smart Refresh Visual Enhancement */
-.quickRefreshButton:active {
-  background: linear-gradient(135deg, var(--primary), #00C3F7);
-  color: white;
-  transform: scale(0.9) rotate(180deg);
-}
-
-/* Focus Mode Header */
-.focusMode .title {
-  font-size: 24px;
-}
-
-.focusMode .subtitle {
-  font-size: 13px;
-}
-
-.focusMode .headerContent {
-  margin-bottom: 16px;
-}
-
-/* Advanced Loading States */
-.refreshing {
-  animation: smartSpin 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-}
-
-@keyframes smartSpin {
-  0% { transform: rotate(0deg) scale(1); }
-  50% { transform: rotate(180deg) scale(1.1); }
-  100% { transform: rotate(360deg) scale(1); }
-}
-
-/* Contextual Menu Enhancements */
-.menuItem:active .menuIconWrapper {
-  background: var(--primary);
-  color: white;
-  transform: scale(1.1);
-}
-
-.menuItem:active .menuArrow {
-  color: var(--primary);
-  transform: translateX(6px);
-}
-
-/* Smart Visibility Transitions */
-@keyframes slideInFromRight {
-  from {
-    opacity: 0;
-    transform: translateX(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes slideOutToRight {
-  from {
-    opacity: 1;
-    transform: translateX(0);
-  }
-  to {
-    opacity: 0;
-    transform: translateX(30px);
-  }
-}
-
-.container:not(.focusMode) .accountSection,
-.container:not(.focusMode) .adminSection {
-  animation: slideInFromRight 0.4s ease-out;
-}
-
-/* Performance Optimizations */
-.container *,
-.container *::before,
-.container *::after {
-  transform: translateZ(0);
-  backface-visibility: hidden;
-}
-
-/* Advanced Focus States */
-.smartControlButton:focus-visible,
-.quickActionCard:focus-visible,
-.menuItem:focus-visible {
-  outline: 2px solid var(--primary);
-  outline-offset: 2px;
-}
-
-/* Gesture Recognition Visual Feedback */
-.container[data-gesture="swipe-left"] {
-  background: linear-gradient(90deg, transparent, rgba(0, 122, 255, 0.05));
-}
-
-.container[data-gesture="swipe-right"] {
-  background: linear-gradient(-90deg, transparent, rgba(0, 122, 255, 0.05));
-}
-
-/* High contrast mode support */
-@media (prefers-contrast: high) {
-  .quickActionCard,
-  .menuItem {
-    border-width: 2px;
-  }
-  
-  .primaryAction {
-    border-color: var(--primary);
-    border-width: 3px;
-  }
-  
-  .smartControlButton {
-    border-width: 2px;
-  }
-  
-  .focusMode .quickActionCard {
-    border: 3px solid white;
-  }
-}
-
-/* Motion Preferences */
-@media (prefers-reduced-motion: reduce) {
-  .container * {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-  
-  .smartControlButton,
-  .quickActionCard,
-  .menuItem {
-    transition: none !important;
-  }
-}
-
-/* FORCE LIGHT THEME - Override any dark theme */
-.container,
-.container *,
-.header,
-.mainContent,
-.metricsSection,
-.quickActionsContainer,
-.accountSection,
-.adminSection,
-.menuContainer,
-.menuItem,
-.metricCard,
-.quickActionCard {
-  background-color: var(--card, #FFFFFF) !important;
-  color: var(--text-primary, #000000) !important;
-}
-
-.container {
-  background-color: #F2F2F7 !important;
-  background: #F2F2F7 !important;
-}
-
-/* Ensure all cards are white */
-.metricCard,
-.quickActionCard,
-.menuItem,
-.orderItem,
-.profileSection {
-  background-color: #FFFFFF !important;
-  background: #FFFFFF !important;
-  color: #000000 !important;
-  border-color: #E5E5EA !important;
-}
-
-/* Removed global body/html selectors - not allowed in CSS Modules */
-
-/* Legacy styles for compatibility */
+/* Metrics Section */
 .metricsSection {
-  background-color: var(--card);
-  border: 1px solid var(--border-light);
-  border-radius: 12px;
-  padding: var(--space-md);
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  padding: 1rem;
 }
 
 .sectionHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--space-md);
+  margin-bottom: 1rem;
 }
 
 .sectionHeader.clickable {
   cursor: pointer;
 }
 
+.sectionTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #334155;
+}
+
 .periodSelector {
   display: flex;
   align-items: center;
-  gap: var(--space-sm);
+  gap: 0.5rem;
 }
 
 .periodSelect {
-  background-color: var(--background);
-  color: var(--text-primary);
-  border: 1px solid var(--border);
-  border-radius: var(--space-sm);
-  padding: 6px 12px;
-  font-size: var(--text-caption);
-  min-height: 32px;
+  background-color: #ffffff;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
 }
 
 .refreshButton {
   background: none;
   border: none;
-  color: var(--secondary);
+  color: #64748b;
   cursor: pointer;
 }
 
@@ -1123,7 +166,6 @@
 .metricsScrollContainer {
   overflow-x: auto;
   scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
 }
 .metricsScrollContainer::-webkit-scrollbar {
   display: none;
@@ -1131,32 +173,30 @@
 
 .metricsRow {
   display: flex;
-  gap: 12px;
-  padding-bottom: var(--space-md);
+  gap: 0.75rem;
+  padding-bottom: 1rem;
 }
 
 .metricCard {
-  background-color: var(--background);
-  border: 1px solid var(--border-light);
-  border-radius: 12px;
-  padding: var(--space-md);
-  min-width: 140px;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  padding: 1rem;
+  min-width: 150px;
   text-align: left;
-  transition: background-color 0.2s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
   display: flex;
   align-items: center;
-  gap: 12px;
-  flex-shrink: 0;
+  gap: 0.75rem;
 }
 
-.metricCard:active {
-  background-color: var(--touch-feedback);
-  transform: scale(0.98);
-  transition: all 0.1s ease;
+.metricCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(17, 24, 39, 0.08);
 }
 
 .metricIcon {
-  color: var(--primary);
+  color: #64748b;
   flex-shrink: 0;
 }
 
@@ -1166,44 +206,45 @@
 }
 
 .metricTitle {
-  font-size: var(--text-caption);
-  color: var(--text-secondary);
-  margin-bottom: 4px;
+  font-size: 0.8rem;
+  color: #64748b;
+  margin-bottom: 0.25rem;
   text-transform: capitalize;
 }
 
 .metricValue {
-  font-size: var(--text-heading-medium);
+  font-size: 1.25rem;
   font-weight: 600;
-  color: var(--text-primary);
+  color: #1e293b;
 }
 
 .scrollIndicator {
   display: flex;
   justify-content: center;
-  gap: 6px;
-  margin-top: var(--space-sm);
+  gap: 0.5rem;
+  margin-top: -0.5rem;
 }
 
 .scrollDot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background-color: var(--border);
+  background-color: #cbd5e1;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.2s;
 }
 
 .activeDot {
-  background-color: var(--primary);
+  background-color: #334155;
 }
+
 
 /* Orders Section */
 .ordersSection {
-  background-color: var(--card);
-  border: 1px solid var(--border-light);
-  border-radius: 12px;
-  padding: var(--space-md);
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  padding: 1rem;
 }
 
 .expandableSection {
@@ -1218,11 +259,10 @@
 
 .ordersScrollContainer {
   display: flex;
-  gap: 12px;
+  gap: 1rem;
   overflow-x: auto;
-  padding: var(--space-sm) 0;
+  padding: 0.5rem 0;
   scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
 }
 
 .ordersScrollContainer::-webkit-scrollbar {
@@ -1230,18 +270,17 @@
 }
 
 .orderCard {
-  flex: 0 0 200px;
-  background-color: var(--background);
-  border: 1px solid var(--border-light);
-  border-radius: 12px;
+  flex: 0 0 220px;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
   overflow: hidden;
-  transition: background-color 0.2s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.orderCard:active {
-  background-color: var(--touch-feedback);
-  transform: scale(0.98);
-  transition: all 0.1s ease;
+.orderCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(17, 24, 39, 0.08);
 }
 
 .orderCardLink {
@@ -1250,8 +289,8 @@
 }
 
 .orderImageContainer {
-  height: 100px;
-  background-color: var(--border-light);
+  height: 120px;
+  background-color: #f1f5f9;
 }
 
 .orderImage {
@@ -1266,96 +305,200 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--secondary);
+  color: #94a3b8;
 }
 
 .orderContent {
-  padding: 12px;
+  padding: 0.75rem;
 }
 
 .productName {
-  font-size: var(--text-body);
+  font-size: 0.9rem;
   font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin-bottom: var(--space-sm);
-  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+  color: #1e293b;
 }
 
 .orderMeta {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: var(--text-caption);
-  color: var(--text-secondary);
+  font-size: 0.75rem;
+  color: #64748b;
 }
 
 .orderDate {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 0.25rem;
 }
 
 .orderStatus {
-  padding: 4px var(--space-sm);
-  border-radius: 12px;
+  padding: 0.2rem 0.5rem;
+  border-radius: 1rem;
   font-weight: 500;
-  font-size: var(--text-small);
+  font-size: 0.7rem;
 }
 
 .statusPending {
-  background-color: #FFF4E6;
-  color: #BF6A02;
+  background-color: #fffbeb;
+  color: #b45309;
+  border: 1px solid #fde68a;
 }
 .statusProcessing {
-  background-color: #E6F3FF;
-  color: #0066CC;
+  background-color: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
 }
 .statusCompleted {
-  background-color: #E6F7E6;
-  color: #007A00;
+  background-color: #f0fdf4;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
 }
 
 .emptyState {
   text-align: center;
-  padding: var(--space-xl) 0;
+  padding: 2rem 0;
+  color: #64748b;
 }
-
-/* MOBILE SPACING OPTIMIZATION - Ultra Compact */
-@media (max-width: 768px) {
-  .container {
-    padding-bottom: var(--space-sm) !important;
-  }
-  
-  .mainContent {
-    padding: var(--space-xs) var(--space-sm) !important;
-    gap: var(--space-xs) !important;
-  }
-  
-  .header {
-    padding: var(--space-xs) var(--space-sm) !important;
-  }
-  
-  .metricsContainer,
-  .quickActionsContainer,
-  .recentSection,
-  .accountSection,
-  .adminSection {
-    gap: 2px !important; /* Ultra compact */
-  }
-  
-  .quickActionCard {
-    padding: var(--space-sm) !important;
-    min-height: 56px !important;
-  }
-  
-  .profileSection {
-    padding: var(--space-sm) !important;
-  }
-}
-
 .emptyStateIcon {
-  margin-bottom: var(--space-sm);
-  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.menuContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.menuItem {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s, transform 0.3s ease, box-shadow 0.3s ease;
+  text-decoration: none;
+  color: inherit;
+}
+
+.menuItem:hover {
+  background-color: #f1f5f9;
+  border-color: #cbd5e1;
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(17, 24, 39, 0.08);
+}
+
+.menuIconWrapper {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background-color: #e2e8f0;
+  color: #475569;
+  transition: transform 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+}
+
+.menuItem:hover .menuIconWrapper,
+.subMenuItem:hover .menuIconWrapper {
+  transform: scale(1.1) rotate(-5deg);
+  background-color: #dbeafe;
+  color: #1e3a8a;
+}
+
+.menuText {
+  flex-grow: 1;
+}
+
+.menuLabel {
+  display: block;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #1e293b;
+}
+
+.menuDescription {
+  display: block;
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.menuArrow {
+  color: #94a3b8;
+  flex-shrink: 0;
+  transition: transform 0.3s ease;
+}
+
+.menuItem:hover .menuArrow {
+  transform: translateX(4px);
+}
+
+.adminSection {
+  margin-top: 1.5rem;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  padding: 1rem;
+}
+
+.adminTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #334155;
+}
+
+.menuItemGroup {
+  background-color: transparent;
+}
+
+.subMenuContainer {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease-in-out;
+}
+
+.subMenuOpen {
+  max-height: 20rem; /* Adjust if more items are added */
+}
+
+.subMenuItemWrapper {
+  padding-top: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.subMenuItem {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  text-decoration: none;
+  color: #334155;
+  transition: background-color 0.2s, transform 0.3s ease, box-shadow 0.3s ease;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+}
+
+.subMenuItem:hover {
+  background-color: #f1f5f9;
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(17, 24, 39, 0.08);
+}
+
+.subMenuLabel {
+  flex-grow: 1;
+  font-size: 0.9rem;
 } 
