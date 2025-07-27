@@ -1,5 +1,10 @@
 /* Modern Mobile Dashboard - Simplified Design */
-:root {
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.container {
   --primary: #007AFF;
   --secondary: #8E8E93;
   --background: #F2F2F7;
@@ -25,14 +30,6 @@
   --space-lg: 24px;
   --space-xl: 32px;
   --space-xxl: 48px;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-.container {
   background-color: var(--background);
   color: var(--text-primary);
   min-height: 100vh;
@@ -614,7 +611,7 @@
 
 /* Dark mode support */
 @media (prefers-color-scheme: dark) {
-  :root {
+  .container {
     --background: #000000;
     --card: #1C1C1E;
     --text-primary: #FFFFFF;

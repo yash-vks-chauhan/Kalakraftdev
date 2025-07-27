@@ -1,5 +1,5 @@
 /* Recent Orders - Modern Mobile Design */
-:root {
+.ordersSection {
   --primary: #007AFF;
   --secondary: #8E8E93;
   --background: #F2F2F7;
@@ -26,9 +26,6 @@
   --space-md: 16px;
   --space-lg: 24px;
   --space-xl: 32px;
-}
-
-.ordersSection {
   background-color: var(--card);
   border: 1px solid var(--border-light);
   border-radius: 12px;

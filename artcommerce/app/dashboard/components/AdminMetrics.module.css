@@ -1,5 +1,5 @@
 /* Simplified Admin Metrics - Modern Mobile Design */
-:root {
+.metricsSection {
   --primary: #007AFF;
   --secondary: #8E8E93;
   --background: #F2F2F7;
@@ -9,9 +9,6 @@
   --border: #C6C6C8;
   --border-light: #E5E5EA;
   --touch-feedback: rgba(0, 122, 255, 0.1);
-}
-
-.metricsSection {
   background-color: var(--card);
   border: 1px solid var(--border-light);
   border-radius: 12px;
