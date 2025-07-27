@@ -30,17 +30,19 @@
   --space-lg: 24px;
   --space-xl: 32px;
   --space-xxl: 48px;
-  background-color: var(--background);
-  color: var(--text-primary);
+  /* Force light theme background */
+  background-color: #F2F2F7 !important;
+  background: #F2F2F7 !important;
+  color: #000000 !important;
   min-height: 100vh;
-  padding-bottom: var(--space-lg);
+  padding-bottom: var(--space-md); /* Reduced from --space-lg */
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   animation: fadeIn 0.3s ease-out;
 }
 
-/* Header Improvements */
+/* Header Improvements - Mobile Compact */
 .header {
-  padding: var(--space-md);
+  padding: var(--space-sm) var(--space-md);
   background-color: var(--card);
   border-bottom: 1px solid var(--border-light);
 }
@@ -169,15 +171,15 @@
   flex-shrink: 0;
 }
 
-/* Main Content Layout */
+/* Main Content Layout - Mobile Optimized */
 .mainContent {
-  padding: var(--space-md);
+  padding: var(--space-sm) var(--space-md);
   display: flex;
   flex-direction: column;
-  gap: var(--space-lg);
+  gap: var(--space-sm); /* Reduced from --space-lg to --space-sm */
 }
 
-/* Section Styling */
+/* Section Styling - Compact Mobile */
 .metricsContainer,
 .quickActionsContainer,
 .recentSection,
@@ -185,7 +187,7 @@
 .adminSection {
   display: flex;
   flex-direction: column;
-  gap: var(--space-md);
+  gap: var(--space-xs); /* Reduced from --space-md to --space-xs */
 }
 
 .sectionTitle {
@@ -609,16 +611,15 @@
   outline-offset: 2px;
 }
 
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-  .container {
-    --background: #000000;
-    --card: #1C1C1E;
-    --text-primary: #FFFFFF;
-    --text-secondary: #8E8E93;
-    --border: #38383A;
-    --border-light: #38383A;
-  }
+/* Light theme enforcement - removed automatic dark mode */
+.container {
+  /* Ensure light theme always */
+  --background: #F2F2F7 !important;
+  --card: #FFFFFF !important;
+  --text-primary: #000000 !important;
+  --text-secondary: #6D6D70 !important;
+  --border: #C6C6C8 !important;
+  --border-light: #E5E5EA !important;
 }
 
 /* Small screen optimizations */
@@ -653,6 +654,349 @@
   }
 }
 
+/* Advanced Week 6 Features */
+
+/* Smart Controls */
+.smartControls {
+  position: fixed;
+  top: 20px;
+  right: 16px;
+  z-index: 200;
+  display: flex;
+  gap: 8px;
+}
+
+.smartControlButton {
+  background: var(--card);
+  border: 1px solid var(--border-light);
+  border-radius: 20px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  color: var(--secondary);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.smartControlButton:active {
+  transform: scale(0.9);
+  background-color: var(--touch-feedback);
+}
+
+.smartControlButton.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+}
+
+/* Focus Mode Styling - Ultra Compact */
+.container.focusMode {
+  --space-md: 8px;
+  --space-lg: 12px;
+}
+
+.container.focusMode .header {
+  padding: 8px 16px;
+}
+
+.container.focusMode .mainContent {
+  padding: 8px 16px;
+  gap: 8px; /* Much more compact */
+}
+
+.container.focusMode .sectionTitle {
+  font-size: 18px;
+}
+
+.container.focusMode .profileSection {
+  padding: 12px;
+}
+
+.container.focusMode .metricCard {
+  padding: 12px;
+  min-width: 120px;
+}
+
+/* Minimized Mode - Ultra Compact */
+.container.minimized .header {
+  padding: 6px 16px;
+}
+
+.container.minimized .profileSection {
+  padding: 6px 12px;
+}
+
+.container.minimized .mainContent {
+  padding: 6px 16px;
+  gap: 6px; /* Super compact for minimized */
+}
+
+.container.minimized .avatar {
+  width: 36px;
+  height: 36px;
+}
+
+.container.minimized .profileName {
+  font-size: 15px;
+}
+
+.container.minimized .profileEmail {
+  font-size: 11px;
+}
+
+/* Layout Indicators */
+.layoutIndicator {
+  font-size: 11px;
+  color: var(--primary);
+  font-weight: 400;
+  opacity: 0.8;
+}
+
+/* Swipeable Elements */
+.swipeableSection {
+  position: relative;
+  overflow: hidden;
+}
+
+.swipeableSection::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -2px;
+  width: 2px;
+  height: 100%;
+  background: var(--primary);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.swipeableSection:active::before {
+  opacity: 0.3;
+}
+
+.swipeableCard {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Enhanced Quick Actions Grid */
+.focusGrid {
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.focusGrid .quickActionCard {
+  min-height: 80px;
+  padding: 20px;
+}
+
+.focusGrid .actionIconWrapper {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+}
+
+.focusGrid .actionLabel {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* Swipe Gesture Indicators */
+.container[data-swiping="left"] .swipeableSection {
+  transform: translateX(-10px);
+  transition: transform 0.2s ease;
+}
+
+.container[data-swiping="right"] .swipeableSection {
+  transform: translateX(10px);
+  transition: transform 0.2s ease;
+}
+
+/* Enhanced Touch Feedback */
+.quickActionCard:active,
+.menuItem:active {
+  transform: scale(0.97);
+  transition: all 0.1s ease;
+}
+
+/* Focus Mode Quick Actions - Light theme friendly */
+.focusMode .quickActionCard {
+  background: linear-gradient(135deg, var(--primary), #00C3F7);
+  color: white;
+  border: 1px solid var(--border-light);
+}
+
+.focusMode .quickActionCard .actionIconWrapper {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.focusMode .quickActionCard .actionLabel,
+.focusMode .quickActionCard .actionDescription {
+  color: white;
+}
+
+.focusMode .quickActionCard .actionIndicator {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+/* Smart Section Transitions */
+.metricsContainer,
+.quickActionsContainer,
+.recentSection,
+.accountSection,
+.adminSection {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.container.focusMode .accountSection,
+.container.focusMode .adminSection:not([data-priority="admin"]) {
+  opacity: 0;
+  transform: translateY(20px);
+  pointer-events: none;
+}
+
+/* Advanced Micro-interactions */
+@keyframes focusPulse {
+  0%, 100% { 
+    box-shadow: 0 0 0 0 rgba(0, 122, 255, 0.4);
+  }
+  50% { 
+    box-shadow: 0 0 0 10px rgba(0, 122, 255, 0);
+  }
+}
+
+.focusMode .quickActionCard.primaryAction {
+  animation: focusPulse 2s infinite;
+}
+
+/* Swipe Navigation Hints - Light theme */
+.swipeHint {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 122, 255, 0.9);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  opacity: 0;
+  animation: swipeHintFade 3s ease-in-out;
+}
+
+@keyframes swipeHintFade {
+  0%, 90% { opacity: 0; }
+  10%, 80% { opacity: 1; }
+}
+
+/* Enhanced Profile Section */
+.profileSection:active {
+  background: linear-gradient(135deg, var(--touch-feedback), rgba(0, 195, 247, 0.1));
+}
+
+/* Smart Refresh Visual Enhancement */
+.quickRefreshButton:active {
+  background: linear-gradient(135deg, var(--primary), #00C3F7);
+  color: white;
+  transform: scale(0.9) rotate(180deg);
+}
+
+/* Focus Mode Header */
+.focusMode .title {
+  font-size: 24px;
+}
+
+.focusMode .subtitle {
+  font-size: 13px;
+}
+
+.focusMode .headerContent {
+  margin-bottom: 16px;
+}
+
+/* Advanced Loading States */
+.refreshing {
+  animation: smartSpin 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes smartSpin {
+  0% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(1.1); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+/* Contextual Menu Enhancements */
+.menuItem:active .menuIconWrapper {
+  background: var(--primary);
+  color: white;
+  transform: scale(1.1);
+}
+
+.menuItem:active .menuArrow {
+  color: var(--primary);
+  transform: translateX(6px);
+}
+
+/* Smart Visibility Transitions */
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOutToRight {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+}
+
+.container:not(.focusMode) .accountSection,
+.container:not(.focusMode) .adminSection {
+  animation: slideInFromRight 0.4s ease-out;
+}
+
+/* Performance Optimizations */
+.container *,
+.container *::before,
+.container *::after {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Advanced Focus States */
+.smartControlButton:focus-visible,
+.quickActionCard:focus-visible,
+.menuItem:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Gesture Recognition Visual Feedback */
+.container[data-gesture="swipe-left"] {
+  background: linear-gradient(90deg, transparent, rgba(0, 122, 255, 0.05));
+}
+
+.container[data-gesture="swipe-right"] {
+  background: linear-gradient(-90deg, transparent, rgba(0, 122, 255, 0.05));
+}
+
 /* High contrast mode support */
 @media (prefers-contrast: high) {
   .quickActionCard,
@@ -664,6 +1008,70 @@
     border-color: var(--primary);
     border-width: 3px;
   }
+  
+  .smartControlButton {
+    border-width: 2px;
+  }
+  
+  .focusMode .quickActionCard {
+    border: 3px solid white;
+  }
+}
+
+/* Motion Preferences */
+@media (prefers-reduced-motion: reduce) {
+  .container * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .smartControlButton,
+  .quickActionCard,
+  .menuItem {
+    transition: none !important;
+  }
+}
+
+/* FORCE LIGHT THEME - Override any dark theme */
+.container,
+.container *,
+.header,
+.mainContent,
+.metricsSection,
+.quickActionsContainer,
+.accountSection,
+.adminSection,
+.menuContainer,
+.menuItem,
+.metricCard,
+.quickActionCard {
+  background-color: var(--card, #FFFFFF) !important;
+  color: var(--text-primary, #000000) !important;
+}
+
+.container {
+  background-color: #F2F2F7 !important;
+  background: #F2F2F7 !important;
+}
+
+/* Ensure all cards are white */
+.metricCard,
+.quickActionCard,
+.menuItem,
+.orderItem,
+.profileSection {
+  background-color: #FFFFFF !important;
+  background: #FFFFFF !important;
+  color: #000000 !important;
+  border-color: #E5E5EA !important;
+}
+
+/* Override any accidental dark backgrounds */
+body,
+html {
+  background-color: #F2F2F7 !important;
+  background: #F2F2F7 !important;
 }
 
 /* Legacy styles for compatibility */
@@ -917,8 +1325,42 @@
 .emptyState {
   text-align: center;
   padding: var(--space-xl) 0;
-  color: var(--text-secondary);
 }
+
+/* MOBILE SPACING OPTIMIZATION - Ultra Compact */
+@media (max-width: 768px) {
+  .container {
+    padding-bottom: var(--space-sm) !important;
+  }
+  
+  .mainContent {
+    padding: var(--space-xs) var(--space-sm) !important;
+    gap: var(--space-xs) !important;
+  }
+  
+  .header {
+    padding: var(--space-xs) var(--space-sm) !important;
+  }
+  
+  .metricsContainer,
+  .quickActionsContainer,
+  .recentSection,
+  .accountSection,
+  .adminSection {
+    gap: 2px !important; /* Ultra compact */
+  }
+  
+  .quickActionCard {
+    padding: var(--space-sm) !important;
+    min-height: 56px !important;
+  }
+  
+  .profileSection {
+    padding: var(--space-sm) !important;
+  }
+}
+
 .emptyStateIcon {
   margin-bottom: var(--space-sm);
+  color: var(--text-secondary);
 } 

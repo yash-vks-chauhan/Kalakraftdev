@@ -26,18 +26,21 @@
   --space-md: 16px;
   --space-lg: 24px;
   --space-xl: 32px;
-  background-color: var(--card);
-  border: 1px solid var(--border-light);
+  /* Force light theme */
+  background-color: #FFFFFF !important;
+  background: #FFFFFF !important;
+  border: 1px solid #E5E5EA !important;
   border-radius: 12px;
-  padding: var(--space-md);
+  padding: var(--space-sm); /* Reduced from --space-md */
+  color: #000000 !important;
 }
 
 .sectionHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--space-md);
-  gap: var(--space-sm);
+  margin-bottom: var(--space-sm); /* Reduced from --space-md */
+  gap: var(--space-xs); /* Reduced from --space-sm */
 }
 
 .sectionTitle {
@@ -448,4 +451,30 @@
     width: 40px;
     height: 40px;
   }
+}
+
+/* FORCE LIGHT THEME FOR ALL ORDERS COMPONENTS */
+.ordersSection,
+.ordersSection *,
+.orderItem,
+.recentOrdersList,
+.viewAllOrdersItem,
+.emptyState,
+.errorState {
+  background-color: #FFFFFF !important;
+  color: #000000 !important;
+  border-color: #E5E5EA !important;
+}
+
+.ordersSection {
+  background-color: #FFFFFF !important;
+}
+
+.orderItem {
+  background-color: #F2F2F7 !important;
+}
+
+.emptyState,
+.errorState {
+  background-color: #F2F2F7 !important;
 } 
