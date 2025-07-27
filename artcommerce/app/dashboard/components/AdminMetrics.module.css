@@ -1,43 +1,83 @@
+/* Simplified Admin Metrics - Modern Mobile Design */
+:root {
+  --primary: #007AFF;
+  --secondary: #8E8E93;
+  --background: #F2F2F7;
+  --card: #FFFFFF;
+  --text-primary: #000000;
+  --text-secondary: #6D6D70;
+  --border: #C6C6C8;
+  --border-light: #E5E5EA;
+  --touch-feedback: rgba(0, 122, 255, 0.1);
+}
+
 .metricsSection {
-  background-color: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 1rem;
-  padding: 1rem;
+  background-color: var(--card);
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 24px;
 }
 
 .sectionHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
+  margin-bottom: 16px;
 }
 
 .sectionTitle {
-  font-size: 1.1rem;
+  font-size: 20px;
   font-weight: 600;
-  color: #334155;
+  color: var(--text-primary);
+  margin: 0;
 }
 
 .periodSelector {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 8px;
 }
 
 .periodSelect {
-  background-color: #ffffff;
-  color: #334155;
-  border: 1px solid #cbd5e1;
-  border-radius: 0.5rem;
-  padding: 0.25rem 0.5rem;
-  font-size: 0.875rem;
+  background-color: var(--background);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 13px;
+  min-height: 32px;
+  outline: none;
+}
+
+.periodSelect:focus {
+  border-color: var(--primary);
 }
 
 .refreshButton {
   background: none;
   border: none;
-  color: #64748b;
+  color: var(--secondary);
   cursor: pointer;
+  padding: 8px;
+  border-radius: 6px;
+  min-height: 32px;
+  min-width: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+}
+
+.refreshButton:active {
+  background-color: var(--touch-feedback);
+  transform: scale(0.9);
+  transition: all 0.1s ease;
+}
+
+.refreshButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .refreshing {
@@ -49,140 +89,209 @@
   to { transform: rotate(360deg); }
 }
 
+/* Metrics Display */
 .metricsScrollContainer {
+  position: relative;
+  margin-bottom: 16px;
   overflow-x: auto;
   scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
 }
+
 .metricsScrollContainer::-webkit-scrollbar {
   display: none;
 }
 
 .metricsRow {
   display: flex;
-  gap: 0.75rem;
-  padding-bottom: 1rem;
+  gap: 12px;
+  padding: 4px 0 16px 0;
+  min-width: min-content;
 }
 
 .metricCard {
-  background-color: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 1rem;
-  padding: 1rem;
-  min-width: 150px;
-  text-align: left;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  background-color: var(--background);
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  padding: 16px;
+  min-width: 140px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 12px;
+  transition: background-color 0.2s ease;
+  cursor: pointer;
 }
 
-.metricCard:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(17, 24, 39, 0.08);
+.metricCard:active {
+  background-color: var(--touch-feedback);
+  transform: scale(0.98);
+  transition: all 0.1s ease;
 }
 
 .metricIcon {
-  color: #64748b;
+  color: var(--primary);
   flex-shrink: 0;
 }
 
 .metricText {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .metricTitle {
-  font-size: 0.8rem;
-  color: #64748b;
-  margin-bottom: 0.25rem;
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: 0 0 4px 0;
   text-transform: capitalize;
+  line-height: 1.2;
 }
 
 .metricValue {
-  font-size: 1.25rem;
+  font-size: 20px;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.2;
 }
 
+/* Scroll Indicator */
 .scrollIndicator {
   display: flex;
   justify-content: center;
-  gap: 0.5rem;
-  margin-top: -0.5rem;
+  gap: 6px;
+  margin-top: 8px;
 }
 
 .scrollDot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background-color: #cbd5e1;
+  background-color: var(--border);
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.2s ease;
+}
+
+.scrollDot:active {
+  transform: scale(1.2);
 }
 
 .activeDot {
-  background-color: #334155;
+  background-color: var(--primary);
+  transform: scale(1.1);
 }
 
+/* Loading States */
 .skeleton {
-  cursor: progress;
-  animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  background: linear-gradient(90deg, var(--background) 25%, var(--border-light) 50%, var(--background) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
 }
 
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: .5;
-  }
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
 .skeletonIcon {
   width: 20px;
   height: 20px;
-  border-radius: 50%;
-  background-color: #e2e8f0;
+  border-radius: 4px;
+  background-color: var(--border);
+  flex-shrink: 0;
 }
 
 .skeletonTextWrapper {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  flex-grow: 1;
+  gap: 6px;
+  flex: 1;
 }
 
 .skeletonText {
   height: 12px;
-  width: 70%;
-  border-radius: 0.25rem;
-  background-color: #e2e8f0;
+  border-radius: 6px;
+  background-color: var(--border);
+  width: 60%;
 }
 
 .skeletonValue {
-  height: 20px;
-  width: 40%;
-  border-radius: 0.25rem;
-  background-color: #e2e8f0;
+  height: 18px;
+  border-radius: 9px;
+  background-color: var(--border);
+  width: 80%;
 }
 
+/* Error States */
 .errorState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
   text-align: center;
-  padding: 2rem;
-  color: #ef4444;
+  color: var(--text-secondary);
+  background-color: var(--background);
+  border-radius: 12px;
+  margin: 16px 0;
+}
+
+.errorState p {
+  font-size: 15px;
+  margin: 0 0 16px 0;
+  color: var(--text-secondary);
 }
 
 .retryButton {
-  background-color: #ef4444;
+  background-color: var(--primary);
   color: white;
   border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 0.5rem;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 15px;
+  font-weight: 500;
   cursor: pointer;
-  margin-top: 1rem;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s ease;
+  min-height: 44px;
 }
 
-.retryButton:hover {
-  background-color: #dc2626;
+.retryButton:active {
+  background-color: #0056CC;
+  transform: scale(0.98);
+  transition: all 0.1s ease;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 375px) {
+  .metricCard {
+    min-width: 120px;
+    padding: 12px;
+  }
+  
+  .metricValue {
+    font-size: 18px;
+  }
+  
+  .metricTitle {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 320px) {
+  .sectionHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .periodSelector {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .periodSelect {
+    flex: 1;
+    margin-right: 8px;
+  }
 } 
