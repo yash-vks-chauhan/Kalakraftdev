@@ -1067,12 +1067,7 @@
   border-color: #E5E5EA !important;
 }
 
-/* Override any accidental dark backgrounds */
-body,
-html {
-  background-color: #F2F2F7 !important;
-  background: #F2F2F7 !important;
-}
+/* Removed global body/html selectors - not allowed in CSS Modules */
 
 /* Legacy styles for compatibility */
 .metricsSection {
