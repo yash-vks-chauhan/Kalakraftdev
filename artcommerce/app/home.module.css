@@ -2,6 +2,14 @@
   --accent-color: #00a0a0;
 }
 
+/* Mobile scrolling optimization */
+@media (max-width: 1024px) {
+  .root {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+}
+
 .videoContainer {
   position: relative;
   width: 100%;
@@ -2452,11 +2460,7 @@
 
 /* Mobile-specific performance optimizations */
 @media (max-width: 1024px) {
-  /* Optimize scrolling performance */
-  main {
-    -webkit-overflow-scrolling: touch;
-    scroll-behavior: smooth;
-  }
+
   
   /* Optimize transforms for better performance */
   .productCard,
