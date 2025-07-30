@@ -1135,17 +1135,14 @@ clearTimeout(resumeTimerRef.current)
 
 
 useEffect(() => {
-
-AOS.init({
-
-duration: 800,
-
-once: true,
-
-easing: 'ease-in-out',
-
-})
-
+  // Only initialize AOS on desktop to avoid mobile performance issues
+  if (!isMobileView()) {
+    AOS.init({
+      duration: 800,
+      once: true,
+      easing: 'ease-in-out',
+    })
+  }
 }, [])
 
 
@@ -1327,7 +1324,6 @@ Handcrafted resin art for <span id="rotator">{displayText}</span>
 
 
 {/* Product Categories Grid Section */}
-
 <section className={styles.productGridSection} data-aos="fade-up">
 
 {/* Section Header with description */}
@@ -1505,7 +1501,7 @@ onClick={() => handleCarouselNav('next')}
   </div>
   
   {/* Explore Our Artisan Creations section - Restored */}
-  <section className={`${styles.mobileExploreSection} ${styles.mobileOnly}`} style={{ padding: '5rem 1.5rem 6rem' }} data-aos="fade-up" data-aos-delay="500">
+  <section className={`${styles.mobileExploreSection} ${styles.mobileOnly}`} style={{ padding: '5rem 1.5rem 6rem' }}>
     {/* Architectural design elements */}
     <div style={{
       position: 'absolute',
@@ -1527,7 +1523,7 @@ onClick={() => handleCarouselNav('next')}
       zIndex: 2
     }}></div>
 
-    <div className={styles.mobileExploreHeader} data-aos="fade-in" data-aos-delay="200">
+    <div className={styles.mobileExploreHeader}>
       <div className={styles.headerLine}></div>
       <h2 className={styles.mobileExploreTitle} style={{ 
         fontFamily: 'Cormorant Garamond, serif',
@@ -1556,7 +1552,7 @@ onClick={() => handleCarouselNav('next')}
       </p>
     </div>
 
-    <div className={styles.mobileExploreGrid} data-aos="fade-up" data-aos-delay="300">
+    <div className={styles.mobileExploreGrid}>
       {[
         {
           title: 'Artistic Journals',
@@ -1583,7 +1579,7 @@ onClick={() => handleCarouselNav('next')}
           image: 'https://res.cloudinary.com/downe8107/image/upload/v1752441212/2E077407-F784-4515-8960-988FB394B218_1_201_a_p1as8c.jpg'
         }
       ].map((item, index) => (
-        <div key={index} className={styles.mobileExploreCard} data-aos="fade-up" data-aos-delay={`${400 + (index * 100)}`}>
+        <div key={index} className={styles.mobileExploreCard}>
           <div className={styles.mobileExploreCardInner}>
             <img
               src={item.image}
@@ -1651,7 +1647,7 @@ onClick={() => handleCarouselNav('next')}
       marginTop: '3.5rem',
       position: 'relative',
       zIndex: 2
-    }} data-aos="fade-up" data-aos-delay="1000">
+    }}>
       <Link href="/products" className={styles.exploreAllButton}>
         View All Collections
       </Link>
@@ -1659,9 +1655,9 @@ onClick={() => handleCarouselNav('next')}
   </section>
   
   {/* Featured Discoveries Section - Random products from API */}
-<section className={`${styles.mobileFeaturedSection} ${styles.mobileOnly}`} data-aos="fade-up" data-aos-delay="600">
+<section className={`${styles.mobileFeaturedSection} ${styles.mobileOnly}`}>
   {/* Section header */}
-  <div className={styles.mobileFeaturedHeader} data-aos="fade-in" data-aos-delay="200">
+  <div className={styles.mobileFeaturedHeader}>
     <div className={styles.mobileFeaturedHeaderLine} />
     <h2 className={styles.mobileFeaturedTitle} style={{
       fontFamily: 'Cormorant Garamond, serif',
@@ -1678,7 +1674,7 @@ onClick={() => handleCarouselNav('next')}
   </div>
 
   {/* Replace the grid with our new stacked carousel */}
-  <div data-aos="fade-up" data-aos-delay="300">
+  <div>
     <MobileFeaturedCarousel products={featuredProducts} />
   </div>
 
@@ -1688,7 +1684,7 @@ onClick={() => handleCarouselNav('next')}
     marginTop: '2.5rem',
     position: 'relative',
     zIndex: 2
-  }} data-aos="fade-up" data-aos-delay="400">
+  }}>
     <Link href="/products" className={styles.mobileFeaturedViewAllButton}>
       View All Products
     </Link>
