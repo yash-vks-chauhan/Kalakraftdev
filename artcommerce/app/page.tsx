@@ -1495,120 +1495,104 @@ onClick={() => handleCarouselNav('next')}
   
   </section>
   
+  {/* Mobile Our Collections Section - Same as Desktop */}
+  <section className={`${styles.productGridSection} ${styles.mobileOnly}`}>
+    {/* Section Header with description */}
+    <div className={styles.sectionHeader}>
+      <div className={styles.headerLine}></div>
+      <h2 className={styles.sectionTitle}>Our Collections</h2>
+      <div className={styles.headerLine}></div>
+    </div>
+
+    <div className={styles.collectionDescription}>
+      <p>Discover our handcrafted resin art pieces, each one uniquely created with passion and precision. 
+      Our collections showcase the perfect blend of artistic expression and functional elegance, 
+      bringing the beauty of fluid art into your everyday life.</p>
+    </div>
+
+    <div className={styles.carouselContainer}>
+      <div 
+        ref={carouselTrackRef}
+        className={`${styles.carouselTrack} ${isManualNav ? styles.manualNav : ''}`}
+        style={isManualNav ? { transform: `translateX(${slidePosition}px)` } : {}}
+      >
+        {/* First set of items */}
+        {productCategories.map((category, index) => (
+          <div
+            key={`original-${index}`}
+            className={styles.productCard}
+            style={{animationDelay: `${index * 0.15}s`}}
+          >
+            <div className={styles.cardInner}>
+              <img
+                src={category.image}
+                alt={category.alt}
+                className={styles.productImage}
+                onError={(e) => (e.currentTarget.src = 'https://placehold.co/600x400/f0f0f0/ccc?text=Image+Not+Found')}
+              />
+              <div className={styles.cardOverlay}>
+                <button className={styles.viewAllButton}>Explore Collection</button>
+              </div>
+              <h3 className={styles.categoryTitle}>{category.title}</h3>
+            </div>
+          </div>
+        ))}
+
+        {/* Duplicate set for seamless looping */}
+        {productCategories.map((category, index) => (
+          <div
+            key={`duplicate-${index}`}
+            className={styles.productCard}
+            style={{animationDelay: `${index * 0.15}s`}}
+          >
+            <div className={styles.cardInner}>
+              <img
+                src={category.image}
+                alt={category.alt}
+                className={styles.productImage}
+                onError={(e) => (e.currentTarget.src = 'https://placehold.co/600x400/f0f0f0/ccc?text=Image+Not+Found')}
+              />
+              <div className={styles.cardOverlay}>
+                <button className={styles.viewAllButton}>Explore Collection</button>
+              </div>
+              <h3 className={styles.categoryTitle}>{category.title}</h3>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Navigation arrows */}
+      <div 
+        className={`${styles.carouselNav} ${styles.prevNav}`}
+        onClick={() => handleCarouselNav('prev')}
+      >
+        <ChevronLeft size={24} color="white" />
+      </div>
+      <div 
+        className={`${styles.carouselNav} ${styles.nextNav}`}
+        onClick={() => handleCarouselNav('next')}
+      >
+        <ChevronRight size={24} color="white" />
+      </div>
+    </div>
+    
+    <div className={styles.collectionFooter}>
+      <p>Each piece tells a story through layers of color and texture, inviting you to bring the essence of artistic expression into your home.</p>
+      <button className={styles.exploreAllButton}>View All Collections</button>
+    </div>
+    
+    {/* Decorative elements */}
+    <div className={styles.watercolorSplash}></div>
+    <div className={styles.watercolorSplash2}></div>
+    <div className={styles.inkSplash}></div>
+    <div className={styles.lightEffect}></div>
+    <div className={styles.brushAccent}></div>
+  </section>
+  
   {/* Mobile Video Section - Using the original component */}
   <div>
     <MobileVideoSection />
   </div>
-  
-  {/* Mobile Our Collections Section */}
-  <section className={`${styles.mobileOnly}`} style={{ 
-    padding: '4rem 1.5rem',
-    background: '#f8f8f8',
-    position: 'relative',
-    overflow: 'hidden'
-  }}>
-    {/* Section Header */}
-    <div style={{
-      textAlign: 'center',
-      marginBottom: '3rem',
-      position: 'relative',
-      zIndex: 2
-    }}>
-      <div style={{ 
-        width: '40px',
-        height: '2px',
-        background: '#000',
-        margin: '0.5rem auto'
-      }} />
-      <h2 style={{
-        fontFamily: 'Cormorant Garamond, serif',
-        fontSize: '2.2rem',
-        fontWeight: 400,
-        color: '#000',
-        margin: '1rem 0',
-        letterSpacing: '0.05em',
-        fontStyle: 'italic'
-      }}>Our Collections</h2>
-      <div style={{ 
-        width: '40px',
-        height: '2px',
-        background: '#000',
-        margin: '0.5rem auto'
-      }} />
-      <p style={{
-        fontFamily: 'Inter, sans-serif',
-        fontSize: '0.95rem',
-        color: '#666',
-        maxWidth: '320px',
-        margin: '1.5rem auto 0',
-        lineHeight: 1.6
-      }}>
-        Discover our handcrafted resin art pieces, each one uniquely created with passion and precision.
-      </p>
-    </div>
-
-    {/* Mobile Collections Grid */}
-    <div style={{
-      display: 'grid',
-      gridTemplateColumns: 'repeat(2, 1fr)',
-      gap: '1rem',
-      maxWidth: '100%',
-      margin: '0 auto'
-    }}>
-      {productCategories.slice(0, 6).map((category, index) => (
-        <div key={index} style={{
-          position: 'relative',
-          borderRadius: '8px',
-          overflow: 'hidden',
-          aspectRatio: '1/1.2',
-          background: '#fff',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-          transition: 'transform 0.3s ease'
-        }}>
-          <img
-            src={category.image}
-            alt={category.alt}
-            style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              display: 'block'
-            }}
-            onError={(e) => (e.currentTarget.src = 'https://placehold.co/300x300/f0f0f0/ccc?text=Image+Not+Found')}
-          />
-          <div style={{
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            background: 'linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0.4), transparent)',
-            padding: '1rem 0.8rem 0.8rem',
-            color: '#fff'
-          }}>
-            <h3 style={{
-              fontFamily: 'Inter, sans-serif',
-              fontSize: '0.9rem',
-              fontWeight: 500,
-              margin: 0,
-              textAlign: 'center',
-              textTransform: 'uppercase',
-              letterSpacing: '0.05em'
-            }}>{category.title}</h3>
-          </div>
-        </div>
-      ))}
-    </div>
-
-    {/* View All Button */}
-    <div style={{
-      textAlign: 'center',
-      marginTop: '2.5rem'
-    }}>
-      <Link href="/products" className={styles.exploreAllButton}>
-        View All Collections
-      </Link>
-    </div>
-  </section>
   
   {/* Explore Our Artisan Creations section - Restored */}
   <section className={`${styles.mobileExploreSection} ${styles.mobileOnly}`} style={{ padding: '5rem 1.5rem 6rem' }}>

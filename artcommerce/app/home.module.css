@@ -2320,31 +2320,37 @@
   100% { transform: rotate(360deg); }
 }
 
-/* New button style for "Discover All Pieces" button */
+/* New button style for "Discover All Pieces" button - Apple Liquid Glass Style */
 .discoverAllButton {
-  background: rgba(255, 255, 255, 0.9);
-  border: 2px solid rgba(255, 255, 255, 0.9);
-  color: #000;
-  padding: 0.85rem 2.2rem 0.85rem 2.8rem;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #fff;
+  padding: 1rem 2.5rem 1rem 3rem;
   font-family: 'Inter', sans-serif;
-  font-weight: 500;
+  font-weight: 600;
   text-transform: uppercase;
-  font-size: 0.95rem;
-  letter-spacing: 0.15em;
+  font-size: 1rem;
+  letter-spacing: 0.2em;
   cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   position: relative;
   overflow: hidden;
   margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 12px;
   max-width: fit-content;
-  border-radius: 4px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  border-radius: 50px;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.1) inset,
+    0 1px 0 rgba(255, 255, 255, 0.2) inset;
   text-decoration: none;
-  animation: buttonPulse 2s infinite alternate;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  font-feature-settings: "liga" 1, "kern" 1;
 }
 
 .buttonText {
@@ -2373,44 +2379,42 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255, 255, 255, 0.3), rgba(255,255,255,0));
-  transition: left 0.7s ease;
+  background: linear-gradient(90deg, 
+    rgba(255,255,255,0) 0%, 
+    rgba(255,255,255,0.6) 50%, 
+    rgba(255,255,255,0) 100%);
+  transition: left 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  border-radius: 50px;
 }
 
 .discoverAllButton::after {
   content: '';
   position: absolute;
-  top: -2px;
-  left: -2px;
-  right: -2px;
-  bottom: -2px;
-  background: transparent;
-  border: 2px solid rgba(255, 255, 255, 0.6);
-  border-radius: 4px;
-  opacity: 0;
-  transition: all 0.3s ease;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, 
+    rgba(255,255,255,0.15) 0%, 
+    rgba(255,255,255,0.05) 50%, 
+    rgba(255,255,255,0.15) 100%);
+  border-radius: 50px;
   pointer-events: none;
 }
 
 .discoverAllButton:hover {
-  background-color: #fff;
-  color: #000;
-  border-color: #fff;
-  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.25), 0 0 15px rgba(255, 255, 255, 0.5);
-  transform: translateY(-3px) scale(1.03);
-  letter-spacing: 0.18em;
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.5);
+  box-shadow: 
+    0 12px 40px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.2) inset,
+    0 2px 0 rgba(255, 255, 255, 0.3) inset;
+  transform: translateY(-2px) scale(1.02);
+  letter-spacing: 0.25em;
 }
 
 .discoverAllButton:hover::before {
   left: 100%;
-}
-
-.discoverAllButton:hover::after {
-  opacity: 1;
-  top: -6px;
-  left: -6px;
-  right: -6px;
-  bottom: -6px;
 }
 
 @keyframes buttonPulse {
@@ -2604,15 +2608,18 @@
     transform: translateY(100%) !important;
   }
   
-  /* Disable button animations on mobile */
+  /* Preserve liquid glass effect on mobile but disable animations */
   .discoverAllButton {
     animation: none !important;
   }
   
   .discoverAllButton:hover {
-    transform: none !important;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2) !important;
-    letter-spacing: 0.15em !important;
+    transform: translateY(-1px) scale(1.01) !important;
+    box-shadow: 
+      0 8px 25px rgba(0, 0, 0, 0.3),
+      0 0 0 1px rgba(255, 255, 255, 0.1) inset,
+      0 1px 0 rgba(255, 255, 255, 0.2) inset !important;
+    letter-spacing: 0.2em !important;
   }
   
   .discoverAllButton:hover .buttonIcon {
