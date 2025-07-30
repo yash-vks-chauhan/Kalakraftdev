@@ -1660,6 +1660,17 @@
   transform: translateY(0);
 }
 
+/* Mobile AOS animation disabling */
+@media (max-width: 1024px) {
+  .logo[data-aos="fade-in"],
+  .title[data-aos="fade-up"],
+  .productGridSection[data-aos="fade-up"] {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+  }
+}
+
 /* Add mobile-only class */
 .mobileOnly {
   display: none;
@@ -2613,12 +2624,7 @@
     box-shadow: none !important;
   }
   
-  /* Disable AOS animations on mobile */
-  [data-aos] {
-    opacity: 1 !important;
-    transform: none !important;
-    animation: none !important;
-  }
+
   
   /* Disable typewriter cursor animation on mobile */
   #rotator::after {
