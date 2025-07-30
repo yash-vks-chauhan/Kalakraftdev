@@ -30,6 +30,13 @@
   pointer-events: none; /* Prevents interaction with iframe */
 }
 
+/* Mobile video optimization */
+@media (max-width: 1024px) {
+  .videoBackground {
+    will-change: auto;
+  }
+}
+
 .overlay {
   position: absolute;
   top: 0;
@@ -704,6 +711,15 @@
   z-index: 1;
   transform-origin: center center;
   border-radius: 8px; /* Match parent border radius */
+}
+
+/* Mobile image optimization */
+@media (max-width: 1024px) {
+  .productImage,
+  .mobileExploreImage,
+  .mobileFeaturedImage {
+    will-change: auto;
+  }
 }
 
 .productCard:hover .productImage {
@@ -2472,15 +2488,7 @@
     backface-visibility: hidden;
   }
   
-  /* Optimize video performance */
-  video {
-    will-change: auto;
-  }
-  
-  /* Optimize image performance */
-  img {
-    will-change: auto;
-  }
+
   
   /* Disable floating animations on mobile */
   .watercolorSplash,
