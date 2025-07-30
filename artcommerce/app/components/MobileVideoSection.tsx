@@ -177,13 +177,13 @@ const MobileVideoSection: React.FC = () => {
         }}>Experience the magic of resin art creation</p>
         <Link 
           href="/products" 
-          className={styles.appleLiquidGlass}
+          className={styles.exploreAllButton}
         >
-          Discover All Pieces
+          Explore Our Process
         </Link>
       </div>
     </section>
   );
 };
 
-export default MobileVideoSection;
+export default MobileVideoSection; 
