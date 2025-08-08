@@ -802,7 +802,7 @@ alt: 'Handcrafted resin coasters'
 
 {
 
-image: getImageUrl('imageclock.png'),
+image: 'https://ik.imagekit.io/4pjvf8k9u/Videos/imageclock.png?updatedAt=1754677566365',
 
 title: 'WALL ART',
 
@@ -822,7 +822,7 @@ alt: 'Decorative resin items'
 
 {
 
-image: getImageUrl('collectionwall.png'),
+image: 'https://ik.imagekit.io/4pjvf8k9u/Videos/collectionwall.png?updatedAt=1754677551540',
 
 title: 'CUSTOM PIECES',
 
@@ -842,7 +842,7 @@ alt: 'Handcrafted resin clocks'
 
 {
 
-image: getImageUrl('trayscollection.png'),
+image: 'https://ik.imagekit.io/4pjvf8k9u/Videos/trayscollection.png?updatedAt=1754677551492',
 
 title: 'JEWELRY TRAYS',
 
@@ -852,7 +852,7 @@ alt: 'Elegant resin jewelry trays'
 
 {
 
-image: getImageUrl('vases.png'),
+image: 'https://ik.imagekit.io/4pjvf8k9u/Videos/vases.png?updatedAt=1754677551331',
 
 title: 'VASES',
 
