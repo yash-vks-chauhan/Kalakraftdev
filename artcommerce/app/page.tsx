@@ -1262,7 +1262,7 @@ return (
     }}
   >
     <source 
-      src={process.env.NEXT_PUBLIC_CLOUDINARY_VIDEO_URL || '/images/homepage_video.mp4'} 
+      src="https://ik.imagekit.io/4pjvf8k9u/Videos/homepage4.mp4?updatedAt=1753532187691" 
       type="video/mp4" 
     />
     Your browser does not support the video tag.
