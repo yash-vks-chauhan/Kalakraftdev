@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { X } from 'lucide-react'
+import { getImageUrl } from '@/lib/cloudinaryImages'
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -40,7 +41,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
         <div className="pt-8 pb-6 px-6 text-center">
           <div className="w-24 h-24 mx-auto mb-4 relative">
             <Image
-              src="/images/logo.png"
+              src={getImageUrl('logo.png')}
               alt="Kalakraft Logo"
               fill
               className="object-contain"

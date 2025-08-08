@@ -9,6 +9,7 @@ import { X, Search, ArrowLeft } from 'lucide-react'
 import WishlistButton from './WishlistButton'
 import styles from './MobileSearchModal.module.css'
 import Fuse from 'fuse.js'
+import { getImageUrl } from '@/lib/cloudinaryImages'
 
 // helper to highlight matched substrings
 const getHighlightedText = (text: string, indices: number[][]) => {
@@ -618,7 +619,7 @@ export default function MobileSearchModal({ open, onClose }: Props) {
         
         <div className={styles.logoContainer}>
           <img 
-            src="/images/logo.png" 
+            src={getImageUrl('logo.png')} 
             alt="Kalakraft" 
             className={styles.logoImage}
             width={100}

@@ -3,6 +3,7 @@
 import React, { useRef, useEffect } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { getImageUrl } from '@/lib/cloudinaryImages';
 
 interface CosmosSectionProps {
   /** Array of image URLs for your resin pieces */
@@ -96,7 +97,7 @@ export function CosmosSection({ imageUrls }: CosmosSectionProps) {
       {/* Overlay: logo + central text */}
       <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
         <img
-          src="/images/logo.png"
+          src={getImageUrl('logo.png')}
           alt="Kalakraft Logo"
           className="w-32 h-auto mb-4"
         />

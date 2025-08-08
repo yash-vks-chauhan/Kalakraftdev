@@ -9,6 +9,7 @@ import WishlistButton from './WishlistButton'
 import { useNotificationContext } from '../contexts/NotificationContext'
 import styles from './SearchModal.module.css'
 import Fuse from 'fuse.js'
+import { getImageUrl } from '@/lib/cloudinaryImages'
 // helper to highlight matched substrings
 const getHighlightedText = (text: string, indices: number[][]) => {
   let lastIndex = 0;
@@ -426,7 +427,7 @@ export default function SearchModal({ open, onClose }: Props) {
         <div className={styles.searchHeader}>
           <div className={styles.logoContainer}>
             <img 
-              src="/images/logo.png" 
+              src={getImageUrl('logo.png')} 
               alt="Kalakraft" 
               className={styles.logoImage}
               width={150}
