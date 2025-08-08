@@ -1135,14 +1135,17 @@ clearTimeout(resumeTimerRef.current)
 
 
 useEffect(() => {
-  // Only initialize AOS on desktop to avoid mobile performance issues
-  if (!isMobileView()) {
-    AOS.init({
-      duration: 800,
-      once: true,
-      easing: 'ease-in-out',
-    })
-  }
+
+AOS.init({
+
+duration: 800,
+
+once: true,
+
+easing: 'ease-in-out',
+
+})
+
 }, [])
 
 
@@ -1259,7 +1262,7 @@ return (
     }}
   >
     <source 
-      src="https://ik.imagekit.io/4pjvf8k9u/Videos/homepage4.mp4?updatedAt=1753532187691" 
+      src={process.env.NEXT_PUBLIC_CLOUDINARY_VIDEO_URL || '/images/homepage_video.mp4'} 
       type="video/mp4" 
     />
     Your browser does not support the video tag.
@@ -1324,7 +1327,8 @@ Handcrafted resin art for <span id="rotator">{displayText}</span>
 
 
 {/* Product Categories Grid Section */}
-<section className={`${styles.productGridSection} ${styles.desktopOnly}`} data-aos="fade-up">
+
+<section className={styles.productGridSection} data-aos="fade-up">
 
 {/* Section Header with description */}
 
@@ -1495,107 +1499,13 @@ onClick={() => handleCarouselNav('next')}
   
   </section>
   
-  {/* Mobile Our Collections Section - Same as Desktop */}
-  <section className={`${styles.productGridSection} ${styles.mobileOnly}`}>
-    {/* Section Header with description */}
-    <div className={styles.sectionHeader}>
-      <div className={styles.headerLine}></div>
-      <h2 className={styles.sectionTitle}>Our Collections</h2>
-      <div className={styles.headerLine}></div>
-    </div>
-
-    <div className={styles.collectionDescription}>
-      <p>Discover our handcrafted resin art pieces, each one uniquely created with passion and precision. 
-      Our collections showcase the perfect blend of artistic expression and functional elegance, 
-      bringing the beauty of fluid art into your everyday life.</p>
-    </div>
-
-    <div className={styles.carouselContainer}>
-      <div 
-        ref={carouselTrackRef}
-        className={`${styles.carouselTrack} ${isManualNav ? styles.manualNav : ''}`}
-        style={isManualNav ? { transform: `translateX(${slidePosition}px)` } : {}}
-      >
-        {/* First set of items */}
-        {productCategories.map((category, index) => (
-          <div
-            key={`original-${index}`}
-            className={styles.productCard}
-            style={{animationDelay: `${index * 0.15}s`}}
-          >
-            <div className={styles.cardInner}>
-              <img
-                src={category.image}
-                alt={category.alt}
-                className={styles.productImage}
-                onError={(e) => (e.currentTarget.src = 'https://placehold.co/600x400/f0f0f0/ccc?text=Image+Not+Found')}
-              />
-              <div className={styles.cardOverlay}>
-                <button className={styles.viewAllButton}>Explore Collection</button>
-              </div>
-              <h3 className={styles.categoryTitle}>{category.title}</h3>
-            </div>
-          </div>
-        ))}
-
-        {/* Duplicate set for seamless looping */}
-        {productCategories.map((category, index) => (
-          <div
-            key={`duplicate-${index}`}
-            className={styles.productCard}
-            style={{animationDelay: `${index * 0.15}s`}}
-          >
-            <div className={styles.cardInner}>
-              <img
-                src={category.image}
-                alt={category.alt}
-                className={styles.productImage}
-                onError={(e) => (e.currentTarget.src = 'https://placehold.co/600x400/f0f0f0/ccc?text=Image+Not+Found')}
-              />
-              <div className={styles.cardOverlay}>
-                <button className={styles.viewAllButton}>Explore Collection</button>
-              </div>
-              <h3 className={styles.categoryTitle}>{category.title}</h3>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Navigation arrows */}
-      <div 
-        className={`${styles.carouselNav} ${styles.prevNav}`}
-        onClick={() => handleCarouselNav('prev')}
-      >
-        <ChevronLeft size={24} color="white" />
-      </div>
-      <div 
-        className={`${styles.carouselNav} ${styles.nextNav}`}
-        onClick={() => handleCarouselNav('next')}
-      >
-        <ChevronRight size={24} color="white" />
-      </div>
-    </div>
-    
-    <div className={styles.collectionFooter}>
-      <p>Each piece tells a story through layers of color and texture, inviting you to bring the essence of artistic expression into your home.</p>
-      <button className={styles.exploreAllButton}>View All Collections</button>
-    </div>
-    
-    {/* Decorative elements */}
-    <div className={styles.watercolorSplash}></div>
-    <div className={styles.watercolorSplash2}></div>
-    <div className={styles.inkSplash}></div>
-    <div className={styles.lightEffect}></div>
-    <div className={styles.brushAccent}></div>
-  </section>
-  
   {/* Mobile Video Section - Using the original component */}
-  <div>
+  <div data-aos="fade-up" data-aos-delay="400">
     <MobileVideoSection />
   </div>
   
   {/* Explore Our Artisan Creations section - Restored */}
-  <section className={`${styles.mobileExploreSection} ${styles.mobileOnly}`} style={{ padding: '5rem 1.5rem 6rem' }}>
+  <section className={`${styles.mobileExploreSection} ${styles.mobileOnly}`} style={{ padding: '5rem 1.5rem 6rem' }} data-aos="fade-up" data-aos-delay="500">
     {/* Architectural design elements */}
     <div style={{
       position: 'absolute',
@@ -1617,7 +1527,7 @@ onClick={() => handleCarouselNav('next')}
       zIndex: 2
     }}></div>
 
-    <div className={styles.mobileExploreHeader}>
+    <div className={styles.mobileExploreHeader} data-aos="fade-in" data-aos-delay="200">
       <div className={styles.headerLine}></div>
       <h2 className={styles.mobileExploreTitle} style={{ 
         fontFamily: 'Cormorant Garamond, serif',
@@ -1646,7 +1556,7 @@ onClick={() => handleCarouselNav('next')}
       </p>
     </div>
 
-    <div className={styles.mobileExploreGrid}>
+    <div className={styles.mobileExploreGrid} data-aos="fade-up" data-aos-delay="300">
       {[
         {
           title: 'Artistic Journals',
@@ -1673,7 +1583,7 @@ onClick={() => handleCarouselNav('next')}
           image: 'https://res.cloudinary.com/downe8107/image/upload/v1752441212/2E077407-F784-4515-8960-988FB394B218_1_201_a_p1as8c.jpg'
         }
       ].map((item, index) => (
-        <div key={index} className={styles.mobileExploreCard}>
+        <div key={index} className={styles.mobileExploreCard} data-aos="fade-up" data-aos-delay={`${400 + (index * 100)}`}>
           <div className={styles.mobileExploreCardInner}>
             <img
               src={item.image}
@@ -1741,7 +1651,7 @@ onClick={() => handleCarouselNav('next')}
       marginTop: '3.5rem',
       position: 'relative',
       zIndex: 2
-    }}>
+    }} data-aos="fade-up" data-aos-delay="1000">
       <Link href="/products" className={styles.exploreAllButton}>
         View All Collections
       </Link>
@@ -1749,9 +1659,9 @@ onClick={() => handleCarouselNav('next')}
   </section>
   
   {/* Featured Discoveries Section - Random products from API */}
-<section className={`${styles.mobileFeaturedSection} ${styles.mobileOnly}`}>
+<section className={`${styles.mobileFeaturedSection} ${styles.mobileOnly}`} data-aos="fade-up" data-aos-delay="600">
   {/* Section header */}
-  <div className={styles.mobileFeaturedHeader}>
+  <div className={styles.mobileFeaturedHeader} data-aos="fade-in" data-aos-delay="200">
     <div className={styles.mobileFeaturedHeaderLine} />
     <h2 className={styles.mobileFeaturedTitle} style={{
       fontFamily: 'Cormorant Garamond, serif',
@@ -1768,7 +1678,7 @@ onClick={() => handleCarouselNav('next')}
   </div>
 
   {/* Replace the grid with our new stacked carousel */}
-  <div>
+  <div data-aos="fade-up" data-aos-delay="300">
     <MobileFeaturedCarousel products={featuredProducts} />
   </div>
 
@@ -1778,7 +1688,7 @@ onClick={() => handleCarouselNav('next')}
     marginTop: '2.5rem',
     position: 'relative',
     zIndex: 2
-  }}>
+  }} data-aos="fade-up" data-aos-delay="400">
     <Link href="/products" className={styles.mobileFeaturedViewAllButton}>
       View All Products
     </Link>

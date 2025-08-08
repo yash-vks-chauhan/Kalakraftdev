@@ -3,10 +3,7 @@ import imagekit from '../../../../lib/imagekit';
 import { optimizeImageIfNeeded, MAX_FILE_SIZE } from '../../../../lib/imageOptimizer';
 
 export const runtime = 'nodejs';
-export const maxDuration = 120; // Increase timeout to 2 minutes for large files
-
-// Disable body parsing to handle large files
-export const dynamic = 'force-dynamic';
+export const maxDuration = 60;
 
 export async function POST(request: Request): Promise<NextResponse> {
   const { searchParams } = new URL(request.url);
@@ -21,26 +18,6 @@ export async function POST(request: Request): Promise<NextResponse> {
   }
 
   try {
-    // Check content length if available
-    const contentLength = request.headers.get('content-length');
-    if (contentLength) {
-      const sizeMB = (parseInt(contentLength) / (1024 * 1024)).toFixed(2);
-      console.log(`Uploading file: ${filename}, Size: ${sizeMB}MB`);
-      
-      // Allow files up to 25MB before optimization
-      if (parseInt(contentLength) > 25 * 1024 * 1024) {
-        return NextResponse.json({ 
-          error: `File size too large. Maximum size is 25MB, received: ${sizeMB}MB. Please compress the image before uploading.`,
-          details: {
-            receivedSize: parseInt(contentLength),
-            maxSize: 25 * 1024 * 1024,
-            receivedSizeMB: sizeMB,
-            maxSizeMB: '25MB'
-          }
-        }, { status: 413 });
-      }
-    }
-
     const buffer = await request.arrayBuffer();
     const originalSize = buffer.byteLength;
 
@@ -50,20 +27,10 @@ export async function POST(request: Request): Promise<NextResponse> {
       return NextResponse.json({ error: 'The uploaded file is not a valid image.' }, { status: 400 });
     }
 
-    const { buffer: processedBuffer, optimized, originalSize: origSize, optimizedSize } = await optimizeImageIfNeeded(buffer, filename);
+    const { buffer: processedBuffer, optimized } = await optimizeImageIfNeeded(buffer, filename);
 
     if (processedBuffer.byteLength > MAX_FILE_SIZE) {
-      return NextResponse.json({ 
-        error: `Image is still too large after optimization. Maximum size is 20MB, got ${(processedBuffer.byteLength / (1024 * 1024)).toFixed(2)}MB.`,
-        details: {
-          originalSize: origSize,
-          optimizedSize: optimizedSize,
-          maxSize: MAX_FILE_SIZE,
-          originalSizeMB: (origSize / (1024 * 1024)).toFixed(2) + 'MB',
-          optimizedSizeMB: (optimizedSize / (1024 * 1024)).toFixed(2) + 'MB',
-          maxSizeMB: '20MB'
-        }
-      }, { status: 413 });
+      return NextResponse.json({ error: `Image is still too large after optimization. Maximum size is 10MB, got ${(processedBuffer.byteLength / (1024 * 1024)).toFixed(2)}MB.` }, { status: 413 });
     }
 
     // Upload to ImageKit
@@ -73,13 +40,6 @@ export async function POST(request: Request): Promise<NextResponse> {
       folder: folder.startsWith('/') ? folder : `/${folder}`,
       useUniqueFileName: false,
     });
-
-    // Log upload details
-    const optimizationInfo = optimized 
-      ? `Image was optimized: ${(originalSize / (1024 * 1024)).toFixed(2)}MB → ${(processedBuffer.byteLength / (1024 * 1024)).toFixed(2)}MB (${Math.round((1 - processedBuffer.byteLength / originalSize) * 100)}% reduction)`
-      : 'Image was under size limit, no optimization needed';
-      
-    console.log(`Successfully uploaded to ImageKit: ${uploadResponse.url} - ${optimizationInfo}`);
 
     return NextResponse.json({
       url: uploadResponse.url,
@@ -92,14 +52,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     });
   } catch (error: any) {
     console.error('Error uploading to ImageKit:', error);
-    return NextResponse.json({ 
-      message: 'Error uploading file to ImageKit.', 
-      error: error?.message || 'Unknown error',
-      details: error instanceof Error ? {
-        name: error.name,
-        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
-      } : undefined
-    }, { status: 500 });
+    return NextResponse.json({ message: 'Error uploading file to ImageKit.', error: error?.message || 'Unknown error' }, { status: 500 });
   }
 }
 

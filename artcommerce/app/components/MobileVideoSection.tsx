@@ -39,7 +39,7 @@ const MobileVideoSection: React.FC = () => {
         pointerEvents: 'none'
       }} />
       
-      {/* Watercolor accent 1 - removed animation */}
+      {/* Watercolor accent 1 */}
       <div style={{
         position: 'absolute',
         width: '200px',
@@ -52,10 +52,11 @@ const MobileVideoSection: React.FC = () => {
         zIndex: 1,
         opacity: 0.6,
         transform: 'rotate(-20deg)',
-        pointerEvents: 'none'
+        pointerEvents: 'none',
+        animation: 'gentle-float 18s infinite alternate ease-in-out'
       }} />
       
-      {/* Watercolor accent 2 - removed animation */}
+      {/* Watercolor accent 2 */}
       <div style={{
         position: 'absolute',
         width: '150px',
@@ -68,7 +69,8 @@ const MobileVideoSection: React.FC = () => {
         zIndex: 1,
         opacity: 0.6,
         transform: 'rotate(15deg)',
-        pointerEvents: 'none'
+        pointerEvents: 'none',
+        animation: 'gentle-float 15s infinite alternate-reverse ease-in-out'
       }} />
       
       {/* Section header */}

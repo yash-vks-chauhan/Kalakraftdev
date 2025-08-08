@@ -2,14 +2,6 @@
   --accent-color: #00a0a0;
 }
 
-/* Mobile scrolling optimization */
-@media (max-width: 1024px) {
-  .root {
-    -webkit-overflow-scrolling: touch;
-    scroll-behavior: smooth;
-  }
-}
-
 .videoContainer {
   position: relative;
   width: 100%;
@@ -28,13 +20,6 @@
   background-color: #222; /* Fallback for video load issues */
   border: none; /* For iframe */
   pointer-events: none; /* Prevents interaction with iframe */
-}
-
-/* Mobile video optimization */
-@media (max-width: 1024px) {
-  .videoBackground {
-    will-change: auto;
-  }
 }
 
 .overlay {
@@ -711,15 +696,6 @@
   z-index: 1;
   transform-origin: center center;
   border-radius: 8px; /* Match parent border radius */
-}
-
-/* Mobile image optimization */
-@media (max-width: 1024px) {
-  .productImage,
-  .mobileExploreImage,
-  .mobileFeaturedImage {
-    will-change: auto;
-  }
 }
 
 .productCard:hover .productImage {
@@ -1660,17 +1636,6 @@
   transform: translateY(0);
 }
 
-/* Mobile AOS animation disabling */
-@media (max-width: 1024px) {
-  .logo[data-aos="fade-in"],
-  .title[data-aos="fade-up"],
-  .productGridSection[data-aos="fade-up"] {
-    opacity: 1 !important;
-    transform: none !important;
-    animation: none !important;
-  }
-}
-
 /* Add mobile-only class */
 .mobileOnly {
   display: none;
@@ -2320,37 +2285,31 @@
   100% { transform: rotate(360deg); }
 }
 
-/* New button style for "Discover All Pieces" button - Apple Liquid Glass Style */
+/* New button style for "Discover All Pieces" button */
 .discoverAllButton {
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  color: #fff;
-  padding: 1rem 2.5rem 1rem 3rem;
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  color: #000;
+  padding: 0.85rem 2.2rem 0.85rem 2.8rem;
   font-family: 'Inter', sans-serif;
-  font-weight: 600;
+  font-weight: 500;
   text-transform: uppercase;
-  font-size: 1rem;
-  letter-spacing: 0.2em;
+  font-size: 0.95rem;
+  letter-spacing: 0.15em;
   cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
   position: relative;
   overflow: hidden;
   margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 10px;
   max-width: fit-content;
-  border-radius: 50px;
-  box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.3),
-    0 0 0 1px rgba(255, 255, 255, 0.1) inset,
-    0 1px 0 rgba(255, 255, 255, 0.2) inset;
+  border-radius: 4px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
   text-decoration: none;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-  font-feature-settings: "liga" 1, "kern" 1;
+  animation: buttonPulse 2s infinite alternate;
 }
 
 .buttonText {
@@ -2379,42 +2338,44 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, 
-    rgba(255,255,255,0) 0%, 
-    rgba(255,255,255,0.6) 50%, 
-    rgba(255,255,255,0) 100%);
-  transition: left 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  border-radius: 50px;
+  background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255, 255, 255, 0.3), rgba(255,255,255,0));
+  transition: left 0.7s ease;
 }
 
 .discoverAllButton::after {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, 
-    rgba(255,255,255,0.15) 0%, 
-    rgba(255,255,255,0.05) 50%, 
-    rgba(255,255,255,0.15) 100%);
-  border-radius: 50px;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  border-radius: 4px;
+  opacity: 0;
+  transition: all 0.3s ease;
   pointer-events: none;
 }
 
 .discoverAllButton:hover {
-  background: rgba(255, 255, 255, 0.25);
-  border-color: rgba(255, 255, 255, 0.5);
-  box-shadow: 
-    0 12px 40px rgba(0, 0, 0, 0.4),
-    0 0 0 1px rgba(255, 255, 255, 0.2) inset,
-    0 2px 0 rgba(255, 255, 255, 0.3) inset;
-  transform: translateY(-2px) scale(1.02);
-  letter-spacing: 0.25em;
+  background-color: #fff;
+  color: #000;
+  border-color: #fff;
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.25), 0 0 15px rgba(255, 255, 255, 0.5);
+  transform: translateY(-3px) scale(1.03);
+  letter-spacing: 0.18em;
 }
 
 .discoverAllButton:hover::before {
   left: 100%;
+}
+
+.discoverAllButton:hover::after {
+  opacity: 1;
+  top: -6px;
+  left: -6px;
+  right: -6px;
+  bottom: -6px;
 }
 
 @keyframes buttonPulse {
@@ -2487,292 +2448,4 @@
 
 .mobileFeaturedViewAllButton:active {
   transform: translateY(0);
-}
-
-/* Mobile-specific performance optimizations */
-@media (max-width: 1024px) {
-
-  
-  /* Optimize transforms for better performance */
-  .productCard,
-  .mobileExploreCard,
-  .mobileFeaturedCard,
-  .artistryCard {
-    will-change: auto;
-    transform: translateZ(0);
-    backface-visibility: hidden;
-  }
-  
-
-  
-  /* Disable floating animations on mobile */
-  .watercolorSplash,
-  .watercolorSplash2,
-  .inkSplash {
-    animation: none !important;
-  }
-  
-  /* Disable scroll indicator animation */
-  .scrollIndicator::before {
-    animation: none !important;
-  }
-  
-  /* Disable hover effects that cause lag */
-  .productCard:hover {
-    transform: none !important;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.08) !important;
-  }
-  
-  .productCard:hover .productImage {
-    transform: none !important;
-    filter: contrast(1.02) !important;
-  }
-  
-  .productCard:hover .cardOverlay {
-    opacity: 0 !important;
-  }
-  
-  /* Disable artistry card animations */
-  .artistryCard:hover {
-    transform: none !important;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05) !important;
-  }
-  
-  .artistryCard:hover .artistryIcon {
-    animation: none !important;
-  }
-  
-  .artistryCard:hover .artistryIconRipple {
-    animation: none !important;
-  }
-  
-  .artistryCard:hover .artistryCardText {
-    opacity: 0.8 !important;
-  }
-  
-  /* Disable brush accent animation */
-  .productGridSection:hover .brushAccent {
-    animation: none !important;
-  }
-  
-  /* Disable light effect on mobile */
-  .productGridSection:hover .lightEffect {
-    opacity: 0 !important;
-  }
-  
-  /* Disable mobile explore card hover effects */
-  .mobileExploreCard:hover {
-    transform: none !important;
-  }
-  
-  .mobileExploreCard:hover .mobileExploreImage {
-    transform: none !important;
-    opacity: 0.85 !important;
-    filter: brightness(0.9) contrast(1.05) !important;
-  }
-  
-  .mobileExploreCard:hover .mobileExploreCardContent {
-    background: rgba(0, 0, 0, 0.6) !important;
-  }
-  
-  .mobileExploreCard:hover .mobileExploreCardContent::before {
-    width: 20px !important;
-    background: rgba(255, 255, 255, 0.15) !important;
-  }
-  
-  .mobileExploreCard:hover .mobileExploreCardTitle {
-    color: rgba(255, 255, 255, 0.85) !important;
-    letter-spacing: 0.08em !important;
-  }
-  
-  .mobileExploreCard:hover .mobileExploreCardInner::after {
-    opacity: 0.6 !important;
-  }
-  
-  /* Disable mobile featured card hover effects */
-  .mobileFeaturedCard:hover {
-    transform: none !important;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
-  }
-  
-  .mobileFeaturedCard:hover .mobileFeaturedImage {
-    transform: none !important;
-  }
-  
-  .mobileFeaturedCard:hover .mobileFeaturedQuickActions {
-    opacity: 0 !important;
-    transform: translateX(10px) !important;
-  }
-  
-  .mobileFeaturedCard:hover .mobileFeaturedDetails {
-    transform: translateY(100%) !important;
-  }
-  
-  /* Preserve liquid glass effect on mobile but disable animations */
-  .discoverAllButton {
-    animation: none !important;
-  }
-  
-  .discoverAllButton:hover {
-    transform: translateY(-1px) scale(1.01) !important;
-    box-shadow: 
-      0 8px 25px rgba(0, 0, 0, 0.3),
-      0 0 0 1px rgba(255, 255, 255, 0.1) inset,
-      0 1px 0 rgba(255, 255, 255, 0.2) inset !important;
-    letter-spacing: 0.2em !important;
-  }
-  
-  .discoverAllButton:hover .buttonIcon {
-    animation: none !important;
-  }
-  
-  .mobileFeaturedViewAllButton:hover {
-    transform: none !important;
-    box-shadow: none !important;
-  }
-  
-
-  
-  /* Disable typewriter cursor animation on mobile */
-  #rotator::after {
-    animation: none !important;
-  }
-  
-  /* Disable scroll indicator bounce animation */
-  .scrollIndicator {
-    animation: none !important;
-  }
-  
-  /* Disable card fade-in animations */
-  .productCard {
-    animation: none !important;
-  }
-  
-  /* Disable artistry icon animations */
-  .artistryIconRipple {
-    animation: none !important;
-  }
-  
-  /* Disable gentle float animations */
-  @keyframes gentle-float {
-    0%, 100% {
-      transform: translate(0, 0) rotate(15deg);
-    }
-  }
-  
-  /* Disable button pulse animation */
-  @keyframes buttonPulse {
-    0%, 100% {
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-    }
-  }
-  
-  /* Disable icon bounce animation */
-  @keyframes iconBounce {
-    0%, 100% {
-      transform: translateX(0);
-    }
-  }
-  
-  /* Disable scroll pulse animation */
-  @keyframes scrollPulse {
-    0%, 50%, 100% {
-      opacity: 0;
-    }
-  }
-  
-  /* Disable card fade-in animation */
-  @keyframes card-fade-in {
-    0%, 100% {
-      opacity: 1;
-      transform: translateY(0);
-      filter: blur(0);
-    }
-  }
-  
-  /* Disable icon pulse animation */
-  @keyframes iconPulse {
-    0%, 50%, 100% {
-      transform: scale(1);
-    }
-  }
-  
-  /* Disable ripple effect animation */
-  @keyframes rippleEffect {
-    0%, 100% {
-      width: 64px;
-      height: 64px;
-      opacity: 0;
-    }
-  }
-  
-  /* Disable mobile featured spin animation */
-  @keyframes mobileFeaturedSpin {
-    0%, 100% {
-      transform: rotate(0deg);
-    }
-  }
-  
-
-  
-  /* Disable fadeInUp animation */
-  @keyframes fadeInUp {
-    0%, 100% {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  
-  /* Disable fadeIn animation */
-  @keyframes fadeIn {
-    0%, 100% {
-      opacity: 1;
-    }
-  }
-  
-  /* Disable bounce animation */
-  @keyframes bounce {
-    0%, 20%, 40%, 50%, 60%, 80%, 100% {
-      transform: translateY(0);
-    }
-  }
-  
-  /* Disable scrollAnim animation */
-  @keyframes scrollAnim {
-    0%, 50%, 100% {
-      opacity: 1;
-      transform: translate(-50%, 0);
-    }
-  }
-  
-  /* Disable cursor-blink animation */
-  @keyframes cursor-blink {
-    0%, 50%, 100% {
-      opacity: 1;
-    }
-  }
-  
-  /* Disable shimmer animation */
-  @keyframes shimmer {
-    0%, 100% {
-      background-position: -200% 0;
-    }
-  }
-  
-  /* Disable rotateText animation */
-  @keyframes rotateText {
-    0%, 100% {
-      opacity: 1;
-      transform: translateY(0) rotateX(0);
-    }
-  }
-  
-  /* Disable float animation */
-  @keyframes float {
-    0%, 50%, 100% {
-      transform: translateY(0) rotate(-5deg);
-    }
-  }
-  
-
 }
