@@ -16,7 +16,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   if (!isOpen) return null
 
   const handleLogin = () => {
-    router.push('/login')
+    router.push('/auth/login')
   }
 
   return (
@@ -63,7 +63,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
           <p className="mt-4 text-center text-sm text-gray-500">
             Don't have an account?{' '}
             <button
-              onClick={() => router.push('/signup')}
+              onClick={() => router.push('/auth/signup')}
               className="text-black font-medium hover:underline"
             >
               Sign up
