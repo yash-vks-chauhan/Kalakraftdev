@@ -89,11 +89,18 @@ export default function DashboardCartPage() {
       <main className={styles.container}>
         <div className={styles.header}>
           <h1 className={styles.title}>Your Cart</h1>
+          <p className={styles.subtitle}>Review and manage your selected items</p>
         </div>
         <div className={styles.emptyCart}>
-          <p className={styles.emptyCartText}>Your cart is empty.</p>
+          <div className={styles.emptyCartIcon}>
+            <svg className={styles.cartIcon} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+            </svg>
+          </div>
+          <p className={styles.emptyCartText}>Your cart is empty</p>
+          <p className={styles.emptyCartSubtext}>Start shopping to add items to your cart</p>
           <Link href="/products" className={styles.browseLink}>
-            Browse products
+            Browse Products
           </Link>
         </div>
       </main>
@@ -109,43 +116,58 @@ export default function DashboardCartPage() {
     <main className={styles.container}>
       <div className={styles.header}>
         <h1 className={styles.title}>Your Cart</h1>
+        <p className={styles.subtitle}>Review and manage your selected items</p>
       </div>
 
-      <ul className={styles.cartList}>
+      <div className={styles.cartList}>
         {cartItems.map((item) => (
-          <li 
+          <div 
             key={item.id} 
             className={`${styles.cartItem} ${removingItemId === item.id ? styles.itemRemoving : ''}`}
           >
-            <div className={styles.productInfo}>
-              {item.product.imageUrls[0] ? (
-                <img
-                  src={item.product.imageUrls[0]}
-                  alt={item.product.name}
-                  className={styles.productImage}
-                />
-              ) : (
-                <div className={styles.imagePlaceholder}>No image</div>
-              )}
-              <div className={styles.productDetails}>
-                <div className={styles.productName}>{item.product.name}</div>
-                <div className={styles.productPrice}>
-                  ₹{item.product.price.toFixed(2)} each
-                </div>
-                {getStockInfo(item)}
-              </div>
+            {/* Product Image - Clickable */}
+            <div className={styles.productImageContainer}>
+              <Link href={`/products/${item.product.id}`}>
+                {item.product.imageUrls[0] ? (
+                  <div className={styles.imageWrapper}>
+                    <img
+                      src={item.product.imageUrls[0]}
+                      alt={item.product.name}
+                      className={styles.productImage}
+                    />
+                  </div>
+                ) : (
+                  <div className={styles.imagePlaceholder}>No image</div>
+                )}
+              </Link>
             </div>
 
+            {/* Product Info */}
+            <div className={styles.productDetails}>
+              <Link href={`/products/${item.product.id}`} className={styles.productNameLink}>
+                <div className={styles.productName}>{item.product.name}</div>
+              </Link>
+              <div className={styles.productPrice}>
+                ₹{item.product.price.toFixed(2)} each
+              </div>
+              {getStockInfo(item)}
+            </div>
+
+            {/* Quantity & Remove Controls */}
             <div className={styles.quantityControls}>
-              <input
-                type="number"
-                min={1}
-                max={item.product.stockQuantity || 999}
-                value={quantities[item.id] || item.quantity}
-                onChange={(e) => handleQuantityChange(item.id, e.target.value)}
-                disabled={isUpdating[item.id]}
-                className={`${styles.quantityInput} ${isUpdating[item.id] ? styles.updating : ''}`}
-              />
+              <div className={styles.quantitySection}>
+                <label className={styles.quantityLabel}>Quantity</label>
+                <input
+                  type="number"
+                  min={1}
+                  max={item.product.stockQuantity || 999}
+                  value={quantities[item.id] || item.quantity}
+                  onChange={(e) => handleQuantityChange(item.id, e.target.value)}
+                  disabled={isUpdating[item.id]}
+                  className={`${styles.quantityInput} ${isUpdating[item.id] ? styles.updating : ''}`}
+                />
+              </div>
+              
               <button
                 onClick={() => handleRemove(item.id)}
                 className={styles.removeButton}
@@ -154,22 +176,26 @@ export default function DashboardCartPage() {
                 {isUpdating[item.id] ? 'Updating...' : 'Remove'}
               </button>
             </div>
-          </li>
+          </div>
         ))}
-      </ul>
-
-      <div className={styles.subtotalSection}>
-        <div className={styles.subtotalText}>
-          Subtotal: ₹{subtotal.toFixed(2)}
-        </div>
       </div>
 
-      <Link
-        href="/checkout"
-        className={styles.checkoutButton}
-      >
-        Proceed to Checkout
-      </Link>
+      <div className={styles.subtotalSection}>
+        <div className={styles.subtotalInfo}>
+          <div className={styles.subtotalText}>
+            Subtotal: ₹{subtotal.toFixed(2)}
+          </div>
+          <div className={styles.itemCount}>
+            {cartItems.length} item{cartItems.length !== 1 ? 's' : ''} in cart
+          </div>
+        </div>
+        <Link
+          href="/checkout"
+          className={styles.checkoutButton}
+        >
+          Proceed to Checkout
+        </Link>
+      </div>
     </main>
   )
 }
