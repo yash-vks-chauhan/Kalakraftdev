@@ -43,9 +43,10 @@ export default function CartPage() {
             <p className="text-gray-500 mb-6">Start shopping to add items to your cart</p>
             <Link 
               href="/products" 
-              className="inline-block bg-black text-white px-8 py-3 rounded-lg hover:bg-gray-900 transition-all duration-200 font-medium shadow-sm hover:shadow-md"
+              className="relative inline-block overflow-hidden rounded-lg border-2 border-black px-8 py-3 font-semibold text-black group"
             >
-              Browse Products
+              <span className="relative z-10 transition-colors duration-300 group-hover:text-white">Browse Products</span>
+              <span className="absolute inset-0 translate-x-[-100%] bg-black transition-transform duration-300 ease-out group-hover:translate-x-0" />
             </Link>
           </div>
         </div>
@@ -163,9 +164,10 @@ export default function CartPage() {
         </div>
         <Link
           href="/checkout"
-          className="mt-4 md:mt-0 inline-block bg-black text-white px-8 py-3 rounded-lg hover:bg-gray-900 transition-all duration-200 font-medium shadow-sm hover:shadow-md"
+          className="mt-4 md:mt-0 relative inline-block overflow-hidden rounded-lg border-2 border-black px-8 py-3 font-semibold text-black group"
         >
-          Proceed to Checkout
+          <span className="relative z-10 transition-colors duration-300 group-hover:text-white">Proceed to Checkout</span>
+          <span className="absolute inset-0 translate-x-[-100%] bg-black transition-transform duration-300 ease-out group-hover:translate-x-0" />
         </Link>
       </div>
     </main>
