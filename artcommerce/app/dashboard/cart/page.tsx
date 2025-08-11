@@ -124,7 +124,7 @@ export default function DashboardCartPage() {
             className={`${styles.cartItem} ${removingItemId === item.id ? styles.itemRemoving : ''}`}
           >
             {/* Product Image */}
-            <Link href={`/products/${item.product.id}`} className={styles.productImageLink}>
+            <Link href={`/products/${item.product.id}`} className={`${styles.productImageLink} ${styles.imageCol}`}>
               <div className={styles.productImageContainer}>
                 {item.product.imageUrls[0] ? (
                   <img
@@ -143,7 +143,7 @@ export default function DashboardCartPage() {
             </Link>
 
             {/* Product Details */}
-            <div className={styles.productInfo}>
+            <div className={`${styles.productInfo} ${styles.infoCol}`}>
               <Link href={`/products/${item.product.id}`} className={styles.productNameLink}>
                 <h3 className={styles.productName}>{item.product.name}</h3>
               </Link>
@@ -154,7 +154,7 @@ export default function DashboardCartPage() {
             </div>
 
             {/* Quantity Controls */}
-            <div className={styles.quantitySection}>
+            <div className={`${styles.quantitySection} ${styles.quantityCol}`}>
               <label className={styles.quantityLabel}>Qty</label>
               <input
                 type="number"
@@ -170,7 +170,7 @@ export default function DashboardCartPage() {
             {/* Remove Button */}
             <button
               onClick={() => handleRemove(item.id)}
-              className={styles.removeButton}
+              className={`${styles.removeButton} ${styles.removeCol}`}
               disabled={isUpdating[item.id] || removingItemId === item.id}
               title="Remove item"
             >
