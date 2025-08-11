@@ -108,7 +108,7 @@ export default async function OrderDetailsPage({
           to view it.
         </p>
         <p className="mt-6">
-          <Link href="/orders" className="text-blue-600 hover:underline">
+          <Link href="/orders" className="text-gray-900 underline underline-offset-4 hover:opacity-80">
             ← Back to All Orders
           </Link>
         </p>
@@ -254,7 +254,7 @@ export default async function OrderDetailsPage({
       </div>
 
       <p>
-        <Link href="/orders" className="text-blue-600 hover:underline">
+        <Link href="/orders" className="text-gray-900 underline underline-offset-4 hover:opacity-80">
           ← Back to All Orders
         </Link>
       </p>

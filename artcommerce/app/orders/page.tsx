@@ -88,7 +88,7 @@ export default function OrdersPage() {
         <h1 className="text-3xl font-bold mb-4">Your Orders</h1>
         <p className="text-center mt-8">You have no orders yet.</p>
         <div className="text-center mt-6">
-          <Link href="/products" className="text-blue-600 hover:underline">
+          <Link href="/products" className="text-gray-900 underline underline-offset-4 hover:opacity-80">
             Shop Now
           </Link>
         </div>

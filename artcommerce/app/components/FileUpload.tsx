@@ -56,7 +56,7 @@ export default function FileUpload({
           border-2 border-dashed rounded-lg p-8
           flex flex-col items-center justify-center
           cursor-pointer transition-colors
-          ${isDragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300'}
+          ${isDragActive ? 'border-gray-900 bg-gray-50' : 'border-gray-300'}
           ${uploading ? 'opacity-50 cursor-not-allowed' : ''}
         `}
       >
@@ -66,7 +66,7 @@ export default function FileUpload({
         <p className="text-xs text-gray-500">
           Or click to browse (max {maxFiles} files, up to {maxSize / 1024 / 1024}MB each)
         </p>
-        {uploading && <p className="mt-2 text-sm text-blue-500">Uploading...</p>}
+        {uploading && <p className="mt-2 text-sm text-gray-700">Uploading...</p>}
       </div>
 
       {value.length > 0 && (
@@ -90,7 +90,7 @@ export default function FileUpload({
               {uploadProgress[url] !== undefined && (
                 <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-200">
                   <div 
-                    className="h-full bg-blue-500 transition-all duration-300"
+                    className="h-full bg-gray-900 transition-all duration-300"
                     style={{ width: `${uploadProgress[url]}%` }}
                   />
                 </div>

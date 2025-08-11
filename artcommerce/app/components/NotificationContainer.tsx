@@ -32,8 +32,8 @@ export default function NotificationContainer() {
             before:left-0
             before:h-1
             before:bg-gradient-to-r
-            before:from-blue-500
-            before:to-purple-600
+            before:from-gray-900
+            before:to-gray-600
             before:rounded-b-lg
             before:animate-progressBar
           "
