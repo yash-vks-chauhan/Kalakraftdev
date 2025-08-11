@@ -43,7 +43,7 @@ export default function CartPage() {
             <p className="text-gray-500 mb-6">Start shopping to add items to your cart</p>
             <Link 
               href="/products" 
-              className="inline-block bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-all duration-200 font-medium shadow-sm hover:shadow-md"
+              className="inline-block bg-black text-white px-8 py-3 rounded-lg hover:bg-gray-900 transition-all duration-200 font-medium shadow-sm hover:shadow-md"
             >
               Browse Products
             </Link>
@@ -95,7 +95,7 @@ export default function CartPage() {
             {/* Product Info */}
             <div className="flex-1 w-full md:w-1/2 space-y-3">
               <Link href={`/products/${item.product.id}`} className="block group">
-                <h2 className="text-xl font-semibold text-gray-900 group-hover:text-blue-600 transition-colors duration-200">
+                <h2 className="text-xl font-semibold text-gray-900 group-hover:underline transition-colors duration-200">
                   {item.product.name}
                 </h2>
               </Link>
@@ -136,7 +136,7 @@ export default function CartPage() {
                   onChange={(e) =>
                     updateCartItem(item.id, parseInt(e.target.value, 10))
                   }
-                  className="w-20 text-center border-2 border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  className="w-20 text-center border-2 border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all duration-200"
                   disabled={item.product.stockQuantity === 0}
                 />
               </div>
@@ -163,7 +163,7 @@ export default function CartPage() {
         </div>
         <Link
           href="/checkout"
-          className="mt-4 md:mt-0 inline-block bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-all duration-200 font-medium shadow-sm hover:shadow-md"
+          className="mt-4 md:mt-0 inline-block bg-black text-white px-8 py-3 rounded-lg hover:bg-gray-900 transition-all duration-200 font-medium shadow-sm hover:shadow-md"
         >
           Proceed to Checkout
         </Link>
