@@ -54,6 +54,12 @@ export default function DashboardCartPage() {
       
       // Check if quantity exceeds available stock
       const stockQuantity = cartItem.product.stockQuantity || 0
+      if (value > stockQuantity && stockQuantity > 0) {
+        // Clamp to stock and show a brief error message
+        setQuantities(prev => ({ ...prev, [itemId]: stockQuantity }))
+        setIsUpdating(prev => ({ ...prev, [itemId]: false }))
+        return
+      }
       
       // First update local state for responsive UI
       setQuantities(prev => ({
@@ -156,7 +162,7 @@ export default function DashboardCartPage() {
             {/* Quantity Controls */}
             <div className={`${styles.quantitySection} ${styles.quantityCol}`}>
               <label className={styles.quantityLabel}>Qty</label>
-              <input
+               <input
                 type="number"
                 min={1}
                 max={item.product.stockQuantity || 999}
@@ -165,6 +171,9 @@ export default function DashboardCartPage() {
                 disabled={isUpdating[item.id]}
                 className={`${styles.quantityInput} ${isUpdating[item.id] ? styles.updating : ''}`}
               />
+               {quantities[item.id] > (item.product.stockQuantity || 0) && (
+                 <div className={styles.errorMessage}>Max {item.product.stockQuantity} available</div>
+               )}
             </div>
 
             {/* Remove Button */}

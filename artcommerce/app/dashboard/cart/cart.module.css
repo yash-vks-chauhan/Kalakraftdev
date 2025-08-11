@@ -75,7 +75,7 @@
   position: relative;
   display: inline-block;
   overflow: hidden;
-  border-radius: 8px;
+  border-radius: 6px;
   text-decoration: none;
   font-weight: 600;
   padding: 0.75rem 1.5rem;
@@ -100,11 +100,19 @@
 .browseButton span {
   position: relative;
   z-index: 1;
+  color: inherit;
+  transition: color 0.3s ease;
 }
 
 .browseButton:hover {
   color: #ffffff;
 }
+
+/* Ensure good feedback on keyboard/touch as well */
+.browseButton:focus-visible::before,
+.browseButton:active::before { transform: translateX(0); }
+.browseButton:focus-visible,
+.browseButton:active { color: #ffffff; }
 
 /* Cart Items */
 .cartItems {
@@ -341,7 +349,7 @@
   position: relative;
   display: inline-block;
   overflow: hidden;
-  border-radius: 8px;
+  border-radius: 6px;
   text-decoration: none;
   font-weight: 700;
   font-size: 0.9rem;
@@ -350,6 +358,13 @@
   border: 2px solid #000000;
   transition: color 0.3s ease;
   white-space: nowrap;
+}
+
+.checkoutButton span {
+  position: relative;
+  z-index: 1;
+  color: inherit;
+  transition: color 0.3s ease;
 }
 
 .checkoutButton::before {
@@ -368,6 +383,12 @@
 .checkoutButton:hover {
   color: #ffffff;
 }
+
+/* Ensure good feedback on keyboard/touch as well */
+.checkoutButton:focus-visible::before,
+.checkoutButton:active::before { transform: translateX(0); }
+.checkoutButton:focus-visible,
+.checkoutButton:active { color: #ffffff; }
 
 /* Responsive Design */
 @media (max-width: 768px) {
@@ -418,9 +439,15 @@
   }
   
   .summarySection {
+    position: sticky;
+    bottom: 0;
     flex-direction: column;
     align-items: stretch;
     gap: 0.75rem;
+    background: #ffffff;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 -4px 12px rgba(0,0,0,0.04);
   }
 
   .summaryRow {
@@ -431,6 +458,13 @@
     width: 100%;
     text-align: center;
   }
+}
+
+/* Error message below quantity */
+.errorMessage {
+  color: #dc2626;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
 }
 
 @media (max-width: 480px) {
