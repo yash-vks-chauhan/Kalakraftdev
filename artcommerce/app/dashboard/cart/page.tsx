@@ -87,19 +87,15 @@ export default function DashboardCartPage() {
   if (cartItems.length === 0) {
     return (
       <main className={styles.container}>
-        <div className={styles.header}>
-          <h1 className={styles.title}>Your Cart</h1>
-          <p className={styles.subtitle}>Review and manage your selected items</p>
-        </div>
-        <div className={styles.emptyCart}>
+        <div className={styles.emptyCartContainer}>
           <div className={styles.emptyCartIcon}>
-            <svg className={styles.cartIcon} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className={styles.cartIcon}>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
             </svg>
           </div>
-          <p className={styles.emptyCartText}>Your cart is empty</p>
-          <p className={styles.emptyCartSubtext}>Start shopping to add items to your cart</p>
-          <Link href="/products" className={styles.browseLink}>
+          <h1 className={styles.emptyCartTitle}>Your cart is empty</h1>
+          <p className={styles.emptyCartText}>Start shopping to add items to your cart</p>
+          <Link href="/products" className={styles.browseButton}>
             Browse Products
           </Link>
         </div>
@@ -114,85 +110,92 @@ export default function DashboardCartPage() {
 
   return (
     <main className={styles.container}>
+      {/* Header */}
       <div className={styles.header}>
-        <h1 className={styles.title}>Your Cart</h1>
-        <p className={styles.subtitle}>Review and manage your selected items</p>
+        <h1 className={styles.title}>Shopping Cart</h1>
+        <span className={styles.itemCount}>{cartItems.length} item{cartItems.length !== 1 ? 's' : ''}</span>
       </div>
 
-      <div className={styles.cartList}>
+      {/* Cart Items */}
+      <div className={styles.cartItems}>
         {cartItems.map((item) => (
           <div 
             key={item.id} 
             className={`${styles.cartItem} ${removingItemId === item.id ? styles.itemRemoving : ''}`}
           >
-            {/* Product Image - Clickable */}
-            <div className={styles.productImageContainer}>
-              <Link href={`/products/${item.product.id}`}>
+            {/* Product Image */}
+            <Link href={`/products/${item.product.id}`} className={styles.productImageLink}>
+              <div className={styles.productImageContainer}>
                 {item.product.imageUrls[0] ? (
-                  <div className={styles.imageWrapper}>
-                    <img
-                      src={item.product.imageUrls[0]}
-                      alt={item.product.name}
-                      className={styles.productImage}
-                    />
-                  </div>
+                  <img
+                    src={item.product.imageUrls[0]}
+                    alt={item.product.name}
+                    className={styles.productImage}
+                  />
                 ) : (
-                  <div className={styles.imagePlaceholder}>No image</div>
+                  <div className={styles.imagePlaceholder}>
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className={styles.placeholderIcon}>
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
                 )}
-              </Link>
-            </div>
+              </div>
+            </Link>
 
-            {/* Product Info */}
-            <div className={styles.productDetails}>
+            {/* Product Details */}
+            <div className={styles.productInfo}>
               <Link href={`/products/${item.product.id}`} className={styles.productNameLink}>
-                <div className={styles.productName}>{item.product.name}</div>
+                <h3 className={styles.productName}>{item.product.name}</h3>
               </Link>
-              <div className={styles.productPrice}>
-                ₹{item.product.price.toFixed(2)} each
+              <div className={styles.productMeta}>
+                <span className={styles.productPrice}>₹{item.product.price.toFixed(2)}</span>
+                {getStockInfo(item)}
               </div>
-              {getStockInfo(item)}
             </div>
 
-            {/* Quantity & Remove Controls */}
-            <div className={styles.quantityControls}>
-              <div className={styles.quantitySection}>
-                <label className={styles.quantityLabel}>Quantity</label>
-                <input
-                  type="number"
-                  min={1}
-                  max={item.product.stockQuantity || 999}
-                  value={quantities[item.id] || item.quantity}
-                  onChange={(e) => handleQuantityChange(item.id, e.target.value)}
-                  disabled={isUpdating[item.id]}
-                  className={`${styles.quantityInput} ${isUpdating[item.id] ? styles.updating : ''}`}
-                />
-              </div>
-              
-              <button
-                onClick={() => handleRemove(item.id)}
-                className={styles.removeButton}
-                disabled={isUpdating[item.id] || removingItemId === item.id}
-              >
-                {isUpdating[item.id] ? 'Updating...' : 'Remove'}
-              </button>
+            {/* Quantity Controls */}
+            <div className={styles.quantitySection}>
+              <label className={styles.quantityLabel}>Qty</label>
+              <input
+                type="number"
+                min={1}
+                max={item.product.stockQuantity || 999}
+                value={quantities[item.id] || item.quantity}
+                onChange={(e) => handleQuantityChange(item.id, e.target.value)}
+                disabled={isUpdating[item.id]}
+                className={`${styles.quantityInput} ${isUpdating[item.id] ? styles.updating : ''}`}
+              />
             </div>
+
+            {/* Remove Button */}
+            <button
+              onClick={() => handleRemove(item.id)}
+              className={styles.removeButton}
+              disabled={isUpdating[item.id] || removingItemId === item.id}
+              title="Remove item"
+            >
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className={styles.removeIcon}>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </button>
           </div>
         ))}
       </div>
 
-      <div className={styles.subtotalSection}>
-        <div className={styles.subtotalInfo}>
-          <div className={styles.subtotalText}>
-            Subtotal: ₹{subtotal.toFixed(2)}
+      {/* Summary & Checkout */}
+      <div className={styles.summarySection}>
+        <div className={styles.summaryContent}>
+          <div className={styles.summaryRow}>
+            <span className={styles.summaryLabel}>Subtotal</span>
+            <span className={styles.summaryValue}>₹{subtotal.toFixed(2)}</span>
           </div>
-          <div className={styles.itemCount}>
-            {cartItems.length} item{cartItems.length !== 1 ? 's' : ''} in cart
+          <div className={styles.summaryRow}>
+            <span className={styles.summaryLabel}>Items</span>
+            <span className={styles.summaryValue}>{cartItems.length}</span>
           </div>
         </div>
-        <Link
-          href="/checkout"
-          className={styles.checkoutButton}
-        >
+        
+        <Link href="/checkout" className={styles.checkoutButton}>
           Proceed to Checkout
         </Link>
       </div>
