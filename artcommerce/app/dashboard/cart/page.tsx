@@ -130,7 +130,7 @@ export default function DashboardCartPage() {
               <div className={styles.productDetails}>
                 <div className={styles.productName}>{item.product.name}</div>
                 <div className={styles.productPrice}>
-                  ${item.product.price.toFixed(2)} each
+                  ₹{item.product.price.toFixed(2)} each
                 </div>
                 {getStockInfo(item)}
               </div>
@@ -160,7 +160,7 @@ export default function DashboardCartPage() {
 
       <div className={styles.subtotalSection}>
         <div className={styles.subtotalText}>
-          Subtotal: ${subtotal.toFixed(2)}
+          Subtotal: ₹{subtotal.toFixed(2)}
         </div>
       </div>
 
