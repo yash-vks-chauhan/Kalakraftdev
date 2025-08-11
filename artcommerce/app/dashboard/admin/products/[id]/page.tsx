@@ -665,6 +665,83 @@ export default function EditProductPage() {
         </div>
 
         <div className={styles.card}>
+          <h2 className={styles.sectionTitle}>
+            <FiDollarSign className={styles.sectionIcon} />
+            Pricing & Inventory
+          </h2>
+          <div className={styles.formGroup}>
+            <label className={styles.label}>Category</label>
+            <select
+              value={categoryId || ''}
+              onChange={e => setCategoryId(e.target.value ? Number(e.target.value) : null)}
+              className={styles.select}
+              required
+            >
+              <option value="">Select a category</option>
+              {categories.map(c => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div className={styles.formGroup}>
+              <label className={styles.label}>Price</label>
+              <input
+                type="number"
+                value={price}
+                onChange={e => setPrice(parseFloat(e.target.value))}
+                className={styles.input}
+                min="0"
+                step="0.01"
+                placeholder="0.00"
+                required
+              />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label className={styles.label}>Currency</label>
+              <select
+                value={currency}
+                onChange={e => setCurrency(e.target.value)}
+                className={styles.select}
+                required
+              >
+                <option value="INR">INR - Indian Rupee</option>
+                <option value="USD">USD - US Dollar</option>
+                <option value="EUR">EUR - Euro</option>
+              </select>
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div className={styles.formGroup}>
+              <label className={styles.label}>Stock Quantity</label>
+              <input
+                type="number"
+                value={stockQuantity}
+                onChange={e => setStockQuantity(parseInt(e.target.value))}
+                className={styles.input}
+                min="0"
+                placeholder="Available quantity"
+              />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label className={styles.checkbox}>
+                <input
+                  type="checkbox"
+                  checked={isActive}
+                  onChange={e => setIsActive(e.target.checked)}
+                  className={styles.checkboxInput}
+                />
+                <span className={styles.checkboxLabel}>Product Active</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div className={styles.card}>
           <h2 className={styles.sectionTitle}><FiImage /> Product Images</h2>
           <div className={styles.formGroup}>
             <label className={styles.label}>Product Images</label>
