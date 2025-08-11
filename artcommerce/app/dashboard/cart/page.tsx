@@ -96,7 +96,7 @@ export default function DashboardCartPage() {
           <h1 className={styles.emptyCartTitle}>Your cart is empty</h1>
           <p className={styles.emptyCartText}>Start shopping to add items to your cart</p>
           <Link href="/products" className={styles.browseButton}>
-            Browse Products
+            <span>Browse Products</span>
           </Link>
         </div>
       </main>
@@ -196,7 +196,7 @@ export default function DashboardCartPage() {
         </div>
         
         <Link href="/checkout" className={styles.checkoutButton}>
-          Proceed to Checkout
+          <span>Proceed to Checkout</span>
         </Link>
       </div>
     </main>

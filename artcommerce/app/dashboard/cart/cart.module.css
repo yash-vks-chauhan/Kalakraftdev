@@ -72,19 +72,38 @@
 }
 
 .browseButton {
+  position: relative;
   display: inline-block;
-  background: #3b82f6;
-  color: white;
-  padding: 0.75rem 1.5rem;
+  overflow: hidden;
   border-radius: 8px;
   text-decoration: none;
-  font-weight: 500;
-  transition: all 0.2s ease;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  color: #000000;
+  border: 2px solid #000000;
+  transition: color 0.3s ease;
+}
+
+.browseButton::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #000000;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+}
+
+.browseButton:hover::before {
+  transform: translateX(0);
+}
+
+.browseButton span {
+  position: relative;
+  z-index: 1;
 }
 
 .browseButton:hover {
-  background: #2563eb;
-  transform: translateY(-1px);
+  color: #ffffff;
 }
 
 /* Cart Items */
@@ -133,7 +152,7 @@
 }
 
 .productImageContainer:hover {
-  border-color: #3b82f6;
+  border-color: #0f172a;
   transform: scale(1.02);
 }
 
@@ -179,7 +198,8 @@
 }
 
 .productName:hover {
-  color: #3b82f6;
+  color: #0f172a;
+  text-decoration: underline;
 }
 
 .productMeta {
@@ -241,13 +261,13 @@
 
 .quantityInput:focus {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: #0f172a;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.12);
 }
 
 .quantityInput.updating {
-  border-color: #3b82f6;
-  background: #eff6ff;
+  border-color: #0f172a;
+  background: #f1f5f9;
 }
 
 /* Remove Button */
@@ -318,21 +338,35 @@
 }
 
 .checkoutButton {
-  background: #3b82f6;
-  color: white;
-  padding: 0.875rem 2rem;
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
   border-radius: 8px;
   text-decoration: none;
-  font-weight: 600;
-  font-size: 0.875rem;
-  transition: all 0.2s ease;
+  font-weight: 700;
+  font-size: 0.9rem;
+  padding: 0.875rem 2rem;
+  color: #000000;
+  border: 2px solid #000000;
+  transition: color 0.3s ease;
   white-space: nowrap;
 }
 
+.checkoutButton::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #000000;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+}
+
+.checkoutButton:hover::before {
+  transform: translateX(0);
+}
+
 .checkoutButton:hover {
-  background: #2563eb;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  color: #ffffff;
 }
 
 /* Responsive Design */
