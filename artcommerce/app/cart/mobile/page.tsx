@@ -153,10 +153,7 @@ export default function MobileCartPage() {
 
               <div className="min-w-0 flex-1">
                 <Link href={`/products/${item.product.id}`} className="block">
-                  <h2
-                    className="text-base font-semibold text-gray-900 leading-tight"
-                    style={{ display: '-webkit-box', WebkitLineClamp: 2 as any, WebkitBoxOrient: 'vertical' as any, overflow: 'hidden' }}
-                  >
+                  <h2 className="text-base font-semibold text-gray-900 leading-tight line-clamp-2">
                     {item.product.name}
                   </h2>
                 </Link>
