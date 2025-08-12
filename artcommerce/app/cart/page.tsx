@@ -60,7 +60,7 @@ export default function CartPage() {
   )
 
   return (
-    <main className="container mx-auto px-4 pt-6 pb-28 md:pb-8">
+    <main className="container mx-auto px-4 pt-6 pb-28 lg:pb-8">
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-1">Your Cart</h1>
@@ -68,7 +68,7 @@ export default function CartPage() {
       </div>
 
       {/* Mobile layout */}
-      <div className="md:hidden">
+      <div className="lg:hidden">
         <ul className="bg-white rounded-2xl border-2 border-gray-200 divide-y divide-gray-200">
           {cartItems.map((item) => {
             const isOut = (item.product.stockQuantity ?? 0) === 0
@@ -181,7 +181,7 @@ export default function CartPage() {
       </div>
 
       {/* Desktop layout (unchanged) */}
-      <div className="hidden md:block">
+      <div className="hidden lg:block">
         <div className="space-y-6">
           {cartItems.map((item) => (
             <div
