@@ -42,9 +42,10 @@ export default function MobileCartClient() {
   const [removingId, setRemovingId] = useState<number | null>(null)
 
   useEffect(() => {
-    if (!user) {
+    // Avoid redirect loops; only redirect if we know user is null
+    if (user === null) {
       router.replace('/auth/login')
-    } else {
+    } else if (user) {
       setLoading(false)
     }
   }, [user, router])
