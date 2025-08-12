@@ -17,9 +17,13 @@ export default function CartPage() {
   // Redirect small screens to the dedicated mobile cart
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const viewportWidth = window.innerWidth
-      if (viewportWidth < 1024) {
-        router.replace('/cart/mobile')
+      try {
+        const viewportWidth = window.innerWidth
+        if (viewportWidth < 1024) {
+          router.replace('/cart/mobile')
+        }
+      } catch (e) {
+        console.error('Cart redirect error', e)
       }
     }
   }, [router])

@@ -49,7 +49,9 @@ export default function MobileCartPage() {
     }
   }, [user, router])
 
-  if (!user) return null
+  if (!user) return (
+    <main className="p-4 text-sm">Redirecting to login…</main>
+  )
   if (loading || cartLoading) {
     return (
       <main className="container mx-auto px-4 pt-20 pb-28">
