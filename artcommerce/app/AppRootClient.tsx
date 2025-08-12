@@ -21,6 +21,7 @@ export default function AppRootClient({ children }: { children: React.ReactNode 
   const [isMobile, setIsMobile] = useState(false);
   const [forceDesktopView, setForceDesktopView] = useState(false);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
+  const [globalClientError, setGlobalClientError] = useState<string | null>(null);
 
   // Treat certain routes as mobile-only regardless of preference
   const mobileOnlyRoutes = new Set<string>(['/cart/mobile']);
@@ -46,6 +47,24 @@ export default function AppRootClient({ children }: { children: React.ReactNode 
     
     return () => {
       window.removeEventListener('resize', checkMobile);
+    };
+  }, []);
+
+  // Global client-side error catcher (helps on mobile when app error screen hides details)
+  useEffect(() => {
+    const handleError = (event: ErrorEvent) => {
+      const msg = (event?.error?.message || event?.message || 'Unknown client error').toString();
+      setGlobalClientError(msg);
+    };
+    const handleRejection = (event: PromiseRejectionEvent) => {
+      const reason = (event?.reason && (event.reason.message || event.reason.toString?.())) || 'Unhandled promise rejection';
+      setGlobalClientError(String(reason));
+    };
+    window.addEventListener('error', handleError);
+    window.addEventListener('unhandledrejection', handleRejection as any);
+    return () => {
+      window.removeEventListener('error', handleError);
+      window.removeEventListener('unhandledrejection', handleRejection as any);
     };
   }, []);
 
@@ -133,6 +152,11 @@ export default function AppRootClient({ children }: { children: React.ReactNode 
   return (
     <body suppressHydrationWarning>
       <Providers>
+        {globalClientError && (
+          <div style={{position:'fixed',top:0,left:0,right:0,zIndex:9999,background:'#fee2e2',color:'#991b1b',padding:'8px 12px',fontSize:12,borderBottom:'1px solid #ef4444'}}>
+            <strong>Client error:</strong> {globalClientError}
+          </div>
+        )}
         {!showDesktopView ? (
           // Mobile Layout
           <MobileLayout onSwitchToDesktop={switchToDesktopView}>{children}</MobileLayout>
