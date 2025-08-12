@@ -68,7 +68,7 @@ export default function CartPage() {
       </div>
 
       {/* Mobile layout */}
-      <div className="lg:hidden">
+      <div className="lg:hidden" data-testid="mobile-cart-layout">
         <ul className="bg-white rounded-2xl border-2 border-gray-200 divide-y divide-gray-200">
           {cartItems.map((item) => {
             const isOut = (item.product.stockQuantity ?? 0) === 0
