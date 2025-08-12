@@ -40,6 +40,22 @@ export default function MobileCartClient() {
   const [loading, setLoading] = useState(true)
   const [updating, setUpdating] = useState<Record<number, boolean>>({})
   const [removingId, setRemovingId] = useState<number | null>(null)
+  // All hooks must remain at the top and never be conditional
+  const [isSummaryOpen, setIsSummaryOpen] = useState(false)
+  const [promoOpen, setPromoOpen] = useState(false)
+  const [promoCode, setPromoCode] = useState('')
+  const [applyingPromo, setApplyingPromo] = useState(false)
+  const [discount, setDiscount] = useState(0)
+  const [discountType, setDiscountType] = useState<'percentage' | 'flat' | null>(null)
+  const estimatedShipping = 0
+  const estimatedTaxRate = 0.18
+  const subtotal = useMemo(() => cartItems.reduce((sum, item) => sum + item.quantity * item.product.price, 0), [cartItems])
+  const discountAmount = useMemo(() => {
+    if (!discountType) return 0
+    return discountType === 'percentage' ? (subtotal * discount) / 100 : discount
+  }, [discountType, discount, subtotal])
+  const taxes = useMemo(() => Math.max(0, (subtotal - discountAmount) * estimatedTaxRate), [subtotal, discountAmount])
+  const total = useMemo(() => Math.max(0, subtotal - discountAmount + estimatedShipping + taxes), [subtotal, discountAmount, taxes])
 
   useEffect(() => {
     // Avoid redirect loops; only redirect if we know user is null
@@ -88,21 +104,7 @@ export default function MobileCartClient() {
     )
   }
 
-  const subtotal = useMemo(() => cartItems.reduce((sum, item) => sum + item.quantity * item.product.price, 0), [cartItems])
-  const [isSummaryOpen, setIsSummaryOpen] = useState(false)
-  const [promoOpen, setPromoOpen] = useState(false)
-  const [promoCode, setPromoCode] = useState('')
-  const [applyingPromo, setApplyingPromo] = useState(false)
-  const [discount, setDiscount] = useState(0)
-  const [discountType, setDiscountType] = useState<'percentage' | 'flat' | null>(null)
-  const estimatedShipping = 0
-  const estimatedTaxRate = 0.18
-  const discountAmount = useMemo(() => {
-    if (!discountType) return 0
-    return discountType === 'percentage' ? (subtotal * discount) / 100 : discount
-  }, [discountType, discount, subtotal])
-  const taxes = useMemo(() => Math.max(0, (subtotal - discountAmount) * estimatedTaxRate), [subtotal, discountAmount])
-  const total = useMemo(() => Math.max(0, subtotal - discountAmount + estimatedShipping + taxes), [subtotal, discountAmount, taxes])
+  // Hooks are above; values are ready for render paths below
 
   return (
     <ErrorBoundary>
