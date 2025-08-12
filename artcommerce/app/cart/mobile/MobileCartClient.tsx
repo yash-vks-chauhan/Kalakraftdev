@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useCart } from '../../contexts/CartContext'
 import { useAuth } from '../../contexts/AuthContext'
 import { useRouter } from 'next/navigation'
@@ -34,10 +34,9 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { err
 }
 
 export default function MobileCartClient() {
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const router = useRouter()
   const { cartItems, updateCartItem, removeFromCart, cartLoading } = useCart()
-  const [loading, setLoading] = useState(true)
   const [updating, setUpdating] = useState<Record<number, boolean>>({})
   const [removingId, setRemovingId] = useState<number | null>(null)
   // All hooks must remain at the top and never be conditional
@@ -57,18 +56,18 @@ export default function MobileCartClient() {
   const taxes = useMemo(() => Math.max(0, (subtotal - discountAmount) * estimatedTaxRate), [subtotal, discountAmount])
   const total = useMemo(() => Math.max(0, subtotal - discountAmount + estimatedShipping + taxes), [subtotal, discountAmount, taxes])
 
+  const redirectedRef = useRef(false)
   useEffect(() => {
-    // Avoid redirect loops; only redirect if we know user is null
-    if (user === null) {
+    // Wait for auth to finish; only redirect once if unauthenticated
+    if (!authLoading && user === null && !redirectedRef.current) {
+      redirectedRef.current = true
       router.replace('/auth/login')
-    } else if (user) {
-      setLoading(false)
     }
-  }, [user, router])
+  }, [authLoading, user, router])
 
   if (!user) return (<main className="p-4 text-sm">Redirecting to login…</main>)
 
-  if (loading || cartLoading) {
+  if (authLoading || cartLoading) {
     return (
       <main className="container mx-auto px-4 pt-20 pb-28">
         <ul className="space-y-3">
