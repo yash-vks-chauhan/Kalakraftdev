@@ -14,6 +14,16 @@ export default function CartPage() {
   const { cartItems, updateCartItem, removeFromCart } = useCart()
   const [loading, setLoading] = useState(true)
 
+  // Redirect small screens to the dedicated mobile cart
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const viewportWidth = window.innerWidth
+      if (viewportWidth < 1024) {
+        router.replace('/cart/mobile')
+      }
+    }
+  }, [router])
+
   useEffect(() => {
     if (!user) {
       router.replace('/auth/login')
