@@ -22,12 +22,16 @@ export default function AppRootClient({ children }: { children: React.ReactNode 
   const [forceDesktopView, setForceDesktopView] = useState(false);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
 
+  // Treat certain routes as mobile-only regardless of preference
+  const mobileOnlyRoutes = new Set<string>(['/cart/mobile']);
+  const isMobileOnlyRoute = mobileOnlyRoutes.has(pathname);
+
   // Check if device is mobile on client side
   useEffect(() => {
     const checkMobile = () => {
       // Check if user has a preference saved
       const savedViewPreference = localStorage.getItem('viewPreference');
-      if (savedViewPreference === 'desktop') {
+      if (!isMobileOnlyRoute && savedViewPreference === 'desktop') {
         setForceDesktopView(true);
         return;
       }
@@ -114,8 +118,17 @@ export default function AppRootClient({ children }: { children: React.ReactNode 
     setIsMobile(true);
   };
 
-  // Show desktop view if forced or not mobile
-  const showDesktopView = forceDesktopView || !isMobile;
+  // Show desktop view if forced or not mobile, but never on mobile-only routes
+  const showDesktopView = (forceDesktopView || !isMobile) && !isMobileOnlyRoute;
+
+  // Ensure mobile-only routes clear any forced desktop preference
+  useEffect(() => {
+    if (isMobileOnlyRoute && forceDesktopView) {
+      setForceDesktopView(false);
+      localStorage.setItem('viewPreference', 'mobile');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMobileOnlyRoute]);
 
   return (
     <body suppressHydrationWarning>
