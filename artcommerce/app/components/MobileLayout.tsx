@@ -253,7 +253,7 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
   }
 
   const handleCartClick = () => {
-    router.push('/dashboard/cart');
+    router.push('/cart/mobile');
     // Close mobile menu if it's open
     if (isMobileMenuOpen) {
       setIsMobileMenuOpen(false);
