@@ -66,13 +66,13 @@ export default function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html: `(() => {
-              function show(msg){
+              function show(msg, stack){
                 try{var b=document.createElement('div');
                 b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:2147483647;background:#fee2e2;color:#991b1b;padding:8px 12px;font-size:12px;border-bottom:1px solid #ef4444;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial';
-                b.textContent='Client error: '+msg; (document.body||document.documentElement).appendChild(b);}catch(e){}
+                b.textContent='Client error: '+msg+(stack?(' — '+String(stack).split('\n')[0]):''); (document.body||document.documentElement).appendChild(b);}catch(e){}
               }
-              window.addEventListener('error',function(e){show((e&&e.error&&e.error.message)||e.message||'Unknown error')});
-              window.addEventListener('unhandledrejection',function(e){var r=e&&e.reason; show((r&& (r.message||r.toString&&r.toString()))||'Unhandled promise rejection')});
+              window.addEventListener('error',function(e){show((e&&e.error&&e.error.message)||e.message||'Unknown error', e&&e.error&&e.error.stack)});
+              window.addEventListener('unhandledrejection',function(e){var r=e&&e.reason; show((r&& (r.message||r.toString&&r.toString()))||'Unhandled promise rejection', r&&r.stack)});
             })();`
           }}
         />
