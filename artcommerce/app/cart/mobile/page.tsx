@@ -5,7 +5,7 @@ import { useCart } from '../../contexts/CartContext'
 import { useAuth } from '../../contexts/AuthContext'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import Image from 'next/image'
+/* eslint-disable @next/next/no-img-element */
 
 // Error boundary must be defined before use
 class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { error: any }> {
@@ -162,12 +162,14 @@ export default function MobileCartPage() {
             <li key={item.id} className="flex items-center gap-3 p-3">
               <Link href={`/products/${item.product.id}`} className="shrink-0">
                 {Array.isArray(item.product.imageUrls) && item.product.imageUrls[0] ? (
-                  <Image
+                  <img
                     src={item.product.imageUrls[0]}
-                    alt={item.product.name}
+                    alt={item.product.name || 'Product image'}
                     width={80}
                     height={80}
                     className="h-20 w-20 object-cover rounded-xl border border-black"
+                    loading="lazy"
+                    onError={(e) => { (e.currentTarget as HTMLImageElement).style.visibility = 'hidden' }}
                   />
                 ) : (
                   <div className="h-20 w-20 rounded-xl border border-black bg-gray-50 flex items-center justify-center text-gray-400">
