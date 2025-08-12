@@ -338,7 +338,7 @@ export default function Navbar() {
           </Link>
 
           <Link
-            href={user ? '/cart/mobile' : '/auth/login'}
+            href={user ? '/dashboard/cart' : '/auth/login'}
             className={styles.icon}
             aria-label="Your Cart"
           >

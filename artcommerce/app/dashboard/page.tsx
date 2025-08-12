@@ -171,7 +171,7 @@ export default function DashboardHomePage() {
           </>
         )}
 
-        <Link href="/cart/mobile" className={styles.dashboardCard}>
+        <Link href="/dashboard/cart" className={styles.dashboardCard}>
           <h2 className={styles.cardTitle}>Your Cart</h2>
           <p className={styles.cardDescription}>See what's in your shopping cart.</p>
         </Link>

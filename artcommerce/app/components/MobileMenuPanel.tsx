@@ -37,7 +37,7 @@ const MobileMenuPanel: React.FC<MobileMenuPanelProps> = ({ isOpen, onClose, togg
     { 
       title: 'My Cart', 
       icon: <ShoppingBag size={20} />, 
-      href: '/cart/mobile',
+      href: '/dashboard/cart',
       hideWhenLoggedOut: false
     },
     { 
