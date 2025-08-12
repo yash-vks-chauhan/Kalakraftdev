@@ -12,7 +12,8 @@ export default function MobileCartPage() {
   const router = useRouter()
   const { cartItems, updateCartItem, removeFromCart } = useCart()
   const [loading, setLoading] = useState(true)
-  const [refreshing, setRefreshing] = useState(false)
+  const [updating, setUpdating] = useState<Record<number, boolean>>({})
+  const [removingId, setRemovingId] = useState<number | null>(null)
 
   useEffect(() => {
     if (!user) {
@@ -69,43 +70,37 @@ export default function MobileCartPage() {
         <p className="text-gray-600 text-base">Review and manage your selected items</p>
       </div>
 
-      {/* Pull to refresh / manual refresh */}
-      <div className="mb-3 flex items-center gap-2">
-        <button
-          onClick={async () => {
-            try {
-              setRefreshing(true)
-              // Simple refetch by navigating to same route to re-trigger fetch effect
-              router.refresh()
-            } finally {
-              setTimeout(() => setRefreshing(false), 350)
-            }
-          }}
-          className="inline-flex items-center gap-2 rounded-full border-2 border-black px-3 py-1 text-sm font-medium"
-          aria-busy={refreshing}
-        >
-          <span className={`h-3 w-3 rounded-full border-2 border-black border-t-transparent ${refreshing ? 'animate-spin' : ''}`}></span>
-          Refresh
-        </button>
-      </div>
-
       <ul className="bg-white rounded-2xl border-2 border-gray-200 divide-y divide-gray-200">
         {cartItems.map((item) => {
           const isOut = (item.product.stockQuantity ?? 0) === 0
           const maxQty = item.product.stockQuantity && item.product.stockQuantity > 0 ? item.product.stockQuantity : undefined
 
-          const handleDecrease = () => {
+          const handleDecrease = async () => {
             const next = Math.max(1, item.quantity - 1)
-            if (next !== item.quantity) updateCartItem(item.id, next)
-          }
-          const handleIncrease = () => {
-            const next = item.quantity + 1
-            if (maxQty !== undefined) {
-              if (next <= maxQty) updateCartItem(item.id, next)
-            } else {
-              updateCartItem(item.id, next)
+            if (next !== item.quantity) {
+              setUpdating((prev) => ({ ...prev, [item.id]: true }))
+              try {
+                await updateCartItem(item.id, next)
+              } finally {
+                setUpdating((prev) => ({ ...prev, [item.id]: false }))
+              }
             }
           }
+          const handleIncrease = async () => {
+            const next = item.quantity + 1
+            const allowed = maxQty !== undefined ? next <= maxQty : true
+            if (allowed) {
+              setUpdating((prev) => ({ ...prev, [item.id]: true }))
+              try {
+                await updateCartItem(item.id, next)
+              } finally {
+                setUpdating((prev) => ({ ...prev, [item.id]: false }))
+              }
+            }
+          }
+
+          const isUpdating = !!updating[item.id]
+          const isBusy = isUpdating || removingId === item.id
 
           return (
             <li key={item.id} className="flex items-center gap-4 p-4">
@@ -138,13 +133,13 @@ export default function MobileCartPage() {
                   </span>
                 </div>
                 <div className="mt-3 flex items-center justify-between">
-                  <div className="inline-flex items-center rounded-full border-2 border-black overflow-hidden">
+                  <div className="relative inline-flex items-center rounded-full border-2 border-black overflow-hidden">
                     <button
                       type="button"
                       aria-label="Decrease quantity"
                       onClick={handleDecrease}
-                      disabled={isOut || item.quantity <= 1}
-                      className="px-3 py-1 text-black disabled:opacity-40"
+                      disabled={isOut || item.quantity <= 1 || isBusy}
+                      className="px-4 py-2 text-black disabled:opacity-40 transition-all active:translate-y-px focus:outline-none hover:bg-gray-100"
                     >
                       −
                     </button>
@@ -155,28 +150,54 @@ export default function MobileCartPage() {
                       min={1}
                       max={maxQty}
                       value={item.quantity}
-                      onChange={(e) => updateCartItem(item.id, Math.max(1, parseInt(e.target.value, 10) || 1))}
-                      className="w-12 text-center text-black bg-white border-l-2 border-r-2 border-black focus:outline-none"
-                      disabled={isOut}
+                      onChange={async (e) => {
+                        const nextVal = Math.max(1, parseInt(e.target.value, 10) || 1)
+                        setUpdating((prev) => ({ ...prev, [item.id]: true }))
+                        try {
+                          await updateCartItem(item.id, nextVal)
+                        } finally {
+                          setUpdating((prev) => ({ ...prev, [item.id]: false }))
+                        }
+                      }}
+                      className="w-14 text-center text-black bg-white border-l-2 border-r-2 border-black focus:outline-none"
+                      disabled={isOut || isBusy}
                     />
                     <button
                       type="button"
                       aria-label="Increase quantity"
                       onClick={handleIncrease}
-                      disabled={isOut || (maxQty !== undefined && item.quantity >= maxQty)}
-                      className="px-3 py-1 text-white bg-black disabled:opacity-40"
+                      disabled={isOut || (maxQty !== undefined && item.quantity >= maxQty) || isBusy}
+                      className="px-4 py-2 text-white bg-black disabled:opacity-40 transition-all active:translate-y-px focus:outline-none hover:bg-gray-900"
                     >
                       +
                     </button>
+                    {isUpdating && (
+                      <div className="absolute -right-8 top-1/2 -translate-y-1/2">
+                        <span className="h-4 w-4 rounded-full border-2 border-black border-t-transparent inline-block animate-spin" />
+                      </div>
+                    )}
                   </div>
                   <button
-                    onClick={() => removeFromCart(item.id)}
-                    className="ml-4 inline-flex items-center text-sm text-red-600 hover:text-red-700"
+                    onClick={async () => {
+                      setRemovingId(item.id)
+                      try {
+                        await removeFromCart(item.id)
+                      } finally {
+                        setRemovingId(null)
+                      }
+                    }}
+                    className="ml-4 inline-flex items-center gap-2 text-sm rounded-full border-2 border-black px-4 py-2 font-semibold text-black hover:bg-black hover:text-white active:translate-y-px transition-all disabled:opacity-50"
+                    disabled={isBusy}
+                    aria-label="Remove item"
                   >
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="h-5 w-5 mr-1">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m-7 0h8a1 1 0 001-1V5a1 1 0 00-1-1h-3.5l-1-1h-3l-1 1H6a1 1 0 00-1 1v1z" />
-                    </svg>
-                    Remove
+                    {removingId === item.id ? (
+                      <span className="h-4 w-4 rounded-full border-2 border-black border-t-transparent inline-block animate-spin" />
+                    ) : (
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="h-5 w-5">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m-7 0h8a1 1 0 001-1V5a1 1 0 00-1-1h-3.5l-1-1h-3l-1 1H6a1 1 0 00-1 1v1z" />
+                      </svg>
+                    )}
+                    <span className="sr-only">Remove</span>
                   </button>
                 </div>
               </div>
@@ -185,8 +206,8 @@ export default function MobileCartPage() {
         })}
       </ul>
 
-      {/* Sticky checkout bar */}
-      <div className="fixed bottom-0 left-0 right-0 border-t-2 border-gray-200 bg-white">
+      {/* Sticky checkout bar (positioned above mobile footer) */}
+      <div className="fixed left-0 right-0 border-t-2 border-gray-200 bg-white z-[1100]" style={{ bottom: '64px' }}>
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <div>
             <p className="text-xs text-gray-500">Subtotal</p>
@@ -196,7 +217,7 @@ export default function MobileCartPage() {
             href="/checkout"
             className="inline-flex items-center justify-center rounded-full bg-black text-white px-6 py-3 font-semibold"
           >
-            Checkout
+            Proceed to Checkout
           </Link>
         </div>
         <div style={{ height: 'env(safe-area-inset-bottom)' }} />
