@@ -25,6 +25,7 @@ interface CartContextValue {
   updateCartItem: (cartItemId: number, quantity: number) => Promise<boolean>
   removeFromCart: (cartItemId: number) => Promise<void>
   clearCart: () => void
+  cartLoading: boolean
 }
 
 const CartContext = createContext<CartContextValue | undefined>(undefined)
@@ -33,15 +34,18 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const { token } = useAuth()
   const [cartItems, setCartItems] = useState<CartItem[]>([])
   const { addNotification } = useNotificationContext()
+  const [cartLoading, setCartLoading] = useState<boolean>(false)
 
   // Whenever token changes (login/logout), fetch or clear cart
   useEffect(() => {
     if (!token) {
       setCartItems([])
+      setCartLoading(false)
       return
     }
     async function fetchCart() {
       try {
+        setCartLoading(true)
         const res = await fetch('/api/cart', {
           headers: { Authorization: `Bearer ${token}` },
         })
@@ -51,6 +55,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       } catch (err) {
         console.error(err)
         setCartItems([])
+      } finally {
+        setCartLoading(false)
       }
     }
     fetchCart()
@@ -263,6 +269,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         updateCartItem,
         removeFromCart,
         clearCart,
+        cartLoading,
       }}
     >
       {children}
