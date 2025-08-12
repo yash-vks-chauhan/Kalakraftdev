@@ -7,6 +7,32 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 
+// Error boundary must be defined before use
+class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { error: any }> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props)
+    this.state = { error: null }
+  }
+  static getDerivedStateFromError(error: any) {
+    return { error }
+  }
+  componentDidCatch(error: any, info: any) {
+    console.error('Cart mobile error:', error, info)
+  }
+  render() {
+    if (this.state.error) {
+      const message = (this.state.error?.message || this.state.error?.toString?.() || 'Unknown error') as string
+      return (
+        <div className="p-4 text-sm">
+          <h2 className="font-semibold mb-2">Something went wrong.</h2>
+          <pre className="whitespace-pre-wrap break-words p-3 bg-gray-50 border rounded">{message}</pre>
+        </div>
+      )
+    }
+    return this.props.children
+  }
+}
+
 export default function MobileCartPage() {
   const { user } = useAuth()
   const router = useRouter()
@@ -353,30 +379,4 @@ export default function MobileCartPage() {
     </main>
     </ErrorBoundary>
   )
-}
-
-
-class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { error: any }> {
-  constructor(props: { children: React.ReactNode }) {
-    super(props)
-    this.state = { error: null }
-  }
-  static getDerivedStateFromError(error: any) {
-    return { error }
-  }
-  componentDidCatch(error: any, info: any) {
-    console.error('Cart mobile error:', error, info)
-  }
-  render() {
-    if (this.state.error) {
-      const message = (this.state.error?.message || this.state.error?.toString?.() || 'Unknown error') as string
-      return (
-        <div className="p-4 text-sm">
-          <h2 className="font-semibold mb-2">Something went wrong.</h2>
-          <pre className="whitespace-pre-wrap break-words p-3 bg-gray-50 border rounded">{message}</pre>
-        </div>
-      )
-    }
-    return this.props.children
-  }
 }
