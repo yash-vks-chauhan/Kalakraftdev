@@ -1171,8 +1171,10 @@ useEffect(() => {
         fallbackImage.style.display = 'block';
       });
       
-      // Force reload the video
-      videoElement.load();
+      // Force reload the video (guard for environments without load())
+      if (typeof (videoElement as any).load === 'function') {
+        videoElement.load();
+      }
     }
   };
   

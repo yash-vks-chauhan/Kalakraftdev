@@ -230,8 +230,10 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
           if (fallbackImage) fallbackImage.style.display = 'block';
         });
         
-        // Force reload the video
-        videoElement.load();
+        // Force reload the video (guard on some browsers)
+        if (typeof (videoElement as any).load === 'function') {
+          videoElement.load();
+        }
       }
     };
     
