@@ -39,6 +39,7 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
   const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false)
   const accountDropdownRef = useRef<HTMLDivElement>(null)
   const [productName, setProductName] = useState<string>('')
+  const [isRouteLoading, setIsRouteLoading] = useState(false)
 
   // For handling the mobile/desktop view toggle
   const [viewMode, setViewMode] = useState<'mobile' | 'desktop'>('mobile')
@@ -253,6 +254,7 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
   }
 
   const handleCartClick = () => {
+    setIsRouteLoading(true)
     router.push('/cart/mobile');
     // Close mobile menu if it's open
     if (isMobileMenuOpen) {
@@ -637,6 +639,11 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
     console.log('Current path:', pathname);
     console.log('Is product page:', isProductPage);
     console.log('Is transparent navbar:', isTransparentNavbar);
+    // Clear loading overlay shortly after route change
+    if (isRouteLoading) {
+      const t = setTimeout(() => setIsRouteLoading(false), 300)
+      return () => clearTimeout(t)
+    }
   }, [pathname, isProductPage, isTransparentNavbar]);
 
   // Handle back button click
@@ -671,6 +678,15 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
 
   return (
     <div className={`${styles.mobileLayoutContainer} ${isProductPage ? styles.productPageContainer : ''}`}>
+      {/* Global loading overlay for navigation actions */}
+      {isRouteLoading && (
+        <div className="fixed inset-0 z-[1000] bg-white/90 backdrop-blur-sm flex items-center justify-center">
+          <div className="flex items-center gap-3 text-black">
+            <span className="h-5 w-5 rounded-full border-2 border-black border-t-transparent animate-spin"></span>
+            <span className="text-sm font-medium tracking-wide">Loading…</span>
+          </div>
+        </div>
+      )}
       {/* Backdrop for account dropdown */}
       {isAccountDropdownOpen && (
         <div className={styles.mobileBackdrop} onClick={() => setIsAccountDropdownOpen(false)}></div>

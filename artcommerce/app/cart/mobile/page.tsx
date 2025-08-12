@@ -12,6 +12,7 @@ export default function MobileCartPage() {
   const router = useRouter()
   const { cartItems, updateCartItem, removeFromCart } = useCart()
   const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
 
   useEffect(() => {
     if (!user) {
@@ -22,7 +23,18 @@ export default function MobileCartPage() {
   }, [user, router])
 
   if (!user) return null
-  if (loading) return <p className="text-center mt-8">Loading your cart…</p>
+  if (loading) {
+    return (
+      <main className="container mx-auto px-4 pt-20 pb-28">
+        <div className="flex items-center justify-center">
+          <div className="flex items-center gap-3 text-black">
+            <span className="h-5 w-5 rounded-full border-2 border-black border-t-transparent animate-spin"></span>
+            <span className="text-sm font-medium tracking-wide">Loading your cart…</span>
+          </div>
+        </div>
+      </main>
+    )
+  }
 
   if (cartItems.length === 0) {
     return (
@@ -55,6 +67,26 @@ export default function MobileCartPage() {
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-900 mb-1">Your Cart</h1>
         <p className="text-gray-600 text-base">Review and manage your selected items</p>
+      </div>
+
+      {/* Pull to refresh / manual refresh */}
+      <div className="mb-3 flex items-center gap-2">
+        <button
+          onClick={async () => {
+            try {
+              setRefreshing(true)
+              // Simple refetch by navigating to same route to re-trigger fetch effect
+              router.refresh()
+            } finally {
+              setTimeout(() => setRefreshing(false), 350)
+            }
+          }}
+          className="inline-flex items-center gap-2 rounded-full border-2 border-black px-3 py-1 text-sm font-medium"
+          aria-busy={refreshing}
+        >
+          <span className={`h-3 w-3 rounded-full border-2 border-black border-t-transparent ${refreshing ? 'animate-spin' : ''}`}></span>
+          Refresh
+        </button>
       </div>
 
       <ul className="bg-white rounded-2xl border-2 border-gray-200 divide-y divide-gray-200">
