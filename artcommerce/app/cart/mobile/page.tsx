@@ -1,11 +1,8 @@
-import dynamic from 'next/dynamic'
-import React from 'react'
+'use client'
 
-const SafeMobileCart = dynamic(() => import('./MobileCartClient'), {
-  ssr: false,
-  loading: () => <main className="p-4 text-sm">Loading cart…</main>,
-})
+import React from 'react'
+import MobileCartClient from './MobileCartClient'
 
 export default function MobileCartPage() {
-  return <SafeMobileCart />
+  return <MobileCartClient />
 }
