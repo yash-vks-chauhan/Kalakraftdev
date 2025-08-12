@@ -174,3 +174,11 @@ body:has(> div > main[data-page="home"]) {
 .animate-poofOut {
   animation: poofOut 0.4s ease-in forwards;
 }
+
+/* Utility: two-line clamp for titles on mobile */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
