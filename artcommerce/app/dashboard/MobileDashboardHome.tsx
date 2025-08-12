@@ -348,7 +348,7 @@ export default function MobileDashboardHome() {
           </Link>
         </li>
         <li>
-          <Link href="/dashboard/cart" className={styles.menuItem}>
+         <Link href="/cart/mobile" className={styles.menuItem}>
             <div className={styles.menuIcon}>
               <ShoppingCart size={18} />
             </div>
