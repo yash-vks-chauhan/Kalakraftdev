@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useCart } from '../../contexts/CartContext'
 import { useAuth } from '../../contexts/AuthContext'
 import { useRouter } from 'next/navigation'
@@ -82,6 +82,7 @@ export default function MobileCartPage() {
   const total = useMemo(() => Math.max(0, subtotal - discountAmount + estimatedShipping + taxes), [subtotal, discountAmount, taxes])
 
   return (
+    <ErrorBoundary>
     <main className="container mx-auto px-4 pt-4 pb-28" data-testid="mobile-cart-page">
       <div className="mb-4">
         <h1 className="text-3xl font-bold text-gray-900 leading-tight">Your Cart</h1>
@@ -350,7 +351,32 @@ export default function MobileCartPage() {
         </div>
       )}
     </main>
+    </ErrorBoundary>
   )
 }
 
 
+class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { error: any }> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props)
+    this.state = { error: null }
+  }
+  static getDerivedStateFromError(error: any) {
+    return { error }
+  }
+  componentDidCatch(error: any, info: any) {
+    console.error('Cart mobile error:', error, info)
+  }
+  render() {
+    if (this.state.error) {
+      const message = (this.state.error?.message || this.state.error?.toString?.() || 'Unknown error') as string
+      return (
+        <div className="p-4 text-sm">
+          <h2 className="font-semibold mb-2">Something went wrong.</h2>
+          <pre className="whitespace-pre-wrap break-words p-3 bg-gray-50 border rounded">{message}</pre>
+        </div>
+      )
+    }
+    return this.props.children
+  }
+}
