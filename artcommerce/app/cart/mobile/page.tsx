@@ -72,8 +72,11 @@ export default function MobileCartPage() {
 
       <ul className="bg-white rounded-2xl border-2 border-gray-200 divide-y divide-gray-200">
         {cartItems.map((item) => {
-          const isOut = (item.product.stockQuantity ?? 0) === 0
-          const maxQty = item.product.stockQuantity && item.product.stockQuantity > 0 ? item.product.stockQuantity : undefined
+          const hasStockInfo = typeof item.product.stockQuantity === 'number'
+          const isOut = hasStockInfo ? (item.product.stockQuantity as number) <= 0 : false
+          const maxQty = hasStockInfo && (item.product.stockQuantity as number) > 0
+            ? (item.product.stockQuantity as number)
+            : undefined
 
           const handleDecrease = async () => {
             const next = Math.max(1, item.quantity - 1)
@@ -128,18 +131,25 @@ export default function MobileCartPage() {
                 </Link>
                 <div className="mt-1 flex items-center justify-between">
                   <span className="text-sm font-medium text-gray-900">₹{item.product.price.toFixed(2)}</span>
-                  <span className={`text-xs ${isOut ? 'text-red-600' : 'text-gray-500'}`}>
-                    {isOut ? 'Out of stock' : 'In stock'}
-                  </span>
+                  {hasStockInfo && (
+                    <span className={`text-xs ${isOut ? 'text-red-600' : 'text-gray-500'}`}>
+                      {isOut ? 'Out of stock' : 'In stock'}
+                    </span>
+                  )}
                 </div>
                 <div className="mt-3 flex items-center justify-between">
-                  <div className="relative inline-flex items-center rounded-full border-2 border-black overflow-hidden">
+                  {isOut ? (
+                    <span className="inline-flex items-center rounded-full border-2 border-red-600 text-red-600 px-3 py-2 text-xs font-semibold select-none">
+                      Out of stock
+                    </span>
+                  ) : (
+                  <div className="relative inline-flex items-center rounded-full border-2 border-black overflow-hidden shadow-sm">
                     <button
                       type="button"
                       aria-label="Decrease quantity"
                       onClick={handleDecrease}
                       disabled={isOut || item.quantity <= 1 || isBusy}
-                      className="px-4 py-2 text-black disabled:opacity-40 transition-all active:translate-y-px focus:outline-none hover:bg-gray-100"
+                      className="px-5 py-2 text-black disabled:opacity-40 transition-all active:translate-y-0.5 active:scale-95 focus:outline-none hover:bg-gray-100 ring-offset-1 active:ring-2 active:ring-black"
                     >
                       −
                     </button>
@@ -159,7 +169,7 @@ export default function MobileCartPage() {
                           setUpdating((prev) => ({ ...prev, [item.id]: false }))
                         }
                       }}
-                      className="w-14 text-center text-black bg-white border-l-2 border-r-2 border-black focus:outline-none"
+                      className="w-16 text-center text-black bg-white border-l-2 border-r-2 border-black focus:outline-none"
                       disabled={isOut || isBusy}
                     />
                     <button
@@ -167,7 +177,7 @@ export default function MobileCartPage() {
                       aria-label="Increase quantity"
                       onClick={handleIncrease}
                       disabled={isOut || (maxQty !== undefined && item.quantity >= maxQty) || isBusy}
-                      className="px-4 py-2 text-white bg-black disabled:opacity-40 transition-all active:translate-y-px focus:outline-none hover:bg-gray-900"
+                      className="px-5 py-2 text-white bg-black disabled:opacity-40 transition-all active:translate-y-0.5 active:scale-95 focus:outline-none hover:bg-black/90 ring-offset-1 active:ring-2 active:ring-black"
                     >
                       +
                     </button>
@@ -177,6 +187,7 @@ export default function MobileCartPage() {
                       </div>
                     )}
                   </div>
+                  )}
                   <button
                     onClick={async () => {
                       setRemovingId(item.id)
