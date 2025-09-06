@@ -38,7 +38,7 @@ export default function RootLayout({
             z-index: var(--cosmos-z-index);
           }
         `}</style>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover, shrink-to-fit=no" />
         <link id="favicon" rel="icon" href={getImageUrl('logo.png')} />
         <link
           rel="apple-touch-icon"

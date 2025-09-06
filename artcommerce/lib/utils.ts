@@ -13,16 +13,32 @@ export function isMobileDevice(): boolean {
   // Check user agent for common mobile device identifiers
   const userAgent = window.navigator.userAgent.toLowerCase();
   
-  // Check for mobile devices including iPad
-  const isMobileUserAgent = /android|webos|iphone|ipad|ipod|blackberry|windows phone/.test(userAgent);
+  // Check for mobile devices (phones and small tablets)
+  const isMobileUserAgent = /android|webos|iphone|ipod|blackberry|windows phone/.test(userAgent);
   
-  // Check for touch device (helps identify tablets)
+  // Check for iPad specifically
+  const isIPad = /ipad/.test(userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  
+  // Check for touch device
   const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
   
-  // Use 1024px as the breakpoint to include iPads and smaller tablets
-  const isMobileScreenSize = window.innerWidth <= 1024;
+  // Use 768px as the breakpoint for mobile devices (excluding large tablets)
+  const isMobileScreenSize = window.innerWidth <= 768;
   
-  return isMobileUserAgent || (isTouchDevice && isMobileScreenSize);
+  // Use 1024px for tablets (including iPad)
+  const isTabletScreenSize = window.innerWidth <= 1024 && window.innerWidth > 768;
+  
+  // Mobile: phones and small screens
+  if (isMobileUserAgent || isMobileScreenSize) {
+    return true;
+  }
+  
+  // Tablet: iPad and other tablets should be treated as mobile for UI purposes
+  if (isIPad || (isTouchDevice && isTabletScreenSize)) {
+    return true;
+  }
+  
+  return false;
 }
 
 export function useIsMobile(): boolean {
