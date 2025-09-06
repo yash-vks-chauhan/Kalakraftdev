@@ -80,7 +80,7 @@ export default function ProductsClient() {
     checkMobile()
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
-  }, [])
+  }, [isSidebarOpen])
   
   // Ensure sidebar toggle button position updates correctly
   useEffect(() => {

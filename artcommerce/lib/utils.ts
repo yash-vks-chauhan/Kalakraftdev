@@ -10,35 +10,41 @@ export function isMobileDevice(): boolean {
     return false;
   }
   
-  // Check user agent for common mobile device identifiers
-  const userAgent = window.navigator.userAgent.toLowerCase();
-  
-  // Check for mobile devices (phones and small tablets)
-  const isMobileUserAgent = /android|webos|iphone|ipod|blackberry|windows phone/.test(userAgent);
-  
-  // Check for iPad specifically
-  const isIPad = /ipad/.test(userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-  
-  // Check for touch device
-  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-  
-  // Use 768px as the breakpoint for mobile devices (excluding large tablets)
-  const isMobileScreenSize = window.innerWidth <= 768;
-  
-  // Use 1024px for tablets (including iPad)
-  const isTabletScreenSize = window.innerWidth <= 1024 && window.innerWidth > 768;
-  
-  // Mobile: phones and small screens
-  if (isMobileUserAgent || isMobileScreenSize) {
-    return true;
+  try {
+    // Check user agent for common mobile device identifiers
+    const userAgent = window.navigator.userAgent.toLowerCase();
+    
+    // Check for mobile devices (phones and small tablets)
+    const isMobileUserAgent = /android|webos|iphone|ipod|blackberry|windows phone/.test(userAgent);
+    
+    // Check for iPad specifically
+    const isIPad = /ipad/.test(userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    
+    // Check for touch device
+    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    
+    // Use 768px as the breakpoint for mobile devices (excluding large tablets)
+    const isMobileScreenSize = window.innerWidth <= 768;
+    
+    // Use 1024px for tablets (including iPad)
+    const isTabletScreenSize = window.innerWidth <= 1024 && window.innerWidth > 768;
+    
+    // Mobile: phones and small screens
+    if (isMobileUserAgent || isMobileScreenSize) {
+      return true;
+    }
+    
+    // Tablet: iPad and other tablets should be treated as mobile for UI purposes
+    if (isIPad || (isTouchDevice && isTabletScreenSize)) {
+      return true;
+    }
+    
+    return false;
+  } catch (error) {
+    console.error('Error in isMobileDevice:', error);
+    // Fallback to basic screen size check
+    return window.innerWidth <= 1024;
   }
-  
-  // Tablet: iPad and other tablets should be treated as mobile for UI purposes
-  if (isIPad || (isTouchDevice && isTabletScreenSize)) {
-    return true;
-  }
-  
-  return false;
 }
 
 export function useIsMobile(): boolean {

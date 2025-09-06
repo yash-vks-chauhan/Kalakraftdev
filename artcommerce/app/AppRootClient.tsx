@@ -30,22 +30,29 @@ export default function AppRootClient({ children }: { children: React.ReactNode 
   // Check if device is mobile on client side
   useEffect(() => {
     const checkMobile = () => {
-      // Check if user has a preference saved
-      const savedViewPreference = localStorage.getItem('viewPreference');
-      if (!isMobileOnlyRoute && savedViewPreference === 'desktop') {
-        setForceDesktopView(true);
-        return;
-      }
-      
-      // Use the utility function for mobile detection
-      const mobileDetected = isMobileDevice();
-      setIsMobile(mobileDetected);
-      setIsSmallScreen(window.innerWidth <= 1024);
-      
-      // If mobile detected but desktop preference exists, clear it
-      if (mobileDetected && savedViewPreference === 'desktop') {
-        localStorage.removeItem('viewPreference');
-        setForceDesktopView(false);
+      try {
+        // Check if user has a preference saved
+        const savedViewPreference = localStorage.getItem('viewPreference');
+        if (!isMobileOnlyRoute && savedViewPreference === 'desktop') {
+          setForceDesktopView(true);
+          return;
+        }
+        
+        // Use the utility function for mobile detection
+        const mobileDetected = isMobileDevice();
+        setIsMobile(mobileDetected);
+        setIsSmallScreen(window.innerWidth <= 1024);
+        
+        // If mobile detected but desktop preference exists, clear it
+        if (mobileDetected && savedViewPreference === 'desktop') {
+          localStorage.removeItem('viewPreference');
+          setForceDesktopView(false);
+        }
+      } catch (error) {
+        console.error('Error in mobile detection:', error);
+        // Fallback to basic detection
+        setIsMobile(window.innerWidth <= 1024);
+        setIsSmallScreen(window.innerWidth <= 1024);
       }
     };
     
@@ -55,7 +62,7 @@ export default function AppRootClient({ children }: { children: React.ReactNode 
     return () => {
       window.removeEventListener('resize', checkMobile);
     };
-  }, []);
+  }, [isMobileOnlyRoute]);
 
   // Global client-side error catcher (helps on mobile when app error screen hides details)
   useEffect(() => {

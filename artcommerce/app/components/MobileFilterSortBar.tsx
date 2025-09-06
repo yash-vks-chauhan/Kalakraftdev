@@ -26,11 +26,8 @@ export default function MobileFilterSortBar({
   onSortSelect
 }: MobileFilterSortBarProps) {
   const [isSticky, setIsSticky] = useState(false)
-  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    setMounted(true)
-    
     const handleScroll = () => {
       const scrollTop = window.scrollY
       // Start sticking when scrolled past 100px (navbar height)
@@ -40,26 +37,6 @@ export default function MobileFilterSortBar({
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
-
-  // Prevent hydration mismatch
-  if (!mounted) {
-    return (
-      <div className={styles.filterSortBar}>
-        <div className={styles.barContent}>
-          <button className={styles.sortButton} disabled>
-            <span className={styles.buttonIcon}>☰</span>
-            <span className={styles.buttonText}>Sort By: {currentSort}</span>
-            <FiChevronDown className={styles.chevron} />
-          </button>
-          
-          <button className={styles.filterButton} disabled>
-            <FiFilter className={styles.buttonIcon} />
-            <span className={styles.buttonText}>Filters</span>
-          </button>
-        </div>
-      </div>
-    )
-  }
 
   return (
     <>
