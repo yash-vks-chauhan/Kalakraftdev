@@ -626,10 +626,12 @@
   transition: opacity 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   will-change: opacity;
   transform: translateZ(0);
+  pointer-events: none;
 }
 
 .mobileFilterOverlayVisible {
   opacity: 1;
+  pointer-events: auto;
 }
 
 .sortOverlay {
@@ -643,10 +645,12 @@
   z-index: 1001;
   opacity: 0;
   transition: opacity 0.3s ease;
+  pointer-events: none;
 }
 
 .sortOverlayVisible {
   opacity: 1;
+  pointer-events: auto;
 }
 
 .sortModal {
