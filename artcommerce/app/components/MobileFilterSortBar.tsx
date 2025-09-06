@@ -8,22 +8,12 @@ interface MobileFilterSortBarProps {
   onFilterClick: () => void
   onSortClick: () => void
   currentSort: string
-  isFilterOpen: boolean
-  isSortOpen: boolean
-  onCloseFilter: () => void
-  onCloseSort: () => void
-  onSortSelect: (sortValue: string) => void
 }
 
 export default function MobileFilterSortBar({
   onFilterClick,
   onSortClick,
-  currentSort,
-  isFilterOpen,
-  isSortOpen,
-  onCloseFilter,
-  onCloseSort,
-  onSortSelect
+  currentSort
 }: MobileFilterSortBarProps) {
   const [isSticky, setIsSticky] = useState(false)
 
@@ -43,7 +33,7 @@ export default function MobileFilterSortBar({
       <div className={`${styles.filterSortBar} ${isSticky ? styles.sticky : ''}`}>
         <div className={styles.barContent}>
           <button 
-            className={`${styles.sortButton} ${isSortOpen ? styles.active : ''}`}
+            className={`${styles.sortButton}`}
             onClick={onSortClick}
           >
             <span className={styles.buttonIcon}>☰</span>
@@ -52,7 +42,7 @@ export default function MobileFilterSortBar({
           </button>
           
           <button 
-            className={`${styles.filterButton} ${isFilterOpen ? styles.active : ''}`}
+            className={`${styles.filterButton}`}
             onClick={onFilterClick}
           >
             <FiFilter className={styles.buttonIcon} />
@@ -60,40 +50,6 @@ export default function MobileFilterSortBar({
           </button>
         </div>
       </div>
-
-      {/* Sort Dropdown */}
-      {isSortOpen && (
-        <div className={styles.dropdownOverlay} onClick={onCloseSort}>
-          <div className={styles.sortDropdown} onClick={(e) => e.stopPropagation()}>
-            <div className={styles.dropdownHeader}>
-              <h3>Sort By</h3>
-              <button className={styles.closeButton} onClick={onCloseSort}>
-                <FiX size={20} />
-              </button>
-            </div>
-            <div className={styles.sortOptions}>
-              <button className={styles.sortOption} onClick={() => onSortSelect('')}>
-                Recommended
-              </button>
-              <button className={styles.sortOption} onClick={() => onSortSelect('price-asc')}>
-                Price: Low to High
-              </button>
-              <button className={styles.sortOption} onClick={() => onSortSelect('price-desc')}>
-                Price: High to Low
-              </button>
-              <button className={styles.sortOption} onClick={() => onSortSelect('newest')}>
-                Newest First
-              </button>
-              <button className={styles.sortOption} onClick={() => onSortSelect('oldest')}>
-                Oldest First
-              </button>
-              <button className={styles.sortOption} onClick={() => onSortSelect('rating-desc')}>
-                Rating: High to Low
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   )
 }

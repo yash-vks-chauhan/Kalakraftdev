@@ -534,30 +534,26 @@
 /* Optimized mobile filter drawer */
 .mobileFilterDrawer {
   position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 90vh;
-  max-height: 90vh;
+  top: 0;
+  right: 0;
+  width: 85%;
+  max-width: 350px;
+  height: 100vh;
   background: white;
   z-index: 1000;
-  transform: translateY(100%) translateZ(0);
-  /* Smoother drawer animation */
+  transform: translateX(100%) translateZ(0);
   transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
-  border-top-left-radius: 16px;
-  border-top-right-radius: 16px;
-  /* Optimize drawer performance */
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.1);
   will-change: transform;
   contain: layout style paint;
 }
 
 .mobileFilterDrawerOpen {
-  transform: translateY(0) translateZ(0);
+  transform: translateX(0) translateZ(0);
 }
 
 .mobileFilterHeader {
@@ -625,17 +621,103 @@
   height: 100vh;
   background: rgba(0, 0, 0, 0.4);
   z-index: 999;
-  backdrop-filter: blur(2px);
+  backdrop-filter: blur(4px);
   opacity: 0;
-  /* Smoother overlay transition */
   transition: opacity 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   will-change: opacity;
-  /* Optimize overlay performance */
   transform: translateZ(0);
 }
 
 .mobileFilterOverlayVisible {
   opacity: 1;
+}
+
+.sortOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  z-index: 1001;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.sortOverlayVisible {
+  opacity: 1;
+}
+
+.sortModal {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: white;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  padding: 16px;
+  z-index: 1002;
+  transform: translateY(100%);
+  transition: transform 0.3s ease;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+}
+
+.sortModalVisible {
+  transform: translateY(0);
+}
+
+.sortHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.sortHeader h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.closeSortButton {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.sortOptions {
+  display: flex;
+  flex-direction: column;
+}
+
+.sortOption {
+  padding: 16px 8px;
+  border: none;
+  background: none;
+  text-align: left;
+  font-size: 1rem;
+  cursor: pointer;
+  border-bottom: 1px solid #f0f0f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sortOption:last-child {
+  border-bottom: none;
+}
+
+.sortOption.active {
+  font-weight: 600;
+  color: #000;
+}
+
+.sortOption.active::after {
+  content: '✔';
+  color: #000;
 }
 
 .mobileActiveFilters {

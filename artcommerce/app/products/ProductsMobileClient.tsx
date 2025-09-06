@@ -679,11 +679,6 @@ export default function ProductsMobileClient() {
         onFilterClick={() => setIsMobileFilterOpen(true)}
         onSortClick={() => setIsSortOpen(true)}
         currentSort={getCurrentSortName()}
-        isFilterOpen={isMobileFilterOpen}
-        isSortOpen={isSortOpen}
-        onCloseFilter={() => setIsMobileFilterOpen(false)}
-        onCloseSort={() => setIsSortOpen(false)}
-        onSortSelect={handleSortSelect}
       />
       
       {/* Active filters display */}
@@ -772,9 +767,16 @@ export default function ProductsMobileClient() {
       )}
 
       {/* Mobile Filter Drawer */}
-      {isMobileFilterOpen && (
-        <div className={styles.mobileFilterOverlay} onClick={() => setIsMobileFilterOpen(false)}>
-          <div className={styles.mobileFilterDrawer} onClick={(e) => e.stopPropagation()}>
+      <div 
+        className={`${styles.mobileFilterOverlay} ${isMobileFilterOpen ? styles.mobileFilterOverlayVisible : ''}`}
+        onClick={() => setIsMobileFilterOpen(false)}
+      />
+      <div 
+        className={`${styles.mobileFilterDrawer} ${isMobileFilterOpen ? styles.mobileFilterDrawerOpen : ''}`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {isMobileFilterOpen && (
+          <>
             <div className={styles.mobileFilterHeader}>
               <h2>Filter Products</h2>
               <button 
@@ -787,10 +789,49 @@ export default function ProductsMobileClient() {
             <div className={styles.mobileFilterContent}>
               {renderFilters()}
             </div>
-          </div>
-        </div>
-      )}
+          </>
+        )}
+      </div>
       
+      {/* Sort Bottom Sheet */}
+      <div 
+        className={`${styles.sortOverlay} ${isSortOpen ? styles.sortOverlayVisible : ''}`}
+        onClick={() => setIsSortOpen(false)}
+      />
+      <div className={`${styles.sortModal} ${isSortOpen ? styles.sortModalVisible : ''}`}>
+        <div className={styles.sortHeader}>
+          <h3>SORT BY</h3>
+          <button onClick={() => setIsSortOpen(false)} className={styles.closeSortButton}>
+            <FiX />
+          </button>
+        </div>
+        <div className={styles.sortOptions}>
+          <button 
+            className={`${styles.sortOption} ${sortOrder === '' ? styles.active : ''}`}
+            onClick={() => handleSortSelect('')}
+          >
+            Recommended
+          </button>
+          <button 
+            className={`${styles.sortOption} ${sortOrder === 'newest' ? styles.active : ''}`}
+            onClick={() => handleSortSelect('newest')}
+          >
+            Newest
+          </button>
+          <button 
+            className={`${styles.sortOption} ${sortOrder === 'price-desc' ? styles.active : ''}`}
+            onClick={() => handleSortSelect('price-desc')}
+          >
+            Price High to Low
+          </button>
+          <button 
+            className={`${styles.sortOption} ${sortOrder === 'price-asc' ? styles.active : ''}`}
+            onClick={() => handleSortSelect('price-asc')}
+          >
+            Price Low to High
+          </button>
+        </div>
+      </div>
     </div>
   );
 } 
