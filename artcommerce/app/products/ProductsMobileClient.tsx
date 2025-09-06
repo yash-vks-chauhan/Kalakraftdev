@@ -478,13 +478,6 @@ export default function ProductsMobileClient() {
                 {cat.name}
               </label>
             ))}
-            {currentCategory && (
-              <button className={styles.clearButton} onClick={() => {
-                const qs = new URLSearchParams(searchParams.toString())
-                qs.delete('category');
-                router.replace(qs.toString() ? `/products?${qs}` : '/products')
-              }}>Clear</button>
-            )}
           </div>
         </details>
 
@@ -526,14 +519,6 @@ export default function ProductsMobileClient() {
                 {thr}+ stars
               </label>
             ))}
-            {ratingMin && (
-              <button className={styles.clearButton} onClick={() => {
-                setRatingMin('')
-                const qs = new URLSearchParams(searchParams.toString())
-                qs.delete('ratingMin')
-                router.replace(qs.toString()?`/products?${qs}`:'/products')
-              }}>Clear</button>
-            )}
           </div>
         </details>
 
@@ -715,6 +700,25 @@ export default function ProductsMobileClient() {
             <div className={styles.mobileFilterContent}>
               {renderFilters()}
             </div>
+            <div className={styles.mobileFilterActions}>
+              <button 
+                className={styles.clearFilterButton}
+                onClick={() => {
+                  // Clear all filters
+                  const qs = new URLSearchParams()
+                  router.replace('/products')
+                  setIsMobileFilterOpen(false)
+                }}
+              >
+                Clear All
+              </button>
+              <button 
+                className={styles.applyFilterButton}
+                onClick={() => setIsMobileFilterOpen(false)}
+              >
+                Apply
+              </button>
+            </div>
           </>
         )}
       </div>
@@ -765,7 +769,7 @@ export default function ProductsMobileClient() {
         onClick={() => setIsSortOpen(false)} 
         className={`${styles.closeSortButton} ${isSortOpen ? styles.visible : ''}`}
       >
-        <FiX size={20} />
+        <FiX size={24} />
       </button>
     </div>
   );
