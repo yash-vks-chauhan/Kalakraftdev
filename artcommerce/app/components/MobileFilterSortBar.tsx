@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { FiFilter, FiChevronDown, FiX, FiArrowUpDown } from 'react-icons/fi'
+import { FiFilter, FiChevronDown, FiX, FiBarChart2 } from 'react-icons/fi'
 import styles from './MobileFilterSortBar.module.css'
 
 interface MobileFilterSortBarProps {
@@ -36,7 +36,7 @@ export default function MobileFilterSortBar({
             className={`${styles.sortButton}`}
             onClick={onSortClick}
           >
-            <FiArrowUpDown className={styles.buttonIcon} />
+            <FiBarChart2 className={styles.buttonIcon} />
             <span className={styles.buttonText}>{currentSort}</span>
             <FiChevronDown className={styles.chevron} />
           </button>
