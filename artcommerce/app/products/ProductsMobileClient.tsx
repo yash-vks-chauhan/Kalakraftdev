@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import styles from './productsMobile.module.css'
 import WishlistButton from '../components/WishlistButton'
+import MobileFilterSortBar from '../components/MobileFilterSortBar'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { FiFilter, FiX, FiChevronRight, FiStar, FiPackage, FiTrendingUp, FiGrid, FiHeart } from 'react-icons/fi'
 
@@ -298,6 +299,7 @@ export default function ProductsMobileClient() {
   const [inStockOnly, setInStockOnly] = useState(inStockOnlyParam)
   const [ratingMin, setRatingMin] = useState(ratingMinParam)
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false)
+  const [isSortOpen, setIsSortOpen] = useState(false)
   const [openSections, setOpenSections] = useState({
     category: true,
     rating: true,
@@ -310,6 +312,30 @@ export default function ProductsMobileClient() {
     if (!currentCategory) return 'All Products';
     const category = KNOWN_CATEGORIES.find(cat => cat.slug === currentCategory);
     return category ? category.name : 'Products';
+  };
+
+  // Get current sort display name
+  const getCurrentSortName = () => {
+    switch (sortOrder) {
+      case 'oldest': return 'Oldest';
+      case 'price-asc': return 'Price: Low to High';
+      case 'price-desc': return 'Price: High to Low';
+      case 'rating-desc': return 'Rating: High to Low';
+      default: return 'Recommended';
+    }
+  };
+
+  // Handle sort selection
+  const handleSortSelect = (sortValue: string) => {
+    setSortOrder(sortValue);
+    const qs = new URLSearchParams(searchParams.toString());
+    if (sortValue === '') {
+      qs.delete('sort');
+    } else {
+      qs.set('sort', sortValue);
+    }
+    router.replace(qs.toString() ? `/products?${qs}` : '/products');
+    setIsSortOpen(false);
   };
 
   // Toggle filter sections
@@ -647,6 +673,18 @@ export default function ProductsMobileClient() {
           <p className={styles.resultCount}>{products.length} products</p>
         )}
       </div>
+
+      {/* Sticky Filter/Sort Bar */}
+      <MobileFilterSortBar
+        onFilterClick={() => setIsMobileFilterOpen(true)}
+        onSortClick={() => setIsSortOpen(true)}
+        currentSort={getCurrentSortName()}
+        isFilterOpen={isMobileFilterOpen}
+        isSortOpen={isSortOpen}
+        onCloseFilter={() => setIsMobileFilterOpen(false)}
+        onCloseSort={() => setIsSortOpen(false)}
+        onSortSelect={handleSortSelect}
+      />
       
       {/* Active filters display */}
       {(currentCategory || currentTag || priceMin || priceMax || sortOrder || lowStockOnly || inStockOnly || ratingMin) && (
@@ -732,39 +770,27 @@ export default function ProductsMobileClient() {
           ))}
         </div>
       )}
-      
-      {/* Filter button */}
-      <button 
-        className={styles.mobileFilterButton}
-        onClick={() => setIsMobileFilterOpen(true)}
-      >
-        <FiFilter size={16} />
-        <span>Filter</span>
-      </button>
-      
+
       {/* Mobile Filter Drawer */}
-      <div className={`${styles.mobileFilterDrawer} ${isMobileFilterOpen ? styles.mobileFilterDrawerOpen : ''}`}>
-        <div className={styles.mobileFilterHeader}>
-          <h2>Filter Products</h2>
-          <button 
-            className={styles.mobileFilterCloseButton}
-            onClick={() => setIsMobileFilterOpen(false)}
-          >
-            <FiX size={20} />
-          </button>
-        </div>
-        <div className={styles.mobileFilterContent}>
-          {renderFilters()}
-        </div>
-      </div>
-      
-      {/* Mobile Filter Overlay */}
       {isMobileFilterOpen && (
-        <div 
-          className={`${styles.mobileFilterOverlay} ${isMobileFilterOpen ? styles.mobileFilterOverlayVisible : ''}`}
-          onClick={() => setIsMobileFilterOpen(false)}
-        />
+        <div className={styles.mobileFilterOverlay} onClick={() => setIsMobileFilterOpen(false)}>
+          <div className={styles.mobileFilterDrawer} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.mobileFilterHeader}>
+              <h2>Filter Products</h2>
+              <button 
+                className={styles.mobileFilterCloseButton}
+                onClick={() => setIsMobileFilterOpen(false)}
+              >
+                <FiX size={20} />
+              </button>
+            </div>
+            <div className={styles.mobileFilterContent}>
+              {renderFilters()}
+            </div>
+          </div>
+        </div>
       )}
+      
     </div>
   );
 } 

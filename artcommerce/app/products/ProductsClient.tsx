@@ -506,16 +506,6 @@ export default function ProductsClient() {
         </aside>
       )}
 
-      {/* Mobile Filter Button */}
-      {isMobileView && (
-        <button 
-          className={styles.mobileFilterButton}
-          onClick={() => setIsMobileFilterOpen(true)}
-          aria-label="Open filters"
-        >
-          <FiFilter size={16} /> Filter
-        </button>
-      )}
 
       {/* Mobile Filter Drawer */}
       {isMobileView && (
