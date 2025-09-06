@@ -9,7 +9,6 @@ import Providers from './Providers'
 import { useMobileMenu } from './contexts/MobileMenuContext'
 import MobileMenuPanel from './components/MobileMenuPanel'
 import MobileLayout from './components/MobileLayout'
-import MobileDebugInfo from './components/MobileDebugInfo'
 import styles from './components/Navbar.module.css'
 import { isMobileDevice } from '../lib/utils'
 import { getImageUrl, getOptimizedImageUrl } from '../lib/cloudinaryImages'
@@ -169,29 +168,7 @@ export default function AppRootClient({ children }: { children: React.ReactNode 
         )}
         {!showDesktopView ? (
           // Mobile Layout
-          <>
-            <MobileLayout onSwitchToDesktop={switchToDesktopView}>{children}</MobileLayout>
-            {/* Desktop View Switch Button for mobile */}
-            <button 
-              onClick={switchToDesktopView}
-              aria-label="Switch to Desktop View"
-              style={{
-                position: 'fixed',
-                bottom: '20px',
-                right: '20px',
-                zIndex: 9999,
-                background: '#28a745',
-                color: 'white',
-                border: 'none',
-                padding: '10px 15px',
-                borderRadius: '5px',
-                cursor: 'pointer',
-                fontSize: '14px'
-              }}
-            >
-              Switch to Desktop View
-            </button>
-          </>
+          <MobileLayout onSwitchToDesktop={switchToDesktopView}>{children}</MobileLayout>
         ) : (
           // Desktop Layout
           <>
@@ -222,30 +199,8 @@ export default function AppRootClient({ children }: { children: React.ReactNode 
               viewMode="desktop"
             />
             
-            {/* Mobile View Switch Button (show on all screens for testing) */}
-            <button 
-              onClick={switchToMobileView}
-              className={styles.switchToMobileButton}
-              aria-label="Switch to Mobile View"
-              style={{
-                position: 'fixed',
-                bottom: '20px',
-                left: '20px',
-                zIndex: 9999,
-                background: '#007bff',
-                color: 'white',
-                border: 'none',
-                padding: '10px 15px',
-                borderRadius: '5px',
-                cursor: 'pointer',
-                fontSize: '14px'
-              }}
-            >
-              Switch to Mobile View
-            </button>
           </>
         )}
-        <MobileDebugInfo />
       </Providers>
     </body>
   );
