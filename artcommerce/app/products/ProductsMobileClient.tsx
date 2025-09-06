@@ -307,6 +307,17 @@ export default function ProductsMobileClient() {
     sort: true
   });
   
+  // Temporary filter state for apply/cancel functionality
+  const [tempFilters, setTempFilters] = useState({
+    category: currentCategory,
+    tag: currentTag,
+    priceMin: priceMinParam,
+    priceMax: priceMaxParam,
+    ratingMin: ratingMinParam,
+    lowStock: lowStockParam,
+    inStock: inStockOnlyParam
+  });
+  
   // Get current category name for display
   const getCurrentCategoryName = () => {
     if (!currentCategory) return 'All Products';
@@ -344,6 +355,51 @@ export default function ProductsMobileClient() {
       ...prev,
       [section]: !prev[section]
     }));
+  };
+
+  // Apply filters
+  const applyFilters = () => {
+    const qs = new URLSearchParams();
+    
+    if (tempFilters.category) qs.set('category', tempFilters.category);
+    if (tempFilters.tag) qs.set('usageTag', tempFilters.tag);
+    if (tempFilters.priceMin) qs.set('priceMin', tempFilters.priceMin);
+    if (tempFilters.priceMax) qs.set('priceMax', tempFilters.priceMax);
+    if (tempFilters.ratingMin) qs.set('ratingMin', tempFilters.ratingMin);
+    if (tempFilters.lowStock) qs.set('lowStock', 'true');
+    if (tempFilters.inStock) qs.set('inStock', 'true');
+    
+    router.replace(qs.toString() ? `/products?${qs}` : '/products');
+    setIsMobileFilterOpen(false);
+  };
+
+  // Clear all filters
+  const clearAllFilters = () => {
+    setTempFilters({
+      category: '',
+      tag: '',
+      priceMin: '',
+      priceMax: '',
+      ratingMin: '',
+      lowStock: false,
+      inStock: false
+    });
+    router.replace('/products');
+    setIsMobileFilterOpen(false);
+  };
+
+  // Reset temp filters when opening filter drawer
+  const handleFilterOpen = () => {
+    setTempFilters({
+      category: currentCategory,
+      tag: currentTag,
+      priceMin: priceMinParam,
+      priceMax: priceMaxParam,
+      ratingMin: ratingMinParam,
+      lowStock: lowStockParam,
+      inStock: inStockOnlyParam
+    });
+    setIsMobileFilterOpen(true);
   };
 
   // Fetch list of available usage tags once
@@ -466,13 +522,12 @@ export default function ProductsMobileClient() {
                 <input
                   type="radio"
                   name="categoryFilter"
-                  checked={currentCategory === cat.slug}
+                  checked={tempFilters.category === cat.slug}
                   onChange={() => {
-                    const qs = new URLSearchParams(searchParams.toString())
-                    if (cat.slug === currentCategory) qs.delete('category')
-                    else qs.set('category', cat.slug)
-                    router.replace(qs.toString() ? `/products?${qs}` : '/products')
-                    setIsMobileFilterOpen(false)
+                    setTempFilters(prev => ({
+                      ...prev,
+                      category: prev.category === cat.slug ? '' : cat.slug
+                    }))
                   }}
                 />
                 {cat.name}
@@ -502,18 +557,12 @@ export default function ProductsMobileClient() {
                 <input
                   type="radio"
                   name="ratingFilter"
-                  checked={Number(ratingMin) === thr}
+                  checked={Number(tempFilters.ratingMin) === thr}
                   onChange={() => {
-                    const qs = new URLSearchParams(searchParams.toString())
-                    if (Number(ratingMin) === thr) {
-                      setRatingMin('')
-                      qs.delete('ratingMin')
-                    } else {
-                      setRatingMin(String(thr))
-                      qs.set('ratingMin', String(thr))
-                    }
-                    router.replace(qs.toString()?`/products?${qs}`:'/products')
-                    setIsMobileFilterOpen(false)
+                    setTempFilters(prev => ({
+                      ...prev,
+                      ratingMin: Number(prev.ratingMin) === thr ? '' : String(thr)
+                    }))
                   }}
                 />
                 {thr}+ stars
@@ -541,15 +590,12 @@ export default function ProductsMobileClient() {
             <label className={styles.filterOption}>
               <input
                 type="checkbox"
-                checked={lowStockOnly}
+                checked={tempFilters.lowStock}
                 onChange={e => {
-                  setLowStockOnly(e.target.checked)
-                  const qs = new URLSearchParams(searchParams.toString())
-                  if (e.target.checked) qs.set('lowStock','true')
-                  else qs.delete('lowStock')
-                  if (inStockOnly) qs.set('inStock','true')
-                  router.replace(qs.toString()?`/products?${qs}`:'/products')
-                  setIsMobileFilterOpen(false)
+                  setTempFilters(prev => ({
+                    ...prev,
+                    lowStock: e.target.checked
+                  }))
                 }}
               />
               Only low stock
@@ -557,13 +603,12 @@ export default function ProductsMobileClient() {
             <label className={styles.filterOption}>
               <input
                 type="checkbox"
-                checked={inStockOnly}
-                onChange={e=>{
-                  setInStockOnly(e.target.checked)
-                  const qs=new URLSearchParams(searchParams.toString())
-                  if(e.target.checked) qs.set('inStock','true'); else qs.delete('inStock')
-                  router.replace(qs.toString()?`/products?${qs}`:'/products')
-                  setIsMobileFilterOpen(false)
+                checked={tempFilters.inStock}
+                onChange={e => {
+                  setTempFilters(prev => ({
+                    ...prev,
+                    inStock: e.target.checked
+                  }))
                 }}
               />
               In stock only
@@ -587,7 +632,7 @@ export default function ProductsMobileClient() {
 
       {/* Sticky Filter/Sort Bar */}
       <MobileFilterSortBar
-        onFilterClick={() => setIsMobileFilterOpen(true)}
+        onFilterClick={handleFilterOpen}
         onSortClick={() => setIsSortOpen(true)}
         currentSort={getCurrentSortName()}
       />
@@ -703,18 +748,13 @@ export default function ProductsMobileClient() {
             <div className={styles.mobileFilterActions}>
               <button 
                 className={styles.clearFilterButton}
-                onClick={() => {
-                  // Clear all filters
-                  const qs = new URLSearchParams()
-                  router.replace('/products')
-                  setIsMobileFilterOpen(false)
-                }}
+                onClick={clearAllFilters}
               >
                 Clear All
               </button>
               <button 
                 className={styles.applyFilterButton}
-                onClick={() => setIsMobileFilterOpen(false)}
+                onClick={applyFilters}
               >
                 Apply
               </button>

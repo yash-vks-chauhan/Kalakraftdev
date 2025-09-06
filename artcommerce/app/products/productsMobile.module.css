@@ -742,7 +742,7 @@
 
 .closeSortButton {
   position: fixed;
-  bottom: 120px;
+  bottom: calc(100vh - 120px);
   left: 50%;
   transform: translateX(-50%);
   width: 56px;
@@ -763,9 +763,11 @@
   pointer-events: none;
 }
 
+.sortModalVisible + .closeSortButton,
 .closeSortButton.visible {
   opacity: 1;
   pointer-events: auto;
+  bottom: calc(100vh - 180px);
 }
 
 .closeSortButton:hover {
