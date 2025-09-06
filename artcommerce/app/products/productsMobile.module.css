@@ -689,9 +689,10 @@
 }
 
 .closeSortButton {
-  position: absolute;
-  top: -60px;
-  right: 20px;
+  position: fixed;
+  bottom: calc(100vh - 200px);
+  left: 50%;
+  transform: translateX(-50%);
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -703,19 +704,27 @@
   justify-content: center;
   cursor: pointer;
   z-index: 10004;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   color: white;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.sortModalVisible ~ .closeSortButton,
+.closeSortButton.visible {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .closeSortButton:hover {
   background-color: rgba(0, 0, 0, 0.9);
-  transform: scale(1.05);
+  transform: translateX(-50%) scale(1.05);
 }
 
 .closeSortButton:active {
   background-color: rgba(0, 0, 0, 1);
-  transform: scale(0.95);
+  transform: translateX(-50%) scale(0.95);
 }
 
 .sortOptions {

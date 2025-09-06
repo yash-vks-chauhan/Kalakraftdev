@@ -725,9 +725,6 @@ export default function ProductsMobileClient() {
         onClick={() => setIsSortOpen(false)}
       />
       <div className={`${styles.sortModal} ${isSortOpen ? styles.sortModalVisible : ''}`}>
-        <button onClick={() => setIsSortOpen(false)} className={styles.closeSortButton}>
-          <FiX size={18} />
-        </button>
         <div className={styles.sortHeader}>
           <h3>SORT BY</h3>
         </div>
@@ -762,6 +759,14 @@ export default function ProductsMobileClient() {
           </button>
         </div>
       </div>
+      
+      {/* Floating Close Button for Sort Modal */}
+      <button 
+        onClick={() => setIsSortOpen(false)} 
+        className={`${styles.closeSortButton} ${isSortOpen ? styles.visible : ''}`}
+      >
+        <FiX size={20} />
+      </button>
     </div>
   );
 } 

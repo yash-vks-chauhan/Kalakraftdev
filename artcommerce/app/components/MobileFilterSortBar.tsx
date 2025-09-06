@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { FiFilter, FiChevronDown, FiX } from 'react-icons/fi'
+import { FiFilter, FiChevronDown, FiX, FiArrowUpDown } from 'react-icons/fi'
 import styles from './MobileFilterSortBar.module.css'
 
 interface MobileFilterSortBarProps {
@@ -20,8 +20,8 @@ export default function MobileFilterSortBar({
   useEffect(() => {
     const handleScroll = () => {
       const scrollTop = window.scrollY
-      // Start sticking when scrolled past 100px (navbar height)
-      setIsSticky(scrollTop > 100)
+      // Start sticking when scrolled past 120px (navbar height + some buffer)
+      setIsSticky(scrollTop > 120)
     }
 
     window.addEventListener('scroll', handleScroll)
@@ -36,8 +36,8 @@ export default function MobileFilterSortBar({
             className={`${styles.sortButton}`}
             onClick={onSortClick}
           >
-            <span className={styles.buttonIcon}>☰</span>
-            <span className={styles.buttonText}>Sort By: {currentSort}</span>
+            <FiArrowUpDown className={styles.buttonIcon} />
+            <span className={styles.buttonText}>{currentSort}</span>
             <FiChevronDown className={styles.chevron} />
           </button>
           
