@@ -2,11 +2,11 @@
 .filterSortBar {
   position: relative;
   background: #ffffff;
-  border-bottom: 1px solid #e0e0e0;
-  padding: 12px 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 16px;
   z-index: 1000;
   transition: all 0.3s ease;
-  margin-bottom: 16px;
+  margin-bottom: 0;
 }
 
 .filterSortBar.sticky {
@@ -15,80 +15,84 @@
   left: 0;
   right: 0;
   z-index: 1100;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  margin-bottom: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.95);
 }
 
 .barContent {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
+  max-width: 100%;
 }
 
 .sortButton,
 .filterButton {
   display: flex;
   align-items: center;
-  gap: 8px;
-  background: none;
-  border: none;
-  padding: 8px 12px;
-  border-radius: 6px;
+  justify-content: center;
+  gap: 6px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  padding: 12px 16px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   font-size: 14px;
   font-weight: 500;
-  color: #333;
+  color: #1a1a1a;
   flex: 1;
-  justify-content: flex-start;
-  min-height: 40px;
+  min-height: 44px;
+  position: relative;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
-.sortButton {
-  border: 1px solid #e0e0e0;
-  background: #f9f9f9;
+.sortButton::before,
+.filterButton::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.04);
+  opacity: 0;
+  transition: opacity 0.15s ease;
 }
 
-.filterButton {
-  border: 1px solid #e0e0e0;
-  background: #f9f9f9;
+.sortButton:active::before,
+.filterButton:active::before {
+  opacity: 1;
 }
 
-.sortButton:hover,
-.filterButton:hover {
-  background: #f0f0f0;
-  border-color: #d0d0d0;
-}
-
-.sortButton.active,
-.filterButton.active {
-  background: #000;
-  color: #fff;
-  border-color: #000;
+.sortButton:active,
+.filterButton:active {
+  transform: scale(0.98);
 }
 
 .buttonIcon {
-  font-size: 16px;
+  font-size: 18px;
   display: flex;
   align-items: center;
+  opacity: 0.8;
 }
 
 .buttonText {
   font-size: 14px;
   font-weight: 500;
-  text-decoration: underline;
-  text-underline-offset: 2px;
+  opacity: 0.9;
+  line-height: 1.2;
 }
 
 .chevron {
-  font-size: 14px;
-  margin-left: auto;
+  font-size: 16px;
+  margin-left: 4px;
+  opacity: 0.6;
   transition: transform 0.2s ease;
-}
-
-.sortButton.active .chevron {
-  transform: rotate(180deg);
 }
 
 /* Dropdown Styles */

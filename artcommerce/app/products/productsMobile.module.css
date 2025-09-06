@@ -690,26 +690,31 @@
 
 .closeSortButton {
   position: absolute;
-  top: 16px;
-  right: 16px;
-  width: 32px;
-  height: 32px;
+  top: -60px;
+  right: 20px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  background-color: #f5f5f5;
+  background-color: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
   border: none;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  z-index: 10004;
+  transition: all 0.2s ease;
+  color: white;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
 .closeSortButton:hover {
-  background-color: #e0e0e0;
+  background-color: rgba(0, 0, 0, 0.9);
+  transform: scale(1.05);
 }
 
 .closeSortButton:active {
-  background-color: #d0d0d0;
+  background-color: rgba(0, 0, 0, 1);
   transform: scale(0.95);
 }
 

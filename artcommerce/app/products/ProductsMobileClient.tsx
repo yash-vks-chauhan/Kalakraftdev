@@ -318,8 +318,8 @@ export default function ProductsMobileClient() {
   const getCurrentSortName = () => {
     switch (sortOrder) {
       case 'oldest': return 'Oldest';
-      case 'price-asc': return 'Price: Low to High';
-      case 'price-desc': return 'Price: High to Low';
+      case 'price_asc': return 'Price: Low to High';
+      case 'price_desc': return 'Price: High to Low';
       case 'rating-desc': return 'Rating: High to Low';
       default: return 'Recommended';
     }
@@ -725,11 +725,11 @@ export default function ProductsMobileClient() {
         onClick={() => setIsSortOpen(false)}
       />
       <div className={`${styles.sortModal} ${isSortOpen ? styles.sortModalVisible : ''}`}>
+        <button onClick={() => setIsSortOpen(false)} className={styles.closeSortButton}>
+          <FiX size={18} />
+        </button>
         <div className={styles.sortHeader}>
           <h3>SORT BY</h3>
-          <button onClick={() => setIsSortOpen(false)} className={styles.closeSortButton}>
-            <FiX size={16} />
-          </button>
         </div>
         <div className={styles.sortOptions}>
           <button 
@@ -747,17 +747,17 @@ export default function ProductsMobileClient() {
             <span className={styles.sortOptionText}>Oldest</span>
           </button>
           <button 
-            className={`${styles.sortOption} ${(sortOrder === 'price-desc' || sortOrder === 'price_desc') ? styles.active : ''}`}
-            onClick={() => handleSortSelect('price-desc')}
+            className={`${styles.sortOption} ${sortOrder === 'price_desc' ? styles.active : ''}`}
+            onClick={() => handleSortSelect('price_desc')}
           >
-            <div className={`${styles.sortRadio} ${(sortOrder === 'price-desc' || sortOrder === 'price_desc') ? styles.active : ''}`}></div>
+            <div className={`${styles.sortRadio} ${sortOrder === 'price_desc' ? styles.active : ''}`}></div>
             <span className={styles.sortOptionText}>Price High to Low</span>
           </button>
           <button 
-            className={`${styles.sortOption} ${(sortOrder === 'price-asc' || sortOrder === 'price_asc') ? styles.active : ''}`}
-            onClick={() => handleSortSelect('price-asc')}
+            className={`${styles.sortOption} ${sortOrder === 'price_asc' ? styles.active : ''}`}
+            onClick={() => handleSortSelect('price_asc')}
           >
-            <div className={`${styles.sortRadio} ${(sortOrder === 'price-asc' || sortOrder === 'price_asc') ? styles.active : ''}`}></div>
+            <div className={`${styles.sortRadio} ${sortOrder === 'price_asc' ? styles.active : ''}`}></div>
             <span className={styles.sortOptionText}>Price Low to High</span>
           </button>
         </div>
