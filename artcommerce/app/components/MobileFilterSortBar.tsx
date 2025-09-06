@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { FiFilter, FiChevronDown, FiX } from 'lucide-react'
+import { FiFilter, FiChevronDown, FiX } from 'react-icons/fi'
 import styles from './MobileFilterSortBar.module.css'
 
 interface MobileFilterSortBarProps {
