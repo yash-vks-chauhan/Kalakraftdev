@@ -329,7 +329,7 @@ export default function ProductsMobileClient() {
   const handleSortSelect = (sortValue: string) => {
     setSortOrder(sortValue);
     const qs = new URLSearchParams(searchParams.toString());
-    if (sortValue === '') {
+    if (sortValue === '' || sortValue === 'newest') {
       qs.delete('sort');
     } else {
       qs.set('sort', sortValue);
@@ -586,80 +586,6 @@ export default function ProductsMobileClient() {
           </div>
         </details>
 
-        {/* Sort */}
-        <details open={openSections.sort} className={styles.filterSection}>
-          <summary 
-            className={styles.filterHeader}
-            onClick={(e) => {
-              e.preventDefault();
-              toggleSection('sort');
-            }}
-          >
-            <span style={{ display: 'flex', alignItems: 'center' }}>
-              <FiTrendingUp style={{ marginRight: '8px' }} />
-              Sort
-            </span>
-            <FiChevronRight className={styles.arrow} />
-          </summary>
-          <div className={styles.filterContent}>
-            <label className={styles.filterOption}>
-              <input
-                type="radio"
-                name="sortoption"
-                checked={sortOrder === '' || sortOrder === 'newest'}
-                onChange={() => {
-                  setSortOrder('')
-                  const qs = new URLSearchParams(searchParams.toString())
-                  qs.delete('sort')
-                  router.replace(qs.toString()?`/products?${qs}`:'/products')
-                  setIsMobileFilterOpen(false)
-                }}
-              /> Newest
-            </label>
-            <label className={styles.filterOption}>
-              <input
-                type="radio"
-                name="sortoption"
-                checked={sortOrder === 'oldest'}
-                onChange={() => {
-                  setSortOrder('oldest')
-                  const qs = new URLSearchParams(searchParams.toString())
-                  qs.set('sort','oldest')
-                  router.replace(`/products?${qs}`)
-                  setIsMobileFilterOpen(false)
-                }}
-              /> Oldest
-            </label>
-            <label className={styles.filterOption}>
-              <input
-                type="radio"
-                name="sortoption"
-                checked={sortOrder === 'price_asc'}
-                onChange={() => {
-                  setSortOrder('price_asc')
-                  const qs = new URLSearchParams(searchParams.toString())
-                  qs.set('sort','price_asc')
-                  router.replace(`/products?${qs}`)
-                  setIsMobileFilterOpen(false)
-                }}
-              /> Price: Low to High
-            </label>
-            <label className={styles.filterOption}>
-              <input
-                type="radio"
-                name="sortoption"
-                checked={sortOrder === 'price_desc'}
-                onChange={() => {
-                  setSortOrder('price_desc')
-                  const qs = new URLSearchParams(searchParams.toString())
-                  qs.set('sort','price_desc')
-                  router.replace(`/products?${qs}`)
-                  setIsMobileFilterOpen(false)
-                }}
-              /> Price: High to Low
-            </label>
-          </div>
-        </details>
       </>
     );
   };
@@ -802,33 +728,37 @@ export default function ProductsMobileClient() {
         <div className={styles.sortHeader}>
           <h3>SORT BY</h3>
           <button onClick={() => setIsSortOpen(false)} className={styles.closeSortButton}>
-            <FiX />
+            <FiX size={16} />
           </button>
         </div>
         <div className={styles.sortOptions}>
           <button 
-            className={`${styles.sortOption} ${sortOrder === '' ? styles.active : ''}`}
+            className={`${styles.sortOption} ${(sortOrder === '' || sortOrder === 'newest') ? styles.active : ''}`}
             onClick={() => handleSortSelect('')}
           >
-            Recommended
+            <div className={`${styles.sortRadio} ${(sortOrder === '' || sortOrder === 'newest') ? styles.active : ''}`}></div>
+            <span className={styles.sortOptionText}>Recommended</span>
           </button>
           <button 
-            className={`${styles.sortOption} ${sortOrder === 'newest' ? styles.active : ''}`}
-            onClick={() => handleSortSelect('newest')}
+            className={`${styles.sortOption} ${sortOrder === 'oldest' ? styles.active : ''}`}
+            onClick={() => handleSortSelect('oldest')}
           >
-            Newest
+            <div className={`${styles.sortRadio} ${sortOrder === 'oldest' ? styles.active : ''}`}></div>
+            <span className={styles.sortOptionText}>Oldest</span>
           </button>
           <button 
-            className={`${styles.sortOption} ${sortOrder === 'price-desc' ? styles.active : ''}`}
+            className={`${styles.sortOption} ${(sortOrder === 'price-desc' || sortOrder === 'price_desc') ? styles.active : ''}`}
             onClick={() => handleSortSelect('price-desc')}
           >
-            Price High to Low
+            <div className={`${styles.sortRadio} ${(sortOrder === 'price-desc' || sortOrder === 'price_desc') ? styles.active : ''}`}></div>
+            <span className={styles.sortOptionText}>Price High to Low</span>
           </button>
           <button 
-            className={`${styles.sortOption} ${sortOrder === 'price-asc' ? styles.active : ''}`}
+            className={`${styles.sortOption} ${(sortOrder === 'price-asc' || sortOrder === 'price_asc') ? styles.active : ''}`}
             onClick={() => handleSortSelect('price-asc')}
           >
-            Price Low to High
+            <div className={`${styles.sortRadio} ${(sortOrder === 'price-asc' || sortOrder === 'price_asc') ? styles.active : ''}`}></div>
+            <span className={styles.sortOptionText}>Price Low to High</span>
           </button>
         </div>
       </div>
