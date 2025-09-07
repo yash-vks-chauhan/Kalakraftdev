@@ -7,10 +7,10 @@ export default function InitialLoadingScreen() {
   const [currentStep, setCurrentStep] = useState(0)
   
   const steps = [
-    "Setting up your gallery...",
+    "Authenticating your account...",
     "Preparing your cart...",
     "Loading your wishlist...",
-    "Finalizing your experience..."
+    "Setting up your dashboard..."
   ]
   
   useEffect(() => {

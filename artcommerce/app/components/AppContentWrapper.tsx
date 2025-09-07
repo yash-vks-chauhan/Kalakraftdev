@@ -12,12 +12,48 @@ interface AppContentWrapperProps {
 }
 
 export default function AppContentWrapper({ children }: AppContentWrapperProps) {
-  const { loading: authLoading } = useAuth()
+  const { loading: authLoading, user, token } = useAuth()
+  const { cartLoading } = useCart()
+  const { loading: wishlistLoading } = useWishlist()
   const pathname = usePathname()
   const [showInitialLoading, setShowInitialLoading] = useState(false)
-  const [loadingComplete, setLoadingComplete] = useState(false)
+  const [allSystemsReady, setAllSystemsReady] = useState(false)
   
-  // Simplified approach: Show loading for minimum time to ensure all contexts initialize
+  // Check if all systems are ready
+  useEffect(() => {
+    // Auth is ready when not loading
+    const authReady = !authLoading
+    
+    // For authenticated users, wait for cart and wishlist to load
+    // For non-authenticated users, they should be ready immediately
+    let cartReady = true
+    let wishlistReady = true
+    
+    if (token && user) {
+      // User is authenticated, wait for actual data loading
+      cartReady = !cartLoading
+      wishlistReady = !wishlistLoading
+    }
+    
+    console.log('System status:', {
+      authReady,
+      authLoading,
+      cartReady,
+      cartLoading,
+      wishlistReady,
+      wishlistLoading,
+      hasToken: !!token,
+      hasUser: !!user
+    })
+    
+    // All systems are ready
+    if (authReady && cartReady && wishlistReady) {
+      console.log('All systems ready!')
+      setAllSystemsReady(true)
+    }
+  }, [authLoading, cartLoading, wishlistLoading, token, user])
+  
+  // Control loading screen display
   useEffect(() => {
     const hasShownLoading = sessionStorage.getItem('initialLoadingShown')
     const isHomePage = pathname === '/'
@@ -25,29 +61,28 @@ export default function AppContentWrapper({ children }: AppContentWrapperProps) 
     if (isHomePage && !hasShownLoading) {
       setShowInitialLoading(true)
       
-      // Wait for auth to complete AND minimum time for contexts to initialize
-      const checkComplete = () => {
-        if (!authLoading) {
-          // Auth is done, now wait additional time for contexts to fully initialize
-          setTimeout(() => {
-            setLoadingComplete(true)
-            setShowInitialLoading(false)
-            sessionStorage.setItem('initialLoadingShown', 'true')
-          }, 1200) // Extra time for cart/wishlist to initialize
-        }
+      // Fallback timeout to prevent infinite loading (max 5 seconds)
+      const fallbackTimer = setTimeout(() => {
+        console.log('Fallback timeout reached, forcing completion')
+        setShowInitialLoading(false)
+        sessionStorage.setItem('initialLoadingShown', 'true')
+      }, 5000)
+      
+      // Wait for all systems to be ready with minimum display time
+      if (allSystemsReady) {
+        // Add minimum display time for better UX
+        setTimeout(() => {
+          clearTimeout(fallbackTimer)
+          setShowInitialLoading(false)
+          sessionStorage.setItem('initialLoadingShown', 'true')
+        }, 1000) // Minimum time to see the loading animation
       }
       
-      // Check immediately and set up interval
-      checkComplete()
-      const interval = setInterval(checkComplete, 100)
-      
-      // Cleanup
-      return () => clearInterval(interval)
+      return () => clearTimeout(fallbackTimer)
     } else {
       setShowInitialLoading(false)
-      setLoadingComplete(true)
     }
-  }, [pathname, authLoading])
+  }, [pathname, allSystemsReady])
   
   if (showInitialLoading) {
     return <InitialLoadingScreen />
