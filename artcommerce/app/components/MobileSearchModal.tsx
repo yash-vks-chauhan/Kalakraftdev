@@ -603,6 +603,11 @@ export default function MobileSearchModal({ open, onClose }: Props) {
       {open && (
         <motion.div
           className={styles.mobileSearchOverlay}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              handleClose()
+            }
+          }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -610,9 +615,9 @@ export default function MobileSearchModal({ open, onClose }: Props) {
         >
           <motion.div
             className={styles.modalContent}
-            initial={{ y: '100%' }}
-            animate={{ y: '0%' }}
-            exit={{ y: '100%' }}
+            initial={{ scaleY: 0, opacity: 0 }}
+            animate={{ scaleY: 1, opacity: 1, transformOrigin: 'top' }}
+            exit={{ scaleY: 0, opacity: 0, transformOrigin: 'bottom' }}
             transition={{ duration: 0.3, ease: 'easeInOut' }}
           >
             <div className={styles.mobileSearchHeader}>
