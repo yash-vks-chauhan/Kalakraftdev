@@ -1,11 +1,19 @@
 'use client'
 
-import { useEffect, useState, useRef, FormEvent, useCallback, ReactNode } from 'react'
+import {
+  useEffect,
+  useState,
+  useRef,
+  FormEvent,
+  useCallback,
+  ReactNode,
+} from 'react'
 import { createPortal } from 'react-dom'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { X, Search, ArrowLeft } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 import WishlistButton from './WishlistButton'
 import styles from './MobileSearchModal.module.css'
 import Fuse from 'fuse.js'
@@ -587,121 +595,157 @@ export default function MobileSearchModal({ open, onClose }: Props) {
   }
 
   // Early return after all hooks
-  if (!mounted || !open) return null
+  if (!mounted) return null
 
   // Create portal directly in document.body
   const modalContent = (
-    <div
-      className={`${styles.mobileSearchOverlay} ${open ? styles.searchOverlayOpen : ''}`}
-    >
-      <div className={styles.mobileSearchHeader}>
-        <button 
-          onClick={handleClose}
-          className={styles.backButton}
-          aria-label="Back"
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          className={styles.mobileSearchOverlay}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3, ease: 'easeInOut' }}
         >
-          <ArrowLeft size={20} />
-        </button>
-        
-        <div className={styles.logoContainer}>
-          <img 
-            src={getImageUrl('logo.png')} 
-            alt="Kalakraft" 
-            className={styles.logoImage}
-            width={100}
-            height={32}
-          />
-        </div>
-        
-        <button
-          type="button"
-          onClick={handleClearSearch}
-          className={styles.clearButton}
-          aria-label="Clear search"
-        >
-          <X size={18} />
-        </button>
-      </div>
+          <motion.div
+            className={styles.modalContent}
+            initial={{ y: '100%' }}
+            animate={{ y: '0%' }}
+            exit={{ y: '100%' }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
+          >
+            <div className={styles.mobileSearchHeader}>
+              <button
+                onClick={handleClose}
+                className={styles.backButton}
+                aria-label="Back"
+              >
+                <ArrowLeft size={20} />
+              </button>
 
-      <div className={styles.mobileSearchContent}>
-        <form onSubmit={handleSearchSubmit} className={styles.searchForm}>
-          <div className={styles.searchInputContainer}>
-            <Search className={styles.searchIcon} size={18} />
-            <input
-              ref={inputRef}
-              type="text"
-              placeholder="Search products..."
-              value={searchText}
-              onChange={e => setSearchText(e.target.value)}
-              className={styles.searchInput}
-              autoComplete="off"
-            />
-          </div>
-        </form>
-
-        <div className={styles.categoriesScroll}>
-          {KNOWN_CATEGORIES.map(category => (
-            <button 
-              key={category.slug}
-              type="button"
-              className={`${styles.categoryPill} ${selectedCategory === category.slug ? styles.categoryPillActive : ''}`}
-              onClick={() => handleCategorySelect(category.slug)}
-            >
-              {category.name}
-            </button>
-          ))}
-        </div>
-
-        <div className={styles.resultsContainer}>
-          {loadingResults ? (
-            <div className={styles.loadingContainer}>
-              <div className={styles.loadingSpinner}></div>
-              <p className={styles.loadingText}>Searching...</p>
-            </div>
-          ) : errorResults ? (
-            <div className={styles.errorContainer}>
-              <p className={styles.errorText}>Error: {errorResults}</p>
-            </div>
-          ) : searchResults.length > 0 ? (
-            <div className={styles.list}>
-              {searchResults.map(product => (
-                <ProductCard 
-                  key={product.id} 
-                  product={product}
-                  handleProductClick={handleProductClick}
+              <div className={styles.logoContainer}>
+                <img
+                  src={getImageUrl('logo.png')}
+                  alt="Kalakraft"
+                  className={styles.logoImage}
+                  width={100}
+                  height={32}
                 />
-              ))}
-            </div>
-          ) : searchText ? (
-            <div className={styles.noResultsContainer}>
-              <p className={styles.noResultsText}>No products found</p>
-              <p className={styles.noResultsSubtext}>Try a different search term or browse categories</p>
-            </div>
-          ) : recentSearches.length > 0 ? (
-            <div className={styles.recentSearches}>
-              <h3 className={styles.recentSearchesTitle}>Recent Searches</h3>
-              {recentSearches.map((search, index) => (
-                <button 
-                  key={index}
-                  className={styles.recentSearchItem}
-                  onClick={() => handleRecentSearchClick(search)}
-                >
-                  <span className={styles.recentSearchText}>{search}</span>
-                  <ArrowLeft size={16} className={styles.recentSearchIcon} />
-                </button>
-              ))}
-            </div>
-          ) : (
-            <div className={styles.emptyStateContainer}>
-              <Search size={40} className={styles.emptyStateIcon} />
-              <p className={styles.emptyStateText}>Search for products</p>
-              <p className={styles.emptyStateSubtext}>Type in the search box above or select a category</p>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
+              </div>
 
-  return createPortal(modalContent, document.body);
+              <button
+                type="button"
+                onClick={handleClearSearch}
+                className={styles.clearButton}
+                aria-label="Clear search"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className={styles.mobileSearchContent}>
+              <form
+                onSubmit={handleSearchSubmit}
+                className={styles.searchForm}
+              >
+                <div className={styles.searchInputContainer}>
+                  <Search className={styles.searchIcon} size={18} />
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    placeholder="Search products..."
+                    value={searchText}
+                    onChange={(e) => setSearchText(e.target.value)}
+                    className={styles.searchInput}
+                    autoComplete="off"
+                  />
+                </div>
+              </form>
+
+              <div className={styles.categoriesScroll}>
+                {KNOWN_CATEGORIES.map((category) => (
+                  <button
+                    key={category.slug}
+                    type="button"
+                    className={`${styles.categoryPill} ${
+                      selectedCategory === category.slug
+                        ? styles.categoryPillActive
+                        : ''
+                    }`}
+                    onClick={() => handleCategorySelect(category.slug)}
+                  >
+                    {category.name}
+                  </button>
+                ))}
+              </div>
+
+              <div className={styles.resultsContainer}>
+                {loadingResults ? (
+                  <div className={styles.loadingContainer}>
+                    <div className={styles.loadingSpinner}></div>
+                    <p className={styles.loadingText}>Searching...</p>
+                  </div>
+                ) : errorResults ? (
+                  <div className={styles.errorContainer}>
+                    <p className={styles.errorText}>Error: {errorResults}</p>
+                  </div>
+                ) : searchResults.length > 0 ? (
+                  <div className={styles.list}>
+                    {searchResults.map((product) => (
+                      <ProductCard
+                        key={product.id}
+                        product={product}
+                        handleProductClick={handleProductClick}
+                      />
+                    ))}
+                  </div>
+                ) : searchText ? (
+                  <div className={styles.noResultsContainer}>
+                    <p className={styles.noResultsText}>No products found</p>
+                    <p className={styles.noResultsSubtext}>
+                      Try a different search term or browse categories
+                    </p>
+                  </div>
+                ) : recentSearches.length > 0 ? (
+                  <div className={styles.recentSearches}>
+                    <h3 className={styles.recentSearchesTitle}>
+                      Recent Searches
+                    </h3>
+                    {recentSearches.map((search, index) => (
+                      <button
+                        key={index}
+                        className={styles.recentSearchItem}
+                        onClick={() => handleRecentSearchClick(search)}
+                      >
+                        <span className={styles.recentSearchText}>
+                          {search}
+                        </span>
+                        <ArrowLeft
+                          size={16}
+                          className={styles.recentSearchIcon}
+                        />
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className={styles.emptyStateContainer}>
+                    <Search size={40} className={styles.emptyStateIcon} />
+                    <p className={styles.emptyStateText}>
+                      Search for products
+                    </p>
+                    <p className={styles.emptyStateSubtext}>
+                      Type in the search box above or select a category
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  )
+
+  return createPortal(modalContent, document.body)
 } 

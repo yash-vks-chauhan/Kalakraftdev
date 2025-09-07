@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
+import { motion, AnimatePresence } from 'framer-motion'
 import WishlistButton from './WishlistButton'
 import { useNotificationContext } from '../contexts/NotificationContext'
 import styles from './SearchModal.module.css'
@@ -408,289 +409,451 @@ export default function SearchModal({ open, onClose }: Props) {
   }
 
   // Early return after all hooks
-  if (!mounted || (!open && !isClosing)) return null
+  if (!mounted) return null
 
   // Create portal directly in document.body
   const modalContent = (
-    <div
-      className={`${styles.searchOverlay} ${open ? styles.searchOverlayOpen : ''} ${isClosing ? styles.searchModalClosing : ''}`}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) {
-          handleClose(false)
-        }
-      }}
-    >
-      <div
-        className={styles.searchModal}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className={styles.searchHeader}>
-          <div className={styles.logoContainer}>
-            <img 
-              src={getImageUrl('logo.png')} 
-              alt="Kalakraft" 
-              className={styles.logoImage}
-              width={150}
-              height={40}
-            />
-          </div>
-          <button
-            type="button"
-            onClick={() => handleClose(false)}
-            className={styles.closeButton}
-            aria-label="Close search"
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          className={styles.searchOverlay}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              handleClose(false)
+            }
+          }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3, ease: 'easeInOut' }}
+        >
+          <motion.div
+            className={styles.searchModal}
+            onClick={(e) => e.stopPropagation()}
+            initial={{ scaleY: 0, opacity: 0 }}
+            animate={{ scaleY: 1, opacity: 1, transformOrigin: 'top' }}
+            exit={{ scaleY: 0, opacity: 0, transformOrigin: 'bottom' }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-          </button>
-        </div>
-
-        <div className={styles.searchContent}>
-          <form onSubmit={handleSearchSubmit} className={styles.searchForm}>
-            <div className={styles.searchInputContainer}>
-              <svg className={styles.searchIcon} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="11" cy="11" r="8"></circle>
-                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-              </svg>
-              <input
-                autoFocus
-                type="text"
-                placeholder="SEARCH PRODUCTS..."
-                value={searchText}
-                onChange={e => setSearchText(e.target.value)}
-                className={styles.searchInput}
-                autoComplete="off"
-              />
-              {searchText && (
-                <button
-                  type="button"
-                  onClick={handleClearSearch}
-                  className={styles.clearButton}
+            <div className={styles.searchHeader}>
+              <div className={styles.logoContainer}>
+                <img
+                  src={getImageUrl('logo.png')}
+                  alt="Kalakraft"
+                  className={styles.logoImage}
+                  width={150}
+                  height={40}
+                />
+              </div>
+              <button
+                type="button"
+                onClick={() => handleClose(false)}
+                className={styles.closeButton}
+                aria-label="Close search"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                 >
-                  CLEAR
-                </button>
-              )}
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
             </div>
-            
-            {recentSearches.length > 0 && !searchText && (
-              <div className={styles.recentSearches}>
-                <p className={styles.recentSearchesTitle}>Recent searches:</p>
-                <div className={styles.recentSearchesList}>
-                  {recentSearches.map((search, index) => (
-                    <button 
-                      key={index} 
+
+            <div className={styles.searchContent}>
+              <form onSubmit={handleSearchSubmit} className={styles.searchForm}>
+                <div className={styles.searchInputContainer}>
+                  <svg
+                    className={styles.searchIcon}
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                  </svg>
+                  <input
+                    autoFocus
+                    type="text"
+                    placeholder="SEARCH PRODUCTS..."
+                    value={searchText}
+                    onChange={(e) => setSearchText(e.target.value)}
+                    className={styles.searchInput}
+                    autoComplete="off"
+                  />
+                  {searchText && (
+                    <button
                       type="button"
-                      className={styles.recentSearchItem}
-                      onClick={() => handleRecentSearchClick(search)}
+                      onClick={handleClearSearch}
+                      className={styles.clearButton}
                     >
-                      <svg className={styles.recentSearchIcon} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="9 14 4 9 9 4"></polyline>
-                        <path d="M20 20v-7a4 4 0 0 0-4-4H4"></path>
-                      </svg>
-                      {search}
+                      CLEAR
+                    </button>
+                  )}
+                </div>
+
+                {recentSearches.length > 0 && !searchText && (
+                  <div className={styles.recentSearches}>
+                    <p className={styles.recentSearchesTitle}>
+                      Recent searches:
+                    </p>
+                    <div className={styles.recentSearchesList}>
+                      {recentSearches.map((search, index) => (
+                        <button
+                          key={index}
+                          type="button"
+                          className={styles.recentSearchItem}
+                          onClick={() => handleRecentSearchClick(search)}
+                        >
+                          <svg
+                            className={styles.recentSearchIcon}
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <polyline points="9 14 4 9 9 4"></polyline>
+                            <path d="M20 20v-7a4 4 0 0 0-4-4H4"></path>
+                          </svg>
+                          {search}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className={styles.categoriesContainer}>
+                  {KNOWN_CATEGORIES.map((category) => (
+                    <button
+                      key={category.slug}
+                      type="button"
+                      className={`${styles.categoryPill} ${
+                        selectedCategory === category.slug
+                          ? styles.categoryPillActive
+                          : ''
+                      }`}
+                      onClick={() => handleCategorySelect(category.slug)}
+                    >
+                      {category.name}
                     </button>
                   ))}
                 </div>
-              </div>
-            )}
-            
-            <div className={styles.categoriesContainer}>
-              {KNOWN_CATEGORIES.map(category => (
-                <button 
-                  key={category.slug}
-                  type="button"
-                  className={`${styles.categoryPill} ${selectedCategory === category.slug ? styles.categoryPillActive : ''}`}
-                  onClick={() => handleCategorySelect(category.slug)}
-                >
-                  {category.name}
-                </button>
-              ))}
-            </div>
-            
-            <div className={styles.quickFilters}>
-              {QUICK_FILTERS.map(filter => (
-                <button 
-                  key={filter.id}
-                  type="button"
-                  className={`${styles.quickFilterButton} ${activeFilter === filter.id ? styles.quickFilterActive : ''}`}
-                  onClick={() => handleFilterSelect(filter.id)}
-                >
-                  {filter.name}
-                </button>
-              ))}
-            </div>
-          </form>
 
-          {searchText && (
-            <div className={styles.sortOptions}>
-              <select 
-                className={styles.sortSelect}
-                value={sortOption}
-                onChange={handleSortChange}
-                aria-label="Sort products"
-              >
-                {SORT_OPTIONS.map(option => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-
-          <div className={styles.resultsContainer}>
-            {loadingResults ? (
-              <div className={styles.loadingContainer}>
-                <div className={styles.loadingSpinnerWrapper}>
-                  <div className={styles.loadingSpinner}>
-                    <svg className={styles.loadingCircle} viewBox="0 0 50 50">
-                      <circle cx="25" cy="25" r="20" fill="none" strokeWidth="4" />
-                    </svg>
-                  </div>
-                </div>
-                <div className={styles.emptyResultsText}>
-                  {"SEARCHING PRODUCTS".split('').map((letter, index) => (
-                    <span key={index} className={styles.letter}>
-                      {letter === ' ' ? '\u00A0' : letter}
-                    </span>
-                  ))}
-                  <span className={styles.dots}>
-                    <span>.</span>
-                    <span>.</span>
-                    <span>.</span>
-                  </span>
-                </div>
-              </div>
-            ) : errorResults ? (
-              <div className={styles.errorContainer}>
-                <svg className={styles.errorIcon} xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <line x1="12" y1="8" x2="12" y2="12"></line>
-                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                </svg>
-                <p className={styles.errorText}>ERROR: {errorResults.toUpperCase()}</p>
-              </div>
-            ) : searchResults.length > 0 ? (
-              <div className={styles.resultsGrid}>
-                {searchResults.map(prod => {
-                  const currentImageIndex = currentImages[prod.id] || 0;
-                  const isLoading = loadingProductId === prod.id;
-                  const hasMultipleImages = prod.imageUrls.length > 1;
-                  const nameMatch = prod._matches?.find(m => m.key === 'name');
-                  const catMatch = prod._matches?.find(m => m.key === 'category.name');
-                  return (
-                    <div 
-                      key={prod.id} 
-                      className={`${styles.productCard} ${isLoading ? styles.productCardLoading : ''}`}
+                <div className={styles.quickFilters}>
+                  {QUICK_FILTERS.map((filter) => (
+                    <button
+                      key={filter.id}
+                      type="button"
+                      className={`${styles.quickFilterButton} ${
+                        activeFilter === filter.id
+                          ? styles.quickFilterActive
+                          : ''
+                      }`}
+                      onClick={() => handleFilterSelect(filter.id)}
                     >
-                      <div className={styles.wishlistButtonContainer}>
-                        <WishlistButton productId={prod.id} />
+                      {filter.name}
+                    </button>
+                  ))}
+                </div>
+              </form>
+
+              {searchText && (
+                <div className={styles.sortOptions}>
+                  <select
+                    className={styles.sortSelect}
+                    value={sortOption}
+                    onChange={handleSortChange}
+                    aria-label="Sort products"
+                  >
+                    {SORT_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              <div className={styles.resultsContainer}>
+                {loadingResults ? (
+                  <div className={styles.loadingContainer}>
+                    <div className={styles.loadingSpinnerWrapper}>
+                      <div className={styles.loadingSpinner}>
+                        <svg
+                          className={styles.loadingCircle}
+                          viewBox="0 0 50 50"
+                        >
+                          <circle
+                            cx="25"
+                            cy="25"
+                            r="20"
+                            fill="none"
+                            strokeWidth="4"
+                          />
+                        </svg>
                       </div>
-                      
-                      <a
-                        href={`/products/${prod.id}`}
-                        className={styles.productLink}
-                        onClick={(e) => handleProductClick(prod.id, `/products/${prod.id}`, e)}
-                      >
-                        <div className={styles.productImageContainer}>
-                          {prod.imageUrls[currentImageIndex] ? (
-                            <img 
-                              src={prod.imageUrls[currentImageIndex]} 
-                              alt={prod.name} 
-                              className={styles.productImage} 
-                            />
-                          ) : (
-                            <div className={styles.noImagePlaceholder}>NO IMAGE</div>
-                          )}
-                          
-                          {isLoading && (
-                            <div className={styles.loadingOverlay}>
-                              <div className={styles.loadingSpinnerSmall}>
-                                <svg className={styles.loadingCircleSmall} viewBox="0 0 50 50">
-                                  <circle cx="25" cy="25" r="20" fill="none" strokeWidth="4" />
-                                </svg>
+                    </div>
+                    <div className={styles.emptyResultsText}>
+                      {'SEARCHING PRODUCTS'.split('').map((letter, index) => (
+                        <span key={index} className={styles.letter}>
+                          {letter === ' ' ? '\u00A0' : letter}
+                        </span>
+                      ))}
+                      <span className={styles.dots}>
+                        <span>.</span>
+                        <span>.</span>
+                        <span>.</span>
+                      </span>
+                    </div>
+                  </div>
+                ) : errorResults ? (
+                  <div className={styles.errorContainer}>
+                    <svg
+                      className={styles.errorIcon}
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="36"
+                      height="36"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <line x1="12" y1="8" x2="12" y2="12"></line>
+                      <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    <p className={styles.errorText}>
+                      ERROR: {errorResults.toUpperCase()}
+                    </p>
+                  </div>
+                ) : searchResults.length > 0 ? (
+                  <div className={styles.resultsGrid}>
+                    {searchResults.map((prod) => {
+                      const currentImageIndex = currentImages[prod.id] || 0
+                      const isLoading = loadingProductId === prod.id
+                      const hasMultipleImages = prod.imageUrls.length > 1
+                      const nameMatch = prod._matches?.find(
+                        (m) => m.key === 'name'
+                      )
+                      const catMatch = prod._matches?.find(
+                        (m) => m.key === 'category.name'
+                      )
+                      return (
+                        <div
+                          key={prod.id}
+                          className={`${styles.productCard} ${
+                            isLoading ? styles.productCardLoading : ''
+                          }`}
+                        >
+                          <div className={styles.wishlistButtonContainer}>
+                            <WishlistButton productId={prod.id} />
+                          </div>
+
+                          <a
+                            href={`/products/${prod.id}`}
+                            className={styles.productLink}
+                            onClick={(e) =>
+                              handleProductClick(
+                                prod.id,
+                                `/products/${prod.id}`,
+                                e
+                              )
+                            }
+                          >
+                            <div className={styles.productImageContainer}>
+                              {prod.imageUrls[currentImageIndex] ? (
+                                <img
+                                  src={prod.imageUrls[currentImageIndex]}
+                                  alt={prod.name}
+                                  className={styles.productImage}
+                                />
+                              ) : (
+                                <div className={styles.noImagePlaceholder}>
+                                  NO IMAGE
+                                </div>
+                              )}
+
+                              {isLoading && (
+                                <div className={styles.loadingOverlay}>
+                                  <div
+                                    className={styles.loadingSpinnerSmall}
+                                  >
+                                    <svg
+                                      className={styles.loadingCircleSmall}
+                                      viewBox="0 0 50 50"
+                                    >
+                                      <circle
+                                        cx="25"
+                                        cy="25"
+                                        r="20"
+                                        fill="none"
+                                        strokeWidth="4"
+                                      />
+                                    </svg>
+                                  </div>
+                                </div>
+                              )}
+
+                              {hasMultipleImages && !isLoading && (
+                                <>
+                                  <button
+                                    className={`${styles.imageNav} ${styles.imageNavPrev}`}
+                                    onClick={(e) =>
+                                      handlePrevImage(prod.id, e)
+                                    }
+                                    aria-label="Previous image"
+                                  >
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      width="16"
+                                      height="16"
+                                      viewBox="0 0 24 24"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      strokeWidth="2"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                    >
+                                      <polyline points="15 18 9 12 15 6"></polyline>
+                                    </svg>
+                                  </button>
+                                  <button
+                                    className={`${styles.imageNav} ${styles.imageNavNext}`}
+                                    onClick={(e) =>
+                                      handleNextImage(prod.id, e)
+                                    }
+                                    aria-label="Next image"
+                                  >
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      width="16"
+                                      height="16"
+                                      viewBox="0 0 24 24"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      strokeWidth="2"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                    >
+                                      <polyline points="9 18 15 12 9 6"></polyline>
+                                    </svg>
+                                  </button>
+                                  <div className={styles.imageCounter}>
+                                    {currentImageIndex + 1} /{' '}
+                                    {prod.imageUrls.length}
+                                  </div>
+                                </>
+                              )}
+
+                              <div className={styles.productInfoOverlay}>
+                                <h3 className={styles.productName}>
+                                  {nameMatch
+                                    ? getHighlightedText(
+                                        prod.name,
+                                        nameMatch.indices
+                                      )
+                                    : prod.name}
+                                </h3>
+                                <p className={styles.productPrice}>
+                                  {prod.currency} {prod.price.toFixed(2)}
+                                </p>
+                                {prod.category && (
+                                  <span className={styles.productCategory}>
+                                    {catMatch
+                                      ? getHighlightedText(
+                                          prod.category.name,
+                                          catMatch.indices
+                                        )
+                                      : prod.category.name}
+                                  </span>
+                                )}
                               </div>
                             </div>
-                          )}
-                          
-                          {hasMultipleImages && !isLoading && (
-                            <>
-                              <button
-                                className={`${styles.imageNav} ${styles.imageNavPrev}`}
-                                onClick={(e) => handlePrevImage(prod.id, e)}
-                                aria-label="Previous image"
-                              >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                  <polyline points="15 18 9 12 15 6"></polyline>
-                                </svg>
-                              </button>
-                              <button
-                                className={`${styles.imageNav} ${styles.imageNavNext}`}
-                                onClick={(e) => handleNextImage(prod.id, e)}
-                                aria-label="Next image"
-                              >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                  <polyline points="9 18 15 12 9 6"></polyline>
-                                </svg>
-                              </button>
-                              <div className={styles.imageCounter}>
-                                {currentImageIndex + 1} / {prod.imageUrls.length}
-                              </div>
-                            </>
-                          )}
-                          
-                          <div className={styles.productInfoOverlay}>
-                            <h3 className={styles.productName}>
-                              {nameMatch ? getHighlightedText(prod.name, nameMatch.indices) : prod.name}
-                            </h3>
-                            <p className={styles.productPrice}>
-                              {prod.currency} {prod.price.toFixed(2)}
-                            </p>
-                            {prod.category && (
-                              <span className={styles.productCategory}>
-                                {catMatch ? getHighlightedText(prod.category.name, catMatch.indices) : prod.category.name}
-                              </span>
-                            )}
-                          </div>
+                          </a>
                         </div>
-                      </a>
+                      )
+                    })}
+                  </div>
+                ) : searchText ? (
+                  <div className={styles.noResultsContainer}>
+                    <svg
+                      className={styles.noResultsIcon}
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="36"
+                      height="36"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <circle cx="11" cy="11" r="8"></circle>
+                      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                      <line x1="8" y1="11" x2="14" y2="11"></line>
+                    </svg>
+                    <p className={styles.noResultsText}>NO PRODUCTS FOUND</p>
+                    <p className={styles.noResultsSubtext}>
+                      Try a different search term or browse categories
+                    </p>
+                  </div>
+                ) : (
+                  <div className={styles.emptyStateContainer}>
+                    <svg
+                      className={styles.emptyStateIcon}
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="36"
+                      height="36"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <circle cx="11" cy="11" r="8"></circle>
+                      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <div className={styles.emptyResultsText}>
+                      {'SEARCH FOR PRODUCTS'
+                        .split('')
+                        .map((letter, index) => (
+                          <span key={index} className={styles.letter}>
+                            {letter === ' ' ? '\u00A0' : letter}
+                          </span>
+                        ))}
                     </div>
-                  );
-                })}
+                    <p className={styles.emptyStateSubtext}>
+                      Type in the search box above or select a category
+                    </p>
+                  </div>
+                )}
               </div>
-            ) : searchText ? (
-              <div className={styles.noResultsContainer}>
-                <svg className={styles.noResultsIcon} xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="11" cy="11" r="8"></circle>
-                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                  <line x1="8" y1="11" x2="14" y2="11"></line>
-                </svg>
-                <p className={styles.noResultsText}>NO PRODUCTS FOUND</p>
-                <p className={styles.noResultsSubtext}>Try a different search term or browse categories</p>
-              </div>
-            ) : (
-              <div className={styles.emptyStateContainer}>
-                <svg className={styles.emptyStateIcon} xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="11" cy="11" r="8"></circle>
-                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
-                <div className={styles.emptyResultsText}>
-                  {"SEARCH FOR PRODUCTS".split('').map((letter, index) => (
-                    <span key={index} className={styles.letter}>
-                      {letter === ' ' ? '\u00A0' : letter}
-                    </span>
-                  ))}
-                </div>
-                <p className={styles.emptyStateSubtext}>Type in the search box above or select a category</p>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  )
 
-  return createPortal(modalContent, document.body);
+  return createPortal(modalContent, document.body)
 }
