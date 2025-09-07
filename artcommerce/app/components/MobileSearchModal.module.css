@@ -16,10 +16,6 @@
   transform: translateY(0);
 }
 
-.searchOverlayClosing {
-  transform: translateY(100%);
-}
-
 .mobileSearchHeader {
   display: flex;
   justify-content: space-between;

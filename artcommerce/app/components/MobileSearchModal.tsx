@@ -378,8 +378,6 @@ export default function MobileSearchModal({ open, onClose }: Props) {
   const currentSearch = searchParams.get('search') || ''
   
   const [mounted, setMounted] = useState(false)
-  const [isClosing, setIsClosing] = useState(false)
-  const closeTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
   const [searchText, setSearchText] = useState<string>('')
   const [searchResults, setSearchResults] = useState<Product[]>([])
   const [loadingResults, setLoadingResults] = useState<boolean>(false)
@@ -421,23 +419,11 @@ export default function MobileSearchModal({ open, onClose }: Props) {
     setMounted(true)
     return () => {
       setMounted(false)
-      if (closeTimeoutRef.current) {
-        clearTimeout(closeTimeoutRef.current)
-      }
     }
   }, [])
 
   const handleClose = useCallback(() => {
-    setIsClosing(true)
-    
-    if (closeTimeoutRef.current) {
-      clearTimeout(closeTimeoutRef.current)
-    }
-    
-    closeTimeoutRef.current = setTimeout(() => {
-      onClose()
-      setIsClosing(false)
-    }, 300)
+    onClose()
   }, [onClose])
 
   // Close on escape key
@@ -601,12 +587,12 @@ export default function MobileSearchModal({ open, onClose }: Props) {
   }
 
   // Early return after all hooks
-  if (!mounted || (!open && !isClosing)) return null
+  if (!mounted || !open) return null
 
   // Create portal directly in document.body
   const modalContent = (
     <div
-      className={`${styles.mobileSearchOverlay} ${open ? styles.searchOverlayOpen : ''} ${isClosing ? styles.searchOverlayClosing : ''}`}
+      className={`${styles.mobileSearchOverlay} ${open ? styles.searchOverlayOpen : ''}`}
     >
       <div className={styles.mobileSearchHeader}>
         <button 
