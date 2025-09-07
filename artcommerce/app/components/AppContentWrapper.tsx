@@ -1,6 +1,8 @@
 'use client'
 
 import { useAuth } from '../contexts/AuthContext'
+import { useCart } from '../contexts/CartContext'
+import { useWishlist } from '../contexts/WishlistContext'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import InitialLoadingScreen from './InitialLoadingScreen'
@@ -10,33 +12,62 @@ interface AppContentWrapperProps {
 }
 
 export default function AppContentWrapper({ children }: AppContentWrapperProps) {
-  const { loading: authLoading } = useAuth()
+  const { loading: authLoading, user } = useAuth()
+  const { cartItems, loading: cartLoading } = useCart()
+  const { wishlistItems, loading: wishlistLoading } = useWishlist()
   const pathname = usePathname()
-  const [initialLoad, setInitialLoad] = useState(true)
+  const [showInitialLoading, setShowInitialLoading] = useState(false)
   const [minLoadingComplete, setMinLoadingComplete] = useState(false)
+  const [systemsInitialized, setSystemsInitialized] = useState(false)
   
-  // Ensure minimum loading duration of 600ms for better UX
+  // Check if all systems are properly initialized
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setMinLoadingComplete(true)
-    }, 600)
+    // Auth is ready when either user is loaded or we know there's no user
+    const authReady = !authLoading
     
-    return () => clearTimeout(timer)
-  }, [])
-  
-  // Mark initial load as complete once auth loading is done and minimum time has passed
-  useEffect(() => {
-    if (!authLoading && minLoadingComplete) {
-      setInitialLoad(false)
+    // Cart and wishlist are ready when they're not loading
+    // (They should initialize even for non-authenticated users)
+    const cartReady = !cartLoading
+    const wishlistReady = !wishlistLoading
+    
+    // All systems are initialized
+    if (authReady && cartReady && wishlistReady) {
+      setSystemsInitialized(true)
     }
-  }, [authLoading, minLoadingComplete])
+  }, [authLoading, cartLoading, wishlistLoading, user])
   
-  // Show loading screen during initial app load
-  // Only show on home page and auth pages to avoid disrupting user experience on other pages
-  const shouldShowLoading = initialLoad && (pathname === '/' || pathname.startsWith('/auth/'))
+  // Check if we should show initial loading screen
+  useEffect(() => {
+    // Only show loading on home page and only if we haven't shown it in this session
+    const hasShownLoading = sessionStorage.getItem('initialLoadingShown')
+    const isHomePage = pathname === '/'
+    
+    if (isHomePage && !hasShownLoading && !systemsInitialized) {
+      setShowInitialLoading(true)
+      
+      // Set minimum loading duration for better UX
+      const timer = setTimeout(() => {
+        setMinLoadingComplete(true)
+      }, 800) // Slightly longer for art-themed animation
+      
+      return () => clearTimeout(timer)
+    } else {
+      setShowInitialLoading(false)
+      setMinLoadingComplete(true)
+    }
+  }, [pathname, systemsInitialized])
   
-  if (shouldShowLoading) {
-    return <InitialLoadingScreen message="Just a moment..." />
+  // Hide loading when all systems are ready and minimum time has passed
+  useEffect(() => {
+    if (showInitialLoading && systemsInitialized && minLoadingComplete) {
+      setShowInitialLoading(false)
+      // Mark that we've shown the initial loading in this session
+      sessionStorage.setItem('initialLoadingShown', 'true')
+    }
+  }, [showInitialLoading, systemsInitialized, minLoadingComplete])
+  
+  if (showInitialLoading) {
+    return <InitialLoadingScreen />
   }
   
   return <>{children}</>

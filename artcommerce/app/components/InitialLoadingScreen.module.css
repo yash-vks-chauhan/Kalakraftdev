@@ -1,16 +1,16 @@
-/* Minimal and professional loading screen */
+/* Art-themed minimal and professional loading screen */
 .loadingScreen {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: #fafafa;
+  background: linear-gradient(135deg, #f8f9fa 0%, #f1f3f4 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 9999;
-  animation: fadeIn 0.3s ease-out;
+  animation: fadeIn 0.4s ease-out;
 }
 
 .loadingContent {
@@ -18,48 +18,159 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1.5rem;
+  gap: 2rem;
+  max-width: 320px;
+  padding: 2rem;
 }
 
-/* Minimal spinner */
-.spinner {
+/* Art-themed loader */
+.artLoader {
   position: relative;
-  width: 32px;
-  height: 32px;
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.spinnerRing {
-  width: 32px;
-  height: 32px;
-  border: 2px solid rgba(0, 0, 0, 0.08);
-  border-top: 2px solid #000;
+/* Paint brush stroke animation */
+.brushStroke {
+  position: absolute;
+  width: 60px;
+  height: 4px;
+  background: linear-gradient(90deg, #8B4513, #DAA520, #2F4F4F);
+  border-radius: 2px;
+  animation: brushPaint 2s ease-in-out infinite;
+  transform-origin: left center;
+}
+
+.brushTip {
+  position: absolute;
+  right: -8px;
+  top: -2px;
+  width: 12px;
+  height: 8px;
+  background: #8B4513;
+  border-radius: 50% 0 50% 50%;
+  animation: brushTipMove 2s ease-in-out infinite;
+}
+
+/* Color palette dots */
+.colorPalette {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.colorDot {
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
-  animation: spin 1s linear infinite;
+  animation: colorPulse 2s ease-in-out infinite;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* Logo styling */
 .logoContainer {
-  opacity: 0.9;
+  opacity: 0.95;
+  animation: logoGlow 3s ease-in-out infinite;
 }
 
 .logo {
-  filter: grayscale(0.1) contrast(1.1);
-  transition: opacity 0.3s ease;
+  filter: contrast(1.05) brightness(1.02);
+  transition: all 0.3s ease;
 }
 
-/* Loading message */
+/* Dynamic loading message */
 .loadingMessage {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 400;
-  color: #666;
-  letter-spacing: 0.025em;
+  color: #4a5568;
+  letter-spacing: 0.03em;
   margin: 0;
-  opacity: 0.8;
+  min-height: 20px;
+  animation: textFade 0.5s ease-in-out;
+}
+
+/* Progress dots */
+.progressDots {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.progressDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.progressDot.active {
+  background: #8B4513;
+  transform: scale(1.3);
+  box-shadow: 0 0 12px rgba(139, 69, 19, 0.4);
 }
 
 /* Animations */
 @keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes brushPaint {
+  0%, 100% {
+    transform: translateX(-10px) rotate(-5deg);
+    opacity: 0.7;
+  }
+  50% {
+    transform: translateX(10px) rotate(5deg);
+    opacity: 1;
+  }
+}
+
+@keyframes brushTipMove {
+  0%, 100% {
+    transform: rotate(-5deg);
+  }
+  50% {
+    transform: rotate(5deg);
+  }
+}
+
+@keyframes colorPulse {
+  0%, 100% {
+    transform: scale(0.8);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+}
+
+@keyframes logoGlow {
+  0%, 100% {
+    filter: contrast(1.05) brightness(1.02) drop-shadow(0 0 0 transparent);
+  }
+  50% {
+    filter: contrast(1.1) brightness(1.05) drop-shadow(0 0 20px rgba(139, 69, 19, 0.1));
+  }
+}
+
+@keyframes textFade {
   from {
     opacity: 0;
     transform: translateY(4px);
@@ -70,50 +181,67 @@
   }
 }
 
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 /* Mobile optimizations */
 @media (max-width: 768px) {
   .loadingContent {
-    gap: 1.25rem;
+    gap: 1.75rem;
+    padding: 1.5rem;
+    max-width: 280px;
   }
   
-  .spinner {
-    width: 28px;
-    height: 28px;
+  .artLoader {
+    width: 70px;
+    height: 70px;
   }
   
-  .spinnerRing {
-    width: 28px;
-    height: 28px;
+  .brushStroke {
+    width: 50px;
+    height: 3px;
+  }
+  
+  .brushTip {
+    width: 10px;
+    height: 6px;
+    right: -6px;
+    top: -1.5px;
+  }
+  
+  .colorDot {
+    width: 10px;
+    height: 10px;
   }
   
   .logo {
-    width: 90px;
+    width: 100px;
     height: auto;
   }
   
   .loadingMessage {
-    font-size: 13px;
-    padding: 0 1.5rem;
+    font-size: 14px;
+    padding: 0 1rem;
+  }
+  
+  .progressDot {
+    width: 5px;
+    height: 5px;
   }
 }
 
 /* Reduced motion preference */
 @media (prefers-reduced-motion: reduce) {
-  .spinnerRing {
+  .brushStroke,
+  .brushTip,
+  .colorDot,
+  .logoContainer {
     animation: none;
-    border: 2px solid rgba(0, 0, 0, 0.2);
   }
   
   .loadingScreen {
     animation: none;
+  }
+  
+  .progressDot.active {
+    transform: none;
+    box-shadow: none;
   }
 }
