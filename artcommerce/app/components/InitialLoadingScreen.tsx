@@ -3,23 +3,17 @@ import { getImageUrl } from '../../lib/cloudinaryImages'
 import { useEffect, useState } from 'react'
 import styles from './InitialLoadingScreen.module.css'
 
-export default function InitialLoadingScreen() {
-  const [currentStep, setCurrentStep] = useState(0)
-  
+interface InitialLoadingScreenProps {
+  currentStep?: number
+}
+
+export default function InitialLoadingScreen({ currentStep = 0 }: InitialLoadingScreenProps) {
   const steps = [
-    "Authenticating your account...",
-    "Preparing your cart...",
-    "Loading your wishlist...",
-    "Setting up your dashboard..."
+    "Loading products...",
+    "Loading categories...", 
+    "Preparing featured content...",
+    "Finalizing setup..."
   ]
-  
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentStep((prev) => (prev + 1) % steps.length)
-    }, 800) // Faster cycling to match reduced loading time
-    
-    return () => clearInterval(interval)
-  }, [steps.length])
   
   return (
     <div className={styles.loadingScreen}>
@@ -53,14 +47,14 @@ export default function InitialLoadingScreen() {
         </div>
         
         {/* Dynamic loading message */}
-        <p className={styles.loadingMessage}>{steps[currentStep]}</p>
+        <p className={styles.loadingMessage}>{steps[currentStep] || steps[0]}</p>
         
         {/* Progress dots */}
         <div className={styles.progressDots}>
           {steps.map((_, index) => (
             <div 
               key={index}
-              className={`${styles.progressDot} ${index === currentStep ? styles.active : ''}`}
+              className={`${styles.progressDot} ${index <= currentStep ? styles.active : ''}`}
             />
           ))}
         </div>

@@ -14,6 +14,7 @@ import styles from './home.module.css'
 import { getImageUrl } from '../lib/cloudinaryImages'
 import Link from 'next/link'
 import MobileVideoSection from './components/MobileVideoSection'
+import { DataCache } from '../lib/dataCache'
 
 // Add this to detect mobile view
 const isMobileView = () => {
@@ -182,19 +183,19 @@ const FeaturedProductsGrid = () => {
     );
   };
 
-  // Fetch products and randomize
+  // Fetch products from cache or API
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        console.log('Fetching products...');
-        const response = await fetch('/api/products');
-        const data = await response.json();
-        console.log('API response:', data);
+        console.log('Loading products from cache...');
         
-        if (data.products && Array.isArray(data.products)) {
+        // Try to get from cache first
+        const cachedProducts = await DataCache.getProducts();
+        
+        if (cachedProducts && Array.isArray(cachedProducts)) {
           // Normalize imageUrls and filter active products
-          const normalizedProducts = data.products
+          const normalizedProducts = cachedProducts
             .filter(p => p.isActive && p.stockQuantity >= 0)
             .map(p => {
               let imageUrls = [];
@@ -208,11 +209,11 @@ const FeaturedProductsGrid = () => {
           
           // Shuffle and take 4 random products
           const shuffled = [...normalizedProducts].sort(() => Math.random() - 0.5);
-          console.log('Processed products:', shuffled.slice(0, 4));
+          console.log('Loaded products from cache:', shuffled.slice(0, 4));
           setProducts(shuffled.slice(0, 4));
         }
       } catch (err) {
-        console.error('Error fetching products:', err);
+        console.error('Error loading products:', err);
         setError(err.message);
       } finally {
         setLoading(false);
@@ -1185,16 +1186,24 @@ useEffect(() => {
 
 
 
-// Fetch featured products for mobile carousel
+// Fetch featured products for mobile carousel from cache
 useEffect(() => {
   const fetchFeaturedProducts = async () => {
     try {
-      const response = await fetch('/api/products');
-      const data = await response.json();
+      // Try to get precomputed featured products from cache first
+      const cachedFeatured = await DataCache.getFeaturedProducts();
       
-      if (data.products && Array.isArray(data.products)) {
+      if (cachedFeatured && cachedFeatured.length > 0) {
+        setFeaturedProducts(cachedFeatured);
+        return;
+      }
+      
+      // Fallback: compute from cached products
+      const cachedProducts = await DataCache.getProducts();
+      
+      if (cachedProducts && Array.isArray(cachedProducts)) {
         // Get active products with stock and images
-        let availableProducts = data.products
+        let availableProducts = cachedProducts
           .filter(p => p.isActive && p.imageUrls && p.imageUrls.length > 0)
           .map(p => ({
             ...p,
@@ -1219,7 +1228,7 @@ useEffect(() => {
         setFeaturedProducts(availableProducts);
       }
     } catch (error) {
-      console.error('Error fetching products:', error);
+      console.error('Error loading featured products:', error);
     }
   };
   

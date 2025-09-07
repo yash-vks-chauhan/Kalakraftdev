@@ -7,6 +7,7 @@ import Image from 'next/image'
 import WishlistButton from '../components/WishlistButton'
 import styles from './products.module.css'
 import { FiChevronLeft, FiChevronRight, FiFilter, FiGrid, FiStar, FiPackage, FiTrendingUp, FiX } from 'react-icons/fi'
+import { DataCache } from '../../lib/dataCache'
 
 const LOW_STOCK_THRESHOLD = 5 // Products with stock <= 5 will show low stock warning
 
@@ -107,31 +108,47 @@ export default function ProductsClient() {
     fetchTags()
   }, [])
 
-  // fetch products from API (with category and tag filter)
+  // fetch products from cache or API (with category and tag filter)
   useEffect(() => {
     async function fetchProducts() {
       setLoading(true)
       setError(null)
-      const params = new URLSearchParams()
-      if (currentCategory) {
-        params.set('category', currentCategory)
-      }
-      if (currentTag) {
-        params.set('usageTag', currentTag)
-      }
-      if (priceMin) params.set('priceMin', priceMin)
-      if (priceMax) params.set('priceMax', priceMax)
-      if (sortOrder) params.set('sort', sortOrder)
-      if (lowStockOnly) params.set('lowStock', 'true')
-      if (inStockOnly) params.set('inStock', 'true')
-      if (ratingMin) params.set('ratingMin', ratingMin)
+      
       try {
-        const res = await fetch(`/api/products?${params.toString()}`)
-        const data = await res.json()
-        if (!res.ok) throw new Error(data.error || 'Failed to fetch products')
+        let allProducts = []
+        
+        // Try to get from cache first if no specific filters
+        if (!currentCategory && !currentTag && !priceMin && !priceMax && !sortOrder && !lowStockOnly && !inStockOnly && !ratingMin) {
+          const cachedProducts = await DataCache.getProducts()
+          if (cachedProducts && cachedProducts.length > 0) {
+            allProducts = cachedProducts
+          }
+        }
+        
+        // If no cached data or filters applied, fetch from API
+        if (allProducts.length === 0) {
+          const params = new URLSearchParams()
+          if (currentCategory) {
+            params.set('category', currentCategory)
+          }
+          if (currentTag) {
+            params.set('usageTag', currentTag)
+          }
+          if (priceMin) params.set('priceMin', priceMin)
+          if (priceMax) params.set('priceMax', priceMax)
+          if (sortOrder) params.set('sort', sortOrder)
+          if (lowStockOnly) params.set('lowStock', 'true')
+          if (inStockOnly) params.set('inStock', 'true')
+          if (ratingMin) params.set('ratingMin', ratingMin)
+          
+          const res = await fetch(`/api/products?${params.toString()}`)
+          const data = await res.json()
+          if (!res.ok) throw new Error(data.error || 'Failed to fetch products')
+          allProducts = data.products || []
+        }
         
         // Normalize imageUrls and prefix any bare filename with '/uploads/'
-        let filteredProducts = (Array.isArray(data.products) ? data.products : []).map((p: any) => {
+        let filteredProducts = (Array.isArray(allProducts) ? allProducts : []).map((p: any) => {
           let rawImgs: string[] = []
           if (Array.isArray(p.imageUrls)) {
             rawImgs = p.imageUrls
