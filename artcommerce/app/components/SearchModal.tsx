@@ -117,6 +117,7 @@ export default function SearchModal({ open, onClose }: Props) {
   const { notifications } = useNotificationContext()
 
   const [mounted, setMounted] = useState(false)
+  const [isVisible, setIsVisible] = useState(false)
   const [searchText, setSearchText] = useState<string>('')
   const [searchResults, setSearchResults] = useState<Product[]>([])
   const [loadingResults, setLoadingResults] = useState<boolean>(false)
@@ -142,6 +143,13 @@ export default function SearchModal({ open, onClose }: Props) {
     }
   }, [])
 
+  // Handle visibility state changes
+  useEffect(() => {
+    if (open) {
+      setIsVisible(true)
+    }
+  }, [open])
+
   // Initialize searchText when modal opens or currentSearch changes
   useEffect(() => {
     if (open) {
@@ -162,16 +170,28 @@ export default function SearchModal({ open, onClose }: Props) {
     }
   }, [])
 
+  // Handle close with animation
+  const handleClose = () => {
+    setIsVisible(false)
+  }
+
+  // Handle animation complete
+  const handleAnimationComplete = () => {
+    if (!isVisible) {
+      onClose(false)
+    }
+  }
+
   // Close on escape key
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose(false)
+      if (e.key === 'Escape') handleClose()
     }
     if (open) {
       window.addEventListener('keydown', onKey)
       return () => window.removeEventListener('keydown', onKey)
     }
-  }, [open, onClose])
+  }, [open])
 
   // Save search to recent searches
   const saveToRecentSearches = (search: string) => {
@@ -308,7 +328,7 @@ export default function SearchModal({ open, onClose }: Props) {
     }
     
     router.replace(`/products?${params.toString()}`)
-    onClose(true)
+    handleClose()
   }
 
   const handleCategorySelect = (category: string | null) => {
@@ -372,7 +392,7 @@ export default function SearchModal({ open, onClose }: Props) {
     await new Promise(resolve => setTimeout(resolve, 300))
     
     router.push(productUrl)
-    onClose(true)
+    handleClose()
   }
 
   // Early return after all hooks
@@ -380,13 +400,13 @@ export default function SearchModal({ open, onClose }: Props) {
 
   // Create portal directly in document.body
   const modalContent = (
-    <AnimatePresence mode="wait">
-      {open && (
+    <AnimatePresence mode="wait" onExitComplete={handleAnimationComplete}>
+      {isVisible && (
         <motion.div
           className={styles.searchOverlay}
           onClick={(e) => {
             if (e.target === e.currentTarget) {
-              onClose(false)
+              handleClose()
             }
           }}
           initial={{ opacity: 0 }}
@@ -443,7 +463,7 @@ export default function SearchModal({ open, onClose }: Props) {
               </div>
               <button
                 type="button"
-                onClick={() => onClose(false)}
+                onClick={handleClose}
                 className={styles.closeButton}
                 aria-label="Close search"
               >

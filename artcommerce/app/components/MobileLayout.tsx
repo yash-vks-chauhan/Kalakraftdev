@@ -991,12 +991,10 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
       )}
       
       {/* Search Overlay */}
-      {isSearchOpen && (
-        <MobileSearchModal
-          open={isSearchOpen}
-          onClose={closeSearch}
-        />
-      )}
+      <MobileSearchModal
+        open={isSearchOpen}
+        onClose={closeSearch}
+      />
 
       {/* Mobile Bottom Navigation removed as we're using the footer instead */}
     </div>

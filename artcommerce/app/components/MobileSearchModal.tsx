@@ -386,6 +386,7 @@ export default function MobileSearchModal({ open, onClose }: Props) {
   const currentSearch = searchParams.get('search') || ''
   
   const [mounted, setMounted] = useState(false)
+  const [isVisible, setIsVisible] = useState(false)
   const [searchText, setSearchText] = useState<string>('')
   const [searchResults, setSearchResults] = useState<Product[]>([])
   const [loadingResults, setLoadingResults] = useState<boolean>(false)
@@ -407,6 +408,13 @@ export default function MobileSearchModal({ open, onClose }: Props) {
       }
     }
   }, [])
+
+  // Handle visibility state changes
+  useEffect(() => {
+    if (open) {
+      setIsVisible(true)
+    }
+  }, [open])
 
   // Initialize searchText when modal opens or currentSearch changes
   useEffect(() => {
@@ -430,9 +438,17 @@ export default function MobileSearchModal({ open, onClose }: Props) {
     }
   }, [])
 
+  // Handle close with animation
   const handleClose = useCallback(() => {
-    onClose()
-  }, [onClose])
+    setIsVisible(false)
+  }, [])
+
+  // Handle animation complete
+  const handleAnimationComplete = () => {
+    if (!isVisible) {
+      onClose()
+    }
+  }
 
   // Close on escape key
   useEffect(() => {
@@ -599,8 +615,8 @@ export default function MobileSearchModal({ open, onClose }: Props) {
 
   // Create portal directly in document.body
   const modalContent = (
-    <AnimatePresence mode="wait">
-      {open && (
+    <AnimatePresence mode="wait" onExitComplete={handleAnimationComplete}>
+      {isVisible && (
         <motion.div
           className={styles.mobileSearchOverlay}
           initial={{ 

@@ -433,12 +433,10 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {searchOpen && (
-        <SearchModal
-          open={searchOpen}
-          onClose={(instantClose) => handleSearchClose(instantClose)}
-        />
-      )}
+      <SearchModal
+        open={searchOpen}
+        onClose={(instantClose) => handleSearchClose(instantClose)}
+      />
 
       {/* Mobile Menu */}
       <div className={`${styles.mobileMenuWrapper} ${isMobileMenuOpen ? styles.mobileMenuWrapperOpen : ''}`}>
