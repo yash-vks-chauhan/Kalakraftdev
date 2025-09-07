@@ -599,14 +599,39 @@ export default function MobileSearchModal({ open, onClose }: Props) {
 
   // Create portal directly in document.body
   const modalContent = (
-    <AnimatePresence>
+    <AnimatePresence mode="wait">
       {open && (
         <motion.div
           className={styles.mobileSearchOverlay}
-          initial={{ scaleY: 0 }}
-          animate={{ scaleY: 1, transformOrigin: 'top' }}
-          exit={{ scaleY: 0, transformOrigin: 'bottom' }}
-          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          initial={{ 
+            y: '100%',
+            opacity: 0,
+            scale: 0.98
+          }}
+          animate={{ 
+            y: 0,
+            opacity: 1,
+            scale: 1
+          }}
+          exit={{ 
+            y: '100%',
+            opacity: 0,
+            scale: 0.95
+          }}
+          transition={{ 
+            duration: 0.4,
+            ease: [0.25, 0.46, 0.45, 0.94], // Smooth entrance
+            opacity: { 
+              duration: 0.3,
+              ease: 'easeOut'
+            },
+            // Faster exit for better responsiveness
+            exit: {
+              duration: 0.3,
+              ease: [0.55, 0.085, 0.68, 0.53],
+              opacity: { duration: 0.2 }
+            }
+          }}
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               handleClose()

@@ -162,32 +162,16 @@ export default function SearchModal({ open, onClose }: Props) {
     }
   }, [])
 
-  const handleClose = useCallback(
-    (instant: boolean) => {
-      onClose(instant)
-    },
-    [onClose]
-  )
-
   // Close on escape key
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') handleClose(false)
+      if (e.key === 'Escape') onClose(false)
     }
     if (open) {
       window.addEventListener('keydown', onKey)
       return () => window.removeEventListener('keydown', onKey)
     }
-  }, [open, handleClose])
-
-  // Handle open/close transitions
-  useEffect(() => {
-    if (open) {
-      if (closeTimeoutRef.current) {
-        clearTimeout(closeTimeoutRef.current)
-      }
-    }
-  }, [open])
+  }, [open, onClose])
 
   // Save search to recent searches
   const saveToRecentSearches = (search: string) => {
@@ -324,7 +308,7 @@ export default function SearchModal({ open, onClose }: Props) {
     }
     
     router.replace(`/products?${params.toString()}`)
-    handleClose(true)
+    onClose(true)
   }
 
   const handleCategorySelect = (category: string | null) => {
@@ -388,7 +372,7 @@ export default function SearchModal({ open, onClose }: Props) {
     await new Promise(resolve => setTimeout(resolve, 300))
     
     router.push(productUrl)
-    handleClose(true)
+    onClose(true)
   }
 
   // Early return after all hooks
@@ -396,27 +380,56 @@ export default function SearchModal({ open, onClose }: Props) {
 
   // Create portal directly in document.body
   const modalContent = (
-    <AnimatePresence>
+    <AnimatePresence mode="wait">
       {open && (
         <motion.div
           className={styles.searchOverlay}
           onClick={(e) => {
             if (e.target === e.currentTarget) {
-              handleClose(false)
+              onClose(false)
             }
           }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.3, ease: 'easeInOut' }}
+          transition={{ 
+            duration: 0.4, 
+            ease: [0.25, 0.46, 0.45, 0.94] // Custom cubic-bezier for smooth fade
+          }}
         >
           <motion.div
             className={styles.searchModal}
             onClick={(e) => e.stopPropagation()}
-            initial={{ scaleY: 0, opacity: 0 }}
-            animate={{ scaleY: 1, opacity: 1, transformOrigin: 'top' }}
-            exit={{ scaleY: 0, opacity: 0, transformOrigin: 'bottom' }}
-            transition={{ duration: 0.3, ease: 'easeInOut' }}
+            initial={{ 
+              scaleY: 0, 
+              opacity: 0, 
+              y: -20,
+              transformOrigin: 'top center'
+            }}
+            animate={{ 
+              scaleY: 1, 
+              opacity: 1, 
+              y: 0,
+              transformOrigin: 'top center'
+            }}
+            exit={{ 
+              scaleY: 0, 
+              opacity: 0, 
+              y: -10,
+              transformOrigin: 'top center'
+            }}
+            transition={{ 
+              duration: 0.45, 
+              ease: [0.22, 1, 0.36, 1], // Professional easing curve
+              opacity: { duration: 0.3 },
+              y: { duration: 0.4 },
+              // Faster exit for better responsiveness
+              exit: {
+                duration: 0.35,
+                ease: [0.55, 0.085, 0.68, 0.53],
+                opacity: { duration: 0.2 }
+              }
+            }}
           >
             <div className={styles.searchHeader}>
               <div className={styles.logoContainer}>
@@ -430,7 +443,7 @@ export default function SearchModal({ open, onClose }: Props) {
               </div>
               <button
                 type="button"
-                onClick={() => handleClose(false)}
+                onClick={() => onClose(false)}
                 className={styles.closeButton}
                 aria-label="Close search"
               >

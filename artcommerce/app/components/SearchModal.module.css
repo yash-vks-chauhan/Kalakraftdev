@@ -73,6 +73,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  will-change: opacity, backdrop-filter;
 }
 
 .searchOverlayOpen {
@@ -92,6 +93,9 @@
   height: 100vh;
   display: flex;
   flex-direction: column;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
 }
 
 .searchOverlayOpen .searchModal {
@@ -152,6 +156,19 @@
   flex-direction: column;
   overflow: hidden;
   padding: 0 2rem;
+  opacity: 0;
+  animation: fadeInContent 0.6s ease-out 0.2s forwards;
+}
+
+@keyframes fadeInContent {
+  from { 
+    opacity: 0; 
+    transform: translateY(10px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
 }
 
 /* Search form */
@@ -932,6 +949,12 @@
   }
 }
 
+/* Prevent content animations during modal exit */
+.searchModal[data-exiting="true"] .searchContent {
+  animation: none;
+  opacity: 1;
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .searchOverlay,
@@ -941,7 +964,8 @@
   .letter,
   .dots span,
   .loadingCircle,
-  .loadingCircleSmall {
+  .loadingCircleSmall,
+  .searchContent {
     animation: none !important;
     transition: opacity 0.1s ease !important;
     transform: none !important;
