@@ -12,14 +12,6 @@ interface AppContentWrapperProps {
 }
 
 export default function AppContentWrapper({ children }: AppContentWrapperProps) {
-  'use client'
-  import { useAuth } from '../contexts/AuthContext'
-  import { useCart } from '../contexts/CartContext'
-  import { useWishlist } from '../contexts/WishlistContext'
-  import { usePathname } from 'next/navigation'
-  import { useEffect, useState, useRef } from 'react'
-  import InitialLoadingScreen from './InitialLoadingScreen'
-
   const { loading: authLoading, user, token } = useAuth()
   const { cartLoading } = useCart()
   const { loading: wishlistLoading } = useWishlist()
