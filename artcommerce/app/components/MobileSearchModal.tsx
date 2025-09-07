@@ -603,150 +603,139 @@ export default function MobileSearchModal({ open, onClose }: Props) {
       {open && (
         <motion.div
           className={styles.mobileSearchOverlay}
+          initial={{ scaleY: 0 }}
+          animate={{ scaleY: 1, transformOrigin: 'top' }}
+          exit={{ scaleY: 0, transformOrigin: 'bottom' }}
+          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               handleClose()
             }
           }}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.3, ease: 'easeInOut' }}
         >
-          <motion.div
-            className={styles.modalContent}
-            initial={{ scaleY: 0, opacity: 0 }}
-            animate={{ scaleY: 1, opacity: 1, transformOrigin: 'top' }}
-            exit={{ scaleY: 0, opacity: 0, transformOrigin: 'bottom' }}
-            transition={{ duration: 0.3, ease: 'easeInOut' }}
-          >
-            <div className={styles.mobileSearchHeader}>
-              <button
-                onClick={handleClose}
-                className={styles.backButton}
-                aria-label="Back"
-              >
-                <ArrowLeft size={20} />
-              </button>
+          <div className={styles.mobileSearchHeader}>
+            <button
+              onClick={handleClose}
+              className={styles.backButton}
+              aria-label="Back"
+            >
+              <ArrowLeft size={20} />
+            </button>
 
-              <div className={styles.logoContainer}>
-                <img
-                  src={getImageUrl('logo.png')}
-                  alt="Kalakraft"
-                  className={styles.logoImage}
-                  width={100}
-                  height={32}
+            <div className={styles.logoContainer}>
+              <img
+                src={getImageUrl('logo.png')}
+                alt="Kalakraft"
+                className={styles.logoImage}
+                width={100}
+                height={32}
+              />
+            </div>
+
+            <button
+              type="button"
+              onClick={handleClearSearch}
+              className={styles.clearButton}
+              aria-label="Clear search"
+            >
+              <X size={18} />
+            </button>
+          </div>
+
+          <div className={styles.mobileSearchContent}>
+            <form onSubmit={handleSearchSubmit} className={styles.searchForm}>
+              <div className={styles.searchInputContainer}>
+                <Search className={styles.searchIcon} size={18} />
+                <input
+                  ref={inputRef}
+                  type="text"
+                  placeholder="Search products..."
+                  value={searchText}
+                  onChange={(e) => setSearchText(e.target.value)}
+                  className={styles.searchInput}
+                  autoComplete="off"
                 />
               </div>
+            </form>
 
-              <button
-                type="button"
-                onClick={handleClearSearch}
-                className={styles.clearButton}
-                aria-label="Clear search"
-              >
-                <X size={18} />
-              </button>
+            <div className={styles.categoriesScroll}>
+              {KNOWN_CATEGORIES.map((category) => (
+                <button
+                  key={category.slug}
+                  type="button"
+                  className={`${styles.categoryPill} ${
+                    selectedCategory === category.slug
+                      ? styles.categoryPillActive
+                      : ''
+                  }`}
+                  onClick={() => handleCategorySelect(category.slug)}
+                >
+                  {category.name}
+                </button>
+              ))}
             </div>
 
-            <div className={styles.mobileSearchContent}>
-              <form
-                onSubmit={handleSearchSubmit}
-                className={styles.searchForm}
-              >
-                <div className={styles.searchInputContainer}>
-                  <Search className={styles.searchIcon} size={18} />
-                  <input
-                    ref={inputRef}
-                    type="text"
-                    placeholder="Search products..."
-                    value={searchText}
-                    onChange={(e) => setSearchText(e.target.value)}
-                    className={styles.searchInput}
-                    autoComplete="off"
-                  />
+            <div className={styles.resultsContainer}>
+              {loadingResults ? (
+                <div className={styles.loadingContainer}>
+                  <div className={styles.loadingSpinner}></div>
+                  <p className={styles.loadingText}>Searching...</p>
                 </div>
-              </form>
-
-              <div className={styles.categoriesScroll}>
-                {KNOWN_CATEGORIES.map((category) => (
-                  <button
-                    key={category.slug}
-                    type="button"
-                    className={`${styles.categoryPill} ${
-                      selectedCategory === category.slug
-                        ? styles.categoryPillActive
-                        : ''
-                    }`}
-                    onClick={() => handleCategorySelect(category.slug)}
-                  >
-                    {category.name}
-                  </button>
-                ))}
-              </div>
-
-              <div className={styles.resultsContainer}>
-                {loadingResults ? (
-                  <div className={styles.loadingContainer}>
-                    <div className={styles.loadingSpinner}></div>
-                    <p className={styles.loadingText}>Searching...</p>
-                  </div>
-                ) : errorResults ? (
-                  <div className={styles.errorContainer}>
-                    <p className={styles.errorText}>Error: {errorResults}</p>
-                  </div>
-                ) : searchResults.length > 0 ? (
-                  <div className={styles.list}>
-                    {searchResults.map((product) => (
-                      <ProductCard
-                        key={product.id}
-                        product={product}
-                        handleProductClick={handleProductClick}
+              ) : errorResults ? (
+                <div className={styles.errorContainer}>
+                  <p className={styles.errorText}>Error: {errorResults}</p>
+                </div>
+              ) : searchResults.length > 0 ? (
+                <div className={styles.list}>
+                  {searchResults.map((product) => (
+                    <ProductCard
+                      key={product.id}
+                      product={product}
+                      handleProductClick={handleProductClick}
+                    />
+                  ))}
+                </div>
+              ) : searchText ? (
+                <div className={styles.noResultsContainer}>
+                  <p className={styles.noResultsText}>No products found</p>
+                  <p className={styles.noResultsSubtext}>
+                    Try a different search term or browse categories
+                  </p>
+                </div>
+              ) : recentSearches.length > 0 ? (
+                <div className={styles.recentSearches}>
+                  <h3 className={styles.recentSearchesTitle}>
+                    Recent Searches
+                  </h3>
+                  {recentSearches.map((search, index) => (
+                    <button
+                      key={index}
+                      className={styles.recentSearchItem}
+                      onClick={() => handleRecentSearchClick(search)}
+                    >
+                      <span className={styles.recentSearchText}>
+                        {search}
+                      </span>
+                      <ArrowLeft
+                        size={16}
+                        className={styles.recentSearchIcon}
                       />
-                    ))}
-                  </div>
-                ) : searchText ? (
-                  <div className={styles.noResultsContainer}>
-                    <p className={styles.noResultsText}>No products found</p>
-                    <p className={styles.noResultsSubtext}>
-                      Try a different search term or browse categories
-                    </p>
-                  </div>
-                ) : recentSearches.length > 0 ? (
-                  <div className={styles.recentSearches}>
-                    <h3 className={styles.recentSearchesTitle}>
-                      Recent Searches
-                    </h3>
-                    {recentSearches.map((search, index) => (
-                      <button
-                        key={index}
-                        className={styles.recentSearchItem}
-                        onClick={() => handleRecentSearchClick(search)}
-                      >
-                        <span className={styles.recentSearchText}>
-                          {search}
-                        </span>
-                        <ArrowLeft
-                          size={16}
-                          className={styles.recentSearchIcon}
-                        />
-                      </button>
-                    ))}
-                  </div>
-                ) : (
-                  <div className={styles.emptyStateContainer}>
-                    <Search size={40} className={styles.emptyStateIcon} />
-                    <p className={styles.emptyStateText}>
-                      Search for products
-                    </p>
-                    <p className={styles.emptyStateSubtext}>
-                      Type in the search box above or select a category
-                    </p>
-                  </div>
-                )}
-              </div>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className={styles.emptyStateContainer}>
+                  <Search size={40} className={styles.emptyStateIcon} />
+                  <p className={styles.emptyStateText}>
+                    Search for products
+                  </p>
+                  <p className={styles.emptyStateSubtext}>
+                    Type in the search box above or select a category
+                  </p>
+                </div>
+              )}
             </div>
-          </motion.div>
+          </div>
         </motion.div>
       )}
     </AnimatePresence>

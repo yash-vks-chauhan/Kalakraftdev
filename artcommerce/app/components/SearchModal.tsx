@@ -117,8 +117,6 @@ export default function SearchModal({ open, onClose }: Props) {
   const { notifications } = useNotificationContext()
 
   const [mounted, setMounted] = useState(false)
-  const [isClosing, setIsClosing] = useState(false)
-  const closeTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
   const [searchText, setSearchText] = useState<string>('')
   const [searchResults, setSearchResults] = useState<Product[]>([])
   const [loadingResults, setLoadingResults] = useState<boolean>(false)
@@ -161,29 +159,15 @@ export default function SearchModal({ open, onClose }: Props) {
     setMounted(true)
     return () => {
       setMounted(false)
-      if (closeTimeoutRef.current) {
-        clearTimeout(closeTimeoutRef.current)
-      }
     }
   }, [])
 
-  const handleClose = useCallback((instant: boolean) => {
-    if (instant) {
-      onClose(true)
-      return
-    }
-
-    setIsClosing(true)
-    
-    if (closeTimeoutRef.current) {
-      clearTimeout(closeTimeoutRef.current)
-    }
-    
-    closeTimeoutRef.current = setTimeout(() => {
-      onClose(false)
-      setIsClosing(false)
-    }, 300) // Reduced from 800ms to 300ms for snappier feel
-  }, [onClose])
+  const handleClose = useCallback(
+    (instant: boolean) => {
+      onClose(instant)
+    },
+    [onClose]
+  )
 
   // Close on escape key
   useEffect(() => {
@@ -199,7 +183,6 @@ export default function SearchModal({ open, onClose }: Props) {
   // Handle open/close transitions
   useEffect(() => {
     if (open) {
-      setIsClosing(false)
       if (closeTimeoutRef.current) {
         clearTimeout(closeTimeoutRef.current)
       }
