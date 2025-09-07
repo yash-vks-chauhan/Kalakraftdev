@@ -2751,30 +2751,6 @@
   font-size: 0.9rem;
 }
 
-/* Best Sellers Footer */
-.bestSellersFooter {
-  text-align: center;
-  margin-top: 3rem;
-}
-
-.viewAllBestSellersButton {
-  display: inline-block;
-  background: linear-gradient(135deg, #333 0%, #555 100%);
-  color: white;
-  padding: 14px 32px;
-  border-radius: 50px;
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 1rem;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-}
-
-.viewAllBestSellersButton:hover {
-  background: linear-gradient(135deg, #222 0%, #444 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.3);
-}
 
 /* Loading State */
 .bestSellersLoading {

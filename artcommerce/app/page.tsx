@@ -210,12 +210,6 @@ const BestSellersSection = () => {
         </div>
       </div>
 
-      {/* View All Button */}
-      <div className={styles.bestSellersFooter} data-aos="fade-up" data-aos-delay="400">
-        <Link href="/products?sort=best_sellers" className={styles.viewAllBestSellersButton}>
-          View All Best Sellers
-        </Link>
-      </div>
     </section>
   );
 };
