@@ -22,6 +22,204 @@ const isMobileView = () => {
   return window.innerWidth <= 1024;
 };
 
+// Best Sellers Component
+const BestSellersSection = () => {
+  const [bestSellers, setBestSellers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Format price function
+  const formatPrice = (price) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 0,
+      minimumFractionDigits: 0
+    }).format(price);
+  };
+
+  // Fetch best sellers
+  useEffect(() => {
+    const fetchBestSellers = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('/api/products/best-sellers?limit=5');
+        const data = await response.json();
+        
+        if (data.products && Array.isArray(data.products)) {
+          setBestSellers(data.products);
+        }
+      } catch (err) {
+        console.error('Error fetching best sellers:', err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBestSellers();
+  }, []);
+
+  if (loading) {
+    return (
+      <section className={styles.bestSellersSection} data-aos="fade-up">
+        <div className={styles.sectionHeader} data-aos="fade-up">
+          <div className={styles.headerLine}></div>
+          <h2 className={styles.sectionTitle}>Best Sellers</h2>
+          <div className={styles.headerLine}></div>
+        </div>
+        <div className={styles.bestSellersLoading}>
+          <div className={styles.loadingSpinner}></div>
+          <p>Loading best sellers...</p>
+        </div>
+      </section>
+    );
+  }
+
+  if (error || !bestSellers.length) {
+    return null; // Hide section if no data
+  }
+
+  return (
+    <section className={styles.bestSellersSection} data-aos="fade-up">
+      {/* Section Header */}
+      <div className={styles.sectionHeader} data-aos="fade-up">
+        <div className={styles.headerLine}></div>
+        <h2 className={styles.sectionTitle}>Best Sellers</h2>
+        <div className={styles.headerLine}></div>
+      </div>
+
+      <div className={styles.bestSellersDescription} data-aos="fade-up" data-aos-delay="100">
+        <p>Discover our most loved creations, chosen by customers like you. These handcrafted pieces have won hearts and found their way into homes across the country.</p>
+      </div>
+
+      {/* Best Sellers Grid - Desktop */}
+      <div className={`${styles.bestSellersGrid} ${styles.desktopOnly}`} data-aos="fade-up" data-aos-delay="200">
+        {bestSellers.map((product, index) => (
+          <div key={product.id} className={styles.bestSellerCard} data-aos="fade-up" data-aos-delay={`${300 + (index * 100)}`}>
+            <Link href={`/products/${product.id}`}>
+              <div className={styles.bestSellerCardInner}>
+                <div className={styles.bestSellerImageContainer}>
+                  <img
+                    src={product.imageUrls && product.imageUrls[0] ? product.imageUrls[0] : 'https://placehold.co/300x300/f0f0f0/888?text=No+Image'}
+                    alt={product.name}
+                    className={styles.bestSellerImage}
+                    onError={(e) => (e.currentTarget.src = 'https://placehold.co/300x300/f0f0f0/888?text=No+Image')}
+                  />
+                  
+                  {/* Best Seller Badge */}
+                  <div className={styles.bestSellerBadge}>
+                    <span className={styles.bestSellerBadgeIcon}>🏆</span>
+                    <span>Best Seller</span>
+                  </div>
+
+                  {/* Sales Info */}
+                  {product.totalSold > 0 && (
+                    <div className={styles.salesInfo}>
+                      {product.totalSold} sold
+                    </div>
+                  )}
+
+                  {/* Stock badges */}
+                  {product.stockQuantity === 0 && (
+                    <div className={`${styles.stockBadge} ${styles.outOfStock}`}>
+                      Out of Stock
+                    </div>
+                  )}
+                  
+                  {product.stockQuantity > 0 && product.stockQuantity <= 5 && (
+                    <div className={`${styles.stockBadge} ${styles.lowStock}`}>
+                      Only {product.stockQuantity} left
+                    </div>
+                  )}
+                </div>
+                
+                <div className={styles.bestSellerCardInfo}>
+                  {product.category && (
+                    <div className={styles.bestSellerCategory}>
+                      {product.category.name}
+                    </div>
+                  )}
+                  <h3 className={styles.bestSellerProductName}>{product.name}</h3>
+                  <div className={styles.bestSellerPriceRow}>
+                    <p className={styles.bestSellerPrice}>{formatPrice(product.price)}</p>
+                    {product.avgRating > 0 && (
+                      <p className={styles.bestSellerRating}>
+                        <span className={styles.bestSellerStarFilled}>★</span>
+                        <span className={styles.bestSellerRatingValue}>{product.avgRating.toFixed(1)}</span>
+                        <span className={styles.bestSellerRatingCount}>({product.ratingCount})</span>
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </Link>
+          </div>
+        ))}
+      </div>
+
+      {/* Best Sellers Carousel - Mobile */}
+      <div className={`${styles.bestSellersMobile} ${styles.mobileOnly}`} data-aos="fade-up" data-aos-delay="200">
+        <div className={styles.bestSellersCarousel}>
+          {bestSellers.map((product, index) => (
+            <div key={product.id} className={styles.bestSellerMobileCard}>
+              <Link href={`/products/${product.id}`}>
+                <div className={styles.bestSellerMobileCardInner}>
+                  <div className={styles.bestSellerMobileImageContainer}>
+                    <img
+                      src={product.imageUrls && product.imageUrls[0] ? product.imageUrls[0] : 'https://placehold.co/300x300/f0f0f0/888?text=No+Image'}
+                      alt={product.name}
+                      className={styles.bestSellerMobileImage}
+                      onError={(e) => (e.currentTarget.src = 'https://placehold.co/300x300/f0f0f0/888?text=No+Image')}
+                    />
+                    
+                    {/* Best Seller Badge */}
+                    <div className={styles.bestSellerMobileBadge}>
+                      🏆 #{index + 1}
+                    </div>
+
+                    {/* Sales Info */}
+                    {product.totalSold > 0 && (
+                      <div className={styles.salesInfoMobile}>
+                        {product.totalSold} sold
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className={styles.bestSellerMobileCardInfo}>
+                    {product.category && (
+                      <div className={styles.bestSellerMobileCategory}>
+                        {product.category.name}
+                      </div>
+                    )}
+                    <h3 className={styles.bestSellerMobileProductName}>{product.name}</h3>
+                    <div className={styles.bestSellerMobilePriceRow}>
+                      <p className={styles.bestSellerMobilePrice}>{formatPrice(product.price)}</p>
+                      {product.avgRating > 0 && (
+                        <p className={styles.bestSellerMobileRating}>
+                          <span className={styles.bestSellerMobileStarFilled}>★</span>
+                          <span>{product.avgRating.toFixed(1)}</span>
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* View All Button */}
+      <div className={styles.bestSellersFooter} data-aos="fade-up" data-aos-delay="400">
+        <Link href="/products?sort=best_sellers" className={styles.viewAllBestSellersButton}>
+          View All Best Sellers
+        </Link>
+      </div>
+    </section>
+  );
+};
+
 // Featured Products Grid Component
 const FeaturedProductsGrid = () => {
   const [products, setProducts] = useState([]);
@@ -1508,6 +1706,9 @@ onClick={() => handleCarouselNav('next')}
   <div className={styles.brushAccent}></div>
   
   </section>
+  
+  {/* Best Sellers Section */}
+  <BestSellersSection />
   
   {/* Mobile Video Section - Using the original component */}
   <div data-aos="fade-up" data-aos-delay="400">

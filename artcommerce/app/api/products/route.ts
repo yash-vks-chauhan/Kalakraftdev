@@ -64,6 +64,10 @@ export async function GET(request: Request) {
     if (sortParam === 'price_asc') orderBy = { price: 'asc' }
     else if (sortParam === 'price_desc') orderBy = { price: 'desc' }
     else if (sortParam === 'oldest') orderBy = { createdAt: 'asc' }
+    else if (sortParam === 'best_sellers') {
+      // For best sellers, we'll use a different approach with raw SQL
+      // This is handled after the initial query
+    }
 
     const products = await prisma.product.findMany({
       where: whereClause,
@@ -100,6 +104,36 @@ export async function GET(request: Request) {
       if (!isNaN(min)) {
         filteredProducts = filteredProducts.filter(p => (p as any).avgRating >= min)
       }
+    }
+
+    // Handle best sellers sorting
+    if (sortParam === 'best_sellers') {
+      // Get sales data for all products
+      const salesData = await prisma.$queryRaw<any[]>`
+        SELECT 
+          p.id,
+          COALESCE(SUM(oi.quantity), 0) as "totalSold"
+        FROM "Product" p
+        LEFT JOIN "OrderItem" oi ON oi."productId" = p.id
+        LEFT JOIN "Order" o ON o.id = oi."orderId" 
+          AND o.status IN ('completed', 'shipped', 'delivered')
+          AND o."paymentStatus" = 'paid'
+        WHERE p.id IN (${filteredProducts.map(p => p.id).join(',')})
+        GROUP BY p.id
+      `
+      
+      // Create a map of product ID to total sold
+      const salesMap = new Map()
+      salesData.forEach(item => {
+        salesMap.set(item.id, Number(item.totalSold) || 0)
+      })
+      
+      // Sort products by total sold (descending)
+      filteredProducts.sort((a, b) => {
+        const aSold = salesMap.get(a.id) || 0
+        const bSold = salesMap.get(b.id) || 0
+        return bSold - aSold
+      })
     }
 
     if (usageTagParam) {

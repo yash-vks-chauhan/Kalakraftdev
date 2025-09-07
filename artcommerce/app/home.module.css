@@ -2449,3 +2449,376 @@
 .mobileFeaturedViewAllButton:active {
   transform: translateY(0);
 }
+
+/* ===============================================
+   BEST SELLERS SECTION
+   =============================================== */
+
+.bestSellersSection {
+  position: relative;
+  padding: 6rem 2rem 8rem;
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 50%, #f1f3f4 100%);
+  overflow: hidden;
+}
+
+.bestSellersDescription {
+  text-align: center;
+  max-width: 600px;
+  margin: 0 auto 3rem;
+  color: #666;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  font-weight: 300;
+}
+
+/* Best Sellers Grid - Desktop */
+.bestSellersGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.bestSellerCard {
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.bestSellerCard:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+.bestSellerCardInner {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  height: 100%;
+}
+
+.bestSellerImageContainer {
+  position: relative;
+  width: 100%;
+  height: 280px;
+  overflow: hidden;
+}
+
+.bestSellerImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.bestSellerCard:hover .bestSellerImage {
+  transform: scale(1.05);
+}
+
+.bestSellerBadge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
+}
+
+.bestSellerBadgeIcon {
+  font-size: 0.85rem;
+}
+
+.salesInfo {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+.stockBadge {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+.stockBadge.outOfStock {
+  background: #ff4757;
+  color: white;
+}
+
+.stockBadge.lowStock {
+  background: #ffa726;
+  color: white;
+}
+
+.bestSellerCardInfo {
+  padding: 1.5rem;
+}
+
+.bestSellerCategory {
+  font-size: 0.75rem;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.bestSellerProductName {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 1rem;
+  line-height: 1.4;
+}
+
+.bestSellerPriceRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.bestSellerPrice {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #333;
+  margin: 0;
+}
+
+.bestSellerRating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.85rem;
+  color: #666;
+  margin: 0;
+}
+
+.bestSellerStarFilled {
+  color: #ffd700;
+  font-size: 1rem;
+}
+
+.bestSellerRatingValue {
+  font-weight: 600;
+  color: #333;
+}
+
+.bestSellerRatingCount {
+  color: #999;
+  font-size: 0.8rem;
+}
+
+/* Best Sellers Mobile Carousel */
+.bestSellersMobile {
+  margin: 0 -1rem;
+}
+
+.bestSellersCarousel {
+  display: flex;
+  gap: 1rem;
+  padding: 0 1rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.bestSellersCarousel::-webkit-scrollbar {
+  display: none;
+}
+
+.bestSellerMobileCard {
+  flex: 0 0 280px;
+  scroll-snap-align: start;
+}
+
+.bestSellerMobileCardInner {
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  height: 100%;
+}
+
+.bestSellerMobileImageContainer {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+}
+
+.bestSellerMobileImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.bestSellerMobileBadge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
+}
+
+.salesInfoMobile {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 4px 6px;
+  border-radius: 8px;
+  font-size: 0.65rem;
+  font-weight: 500;
+}
+
+.bestSellerMobileCardInfo {
+  padding: 1rem;
+}
+
+.bestSellerMobileCategory {
+  font-size: 0.7rem;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.3rem;
+  font-weight: 500;
+}
+
+.bestSellerMobileProductName {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.8rem;
+  line-height: 1.3;
+}
+
+.bestSellerMobilePriceRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.bestSellerMobilePrice {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #333;
+  margin: 0;
+}
+
+.bestSellerMobileRating {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.8rem;
+  color: #666;
+  margin: 0;
+}
+
+.bestSellerMobileStarFilled {
+  color: #ffd700;
+  font-size: 0.9rem;
+}
+
+/* Best Sellers Footer */
+.bestSellersFooter {
+  text-align: center;
+  margin-top: 3rem;
+}
+
+.viewAllBestSellersButton {
+  display: inline-block;
+  background: linear-gradient(135deg, #333 0%, #555 100%);
+  color: white;
+  padding: 14px 32px;
+  border-radius: 50px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.viewAllBestSellersButton:hover {
+  background: linear-gradient(135deg, #222 0%, #444 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.3);
+}
+
+/* Loading State */
+.bestSellersLoading {
+  text-align: center;
+  padding: 3rem 0;
+}
+
+.loadingSpinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #333;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .bestSellersSection {
+    padding: 4rem 1rem 6rem;
+  }
+  
+  .bestSellersGrid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    max-width: 400px;
+  }
+  
+  .bestSellerCard {
+    border-radius: 8px;
+  }
+  
+  .bestSellerImageContainer {
+    height: 240px;
+  }
+  
+  .bestSellersDescription {
+    font-size: 1rem;
+    margin-bottom: 2rem;
+  }
+}
