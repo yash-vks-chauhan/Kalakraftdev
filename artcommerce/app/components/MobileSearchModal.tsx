@@ -7,6 +7,7 @@ import {
   FormEvent,
   useCallback,
   ReactNode,
+  Suspense,
 } from 'react'
 import { createPortal } from 'react-dom'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -380,7 +381,7 @@ interface Props {
   onClose: () => void
 }
 
-export default function MobileSearchModal({ open, onClose }: Props) {
+function MobileSearchModalContent({ open, onClose }: Props) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const currentSearch = searchParams.get('search') || ''
@@ -783,4 +784,13 @@ export default function MobileSearchModal({ open, onClose }: Props) {
   )
 
   return createPortal(modalContent, document.body)
+}
+
+// Wrapper component with Suspense boundary
+export default function MobileSearchModal(props: Props) {
+  return (
+    <Suspense fallback={null}>
+      <MobileSearchModalContent {...props} />
+    </Suspense>
+  )
 } 

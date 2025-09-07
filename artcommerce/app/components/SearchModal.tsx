@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useRef, FormEvent, useCallback } from 'react'
+import { useEffect, useState, useRef, FormEvent, useCallback, Suspense } from 'react'
 import { createPortal } from 'react-dom'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
@@ -110,7 +110,7 @@ const SORT_OPTIONS = [
 // Maximum number of recent searches to store
 const MAX_RECENT_SEARCHES = 5
 
-export default function SearchModal({ open, onClose }: Props) {
+function SearchModalContent({ open, onClose }: Props) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const currentSearch = searchParams.get('search') || ''
@@ -872,4 +872,13 @@ export default function SearchModal({ open, onClose }: Props) {
   )
 
   return createPortal(modalContent, document.body)
+}
+
+// Wrapper component with Suspense boundary
+export default function SearchModal(props: Props) {
+  return (
+    <Suspense fallback={null}>
+      <SearchModalContent {...props} />
+    </Suspense>
+  )
 }
