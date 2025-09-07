@@ -10,30 +10,25 @@ export default function InitialLoadingScreen({ message = "Setting up for you..."
   return (
     <div className={styles.loadingScreen}>
       <div className={styles.loadingContent}>
+        {/* Minimal spinner */}
+        <div className={styles.spinner}>
+          <div className={styles.spinnerRing}></div>
+        </div>
+        
         {/* Logo */}
         <div className={styles.logoContainer}>
           <Image
             src={getImageUrl('logo.png')}
             alt="Kalakraft Logo"
-            width={120}
-            height={40}
+            width={100}
+            height={33}
             className={styles.logo}
             priority
           />
         </div>
         
-        {/* Animated dots */}
-        <div className={styles.loadingDots}>
-          <div className={styles.dot}></div>
-          <div className={styles.dot}></div>
-          <div className={styles.dot}></div>
-        </div>
-        
         {/* Loading message */}
         <p className={styles.loadingMessage}>{message}</p>
-        
-        {/* Subtle background pattern */}
-        <div className={styles.backgroundPattern}></div>
       </div>
     </div>
   )

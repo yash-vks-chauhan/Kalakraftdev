@@ -13,7 +13,6 @@ import { getImageUrl } from '../../lib/cloudinaryImages'
 import styles from './MobileLayout.module.css'
 import MobileMenuPanel from './MobileMenuPanel'
 import MobileSearchModal from './MobileSearchModal'
-import InitialLoadingScreen from './InitialLoadingScreen'
 
 interface MobileLayoutProps {
   children: React.ReactNode
@@ -21,7 +20,7 @@ interface MobileLayoutProps {
 }
 
 export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayoutProps) {
-  const { user, logout, loading: authLoading } = useAuth()
+  const { user, logout } = useAuth()
   const { cartItems } = useCart()
   const { wishlistItems } = useWishlist()
   const { isMobileMenuOpen, setIsMobileMenuOpen, isProductPage, isTransparentNavbar } = useMobileMenu()
@@ -678,11 +677,6 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
       }
     }
   }, [isProductPage, pathname]);
-
-  // Show loading screen while auth is being determined (only on home page)
-  if (authLoading && isHomePage) {
-    return <InitialLoadingScreen message="Setting up for you..." />
-  }
 
   return (
     <div className={`${styles.mobileLayoutContainer} ${isProductPage ? styles.productPageContainer : ''}`}>

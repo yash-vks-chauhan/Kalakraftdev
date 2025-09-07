@@ -9,6 +9,7 @@ import Providers from './Providers'
 import { useMobileMenu } from './contexts/MobileMenuContext'
 import MobileMenuPanel from './components/MobileMenuPanel'
 import MobileLayout from './components/MobileLayout'
+import AppContentWrapper from './components/AppContentWrapper'
 import styles from './components/Navbar.module.css'
 import { isMobileDevice } from '../lib/utils'
 import { getImageUrl, getOptimizedImageUrl } from '../lib/cloudinaryImages'
@@ -173,41 +174,43 @@ export default function AppRootClient({ children }: { children: React.ReactNode 
             <strong>Client error:</strong> {globalClientError}
           </div>
         )}
-        {!showDesktopView ? (
-          // Mobile Layout
-          <MobileLayout onSwitchToDesktop={switchToDesktopView}>{children}</MobileLayout>
-        ) : (
-          // Desktop Layout
-          <>
-            {/* Background blur layer for mobile menu */}
-        {isMobileMenuOpen && <div className={`${styles.mobileBackgroundBlur} ${styles.active}`}></div>}
+        <AppContentWrapper>
+          {!showDesktopView ? (
+            // Mobile Layout
+            <MobileLayout onSwitchToDesktop={switchToDesktopView}>{children}</MobileLayout>
+          ) : (
+            // Desktop Layout
+            <>
+              {/* Background blur layer for mobile menu */}
+          {isMobileMenuOpen && <div className={`${styles.mobileBackgroundBlur} ${styles.active}`}></div>}
 
-            {/* Main content wrapper */}
-        <div className={isMobileMenuOpen ? styles.mainContentBlurred : ''}>
-          <Navbar />
-          <NotificationContainer />
-          <AdminNotifications />
-          {children}
-        </div>
+              {/* Main content wrapper */}
+          <div className={isMobileMenuOpen ? styles.mainContentBlurred : ''}>
+            <Navbar />
+            <NotificationContainer />
+            <AdminNotifications />
+            {children}
+          </div>
 
-            {/* Mobile Menu Overlay */}
-        <div 
-          className={`${styles.mobileMenuOverlay} ${isMobileMenuOpen ? styles.active : ''}`}
-          onClick={() => setIsMobileMenuOpen(false)}
-          onTouchStart={handleTouchStart}
-          onTouchEnd={handleTouchEnd}
-        ></div>
+              {/* Mobile Menu Overlay */}
+          <div 
+            className={`${styles.mobileMenuOverlay} ${isMobileMenuOpen ? styles.active : ''}`}
+            onClick={() => setIsMobileMenuOpen(false)}
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+          ></div>
 
-            {/* Mobile Menu Panel - Only used when in desktop mode but showing mobile menu */}
-            <MobileMenuPanel 
-              isOpen={isMobileMenuOpen}
-              onClose={() => setIsMobileMenuOpen(false)}
-              toggleViewMode={switchToMobileView}
-              viewMode="desktop"
-            />
-            
-          </>
-        )}
+              {/* Mobile Menu Panel - Only used when in desktop mode but showing mobile menu */}
+              <MobileMenuPanel 
+                isOpen={isMobileMenuOpen}
+                onClose={() => setIsMobileMenuOpen(false)}
+                toggleViewMode={switchToMobileView}
+                viewMode="desktop"
+              />
+              
+            </>
+          )}
+        </AppContentWrapper>
       </Providers>
     </body>
   );

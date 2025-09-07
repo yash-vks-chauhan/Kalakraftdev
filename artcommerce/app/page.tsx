@@ -14,8 +14,6 @@ import styles from './home.module.css'
 import { getImageUrl } from '../lib/cloudinaryImages'
 import Link from 'next/link'
 import MobileVideoSection from './components/MobileVideoSection'
-import { useAuth } from './contexts/AuthContext'
-import InitialLoadingScreen from './components/InitialLoadingScreen';
 
 // Add this to detect mobile view
 const isMobileView = () => {
@@ -763,7 +761,6 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
 };
 
 export default function Home() {
-const { loading: authLoading } = useAuth()
 const [message, setMessage] = useState<string|null>(null)
 const [featuredProducts, setFeaturedProducts] = useState([]);
 
@@ -1230,11 +1227,6 @@ useEffect(() => {
 }, []);
 
 
-
-// Show loading screen while auth is being determined
-if (authLoading) {
-  return <InitialLoadingScreen message="Setting up for you..." />
-}
 
 return (
 
