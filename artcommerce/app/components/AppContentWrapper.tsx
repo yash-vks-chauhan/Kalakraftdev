@@ -19,7 +19,17 @@ export default function AppContentWrapper({ children }: AppContentWrapperProps) 
 
   const [showInitialLoading, setShowInitialLoading] = useState(false)
   const [allSystemsReady, setAllSystemsReady] = useState(false)
-  const loadingStartRef = useRef<number>(0)
+  const loadingStartRef = useRef(0)
+
+  // Determine when auth, cart, and wishlist are fully initialized
+  useEffect(() => {
+    const authReady = !authLoading || (token && user)
+    const cartReady = token && user ? !cartLoading : true
+    const wishlistReady = token && user ? !wishlistLoading : true
+    if (authReady && cartReady && wishlistReady) {
+      setAllSystemsReady(true)
+    }
+  }, [authLoading, cartLoading, wishlistLoading, token, user])
 
   // Show loading screen on first home page render
   useEffect(() => {
@@ -30,29 +40,20 @@ export default function AppContentWrapper({ children }: AppContentWrapperProps) 
     }
   }, [pathname])
 
-  // Determine when all systems are ready
-  useEffect(() => {
-    const authReady = !authLoading || (token && user)
-    const cartReady = token && user ? !cartLoading : true
-    const wishlistReady = token && user ? !wishlistLoading : true
-    if (authReady && cartReady && wishlistReady) {
-      setAllSystemsReady(true)
-    }
-  }, [authLoading, cartLoading, wishlistLoading, token, user])
-
-  // Hide loading when all systems are ready AND minimum display time has passed
+  // Ensure minimum display time (5s) and all systems ready before hiding loading screen
   useEffect(() => {
     if (showInitialLoading && allSystemsReady) {
-      const minDisplayTime = 6000 // 4 steps × 1500ms
       const elapsed = Date.now() - loadingStartRef.current
-      if (elapsed >= minDisplayTime) {
+      const minimum = 5000
+      const remaining = minimum - elapsed
+      if (remaining <= 0) {
         setShowInitialLoading(false)
         sessionStorage.setItem('initialLoadingShown', 'true')
       } else {
         const timer = setTimeout(() => {
           setShowInitialLoading(false)
           sessionStorage.setItem('initialLoadingShown', 'true')
-        }, minDisplayTime - elapsed)
+        }, remaining)
         return () => clearTimeout(timer)
       }
     }

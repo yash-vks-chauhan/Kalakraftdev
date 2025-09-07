@@ -256,9 +256,7 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
   }
 
   const handleCartClick = () => {
-    if (!sessionStorage.getItem('initialLoadingShown')) {
-      setIsRouteLoading(true)
-    }
+    setIsRouteLoading(true)
     router.push('/cart/mobile');
     // Close mobile menu if it's open
     if (isMobileMenuOpen) {
@@ -267,9 +265,6 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
   }
 
   const handleWishlistClick = () => {
-    if (!sessionStorage.getItem('initialLoadingShown')) {
-      setIsRouteLoading(true)
-    }
     router.push('/dashboard/wishlist');
     // Close mobile menu if it's open
     if (isMobileMenuOpen) {
