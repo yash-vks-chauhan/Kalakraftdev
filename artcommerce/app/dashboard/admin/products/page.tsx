@@ -21,6 +21,7 @@ interface Product {
   stockQuantity: number
   isActive: boolean
   categoryId: number | null
+  totalSold: number
 }
 
 export default function AdminProductsPage() {
@@ -135,6 +136,7 @@ export default function AdminProductsPage() {
             <th className={styles.tableHeaderCell}>Product Name</th>
             <th className={styles.tableHeaderCell}>Price</th>
             <th className={styles.tableHeaderCell}>Stock</th>
+            <th className={styles.tableHeaderCell}>Products Sold</th>
             <th className={styles.tableHeaderCell}>Status</th>
             <th className={styles.tableHeaderCell}>Actions</th>
           </tr>
@@ -146,6 +148,7 @@ export default function AdminProductsPage() {
             const priceDisplay = typeof p.price === 'number' ? p.price.toFixed(2) : '0.00';
             const currencyDisplay = p.currency || 'N/A';
             const stockDisplay = typeof p.stockQuantity === 'number' ? p.stockQuantity : 'N/A';
+            const soldDisplay = typeof p.totalSold === 'number' ? p.totalSold : 0;
             const statusClass = p.isActive ? styles.statusActive : styles.statusInactive;
             const statusText = p.isActive ? 'Active' : 'Inactive';
 
@@ -158,6 +161,11 @@ export default function AdminProductsPage() {
                   </span>
                 </td>
                 <td className={styles.tableCell}>{stockDisplay}</td>
+                <td className={styles.tableCell}>
+                  <span className={styles.soldCount}>
+                    {soldDisplay}
+                  </span>
+                </td>
                 <td className={styles.tableCell}>
                   <label className={styles.statusSwitch}>
                     <input

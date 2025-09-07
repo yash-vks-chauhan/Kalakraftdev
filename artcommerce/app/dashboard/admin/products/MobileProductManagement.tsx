@@ -36,6 +36,7 @@ interface Product {
   stockQuantity: number
   isActive: boolean
   categoryId: number | null
+  totalSold: number
 }
 
 export default function MobileProductManagement() {
@@ -373,6 +374,15 @@ export default function MobileProductManagement() {
                       </span>
                     </div>
                     
+                    <div className="flex items-center gap-2 text-sm">
+                      <span className="text-gray-500">Sold:</span>
+                      <span className="font-medium text-gray-800">
+                        {product.totalSold || 0}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 text-sm">
                       <span className="text-gray-500">Status:</span>
                       <label className={desktopStyles.statusSwitch} onClick={e => e.stopPropagation()}>

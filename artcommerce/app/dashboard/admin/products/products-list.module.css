@@ -150,6 +150,13 @@
   font-weight: 500;
 }
 
+.soldCount {
+  font-family: 'SF Mono', monospace;
+  color: #1f2937;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
 .status {
   display: inline-flex;
   align-items: center;

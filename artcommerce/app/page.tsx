@@ -15,6 +15,7 @@ import { getImageUrl } from '../lib/cloudinaryImages'
 import Link from 'next/link'
 import MobileVideoSection from './components/MobileVideoSection'
 import { DataCache } from '../lib/dataCache'
+import WishlistButton from './components/WishlistButton'
 
 // Add this to detect mobile view
 const isMobileView = () => {
@@ -107,31 +108,14 @@ const BestSellersSection = () => {
                     onError={(e) => (e.currentTarget.src = 'https://placehold.co/300x300/f0f0f0/888?text=No+Image')}
                   />
                   
-                  {/* Best Seller Badge */}
-                  <div className={styles.bestSellerBadge}>
-                    <span className={styles.bestSellerBadgeIcon}>🏆</span>
-                    <span>Best Seller</span>
+                  {/* Wishlist Button */}
+                  <div className={styles.bestSellerWishlistContainer}>
+                    <WishlistButton 
+                      productId={product.id} 
+                      className={styles.bestSellerWishlistButton}
+                      preventNavigation={true}
+                    />
                   </div>
-
-                  {/* Sales Info */}
-                  {product.totalSold > 0 && (
-                    <div className={styles.salesInfo}>
-                      {product.totalSold} sold
-                    </div>
-                  )}
-
-                  {/* Stock badges */}
-                  {product.stockQuantity === 0 && (
-                    <div className={`${styles.stockBadge} ${styles.outOfStock}`}>
-                      Out of Stock
-                    </div>
-                  )}
-                  
-                  {product.stockQuantity > 0 && product.stockQuantity <= 5 && (
-                    <div className={`${styles.stockBadge} ${styles.lowStock}`}>
-                      Only {product.stockQuantity} left
-                    </div>
-                  )}
                 </div>
                 
                 <div className={styles.bestSellerCardInfo}>
@@ -173,17 +157,14 @@ const BestSellersSection = () => {
                       onError={(e) => (e.currentTarget.src = 'https://placehold.co/300x300/f0f0f0/888?text=No+Image')}
                     />
                     
-                    {/* Best Seller Badge */}
-                    <div className={styles.bestSellerMobileBadge}>
-                      🏆 #{index + 1}
+                    {/* Wishlist Button */}
+                    <div className={styles.bestSellerMobileWishlistContainer}>
+                      <WishlistButton 
+                        productId={product.id} 
+                        className={styles.bestSellerMobileWishlistButton}
+                        preventNavigation={true}
+                      />
                     </div>
-
-                    {/* Sales Info */}
-                    {product.totalSold > 0 && (
-                      <div className={styles.salesInfoMobile}>
-                        {product.totalSold} sold
-                      </div>
-                    )}
                   </div>
                   
                   <div className={styles.bestSellerMobileCardInfo}>
