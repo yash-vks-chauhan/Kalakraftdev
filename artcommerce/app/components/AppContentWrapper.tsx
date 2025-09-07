@@ -18,11 +18,13 @@ export default function AppContentWrapper({ children }: AppContentWrapperProps) 
   const pathname = usePathname()
   const [showInitialLoading, setShowInitialLoading] = useState(false)
   const [allSystemsReady, setAllSystemsReady] = useState(false)
+  const [forceReady, setForceReady] = useState(false)
   
   // Check if all systems are ready
   useEffect(() => {
-    // Auth is ready when not loading
-    const authReady = !authLoading
+    // Auth is ready when we have user data OR when loading is complete and no user
+    // This handles cases where authLoading might be stuck but we have valid user data
+    const authReady = (!authLoading) || (token && user)
     
     // For authenticated users, wait for cart and wishlist to load
     // For non-authenticated users, they should be ready immediately
@@ -43,15 +45,34 @@ export default function AppContentWrapper({ children }: AppContentWrapperProps) 
       wishlistReady,
       wishlistLoading,
       hasToken: !!token,
-      hasUser: !!user
+      hasUser: !!user,
+      authReadyReason: (!authLoading) ? 'not loading' : (token && user) ? 'has token and user' : 'waiting'
     })
     
-    // All systems are ready
-    if (authReady && cartReady && wishlistReady) {
-      console.log('All systems ready!')
+    // All systems are ready OR force ready is triggered
+    if ((authReady && cartReady && wishlistReady) || forceReady) {
+      console.log('All systems ready!', forceReady ? '(forced)' : '(natural)')
       setAllSystemsReady(true)
+    } else {
+      console.log('Systems not ready yet:', {
+        authReady,
+        cartReady,
+        wishlistReady
+      })
     }
-  }, [authLoading, cartLoading, wishlistLoading, token, user])
+  }, [authLoading, cartLoading, wishlistLoading, token, user, forceReady])
+  
+  // Force ready after 3 seconds if contexts are stuck
+  useEffect(() => {
+    const forceTimer = setTimeout(() => {
+      if (!allSystemsReady && (token && user)) {
+        console.log('Forcing systems ready due to timeout with valid auth')
+        setForceReady(true)
+      }
+    }, 3000) // Force after 3 seconds if we have valid auth but contexts are stuck
+    
+    return () => clearTimeout(forceTimer)
+  }, [allSystemsReady, token, user])
   
   // Control loading screen display
   useEffect(() => {
