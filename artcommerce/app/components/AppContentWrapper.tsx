@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { useCart } from '../contexts/CartContext'
 import { useWishlist } from '../contexts/WishlistContext'
 import { usePathname } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import InitialLoadingScreen from './InitialLoadingScreen'
 
 interface AppContentWrapperProps {
@@ -12,102 +12,64 @@ interface AppContentWrapperProps {
 }
 
 export default function AppContentWrapper({ children }: AppContentWrapperProps) {
+  'use client'
+  import { useAuth } from '../contexts/AuthContext'
+  import { useCart } from '../contexts/CartContext'
+  import { useWishlist } from '../contexts/WishlistContext'
+  import { usePathname } from 'next/navigation'
+  import { useEffect, useState, useRef } from 'react'
+  import InitialLoadingScreen from './InitialLoadingScreen'
+
   const { loading: authLoading, user, token } = useAuth()
   const { cartLoading } = useCart()
   const { loading: wishlistLoading } = useWishlist()
   const pathname = usePathname()
+
   const [showInitialLoading, setShowInitialLoading] = useState(false)
   const [allSystemsReady, setAllSystemsReady] = useState(false)
-  const [forceReady, setForceReady] = useState(false)
-  
-  // Check if all systems are ready
+  const loadingStartRef = useRef(0)
+
+  // Determine when auth, cart, and wishlist are fully initialized
   useEffect(() => {
-    // Auth is ready when we have user data OR when loading is complete and no user
-    // This handles cases where authLoading might be stuck but we have valid user data
-    const authReady = (!authLoading) || (token && user)
-    
-    // For authenticated users, wait for cart and wishlist to load
-    // For non-authenticated users, they should be ready immediately
-    let cartReady = true
-    let wishlistReady = true
-    
-    if (token && user) {
-      // User is authenticated, wait for actual data loading
-      cartReady = !cartLoading
-      wishlistReady = !wishlistLoading
-    }
-    
-    console.log('System status:', {
-      authReady,
-      authLoading,
-      cartReady,
-      cartLoading,
-      wishlistReady,
-      wishlistLoading,
-      hasToken: !!token,
-      hasUser: !!user,
-      authReadyReason: (!authLoading) ? 'not loading' : (token && user) ? 'has token and user' : 'waiting'
-    })
-    
-    // All systems are ready OR force ready is triggered
-    if ((authReady && cartReady && wishlistReady) || forceReady) {
-      console.log('All systems ready!', forceReady ? '(forced)' : '(natural)')
+    const authReady = !authLoading || (token && user)
+    const cartReady = token && user ? !cartLoading : true
+    const wishlistReady = token && user ? !wishlistLoading : true
+    if (authReady && cartReady && wishlistReady) {
       setAllSystemsReady(true)
-    } else {
-      console.log('Systems not ready yet:', {
-        authReady,
-        cartReady,
-        wishlistReady
-      })
     }
-  }, [authLoading, cartLoading, wishlistLoading, token, user, forceReady])
-  
-  // Force ready after 3 seconds if contexts are stuck
+  }, [authLoading, cartLoading, wishlistLoading, token, user])
+
+  // Show loading screen on first home page render
   useEffect(() => {
-    const forceTimer = setTimeout(() => {
-      if (!allSystemsReady && (token && user)) {
-        console.log('Forcing systems ready due to timeout with valid auth')
-        setForceReady(true)
-      }
-    }, 3000) // Force after 3 seconds if we have valid auth but contexts are stuck
-    
-    return () => clearTimeout(forceTimer)
-  }, [allSystemsReady, token, user])
-  
-  // Control loading screen display
-  useEffect(() => {
-    const hasShownLoading = sessionStorage.getItem('initialLoadingShown')
-    const isHomePage = pathname === '/'
-    
-    if (isHomePage && !hasShownLoading) {
+    const hasShown = sessionStorage.getItem('initialLoadingShown')
+    if (pathname === '/' && !hasShown) {
       setShowInitialLoading(true)
-      
-      // Fallback timeout to prevent infinite loading (max 5 seconds)
-      const fallbackTimer = setTimeout(() => {
-        console.log('Fallback timeout reached, forcing completion')
+      loadingStartRef.current = Date.now()
+    }
+  }, [pathname])
+
+  // Ensure minimum display time (5s) and all systems ready before hiding loading screen
+  useEffect(() => {
+    if (showInitialLoading && allSystemsReady) {
+      const elapsed = Date.now() - loadingStartRef.current
+      const minimum = 5000
+      const remaining = minimum - elapsed
+      if (remaining <= 0) {
         setShowInitialLoading(false)
         sessionStorage.setItem('initialLoadingShown', 'true')
-      }, 5000)
-      
-      // Wait for all systems to be ready with minimum display time
-      if (allSystemsReady) {
-        // Add minimum display time for better UX
-        setTimeout(() => {
-          clearTimeout(fallbackTimer)
+      } else {
+        const timer = setTimeout(() => {
           setShowInitialLoading(false)
           sessionStorage.setItem('initialLoadingShown', 'true')
-        }, 1000) // Minimum time to see the loading animation
+        }, remaining)
+        return () => clearTimeout(timer)
       }
-      
-      return () => clearTimeout(fallbackTimer)
-    } else {
-      setShowInitialLoading(false)
     }
-  }, [pathname, allSystemsReady])
-  
+  }, [showInitialLoading, allSystemsReady])
+
   if (showInitialLoading) {
     return <InitialLoadingScreen />
   }
-  
+
   return <>{children}</>
 }
