@@ -16,7 +16,7 @@ export default function InitialLoadingScreen() {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentStep((prev) => (prev + 1) % steps.length)
-    }, 1500)
+    }, 800) // Faster cycling to match reduced loading time
     
     return () => clearInterval(interval)
   }, [steps.length])
