@@ -2527,8 +2527,21 @@
   width: 100%;
   aspect-ratio: 3/4;
   overflow: hidden;
-  background: #f1f3f4;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 25%, #f1f3f4 50%, #e9ecef 75%, #f8f9fa 100%);
   border-radius: 8px;
+  position: relative;
+}
+
+.bestSellerImageContainer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.3) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 1;
 }
 
 
@@ -2544,7 +2557,7 @@
   transform: translateY(-50%);
   filter: none;
   mix-blend-mode: normal;
-  z-index: 2;
+  z-index: 3;
 }
 
 .bestSellerCard:hover .bestSellerImage {
@@ -2716,13 +2729,25 @@
   width: 100%;
   aspect-ratio: 1/1.4;
   overflow: hidden;
-  background: #f1f3f4;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 25%, #f1f3f4 50%, #e9ecef 75%, #f8f9fa 100%);
   border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: none;
   transition: transform 0.2s ease;
+}
+
+.bestSellerMobileImageContainer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.3) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 1;
 }
 
 
@@ -2738,7 +2763,7 @@
   object-fit: contain;
   background: transparent;
   position: relative;
-  z-index: 2;
+  z-index: 3;
   filter: none;
   mix-blend-mode: normal;
   opacity: 1;
