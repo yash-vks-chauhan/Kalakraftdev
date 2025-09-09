@@ -113,36 +113,23 @@ const BestSellersSection = () => {
                     onError={(e) => (e.currentTarget.src = 'https://placehold.co/300x300/f0f0f0/888?text=No+Image')}
                   />
                   
-                  {/* Wishlist Button */}
-                  <div className={styles.bestSellerWishlistContainer}>
-                    <WishlistButton 
-                      productId={product.id} 
-                      className={styles.bestSellerWishlistButton}
-                      preventNavigation={true}
-                    />
-                  </div>
                 </div>
                 
                 <div className={styles.bestSellerCardInfo}>
-                  {product.category && (
-                    <div className={styles.bestSellerCategory}>
-                      {product.category.name}
-                    </div>
-                  )}
                   <h3 className={styles.bestSellerProductName}>{product.name}</h3>
-                  <div className={styles.bestSellerPriceRow}>
-                    <p className={styles.bestSellerPrice}>{formatPrice(product.price)}</p>
-                    {product.avgRating > 0 && (
-                      <p className={styles.bestSellerRating}>
-                        <span className={styles.bestSellerStarFilled}>★</span>
-                        <span className={styles.bestSellerRatingValue}>{product.avgRating.toFixed(1)}</span>
-                        <span className={styles.bestSellerRatingCount}>({product.ratingCount})</span>
-                      </p>
-                    )}
-                  </div>
+                  <p className={styles.bestSellerPrice}>{formatPrice(product.price)}</p>
                 </div>
               </div>
             </Link>
+            
+            {/* Wishlist Button - Outside Link to prevent navigation */}
+            <div className={styles.bestSellerWishlistContainer}>
+              <WishlistButton 
+                productId={product.id} 
+                className={styles.bestSellerWishlistButton}
+                preventNavigation={true}
+              />
+            </div>
           </div>
         ))}
       </div>

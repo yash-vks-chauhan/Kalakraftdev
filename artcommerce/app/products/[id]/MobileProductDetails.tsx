@@ -860,14 +860,6 @@ export default function MobileProductDetails({
                     )}
                     <h3 className={styles.name}>{similarProduct.name}</h3>
                     
-                    {/* Short description - only show if there's space and no rating */}
-                    {similarProduct.shortDesc && (!similarProduct.avgRating || similarProduct.avgRating <= 0) && (
-                      <p className={styles.shortDesc}>
-                        {similarProduct.shortDesc.length > 60 
-                          ? `${similarProduct.shortDesc.substring(0, 60)}...` 
-                          : similarProduct.shortDesc}
-                      </p>
-                    )}
                     
                     <div className={styles.priceRow}>
                       <p className={styles.price}>{formatPrice(similarProduct.price)}</p>

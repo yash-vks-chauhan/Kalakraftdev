@@ -2826,16 +2826,16 @@
 /* Wishlist Button Styles for Best Sellers */
 .bestSellerWishlistContainer {
   position: absolute;
-  top: 12px;
-  right: 12px;
+  bottom: 8px;
+  right: 8px;
   z-index: 10;
 }
 
 .bestSellerWishlistButton {
   background: rgba(255, 255, 255, 0.9);
   border: none;
-  width: 36px;
-  height: 36px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   display: flex;
   align-items: center;

@@ -248,10 +248,6 @@ const ProductCard = ({ product, formatPrice }) => {
           )}
           <h3 className={styles.name}>{product.name}</h3>
           
-          {/* Short description - only show if there's space */}
-          {product.shortDesc && !product.avgRating && (
-            <p className={styles.shortDesc}>{getShortDescription()}</p>
-          )}
           
           <div className={styles.priceRow}>
             <p className={styles.price}>{formatPrice(product.price)}</p>
