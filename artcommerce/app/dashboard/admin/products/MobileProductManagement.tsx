@@ -264,7 +264,7 @@ export default function MobileProductManagement() {
               {showActionsMenu && (
                 <div className={styles.actionMenuDropdown}>
                   <Link
-                    href="/dashboard/admin/products/new"
+                    href="/dashboard/admin/products/new/mobile"
                     className={styles.actionMenuItem}
                     onClick={() => setShowActionsMenu(false)}
                   >

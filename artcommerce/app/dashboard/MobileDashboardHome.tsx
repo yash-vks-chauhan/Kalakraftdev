@@ -398,7 +398,7 @@ export default function MobileDashboardHome() {
                     <span>Show All Products</span>
                     <ChevronRight size={16} />
                   </Link>
-                  <Link href="/dashboard/admin/products/new" className={styles.submenuItem}>
+                  <Link href="/dashboard/admin/products/new/mobile" className={styles.submenuItem}>
                     <PlusCircle size={16} />
                     <span>Add New Product</span>
                     <ChevronRight size={16} />
