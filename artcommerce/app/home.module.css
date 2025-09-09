@@ -2530,22 +2530,17 @@
   overflow: hidden;
   background: 
     linear-gradient(135deg, 
-      #1a1a1a 0%, 
-      #2d2d2d 15%, 
-      #3a3a3a 30%, 
-      #4a4a4a 45%, 
-      #5a5a5a 60%, 
-      #4a4a4a 75%, 
-      #2d2d2d 90%, 
-      #1a1a1a 100%
-    ),
-    radial-gradient(ellipse at 40% 30%, rgba(139, 69, 19, 0.3) 0%, transparent 60%),
-    radial-gradient(ellipse at 70% 80%, rgba(160, 82, 45, 0.2) 0%, transparent 50%);
+      #e8e8e8 0%, 
+      #f2f2f2 20%, 
+      #f8f8f8 40%, 
+      #f5f5f5 60%, 
+      #f0f0f0 80%, 
+      #e8e8e8 100%
+    );
   border-radius: 8px;
   box-shadow: 
-    inset 0 2px 4px rgba(255, 255, 255, 0.1),
-    inset 0 -2px 4px rgba(0, 0, 0, 0.3),
-    0 4px 12px rgba(0, 0, 0, 0.15);
+    inset 0 1px 3px rgba(0, 0, 0, 0.1),
+    0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .bestSellerImageContainer::before {
@@ -2556,20 +2551,17 @@
   right: 0;
   bottom: 0;
   background: 
-    linear-gradient(45deg, 
-      transparent 25%, 
-      rgba(255, 255, 255, 0.05) 25%, 
-      rgba(255, 255, 255, 0.05) 50%, 
-      transparent 50%, 
-      transparent 75%, 
-      rgba(255, 255, 255, 0.05) 75%
-    ),
-    radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.15) 0%, transparent 40%),
-    radial-gradient(circle at 75% 75%, rgba(139, 69, 19, 0.1) 0%, transparent 30%);
-  background-size: 20px 20px, 100% 100%, 100% 100%;
+    repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 1px,
+      rgba(255, 255, 255, 0.3) 1px,
+      rgba(255, 255, 255, 0.3) 2px
+    );
+  background-size: 20px 20px;
   pointer-events: none;
   z-index: 1;
-  opacity: 0.8;
+  opacity: 0.4;
 }
 
 .bestSellerImageContainer::after {
@@ -2580,17 +2572,10 @@
   right: 0;
   bottom: 0;
   background: 
-    linear-gradient(90deg, 
-      rgba(255, 255, 255, 0) 0%, 
-      rgba(255, 255, 255, 0.08) 20%, 
-      rgba(255, 255, 255, 0.12) 40%, 
-      rgba(255, 255, 255, 0.08) 60%, 
-      rgba(255, 255, 255, 0) 80%
-    );
+    radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.6) 0%, transparent 50%);
   pointer-events: none;
   z-index: 2;
-  opacity: 0.6;
-  animation: luxuryShimmer 4s ease-in-out infinite alternate;
+  opacity: 0.8;
 }
 
 
@@ -2780,25 +2765,20 @@
   overflow: hidden;
   background: 
     linear-gradient(135deg, 
-      #1a1a1a 0%, 
-      #2d2d2d 15%, 
-      #3a3a3a 30%, 
-      #4a4a4a 45%, 
-      #5a5a5a 60%, 
-      #4a4a4a 75%, 
-      #2d2d2d 90%, 
-      #1a1a1a 100%
-    ),
-    radial-gradient(ellipse at 40% 30%, rgba(139, 69, 19, 0.3) 0%, transparent 60%),
-    radial-gradient(ellipse at 70% 80%, rgba(160, 82, 45, 0.2) 0%, transparent 50%);
+      #e8e8e8 0%, 
+      #f2f2f2 20%, 
+      #f8f8f8 40%, 
+      #f5f5f5 60%, 
+      #f0f0f0 80%, 
+      #e8e8e8 100%
+    );
   border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: 
-    inset 0 2px 4px rgba(255, 255, 255, 0.1),
-    inset 0 -2px 4px rgba(0, 0, 0, 0.3),
-    0 4px 12px rgba(0, 0, 0, 0.15);
+    inset 0 1px 3px rgba(0, 0, 0, 0.1),
+    0 2px 8px rgba(0, 0, 0, 0.06);
   transition: transform 0.2s ease;
 }
 
@@ -2810,20 +2790,17 @@
   right: 0;
   bottom: 0;
   background: 
-    linear-gradient(45deg, 
-      transparent 25%, 
-      rgba(255, 255, 255, 0.05) 25%, 
-      rgba(255, 255, 255, 0.05) 50%, 
-      transparent 50%, 
-      transparent 75%, 
-      rgba(255, 255, 255, 0.05) 75%
-    ),
-    radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.15) 0%, transparent 40%),
-    radial-gradient(circle at 75% 75%, rgba(139, 69, 19, 0.1) 0%, transparent 30%);
-  background-size: 20px 20px, 100% 100%, 100% 100%;
+    repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 1px,
+      rgba(255, 255, 255, 0.3) 1px,
+      rgba(255, 255, 255, 0.3) 2px
+    );
+  background-size: 20px 20px;
   pointer-events: none;
   z-index: 1;
-  opacity: 0.8;
+  opacity: 0.4;
 }
 
 .bestSellerMobileImageContainer::after {
@@ -2834,17 +2811,10 @@
   right: 0;
   bottom: 0;
   background: 
-    linear-gradient(90deg, 
-      rgba(255, 255, 255, 0) 0%, 
-      rgba(255, 255, 255, 0.08) 20%, 
-      rgba(255, 255, 255, 0.12) 40%, 
-      rgba(255, 255, 255, 0.08) 60%, 
-      rgba(255, 255, 255, 0) 80%
-    );
+    radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.6) 0%, transparent 50%);
   pointer-events: none;
   z-index: 2;
-  opacity: 0.6;
-  animation: luxuryShimmer 4s ease-in-out infinite alternate;
+  opacity: 0.8;
 }
 
 
