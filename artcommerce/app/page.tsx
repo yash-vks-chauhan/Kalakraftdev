@@ -44,7 +44,7 @@ const BestSellersSection = () => {
     const fetchBestSellers = async () => {
       try {
         setLoading(true);
-        const response = await fetch('/api/products/best-sellers?limit=6');
+        const response = await fetch('/api/products/best-sellers?limit=4');
         const data = await response.json();
         
         if (data.products && Array.isArray(data.products)) {
