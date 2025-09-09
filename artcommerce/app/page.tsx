@@ -155,6 +155,15 @@ const BestSellersSection = () => {
                     className={styles.bestSellerMobileImage}
                     onError={(e) => (e.currentTarget.src = 'https://placehold.co/300x300/f0f0f0/888?text=No+Image')}
                   />
+                  
+                  {/* Wishlist Button */}
+                  <div className={styles.bestSellerMobileWishlistContainer}>
+                    <WishlistButton 
+                      productId={product.id} 
+                      className={styles.bestSellerMobileWishlistButton}
+                      preventNavigation={true}
+                    />
+                  </div>
                 </div>
                 
                 <div className={styles.bestSellerMobileCardInfo}>
