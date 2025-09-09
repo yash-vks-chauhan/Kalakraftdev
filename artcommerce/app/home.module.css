@@ -2691,16 +2691,65 @@
   transition: transform 0.2s ease;
 }
 
+.bestSellerMobileImageContainer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: transparent;
+  z-index: 1;
+}
+
+/* Alternative approach - try to mask white areas */
+.bestSellerMobileImageContainer::after {
+  content: '';
+  position: absolute;
+  top: 10%;
+  left: 10%;
+  right: 10%;
+  bottom: 10%;
+  background: transparent;
+  z-index: 3;
+  pointer-events: none;
+}
+
 .bestSellerMobileImageContainer:hover {
   transform: scale(1.02);
 }
 
 .bestSellerMobileImage {
-  width: 85%;
-  height: 85%;
+  width: 90%;
+  height: 90%;
   object-fit: contain;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
   background: transparent;
+  position: relative;
+  z-index: 2;
+  /* Try to remove white backgrounds */
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+  mix-blend-mode: multiply;
+  opacity: 0.95;
+}
+
+/* Additional styling to handle white backgrounds in product images */
+.bestSellerMobileImage[src*=".png"],
+.bestSellerMobileImage[src*=".PNG"] {
+  /* For PNG images that might have transparent backgrounds */
+  mix-blend-mode: normal;
+  opacity: 1;
+}
+
+.bestSellerMobileImage[src*=".jpg"],
+.bestSellerMobileImage[src*=".JPG"],
+.bestSellerMobileImage[src*=".jpeg"],
+.bestSellerMobileImage[src*=".JPEG"] {
+  /* For JPG images that likely have white backgrounds */
+  mix-blend-mode: multiply;
+  filter: 
+    drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1))
+    contrast(1.05)
+    brightness(0.98);
 }
 
 .bestSellerMobileBadge {
