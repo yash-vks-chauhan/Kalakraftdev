@@ -144,7 +144,7 @@ const BestSellersSection = () => {
 
       {/* Best Sellers Grid - Mobile */}
       <div className={`${styles.bestSellersMobile} ${styles.mobileOnly}`}>
-        <div className={styles.bestSellersGrid}>
+        <div className={styles.bestSellersMobileGrid}>
           {bestSellers.map((product, index) => (
             <div key={product.id} className={styles.bestSellerMobileCard}>
               <Link href={`/products/${product.id}`}>

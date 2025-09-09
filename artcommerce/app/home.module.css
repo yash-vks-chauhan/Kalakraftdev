@@ -2495,14 +2495,7 @@
   }
 }
 
-/* Keep the old grid for mobile compatibility */
-.bestSellersGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
-  margin: 0 auto;
-  max-width: 100%;
-}
+/* This class is no longer needed - mobile now uses bestSellersMobileGrid */
 
 .bestSellerCard {
   background: #fff;
@@ -2661,7 +2654,7 @@
   padding: 0 1rem;
 }
 
-.bestSellersGrid {
+.bestSellersMobileGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0.75rem;
@@ -2866,7 +2859,7 @@
     max-width: 400px;
   }
   
-  .bestSellersGrid {
+  .bestSellersMobileGrid {
     grid-template-columns: 1fr;
     gap: 1.5rem;
     max-width: 400px;
