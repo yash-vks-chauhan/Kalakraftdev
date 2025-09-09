@@ -8,6 +8,7 @@ interface MobileMenuContextType {
   setIsMobileMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
   isProductPage: boolean;
   isTransparentNavbar: boolean;
+  isCreateProductPage: boolean;
 }
 
 const MobileMenuContext = createContext<MobileMenuContextType>({
@@ -15,6 +16,7 @@ const MobileMenuContext = createContext<MobileMenuContextType>({
   setIsMobileMenuOpen: () => {},
   isProductPage: false,
   isTransparentNavbar: false,
+  isCreateProductPage: false,
 });
 
 export const useMobileMenu = () => useContext(MobileMenuContext);
@@ -26,6 +28,9 @@ export const MobileMenuProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   // Check if current page is a product details page
   // This regex matches paths like /products/123 but not /products or /products/new
   const isProductPage = pathname ? /^\/products\/\d+$/.test(pathname) : false;
+  
+  // Check if current page is the mobile create product page
+  const isCreateProductPage = pathname === '/dashboard/admin/products/new/mobile';
   
   // Determine if navbar should be transparent (on product pages)
   const isTransparentNavbar = isProductPage;
@@ -40,7 +45,8 @@ export const MobileMenuProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       isMobileMenuOpen, 
       setIsMobileMenuOpen,
       isProductPage,
-      isTransparentNavbar
+      isTransparentNavbar,
+      isCreateProductPage
     }}>
       {children}
     </MobileMenuContext.Provider>

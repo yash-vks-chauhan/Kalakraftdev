@@ -327,6 +327,15 @@
     gap: 1.5rem;
     padding: 1.5rem;
   }
+  
+  /* Enhanced mobile scrolling for home page sections */
+  .videoContainer,
+  .content {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    transform: translateZ(0);
+    will-change: transform;
+  }
 }
 
 .waterCursor {
@@ -1664,6 +1673,9 @@
   position: relative;
   overflow: hidden;
   color: #fff;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  transform: translateZ(0);
 }
 
 /* Sophisticated background pattern */
@@ -1721,6 +1733,8 @@
   z-index: 2;
   max-width: 90%;
   padding: 0;
+  transform: translateZ(0);
+  will-change: transform;
 }
 
 /* Large card that spans 4 columns */
@@ -1884,6 +1898,9 @@
   background: #000; /* Reverted to pure black for a minimal UI */
   position: relative;
   overflow: hidden;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  transform: translateZ(0);
 }
 
 /* Subtle background pattern - adjust for dark background */
@@ -2949,6 +2966,9 @@
 @media (max-width: 768px) {
   .bestSellersSection {
     padding: 4rem 1rem 6rem;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    transform: translateZ(0);
   }
   
   .bestSellersDesktop {
@@ -2962,10 +2982,13 @@
     grid-template-columns: 1fr 1fr;
     gap: 1rem;
     max-width: 100%;
+    transform: translateZ(0);
   }
   
   .bestSellerCard {
     border-radius: 8px;
+    transform: translateZ(0);
+    will-change: transform;
   }
   
   .bestSellerImageContainer {

@@ -34,6 +34,8 @@ interface Product {
   price: number
   currency: string
   stockQuantity: number
+  imageUrls: string[]
+  shortDesc: string
   isActive: boolean
   categoryId: number | null
   totalSold: number
@@ -342,7 +344,23 @@ export default function MobileProductManagement() {
                 onClick={() => setExpandedProduct(expandedProduct === product.id ? null : product.id)}
               >
                 <div className={styles.menuIcon}>
-                  <Package size={18} />
+                  {product.imageUrls && product.imageUrls.length > 0 ? (
+                    <img 
+                      src={product.imageUrls[0]} 
+                      alt={product.name}
+                      className={styles.productImage}
+                      onError={(e) => {
+                        // Fallback to Package icon if image fails to load
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        target.nextElementSibling?.classList.remove('hidden');
+                      }}
+                    />
+                  ) : null}
+                  <Package 
+                    size={18} 
+                    className={product.imageUrls && product.imageUrls.length > 0 ? 'hidden' : ''} 
+                  />
                 </div>
                 <div className={styles.menuItemText}>
                   <div className="font-medium">{product.name}</div>

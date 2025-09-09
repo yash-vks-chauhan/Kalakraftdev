@@ -48,6 +48,7 @@ export default function MobileNewProductPage() {
   const [expandedSections, setExpandedSections] = useState<{ [key: number]: boolean }>({
     0: true
   })
+  const [isNavbarVisible, setIsNavbarVisible] = useState(true)
 
   const sections = [
     'Basic Information',
@@ -73,6 +74,72 @@ export default function MobileNewProductPage() {
       })
       .catch(console.error)
   }, [user])
+
+  // Handle navbar visibility based on scroll
+  useEffect(() => {
+    let prevScrollY = window.scrollY
+    let scrollDirection = 0
+    let lastScrollTime = Date.now()
+    let scrollVelocity = 0
+    let scrollTimer: NodeJS.Timeout | null = null
+    
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY
+      const currentTime = Date.now()
+      const timeDiff = currentTime - lastScrollTime
+      
+      // Calculate scroll velocity (pixels per millisecond)
+      scrollVelocity = Math.abs(currentScrollY - prevScrollY) / Math.max(timeDiff, 1)
+      
+      // Determine scroll direction (1 for down, -1 for up)
+      const currentDirection = currentScrollY > prevScrollY ? 1 : -1
+      
+      // Update scroll direction only if it changed
+      if (currentDirection !== scrollDirection) {
+        scrollDirection = currentDirection
+      }
+      
+      // Clear any existing timer
+      if (scrollTimer) {
+        clearTimeout(scrollTimer)
+      }
+      
+      // Navbar visibility logic (similar to MobileLayout footer logic)
+      if (currentScrollY < 50) {
+        // Always show navbar when near the top
+        setIsNavbarVisible(true)
+      } else if (
+        scrollDirection > 0 && // Scrolling down
+        scrollVelocity > 0.3 && // Fast scroll
+        currentScrollY > 100 // Not at the very top
+      ) {
+        // Hide navbar when scrolling down quickly
+        setIsNavbarVisible(false)
+      } else if (scrollDirection < 0) { // Scrolling up
+        // Show navbar immediately when scrolling up
+        setIsNavbarVisible(true)
+      }
+      
+      // Set a timer to show navbar after scrolling stops
+      scrollTimer = setTimeout(() => {
+        if (currentScrollY > 50) {
+          setIsNavbarVisible(true)
+        }
+      }, 150) // Show after 150ms of no scrolling
+      
+      // Update values for next iteration
+      prevScrollY = currentScrollY
+      lastScrollTime = currentTime
+    }
+
+    window.addEventListener('scroll', handleScroll)
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      if (scrollTimer) {
+        clearTimeout(scrollTimer)
+      }
+    }
+  }, [])
 
   const handleRemoveImage = (indexToRemove: number) => {
     setImageUrls(prev => prev.filter((_, index) => index !== indexToRemove))
@@ -309,21 +376,6 @@ export default function MobileNewProductPage() {
 
   return (
     <div className={styles.container}>
-      {/* Fixed Header */}
-      <div className={styles.header}>
-        <button onClick={handleCancelClick} className={styles.backButton}>
-          <ArrowLeft size={20} />
-        </button>
-        <h1 className={styles.title}>New Product</h1>
-        <button
-          type="submit"
-          form="product-form"
-          className={styles.saveButton}
-          disabled={submitting}
-        >
-          {submitting ? <LoadingSpinner /> : <Save size={18} />}
-        </button>
-      </div>
 
       {/* Notification */}
       {showNotification && (
@@ -684,7 +736,7 @@ export default function MobileNewProductPage() {
       </div>
 
       {/* Fixed Footer */}
-      <div className={styles.footer}>
+      <div className={`${styles.footer} ${isNavbarVisible ? styles.footerAboveNavbar : styles.footerInPlace}`}>
         <button 
           onClick={handleCancelClick} 
           className={styles.cancelButton}

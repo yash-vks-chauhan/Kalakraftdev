@@ -7,7 +7,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '../contexts/AuthContext'
 import { useCart } from '../contexts/CartContext'
 import { useWishlist } from '../contexts/WishlistContext'
-import { Search, Home, ShoppingBag, User, Menu, X, Heart, ShoppingCart, Monitor, ChevronDown, Grid, HelpCircle, LogOut, ArrowLeft, Share } from 'lucide-react'
+import { Search, Home, ShoppingBag, User, Menu, X, Heart, ShoppingCart, Monitor, ChevronDown, Grid, HelpCircle, LogOut, ArrowLeft, Share, Save } from 'lucide-react'
 import { useMobileMenu } from '../contexts/MobileMenuContext'
 import { getImageUrl } from '../../lib/cloudinaryImages'
 import styles from './MobileLayout.module.css'
@@ -23,7 +23,7 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
   const { user, logout } = useAuth()
   const { cartItems } = useCart()
   const { wishlistItems } = useWishlist()
-  const { isMobileMenuOpen, setIsMobileMenuOpen, isProductPage, isTransparentNavbar } = useMobileMenu()
+  const { isMobileMenuOpen, setIsMobileMenuOpen, isProductPage, isTransparentNavbar, isCreateProductPage } = useMobileMenu()
   const [isSearchOpen, setIsSearchOpen] = React.useState(false)
   const [isSearchClosing, setIsSearchClosing] = useState(false)
   const searchCloseTimeoutRef = useRef<NodeJS.Timeout | null>(null)
@@ -121,17 +121,20 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
     let lastScrollTime = Date.now()
     let scrollVelocity = 0
     let scrollTimer: NodeJS.Timeout | null = null
+    let ticking = false
     
     const handleScroll = () => {
-      const currentScrollY = window.scrollY
-      const currentTime = Date.now()
-      const timeDiff = currentTime - lastScrollTime
-      
-      // Calculate scroll velocity (pixels per millisecond)
-      scrollVelocity = Math.abs(currentScrollY - prevScrollY) / Math.max(timeDiff, 1)
-      
-      // Header scroll effect
-      setIsScrolled(currentScrollY > 10)
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          const currentScrollY = window.scrollY
+          const currentTime = Date.now()
+          const timeDiff = currentTime - lastScrollTime
+          
+          // Calculate scroll velocity (pixels per millisecond)
+          scrollVelocity = Math.abs(currentScrollY - prevScrollY) / Math.max(timeDiff, 1)
+          
+          // Header scroll effect
+          setIsScrolled(currentScrollY > 10)
       
       // Determine scroll direction (1 for down, -1 for up)
       const currentDirection = currentScrollY > prevScrollY ? 1 : -1
@@ -169,28 +172,21 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
         }
       }, 150) // Show after 150ms of no scrolling
       
-      // Update values for next iteration
-      prevScrollY = currentScrollY
-      lastScrollTime = currentTime
-      setLastScrollY(currentScrollY)
-    }
-
-    // Throttled scroll handler for smoother performance
-    let lastRun = 0
-    const scrollThreshold = 16 // ~60fps
-    
-    const throttledScroll = () => {
-      const now = Date.now()
-      if (now - lastRun >= scrollThreshold) {
-        lastRun = now
-        handleScroll()
+          // Update values for next iteration
+          prevScrollY = currentScrollY
+          lastScrollTime = currentTime
+          setLastScrollY(currentScrollY)
+          
+          ticking = false
+        })
+        ticking = true
       }
     }
 
-    window.addEventListener('scroll', throttledScroll, { passive: true })
+    window.addEventListener('scroll', handleScroll, { passive: true })
     
     return () => {
-      window.removeEventListener('scroll', throttledScroll)
+      window.removeEventListener('scroll', handleScroll)
       if (scrollTimer) {
         clearTimeout(scrollTimer)
       }
@@ -771,17 +767,25 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
         </div>
       )}
 
-      {/* Mobile Header - Now with product page detection */}
+      {/* Mobile Header - Now with product page and create product page detection */}
       <header 
-        className={`${styles.mobileHeader} ${isHomePage ? styles.homeMobileHeader : ''} ${isProductPage ? styles.productPageHeader : ''}`}
+        className={`${styles.mobileHeader} ${isHomePage ? styles.homeMobileHeader : ''} ${isProductPage ? styles.productPageHeader : ''} ${isCreateProductPage ? styles.createProductPageHeader : ''}`}
         data-scrolled={isScrolled ? 'true' : 'false'}
       >
-        {/* Left side - Logo or Back button for product pages */}
+        {/* Left side - Logo, Back button for product pages, or Back button for create product page */}
         {isProductPage ? (
           <button 
             onClick={handleBackClick}
             className={styles.backButton}
             aria-label="Go back"
+          >
+            <ArrowLeft size={24} strokeWidth={2} />
+          </button>
+        ) : isCreateProductPage ? (
+          <button 
+            onClick={() => router.push('/dashboard/admin/products')}
+            className={styles.backButton}
+            aria-label="Go back to products"
           >
             <ArrowLeft size={24} strokeWidth={2} />
           </button>
@@ -799,15 +803,30 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
           </Link>
         )}
         
-        {/* Center - Empty spacer or Product title for product pages */}
+        {/* Center - Empty spacer, Product title for product pages, or New Product title for create product page */}
         <div className={styles.headerSpacer}>
           {isProductPage && productName && (
             <div className={styles.productPageTitle}>{productName}</div>
+          )}
+          {isCreateProductPage && (
+            <div className={styles.createProductPageTitle}>New Product</div>
           )}
         </div>
         
         {/* Right side - Icons and burger menu */}
         <div className={styles.headerIcons}>
+          {/* Save button - Only on create product page */}
+          {isCreateProductPage && (
+            <button 
+              type="submit" 
+              form="product-form"
+              className={styles.headerIconButton}
+              aria-label="Save product"
+            >
+              <Save size={20} strokeWidth={2} />
+            </button>
+          )}
+          
           {/* Share button - Only on product pages */}
           {isProductPage && (
             <button 
@@ -819,36 +838,42 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
             </button>
           )}
           
-          {/* Search Icon */}
-          <button 
-            onClick={toggleSearch}
-            className={styles.headerIconButton}
-            aria-label="Search"
-          >
-            <Search size={20} strokeWidth={2} />
-          </button>
+          {/* Search Icon - Hidden on create product page */}
+          {!isCreateProductPage && (
+            <button 
+              onClick={toggleSearch}
+              className={styles.headerIconButton}
+              aria-label="Search"
+            >
+              <Search size={20} strokeWidth={2} />
+            </button>
+          )}
           
-          {/* Cart Icon */}
-          <button 
-            onClick={handleCartClick}
-            className={styles.headerIconButton}
-            aria-label="Cart"
-          >
-            <ShoppingCart size={20} />
-            {cartItems.length > 0 && (
-              <span className={styles.cartBadge}>{cartItems.length}</span>
-            )}
-          </button>
+          {/* Cart Icon - Hidden on create product page */}
+          {!isCreateProductPage && (
+            <button 
+              onClick={handleCartClick}
+              className={styles.headerIconButton}
+              aria-label="Cart"
+            >
+              <ShoppingCart size={20} />
+              {cartItems.length > 0 && (
+                <span className={styles.cartBadge}>{cartItems.length}</span>
+              )}
+            </button>
+          )}
         </div>
         
-        {/* Burger menu */}
-        <button 
-          onClick={toggleMobileMenu}
-          className={styles.menuButton}
-          aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
-        >
-          <Menu size={24} strokeWidth={2.5} />
-        </button>
+        {/* Burger menu - Hidden on create product page */}
+        {!isCreateProductPage && (
+          <button 
+            onClick={toggleMobileMenu}
+            className={styles.menuButton}
+            aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+          >
+            <Menu size={24} strokeWidth={2.5} />
+          </button>
+        )}
       </header>
       
       {/* Main Content Area */}
