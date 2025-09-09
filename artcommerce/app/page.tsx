@@ -94,8 +94,8 @@ const BestSellersSection = () => {
         <p>Discover our most loved creations, chosen by customers like you. These handcrafted pieces have won hearts and found their way into homes across the country.</p>
       </div>
 
-      {/* Best Sellers Grid - Desktop */}
-      <div className={`${styles.bestSellersGrid} ${styles.desktopOnly}`} data-aos="fade-up" data-aos-delay="200">
+      {/* Best Sellers Layout - Desktop */}
+      <div className={`${styles.bestSellersDesktop} ${styles.desktopOnly}`} data-aos="fade-up" data-aos-delay="200">
         {bestSellers.map((product, index) => (
           <div key={product.id} className={styles.bestSellerCard} data-aos="fade-up" data-aos-delay={`${300 + (index * 100)}`}>
             <Link href={`/products/${product.id}`}>
@@ -156,33 +156,11 @@ const BestSellersSection = () => {
                       className={styles.bestSellerMobileImage}
                       onError={(e) => (e.currentTarget.src = 'https://placehold.co/300x300/f0f0f0/888?text=No+Image')}
                     />
-                    
-                    {/* Wishlist Button */}
-                    <div className={styles.bestSellerMobileWishlistContainer}>
-                      <WishlistButton 
-                        productId={product.id} 
-                        className={styles.bestSellerMobileWishlistButton}
-                        preventNavigation={true}
-                      />
-                    </div>
                   </div>
                   
                   <div className={styles.bestSellerMobileCardInfo}>
-                    {product.category && (
-                      <div className={styles.bestSellerMobileCategory}>
-                        {product.category.name}
-                      </div>
-                    )}
                     <h3 className={styles.bestSellerMobileProductName}>{product.name}</h3>
-                    <div className={styles.bestSellerMobilePriceRow}>
-                      <p className={styles.bestSellerMobilePrice}>{formatPrice(product.price)}</p>
-                      {product.avgRating > 0 && (
-                        <p className={styles.bestSellerMobileRating}>
-                          <span className={styles.bestSellerMobileStarFilled}>★</span>
-                          <span>{product.avgRating.toFixed(1)}</span>
-                        </p>
-                      )}
-                    </div>
+                    <p className={styles.bestSellerMobilePrice}>{formatPrice(product.price)}</p>
                   </div>
                 </div>
               </Link>

@@ -2471,14 +2471,37 @@
   font-weight: 300;
 }
 
-/* Best Sellers Grid - Desktop */
+/* Best Sellers Layout - Desktop */
+.bestSellersDesktop {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+@media (max-width: 1024px) and (min-width: 769px) {
+  .bestSellersDesktop {
+    gap: 1rem;
+    padding: 0 1rem;
+  }
+  
+  .bestSellerCard {
+    flex: 0 0 calc(33.333% - 1rem);
+    min-width: 180px;
+    max-width: 220px;
+  }
+}
+
+/* Keep the old grid for mobile compatibility */
 .bestSellersGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 2rem;
-  max-width: 1400px;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
   margin: 0 auto;
-  padding: 0 1rem;
+  max-width: 100%;
 }
 
 .bestSellerCard {
@@ -2488,6 +2511,9 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
   position: relative;
+  flex: 0 0 calc(16.666% - 1.25rem);
+  min-width: 200px;
+  max-width: 250px;
 }
 
 .bestSellerCard:hover {
@@ -2638,7 +2664,7 @@
 .bestSellersGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1rem;
+  gap: 0.75rem;
   margin: 0 auto;
   max-width: 100%;
 }
@@ -2649,26 +2675,37 @@
 
 .bestSellerMobileCardInner {
   background: #fff;
-  border-radius: 12px;
+  border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   text-decoration: none;
   color: inherit;
   display: block;
   height: 100%;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.bestSellerMobileCardInner:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
 }
 
 .bestSellerMobileImageContainer {
   position: relative;
   width: 100%;
-  height: 200px;
+  height: 180px;
   overflow: hidden;
+  background: #e8e8e8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .bestSellerMobileImage {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  width: 80%;
+  height: 80%;
+  object-fit: contain;
+  mix-blend-mode: multiply;
 }
 
 .bestSellerMobileBadge {
@@ -2697,51 +2734,26 @@
 }
 
 .bestSellerMobileCardInfo {
-  padding: 1rem;
-}
-
-.bestSellerMobileCategory {
-  font-size: 0.7rem;
-  color: #666;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  margin-bottom: 0.3rem;
-  font-weight: 500;
+  padding: 0.75rem;
+  text-align: center;
 }
 
 .bestSellerMobileProductName {
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: 0.9rem;
+  font-weight: 500;
   color: #333;
-  margin-bottom: 0.8rem;
+  margin-bottom: 0.5rem;
   line-height: 1.3;
-}
-
-.bestSellerMobilePriceRow {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .bestSellerMobilePrice {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #333;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #000;
   margin: 0;
-}
-
-.bestSellerMobileRating {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  font-size: 0.8rem;
-  color: #666;
-  margin: 0;
-}
-
-.bestSellerMobileStarFilled {
-  color: #ffd700;
-  font-size: 0.9rem;
 }
 
 /* Wishlist Button Styles for Best Sellers */
@@ -2845,6 +2857,13 @@
 @media (max-width: 768px) {
   .bestSellersSection {
     padding: 4rem 1rem 6rem;
+  }
+  
+  .bestSellersDesktop {
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    max-width: 400px;
   }
   
   .bestSellersGrid {
