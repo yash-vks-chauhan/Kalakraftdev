@@ -97,7 +97,12 @@ const BestSellersSection = () => {
       {/* Best Sellers Layout - Desktop */}
       <div className={`${styles.bestSellersDesktop} ${styles.desktopOnly}`} data-aos="fade-up" data-aos-delay="200">
         {bestSellers.map((product, index) => (
-          <div key={product.id} className={styles.bestSellerCard} data-aos="fade-up" data-aos-delay={`${300 + (index * 100)}`}>
+          <div key={product.id} className={styles.bestSellerCard} data-aos="fade-up" data-aos-delay={`${300 + (index * 100)}`}
+               onClick={() => {
+                 if (navigator.vibrate) {
+                   navigator.vibrate([10, 5, 10]);
+                 }
+               }}>
             <Link href={`/products/${product.id}`}>
               <div className={styles.bestSellerCardInner}>
                 <div className={styles.bestSellerImageContainer}>
@@ -146,7 +151,12 @@ const BestSellersSection = () => {
       <div className={`${styles.bestSellersMobile} ${styles.mobileOnly}`}>
         <div className={styles.bestSellersMobileGrid}>
           {bestSellers.map((product, index) => (
-            <div key={product.id} className={styles.bestSellerMobileCard}>
+            <div key={product.id} className={styles.bestSellerMobileCard}
+                 onClick={() => {
+                   if (navigator.vibrate) {
+                     navigator.vibrate([10, 5, 10]);
+                   }
+                 }}>
               <div className={styles.bestSellerMobileCardWrapper}>
                 <Link href={`/products/${product.id}`} className={styles.bestSellerMobileLink}>
                   <div className={styles.bestSellerMobileImageContainer}>

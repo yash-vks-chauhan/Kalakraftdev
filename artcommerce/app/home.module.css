@@ -2503,16 +2503,24 @@
   border-radius: 0;
   overflow: hidden;
   box-shadow: none;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   position: relative;
   flex: 0 0 calc(16.666% - 1.25rem);
   min-width: 200px;
   max-width: 250px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .bestSellerCard:hover {
-  transform: none;
-  box-shadow: none;
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+}
+
+.bestSellerCard:active {
+  transform: translateY(1px) scale(0.98);
+  transition: all 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .bestSellerCardInner {
@@ -2525,10 +2533,22 @@
 .bestSellerImageContainer {
   position: relative;
   width: 100%;
-  height: 320px;
+  height: 380px;
   overflow: hidden;
   background: #f1f3f4;
   border-radius: 8px;
+}
+
+.bestSellerImageContainer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #f1f3f4;
+  z-index: 1;
+  pointer-events: none;
 }
 
 .bestSellerImage {
@@ -2541,6 +2561,9 @@
   position: relative;
   top: 50%;
   transform: translateY(-50%);
+  filter: contrast(1.2) brightness(0.95) saturate(1.1);
+  mix-blend-mode: multiply;
+  z-index: 3;
 }
 
 .bestSellerCard:hover .bestSellerImage {
@@ -2676,6 +2699,10 @@
   width: 100%;
   display: flex;
   flex-direction: column;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .bestSellerMobileCardWrapper {
@@ -2683,6 +2710,16 @@
   width: 100%;
   display: flex;
   flex-direction: column;
+}
+
+.bestSellerMobileCard:hover {
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+}
+
+.bestSellerMobileCard:active {
+  transform: translateY(1px) scale(0.99);
+  transition: all 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .bestSellerMobileLink {
@@ -2696,7 +2733,7 @@
 .bestSellerMobileImageContainer {
   position: relative;
   width: 100%;
-  aspect-ratio: 1/1.2;
+  aspect-ratio: 1/1.4;
   overflow: hidden;
   background: #f1f3f4;
   border-radius: 8px;
@@ -2705,6 +2742,18 @@
   justify-content: center;
   box-shadow: none;
   transition: transform 0.2s ease;
+}
+
+.bestSellerMobileImageContainer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #f1f3f4;
+  z-index: 1;
+  pointer-events: none;
 }
 
 /* Removed unnecessary pseudo-elements - LV gradient handles the background */
@@ -2719,9 +2768,9 @@
   object-fit: contain;
   background: transparent;
   position: relative;
-  z-index: 2;
-  filter: none;
-  mix-blend-mode: normal;
+  z-index: 3;
+  filter: contrast(1.2) brightness(0.95) saturate(1.1);
+  mix-blend-mode: multiply;
   opacity: 1;
 }
 
@@ -2925,7 +2974,7 @@
   }
   
   .bestSellerImageContainer {
-    height: 280px;
+    height: 340px;
   }
   
   .bestSellersDescription {
