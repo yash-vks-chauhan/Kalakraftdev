@@ -2696,10 +2696,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 
-    0 1px 3px rgba(0, 0, 0, 0.08),
-    0 2px 8px rgba(0, 0, 0, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  box-shadow: none;
   transition: transform 0.2s ease;
 }
 
@@ -2707,10 +2704,6 @@
 
 .bestSellerMobileImageContainer:hover {
   transform: scale(1.01);
-  box-shadow: 
-    0 2px 6px rgba(0, 0, 0, 0.1),
-    0 4px 16px rgba(0, 0, 0, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 .bestSellerMobileImage {
@@ -2720,10 +2713,16 @@
   background: transparent;
   position: relative;
   z-index: 2;
-  /* Subtle shadow to lift the product like LV */
-  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.08));
+  /* Remove white backgrounds more aggressively */
+  filter: 
+    drop-shadow(0 2px 6px rgba(0, 0, 0, 0.08))
+    contrast(1.15)
+    brightness(0.92)
+    saturate(1.08);
   mix-blend-mode: multiply;
-  opacity: 0.98;
+  opacity: 1;
+  /* Try to make white areas more transparent */
+  background-blend-mode: multiply;
 }
 
 /* Additional styling to handle white backgrounds in product images */
@@ -2738,12 +2737,13 @@
 .bestSellerMobileImage[src*=".JPG"],
 .bestSellerMobileImage[src*=".jpeg"],
 .bestSellerMobileImage[src*=".JPEG"] {
-  /* For JPG images that likely have white backgrounds */
+  /* For JPG images that likely have white backgrounds - more aggressive */
   mix-blend-mode: multiply;
   filter: 
     drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1))
-    contrast(1.05)
-    brightness(0.98);
+    contrast(1.2)
+    brightness(0.9)
+    saturate(1.1);
 }
 
 .bestSellerMobileBadge {
