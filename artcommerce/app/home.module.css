@@ -2476,10 +2476,10 @@
 .bestSellersDesktop {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 2rem;
-  max-width: 1400px;
+  gap: 1.5rem;
+  max-width: 1600px;
   margin: 0 auto;
-  padding: 0 2rem;
+  padding: 0 3rem;
 }
 
 @media (max-width: 1024px) and (min-width: 769px) {
@@ -2525,7 +2525,7 @@
 .bestSellerImageContainer {
   position: relative;
   width: 100%;
-  aspect-ratio: 1;
+  aspect-ratio: 4/3;
   overflow: hidden;
   background: #f1f3f4;
   border-radius: 8px;
@@ -2944,7 +2944,7 @@
   }
   
   .bestSellerImageContainer {
-    aspect-ratio: 1;
+    aspect-ratio: 4/3;
   }
   
   .bestSellersDescription {
