@@ -2630,28 +2630,21 @@
   font-size: 0.8rem;
 }
 
-/* Best Sellers Mobile Carousel */
+/* Best Sellers Mobile Grid */
 .bestSellersMobile {
-  margin: 0 -1rem;
-}
-
-.bestSellersCarousel {
-  display: flex;
-  gap: 1rem;
   padding: 0 1rem;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
 }
 
-.bestSellersCarousel::-webkit-scrollbar {
-  display: none;
+.bestSellersGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin: 0 auto;
+  max-width: 100%;
 }
 
 .bestSellerMobileCard {
-  flex: 0 0 280px;
-  scroll-snap-align: start;
+  width: 100%;
 }
 
 .bestSellerMobileCardInner {
