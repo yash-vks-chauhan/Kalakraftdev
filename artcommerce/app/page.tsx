@@ -147,21 +147,19 @@ const BestSellersSection = () => {
         <div className={styles.bestSellersMobileGrid}>
           {bestSellers.map((product, index) => (
             <div key={product.id} className={styles.bestSellerMobileCard}>
-              <Link href={`/products/${product.id}`}>
-                <div className={styles.bestSellerMobileCardInner}>
-                  <div className={styles.bestSellerMobileImageContainer}>
-                    <img
-                      src={product.imageUrls && product.imageUrls[0] ? product.imageUrls[0] : 'https://placehold.co/300x300/f0f0f0/888?text=No+Image'}
-                      alt={product.name}
-                      className={styles.bestSellerMobileImage}
-                      onError={(e) => (e.currentTarget.src = 'https://placehold.co/300x300/f0f0f0/888?text=No+Image')}
-                    />
-                  </div>
-                  
-                  <div className={styles.bestSellerMobileCardInfo}>
-                    <h3 className={styles.bestSellerMobileProductName}>{product.name}</h3>
-                    <p className={styles.bestSellerMobilePrice}>{formatPrice(product.price)}</p>
-                  </div>
+              <Link href={`/products/${product.id}`} className={styles.bestSellerMobileLink}>
+                <div className={styles.bestSellerMobileImageContainer}>
+                  <img
+                    src={product.imageUrls && product.imageUrls[0] ? product.imageUrls[0] : 'https://placehold.co/300x300/f0f0f0/888?text=No+Image'}
+                    alt={product.name}
+                    className={styles.bestSellerMobileImage}
+                    onError={(e) => (e.currentTarget.src = 'https://placehold.co/300x300/f0f0f0/888?text=No+Image')}
+                  />
+                </div>
+                
+                <div className={styles.bestSellerMobileCardInfo}>
+                  <h3 className={styles.bestSellerMobileProductName}>{product.name}</h3>
+                  <p className={styles.bestSellerMobilePrice}>{formatPrice(product.price)}</p>
                 </div>
               </Link>
             </div>
