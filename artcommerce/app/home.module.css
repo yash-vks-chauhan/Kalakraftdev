@@ -2669,6 +2669,13 @@
   flex-direction: column;
 }
 
+.bestSellerMobileCardWrapper {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
 .bestSellerMobileLink {
   text-decoration: none;
   color: inherit;
@@ -2839,92 +2846,57 @@
 }
 
 .bestSellerMobileWishlistButton {
-  background: rgba(255, 255, 255, 0.95);
+  background: transparent;
   border: none;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  border-radius: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
-  backdrop-filter: blur(10px);
+  box-shadow: none;
+  color: #000;
+  transition: transform 0.2s ease;
+  backdrop-filter: none;
   position: relative;
   overflow: hidden;
-  color: #333;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .bestSellerMobileWishlistButton:hover {
-  background: rgba(255, 255, 255, 1);
-  transform: scale(1.1);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  transform: scale(1.05);
 }
 
 .bestSellerMobileWishlistButton[data-active="true"] {
-  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
-  color: #fff;
+  color: #000;
+  background: transparent;
+  box-shadow: none;
 }
 
 .bestSellerMobileWishlistButton[data-active="true"]:hover {
-  background: linear-gradient(135deg, #ff5252 0%, #e53935 100%);
-  transform: scale(1.1);
+  transform: scale(1.05);
 }
 
-/* Loading animation for wishlist button */
+/* Loading animation for wishlist button - Simple and elegant */
 .bestSellerMobileWishlistButton[data-loading="true"] {
   pointer-events: none;
-}
-
-.bestSellerMobileWishlistButton[data-loading="true"]::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 20px;
-  height: 20px;
-  margin: -10px 0 0 -10px;
-  border: 2px solid transparent;
-  border-top: 2px solid currentColor;
-  border-radius: 50%;
-  animation: wishlistSpin 0.8s linear infinite;
+  opacity: 0.7;
 }
 
 .bestSellerMobileWishlistButton[data-loading="true"] svg {
-  opacity: 0;
+  animation: wishlistPulse 1s ease-in-out infinite alternate;
 }
 
-@keyframes wishlistSpin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-/* Resin-themed loading ripple effect */
-.bestSellerMobileWishlistButton[data-loading="true"]::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 107, 107, 0.3) 0%, transparent 70%);
-  animation: resinRipple 1.5s ease-out infinite;
-}
-
-@keyframes resinRipple {
-  0% {
-    width: 0;
-    height: 0;
-    margin: 0;
-    opacity: 1;
+@keyframes wishlistPulse {
+  0% { 
+    opacity: 0.5;
+    transform: scale(0.9);
   }
-  100% {
-    width: 80px;
-    height: 80px;
-    margin: -40px 0 0 -40px;
-    opacity: 0;
+  100% { 
+    opacity: 1;
+    transform: scale(1.1);
   }
 }
 

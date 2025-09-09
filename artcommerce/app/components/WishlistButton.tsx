@@ -80,6 +80,7 @@ export default function WishlistButton({ productId, className = '', preventNavig
         className={className}
         data-active={inWishlist}
         data-animating={isAnimating}
+        data-loading={loading}
         aria-label={inWishlist ? "Remove from wishlist" : "Add to wishlist"}
         disabled={loading}
       >
