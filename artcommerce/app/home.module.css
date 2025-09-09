@@ -2682,54 +2682,41 @@
   width: 100%;
   aspect-ratio: 4/5;
   overflow: hidden;
-  background: linear-gradient(135deg, #e5e5e5 0%, #c8c8c8 30%, #a8a8a8 70%, #888888 100%);
+  background: 
+    radial-gradient(ellipse 60% 40% at center 45%, rgba(255, 255, 255, 0.3) 0%, transparent 70%),
+    linear-gradient(to bottom, #dddcdb 0%, #edeceb 25%, #f3f2f1 75%, #f7f7f6 100%);
   border-radius: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 
+    0 1px 3px rgba(0, 0, 0, 0.08),
+    0 2px 8px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
   transition: transform 0.2s ease;
 }
 
-.bestSellerMobileImageContainer::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: transparent;
-  z-index: 1;
-}
-
-/* Alternative approach - try to mask white areas */
-.bestSellerMobileImageContainer::after {
-  content: '';
-  position: absolute;
-  top: 10%;
-  left: 10%;
-  right: 10%;
-  bottom: 10%;
-  background: transparent;
-  z-index: 3;
-  pointer-events: none;
-}
+/* Removed unnecessary pseudo-elements - LV gradient handles the background */
 
 .bestSellerMobileImageContainer:hover {
-  transform: scale(1.02);
+  transform: scale(1.01);
+  box-shadow: 
+    0 2px 6px rgba(0, 0, 0, 0.1),
+    0 4px 16px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 .bestSellerMobileImage {
-  width: 90%;
-  height: 90%;
+  width: 85%;
+  height: 85%;
   object-fit: contain;
   background: transparent;
   position: relative;
   z-index: 2;
-  /* Try to remove white backgrounds */
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+  /* Subtle shadow to lift the product like LV */
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.08));
   mix-blend-mode: multiply;
-  opacity: 0.95;
+  opacity: 0.98;
 }
 
 /* Additional styling to handle white backgrounds in product images */
