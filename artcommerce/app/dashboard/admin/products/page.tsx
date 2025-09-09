@@ -110,7 +110,7 @@ export default function AdminProductsPage() {
     router.push('/dashboard/admin/products/new')
   }
 
-  if (isLoading || isTransitioning) return <LoadingSpinner />
+  if (isLoading || isTransitioning) return <LoadingSpinner overlay={true} message="Loading products..." />
   if (error) return <div className={styles.error}>{error}</div>
 
   return (

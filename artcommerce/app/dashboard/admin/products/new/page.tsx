@@ -390,7 +390,7 @@ export default function NewProductPage() {
     router.push('/dashboard/admin/products')
   }
 
-  if (isLoading || isSaving) return <LoadingSpinner />
+  if (isLoading || isSaving) return <LoadingSpinner overlay={true} message={isSaving ? "Saving product..." : "Loading..."} />
   if (error) return <div className={styles.error}>{error}</div>
 
   return (

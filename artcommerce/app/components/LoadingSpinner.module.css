@@ -39,4 +39,11 @@
   to {
     opacity: 1;
   }
+}
+
+.loadingMessage {
+  margin-top: 1rem;
+  color: #6b7280;
+  font-size: 0.875rem;
+  text-align: center;
 } 

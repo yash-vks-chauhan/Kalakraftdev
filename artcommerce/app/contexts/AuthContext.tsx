@@ -156,6 +156,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const savedToken = localStorage.getItem('token');
+    
+    // Set a timeout to ensure loading doesn't persist indefinitely
+    const timeoutId = setTimeout(() => {
+      console.warn('Auth loading timeout - setting loading to false');
+      setLoading(false);
+    }, 10000); // 10 second timeout
+    
     if (savedToken) {
       fetchProfile(savedToken).catch((err) => {
         console.error('Profile fetch error:', err);
@@ -165,11 +172,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.removeItem('token');
         sessionStorage.clear();
         setLoading(false);
+      }).finally(() => {
+        clearTimeout(timeoutId);
       });
     } else {
       setLoading(false);
+      clearTimeout(timeoutId);
     }
-  }, [fetchProfile]);
+    
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, []); // Remove fetchProfile dependency to prevent re-runs
 
   const signup = useCallback(async (fullName: string, email: string, password: string) => {
     setLoading(true);

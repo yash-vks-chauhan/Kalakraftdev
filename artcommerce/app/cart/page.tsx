@@ -37,7 +37,19 @@ export default function CartPage() {
   }, [user, router])
 
   if (!user) return null
-  if (loading) return <p className="text-center mt-8">Loading your cart…</p>
+  if (loading) return (
+    <div style={{ 
+      display: 'flex', 
+      justifyContent: 'center', 
+      alignItems: 'center', 
+      minHeight: '50vh',
+      flexDirection: 'column',
+      gap: '1rem'
+    }}>
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+      <p style={{ color: '#6b7280', fontSize: '0.875rem' }}>Loading your cart...</p>
+    </div>
+  )
 
   if (cartItems.length === 0) {
     return (

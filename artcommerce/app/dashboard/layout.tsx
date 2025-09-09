@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { redirect } from 'next/navigation'
 import styles from './layout.module.css'
 import navStyles from '../components/Navbar.module.css'
+import LoadingSpinner from '../components/LoadingSpinner'
 import { useEffect, useState } from 'react'
 import { isMobileDevice } from '../../lib/utils'
 
@@ -27,7 +28,20 @@ export default function DashboardLayout({
   }, [])
 
   if (loading) {
-    return <div>Loading...</div>
+    return (
+      <div className={`${styles.dashboardContainer} ${navStyles.mainContent}`}>
+        <div className={styles.dashboardContent}>
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'center', 
+            alignItems: 'center', 
+            minHeight: '50vh'
+          }}>
+            <LoadingSpinner message="Loading dashboard..." />
+          </div>
+        </div>
+      </div>
+    )
   }
 
   if (!user) {

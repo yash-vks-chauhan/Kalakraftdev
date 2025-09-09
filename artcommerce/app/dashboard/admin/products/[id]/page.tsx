@@ -537,7 +537,7 @@ export default function EditProductPage() {
     }
   }
 
-  if (isLoading) return <LoadingSpinner />;
+  if (isLoading) return <LoadingSpinner overlay={true} message="Loading product..." />;
   if (error) return <div className="p-4 text-red-600 bg-red-100 rounded-md">Error: {error}</div>;
 
   return (
