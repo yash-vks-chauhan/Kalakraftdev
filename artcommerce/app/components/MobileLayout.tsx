@@ -124,17 +124,15 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
     let ticking = false
     
     const handleScroll = () => {
-      if (!ticking) {
-        requestAnimationFrame(() => {
-          const currentScrollY = window.scrollY
-          const currentTime = Date.now()
-          const timeDiff = currentTime - lastScrollTime
-          
-          // Calculate scroll velocity (pixels per millisecond)
-          scrollVelocity = Math.abs(currentScrollY - prevScrollY) / Math.max(timeDiff, 1)
-          
-          // Header scroll effect
-          setIsScrolled(currentScrollY > 10)
+      const currentScrollY = window.scrollY
+      const currentTime = Date.now()
+      const timeDiff = currentTime - lastScrollTime
+      
+      // Calculate scroll velocity (pixels per millisecond)
+      scrollVelocity = Math.abs(currentScrollY - prevScrollY) / Math.max(timeDiff, 1)
+      
+      // Header scroll effect
+      setIsScrolled(currentScrollY > 10)
       
       // Determine scroll direction (1 for down, -1 for up)
       const currentDirection = currentScrollY > prevScrollY ? 1 : -1
@@ -172,15 +170,10 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
         }
       }, 150) // Show after 150ms of no scrolling
       
-          // Update values for next iteration
-          prevScrollY = currentScrollY
-          lastScrollTime = currentTime
-          setLastScrollY(currentScrollY)
-          
-          ticking = false
-        })
-        ticking = true
-      }
+      // Update values for next iteration
+      prevScrollY = currentScrollY
+      lastScrollTime = currentTime
+      setLastScrollY(currentScrollY)
     }
 
     window.addEventListener('scroll', handleScroll, { passive: true })

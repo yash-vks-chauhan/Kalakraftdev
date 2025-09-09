@@ -9,29 +9,10 @@
   --secondary-color: #4a5568;
 }
 
-/* Enhanced mobile scrolling */
+/* Add scroll snapping */
 html, body {
   scroll-snap-type: y proximity;
   scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
-}
-
-/* Mobile-specific smooth scrolling improvements */
-@media (max-width: 768px) {
-  html, body {
-    -webkit-overflow-scrolling: touch;
-    overflow-x: hidden;
-    scroll-behavior: smooth;
-    overscroll-behavior-y: contain;
-    touch-action: pan-y;
-  }
-  
-  body {
-    -webkit-text-size-adjust: 100%;
-    -webkit-tap-highlight-color: transparent;
-    transform: translateZ(0);
-  }
 }
 
 section {
@@ -40,14 +21,6 @@ section {
   position: relative;
 }
 
-/* Mobile section optimizations */
-@media (max-width: 768px) {
-  section {
-    -webkit-overflow-scrolling: touch;
-    transform: translateZ(0);
-    will-change: transform;
-  }
-}
 
 /* Remove overflow: hidden from section to allow CosmosSection to work properly */
 section:not(:has(.cosmos-card)) {
