@@ -2539,17 +2539,6 @@
   border-radius: 8px;
 }
 
-.bestSellerImageContainer::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: #f1f3f4;
-  z-index: 1;
-  pointer-events: none;
-}
 
 .bestSellerImage {
   width: 90%;
@@ -2561,9 +2550,9 @@
   position: relative;
   top: 50%;
   transform: translateY(-50%);
-  filter: contrast(1.2) brightness(0.95) saturate(1.1);
-  mix-blend-mode: multiply;
-  z-index: 3;
+  filter: none;
+  mix-blend-mode: normal;
+  z-index: 2;
 }
 
 .bestSellerCard:hover .bestSellerImage {
@@ -2744,17 +2733,6 @@
   transition: transform 0.2s ease;
 }
 
-.bestSellerMobileImageContainer::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: #f1f3f4;
-  z-index: 1;
-  pointer-events: none;
-}
 
 /* Removed unnecessary pseudo-elements - LV gradient handles the background */
 
@@ -2768,9 +2746,9 @@
   object-fit: contain;
   background: transparent;
   position: relative;
-  z-index: 3;
-  filter: contrast(1.2) brightness(0.95) saturate(1.1);
-  mix-blend-mode: multiply;
+  z-index: 2;
+  filter: none;
+  mix-blend-mode: normal;
   opacity: 1;
 }
 
