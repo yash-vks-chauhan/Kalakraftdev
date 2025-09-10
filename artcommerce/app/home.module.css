@@ -2594,11 +2594,11 @@
 
 /* Featured Product Card - Desktop */
 .featuredProductCard {
-  background: #f5f5f5;
+  background: #e8e8e8;
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: transform 0.1s ease;
   position: relative;
   width: 100%;
   user-select: none;
@@ -2623,10 +2623,8 @@
   height: 100%;
 }
 
-.featuredProductCard:hover {
-  transform: translateY(-3px) scale(1.02);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-  background: #f0f0f0;
+.featuredProductCard:active {
+  transform: scale(0.98);
 }
 
 .featuredProductCard:active {
@@ -2643,11 +2641,12 @@
 
 .featuredImageContainer {
   position: relative;
-  width: 100%;
+  width: calc(100% - 16px);
   aspect-ratio: 3/4;
   overflow: hidden;
   background: #ffffff;
   border-radius: 8px;
+  margin: 8px;
 }
 
 .featuredImageContainer::before {
@@ -2677,13 +2676,10 @@
   z-index: 3;
 }
 
-.featuredProductCard:hover .featuredProductImage {
-  transform: translateY(-50%);
-}
 
 .featuredCardInfo {
   padding: 1.5rem;
-  background: #f5f5f5;
+  background: #e8e8e8;
 }
 
 .featuredProductName {
@@ -2722,8 +2718,8 @@
   cursor: pointer;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
-  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  background: #f5f5f5;
+  transition: transform 0.1s ease;
+  background: #e8e8e8;
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
@@ -2737,10 +2733,8 @@
   flex-direction: column;
 }
 
-.featuredMobileCard:hover {
-  transform: translateY(-2px) scale(1.01);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-  background: #f0f0f0;
+.featuredMobileCard:active {
+  transform: scale(0.98);
 }
 
 .featuredMobileCard:active {
@@ -2758,7 +2752,7 @@
 
 .featuredMobileImageContainer {
   position: relative;
-  width: 100%;
+  width: calc(100% - 16px);
   aspect-ratio: 1/1.4;
   overflow: hidden;
   background: #ffffff;
@@ -2767,7 +2761,7 @@
   align-items: center;
   justify-content: center;
   box-shadow: none;
-  transition: transform 0.2s ease;
+  margin: 8px;
 }
 
 .featuredMobileImageContainer::before {
@@ -2782,9 +2776,6 @@
   z-index: 1;
 }
 
-.featuredMobileImageContainer:hover {
-  transform: none;
-}
 
 .featuredMobileImage {
   width: 90%;
@@ -2801,7 +2792,7 @@
 .featuredMobileCardInfo {
   padding: 1rem 1rem 1rem 1rem;
   text-align: left;
-  background: #f5f5f5;
+  background: #e8e8e8;
 }
 
 .featuredMobileProductName {
@@ -3005,11 +2996,11 @@
 /* This class is no longer needed - mobile now uses bestSellersMobileGrid */
 
 .bestSellerCard {
-  background: #f5f5f5;
+  background: #e8e8e8;
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: transform 0.1s ease;
   position: relative;
   width: 100%;
   cursor: pointer;
@@ -3018,10 +3009,8 @@
   border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
-.bestSellerCard:hover {
-  transform: translateY(-3px) scale(1.02);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-  background: #f0f0f0;
+.bestSellerCard:active {
+  transform: scale(0.98);
 }
 
 .bestSellerCard:active {
@@ -3044,6 +3033,8 @@
   background: #ffffff;
   border-radius: 8px;
   position: relative;
+  margin: 8px;
+  width: calc(100% - 16px);
 }
 
 .bestSellerImageContainer::before {
@@ -3074,9 +3065,6 @@
   z-index: 3;
 }
 
-.bestSellerCard:hover .bestSellerImage {
-  transform: translateY(-50%);
-}
 
 .bestSellerBadge {
   position: absolute;
@@ -3132,7 +3120,7 @@
 
 .bestSellerCardInfo {
   padding: 1.5rem;
-  background: #f5f5f5;
+  background: #e8e8e8;
 }
 
 .bestSellerCategory {
@@ -3210,8 +3198,8 @@
   cursor: pointer;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
-  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  background: #f5f5f5;
+  transition: transform 0.1s ease;
+  background: #e8e8e8;
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
@@ -3225,10 +3213,8 @@
   flex-direction: column;
 }
 
-.bestSellerMobileCard:hover {
-  transform: translateY(-2px) scale(1.01);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-  background: #f0f0f0;
+.bestSellerMobileCard:active {
+  transform: scale(0.98);
 }
 
 .bestSellerMobileCard:active {
@@ -3246,7 +3232,7 @@
 
 .bestSellerMobileImageContainer {
   position: relative;
-  width: 100%;
+  width: calc(100% - 16px);
   aspect-ratio: 1/1.4;
   overflow: hidden;
   background: #ffffff;
@@ -3255,7 +3241,7 @@
   align-items: center;
   justify-content: center;
   box-shadow: none;
-  transition: transform 0.2s ease;
+  margin: 8px;
 }
 
 .bestSellerMobileImageContainer::before {
@@ -3273,9 +3259,6 @@
 
 /* Removed unnecessary pseudo-elements - LV gradient handles the background */
 
-.bestSellerMobileImageContainer:hover {
-  transform: none;
-}
 
 .bestSellerMobileImage {
   width: 90%;
@@ -3319,7 +3302,7 @@
 .bestSellerMobileCardInfo {
   padding: 1rem 1rem 1rem 1rem;
   text-align: left;
-  background: #f5f5f5;
+  background: #e8e8e8;
 }
 
 .bestSellerMobileProductName {

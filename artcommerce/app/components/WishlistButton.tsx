@@ -6,6 +6,15 @@ import { useAuth } from '../contexts/AuthContext'
 import { useWishlist } from '../contexts/WishlistContext'
 import { useNotificationContext } from '../contexts/NotificationContext'
 import AuthModal from './AuthModal'
+import WishlistModal from './WishlistModal'
+
+interface Product {
+  id: number
+  name: string
+  price: number
+  imageUrls: string[]
+  category?: { name: string }
+}
 
 interface Props {
   productId: number;
@@ -20,8 +29,8 @@ export default function WishlistButton({ productId, className = '', preventNavig
   const [loading, setLoading] = useState(false)
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [isAnimating, setIsAnimating] = useState(false)
-  const [showSuccessMessage, setShowSuccessMessage] = useState(false)
-  const [successMessage, setSuccessMessage] = useState('')
+  const [showWishlistModal, setShowWishlistModal] = useState(false)
+  const [productData, setProductData] = useState<Product | null>(null)
 
   const inWishlist = isInWishlist(productId)
 
@@ -44,7 +53,6 @@ export default function WishlistButton({ productId, className = '', preventNavig
       
       if (inWishlist) {
         await removeFromWishlist(productId)
-        setSuccessMessage('Removed from wishlist')
         addNotification({
           title: 'Removed from Wishlist',
           body: 'Item has been removed from your wishlist',
@@ -52,8 +60,30 @@ export default function WishlistButton({ productId, className = '', preventNavig
           severity: 'info'
         })
       } else {
-        await addToWishlist(productId)
-        setSuccessMessage('Added to your wishlist!')
+        const wishlistItem = await addToWishlist(productId)
+        
+        // Extract product data from the wishlist response
+        if (wishlistItem && wishlistItem.product) {
+          // Normalize imageUrls
+          let imageUrls = []
+          try {
+            imageUrls = Array.isArray(wishlistItem.product.imageUrls) 
+              ? wishlistItem.product.imageUrls 
+              : JSON.parse(wishlistItem.product.imageUrls || '[]')
+          } catch {
+            imageUrls = []
+          }
+          
+          setProductData({
+            id: wishlistItem.product.id,
+            name: wishlistItem.product.name,
+            price: wishlistItem.product.price,
+            imageUrls: imageUrls.filter((url: string) => url && url.length > 0),
+            category: wishlistItem.product.category
+          })
+          setShowWishlistModal(true)
+        }
+        
         addNotification({
           title: 'Added to Wishlist',
           body: 'Item has been added to your wishlist',
@@ -62,28 +92,13 @@ export default function WishlistButton({ productId, className = '', preventNavig
         })
       }
       
-      // Show success message
-      setShowSuccessMessage(true)
-      
-      // Hide success message after 2 seconds
-      setTimeout(() => {
-        setShowSuccessMessage(false)
-      }, 2000)
-      
     } catch (error) {
-      setSuccessMessage('Failed to update wishlist')
-      setShowSuccessMessage(true)
       addNotification({
         title: 'Error',
         body: 'Failed to update wishlist',
         category: 'user',
         severity: 'error'
       })
-      
-      // Hide error message after 2 seconds
-      setTimeout(() => {
-        setShowSuccessMessage(false)
-      }, 2000)
     } finally {
       // Stop animation and loading state
       setTimeout(() => {
@@ -148,47 +163,17 @@ export default function WishlistButton({ productId, className = '', preventNavig
           )}
         </button>
 
-        {/* Success Message Tooltip */}
-        {showSuccessMessage && (
-          <div 
-            style={{
-              position: 'absolute',
-              top: '-45px',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              background: 'rgba(0, 0, 0, 0.9)',
-              color: 'white',
-              padding: '8px 12px',
-              borderRadius: '6px',
-              fontSize: '12px',
-              whiteSpace: 'nowrap',
-              zIndex: 1000,
-              animation: 'fadeInScale 0.3s ease-out',
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)'
-            }}
-          >
-            {successMessage}
-            {/* Tooltip arrow */}
-            <div 
-              style={{
-                position: 'absolute',
-                top: '100%',
-                left: '50%',
-                transform: 'translateX(-50%)',
-                width: 0,
-                height: 0,
-                borderLeft: '5px solid transparent',
-                borderRight: '5px solid transparent',
-                borderTop: '5px solid rgba(0, 0, 0, 0.9)'
-              }}
-            />
-          </div>
-        )}
       </div>
 
       <AuthModal 
         isOpen={showAuthModal} 
         onClose={() => setShowAuthModal(false)} 
+      />
+      
+      <WishlistModal
+        isOpen={showWishlistModal}
+        onClose={() => setShowWishlistModal(false)}
+        product={productData}
       />
 
       {/* Inline Styles for Animations */}
@@ -217,16 +202,6 @@ export default function WishlistButton({ productId, className = '', preventNavig
           }
         }
         
-        @keyframes fadeInScale {
-          from {
-            opacity: 0;
-            transform: translateX(-50%) scale(0.8);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(-50%) scale(1);
-          }
-        }
         
         @keyframes wishlistRotate {
           0% {

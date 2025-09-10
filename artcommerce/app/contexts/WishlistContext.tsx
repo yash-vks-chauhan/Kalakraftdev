@@ -20,12 +20,17 @@ export interface WishlistItem {
     price: number
     currency: string
     imageUrls: string[]
+    category?: {
+      id: number
+      name: string
+      slug: string
+    }
   }
 }
 
 export interface WishlistContextValue {
   wishlistItems: WishlistItem[]
-  addToWishlist: (productId: number) => Promise<void>
+  addToWishlist: (productId: number) => Promise<WishlistItem>
   removeFromWishlist: (productId: number) => Promise<void>
   isInWishlist: (productId: number) => boolean
   loading: boolean
@@ -102,6 +107,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
 
     const data = await res.json()
     setWishlistItems((prev) => [...prev, data.wishlistItem])
+    return data.wishlistItem
   }
 
   // Remove from wishlist
