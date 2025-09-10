@@ -3041,27 +3041,30 @@
 .bestSellerHorizontalCard {
   flex: 0 0 400px;
   scroll-snap-align: center;
-  background: #ffffff;
-  border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
   transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  overflow: hidden;
+  overflow: visible;
   position: relative;
-  height: 500px;
+  height: auto;
   display: flex;
   flex-direction: column;
 }
 
 .bestSellerHorizontalCard:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.15);
+  transform: none;
+  box-shadow: none;
 }
 
 .bestSellerHorizontalImageContainer {
   position: relative;
-  height: 300px;
+  width: 100%;
+  height: 400px;
   overflow: hidden;
-  background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+  background: linear-gradient(135deg, #f0f0f0 0%, #e8e8e8 100%);
+  border-radius: 16px;
+  margin-bottom: 1rem;
 }
 
 .bestSellerHorizontalImage {
@@ -3072,7 +3075,7 @@
 }
 
 .bestSellerHorizontalCard:hover .bestSellerHorizontalImage {
-  transform: scale(1.05);
+  transform: scale(1.02);
 }
 
 .bestSellerBadge {
@@ -3097,47 +3100,45 @@
 }
 
 .bestSellerHorizontalInfo {
-  padding: 1.5rem;
-  flex: 1;
+  padding: 0;
+  flex: none;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
+  background: transparent;
 }
 
 .bestSellerHorizontalName {
   font-size: 1.25rem;
   font-weight: 600;
   color: #333;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
   line-height: 1.3;
+  text-align: center;
 }
 
 .bestSellerHorizontalDesc {
-  font-size: 0.9rem;
-  color: #666;
-  margin-bottom: 1rem;
-  line-height: 1.4;
+  display: none; /* Hide description to match Apple design */
 }
 
 .bestSellerHorizontalPriceRow {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
+  flex-direction: column;
+  gap: 0.25rem;
 }
 
 .bestSellerHorizontalPrice {
-  font-size: 1.4rem;
-  font-weight: 700;
+  font-size: 1.2rem;
+  font-weight: 600;
   color: #333;
+  text-align: center;
 }
 
 .bestSellerHorizontalRating {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 0.9rem;
-  color: #666;
+  display: none; /* Hide rating to match Apple design */
 }
 
 .bestSellerStar {
@@ -3147,35 +3148,31 @@
 
 .bestSellerHorizontalActions {
   display: flex;
-  gap: 1rem;
+  gap: 0.5rem;
   align-items: center;
+  justify-content: center;
 }
 
 .bestSellerAddToCartBtn {
-  flex: 1;
-  padding: 12px 24px;
+  padding: 10px 20px;
   background: #000;
   color: white;
   border: none;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  font-weight: 600;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
 }
 
 .bestSellerAddToCartBtn:hover {
   background: #333;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .bestSellerHorizontalWishlistBtn {
-  padding: 12px;
+  padding: 10px;
   border: 1px solid #ddd;
-  border-radius: 8px;
+  border-radius: 6px;
   background: white;
   color: #666;
   transition: all 0.3s ease;
@@ -3183,8 +3180,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 48px;
-  height: 48px;
+  width: 40px;
+  height: 40px;
 }
 
 .bestSellerHorizontalWishlistBtn:hover {
@@ -3228,7 +3225,10 @@
 @media (max-width: 1200px) {
   .bestSellerHorizontalCard {
     flex: 0 0 350px;
-    height: 480px;
+  }
+  
+  .bestSellerHorizontalImageContainer {
+    height: 350px;
   }
   
   .bestSellersHorizontal {
@@ -3239,15 +3239,10 @@
 @media (max-width: 768px) {
   .bestSellerHorizontalCard {
     flex: 0 0 300px;
-    height: 450px;
   }
   
   .bestSellerHorizontalImageContainer {
-    height: 250px;
-  }
-  
-  .bestSellerHorizontalInfo {
-    padding: 1rem;
+    height: 300px;
   }
   
   .bestSellerHorizontalName {
@@ -3255,7 +3250,7 @@
   }
   
   .bestSellerHorizontalPrice {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
   }
 }
 

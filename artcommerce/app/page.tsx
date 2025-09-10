@@ -155,28 +155,13 @@ const BestSellersSection = () => {
                   className={styles.bestSellerHorizontalImage}
                   onError={(e) => (e.currentTarget.src = 'https://placehold.co/400x400/f0f0f0/888?text=No+Image')}
                 />
-                
-                {/* Best Seller Badge */}
-                <div className={styles.bestSellerBadge}>
-                  <span className={styles.bestSellerBadgeIcon}>🔥</span>
-                  Best Seller
-                </div>
               </div>
               
               {/* Product Info */}
               <div className={styles.bestSellerHorizontalInfo}>
                 <h3 className={styles.bestSellerHorizontalName}>{product.name}</h3>
-                <p className={styles.bestSellerHorizontalDesc}>
-                  {product.shortDesc || "Handcrafted with premium materials"}
-                </p>
                 <div className={styles.bestSellerHorizontalPriceRow}>
                   <span className={styles.bestSellerHorizontalPrice}>{formatPrice(product.price)}</span>
-                  {product.avgRating > 0 && (
-                    <div className={styles.bestSellerHorizontalRating}>
-                      <span className={styles.bestSellerStar}>★</span>
-                      <span>{product.avgRating.toFixed(1)}</span>
-                    </div>
-                  )}
                 </div>
                 
                 {/* Action Buttons */}
