@@ -1006,12 +1006,12 @@ const FeaturedCategoriesSection = () => {
     { id: 'all', name: 'All Products', slug: 'all' },
     { id: 'clocks', name: 'Clocks', slug: 'clocks' },
     { id: 'pots', name: 'Pots', slug: 'pots' },
-    { id: 'trays', name: 'Trays', slug: 'tray' },
-    { id: 'jewelry-trays', name: 'Jewelry Trays', slug: 'Tray' },
+    { id: 'trays', name: 'Trays', slug: 'trays' },
+    { id: 'jewelry-trays', name: 'Jewelry Trays', slug: 'jewelry-trays' },
     { id: 'rangoli', name: 'Rangoli', slug: 'rangoli' },
-    { id: 'wall-decor', name: 'Wall Decor', slug: 'decor' },
-    { id: 'matt-rangoli', name: 'Matt Rangoli', slug: 'matt rangoli' },
-    { id: 'mirror-work', name: 'Mirror Work', slug: 'mirror work' }
+    { id: 'wall-decor', name: 'Wall Decor', slug: 'wall-decor' },
+    { id: 'matt-rangoli', name: 'Matt Rangoli', slug: 'matt-rangoli' },
+    { id: 'mirror-work', name: 'Mirror Work', slug: 'mirror-work' }
   ];
 
   // Format price function
@@ -1044,11 +1044,13 @@ const FeaturedCategoriesSection = () => {
             const slug = categorySlug.toLowerCase();
             
             // Match category names
-            return categoryName.includes(slug) || 
-                   slug.includes(categoryName) ||
-                   (slug === 'wall art' && categoryName.includes('wall')) ||
-                   (slug === 'decor' && (categoryName.includes('decor') || categoryName.includes('home'))) ||
-                   (slug === 'tray' && categoryName.includes('tray'));
+            return categoryName.includes(slug.replace('-', ' ')) || 
+                   slug.replace('-', ' ').includes(categoryName) ||
+                   (slug === 'wall-decor' && (categoryName.includes('wall') || categoryName.includes('decor'))) ||
+                   (slug === 'jewelry-trays' && categoryName.includes('tray')) ||
+                   (slug === 'trays' && categoryName.includes('tray')) ||
+                   (slug === 'matt-rangoli' && (categoryName.includes('matt') || categoryName.includes('rangoli'))) ||
+                   (slug === 'mirror-work' && (categoryName.includes('mirror') || categoryName.includes('work')));
           });
         }
 

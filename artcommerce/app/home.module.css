@@ -2465,42 +2465,25 @@
 /* Category Buttons Container */
 .categoryButtonsContainer {
   display: flex;
-  flex-wrap: nowrap;
-  justify-content: flex-start;
+  flex-wrap: wrap;
+  justify-content: center;
   align-items: center;
   gap: 1rem;
   margin: 2rem auto 3rem;
-  max-width: 100%;
-  overflow-x: auto;
+  max-width: 1200px;
+  overflow-x: visible;
   padding: 0 2rem 1rem;
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE and Edge */
+  position: relative;
 }
 
 .categoryButtonsContainer::-webkit-scrollbar {
   display: none; /* Chrome, Safari and Opera */
 }
 
-/* Add scroll indicators */
+/* Remove scroll indicators for desktop wrapped layout */
 .categoryButtonsContainer::before,
 .categoryButtonsContainer::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  width: 30px;
-  height: 100%;
-  pointer-events: none;
-  z-index: 2;
-}
-
-.categoryButtonsContainer::before {
-  left: 0;
-  background: linear-gradient(to right, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0));
-}
-
-.categoryButtonsContainer::after {
-  right: 0;
-  background: linear-gradient(to left, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0));
+  display: none;
 }
 
 .categoryButton {
@@ -2928,14 +2911,40 @@
   }
   
   .categoryButtonsContainer {
+    flex-wrap: nowrap;
+    justify-content: flex-start;
     gap: 0.75rem;
     margin: 1.5rem auto 2.5rem;
     padding: 0 1rem 1rem;
+    overflow-x: auto;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+  }
+  
+  .categoryButtonsContainer::-webkit-scrollbar {
+    display: none; /* Chrome, Safari and Opera */
   }
   
   .categoryButtonsContainer::before,
   .categoryButtonsContainer::after {
+    content: '';
+    display: block;
+    position: absolute;
+    top: 0;
     width: 20px;
+    height: 100%;
+    pointer-events: none;
+    z-index: 2;
+  }
+  
+  .categoryButtonsContainer::before {
+    left: 0;
+    background: linear-gradient(to right, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0));
+  }
+  
+  .categoryButtonsContainer::after {
+    right: 0;
+    background: linear-gradient(to left, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0));
   }
   
   .categoryButton {
@@ -2943,6 +2952,7 @@
     font-size: 0.75rem;
     min-width: 90px;
     border-radius: 20px;
+    flex-shrink: 0;
   }
   
   .featuredDescription {
@@ -2981,9 +2991,9 @@
 /* Best Sellers Horizontal Layout - Desktop */
 .bestSellersHorizontal {
   position: relative;
-  max-width: 1600px;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 0 2rem;
+  padding: 0 1.5rem;
 }
 
 .bestSellersNavButton {
@@ -3025,7 +3035,7 @@
 
 .bestSellersScrollContainer {
   display: flex;
-  gap: 2.5rem;
+  gap: 2rem;
   overflow-x: auto;
   scroll-behavior: smooth;
   scroll-snap-type: x mandatory;
@@ -3039,7 +3049,7 @@
 }
 
 .bestSellerHorizontalCard {
-  flex: 0 0 500px;
+  flex: 0 0 380px;
   scroll-snap-align: center;
   background: transparent;
   border-radius: 0;
@@ -3060,7 +3070,7 @@
 .bestSellerHorizontalImageContainer {
   position: relative;
   width: 100%;
-  height: 500px;
+  height: 380px;
   overflow: hidden;
   background: linear-gradient(135deg, #f0f0f0 0%, #e8e8e8 100%);
   border-radius: 20px;
