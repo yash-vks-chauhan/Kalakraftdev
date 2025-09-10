@@ -2594,16 +2594,16 @@
 
 /* Featured Product Card - Desktop */
 .featuredProductCard {
-  background: #ffffff;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  background: transparent;
+  border-radius: 0;
+  overflow: visible;
+  box-shadow: none;
   transition: transform 0.1s ease;
   position: relative;
   width: 100%;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  border: none;
 }
 
 .featuredCardWrapper {
@@ -2641,12 +2641,12 @@
 
 .featuredImageContainer {
   position: relative;
-  width: calc(100% - 16px);
+  width: 100%;
   aspect-ratio: 3/4;
   overflow: hidden;
   background: #e8e8e8;
-  border-radius: 8px;
-  margin: 8px;
+  border-radius: 12px;
+  margin: 0 0 1rem 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2681,8 +2681,8 @@
 
 
 .featuredCardInfo {
-  padding: 1.5rem;
-  background: #ffffff;
+  padding: 0;
+  background: transparent;
 }
 
 .featuredProductName {
@@ -2722,11 +2722,11 @@
   user-select: none;
   -webkit-tap-highlight-color: transparent;
   transition: transform 0.1s ease;
-  background: #ffffff;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  background: transparent;
+  border-radius: 0;
+  overflow: visible;
+  box-shadow: none;
+  border: none;
 }
 
 .featuredMobileCardWrapper {
@@ -2755,16 +2755,16 @@
 
 .featuredMobileImageContainer {
   position: relative;
-  width: calc(100% - 16px);
+  width: 100%;
   aspect-ratio: 1/1.4;
   overflow: hidden;
   background: #e8e8e8;
-  border-radius: 8px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: none;
-  margin: 8px;
+  margin: 0 0 1rem 0;
 }
 
 .featuredMobileImageContainer::before {
@@ -2793,9 +2793,9 @@
 }
 
 .featuredMobileCardInfo {
-  padding: 1rem 1rem 1rem 1rem;
+  padding: 0;
   text-align: left;
-  background: #ffffff;
+  background: transparent;
 }
 
 .featuredMobileProductName {
@@ -2999,17 +2999,17 @@
 /* This class is no longer needed - mobile now uses bestSellersMobileGrid */
 
 .bestSellerCard {
-  background: #ffffff;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  background: transparent;
+  border-radius: 0;
+  overflow: visible;
+  box-shadow: none;
   transition: transform 0.1s ease;
   position: relative;
   width: 100%;
   cursor: pointer;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  border: none;
 }
 
 .bestSellerCard:active {
@@ -3030,12 +3030,12 @@
 
 .bestSellerImageContainer {
   position: relative;
-  width: calc(100% - 16px);
+  width: 100%;
   aspect-ratio: 3/4;
   overflow: hidden;
   background: #e8e8e8;
-  border-radius: 8px;
-  margin: 8px;
+  border-radius: 12px;
+  margin: 0 0 1rem 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3123,8 +3123,8 @@
 }
 
 .bestSellerCardInfo {
-  padding: 1.5rem;
-  background: #ffffff;
+  padding: 0;
+  background: transparent;
 }
 
 .bestSellerCategory {
@@ -3203,11 +3203,11 @@
   user-select: none;
   -webkit-tap-highlight-color: transparent;
   transition: transform 0.1s ease;
-  background: #ffffff;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  background: transparent;
+  border-radius: 0;
+  overflow: visible;
+  box-shadow: none;
+  border: none;
 }
 
 .bestSellerMobileCardWrapper {
@@ -3236,16 +3236,16 @@
 
 .bestSellerMobileImageContainer {
   position: relative;
-  width: calc(100% - 16px);
+  width: 100%;
   aspect-ratio: 1/1.4;
   overflow: hidden;
   background: #e8e8e8;
-  border-radius: 8px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: none;
-  margin: 8px;
+  margin: 0 0 1rem 0;
 }
 
 .bestSellerMobileImageContainer::before {
@@ -3304,9 +3304,9 @@
 }
 
 .bestSellerMobileCardInfo {
-  padding: 1rem 1rem 1rem 1rem;
+  padding: 0;
   text-align: left;
-  background: #ffffff;
+  background: transparent;
 }
 
 .bestSellerMobileProductName {
