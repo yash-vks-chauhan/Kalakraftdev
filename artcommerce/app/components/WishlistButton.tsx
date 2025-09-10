@@ -2,7 +2,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { createPortal } from 'react-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useWishlist } from '../contexts/WishlistContext'
 import { useNotificationContext } from '../contexts/NotificationContext'
@@ -32,14 +31,8 @@ export default function WishlistButton({ productId, className = '', preventNavig
   const [isAnimating, setIsAnimating] = useState(false)
   const [showWishlistModal, setShowWishlistModal] = useState(false)
   const [productData, setProductData] = useState<Product | null>(null)
-  const [mounted, setMounted] = useState(false)
 
   const inWishlist = isInWishlist(productId)
-
-  // Ensure component is mounted for portal
-  useEffect(() => {
-    setMounted(true)
-  }, [])
 
   const handleToggleWishlist = async (e: React.MouseEvent) => {
     // Prevent the event from bubbling up to parent elements
@@ -203,22 +196,16 @@ export default function WishlistButton({ productId, className = '', preventNavig
 
       </div>
 
-      {/* Render modals using portal to ensure they appear at document level */}
-      {mounted && createPortal(
-        <>
-          <AuthModal 
-            isOpen={showAuthModal} 
-            onClose={() => setShowAuthModal(false)} 
-          />
-          
-          <WishlistModal
-            isOpen={showWishlistModal}
-            onClose={() => setShowWishlistModal(false)}
-            product={productData}
-          />
-        </>,
-        document.body
-      )}
+      <AuthModal 
+        isOpen={showAuthModal} 
+        onClose={() => setShowAuthModal(false)} 
+      />
+      
+      <WishlistModal
+        isOpen={showWishlistModal}
+        onClose={() => setShowWishlistModal(false)}
+        product={productData}
+      />
 
       {/* Inline Styles for Animations */}
       <style jsx>{`

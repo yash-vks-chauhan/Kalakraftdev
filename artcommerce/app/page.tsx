@@ -28,8 +28,6 @@ const BestSellersSection = () => {
   const [bestSellers, setBestSellers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const scrollContainerRef = useRef(null);
 
   // Format price function
   const formatPrice = (price) => {
@@ -41,38 +39,12 @@ const BestSellersSection = () => {
     }).format(price);
   };
 
-  // Scroll to specific product
-  const scrollToProduct = (index) => {
-    if (scrollContainerRef.current) {
-      const container = scrollContainerRef.current;
-      const cardWidth = 500 + 40; // card width + gap (2.5rem = 40px)
-      const scrollPosition = index * cardWidth;
-      
-      container.scrollTo({
-        left: scrollPosition,
-        behavior: 'smooth'
-      });
-      setCurrentIndex(index);
-    }
-  };
-
-  // Handle scroll events to update active indicator
-  const handleScroll = () => {
-    if (scrollContainerRef.current) {
-      const container = scrollContainerRef.current;
-      const cardWidth = 500 + 40;
-      const scrollPosition = container.scrollLeft;
-      const newIndex = Math.round(scrollPosition / cardWidth);
-      setCurrentIndex(newIndex);
-    }
-  };
-
-  // Fetch best sellers - now getting 5 products
+  // Fetch best sellers
   useEffect(() => {
     const fetchBestSellers = async () => {
       try {
         setLoading(true);
-        const response = await fetch('/api/products/best-sellers?limit=5');
+        const response = await fetch('/api/products/best-sellers?limit=4');
         const data = await response.json();
         
         if (data.products && Array.isArray(data.products)) {
@@ -122,82 +94,44 @@ const BestSellersSection = () => {
         <p>Discover our most loved creations, chosen by customers like you. These handcrafted pieces have won hearts and found their way into homes across the country.</p>
       </div>
 
-      {/* Best Sellers Horizontal Scroll - Desktop */}
-      <div className={`${styles.bestSellersHorizontal} ${styles.desktopOnly}`} data-aos="fade-up" data-aos-delay="200">
-        {/* Navigation Arrows */}
-        <button 
-          className={`${styles.bestSellersNavButton} ${styles.bestSellersNavPrev}`}
-          onClick={() => scrollToProduct(Math.max(0, currentIndex - 1))}
-          disabled={currentIndex === 0}
-        >
-          <ChevronLeft size={20} />
-        </button>
-        <button 
-          className={`${styles.bestSellersNavButton} ${styles.bestSellersNavNext}`}
-          onClick={() => scrollToProduct(Math.min(bestSellers.length - 1, currentIndex + 1))}
-          disabled={currentIndex >= bestSellers.length - 1}
-        >
-          <ChevronRight size={20} />
-        </button>
-        
-        <div 
-          ref={scrollContainerRef}
-          className={styles.bestSellersScrollContainer}
-          onScroll={handleScroll}
-        >
-          {bestSellers.map((product, index) => (
-            <div key={product.id} className={styles.bestSellerHorizontalCard} data-aos="fade-up" data-aos-delay={`${300 + (index * 100)}`}>
-              {/* Product Image Container */}
-              <div className={styles.bestSellerHorizontalImageContainer}>
-                <img
-                  src={product.imageUrls && product.imageUrls[0] ? product.imageUrls[0] : 'https://placehold.co/400x400/f0f0f0/888?text=No+Image'}
-                  alt={product.name}
-                  className={styles.bestSellerHorizontalImage}
-                  onError={(e) => (e.currentTarget.src = 'https://placehold.co/400x400/f0f0f0/888?text=No+Image')}
-                />
-              </div>
-              
-              {/* Product Info */}
-              <div className={styles.bestSellerHorizontalInfo}>
-                <h3 className={styles.bestSellerHorizontalName}>{product.name}</h3>
-                <div className={styles.bestSellerHorizontalPriceRow}>
-                  <span className={styles.bestSellerHorizontalPrice}>{formatPrice(product.price)}</span>
+      {/* Best Sellers Layout - Desktop */}
+      <div className={`${styles.bestSellersDesktop} ${styles.desktopOnly}`} data-aos="fade-up" data-aos-delay="200">
+        {bestSellers.map((product, index) => (
+          <div key={product.id} className={styles.bestSellerCard} data-aos="fade-up" data-aos-delay={`${300 + (index * 100)}`}
+               onClick={() => {
+                 if (navigator.vibrate) {
+                   navigator.vibrate([10, 5, 10]);
+                 }
+               }}>
+            <Link href={`/products/${product.id}`}>
+              <div className={styles.bestSellerCardInner}>
+                <div className={styles.bestSellerImageContainer}>
+                  <img
+                    src={product.imageUrls && product.imageUrls[0] ? product.imageUrls[0] : 'https://placehold.co/300x300/f0f0f0/888?text=No+Image'}
+                    alt={product.name}
+                    className={styles.bestSellerImage}
+                    onError={(e) => (e.currentTarget.src = 'https://placehold.co/300x300/f0f0f0/888?text=No+Image')}
+                  />
+                  
                 </div>
                 
-                {/* Action Buttons */}
-                <div className={styles.bestSellerHorizontalActions}>
-                  <button 
-                    className={styles.bestSellerAddToCartBtn}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      e.preventDefault();
-                      // Handle add to cart
-                      window.location.href = `/products/${product.id}`;
-                    }}
-                  >
-                    Add to Cart
-                  </button>
-                  <WishlistButton 
-                    productId={product.id} 
-                    className={styles.bestSellerHorizontalWishlistBtn}
-                    preventNavigation={true}
-                  />
+                <div className={styles.bestSellerCardInfo}>
+                  <h3 className={styles.bestSellerProductName}>{product.name}</h3>
+                  <p className={styles.bestSellerPrice}>{formatPrice(product.price)}</p>
                 </div>
               </div>
+            </Link>
+            
+            {/* Wishlist Button - Outside Link to prevent navigation */}
+            <div className={styles.bestSellerWishlistContainer}>
+              <WishlistButton 
+                productId={product.id} 
+                className={styles.bestSellerWishlistButton}
+                preventNavigation={true}
+              />
             </div>
-          ))}
-        </div>
-        
-        {/* Scroll Indicators */}
-        <div className={styles.bestSellersScrollIndicators}>
-          {bestSellers.map((_, index) => (
-            <div 
-              key={index} 
-              className={`${styles.bestSellersScrollDot} ${index === currentIndex ? styles.bestSellersScrollDotActive : ''}`}
-              onClick={() => scrollToProduct(index)}
-            ></div>
-          ))}
-        </div>
+          </div>
+        ))}
       </div>
 
       {/* Best Sellers Grid - Mobile */}
@@ -227,18 +161,8 @@ const BestSellersSection = () => {
                   </div>
                 </Link>
                 
-                {/* Mobile Action Buttons */}
-                <div className={styles.bestSellerMobileActions}>
-                  <button 
-                    className={styles.bestSellerMobileAddToCartBtn}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      e.preventDefault();
-                      window.location.href = `/products/${product.id}`;
-                    }}
-                  >
-                    Add to Cart
-                  </button>
+                {/* Wishlist Button - Outside Link to prevent navigation */}
+                <div className={styles.bestSellerMobileWishlistContainer}>
                   <WishlistButton 
                     productId={product.id} 
                     className={styles.bestSellerMobileWishlistButton}
@@ -1006,12 +930,12 @@ const FeaturedCategoriesSection = () => {
     { id: 'all', name: 'All Products', slug: 'all' },
     { id: 'clocks', name: 'Clocks', slug: 'clocks' },
     { id: 'pots', name: 'Pots', slug: 'pots' },
-    { id: 'trays', name: 'Trays', slug: 'trays' },
-    { id: 'jewelry-trays', name: 'Jewelry Trays', slug: 'jewelry-trays' },
+    { id: 'trays', name: 'Trays', slug: 'tray' },
+    { id: 'jewelry-trays', name: 'Jewelry Trays', slug: 'Tray' },
     { id: 'rangoli', name: 'Rangoli', slug: 'rangoli' },
-    { id: 'wall-decor', name: 'Wall Decor', slug: 'wall-decor' },
-    { id: 'matt-rangoli', name: 'Matt Rangoli', slug: 'matt-rangoli' },
-    { id: 'mirror-work', name: 'Mirror Work', slug: 'mirror-work' }
+    { id: 'wall-decor', name: 'Wall Decor', slug: 'decor' },
+    { id: 'matt-rangoli', name: 'Matt Rangoli', slug: 'matt rangoli' },
+    { id: 'mirror-work', name: 'Mirror Work', slug: 'mirror work' }
   ];
 
   // Format price function
@@ -1044,13 +968,11 @@ const FeaturedCategoriesSection = () => {
             const slug = categorySlug.toLowerCase();
             
             // Match category names
-            return categoryName.includes(slug.replace('-', ' ')) || 
-                   slug.replace('-', ' ').includes(categoryName) ||
-                   (slug === 'wall-decor' && (categoryName.includes('wall') || categoryName.includes('decor'))) ||
-                   (slug === 'jewelry-trays' && categoryName.includes('tray')) ||
-                   (slug === 'trays' && categoryName.includes('tray')) ||
-                   (slug === 'matt-rangoli' && (categoryName.includes('matt') || categoryName.includes('rangoli'))) ||
-                   (slug === 'mirror-work' && (categoryName.includes('mirror') || categoryName.includes('work')));
+            return categoryName.includes(slug) || 
+                   slug.includes(categoryName) ||
+                   (slug === 'wall art' && categoryName.includes('wall')) ||
+                   (slug === 'decor' && (categoryName.includes('decor') || categoryName.includes('home'))) ||
+                   (slug === 'tray' && categoryName.includes('tray'));
           });
         }
 
