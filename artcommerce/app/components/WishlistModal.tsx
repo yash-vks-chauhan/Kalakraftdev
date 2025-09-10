@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import Link from 'next/link'
 
 interface Product {
@@ -20,6 +21,12 @@ interface WishlistModalProps {
 export default function WishlistModal({ isOpen, onClose, product }: WishlistModalProps) {
   const [isVisible, setIsVisible] = useState(false)
   const [isAnimating, setIsAnimating] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  // Ensure component is mounted on client side
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // Format price to INR
   const formatPrice = (price: number) => {
@@ -31,6 +38,17 @@ export default function WishlistModal({ isOpen, onClose, product }: WishlistModa
     }).format(price)
   }
 
+  const handleClose = useCallback(() => {
+    setIsAnimating(false)
+    // Restore body scroll
+    document.body.style.overflow = 'unset'
+    // Wait for animation to complete before hiding
+    setTimeout(() => {
+      setIsVisible(false)
+      onClose()
+    }, 300)
+  }, [onClose])
+
   // Handle modal open/close with animations
   useEffect(() => {
     if (isOpen && product) {
@@ -38,25 +56,32 @@ export default function WishlistModal({ isOpen, onClose, product }: WishlistModa
       // Small delay to trigger animation
       setTimeout(() => setIsAnimating(true), 50)
       
+      // Prevent body scroll when modal is open
+      document.body.style.overflow = 'hidden'
+      
+      // Handle escape key
+      const handleEscape = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') {
+          handleClose()
+        }
+      }
+      document.addEventListener('keydown', handleEscape)
+      
       // Auto-close after 6.5 seconds
       const timer = setTimeout(() => {
         handleClose()
       }, 6500)
       
-      return () => clearTimeout(timer)
+      return () => {
+        clearTimeout(timer)
+        document.removeEventListener('keydown', handleEscape)
+        // Restore body scroll when modal closes
+        document.body.style.overflow = 'unset'
+      }
     } else {
       handleClose()
     }
-  }, [isOpen, product])
-
-  const handleClose = () => {
-    setIsAnimating(false)
-    // Wait for animation to complete before hiding
-    setTimeout(() => {
-      setIsVisible(false)
-      onClose()
-    }, 300)
-  }
+  }, [isOpen, product, handleClose])
 
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
@@ -64,9 +89,9 @@ export default function WishlistModal({ isOpen, onClose, product }: WishlistModa
     }
   }
 
-  if (!isVisible || !product) return null
+  if (!mounted || !isVisible || !product) return null
 
-  return (
+  const modalContent = (
     <>
       {/* Modal Backdrop */}
       <div 
@@ -129,20 +154,26 @@ export default function WishlistModal({ isOpen, onClose, product }: WishlistModa
       {/* Styles */}
       <style jsx>{`
         .wishlist-modal-backdrop {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
+          position: fixed !important;
+          top: 0 !important;
+          left: 0 !important;
+          right: 0 !important;
+          bottom: 0 !important;
           background: rgba(0, 0, 0, 0.6);
           backdrop-filter: blur(8px);
           display: flex;
           align-items: center;
           justify-content: center;
-          z-index: 99999;
+          z-index: 999999 !important;
           opacity: 0;
           transition: opacity 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
           padding: 1rem;
+          width: 100vw !important;
+          height: 100vh !important;
+          margin: 0 !important;
+          transform: none !important;
+          clip: unset !important;
+          overflow: visible !important;
         }
 
         .wishlist-modal-backdrop.visible {
@@ -414,4 +445,6 @@ export default function WishlistModal({ isOpen, onClose, product }: WishlistModa
       `}</style>
     </>
   )
+
+  return createPortal(modalContent, document.body)
 }
