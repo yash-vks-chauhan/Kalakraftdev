@@ -1143,17 +1143,34 @@ const FeaturedCategoriesSection = () => {
                       
                       <div className={styles.featuredCardInfo}>
                         <h3 className={styles.featuredProductName}>{product.name}</h3>
+                        <p className={styles.featuredProductDescription}>
+                          {product.description || `Handcrafted resin ${product.category?.name.toLowerCase() || 'art piece'} with unique design and premium quality finish.`}
+                        </p>
                         <p className={styles.featuredProductPrice}>{formatPrice(product.price)}</p>
                       </div>
                     </Link>
                     
-                    {/* Wishlist Button - Positioned on the card */}
-                    <div className={styles.featuredDesktopWishlistContainer}>
-                      <WishlistButton 
-                        productId={product.id} 
-                        className={styles.featuredDesktopWishlistButton}
-                        preventNavigation={true}
-                      />
+                    {/* Action Buttons */}
+                    <div className={styles.featuredProductActions}>
+                      <button 
+                        className={styles.featuredAddToCartButton}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          window.location.href = `/products/${product.id}`;
+                        }}
+                      >
+                        Add to Cart
+                      </button>
+                      
+                      <div className={styles.featuredDesktopWishlistContainer}>
+                        <WishlistButton 
+                          productId={product.id} 
+                          className={styles.featuredDesktopWishlistButton}
+                          preventNavigation={true}
+                          showText={true}
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>

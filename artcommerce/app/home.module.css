@@ -2587,6 +2587,9 @@
   user-select: none;
   -webkit-tap-highlight-color: transparent;
   border: none;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .featuredCardWrapper {
@@ -2610,77 +2613,104 @@
   transform: scale(0.98);
 }
 
-.featuredProductCard:active {
-  transform: translateY(1px) scale(0.98);
-  transition: all 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-.featuredCardInner {
-  display: block;
-  text-decoration: none;
-  color: inherit;
-  height: 100%;
-}
-
 .featuredImageContainer {
   position: relative;
   width: 100%;
-  aspect-ratio: 3/4;
+  height: 480px;
   overflow: hidden;
-  background: #e8e8e8;
-  border-radius: 12px;
-  margin: 0 0 1rem 0;
+  background: linear-gradient(135deg, #f8f8f8 0%, #eeeeee 100%);
+  border-radius: 20px;
+  margin: 0 0 1.2rem 0;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.featuredImageContainer::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: transparent;
-  pointer-events: none;
-  z-index: 1;
-}
-
 .featuredProductImage {
-  width: 90%;
-  height: 90%;
-  object-fit: contain;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   transition: transform 0.3s ease;
-  margin: auto;
-  display: block;
-  position: relative;
-  top: 50%;
-  transform: translateY(-50%);
-  filter: none;
-  mix-blend-mode: normal;
-  z-index: 3;
+  border-radius: 20px;
 }
-
 
 .featuredCardInfo {
   padding: 0;
   background: transparent;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .featuredProductName {
-  font-size: 1.1rem;
+  font-size: 1.4rem;
   font-weight: 600;
-  color: #333;
-  margin-bottom: 1rem;
-  line-height: 1.4;
+  color: #1d1d1f;
+  margin: 0;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+.featuredProductDescription {
+  font-size: 1rem;
+  font-weight: 400;
+  color: #86868b;
+  margin: 0;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 .featuredProductPrice {
   font-size: 1.2rem;
-  font-weight: 700;
-  color: #333;
+  font-weight: 600;
+  color: #1d1d1f;
   margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+.featuredProductActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+  gap: 12px;
+}
+
+.featuredAddToCartButton {
+  flex: 1;
+  background: #0071e3;
+  color: white;
+  border: none;
+  border-radius: 980px;
+  padding: 10px 20px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  min-height: 36px;
+  box-shadow: 0 1px 3px rgba(0, 113, 227, 0.2);
+}
+
+.featuredAddToCartButton:hover {
+  background: #0077ed;
+  transform: scale(1.02);
+  box-shadow: 0 2px 8px rgba(0, 113, 227, 0.3);
+}
+
+.featuredAddToCartButton:active {
+  transform: scale(0.98);
+  transition: transform 0.1s ease;
 }
 
 /* Featured Products Mobile Layout */
@@ -2739,10 +2769,10 @@
 .featuredMobileImageContainer {
   position: relative;
   width: 100%;
-  aspect-ratio: 1/1.4;
+  height: 280px;
   overflow: hidden;
-  background: #e8e8e8;
-  border-radius: 12px;
+  background: linear-gradient(135deg, #f8f8f8 0%, #eeeeee 100%);
+  border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2750,53 +2780,42 @@
   margin: 0 0 1rem 0;
 }
 
-.featuredMobileImageContainer::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: transparent;
-  pointer-events: none;
-  z-index: 1;
-}
-
-
 .featuredMobileImage {
-  width: 90%;
-  height: 90%;
-  object-fit: contain;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   background: transparent;
   position: relative;
   z-index: 3;
   filter: none;
   mix-blend-mode: normal;
   opacity: 1;
+  border-radius: 16px;
 }
 
 .featuredMobileCardInfo {
   padding: 0;
-  text-align: left;
+  text-align: center;
   background: transparent;
 }
 
 .featuredMobileProductName {
-  font-size: 0.85rem;
-  font-weight: 400;
+  font-size: 1rem;
+  font-weight: 600;
   color: #333;
-  margin-bottom: 0.25rem;
-  line-height: 1.2;
+  margin-bottom: 0.5rem;
+  line-height: 1.3;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   white-space: normal;
 }
 
 .featuredMobilePrice {
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   font-weight: 500;
   color: #666;
   margin: 0;
@@ -2804,13 +2823,74 @@
 
 /* Desktop Wishlist Button Styles for Featured Section */
 .featuredDesktopWishlistContainer {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  z-index: 10;
+  flex-shrink: 0;
 }
 
 .featuredDesktopWishlistButton {
+  background: white;
+  border: 1.5px solid #d2d2d7;
+  width: auto;
+  height: 36px;
+  border-radius: 980px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  color: #1d1d1f;
+  padding: 0 16px;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 0.9rem;
+  font-weight: 400;
+  gap: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  min-width: 100px;
+}
+
+.featuredDesktopWishlistButton:hover {
+  background: #f5f5f7;
+  border-color: #a1a1aa;
+  transform: scale(1.02);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.featuredDesktopWishlistButton:active {
+  transform: scale(0.98);
+  transition: transform 0.1s ease;
+}
+
+.featuredDesktopWishlistButton[data-active="true"] {
+  background: #1d1d1f;
+  color: white;
+  border-color: #1d1d1f;
+}
+
+.featuredDesktopWishlistButton[data-active="true"]:hover {
+  background: #424245;
+  border-color: #424245;
+}
+
+.featuredWishlistIcon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.featuredWishlistText {
+  font-size: 0.9rem;
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+/* Mobile Wishlist Button Styles for Featured Section */
+.featuredMobileWishlistContainer {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 10;
+}
+
+.featuredMobileWishlistButton {
   background: rgba(255, 255, 255, 0.9);
   border: none;
   width: 32px;
@@ -2820,52 +2900,11 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   color: #333;
+  transition: transform 0.2s ease;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-}
-
-.featuredDesktopWishlistButton:hover {
-  background: rgba(255, 255, 255, 1);
-  transform: scale(1.1);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-}
-
-.featuredDesktopWishlistButton[data-active="true"] {
-  background: #333;
-  color: #fff;
-}
-
-.featuredDesktopWishlistButton[data-active="true"]:hover {
-  background: #555;
-}
-
-/* Mobile Wishlist Button Styles for Featured Section */
-.featuredMobileWishlistContainer {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  z-index: 10;
-}
-
-.featuredMobileWishlistButton {
-  background: transparent;
-  border: none;
-  width: 28px;
-  height: 28px;
-  border-radius: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: none;
-  color: #000;
-  transition: transform 0.2s ease;
-  backdrop-filter: none;
-  position: relative;
-  overflow: hidden;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
 }
@@ -2875,9 +2914,8 @@
 }
 
 .featuredMobileWishlistButton[data-active="true"] {
-  color: #000;
-  background: transparent;
-  box-shadow: none;
+  background: #333;
+  color: #fff;
 }
 
 .featuredMobileWishlistButton[data-active="true"]:hover {
