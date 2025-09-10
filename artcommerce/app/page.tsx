@@ -929,10 +929,13 @@ const FeaturedCategoriesSection = () => {
   const categories = [
     { id: 'all', name: 'All Products', slug: 'all' },
     { id: 'clocks', name: 'Clocks', slug: 'clocks' },
-    { id: 'wall-art', name: 'Wall Art', slug: 'wall art' },
-    { id: 'home-decor', name: 'Home Decor', slug: 'decor' },
+    { id: 'pots', name: 'Pots', slug: 'pots' },
     { id: 'trays', name: 'Trays', slug: 'tray' },
-    { id: 'custom', name: 'Custom Pieces', slug: 'custom' }
+    { id: 'jewelry-trays', name: 'Jewelry Trays', slug: 'Tray' },
+    { id: 'rangoli', name: 'Rangoli', slug: 'rangoli' },
+    { id: 'wall-decor', name: 'Wall Decor', slug: 'decor' },
+    { id: 'matt-rangoli', name: 'Matt Rangoli', slug: 'matt rangoli' },
+    { id: 'mirror-work', name: 'Mirror Work', slug: 'mirror work' }
   ];
 
   // Format price function
@@ -1049,8 +1052,8 @@ const FeaturedCategoriesSection = () => {
             <div className={`${styles.featuredProductsDesktop} ${styles.desktopOnly}`}>
               {featuredProducts.slice(0, 4).map((product, index) => (
                 <div key={product.id} className={styles.featuredProductCard} data-aos="fade-up" data-aos-delay={`${400 + (index * 100)}`}>
-                  <Link href={`/products/${product.id}`}>
-                    <div className={styles.featuredCardInner}>
+                  <div className={styles.featuredCardWrapper}>
+                    <Link href={`/products/${product.id}`} className={styles.featuredCardLink}>
                       <div className={styles.featuredImageContainer}>
                         <img
                           src={product.imageUrls && product.imageUrls[0] ? product.imageUrls[0] : 'https://placehold.co/300x300/f0f0f0/888?text=No+Image'}
@@ -1064,16 +1067,16 @@ const FeaturedCategoriesSection = () => {
                         <h3 className={styles.featuredProductName}>{product.name}</h3>
                         <p className={styles.featuredProductPrice}>{formatPrice(product.price)}</p>
                       </div>
+                    </Link>
+                    
+                    {/* Wishlist Button - Positioned on the card */}
+                    <div className={styles.featuredDesktopWishlistContainer}>
+                      <WishlistButton 
+                        productId={product.id} 
+                        className={styles.featuredDesktopWishlistButton}
+                        preventNavigation={true}
+                      />
                     </div>
-                  </Link>
-                  
-                  {/* Wishlist Button */}
-                  <div className={styles.featuredWishlistContainer}>
-                    <WishlistButton 
-                      productId={product.id} 
-                      className={styles.featuredWishlistButton}
-                      preventNavigation={true}
-                    />
                   </div>
                 </div>
               ))}
