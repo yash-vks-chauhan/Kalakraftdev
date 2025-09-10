@@ -3,7 +3,6 @@
 
 import { useAuth } from '../contexts/AuthContext'
 import RealTimeNotifications from './RealTimeNotifications'
-import NotificationContainer from './NotificationContainer'
 
 export default function AdminNotifications() {
   const { user, loading } = useAuth()
@@ -12,11 +11,8 @@ export default function AdminNotifications() {
 
   return (
     <>
-      {/* only kicks off the Pusher bind() calls */}
+      {/* only kicks off the Pusher bind() calls for admin notifications */}
       <RealTimeNotifications />
-
-      {/* the ONLY place we map over `notifications` */}
-      <NotificationContainer />
     </>
   )
 }

@@ -12,19 +12,20 @@ export default function NotificationContainer() {
   if (userNotifications.length === 0) return null
 
   return (
-    <div className="fixed top-[72px] left-1/2 -translate-x-1/2 z-[9999] flex flex-col gap-3 pointer-events-none">
+    <div className="fixed top-[60px] sm:top-[72px] left-1/2 -translate-x-1/2 z-[9999] flex flex-col gap-2 sm:gap-3 pointer-events-none px-3 sm:px-4 w-full max-w-xs sm:max-w-sm md:max-w-md">
       {userNotifications.map((note) => (
         <div
           key={note.id}
+          data-notification-id={note.id}
           className="
             pointer-events-auto
             bg-white
             border border-gray-200
             rounded-lg
             shadow-lg
-            min-w-[350px]
-            max-w-[400px]
-            p-4
+            w-full
+            p-3
+            sm:p-4
             relative
             animate-slideIn
             before:absolute
@@ -36,18 +37,23 @@ export default function NotificationContainer() {
             before:to-gray-600
             before:rounded-b-lg
             before:animate-progressBar
+            
+            /* Mobile responsive */
+            sm:min-w-[320px]
+            md:min-w-[350px]
+            md:max-w-[400px]
           "
           style={{
             animation: 'slideIn 0.3s ease-out forwards'
           }}
         >
           {/* Content */}
-          <div className="pr-8">
-            <div className="text-[16px] font-semibold text-gray-900 leading-tight">
+          <div className="pr-7 sm:pr-8">
+            <div className="text-sm sm:text-[15px] md:text-[16px] font-semibold text-gray-900 leading-tight">
               {note.title}
             </div>
             {note.body && (
-              <div className="text-[14px] text-gray-600 mt-1 leading-relaxed">
+              <div className="text-xs sm:text-[13px] md:text-[14px] text-gray-600 mt-1 leading-relaxed">
                 {note.body}
               </div>
             )}
@@ -56,10 +62,10 @@ export default function NotificationContainer() {
           {/* Close button */}
           <button
             onClick={() => removeNotification(note.id)}
-            className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 transition-colors duration-200 rounded-full p-1 hover:bg-gray-100"
+            className="absolute top-2 sm:top-3 right-2 sm:right-3 text-gray-400 hover:text-gray-600 transition-colors duration-200 rounded-full p-1 hover:bg-gray-100"
             aria-label="Close notification"
           >
-            <X size={16} />
+            <X size={14} className="sm:w-4 sm:h-4" />
           </button>
         </div>
       ))}

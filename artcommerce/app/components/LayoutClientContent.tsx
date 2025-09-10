@@ -3,6 +3,7 @@
 import React, { useEffect } from 'react'
 import Navbar from './Navbar'
 import AdminNotifications from './AdminNotifications'
+import UserNotifications from './UserNotifications'
 import Providers from '../Providers'
 import { useMobileMenu } from '../contexts/MobileMenuContext'
 
@@ -81,6 +82,7 @@ export default function LayoutClientContent({ children }: { children: React.Reac
       <Providers>
         <Navbar />
         <AdminNotifications />
+        <UserNotifications />
         {children}
       </Providers>
     </body>

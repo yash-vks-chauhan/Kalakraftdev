@@ -20,6 +20,7 @@ interface WishlistModalProps {
 
 export default function WishlistModal({ isOpen, onClose, product }: WishlistModalProps) {
   const [isAnimating, setIsAnimating] = useState(false)
+  const [isClosing, setIsClosing] = useState(false)
   const [mounted, setMounted] = useState(false)
 
   // Ensure component is mounted on client side
@@ -38,20 +39,27 @@ export default function WishlistModal({ isOpen, onClose, product }: WishlistModa
   }
 
   const handleClose = useCallback(() => {
+    if (isClosing) return // Prevent multiple close calls
+    
+    setIsClosing(true)
     setIsAnimating(false)
+    
     // Restore body scroll
     if (typeof document !== 'undefined') {
       document.body.style.overflow = 'unset'
     }
+    
     // Wait for animation to complete before hiding
     setTimeout(() => {
+      setIsClosing(false)
       onClose()
     }, 300)
-  }, [onClose])
+  }, [onClose, isClosing])
 
   // Handle modal open/close with animations
   useEffect(() => {
     if (isOpen && product && typeof document !== 'undefined') {
+      setIsClosing(false)
       // Small delay to trigger animation
       setTimeout(() => setIsAnimating(true), 50)
       
@@ -75,10 +83,13 @@ export default function WishlistModal({ isOpen, onClose, product }: WishlistModa
         clearTimeout(timer)
         document.removeEventListener('keydown', handleEscape)
         // Restore body scroll when modal closes
-        document.body.style.overflow = 'unset'
+        if (typeof document !== 'undefined') {
+          document.body.style.overflow = 'unset'
+        }
       }
     } else if (!isOpen) {
       setIsAnimating(false)
+      setIsClosing(false)
       if (typeof document !== 'undefined') {
         document.body.style.overflow = 'unset'
       }
@@ -86,27 +97,28 @@ export default function WishlistModal({ isOpen, onClose, product }: WishlistModa
   }, [isOpen, product, handleClose])
 
   const handleBackdropClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) {
+    if (e.target === e.currentTarget && !isClosing) {
       handleClose()
     }
   }
 
-  if (!mounted || !isOpen || !product) return null
+  if (!mounted || (!isOpen && !isClosing) || !product) return null
 
   const modalContent = (
     <>
       {/* Modal Backdrop */}
       <div 
-        className={`wishlist-modal-backdrop ${isAnimating ? 'visible' : ''}`}
+        className={`wishlist-modal-backdrop ${isAnimating && !isClosing ? 'visible' : ''}`}
         onClick={handleBackdropClick}
       >
         {/* Modal Content */}
-        <div className={`wishlist-modal-content ${isAnimating ? 'visible' : ''}`}>
+        <div className={`wishlist-modal-content ${isAnimating && !isClosing ? 'visible' : ''}`}>
           {/* Close Button */}
           <button 
             className="wishlist-modal-close"
             onClick={handleClose}
             aria-label="Close modal"
+            disabled={isClosing}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -225,6 +237,18 @@ export default function WishlistModal({ isOpen, onClose, product }: WishlistModa
           background: rgba(0, 0, 0, 0.1);
           color: #333;
           transform: scale(1.1);
+        }
+
+        .wishlist-modal-close:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+          transform: none;
+        }
+
+        .wishlist-modal-close:disabled:hover {
+          background: rgba(0, 0, 0, 0.05);
+          color: #666;
+          transform: none;
         }
 
         .wishlist-modal-icon {
