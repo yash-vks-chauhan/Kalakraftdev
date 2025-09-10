@@ -129,7 +129,7 @@ export default function DashboardHomePage() {
 
         <Link href="/dashboard/orders" className={styles.dashboardCard}>
           <h2 className={styles.cardTitle}>Your Orders</h2>
-          <p className={styles.cardDescription}>View all the orders you've placed.</p>
+          <p className={styles.cardDescription}>View all the orders you&apos;ve placed.</p>
         </Link>
 
         {user.role === 'admin' && (
@@ -173,7 +173,7 @@ export default function DashboardHomePage() {
 
         <Link href="/dashboard/cart" className={styles.dashboardCard}>
           <h2 className={styles.cardTitle}>Your Cart</h2>
-          <p className={styles.cardDescription}>See what's in your shopping cart.</p>
+          <p className={styles.cardDescription}>See what&apos;s in your shopping cart.</p>
         </Link>
 
         <Link href="/dashboard/wishlist" className={styles.dashboardCard}>

@@ -563,7 +563,7 @@ export default function ProfilePage() {
               ))}
             </ul>
           ) : (
-            <p className={styles.emptyText}>You haven't placed any orders yet.</p>
+            <p className={styles.emptyText}>You haven&apos;t placed any orders yet.</p>
           )}
           {(user.orders && user.orders.length > visibleOrderCount) && (
             <button 

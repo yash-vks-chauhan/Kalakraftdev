@@ -48,11 +48,12 @@ export function isMobileDevice(): boolean {
 }
 
 export function useIsMobile(): boolean {
-  if (typeof window === 'undefined') return false;
-  
-  const [isMobile, setIsMobile] = React.useState(isMobileDevice());
+  const [isMobile, setIsMobile] = React.useState(false);
   
   React.useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    setIsMobile(isMobileDevice());
     const checkMobile = () => {
       setIsMobile(isMobileDevice());
     };

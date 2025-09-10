@@ -119,7 +119,7 @@ export default function SupportPage() {
           Contact Support
         </h1>
         <p className={styles.subtitle}>
-          Need help? We're here to assist you. Fill out the form below and we'll get back to you as soon as possible.
+          Need help? We&apos;re here to assist you. Fill out the form below and we&apos;ll get back to you as soon as possible.
         </p>
       </div>
 

@@ -8,10 +8,9 @@ export default function RealTimeNotifications() {
   const { user, loading } = useAuth()
   const { notify, incrementUnread } = useNotificationContext()
 
-  // don't subscribe unless we're sure it's an admin
-  if (loading || user?.role !== 'admin') return null
-
   useEffect(() => {
+    // don't subscribe unless we're sure it's an admin
+    if (loading || user?.role !== 'admin') return
     // enable Pusher logs in the browser console (optional)
     // @ts-ignore
     Pusher.logToConsole = false
