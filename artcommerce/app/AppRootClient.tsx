@@ -3,8 +3,8 @@
 import { useEffect, useState, useRef } from 'react'
 import { usePathname } from 'next/navigation'
 import Navbar from './components/Navbar'
-import NotificationContainer from './components/NotificationContainer'
 import AdminNotifications from './components/AdminNotifications'
+import UserNotifications from './components/UserNotifications'
 import Providers from './Providers'
 import { useMobileMenu } from './contexts/MobileMenuContext'
 import MobileMenuPanel from './components/MobileMenuPanel'
@@ -177,7 +177,11 @@ export default function AppRootClient({ children }: { children: React.ReactNode 
         <AppContentWrapper>
           {!showDesktopView ? (
             // Mobile Layout
-            <MobileLayout onSwitchToDesktop={switchToDesktopView}>{children}</MobileLayout>
+            <>
+              <UserNotifications />
+              <AdminNotifications />
+              <MobileLayout onSwitchToDesktop={switchToDesktopView}>{children}</MobileLayout>
+            </>
           ) : (
             // Desktop Layout
             <>
@@ -187,7 +191,7 @@ export default function AppRootClient({ children }: { children: React.ReactNode 
               {/* Main content wrapper */}
           <div className={isMobileMenuOpen ? styles.mainContentBlurred : ''}>
             <Navbar />
-            <NotificationContainer />
+            <UserNotifications />
             <AdminNotifications />
             {children}
           </div>

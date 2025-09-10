@@ -12,7 +12,7 @@ export default function NotificationContainer() {
   if (userNotifications.length === 0) return null
 
   return (
-    <div className="fixed top-[60px] sm:top-[72px] left-1/2 -translate-x-1/2 z-[9999] flex flex-col gap-2 sm:gap-3 pointer-events-none px-3 sm:px-4 w-full max-w-xs sm:max-w-sm md:max-w-md">
+    <div className="fixed top-[60px] sm:top-[72px] left-1/2 -translate-x-1/2 z-[999999] flex flex-col gap-2 sm:gap-3 pointer-events-none px-3 sm:px-4 w-full max-w-xs sm:max-w-sm md:max-w-md">
       {userNotifications.map((note) => (
         <div
           key={note.id}

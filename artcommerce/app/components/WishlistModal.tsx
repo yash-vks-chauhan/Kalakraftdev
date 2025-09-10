@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import Link from 'next/link'
 
@@ -22,10 +22,22 @@ export default function WishlistModal({ isOpen, onClose, product }: WishlistModa
   const [isAnimating, setIsAnimating] = useState(false)
   const [isClosing, setIsClosing] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const closingRef = useRef(false)
+  const timerRef = useRef<NodeJS.Timeout | null>(null)
 
   // Ensure component is mounted on client side
   useEffect(() => {
     setMounted(true)
+    
+    // Cleanup on unmount
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current)
+      }
+      if (typeof document !== 'undefined') {
+        document.body.style.overflow = 'unset'
+      }
+    }
   }, [])
 
   // Format price to INR
@@ -39,10 +51,17 @@ export default function WishlistModal({ isOpen, onClose, product }: WishlistModa
   }
 
   const handleClose = useCallback(() => {
-    if (isClosing) return // Prevent multiple close calls
+    if (closingRef.current) return // Prevent multiple close calls
     
+    closingRef.current = true
     setIsClosing(true)
     setIsAnimating(false)
+    
+    // Clear any existing auto-close timer
+    if (timerRef.current) {
+      clearTimeout(timerRef.current)
+      timerRef.current = null
+    }
     
     // Restore body scroll
     if (typeof document !== 'undefined') {
@@ -52,14 +71,23 @@ export default function WishlistModal({ isOpen, onClose, product }: WishlistModa
     // Wait for animation to complete before hiding
     setTimeout(() => {
       setIsClosing(false)
+      closingRef.current = false
       onClose()
     }, 300)
-  }, [onClose, isClosing])
+  }, [onClose])
 
   // Handle modal open/close with animations
   useEffect(() => {
     if (isOpen && product && typeof document !== 'undefined') {
       setIsClosing(false)
+      closingRef.current = false
+      
+      // Clear any existing timer
+      if (timerRef.current) {
+        clearTimeout(timerRef.current)
+        timerRef.current = null
+      }
+      
       // Small delay to trigger animation
       setTimeout(() => setIsAnimating(true), 50)
       
@@ -75,12 +103,15 @@ export default function WishlistModal({ isOpen, onClose, product }: WishlistModa
       document.addEventListener('keydown', handleEscape)
       
       // Auto-close after 6.5 seconds
-      const timer = setTimeout(() => {
+      timerRef.current = setTimeout(() => {
         handleClose()
       }, 6500)
       
       return () => {
-        clearTimeout(timer)
+        if (timerRef.current) {
+          clearTimeout(timerRef.current)
+          timerRef.current = null
+        }
         document.removeEventListener('keydown', handleEscape)
         // Restore body scroll when modal closes
         if (typeof document !== 'undefined') {
@@ -90,6 +121,14 @@ export default function WishlistModal({ isOpen, onClose, product }: WishlistModa
     } else if (!isOpen) {
       setIsAnimating(false)
       setIsClosing(false)
+      closingRef.current = false
+      
+      // Clear timer when modal is closed
+      if (timerRef.current) {
+        clearTimeout(timerRef.current)
+        timerRef.current = null
+      }
+      
       if (typeof document !== 'undefined') {
         document.body.style.overflow = 'unset'
       }
@@ -97,7 +136,7 @@ export default function WishlistModal({ isOpen, onClose, product }: WishlistModa
   }, [isOpen, product, handleClose])
 
   const handleBackdropClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget && !isClosing) {
+    if (e.target === e.currentTarget && !closingRef.current) {
       handleClose()
     }
   }
@@ -116,9 +155,14 @@ export default function WishlistModal({ isOpen, onClose, product }: WishlistModa
           {/* Close Button */}
           <button 
             className="wishlist-modal-close"
-            onClick={handleClose}
+            onClick={(e) => {
+              e.stopPropagation()
+              e.preventDefault()
+              handleClose()
+            }}
             aria-label="Close modal"
-            disabled={isClosing}
+            disabled={isClosing || closingRef.current}
+            type="button"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -472,5 +516,5 @@ export default function WishlistModal({ isOpen, onClose, product }: WishlistModa
     </>
   )
 
-  return createPortal(modalContent, document.body)
+  return createPortal(modalContent, document.body || document.documentElement)
 }
