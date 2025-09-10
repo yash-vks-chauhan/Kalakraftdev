@@ -2965,7 +2965,7 @@
   position: relative;
   padding: 6rem 2rem 8rem;
   background: #ffffff;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .bestSellersDescription {
