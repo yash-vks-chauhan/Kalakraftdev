@@ -62,9 +62,6 @@ export default function WishlistButton({ productId, className = '', preventNavig
       } else {
         const wishlistItem = await addToWishlist(productId)
         
-        // Debug logging
-        console.log('Wishlist item received:', wishlistItem)
-        
         // Extract product data from the wishlist response
         if (wishlistItem && wishlistItem.product) {
           // Normalize imageUrls
@@ -85,13 +82,10 @@ export default function WishlistButton({ productId, className = '', preventNavig
             category: wishlistItem.product.category
           }
           
-          console.log('Setting product data:', productData)
           setProductData(productData)
-          console.log('Setting modal to show')
           setShowWishlistModal(true)
         } else {
           // Fallback: fetch product data if not available from wishlist response
-          console.log('No product data in wishlist response, fetching from API')
           try {
             const productRes = await fetch(`/api/products/${productId}`)
             if (productRes.ok) {

@@ -33,7 +33,6 @@ export default function WishlistModal({ isOpen, onClose, product }: WishlistModa
 
   // Handle modal open/close with animations
   useEffect(() => {
-    console.log('WishlistModal - isOpen:', isOpen, 'product:', product)
     if (isOpen && product) {
       setIsVisible(true)
       // Small delay to trigger animation
@@ -135,8 +134,8 @@ export default function WishlistModal({ isOpen, onClose, product }: WishlistModa
           left: 0;
           right: 0;
           bottom: 0;
-          background: rgba(0, 0, 0, 0.5);
-          backdrop-filter: blur(4px);
+          background: rgba(0, 0, 0, 0.6);
+          backdrop-filter: blur(8px);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -152,17 +151,18 @@ export default function WishlistModal({ isOpen, onClose, product }: WishlistModa
 
         .wishlist-modal-content {
           background: #ffffff;
-          border-radius: 16px;
-          padding: 2rem;
-          max-width: 400px;
+          border-radius: 20px;
+          padding: 2.5rem 2rem;
+          max-width: 480px;
           width: 100%;
           position: relative;
-          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
-          transform: translateY(30px) scale(0.9);
+          box-shadow: 0 25px 80px rgba(0, 0, 0, 0.25);
+          transform: translateY(40px) scale(0.85);
           opacity: 0;
-          transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+          transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
           text-align: center;
-          border: 1px solid rgba(0, 0, 0, 0.05);
+          border: none;
+          font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', system-ui, sans-serif;
         }
 
         .wishlist-modal-content.visible {
@@ -172,61 +172,66 @@ export default function WishlistModal({ isOpen, onClose, product }: WishlistModa
 
         .wishlist-modal-close {
           position: absolute;
-          top: 1rem;
-          right: 1rem;
-          background: transparent;
+          top: 1.25rem;
+          right: 1.25rem;
+          background: rgba(0, 0, 0, 0.05);
           border: none;
           color: #666;
           cursor: pointer;
-          padding: 0.5rem;
+          padding: 0.75rem;
           border-radius: 50%;
           transition: all 0.2s ease;
           display: flex;
           align-items: center;
           justify-content: center;
+          width: 36px;
+          height: 36px;
         }
 
         .wishlist-modal-close:hover {
-          background: #f5f5f5;
+          background: rgba(0, 0, 0, 0.1);
           color: #333;
+          transform: scale(1.1);
         }
 
         .wishlist-modal-icon {
-          color: #e74c3c;
-          margin-bottom: 1rem;
+          color: #ff3b30;
+          margin-bottom: 1.5rem;
           animation: heartBeat 0.8s ease-out;
         }
 
         .wishlist-modal-title {
-          font-family: 'Cormorant Garamond', serif;
-          font-size: 1.5rem;
-          font-weight: 500;
-          color: #333;
-          margin: 0 0 1.5rem 0;
-          letter-spacing: 0.02em;
+          font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
+          font-size: 1.75rem;
+          font-weight: 600;
+          color: #1d1d1f;
+          margin: 0 0 2rem 0;
+          letter-spacing: -0.01em;
         }
 
         .wishlist-modal-product {
           display: flex;
           align-items: center;
-          gap: 1rem;
-          padding: 1rem;
-          background: #f8f8f8;
-          border-radius: 12px;
-          margin-bottom: 1.5rem;
+          gap: 1.25rem;
+          padding: 1.25rem;
+          background: #f8f9fa;
+          border-radius: 16px;
+          margin-bottom: 2rem;
           text-align: left;
+          border: 1px solid rgba(0, 0, 0, 0.05);
         }
 
         .wishlist-modal-image {
           flex-shrink: 0;
-          width: 80px;
-          height: 80px;
-          border-radius: 8px;
+          width: 90px;
+          height: 90px;
+          border-radius: 12px;
           overflow: hidden;
           background: #ffffff;
           display: flex;
           align-items: center;
           justify-content: center;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         }
 
         .wishlist-modal-image img {
@@ -241,55 +246,66 @@ export default function WishlistModal({ isOpen, onClose, product }: WishlistModa
         }
 
         .wishlist-modal-product-name {
-          font-size: 0.95rem;
+          font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+          font-size: 1.05rem;
           font-weight: 600;
-          color: #333;
-          margin: 0 0 0.25rem 0;
+          color: #1d1d1f;
+          margin: 0 0 0.5rem 0;
           line-height: 1.3;
           overflow: hidden;
           text-overflow: ellipsis;
           display: -webkit-box;
           -webkit-line-clamp: 2;
           -webkit-box-orient: vertical;
+          letter-spacing: -0.005em;
         }
 
         .wishlist-modal-category {
-          font-size: 0.75rem;
-          color: #666;
+          font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+          font-size: 0.8rem;
+          color: #8e8e93;
           text-transform: uppercase;
           letter-spacing: 0.05em;
-          margin: 0 0 0.5rem 0;
+          margin: 0 0 0.75rem 0;
           font-weight: 500;
         }
 
         .wishlist-modal-price {
-          font-size: 1rem;
+          font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
+          font-size: 1.15rem;
           font-weight: 700;
-          color: #333;
+          color: #1d1d1f;
           margin: 0;
+          letter-spacing: -0.01em;
         }
 
         .wishlist-modal-action {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          background: #333;
-          color: #fff;
+          background: #007aff;
+          color: #ffffff;
           text-decoration: none;
-          padding: 0.75rem 1.5rem;
-          border-radius: 8px;
-          font-weight: 500;
-          font-size: 0.9rem;
+          padding: 1rem 2rem;
+          border-radius: 12px;
+          font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+          font-weight: 600;
+          font-size: 1rem;
           transition: all 0.2s ease;
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-          min-width: 160px;
+          letter-spacing: -0.005em;
+          min-width: 200px;
+          box-shadow: 0 4px 16px rgba(0, 122, 255, 0.3);
         }
 
         .wishlist-modal-action:hover {
-          background: #555;
-          transform: translateY(-1px);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+          background: #0056d6;
+          transform: translateY(-2px);
+          box-shadow: 0 8px 24px rgba(0, 122, 255, 0.4);
+        }
+
+        .wishlist-modal-action:active {
+          transform: translateY(0);
+          box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
         }
 
         @keyframes heartBeat {
@@ -308,34 +324,91 @@ export default function WishlistModal({ isOpen, onClose, product }: WishlistModa
         }
 
         /* Mobile Responsive */
-        @media (max-width: 480px) {
+        @media (max-width: 768px) {
+          .wishlist-modal-backdrop {
+            padding: 0;
+            align-items: flex-end;
+          }
+
           .wishlist-modal-content {
-            padding: 1.5rem;
-            margin: 1rem;
             max-width: none;
+            width: 100%;
+            margin: 0;
+            border-radius: 20px 20px 0 0;
+            padding: 2rem 1.5rem;
+            transform: translateY(100%);
+            box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.2);
+          }
+
+          .wishlist-modal-content.visible {
+            transform: translateY(0);
           }
 
           .wishlist-modal-title {
-            font-size: 1.3rem;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
           }
 
           .wishlist-modal-product {
-            gap: 0.75rem;
-            padding: 0.75rem;
+            gap: 1rem;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
           }
 
           .wishlist-modal-image {
-            width: 60px;
-            height: 60px;
+            width: 75px;
+            height: 75px;
           }
 
           .wishlist-modal-product-name {
-            font-size: 0.85rem;
+            font-size: 1rem;
+          }
+
+          .wishlist-modal-price {
+            font-size: 1.1rem;
           }
 
           .wishlist-modal-action {
-            padding: 0.7rem 1.2rem;
-            font-size: 0.85rem;
+            width: 100%;
+            padding: 1.2rem;
+            font-size: 1.05rem;
+            min-width: none;
+          }
+
+          .wishlist-modal-close {
+            top: 1rem;
+            right: 1rem;
+            width: 32px;
+            height: 32px;
+            padding: 0.5rem;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .wishlist-modal-content {
+            padding: 1.5rem;
+          }
+
+          .wishlist-modal-title {
+            font-size: 1.4rem;
+          }
+
+          .wishlist-modal-product {
+            gap: 0.875rem;
+            padding: 0.875rem;
+          }
+
+          .wishlist-modal-image {
+            width: 70px;
+            height: 70px;
+          }
+
+          .wishlist-modal-product-name {
+            font-size: 0.95rem;
+          }
+
+          .wishlist-modal-price {
+            font-size: 1.05rem;
           }
         }
       `}</style>
