@@ -2644,7 +2644,7 @@
   width: 100%;
   aspect-ratio: 3/4;
   overflow: hidden;
-  background: linear-gradient(135deg, #2a2a2a 0%, #3d3d3d 25%, #4a4a4a 50%, #3d3d3d 75%, #2a2a2a 100%);
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 25%, #f1f3f4 50%, #e9ecef 75%, #f8f9fa 100%);
   border-radius: 8px;
 }
 
@@ -2655,7 +2655,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.08) 40%, transparent 70%);
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.3) 0%, transparent 50%);
   pointer-events: none;
   z-index: 1;
 }
@@ -2753,7 +2753,7 @@
   width: 100%;
   aspect-ratio: 1/1.4;
   overflow: hidden;
-  background: linear-gradient(135deg, #2a2a2a 0%, #3d3d3d 25%, #4a4a4a 50%, #3d3d3d 75%, #2a2a2a 100%);
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 25%, #f1f3f4 50%, #e9ecef 75%, #f8f9fa 100%);
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -2769,7 +2769,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.08) 40%, transparent 70%);
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.3) 0%, transparent 50%);
   pointer-events: none;
   z-index: 1;
 }
@@ -3031,7 +3031,7 @@
   width: 100%;
   aspect-ratio: 3/4;
   overflow: hidden;
-  background: linear-gradient(135deg, #2a2a2a 0%, #3d3d3d 25%, #4a4a4a 50%, #3d3d3d 75%, #2a2a2a 100%);
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 25%, #f1f3f4 50%, #e9ecef 75%, #f8f9fa 100%);
   border-radius: 8px;
   position: relative;
 }
@@ -3043,7 +3043,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.08) 40%, transparent 70%);
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.3) 0%, transparent 50%);
   pointer-events: none;
   z-index: 1;
 }
@@ -3233,7 +3233,7 @@
   width: 100%;
   aspect-ratio: 1/1.4;
   overflow: hidden;
-  background: linear-gradient(135deg, #2a2a2a 0%, #3d3d3d 25%, #4a4a4a 50%, #3d3d3d 75%, #2a2a2a 100%);
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 25%, #f1f3f4 50%, #e9ecef 75%, #f8f9fa 100%);
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -3249,7 +3249,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.08) 40%, transparent 70%);
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.3) 0%, transparent 50%);
   pointer-events: none;
   z-index: 1;
 }
