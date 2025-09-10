@@ -44,7 +44,7 @@ const BestSellersSection = () => {
     const fetchBestSellers = async () => {
       try {
         setLoading(true);
-        const response = await fetch('/api/products/best-sellers?limit=5');
+        const response = await fetch('/api/products/best-sellers?limit=4');
         const data = await response.json();
         
         if (data.products && Array.isArray(data.products)) {
@@ -94,38 +94,41 @@ const BestSellersSection = () => {
         <p>Discover our most loved creations, chosen by customers like you. These handcrafted pieces have won hearts and found their way into homes across the country.</p>
       </div>
 
-      {/* Best Sellers Layout - Desktop - Vertical Scrolling */}
-      <div className={`${styles.bestSellersDesktopVertical} ${styles.desktopOnly}`} data-aos="fade-up" data-aos-delay="200">
+      {/* Best Sellers Layout - Desktop */}
+      <div className={`${styles.bestSellersDesktop} ${styles.desktopOnly}`} data-aos="fade-up" data-aos-delay="200">
         {bestSellers.map((product, index) => (
-          <div key={product.id} className={styles.bestSellerCardVertical} data-aos="fade-up" data-aos-delay={`${300 + (index * 100)}`}>
-            <div className={styles.bestSellerCardInnerVertical}>
-              <div className={styles.bestSellerImageContainerVertical}>
-                <img
-                  src={product.imageUrls && product.imageUrls[0] ? product.imageUrls[0] : 'https://placehold.co/300x300/f0f0f0/888?text=No+Image'}
-                  alt={product.name}
-                  className={styles.bestSellerImageVertical}
-                  onError={(e) => (e.currentTarget.src = 'https://placehold.co/300x300/f0f0f0/888?text=No+Image')}
-                />
-              </div>
-              
-              <div className={styles.bestSellerCardInfoVertical}>
-                <h3 className={styles.bestSellerProductNameVertical}>{product.name}</h3>
-                <p className={styles.bestSellerDescriptionVertical}>
-                  {product.description ? product.description.substring(0, 80) + '...' : 'Handcrafted with precision and care for your home.'}
-                </p>
-                <p className={styles.bestSellerPriceVertical}>{formatPrice(product.price)}</p>
-                
-                <div className={styles.bestSellerButtonsVertical}>
-                  <button className={styles.addToCartButtonVertical}>
-                    Add to Cart
-                  </button>
-                  <WishlistButton 
-                    productId={product.id} 
-                    className={styles.wishlistButtonVertical}
-                    preventNavigation={true}
+          <div key={product.id} className={styles.bestSellerCard} data-aos="fade-up" data-aos-delay={`${300 + (index * 100)}`}
+               onClick={() => {
+                 if (navigator.vibrate) {
+                   navigator.vibrate([10, 5, 10]);
+                 }
+               }}>
+            <Link href={`/products/${product.id}`}>
+              <div className={styles.bestSellerCardInner}>
+                <div className={styles.bestSellerImageContainer}>
+                  <img
+                    src={product.imageUrls && product.imageUrls[0] ? product.imageUrls[0] : 'https://placehold.co/300x300/f0f0f0/888?text=No+Image'}
+                    alt={product.name}
+                    className={styles.bestSellerImage}
+                    onError={(e) => (e.currentTarget.src = 'https://placehold.co/300x300/f0f0f0/888?text=No+Image')}
                   />
+                  
+                </div>
+                
+                <div className={styles.bestSellerCardInfo}>
+                  <h3 className={styles.bestSellerProductName}>{product.name}</h3>
+                  <p className={styles.bestSellerPrice}>{formatPrice(product.price)}</p>
                 </div>
               </div>
+            </Link>
+            
+            {/* Wishlist Button - Outside Link to prevent navigation */}
+            <div className={styles.bestSellerWishlistContainer}>
+              <WishlistButton 
+                productId={product.id} 
+                className={styles.bestSellerWishlistButton}
+                preventNavigation={true}
+              />
             </div>
           </div>
         ))}
