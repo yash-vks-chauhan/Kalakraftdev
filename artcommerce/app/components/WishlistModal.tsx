@@ -19,7 +19,6 @@ interface WishlistModalProps {
 }
 
 export default function WishlistModal({ isOpen, onClose, product }: WishlistModalProps) {
-  const [isVisible, setIsVisible] = useState(false)
   const [isAnimating, setIsAnimating] = useState(false)
   const [mounted, setMounted] = useState(false)
 
@@ -41,18 +40,18 @@ export default function WishlistModal({ isOpen, onClose, product }: WishlistModa
   const handleClose = useCallback(() => {
     setIsAnimating(false)
     // Restore body scroll
-    document.body.style.overflow = 'unset'
+    if (typeof document !== 'undefined') {
+      document.body.style.overflow = 'unset'
+    }
     // Wait for animation to complete before hiding
     setTimeout(() => {
-      setIsVisible(false)
       onClose()
     }, 300)
   }, [onClose])
 
   // Handle modal open/close with animations
   useEffect(() => {
-    if (isOpen && product) {
-      setIsVisible(true)
+    if (isOpen && product && typeof document !== 'undefined') {
       // Small delay to trigger animation
       setTimeout(() => setIsAnimating(true), 50)
       
@@ -78,8 +77,11 @@ export default function WishlistModal({ isOpen, onClose, product }: WishlistModa
         // Restore body scroll when modal closes
         document.body.style.overflow = 'unset'
       }
-    } else {
-      handleClose()
+    } else if (!isOpen) {
+      setIsAnimating(false)
+      if (typeof document !== 'undefined') {
+        document.body.style.overflow = 'unset'
+      }
     }
   }, [isOpen, product, handleClose])
 
@@ -89,7 +91,7 @@ export default function WishlistModal({ isOpen, onClose, product }: WishlistModa
     }
   }
 
-  if (!mounted || !isVisible || !product) return null
+  if (!mounted || !isOpen || !product) return null
 
   const modalContent = (
     <>
