@@ -45,7 +45,7 @@ const BestSellersSection = () => {
   const scrollToProduct = (index) => {
     if (scrollContainerRef.current) {
       const container = scrollContainerRef.current;
-      const cardWidth = 400 + 32; // card width + gap
+      const cardWidth = 500 + 40; // card width + gap (2.5rem = 40px)
       const scrollPosition = index * cardWidth;
       
       container.scrollTo({
@@ -60,7 +60,7 @@ const BestSellersSection = () => {
   const handleScroll = () => {
     if (scrollContainerRef.current) {
       const container = scrollContainerRef.current;
-      const cardWidth = 400 + 32;
+      const cardWidth = 500 + 40;
       const scrollPosition = container.scrollLeft;
       const newIndex = Math.round(scrollPosition / cardWidth);
       setCurrentIndex(newIndex);
