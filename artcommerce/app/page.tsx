@@ -28,6 +28,8 @@ const BestSellersSection = () => {
   const [bestSellers, setBestSellers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const scrollContainerRef = useRef(null);
 
   // Format price function
   const formatPrice = (price) => {
@@ -39,12 +41,38 @@ const BestSellersSection = () => {
     }).format(price);
   };
 
-  // Fetch best sellers
+  // Scroll to specific product
+  const scrollToProduct = (index) => {
+    if (scrollContainerRef.current) {
+      const container = scrollContainerRef.current;
+      const cardWidth = 400 + 32; // card width + gap
+      const scrollPosition = index * cardWidth;
+      
+      container.scrollTo({
+        left: scrollPosition,
+        behavior: 'smooth'
+      });
+      setCurrentIndex(index);
+    }
+  };
+
+  // Handle scroll events to update active indicator
+  const handleScroll = () => {
+    if (scrollContainerRef.current) {
+      const container = scrollContainerRef.current;
+      const cardWidth = 400 + 32;
+      const scrollPosition = container.scrollLeft;
+      const newIndex = Math.round(scrollPosition / cardWidth);
+      setCurrentIndex(newIndex);
+    }
+  };
+
+  // Fetch best sellers - now getting 5 products
   useEffect(() => {
     const fetchBestSellers = async () => {
       try {
         setLoading(true);
-        const response = await fetch('/api/products/best-sellers?limit=4');
+        const response = await fetch('/api/products/best-sellers?limit=5');
         const data = await response.json();
         
         if (data.products && Array.isArray(data.products)) {
@@ -94,44 +122,97 @@ const BestSellersSection = () => {
         <p>Discover our most loved creations, chosen by customers like you. These handcrafted pieces have won hearts and found their way into homes across the country.</p>
       </div>
 
-      {/* Best Sellers Layout - Desktop */}
-      <div className={`${styles.bestSellersDesktop} ${styles.desktopOnly}`} data-aos="fade-up" data-aos-delay="200">
-        {bestSellers.map((product, index) => (
-          <div key={product.id} className={styles.bestSellerCard} data-aos="fade-up" data-aos-delay={`${300 + (index * 100)}`}
-               onClick={() => {
-                 if (navigator.vibrate) {
-                   navigator.vibrate([10, 5, 10]);
-                 }
-               }}>
-            <Link href={`/products/${product.id}`}>
-              <div className={styles.bestSellerCardInner}>
-                <div className={styles.bestSellerImageContainer}>
-                  <img
-                    src={product.imageUrls && product.imageUrls[0] ? product.imageUrls[0] : 'https://placehold.co/300x300/f0f0f0/888?text=No+Image'}
-                    alt={product.name}
-                    className={styles.bestSellerImage}
-                    onError={(e) => (e.currentTarget.src = 'https://placehold.co/300x300/f0f0f0/888?text=No+Image')}
-                  />
-                  
-                </div>
+      {/* Best Sellers Horizontal Scroll - Desktop */}
+      <div className={`${styles.bestSellersHorizontal} ${styles.desktopOnly}`} data-aos="fade-up" data-aos-delay="200">
+        {/* Navigation Arrows */}
+        <button 
+          className={`${styles.bestSellersNavButton} ${styles.bestSellersNavPrev}`}
+          onClick={() => scrollToProduct(Math.max(0, currentIndex - 1))}
+          disabled={currentIndex === 0}
+        >
+          <ChevronLeft size={20} />
+        </button>
+        <button 
+          className={`${styles.bestSellersNavButton} ${styles.bestSellersNavNext}`}
+          onClick={() => scrollToProduct(Math.min(bestSellers.length - 1, currentIndex + 1))}
+          disabled={currentIndex >= bestSellers.length - 1}
+        >
+          <ChevronRight size={20} />
+        </button>
+        
+        <div 
+          ref={scrollContainerRef}
+          className={styles.bestSellersScrollContainer}
+          onScroll={handleScroll}
+        >
+          {bestSellers.map((product, index) => (
+            <div key={product.id} className={styles.bestSellerHorizontalCard} data-aos="fade-up" data-aos-delay={`${300 + (index * 100)}`}>
+              {/* Product Image Container */}
+              <div className={styles.bestSellerHorizontalImageContainer}>
+                <img
+                  src={product.imageUrls && product.imageUrls[0] ? product.imageUrls[0] : 'https://placehold.co/400x400/f0f0f0/888?text=No+Image'}
+                  alt={product.name}
+                  className={styles.bestSellerHorizontalImage}
+                  onError={(e) => (e.currentTarget.src = 'https://placehold.co/400x400/f0f0f0/888?text=No+Image')}
+                />
                 
-                <div className={styles.bestSellerCardInfo}>
-                  <h3 className={styles.bestSellerProductName}>{product.name}</h3>
-                  <p className={styles.bestSellerPrice}>{formatPrice(product.price)}</p>
+                {/* Best Seller Badge */}
+                <div className={styles.bestSellerBadge}>
+                  <span className={styles.bestSellerBadgeIcon}>🔥</span>
+                  Best Seller
                 </div>
               </div>
-            </Link>
-            
-            {/* Wishlist Button - Outside Link to prevent navigation */}
-            <div className={styles.bestSellerWishlistContainer}>
-              <WishlistButton 
-                productId={product.id} 
-                className={styles.bestSellerWishlistButton}
-                preventNavigation={true}
-              />
+              
+              {/* Product Info */}
+              <div className={styles.bestSellerHorizontalInfo}>
+                <h3 className={styles.bestSellerHorizontalName}>{product.name}</h3>
+                <p className={styles.bestSellerHorizontalDesc}>
+                  {product.shortDesc || "Handcrafted with premium materials"}
+                </p>
+                <div className={styles.bestSellerHorizontalPriceRow}>
+                  <span className={styles.bestSellerHorizontalPrice}>{formatPrice(product.price)}</span>
+                  {product.avgRating > 0 && (
+                    <div className={styles.bestSellerHorizontalRating}>
+                      <span className={styles.bestSellerStar}>★</span>
+                      <span>{product.avgRating.toFixed(1)}</span>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Action Buttons */}
+                <div className={styles.bestSellerHorizontalActions}>
+                  <button 
+                    className={styles.bestSellerAddToCartBtn}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      // Handle add to cart
+                      window.location.href = `/products/${product.id}`;
+                    }}
+                  >
+                    Add to Cart
+                  </button>
+                  <WishlistButton 
+                    productId={product.id} 
+                    className={styles.bestSellerHorizontalWishlistBtn}
+                    preventNavigation={true}
+                  />
+                </div>
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
+        
+        {/* Scroll Indicators */}
+        <div className={styles.bestSellersScrollIndicators}>
+          {bestSellers.map((_, index) => (
+            <div 
+              key={index} 
+              className={`${styles.bestSellersScrollDot} ${index === currentIndex ? styles.bestSellersScrollDotActive : ''}`}
+              onClick={() => scrollToProduct(index)}
+            ></div>
+          ))}
+        </div>
       </div>
 
       {/* Best Sellers Grid - Mobile */}
@@ -161,8 +242,18 @@ const BestSellersSection = () => {
                   </div>
                 </Link>
                 
-                {/* Wishlist Button - Outside Link to prevent navigation */}
-                <div className={styles.bestSellerMobileWishlistContainer}>
+                {/* Mobile Action Buttons */}
+                <div className={styles.bestSellerMobileActions}>
+                  <button 
+                    className={styles.bestSellerMobileAddToCartBtn}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      window.location.href = `/products/${product.id}`;
+                    }}
+                  >
+                    Add to Cart
+                  </button>
                   <WishlistButton 
                     productId={product.id} 
                     className={styles.bestSellerMobileWishlistButton}

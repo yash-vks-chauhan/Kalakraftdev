@@ -2978,14 +2978,340 @@
   font-weight: 300;
 }
 
-/* Best Sellers Layout - Desktop */
-.bestSellersDesktop {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1.5rem;
+/* Best Sellers Horizontal Layout - Desktop */
+.bestSellersHorizontal {
+  position: relative;
   max-width: 1600px;
   margin: 0 auto;
-  padding: 0 3rem;
+  padding: 0 2rem;
+}
+
+.bestSellersNavButton {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.bestSellersNavButton:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 1);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  transform: translateY(-50%) scale(1.05);
+}
+
+.bestSellersNavButton:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.bestSellersNavPrev {
+  left: 10px;
+}
+
+.bestSellersNavNext {
+  right: 10px;
+}
+
+.bestSellersScrollContainer {
+  display: flex;
+  gap: 2rem;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+  padding: 1rem 0 2rem;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;  /* Internet Explorer 10+ */
+}
+
+.bestSellersScrollContainer::-webkit-scrollbar {
+  display: none; /* WebKit browsers */
+}
+
+.bestSellerHorizontalCard {
+  flex: 0 0 400px;
+  scroll-snap-align: center;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  overflow: hidden;
+  position: relative;
+  height: 500px;
+  display: flex;
+  flex-direction: column;
+}
+
+.bestSellerHorizontalCard:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.15);
+}
+
+.bestSellerHorizontalImageContainer {
+  position: relative;
+  height: 300px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+}
+
+.bestSellerHorizontalImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.bestSellerHorizontalCard:hover .bestSellerHorizontalImage {
+  transform: scale(1.05);
+}
+
+.bestSellerBadge {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 24px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+  z-index: 2;
+}
+
+.bestSellerBadgeIcon {
+  font-size: 0.85rem;
+}
+
+.bestSellerHorizontalInfo {
+  padding: 1.5rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.bestSellerHorizontalName {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.5rem;
+  line-height: 1.3;
+}
+
+.bestSellerHorizontalDesc {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 1rem;
+  line-height: 1.4;
+}
+
+.bestSellerHorizontalPriceRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.bestSellerHorizontalPrice {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #333;
+}
+
+.bestSellerHorizontalRating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.bestSellerStar {
+  color: #ffc107;
+  font-size: 1rem;
+}
+
+.bestSellerHorizontalActions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.bestSellerAddToCartBtn {
+  flex: 1;
+  padding: 12px 24px;
+  background: #000;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.bestSellerAddToCartBtn:hover {
+  background: #333;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.bestSellerHorizontalWishlistBtn {
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: white;
+  color: #666;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 48px;
+  height: 48px;
+}
+
+.bestSellerHorizontalWishlistBtn:hover {
+  border-color: #333;
+  color: #333;
+  background: #f8f8f8;
+}
+
+.bestSellerHorizontalWishlistBtn[data-active="true"] {
+  background: #ff4757;
+  border-color: #ff4757;
+  color: white;
+}
+
+.bestSellersScrollIndicators {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 1rem;
+}
+
+.bestSellersScrollDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.2);
+  transition: background 0.3s ease;
+  cursor: pointer;
+}
+
+.bestSellersScrollDot:hover {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.bestSellersScrollDotActive,
+.bestSellersScrollDot:first-child {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+/* Responsive adjustments for horizontal scroll */
+@media (max-width: 1200px) {
+  .bestSellerHorizontalCard {
+    flex: 0 0 350px;
+    height: 480px;
+  }
+  
+  .bestSellersHorizontal {
+    padding: 0 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .bestSellerHorizontalCard {
+    flex: 0 0 300px;
+    height: 450px;
+  }
+  
+  .bestSellerHorizontalImageContainer {
+    height: 250px;
+  }
+  
+  .bestSellerHorizontalInfo {
+    padding: 1rem;
+  }
+  
+  .bestSellerHorizontalName {
+    font-size: 1.1rem;
+  }
+  
+  .bestSellerHorizontalPrice {
+    font-size: 1.2rem;
+  }
+}
+
+/* Mobile Actions for existing mobile cards */
+.bestSellerMobileActions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 1rem;
+  padding: 0 0.5rem;
+}
+
+.bestSellerMobileAddToCartBtn {
+  flex: 1;
+  padding: 10px 16px;
+  background: #000;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.bestSellerMobileAddToCartBtn:hover {
+  background: #333;
+}
+
+.bestSellerMobileWishlistButton {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: white;
+  color: #666;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 36px;
+}
+
+.bestSellerMobileWishlistButton:hover {
+  border-color: #333;
+  color: #333;
+}
+
+.bestSellerMobileWishlistButton[data-active="true"] {
+  background: #ff4757;
+  border-color: #ff4757;
+  color: white;
 }
 
 @media (max-width: 1024px) and (min-width: 769px) {
