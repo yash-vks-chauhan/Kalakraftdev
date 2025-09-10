@@ -1878,6 +1878,66 @@ onClick={() => handleCarouselNav('next')}
   {/* Best Sellers Section */}
   <BestSellersSection />
   
+  {/* Featured Discoveries Section - Moved up after Best Sellers (Mobile Only) */}
+  <section className={`${styles.mobileFeaturedSection} ${styles.mobileOnly}`}>
+    {/* Section header */}
+    <div className={styles.mobileFeaturedHeader}>
+      <div className={styles.mobileFeaturedHeaderLine} />
+      <h2 className={styles.mobileFeaturedTitle} style={{
+        fontFamily: 'Cormorant Garamond, serif',
+        fontSize: '2.2rem',
+        fontWeight: 300,
+        fontStyle: 'italic',
+        letterSpacing: '0.05em',
+        color: '#ffffff',
+      }}>Featured Discoveries</h2>
+      <div className={styles.mobileFeaturedHeaderLine} />
+      <p className={styles.mobileFeaturedDescription}>
+        Handpicked selections from our latest collection, curated just for you
+      </p>
+    </div>
+
+    {/* Replace the grid with our new stacked carousel */}
+    <div>
+      <MobileFeaturedCarousel products={featuredProducts} />
+    </div>
+
+    {/* View all button */}
+    <div style={{
+      textAlign: 'center',
+      marginTop: '2.5rem',
+      position: 'relative',
+      zIndex: 2
+    }}>
+      <Link href="/products" className={styles.mobileFeaturedViewAllButton}>
+        View All Products
+      </Link>
+    </div>
+
+    {/* Subtle accent elements */}
+    <div style={{
+      position: 'absolute',
+      bottom: '10%',
+      right: '5%',
+      width: '150px',
+      height: '150px',
+      background: 'radial-gradient(circle, rgba(0,0,0,0.02) 0%, rgba(0,0,0,0) 70%)',
+      borderRadius: '50%',
+      zIndex: 1
+    }}></div>
+    
+    <div style={{
+      position: 'absolute',
+      top: '15%',
+      left: '8%',
+      width: '100px',
+      height: '100px',
+      background: 'radial-gradient(circle, rgba(0,0,0,0.01) 0%, rgba(0,0,0,0) 70%)',
+      borderRadius: '50%',
+      zIndex: 1
+    }}></div>
+  </section>
+  
   {/* Mobile Video Section - Using the original component */}
   <div>
     <MobileVideoSection />
@@ -2037,69 +2097,90 @@ onClick={() => handleCarouselNav('next')}
     </div>
   </section>
   
-  {/* Featured Discoveries Section - Random products from API */}
-<section className={`${styles.mobileFeaturedSection} ${styles.mobileOnly}`}>
-  {/* Section header */}
-  <div className={styles.mobileFeaturedHeader}>
-    <div className={styles.mobileFeaturedHeaderLine} />
-    <h2 className={styles.mobileFeaturedTitle} style={{
-      fontFamily: 'Cormorant Garamond, serif',
-      fontSize: '2.2rem',
-      fontWeight: 300,
-      fontStyle: 'italic',
-      letterSpacing: '0.05em',
-      color: '#ffffff',
-    }}>Featured Discoveries</h2>
-    <div className={styles.mobileFeaturedHeaderLine} />
-    <p className={styles.mobileFeaturedDescription}>
-      Handpicked selections from our latest collection, curated just for you
-    </p>
+  {/* Artistry in Every Layer Section - Moved to bottom (Mobile Only) */}
+<section className={`${styles.artistrySection} ${styles.mobileOnly}`}>
+  <div 
+    className={styles.artistryBackground}
+    style={{
+      backgroundImage: `linear-gradient(to right, rgba(248, 248, 248, 0.95), rgba(248, 248, 248, 0.8)), url('${getImageUrl('collectionwall.png')}')`
+    }}
+  >
+    <img 
+      src={getImageUrl('DSC01366.JPG')}
+      alt="Resin art creation process" 
+      className={styles.artistryFeatureImage} 
+      data-aos="fade-left"
+    />
+    
+    <div className={styles.artistryContent}>
+      {/* Section Header with description */}
+      <div className={styles.sectionHeader} data-aos="fade-in">
+        <div className={styles.headerLine}></div>
+        <h2 className={styles.sectionTitle}>Artistry in Every Layer</h2>
+        <div className={styles.headerLine}></div>
+      </div>
+      
+      <div className={styles.artistryQuote} data-aos="fade-up">
+        Our resin art combines premium materials with meticulous craftsmanship to create pieces that capture light, color, and imagination in ways that will endure for generations.
+      </div>
+      
+      <div className={styles.artistryCards}>
+        {/* Card 1 */}
+        <div className={styles.artistryCard} data-aos="fade-up" data-aos-delay="100">
+          <div className={styles.artistryIcon}>
+            <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="rgba(179, 138, 88, 0.8)" strokeWidth="1.5">
+              <path d="M32 8C32 8 16 24 16 40C16 48.8366 23.1634 56 32 56C40.8366 56 48 48.8366 48 40C48 24 32 8 32 8Z" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M32 44C34.2091 44 36 42.2091 36 40C36 37.7909 32 32 32 32C32 32 28 37.7909 28 40C28 42.2091 29.7909 44 32 44Z" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            <div className={styles.artistryIconRipple}></div>
+          </div>
+          <h3 className={styles.artistryCardTitle}>Museum-Grade Resin</h3>
+          <p className={styles.artistryCardText}>Hand-mixed for crystal clarity and vibrant hues that endure.</p>
+        </div>
+        
+        {/* Card 2 */}
+        <div className={styles.artistryCard} data-aos="fade-up" data-aos-delay="200">
+          <div className={styles.artistryIcon}>
+            <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="rgba(179, 138, 88, 0.8)" strokeWidth="1.5">
+              <path d="M8 24L32 32L56 24" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M8 32L32 40L56 32" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M8 40L32 48L56 40" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M32 16L16 22L32 28L48 22L32 16Z" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            <div className={styles.artistryIconRipple}></div>
+          </div>
+          <h3 className={styles.artistryCardTitle}>Precision Pouring</h3>
+          <p className={styles.artistryCardText}>Controlled, bubble-free layers for a seamless, mirror-smooth surface.</p>
+        </div>
+        
+        {/* Card 3 */}
+        <div className={styles.artistryCard} data-aos="fade-up" data-aos-delay="300">
+          <div className={styles.artistryIcon}>
+            <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="rgba(179, 138, 88, 0.8)" strokeWidth="1.5">
+              <circle cx="32" cy="32" r="16" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M32 16V8" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M32 56V48" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M16 32H8" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M56 32H48" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M48 16L44 20" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M20 44L16 48" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M48 48L44 44" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M20 20L16 16" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M32 24V32H40" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            <div className={styles.artistryIconRipple}></div>
+          </div>
+          <h3 className={styles.artistryCardTitle}>UV-Resistant Gloss</h3>
+          <p className={styles.artistryCardText}>Anti-yellowing top coat protects color and shine from sun exposure.</p>
+        </div>
+      </div>
+    </div>
   </div>
-
-  {/* Replace the grid with our new stacked carousel */}
-  <div>
-    <MobileFeaturedCarousel products={featuredProducts} />
-  </div>
-
-  {/* View all button */}
-  <div style={{
-    textAlign: 'center',
-    marginTop: '2.5rem',
-    position: 'relative',
-    zIndex: 2
-  }}>
-    <Link href="/products" className={styles.mobileFeaturedViewAllButton}>
-      View All Products
-    </Link>
-  </div>
-
-  {/* Subtle accent elements */}
-  <div style={{
-    position: 'absolute',
-    bottom: '10%',
-    right: '5%',
-    width: '150px',
-    height: '150px',
-    background: 'radial-gradient(circle, rgba(0,0,0,0.02) 0%, rgba(0,0,0,0) 70%)',
-    borderRadius: '50%',
-    zIndex: 1
-  }}></div>
-  
-  <div style={{
-    position: 'absolute',
-    top: '15%',
-    left: '8%',
-    width: '100px',
-    height: '100px',
-    background: 'radial-gradient(circle, rgba(0,0,0,0.01) 0%, rgba(0,0,0,0) 70%)',
-    borderRadius: '50%',
-    zIndex: 1
-  }}></div>
 </section>
 
 
 
-{/* Artistry in Every Layer Section - Redesigned - Desktop Only */}
+{/* Artistry in Every Layer Section - Desktop Only (Behind the Scene) */}
 <section className={`${styles.artistrySection} ${styles.desktopOnly}`}>
   <div 
     className={styles.artistryBackground}
