@@ -33,6 +33,7 @@ export default function WishlistModal({ isOpen, onClose, product }: WishlistModa
 
   // Handle modal open/close with animations
   useEffect(() => {
+    console.log('WishlistModal - isOpen:', isOpen, 'product:', product)
     if (isOpen && product) {
       setIsVisible(true)
       // Small delay to trigger animation
@@ -116,7 +117,11 @@ export default function WishlistModal({ isOpen, onClose, product }: WishlistModa
           </div>
 
           {/* Action Button */}
-          <Link href="/dashboard/wishlist" className="wishlist-modal-action">
+          <Link 
+            href="/dashboard/wishlist" 
+            className="wishlist-modal-action"
+            onClick={handleClose}
+          >
             View Your Wishlist
           </Link>
         </div>
@@ -135,7 +140,7 @@ export default function WishlistModal({ isOpen, onClose, product }: WishlistModa
           display: flex;
           align-items: center;
           justify-content: center;
-          z-index: 9999;
+          z-index: 99999;
           opacity: 0;
           transition: opacity 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
           padding: 1rem;

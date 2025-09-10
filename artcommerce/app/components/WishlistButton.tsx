@@ -62,6 +62,9 @@ export default function WishlistButton({ productId, className = '', preventNavig
       } else {
         const wishlistItem = await addToWishlist(productId)
         
+        // Debug logging
+        console.log('Wishlist item received:', wishlistItem)
+        
         // Extract product data from the wishlist response
         if (wishlistItem && wishlistItem.product) {
           // Normalize imageUrls
@@ -74,14 +77,48 @@ export default function WishlistButton({ productId, className = '', preventNavig
             imageUrls = []
           }
           
-          setProductData({
+          const productData = {
             id: wishlistItem.product.id,
             name: wishlistItem.product.name,
             price: wishlistItem.product.price,
             imageUrls: imageUrls.filter((url: string) => url && url.length > 0),
             category: wishlistItem.product.category
-          })
+          }
+          
+          console.log('Setting product data:', productData)
+          setProductData(productData)
+          console.log('Setting modal to show')
           setShowWishlistModal(true)
+        } else {
+          // Fallback: fetch product data if not available from wishlist response
+          console.log('No product data in wishlist response, fetching from API')
+          try {
+            const productRes = await fetch(`/api/products/${productId}`)
+            if (productRes.ok) {
+              const productData = await productRes.json()
+              if (productData.product) {
+                let imageUrls = []
+                try {
+                  imageUrls = Array.isArray(productData.product.imageUrls) 
+                    ? productData.product.imageUrls 
+                    : JSON.parse(productData.product.imageUrls || '[]')
+                } catch {
+                  imageUrls = []
+                }
+                
+                setProductData({
+                  id: productData.product.id,
+                  name: productData.product.name,
+                  price: productData.product.price,
+                  imageUrls: imageUrls.filter((url: string) => url && url.length > 0),
+                  category: productData.product.category
+                })
+                setShowWishlistModal(true)
+              }
+            }
+          } catch (error) {
+            console.error('Error fetching product data:', error)
+          }
         }
         
         addNotification({

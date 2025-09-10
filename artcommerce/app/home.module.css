@@ -2594,7 +2594,7 @@
 
 /* Featured Product Card - Desktop */
 .featuredProductCard {
-  background: #e8e8e8;
+  background: #ffffff;
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
@@ -2644,9 +2644,12 @@
   width: calc(100% - 16px);
   aspect-ratio: 3/4;
   overflow: hidden;
-  background: #ffffff;
+  background: #e8e8e8;
   border-radius: 8px;
   margin: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .featuredImageContainer::before {
@@ -2679,7 +2682,7 @@
 
 .featuredCardInfo {
   padding: 1.5rem;
-  background: #e8e8e8;
+  background: #ffffff;
 }
 
 .featuredProductName {
@@ -2719,7 +2722,7 @@
   user-select: none;
   -webkit-tap-highlight-color: transparent;
   transition: transform 0.1s ease;
-  background: #e8e8e8;
+  background: #ffffff;
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
@@ -2755,7 +2758,7 @@
   width: calc(100% - 16px);
   aspect-ratio: 1/1.4;
   overflow: hidden;
-  background: #ffffff;
+  background: #e8e8e8;
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -2792,7 +2795,7 @@
 .featuredMobileCardInfo {
   padding: 1rem 1rem 1rem 1rem;
   text-align: left;
-  background: #e8e8e8;
+  background: #ffffff;
 }
 
 .featuredMobileProductName {
@@ -2996,7 +2999,7 @@
 /* This class is no longer needed - mobile now uses bestSellersMobileGrid */
 
 .bestSellerCard {
-  background: #e8e8e8;
+  background: #ffffff;
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
@@ -3027,14 +3030,15 @@
 
 .bestSellerImageContainer {
   position: relative;
-  width: 100%;
+  width: calc(100% - 16px);
   aspect-ratio: 3/4;
   overflow: hidden;
-  background: #ffffff;
+  background: #e8e8e8;
   border-radius: 8px;
-  position: relative;
   margin: 8px;
-  width: calc(100% - 16px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .bestSellerImageContainer::before {
@@ -3120,7 +3124,7 @@
 
 .bestSellerCardInfo {
   padding: 1.5rem;
-  background: #e8e8e8;
+  background: #ffffff;
 }
 
 .bestSellerCategory {
@@ -3199,7 +3203,7 @@
   user-select: none;
   -webkit-tap-highlight-color: transparent;
   transition: transform 0.1s ease;
-  background: #e8e8e8;
+  background: #ffffff;
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
@@ -3235,7 +3239,7 @@
   width: calc(100% - 16px);
   aspect-ratio: 1/1.4;
   overflow: hidden;
-  background: #ffffff;
+  background: #e8e8e8;
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -3302,7 +3306,7 @@
 .bestSellerMobileCardInfo {
   padding: 1rem 1rem 1rem 1rem;
   text-align: left;
-  background: #e8e8e8;
+  background: #ffffff;
 }
 
 .bestSellerMobileProductName {
