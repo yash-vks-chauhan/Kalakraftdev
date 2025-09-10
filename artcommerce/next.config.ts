@@ -7,7 +7,6 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
   distDir: '.next',
-  output: 'standalone',
   images: {
     domains: ['localhost', 'firebasestorage.googleapis.com', 'lh3.googleusercontent.com', 'res.cloudinary.com'],
     unoptimized: true,
