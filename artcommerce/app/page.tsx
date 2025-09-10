@@ -918,6 +918,209 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
   );
 };
 
+// Featured Categories Section Component
+const FeaturedCategoriesSection = () => {
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [featuredProducts, setFeaturedProducts] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  // Available categories based on the system
+  const categories = [
+    { id: 'all', name: 'All Products', slug: 'all' },
+    { id: 'clocks', name: 'Clocks', slug: 'clocks' },
+    { id: 'wall-art', name: 'Wall Art', slug: 'wall art' },
+    { id: 'home-decor', name: 'Home Decor', slug: 'decor' },
+    { id: 'trays', name: 'Trays', slug: 'tray' },
+    { id: 'custom', name: 'Custom Pieces', slug: 'custom' }
+  ];
+
+  // Format price function
+  const formatPrice = (price) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 0,
+      minimumFractionDigits: 0
+    }).format(price);
+  };
+
+  // Fetch products by category
+  const fetchProductsByCategory = async (categorySlug) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Get products from cache
+      const cachedProducts = await DataCache.getProducts();
+      
+      if (cachedProducts && Array.isArray(cachedProducts)) {
+        let filteredProducts = cachedProducts.filter(p => p.isActive && p.stockQuantity >= 0);
+        
+        // Filter by category if not 'all'
+        if (categorySlug !== 'all') {
+          filteredProducts = filteredProducts.filter(p => {
+            if (!p.category) return false;
+            const categoryName = p.category.name.toLowerCase();
+            const slug = categorySlug.toLowerCase();
+            
+            // Match category names
+            return categoryName.includes(slug) || 
+                   slug.includes(categoryName) ||
+                   (slug === 'wall art' && categoryName.includes('wall')) ||
+                   (slug === 'decor' && (categoryName.includes('decor') || categoryName.includes('home'))) ||
+                   (slug === 'tray' && categoryName.includes('tray'));
+          });
+        }
+
+        // Normalize imageUrls and shuffle
+        const normalizedProducts = filteredProducts.map(p => {
+          let imageUrls = [];
+          try {
+            imageUrls = Array.isArray(p.imageUrls) ? p.imageUrls : JSON.parse(p.imageUrls || '[]');
+          } catch {
+            imageUrls = [];
+          }
+          return { ...p, imageUrls };
+        });
+
+        // Shuffle and take 8 random products
+        const shuffled = [...normalizedProducts].sort(() => Math.random() - 0.5);
+        setFeaturedProducts(shuffled.slice(0, 8));
+      }
+    } catch (err) {
+      console.error('Error fetching products:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Load products when category changes
+  useEffect(() => {
+    fetchProductsByCategory(selectedCategory);
+  }, [selectedCategory]);
+
+  // Handle category button click
+  const handleCategoryClick = (categorySlug) => {
+    setSelectedCategory(categorySlug);
+  };
+
+  return (
+    <section className={styles.featuredCategoriesSection} data-aos="fade-up">
+      {/* Section Header */}
+      <div className={styles.sectionHeader} data-aos="fade-up">
+        <div className={styles.headerLine}></div>
+        <h2 className={styles.sectionTitle}>Featured Categories</h2>
+        <div className={styles.headerLine}></div>
+      </div>
+
+      <div className={styles.featuredDescription} data-aos="fade-up" data-aos-delay="100">
+        <p>Explore our curated selection by category. Each piece is handcrafted with attention to detail and artistic flair.</p>
+      </div>
+
+      {/* Category Buttons */}
+      <div className={styles.categoryButtonsContainer} data-aos="fade-up" data-aos-delay="200">
+        {categories.map((category) => (
+          <button
+            key={category.id}
+            className={`${styles.categoryButton} ${selectedCategory === category.slug ? styles.categoryButtonActive : ''}`}
+            onClick={() => handleCategoryClick(category.slug)}
+          >
+            {category.name}
+          </button>
+        ))}
+      </div>
+
+      {/* Products Display */}
+      <div className={styles.featuredProductsContainer} data-aos="fade-up" data-aos-delay="300">
+        {loading ? (
+          <div className={styles.featuredLoading}>
+            <div className={styles.loadingSpinner}></div>
+            <p>Loading products...</p>
+          </div>
+        ) : error ? (
+          <div className={styles.featuredError}>
+            <p>Unable to load products</p>
+          </div>
+        ) : (
+          <>
+            {/* Desktop Layout */}
+            <div className={`${styles.featuredProductsDesktop} ${styles.desktopOnly}`}>
+              {featuredProducts.slice(0, 4).map((product, index) => (
+                <div key={product.id} className={styles.featuredProductCard} data-aos="fade-up" data-aos-delay={`${400 + (index * 100)}`}>
+                  <Link href={`/products/${product.id}`}>
+                    <div className={styles.featuredCardInner}>
+                      <div className={styles.featuredImageContainer}>
+                        <img
+                          src={product.imageUrls && product.imageUrls[0] ? product.imageUrls[0] : 'https://placehold.co/300x300/f0f0f0/888?text=No+Image'}
+                          alt={product.name}
+                          className={styles.featuredProductImage}
+                          onError={(e) => (e.currentTarget.src = 'https://placehold.co/300x300/f0f0f0/888?text=No+Image')}
+                        />
+                      </div>
+                      
+                      <div className={styles.featuredCardInfo}>
+                        <h3 className={styles.featuredProductName}>{product.name}</h3>
+                        <p className={styles.featuredProductPrice}>{formatPrice(product.price)}</p>
+                      </div>
+                    </div>
+                  </Link>
+                  
+                  {/* Wishlist Button */}
+                  <div className={styles.featuredWishlistContainer}>
+                    <WishlistButton 
+                      productId={product.id} 
+                      className={styles.featuredWishlistButton}
+                      preventNavigation={true}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Mobile Layout */}
+            <div className={`${styles.featuredProductsMobile} ${styles.mobileOnly}`}>
+              <div className={styles.featuredProductsMobileGrid}>
+                {featuredProducts.slice(0, 4).map((product, index) => (
+                  <div key={product.id} className={styles.featuredMobileCard}>
+                    <div className={styles.featuredMobileCardWrapper}>
+                      <Link href={`/products/${product.id}`} className={styles.featuredMobileLink}>
+                        <div className={styles.featuredMobileImageContainer}>
+                          <img
+                            src={product.imageUrls && product.imageUrls[0] ? product.imageUrls[0] : 'https://placehold.co/300x300/f0f0f0/888?text=No+Image'}
+                            alt={product.name}
+                            className={styles.featuredMobileImage}
+                            onError={(e) => (e.currentTarget.src = 'https://placehold.co/300x300/f0f0f0/888?text=No+Image')}
+                          />
+                        </div>
+                        
+                        <div className={styles.featuredMobileCardInfo}>
+                          <h3 className={styles.featuredMobileProductName}>{product.name}</h3>
+                          <p className={styles.featuredMobilePrice}>{formatPrice(product.price)}</p>
+                        </div>
+                      </Link>
+                      
+                      {/* Wishlist Button */}
+                      <div className={styles.featuredMobileWishlistContainer}>
+                        <WishlistButton 
+                          productId={product.id} 
+                          className={styles.featuredMobileWishlistButton}
+                          preventNavigation={true}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+    </section>
+  );
+};
+
 export default function Home() {
 const [message, setMessage] = useState<string|null>(null)
 const [featuredProducts, setFeaturedProducts] = useState([]);
@@ -1493,7 +1696,10 @@ Handcrafted resin art for <span id="rotator">{displayText}</span>
 
 
 
-{/* Product Categories Grid Section */}
+  {/* Featured Categories Section */}
+  <FeaturedCategoriesSection />
+
+  {/* Product Categories Grid Section */}
 
 <section className={styles.productGridSection} data-aos="fade-up">
 

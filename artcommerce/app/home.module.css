@@ -2452,6 +2452,452 @@
 }
 
 /* ===============================================
+   FEATURED CATEGORIES SECTION
+   =============================================== */
+
+.featuredCategoriesSection {
+  position: relative;
+  padding: 6rem 2rem 4rem;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+/* Category Buttons Container */
+.categoryButtonsContainer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  margin: 2rem auto 3rem;
+  max-width: 800px;
+}
+
+.categoryButton {
+  background: transparent;
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  color: #333;
+  padding: 0.75rem 2rem;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+  min-width: 120px;
+}
+
+.categoryButton::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, rgba(0,0,0,0), rgba(0,0,0,0.05), rgba(0,0,0,0));
+  transition: left 0.5s ease;
+}
+
+.categoryButton:hover {
+  background-color: #f8f8f8;
+  border-color: rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.categoryButton:hover::before {
+  left: 100%;
+}
+
+.categoryButtonActive {
+  background-color: #333;
+  color: #fff;
+  border-color: #333;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.categoryButtonActive:hover {
+  background-color: #555;
+  border-color: #555;
+}
+
+/* Featured Description */
+.featuredDescription {
+  text-align: center;
+  max-width: 600px;
+  margin: 0 auto 2rem;
+  color: #666;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  font-weight: 300;
+}
+
+/* Featured Products Container */
+.featuredProductsContainer {
+  position: relative;
+  z-index: 2;
+}
+
+/* Featured Products Desktop Layout */
+.featuredProductsDesktop {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 0 3rem;
+}
+
+@media (max-width: 1024px) and (min-width: 769px) {
+  .featuredProductsDesktop {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    padding: 0 1rem;
+  }
+}
+
+/* Featured Product Card - Desktop */
+.featuredProductCard {
+  background: transparent;
+  border-radius: 0;
+  overflow: hidden;
+  box-shadow: none;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  position: relative;
+  width: 100%;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.featuredProductCard:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+}
+
+.featuredProductCard:active {
+  transform: translateY(1px) scale(0.98);
+  transition: all 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.featuredCardInner {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  height: 100%;
+}
+
+.featuredImageContainer {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3/4;
+  overflow: hidden;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 25%, #f1f3f4 50%, #e9ecef 75%, #f8f9fa 100%);
+  border-radius: 8px;
+}
+
+.featuredImageContainer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.3) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.featuredProductImage {
+  width: 90%;
+  height: 90%;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+  margin: auto;
+  display: block;
+  position: relative;
+  top: 50%;
+  transform: translateY(-50%);
+  filter: none;
+  mix-blend-mode: normal;
+  z-index: 3;
+}
+
+.featuredProductCard:hover .featuredProductImage {
+  transform: translateY(-50%);
+}
+
+.featuredCardInfo {
+  padding: 1.5rem;
+  background: transparent;
+}
+
+.featuredProductName {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 1rem;
+  line-height: 1.4;
+}
+
+.featuredProductPrice {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #333;
+  margin: 0;
+}
+
+/* Featured Products Mobile Layout */
+.featuredProductsMobile {
+  padding: 0 1.25rem;
+}
+
+.featuredProductsMobileGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  margin: 0 auto;
+  max-width: 100%;
+  padding: 0;
+}
+
+.featuredMobileCard {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.featuredMobileCardWrapper {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.featuredMobileCard:hover {
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+}
+
+.featuredMobileCard:active {
+  transform: translateY(1px) scale(0.99);
+  transition: all 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.featuredMobileLink {
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.featuredMobileImageContainer {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1/1.4;
+  overflow: hidden;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 25%, #f1f3f4 50%, #e9ecef 75%, #f8f9fa 100%);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: none;
+  transition: transform 0.2s ease;
+}
+
+.featuredMobileImageContainer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.3) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.featuredMobileImageContainer:hover {
+  transform: none;
+}
+
+.featuredMobileImage {
+  width: 90%;
+  height: 90%;
+  object-fit: contain;
+  background: transparent;
+  position: relative;
+  z-index: 3;
+  filter: none;
+  mix-blend-mode: normal;
+  opacity: 1;
+}
+
+.featuredMobileCardInfo {
+  padding: 1rem 0 0 0;
+  text-align: left;
+  background: transparent;
+}
+
+.featuredMobileProductName {
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: #333;
+  margin-bottom: 0.25rem;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  white-space: normal;
+}
+
+.featuredMobilePrice {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #666;
+  margin: 0;
+}
+
+/* Wishlist Button Styles for Featured Section */
+.featuredWishlistContainer {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  z-index: 10;
+}
+
+.featuredWishlistButton {
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  color: #333;
+}
+
+.featuredWishlistButton:hover {
+  background: rgba(255, 255, 255, 1);
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.featuredWishlistButton[data-active="true"] {
+  background: #333;
+  color: #fff;
+}
+
+.featuredWishlistButton[data-active="true"]:hover {
+  background: #555;
+}
+
+/* Mobile Wishlist Button Styles for Featured Section */
+.featuredMobileWishlistContainer {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 10;
+}
+
+.featuredMobileWishlistButton {
+  background: transparent;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: none;
+  color: #000;
+  transition: transform 0.2s ease;
+  backdrop-filter: none;
+  position: relative;
+  overflow: hidden;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.featuredMobileWishlistButton:hover {
+  transform: scale(1.05);
+}
+
+.featuredMobileWishlistButton[data-active="true"] {
+  color: #000;
+  background: transparent;
+  box-shadow: none;
+}
+
+.featuredMobileWishlistButton[data-active="true"]:hover {
+  transform: scale(1.05);
+}
+
+/* Loading and Error States */
+.featuredLoading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  font-family: 'Inter', sans-serif;
+}
+
+.featuredError {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  font-family: 'Inter', sans-serif;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .featuredCategoriesSection {
+    padding: 4rem 1rem 3rem;
+  }
+  
+  .categoryButtonsContainer {
+    gap: 0.75rem;
+    margin: 1.5rem auto 2.5rem;
+  }
+  
+  .categoryButton {
+    padding: 0.6rem 1.5rem;
+    font-size: 0.8rem;
+    min-width: 100px;
+  }
+  
+  .featuredDescription {
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .featuredProductsMobileGrid {
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    max-width: 100%;
+  }
+}
+
+/* ===============================================
    BEST SELLERS SECTION
    =============================================== */
 
