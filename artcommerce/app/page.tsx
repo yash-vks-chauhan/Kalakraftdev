@@ -227,8 +227,18 @@ const BestSellersSection = () => {
                   </div>
                 </Link>
                 
-                {/* Mobile Wishlist Button Only */}
-                <div className={styles.bestSellerMobileWishlistContainer}>
+                {/* Mobile Action Buttons */}
+                <div className={styles.bestSellerMobileActions}>
+                  <button 
+                    className={styles.bestSellerMobileAddToCartBtn}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      window.location.href = `/products/${product.id}`;
+                    }}
+                  >
+                    Add to Cart
+                  </button>
                   <WishlistButton 
                     productId={product.id} 
                     className={styles.bestSellerMobileWishlistButton}

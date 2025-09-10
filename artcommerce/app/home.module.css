@@ -3321,44 +3321,59 @@
   }
 }
 
-/* Mobile Wishlist Container for Best Sellers */
-.bestSellerMobileWishlistContainer {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  z-index: 10;
+/* Mobile Actions for existing mobile cards */
+.bestSellerMobileActions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 1rem;
+  padding: 0 0.5rem;
+}
+
+.bestSellerMobileAddToCartBtn {
+  flex: 1;
+  padding: 10px 16px;
+  background: #000;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.bestSellerMobileAddToCartBtn:hover {
+  background: #333;
 }
 
 .bestSellerMobileWishlistButton {
-  background: rgba(255, 255, 255, 0.9);
-  border: none;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: white;
+  color: #666;
+  transition: all 0.3s ease;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  color: #333;
-  transition: transform 0.2s ease;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
+  min-width: 40px;
+  height: 36px;
 }
 
 .bestSellerMobileWishlistButton:hover {
-  transform: scale(1.05);
+  border-color: #333;
+  color: #333;
 }
 
 .bestSellerMobileWishlistButton[data-active="true"] {
-  background: #333;
-  color: #fff;
-}
-
-.bestSellerMobileWishlistButton[data-active="true"]:hover {
-  transform: scale(1.05);
+  background: #ff4757;
+  border-color: #ff4757;
+  color: white;
 }
 
 @media (max-width: 1024px) and (min-width: 769px) {
