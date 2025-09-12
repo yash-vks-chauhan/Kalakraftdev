@@ -25,7 +25,7 @@ export default function WishlistModal({ isOpen, onClose, product }: WishlistModa
   const closingRef = useRef(false)
   const timerRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Ensure component is mounted on client side
+
   useEffect(() => {
     setMounted(true)
     
