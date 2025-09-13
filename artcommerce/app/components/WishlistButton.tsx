@@ -53,12 +53,7 @@ export default function WishlistButton({ productId, className = '', preventNavig
       
       if (inWishlist) {
         await removeFromWishlist(productId)
-        addNotification({
-          title: 'Removed from Wishlist',
-          body: 'Item has been removed from your wishlist',
-          category: 'user',
-          severity: 'info'
-        })
+        // Note: Notification is handled by WishlistContext
       } else {
         const wishlistItem = await addToWishlist(productId)
         
