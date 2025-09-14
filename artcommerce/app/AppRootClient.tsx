@@ -34,29 +34,20 @@ export default function AppRootClient({ children }: { children: React.ReactNode 
       try {
         // Check if user has a preference saved
         const savedViewPreference = localStorage.getItem('viewPreference');
-        console.log('AppRootClient: Checking mobile detection', {
-          savedViewPreference,
-          isMobileOnlyRoute,
-          userAgent: window.navigator.userAgent,
-          screenWidth: window.innerWidth
-        });
         
         if (!isMobileOnlyRoute && savedViewPreference === 'desktop') {
-          console.log('AppRootClient: Using saved desktop preference');
           setForceDesktopView(true);
           return;
         }
         
         // Use the utility function for mobile detection
         const mobileDetected = isMobileDevice();
-        console.log('AppRootClient: Mobile detection result:', mobileDetected);
         
         setIsMobile(mobileDetected);
         setIsSmallScreen(window.innerWidth <= 1024);
         
         // If mobile detected but desktop preference exists, clear it
         if (mobileDetected && savedViewPreference === 'desktop') {
-          console.log('AppRootClient: Clearing desktop preference for mobile device');
           localStorage.removeItem('viewPreference');
           setForceDesktopView(false);
         }
@@ -64,7 +55,6 @@ export default function AppRootClient({ children }: { children: React.ReactNode 
         console.error('Error in mobile detection:', error);
         // Fallback to basic detection
         const fallbackMobile = window.innerWidth <= 1024;
-        console.log('AppRootClient: Using fallback detection:', fallbackMobile);
         setIsMobile(fallbackMobile);
         setIsSmallScreen(fallbackMobile);
       }
@@ -155,13 +145,11 @@ export default function AppRootClient({ children }: { children: React.ReactNode 
   };
 
   const switchToDesktopView = () => {
-    console.log('AppRootClient: Switching to desktop view');
     setForceDesktopView(true);
     localStorage.setItem('viewPreference', 'desktop');
   };
 
   const switchToMobileView = () => {
-    console.log('AppRootClient: Switching to mobile view');
     setForceDesktopView(false);
     localStorage.setItem('viewPreference', 'mobile');
     setIsMobile(true);
@@ -169,13 +157,6 @@ export default function AppRootClient({ children }: { children: React.ReactNode 
 
   // Show desktop view if forced or not mobile, but never on mobile-only routes
   const showDesktopView = (forceDesktopView || !isMobile) && !isMobileOnlyRoute;
-  
-  console.log('AppRootClient: View decision', {
-    isMobile,
-    forceDesktopView,
-    isMobileOnlyRoute,
-    showDesktopView
-  });
 
   // Ensure mobile-only routes clear any forced desktop preference
   useEffect(() => {
@@ -194,41 +175,6 @@ export default function AppRootClient({ children }: { children: React.ReactNode 
         {globalClientError && (
           <div style={{position:'fixed',top:0,left:0,right:0,zIndex:9999,background:'#fee2e2',color:'#991b1b',padding:'8px 12px',fontSize:12,borderBottom:'1px solid #ef4444'}}>
             <strong>Client error:</strong> {globalClientError}
-          </div>
-        )}
-        
-        {/* Debug panel for iPad issues */}
-        {typeof window !== 'undefined' && (
-          <div style={{
-            position: 'fixed',
-            top: '10px',
-            right: '10px',
-            background: 'rgba(0,0,0,0.8)',
-            color: 'white',
-            padding: '10px',
-            borderRadius: '5px',
-            fontSize: '12px',
-            zIndex: 99999,
-            maxWidth: '300px',
-            wordBreak: 'break-all'
-          }}>
-            <div>Mobile: {isMobile.toString()}</div>
-            <div>Force Desktop: {forceDesktopView.toString()}</div>
-            <div>Show Desktop: {showDesktopView.toString()}</div>
-            <div>Screen: {typeof window !== 'undefined' ? window.innerWidth : 'N/A'}px</div>
-            <div>UA: {typeof window !== 'undefined' ? window.navigator.userAgent.slice(0, 50) + '...' : 'N/A'}</div>
-            <button 
-              onClick={switchToMobileView}
-              style={{background: '#007aff', color: 'white', border: 'none', padding: '4px 8px', margin: '2px', borderRadius: '3px'}}
-            >
-              Mobile
-            </button>
-            <button 
-              onClick={switchToDesktopView}
-              style={{background: '#007aff', color: 'white', border: 'none', padding: '4px 8px', margin: '2px', borderRadius: '3px'}}
-            >
-              Desktop
-            </button>
           </div>
         )}
         

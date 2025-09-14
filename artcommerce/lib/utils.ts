@@ -31,16 +31,6 @@ export function isMobileDevice(): boolean {
     // Use 1024px for tablets (including iPad)
     const isTabletScreenSize = window.innerWidth <= 1024 && window.innerWidth > 768;
     
-    // Debug logging for iPad
-    if (isIPad) {
-      console.log('iPad detected:', {
-        userAgent,
-        platform: navigator.platform,
-        maxTouchPoints: navigator.maxTouchPoints,
-        screenWidth: window.innerWidth
-      });
-    }
-    
     // Mobile: phones and small screens
     if (isMobileUserAgent || isMobileScreenSize) {
       return true;
