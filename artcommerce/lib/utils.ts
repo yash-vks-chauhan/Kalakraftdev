@@ -17,8 +17,10 @@ export function isMobileDevice(): boolean {
     // Check for mobile devices (phones and small tablets)
     const isMobileUserAgent = /android|webos|iphone|ipod|blackberry|windows phone/.test(userAgent);
     
-    // Check for iPad specifically
-    const isIPad = /ipad/.test(userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    // Enhanced iPad detection
+    const isIPad = /ipad/.test(userAgent) || 
+                  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) ||
+                  (navigator.userAgent.includes('Mac') && 'ontouchend' in document);
     
     // Check for touch device
     const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
@@ -28,6 +30,16 @@ export function isMobileDevice(): boolean {
     
     // Use 1024px for tablets (including iPad)
     const isTabletScreenSize = window.innerWidth <= 1024 && window.innerWidth > 768;
+    
+    // Debug logging for iPad
+    if (isIPad) {
+      console.log('iPad detected:', {
+        userAgent,
+        platform: navigator.platform,
+        maxTouchPoints: navigator.maxTouchPoints,
+        screenWidth: window.innerWidth
+      });
+    }
     
     // Mobile: phones and small screens
     if (isMobileUserAgent || isMobileScreenSize) {
