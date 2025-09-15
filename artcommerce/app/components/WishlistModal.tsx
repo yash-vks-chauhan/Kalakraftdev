@@ -25,11 +25,11 @@ export default function WishlistModal({ isOpen, onClose, product }: WishlistModa
   const closingRef = useRef(false)
   const timerRef = useRef<NodeJS.Timeout | null>(null)
 
-
+ 
   useEffect(() => {
     setMounted(true)
     
-    // Cleanup on unmount
+
     return () => {
       if (timerRef.current) {
         clearTimeout(timerRef.current)
