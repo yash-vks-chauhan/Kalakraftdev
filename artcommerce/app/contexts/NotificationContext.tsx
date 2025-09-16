@@ -13,6 +13,12 @@ export interface Notification {
   body: string;
   category: 'user' | 'system';
   severity: 'info' | 'success' | 'warning' | 'error';
+  productData?: {
+    id: number;
+    name: string;
+    price?: number;
+    imageUrl?: string;
+  };
 }
 
 export interface NotificationContextValue {
@@ -44,7 +50,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       element.classList.add('animate-poofOut');
       setTimeout(() => {
         setNotifications(prev => prev.filter(n => n.id !== id));
-      }, 400); // Match animation duration
+      }, 500); // Match new animation duration
     } else {
       setNotifications(prev => prev.filter(n => n.id !== id));
     }

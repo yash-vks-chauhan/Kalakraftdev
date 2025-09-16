@@ -19,54 +19,88 @@ export default function NotificationContainer() {
           data-notification-id={note.id}
           className="
             pointer-events-auto
-            bg-white
-            border border-gray-200
-            rounded-lg
-            shadow-lg
-            w-full
-            p-3
-            sm:p-4
             relative
             animate-slideIn
-            before:absolute
-            before:bottom-0
-            before:left-0
-            before:h-1
-            before:bg-gradient-to-r
-            before:from-gray-900
-            before:to-gray-600
-            before:rounded-b-lg
-            before:animate-progressBar
-            
-            /* Mobile responsive */
+            w-full
             sm:min-w-[320px]
             md:min-w-[350px]
             md:max-w-[400px]
           "
           style={{
-            animation: 'slideIn 0.3s ease-out forwards'
+            animation: 'slideIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards'
           }}
         >
-          {/* Content */}
-          <div className="pr-7 sm:pr-8">
-            <div className="text-sm sm:text-[15px] md:text-[16px] font-semibold text-gray-900 leading-tight">
-              {note.title}
-            </div>
-            {note.body && (
-              <div className="text-xs sm:text-[13px] md:text-[14px] text-gray-600 mt-1 leading-relaxed">
-                {note.body}
+          {/* Glassmorphism notification card */}
+          <div className="
+            bg-white/10 
+            backdrop-filter backdrop-blur-[8px] backdrop-saturate-[180%]
+            -webkit-backdrop-filter -webkit-backdrop-blur-[8px] -webkit-backdrop-saturate-[180%]
+            border border-white/25
+            rounded-2xl
+            shadow-[0_8px_32px_rgba(0,0,0,0.12),0_4px_16px_rgba(0,0,0,0.08)]
+            p-3 sm:p-4
+            before:absolute
+            before:bottom-0
+            before:left-0
+            before:h-1
+            before:bg-gradient-to-r
+            before:from-black/60
+            before:to-black/40
+            before:rounded-b-2xl
+            before:animate-progressBar
+          ">
+            {/* Content with optional product image */}
+            <div className="flex items-center gap-3">
+              {/* Product image for wishlist notifications */}
+              {note.productData?.imageUrl && (
+                <div className="flex-shrink-0 w-12 h-12 rounded-xl overflow-hidden bg-black/5 border border-white/20">
+                  <img
+                    src={note.productData.imageUrl}
+                    alt={note.productData.name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none'
+                    }}
+                  />
+                </div>
+              )}
+              
+              {/* Text content */}
+              <div className="flex-1 pr-7 sm:pr-8">
+                <div className="text-sm sm:text-[15px] md:text-[16px] font-semibold text-black/90 leading-tight">
+                  {note.title}
+                </div>
+                {note.body && (
+                  <div className="text-xs sm:text-[13px] md:text-[14px] text-black/60 mt-1 leading-relaxed">
+                    {note.body}
+                  </div>
+                )}
+                {/* Show product name if available */}
+                {note.productData?.name && (
+                  <div className="text-xs text-black/50 mt-1 font-medium truncate">
+                    {note.productData.name}
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            </div>
 
-          {/* Close button */}
-          <button
-            onClick={() => removeNotification(note.id)}
-            className="absolute top-2 sm:top-3 right-2 sm:right-3 text-gray-400 hover:text-gray-600 transition-colors duration-200 rounded-full p-1 hover:bg-gray-100"
-            aria-label="Close notification"
-          >
-            <X size={14} className="sm:w-4 sm:h-4" />
-          </button>
+            {/* Close button */}
+            <button
+              onClick={() => removeNotification(note.id)}
+              className="
+                absolute top-3 right-3
+                text-black/40 hover:text-black/70
+                transition-all duration-200 ease-out
+                rounded-full p-1.5
+                hover:bg-white/20
+                backdrop-filter backdrop-blur-[20px]
+                -webkit-backdrop-filter -webkit-backdrop-blur-[20px]
+              "
+              aria-label="Close notification"
+            >
+              <X size={14} className="sm:w-4 sm:h-4" />
+            </button>
+          </div>
         </div>
       ))}
     </div>
@@ -78,47 +112,54 @@ export default function NotificationContainer() {
 @keyframes slideIn {
   from {
     opacity: 0;
-    transform: translateY(-20px) scale(0.95);
+    transform: translateY(-30px) scale(0.9);
+    filter: blur(4px);
   }
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
+    filter: blur(0px);
   }
 }
 
 @keyframes progressBar {
   from {
     width: 100%;
+    opacity: 0.8;
   }
   to {
     width: 0%;
+    opacity: 0.3;
   }
 }
 
 @keyframes poofOut {
   0% {
     opacity: 1;
-    transform: scale(1);
+    transform: scale(1) rotate(0deg);
+    filter: blur(0px);
   }
   50% {
     opacity: 0.8;
-    transform: scale(1.05);
+    transform: scale(1.05) rotate(-1deg);
+    filter: blur(1px);
   }
   100% {
     opacity: 0;
-    transform: scale(0.9);
+    transform: scale(0.85) rotate(1deg);
+    filter: blur(2px);
   }
 }
 
 .animate-slideIn {
-  animation: slideIn 0.3s ease-out forwards;
+  animation: slideIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }
 
 .animate-progressBar {
-  animation: progressBar 5s linear forwards;
+  animation: progressBar 5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 .animate-poofOut {
-  animation: poofOut 0.4s ease-in forwards;
+  animation: poofOut 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 */

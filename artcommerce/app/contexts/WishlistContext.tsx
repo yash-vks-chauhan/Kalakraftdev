@@ -140,14 +140,35 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     }
 
     // Successful delete; update state
+    const removedItem = wishlistItems.find(wi => wi.productId === productId)
     setWishlistItems((prev) =>
       prev.filter((wi) => wi.productId !== productId)
     )
+    
+    // Get product image from the removed item
+    let productImageUrl = ''
+    if (removedItem?.product?.imageUrls) {
+      try {
+        const imageUrls = Array.isArray(removedItem.product.imageUrls) 
+          ? removedItem.product.imageUrls 
+          : JSON.parse(removedItem.product.imageUrls || '[]')
+        productImageUrl = imageUrls.find((url: string) => url && url.length > 0) || ''
+      } catch {
+        productImageUrl = ''
+      }
+    }
+    
     addNotification({
       title: 'Removed from Wishlist',
       body: 'Item has been removed from your wishlist',
       category: 'user',
-      severity: 'info'
+      severity: 'info',
+      productData: removedItem?.product ? {
+        id: removedItem.product.id,
+        name: removedItem.product.name,
+        price: removedItem.product.price,
+        imageUrl: productImageUrl
+      } : undefined
     })
   }
 
