@@ -62,6 +62,8 @@ export default function WishlistModal({ isOpen, onClose, product }: WishlistModa
     closingRef.current = true
     setIsClosing(true)
     setIsAnimating(false)
+    setTranslateY(0) // Reset any drag position
+    setIsDragging(false) // Reset drag state
     
     // Clear any existing auto-close timer
     if (timerRef.current) {
@@ -83,56 +85,45 @@ export default function WishlistModal({ isOpen, onClose, product }: WishlistModa
   }, [onClose])
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    if (closingRef.current) return
+    if (closingRef.current || isClosing) return
     
     const touch = e.touches[0]
     startYRef.current = touch.clientY
     currentYRef.current = touch.clientY
     setIsDragging(true)
-    setTranslateY(0)
     
-    // Prevent body scroll while dragging
-    e.preventDefault()
-  }, [])
+    // Don't prevent default to allow normal touch behavior initially
+  }, [isClosing])
 
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    if (!isDragging || closingRef.current) return
+    if (!isDragging || closingRef.current || isClosing) return
     
     const touch = e.touches[0]
     currentYRef.current = touch.clientY
     const deltaY = currentYRef.current - startYRef.current
     
-    // Only allow downward swipes
-    if (deltaY > 0) {
+    // Only allow downward swipes (positive deltaY means dragging down)
+    if (deltaY > 10) { // Add threshold to prevent accidental drags
       setTranslateY(deltaY)
-      
-      // Add resistance effect for far swipes
-      const resistance = Math.min(deltaY / 200, 1)
-      const dampedDelta = deltaY * (1 - resistance * 0.5)
-      setTranslateY(dampedDelta)
+      e.preventDefault() // Prevent scrolling only when actually dragging
     }
-    
-    e.preventDefault()
-  }, [isDragging])
+  }, [isDragging, isClosing])
 
   const handleTouchEnd = useCallback((e: React.TouchEvent) => {
-    if (!isDragging || closingRef.current) return
+    if (!isDragging || closingRef.current || isClosing) return
     
     const deltaY = currentYRef.current - startYRef.current
-    const velocity = Math.abs(deltaY) / 150 // Simple velocity calculation
     
     setIsDragging(false)
     
-    // If swiped down enough or with enough velocity, close the modal
-    if (deltaY > 100 || velocity > 0.8) {
+    // If swiped down enough (more than 80px), close the modal
+    if (deltaY > 80) {
       handleClose()
     } else {
       // Snap back to original position
       setTranslateY(0)
     }
-    
-    e.preventDefault()
-  }, [isDragging, handleClose])
+  }, [isDragging, isClosing, handleClose])
 
   // Handle modal open/close with animations
   useEffect(() => {
@@ -215,13 +206,13 @@ export default function WishlistModal({ isOpen, onClose, product }: WishlistModa
         {/* Modal Content */}
         <div 
           ref={modalRef}
-          className={`wishlist-modal-content ${isAnimating && !isClosing ? 'visible' : ''}`}
+          className={`wishlist-modal-content ${isAnimating && !isClosing ? 'visible' : ''} ${isDragging ? 'dragging' : ''}`}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
           style={{
-            transform: `translateY(${translateY}px)`,
-            transition: isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+            transform: isDragging ? `translateY(${translateY}px)` : undefined,
+            transition: isDragging ? 'none' : undefined
           }}
         >
           {/* Drag Handle Indicator */}
@@ -321,12 +312,13 @@ export default function WishlistModal({ isOpen, onClose, product }: WishlistModa
 
         .drag-handle {
           position: absolute;
-          top: 10px;
+          top: 12px;
           left: 50%;
           transform: translateX(-50%);
-          padding: 8px 0;
+          padding: 12px 20px;
           cursor: grab;
           z-index: 10;
+          -webkit-tap-highlight-color: transparent;
         }
 
         .drag-handle:active {
@@ -334,16 +326,17 @@ export default function WishlistModal({ isOpen, onClose, product }: WishlistModa
         }
 
         .drag-handle-bar {
-          width: 40px;
+          width: 50px;
           height: 4px;
-          background: rgba(0, 0, 0, 0.3);
+          background: rgba(0, 0, 0, 0.4);
           border-radius: 2px;
           transition: all 0.2s ease;
         }
 
-        .drag-handle:hover .drag-handle-bar {
-          background: rgba(0, 0, 0, 0.5);
-          width: 50px;
+        .drag-handle:hover .drag-handle-bar,
+        .drag-handle:active .drag-handle-bar {
+          background: rgba(0, 0, 0, 0.6);
+          width: 60px;
         }
 
         .wishlist-modal-content {
@@ -362,7 +355,7 @@ export default function WishlistModal({ isOpen, onClose, product }: WishlistModa
             inset 0 0 60px rgba(255, 255, 255, 0.2),
             inset 0 1px 0 rgba(255, 255, 255, 0.3),
             inset 0 -1px 0 rgba(0, 0, 0, 0.1);
-          transform: translateY(60px) scale(0.9);
+          transform: translateY(100vh) scale(0.9);
           opacity: 0;
           transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
           text-align: center;
@@ -373,6 +366,10 @@ export default function WishlistModal({ isOpen, onClose, product }: WishlistModa
         .wishlist-modal-content.visible {
           transform: translateY(0) scale(1);
           opacity: 1;
+        }
+
+        .wishlist-modal-content.dragging {
+          transition: none !important;
         }        .wishlist-modal-close {
           position: absolute;
           top: 1.25rem;
@@ -544,6 +541,7 @@ export default function WishlistModal({ isOpen, onClose, product }: WishlistModa
           .wishlist-modal-backdrop {
             padding: 0;
             align-items: flex-end;
+            background: rgba(0, 0, 0, 0.5);
           }
 
           .wishlist-modal-content {
@@ -559,6 +557,10 @@ export default function WishlistModal({ isOpen, onClose, product }: WishlistModa
 
           .wishlist-modal-content.visible {
             transform: translateY(0);
+          }
+
+          .wishlist-modal-content.dragging {
+            transition: none !important;
           }
 
           .wishlist-modal-title {
