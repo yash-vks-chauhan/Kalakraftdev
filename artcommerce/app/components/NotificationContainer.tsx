@@ -32,12 +32,12 @@ export default function NotificationContainer() {
         >
           {/* Glassmorphism notification card */}
           <div className="
-            bg-white/50 
-            backdrop-filter backdrop-blur-[20px] backdrop-saturate-[180%]
-            -webkit-backdrop-filter -webkit-backdrop-blur-[20px] -webkit-backdrop-saturate-[180%]
+            bg-white/10 
+            backdrop-filter backdrop-blur-[8px] backdrop-saturate-[180%]
+            -webkit-backdrop-filter -webkit-backdrop-blur-[8px] -webkit-backdrop-saturate-[180%]
             border border-white/25
             rounded-2xl
-            shadow-[0_8px_32px_rgba(0,0,0,0.12),0_4px_16px_rgba(0,0,0,0.08),inset_0_0_60px_rgba(255,255,255,0.2),inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-1px_0_rgba(0,0,0,0.1)]
+            shadow-[0_8px_32px_rgba(0,0,0,0.12),0_4px_16px_rgba(255,255,255,0.15),inset_0_0_60px_rgba(255,255,255,0.2)]
             p-3 sm:p-4
             before:absolute
             before:bottom-0
@@ -85,17 +85,17 @@ export default function NotificationContainer() {
               
               {/* Text content */}
               <div className="flex-1 pr-7 sm:pr-8">
-                <div className="text-sm sm:text-[15px] md:text-[16px] font-semibold text-black/95 leading-tight">
+                <div className="text-sm sm:text-[15px] md:text-[16px] font-semibold text-black/80 leading-tight">
                   {note.title}
                 </div>
                 {note.body && (
-                  <div className="text-xs sm:text-[13px] md:text-[14px] text-black/75 mt-1 leading-relaxed">
+                  <div className="text-xs sm:text-[13px] md:text-[14px] text-black/70 mt-1 leading-relaxed">
                     {note.body}
                   </div>
                 )}
                 {/* Show product name if available */}
                 {note.productData?.name && (
-                  <div className="text-xs text-black/65 mt-1 font-medium truncate">
+                  <div className="text-xs text-black/60 mt-1 font-medium truncate">
                     {note.productData.name}
                   </div>
                 )}
@@ -107,12 +107,12 @@ export default function NotificationContainer() {
               onClick={() => removeNotification(note.id)}
               className="
                 absolute top-3 right-3
-                text-black/60 hover:text-black/90
+                text-black/70 hover:text-black/90
                 transition-all duration-200 ease-out
                 rounded-full p-1.5
-                hover:bg-white/30
-                backdrop-filter backdrop-blur-[20px]
-                -webkit-backdrop-filter -webkit-backdrop-blur-[20px]
+                hover:bg-white/75
+                backdrop-filter backdrop-blur-[80px] backdrop-saturate-[180%]
+                -webkit-backdrop-filter -webkit-backdrop-blur-[80px] -webkit-backdrop-saturate-[180%]
               "
               aria-label="Close notification"
             >
