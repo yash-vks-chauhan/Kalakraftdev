@@ -22,8 +22,14 @@ export default function WishlistModal({ isOpen, onClose, product }: WishlistModa
   const [isAnimating, setIsAnimating] = useState(false)
   const [isClosing, setIsClosing] = useState(false)
   const [mounted, setMounted] = useState(false)
-  const closingRef = useRef(false)
+  const [translateY, setTranslateY] = useState(0)
+  const [isDragging, setIsDragging] = useState(false)
+  
   const timerRef = useRef<NodeJS.Timeout | null>(null)
+  const closingRef = useRef(false)
+  const modalRef = useRef<HTMLDivElement | null>(null)
+  const startYRef = useRef(0)
+  const currentYRef = useRef(0)
 
  
   useEffect(() => {
@@ -68,19 +74,73 @@ export default function WishlistModal({ isOpen, onClose, product }: WishlistModa
       document.body.style.overflow = 'unset'
     }
     
-    // Wait for animation to complete before hiding
+    // Wait for slower animation to complete before hiding
     setTimeout(() => {
       setIsClosing(false)
       closingRef.current = false
       onClose()
-    }, 300)
+    }, 600) // Increased to match slower CSS transition
   }, [onClose])
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    if (closingRef.current) return
+    
+    const touch = e.touches[0]
+    startYRef.current = touch.clientY
+    currentYRef.current = touch.clientY
+    setIsDragging(true)
+    setTranslateY(0)
+    
+    // Prevent body scroll while dragging
+    e.preventDefault()
+  }, [])
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!isDragging || closingRef.current) return
+    
+    const touch = e.touches[0]
+    currentYRef.current = touch.clientY
+    const deltaY = currentYRef.current - startYRef.current
+    
+    // Only allow downward swipes
+    if (deltaY > 0) {
+      setTranslateY(deltaY)
+      
+      // Add resistance effect for far swipes
+      const resistance = Math.min(deltaY / 200, 1)
+      const dampedDelta = deltaY * (1 - resistance * 0.5)
+      setTranslateY(dampedDelta)
+    }
+    
+    e.preventDefault()
+  }, [isDragging])
+
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (!isDragging || closingRef.current) return
+    
+    const deltaY = currentYRef.current - startYRef.current
+    const velocity = Math.abs(deltaY) / 150 // Simple velocity calculation
+    
+    setIsDragging(false)
+    
+    // If swiped down enough or with enough velocity, close the modal
+    if (deltaY > 100 || velocity > 0.8) {
+      handleClose()
+    } else {
+      // Snap back to original position
+      setTranslateY(0)
+    }
+    
+    e.preventDefault()
+  }, [isDragging, handleClose])
 
   // Handle modal open/close with animations
   useEffect(() => {
     if (isOpen && product && typeof document !== 'undefined') {
       setIsClosing(false)
       closingRef.current = false
+      setTranslateY(0)
+      setIsDragging(false)
       
       // Clear any existing timer
       if (timerRef.current) {
@@ -122,6 +182,8 @@ export default function WishlistModal({ isOpen, onClose, product }: WishlistModa
       setIsAnimating(false)
       setIsClosing(false)
       closingRef.current = false
+      setTranslateY(0)
+      setIsDragging(false)
       
       // Clear timer when modal is closed
       if (timerRef.current) {
@@ -151,7 +213,22 @@ export default function WishlistModal({ isOpen, onClose, product }: WishlistModa
         onClick={handleBackdropClick}
       >
         {/* Modal Content */}
-        <div className={`wishlist-modal-content ${isAnimating && !isClosing ? 'visible' : ''}`}>
+        <div 
+          ref={modalRef}
+          className={`wishlist-modal-content ${isAnimating && !isClosing ? 'visible' : ''}`}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          style={{
+            transform: `translateY(${translateY}px)`,
+            transition: isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+          }}
+        >
+          {/* Drag Handle Indicator */}
+          <div className="drag-handle">
+            <div className="drag-handle-bar"></div>
+          </div>
+          
           {/* Close Button */}
           <button 
             className="wishlist-modal-close"
@@ -218,16 +295,14 @@ export default function WishlistModal({ isOpen, onClose, product }: WishlistModa
           left: 0 !important;
           right: 0 !important;
           bottom: 0 !important;
-          background: rgba(255, 255, 255, 0.08);
-          backdrop-filter: blur(16px) saturate(180%);
-          -webkit-backdrop-filter: blur(16px) saturate(180%);
+          background: rgba(0, 0, 0, 0.4);
           display: flex;
           align-items: center;
           justify-content: center;
           z-index: 999999 !important;
           opacity: 0;
           visibility: hidden;
-          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
           padding: 1rem;
           width: 100vw !important;
           height: 100vh !important;
@@ -244,33 +319,61 @@ export default function WishlistModal({ isOpen, onClose, product }: WishlistModa
           pointer-events: auto;
         }
 
+        .drag-handle {
+          position: absolute;
+          top: 10px;
+          left: 50%;
+          transform: translateX(-50%);
+          padding: 8px 0;
+          cursor: grab;
+          z-index: 10;
+        }
+
+        .drag-handle:active {
+          cursor: grabbing;
+        }
+
+        .drag-handle-bar {
+          width: 40px;
+          height: 4px;
+          background: rgba(0, 0, 0, 0.3);
+          border-radius: 2px;
+          transition: all 0.2s ease;
+        }
+
+        .drag-handle:hover .drag-handle-bar {
+          background: rgba(0, 0, 0, 0.5);
+          width: 50px;
+        }
+
         .wishlist-modal-content {
           background: rgba(255, 255, 255, 0.1);
           backdrop-filter: blur(8px) saturate(180%);
           -webkit-backdrop-filter: blur(8px) saturate(180%);
           border: 1px solid rgba(255, 255, 255, 0.25);
           border-radius: 20px;
-          padding: 2.5rem 2rem;
+          padding: 3rem 2rem 2.5rem;
           max-width: 480px;
           width: 100%;
           position: relative;
           box-shadow: 
             0 8px 32px rgba(0, 0, 0, 0.12),
             0 4px 16px rgba(0, 0, 0, 0.08),
-            inset 0 0 60px rgba(255, 255, 255, 0.2);
-          transform: translateY(40px) scale(0.85);
+            inset 0 0 60px rgba(255, 255, 255, 0.2),
+            inset 0 1px 0 rgba(255, 255, 255, 0.3),
+            inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+          transform: translateY(60px) scale(0.9);
           opacity: 0;
-          transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+          transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
           text-align: center;
           font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', system-ui, sans-serif;
+          touch-action: pan-y;
         }
 
         .wishlist-modal-content.visible {
           transform: translateY(0) scale(1);
           opacity: 1;
-        }
-
-        .wishlist-modal-close {
+        }        .wishlist-modal-close {
           position: absolute;
           top: 1.25rem;
           right: 1.25rem;
@@ -336,6 +439,9 @@ export default function WishlistModal({ isOpen, onClose, product }: WishlistModa
           border: 1px solid rgba(0, 0, 0, 0.08);
           backdrop-filter: blur(20px);
           -webkit-backdrop-filter: blur(20px);
+          box-shadow: 
+            inset 0 1px 0 rgba(255, 255, 255, 0.2),
+            inset 0 -1px 0 rgba(0, 0, 0, 0.05);
         }
 
         .wishlist-modal-image {
@@ -445,9 +551,10 @@ export default function WishlistModal({ isOpen, onClose, product }: WishlistModa
             width: 100%;
             margin: 0;
             border-radius: 16px 16px 0 0;
-            padding: 1.5rem;
+            padding: 3rem 1.5rem 1.5rem;
             transform: translateY(100%);
             box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.1);
+            transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
           }
 
           .wishlist-modal-content.visible {

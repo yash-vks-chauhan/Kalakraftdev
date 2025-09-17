@@ -37,7 +37,7 @@ export default function NotificationContainer() {
             -webkit-backdrop-filter -webkit-backdrop-blur-[8px] -webkit-backdrop-saturate-[180%]
             border border-white/25
             rounded-2xl
-            shadow-[0_8px_32px_rgba(0,0,0,0.12),0_4px_16px_rgba(0,0,0,0.08)]
+            shadow-[0_8px_32px_rgba(0,0,0,0.12),0_4px_16px_rgba(0,0,0,0.08),inset_0_0_60px_rgba(255,255,255,0.2),inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-1px_0_rgba(0,0,0,0.1)]
             p-3 sm:p-4
             before:absolute
             before:bottom-0
@@ -48,7 +48,25 @@ export default function NotificationContainer() {
             before:to-black/40
             before:rounded-b-2xl
             before:animate-progressBar
+            relative
+            overflow-hidden
           ">
+            {/* Particle effects container for puff animation */}
+            <div className="absolute inset-0 pointer-events-none opacity-0 transition-opacity duration-300" data-particles>
+              {/* Sparkle particles */}
+              {[...Array(8)].map((_, i) => (
+                <div
+                  key={i}
+                  className="absolute w-1 h-1 bg-white rounded-full"
+                  style={{
+                    top: `${20 + Math.random() * 60}%`,
+                    left: `${20 + Math.random() * 60}%`,
+                    animationDelay: `${i * 0.1}s`
+                  }}
+                  data-particle={i}
+                />
+              ))}
+            </div>
             {/* Content with optional product image */}
             <div className="flex items-center gap-3">
               {/* Product image for wishlist notifications */}
