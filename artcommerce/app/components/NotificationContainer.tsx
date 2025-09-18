@@ -30,23 +30,23 @@ export default function NotificationContainer() {
             animation: 'slideIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards'
           }}
         >
-          {/* Enhanced glassmorphism notification card - matching account dropdown and wishlist modal */}
+          {/* iOS Control Center style glassmorphism notification card */}
           <div className="
-            bg-white/50
-            backdrop-filter backdrop-blur-[8px] backdrop-saturate-[180%]
-            -webkit-backdrop-filter -webkit-backdrop-blur-[8px] -webkit-backdrop-saturate-[180%]
-            border border-white/25
-            rounded-2xl
-            shadow-[0_8px_32px_rgba(0,0,0,0.12),0_4px_16px_rgba(0,0,0,0.08),inset_0_0_60px_rgba(255,255,255,0.2),inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-1px_0_rgba(0,0,0,0.1)]
-            p-3 sm:p-4
+            bg-white/80
+            backdrop-filter backdrop-blur-[20px] backdrop-saturate-[200%]
+            -webkit-backdrop-filter -webkit-backdrop-blur-[20px] -webkit-backdrop-saturate-[200%]
+            border border-white/30
+            rounded-3xl
+            shadow-[0_10px_40px_rgba(0,0,0,0.15),0_4px_20px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,0.4),inset_0_-1px_0_rgba(0,0,0,0.05)]
+            p-4 sm:p-5
             before:absolute
             before:bottom-0
             before:left-0
             before:h-1
             before:bg-gradient-to-r
-            before:from-black/60
-            before:to-black/40
-            before:rounded-b-2xl
+            before:from-black/70
+            before:to-black/50
+            before:rounded-b-3xl
             before:animate-progressBar
             relative
             overflow-hidden
@@ -71,7 +71,7 @@ export default function NotificationContainer() {
             <div className="flex items-center gap-3">
               {/* Product image for wishlist notifications */}
               {note.productData?.imageUrl && (
-                <div className="flex-shrink-0 w-12 h-12 rounded-xl overflow-hidden bg-black/5 border border-white/20">
+                <div className="flex-shrink-0 w-12 h-12 rounded-2xl overflow-hidden bg-black/10 border border-white/30 shadow-sm">
                   <img
                     src={note.productData.imageUrl}
                     alt={note.productData.name}
@@ -85,38 +85,39 @@ export default function NotificationContainer() {
               
               {/* Text content */}
               <div className="flex-1 pr-7 sm:pr-8">
-                <div className="text-sm sm:text-[15px] md:text-[16px] font-semibold text-black/80 leading-tight">
+                <div className="text-sm sm:text-[15px] md:text-[16px] font-semibold text-black/90 leading-tight">
                   {note.title}
                 </div>
                 {note.body && (
-                  <div className="text-xs sm:text-[13px] md:text-[14px] text-black/70 mt-1 leading-relaxed">
+                  <div className="text-xs sm:text-[13px] md:text-[14px] text-black/80 mt-1 leading-relaxed">
                     {note.body}
                   </div>
                 )}
                 {/* Show product name if available */}
                 {note.productData?.name && (
-                  <div className="text-xs text-black/60 mt-1 font-medium truncate">
+                  <div className="text-xs text-black/75 mt-1 font-medium truncate">
                     {note.productData.name}
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Enhanced close button - matching account dropdown and wishlist modal */}
+            {/* iOS Control Center style close button */}
             <button
               onClick={() => removeNotification(note.id)}
               className="
                 absolute top-3 right-3
-                text-black/70 hover:text-black/90
+                text-black/80 hover:text-black
                 transition-all duration-200 ease-out
                 rounded-full p-1.5
-                hover:bg-white/90
-                bg-white/85
-                backdrop-filter backdrop-blur-[80px] backdrop-saturate-[180%]
-                -webkit-backdrop-filter -webkit-backdrop-blur-[80px] -webkit-backdrop-saturate-[180%]
+                hover:bg-white/95
+                bg-white/90
+                backdrop-filter backdrop-blur-[30px] backdrop-saturate-[200%]
+                -webkit-backdrop-filter -webkit-backdrop-blur-[30px] -webkit-backdrop-saturate-[200%]
                 w-7 h-7 flex items-center justify-center
                 hover:scale-110
-                shadow-sm
+                shadow-[0_2px_8px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,0.3)]
+                border border-white/40
               "
               aria-label="Close notification"
             >
