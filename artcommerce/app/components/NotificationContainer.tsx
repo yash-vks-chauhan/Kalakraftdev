@@ -13,6 +13,15 @@ export default function NotificationContainer() {
 
   return (
     <div className="fixed top-[60px] sm:top-[72px] left-1/2 -translate-x-1/2 z-[999999] flex flex-col gap-2 sm:gap-3 pointer-events-none px-3 sm:px-4 w-full max-w-xs sm:max-w-sm md:max-w-md">
+      {/* Background overlay to ensure blur effect visibility */}
+      <div className="fixed inset-0 -z-10 opacity-30" style={{
+        backgroundImage: `
+          radial-gradient(circle at 25% 25%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+          radial-gradient(circle at 75% 75%, rgba(147, 51, 234, 0.1) 0%, transparent 50%),
+          linear-gradient(135deg, rgba(249, 250, 251, 0.8) 0%, rgba(243, 244, 246, 0.6) 100%)
+        `
+      }} />
+      
       {userNotifications.map((note) => (
         <div
           key={note.id}
@@ -30,27 +39,34 @@ export default function NotificationContainer() {
             animation: 'slideIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards'
           }}
         >
-          {/* iOS Control Center style glassmorphism notification card */}
+          {/* True iOS glassmorphism with enhanced blur effect */}
           <div className="
-            bg-white/80
-            backdrop-filter backdrop-blur-[20px] backdrop-saturate-[200%]
-            -webkit-backdrop-filter -webkit-backdrop-blur-[20px] -webkit-backdrop-saturate-[200%]
-            border border-white/30
+            notification-glassmorphism
+            bg-gradient-to-br from-white/85 to-white/75
+            backdrop-filter backdrop-blur-[25px] backdrop-saturate-[180%] backdrop-brightness-[1.1]
+            -webkit-backdrop-filter -webkit-backdrop-blur-[25px] -webkit-backdrop-saturate-[180%] -webkit-backdrop-brightness-[1.1]
+            border border-white/40
             rounded-3xl
-            shadow-[0_10px_40px_rgba(0,0,0,0.15),0_4px_20px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,0.4),inset_0_-1px_0_rgba(0,0,0,0.05)]
+            shadow-[0_8px_32px_rgba(0,0,0,0.2),0_4px_16px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,0.5),inset_0_-1px_0_rgba(0,0,0,0.1)]
             p-4 sm:p-5
             before:absolute
             before:bottom-0
             before:left-0
             before:h-1
             before:bg-gradient-to-r
-            before:from-black/70
-            before:to-black/50
+            before:from-blue-500/80
+            before:to-blue-400/60
             before:rounded-b-3xl
             before:animate-progressBar
             relative
             overflow-hidden
-          ">
+            supports-[backdrop-filter]:bg-white/20
+          "
+          style={{
+            backgroundColor: 'rgba(255, 255, 255, 0.75)',
+            backdropFilter: 'blur(25px) saturate(180%) brightness(1.1)',
+            WebkitBackdropFilter: 'blur(25px) saturate(180%) brightness(1.1)'
+          }}>
             {/* Particle effects container for puff animation */}
             <div className="absolute inset-0 pointer-events-none opacity-0 transition-opacity duration-300" data-particles>
               {/* Sparkle particles */}
@@ -102,23 +118,29 @@ export default function NotificationContainer() {
               </div>
             </div>
 
-            {/* iOS Control Center style close button */}
+            {/* True glassmorphism close button */}
             <button
               onClick={() => removeNotification(note.id)}
               className="
                 absolute top-3 right-3
-                text-black/80 hover:text-black
+                text-black/90 hover:text-black
                 transition-all duration-200 ease-out
                 rounded-full p-1.5
                 hover:bg-white/95
-                bg-white/90
-                backdrop-filter backdrop-blur-[30px] backdrop-saturate-[200%]
-                -webkit-backdrop-filter -webkit-backdrop-blur-[30px] -webkit-backdrop-saturate-[200%]
+                bg-gradient-to-br from-white/90 to-white/80
+                backdrop-filter backdrop-blur-[20px] backdrop-saturate-[180%]
+                -webkit-backdrop-filter -webkit-backdrop-blur-[20px] -webkit-backdrop-saturate-[180%]
                 w-7 h-7 flex items-center justify-center
-                hover:scale-110
-                shadow-[0_2px_8px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,0.3)]
-                border border-white/40
+                hover:scale-105
+                shadow-[0_2px_12px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.6)]
+                border border-white/50
+                supports-[backdrop-filter]:bg-white/30
               "
+              style={{
+                backgroundColor: 'rgba(255, 255, 255, 0.85)',
+                backdropFilter: 'blur(20px) saturate(180%)',
+                WebkitBackdropFilter: 'blur(20px) saturate(180%)'
+              }}
               aria-label="Close notification"
             >
               <X size={14} className="sm:w-4 sm:h-4" />
@@ -132,6 +154,18 @@ export default function NotificationContainer() {
 
 /* Add to your global CSS */
 /*
+@supports (backdrop-filter: blur(1px)) {
+  .notification-glassmorphism {
+    background: rgba(255, 255, 255, 0.2) !important;
+  }
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .notification-glassmorphism {
+    background: rgba(255, 255, 255, 0.8) !important;
+  }
+}
+
 @keyframes slideIn {
   from {
     opacity: 0;
