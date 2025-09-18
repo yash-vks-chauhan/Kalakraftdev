@@ -30,9 +30,9 @@ export default function NotificationContainer() {
             animation: 'slideIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards'
           }}
         >
-          {/* Glassmorphism notification card */}
+          {/* Enhanced glassmorphism notification card - matching account dropdown and wishlist modal */}
           <div className="
-            bg-white/10 
+            bg-white/50
             backdrop-filter backdrop-blur-[8px] backdrop-saturate-[180%]
             -webkit-backdrop-filter -webkit-backdrop-blur-[8px] -webkit-backdrop-saturate-[180%]
             border border-white/25
@@ -102,7 +102,7 @@ export default function NotificationContainer() {
               </div>
             </div>
 
-            {/* Close button */}
+            {/* Enhanced close button - matching account dropdown and wishlist modal */}
             <button
               onClick={() => removeNotification(note.id)}
               className="
@@ -111,10 +111,12 @@ export default function NotificationContainer() {
                 transition-all duration-200 ease-out
                 rounded-full p-1.5
                 hover:bg-white/90
-                bg-white/75
+                bg-white/85
                 backdrop-filter backdrop-blur-[80px] backdrop-saturate-[180%]
                 -webkit-backdrop-filter -webkit-backdrop-blur-[80px] -webkit-backdrop-saturate-[180%]
                 w-7 h-7 flex items-center justify-center
+                hover:scale-110
+                shadow-sm
               "
               aria-label="Close notification"
             >
