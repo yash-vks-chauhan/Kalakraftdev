@@ -41,10 +41,8 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
   const [productName, setProductName] = useState<string>('')
   const [isRouteLoading, setIsRouteLoading] = useState(false)
 
-  // For handling the mobile/desktop view toggle
   const [viewMode, setViewMode] = useState<'mobile' | 'desktop'>('mobile')
 
-  // Product categories for the grid - expanded with more items
   const productCategories = [
     {
       image: getImageUrl('imagecollection1.png'),
@@ -88,10 +86,8 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
     }
   ];
 
-  // For rotating text in the hero section
   const textOptions = ['coasters', 'clocks', 'trays', 'wall art', 'home decor']
 
-  // Close account dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (accountDropdownRef.current && !accountDropdownRef.current.contains(event.target as Node)) {
@@ -99,7 +95,6 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
       }
     }
     
-    // Only add listener when dropdown is open
     if (isAccountDropdownOpen) {
       document.addEventListener('mousedown', handleClickOutside)
     }
@@ -109,12 +104,10 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
     }
   }, [isAccountDropdownOpen, accountDropdownRef])
 
-  // Reset account dropdown when auth state changes
   useEffect(() => {
     setIsAccountDropdownOpen(false)
   }, [user])
 
-  // Add scroll event listener for header and footer
   useEffect(() => {
     let prevScrollY = window.scrollY
     let scrollDirection = 0
@@ -128,49 +121,38 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
       const currentTime = Date.now()
       const timeDiff = currentTime - lastScrollTime
       
-      // Calculate scroll velocity (pixels per millisecond)
       scrollVelocity = Math.abs(currentScrollY - prevScrollY) / Math.max(timeDiff, 1)
       
-      // Header scroll effect
       setIsScrolled(currentScrollY > 10)
       
-      // Determine scroll direction (1 for down, -1 for up)
       const currentDirection = currentScrollY > prevScrollY ? 1 : -1
       
-      // Update scroll direction only if it changed
       if (currentDirection !== scrollDirection) {
         scrollDirection = currentDirection
       }
       
-      // Clear any existing timer
       if (scrollTimer) {
         clearTimeout(scrollTimer)
       }
       
-      // Footer visibility logic
       if (currentScrollY < 50) {
-        // Always show footer when near the top
         setIsFooterVisible(true)
       } else if (
-        scrollDirection > 0 && // Scrolling down
-        scrollVelocity > 0.3 && // Fast scroll
-        currentScrollY > 100 // Not at the very top
+        scrollDirection > 0 &&
+        scrollVelocity > 0.3 &&
+        currentScrollY > 100
       ) {
-        // Hide footer when scrolling down quickly
         setIsFooterVisible(false)
-      } else if (scrollDirection < 0) { // Scrolling up
-        // Show footer immediately when scrolling up
+      } else if (scrollDirection < 0) {
         setIsFooterVisible(true)
       }
       
-      // Set a timer to show footer after scrolling stops
       scrollTimer = setTimeout(() => {
         if (currentScrollY > 50) {
           setIsFooterVisible(true)
         }
-      }, 150) // Show after 150ms of no scrolling
+      }, 150)
       
-      // Update values for next iteration
       prevScrollY = currentScrollY
       lastScrollTime = currentTime
       setLastScrollY(currentScrollY)
@@ -186,7 +168,6 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
     }
   }, [lastScrollY])
 
-  // Rotating text effect
   useEffect(() => {
     let currentIndex = 0
     const interval = setInterval(() => {
@@ -197,7 +178,6 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
     return () => clearInterval(interval)
   }, [])
 
-  // Handle video loading
   useEffect(() => {
     if (!isHomePage || !videoRef.current) return;
     
@@ -206,27 +186,22 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
       const fallbackImage = document.getElementById('mobileVideoFallback');
       
       if (videoElement && fallbackImage) {
-        // Check if video loaded successfully
         videoElement.addEventListener('loadeddata', () => {
-          // Video loaded successfully
           videoElement.style.display = 'block';
           if (fallbackImage) fallbackImage.style.display = 'none';
         });
         
         videoElement.addEventListener('error', () => {
-          // Video failed to load
           videoElement.style.display = 'none';
           if (fallbackImage) fallbackImage.style.display = 'block';
         });
         
-        // Force reload the video (guard on some browsers)
         if (typeof (videoElement as any).load === 'function') {
           videoElement.load();
         }
       }
     };
     
-    // Small delay to ensure DOM is ready
     const timer = setTimeout(handleVideoLoading, 300);
     
     return () => clearTimeout(timer);
@@ -238,7 +213,6 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
 
   const handleProductsClick = () => {
     router.push('/products');
-    // Close mobile menu if it's open
     if (isMobileMenuOpen) {
       setIsMobileMenuOpen(false);
     }
@@ -247,7 +221,6 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
   const handleCartClick = () => {
     setIsRouteLoading(true)
     router.push('/cart/mobile');
-    // Close mobile menu if it's open
     if (isMobileMenuOpen) {
       setIsMobileMenuOpen(false);
     }
@@ -255,25 +228,21 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
 
   const handleWishlistClick = () => {
     router.push('/dashboard/wishlist');
-    // Close mobile menu if it's open
     if (isMobileMenuOpen) {
       setIsMobileMenuOpen(false);
     }
   }
 
   const handleHomeClick = () => {
-    // If already on home page, scroll to top
     if (pathname === '/') {
       window.scrollTo({
         top: 0,
         behavior: 'smooth'
       });
     } else {
-      // Navigate to home page
       router.push('/');
     }
     
-    // Close mobile menu if it's open
     if (isMobileMenuOpen) {
       setIsMobileMenuOpen(false);
     }
@@ -283,7 +252,6 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
     e.preventDefault()
     e.stopPropagation()
     
-    // Add button pulse animation
     const target = e.currentTarget;
     target.classList.add(styles.buttonPulse);
     setTimeout(() => {
@@ -336,7 +304,6 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
     }
   }
 
-  // Handle escape key to close search
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isSearchOpen) {
@@ -353,7 +320,6 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
     }
   }, [isSearchOpen])
 
-  // Cleanup timeout on unmount
   useEffect(() => {
     return () => {
       if (searchCloseTimeoutRef.current) {
@@ -362,15 +328,13 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
     }
   }, [])
 
-  // Handle scroll down from hero section
   const handleScrollDown = () => {
     window.scrollTo({
-      top: window.innerHeight - 60, // Subtract header height
+      top: window.innerHeight - 60,
       behavior: 'smooth'
     });
   };
 
-  // When user clicks on scroll indicator
   useEffect(() => {
     if (!isHomePage) return;
     
@@ -383,7 +347,6 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
     }
   }, [isHomePage]);
 
-  // Mobile Collections Section component
   const MobileCollectionsSection = () => {
     const [isDragging, setIsDragging] = useState(false)
     const [startX, setStartX] = useState(0)
@@ -492,16 +455,13 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
     )
   }
 
-  // Mobile Video Section component - Instagram style video showcase
   const MobileVideoSection = () => {
     const videoRef = useRef<HTMLVideoElement>(null);
     const videoContainerRef = useRef<HTMLDivElement>(null);
     const [isMuted, setIsMuted] = useState(true);
     
-    // Video URL from environment variable or direct URL
     const videoUrl = process.env.NEXT_PUBLIC_INSTAGRAM_VIDEO_URL || "https://res.cloudinary.com/downe8107/video/upload/v1752756632/Goal_make_the_202507170106_9lp5g_rosxzs.mp4";
     
-    // Use Intersection Observer to auto-play when video is visible
     useEffect(() => {
       if (!videoContainerRef.current || !videoRef.current) return;
       
@@ -516,7 +476,7 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
             videoRef.current.pause();
           }
         },
-        { threshold: 0.3 } // Trigger when 30% of the video is visible
+        { threshold: 0.3 }
       );
       
       observer.observe(videoContainerRef.current);
@@ -528,7 +488,6 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
       };
     }, []);
     
-    // Toggle mute/unmute
     const toggleMute = (e: React.MouseEvent) => {
       e.stopPropagation();
       if (videoRef.current) {
@@ -564,7 +523,6 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
               Your browser does not support the video tag.
             </video>
             
-            {/* Video Controls - only mute/unmute */}
             <div className={styles.videoControls}>
               <button 
                 className={styles.muteButton} 
@@ -608,13 +566,11 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
     }
   }
 
-  // Function to determine if a path is active
   const isActivePath = (path: string) => {
     if (path === '/') {
       return pathname === '/'
     }
     if (path === '/products') {
-      // Match /products and any subpaths like /products?category=clocks
       return pathname.startsWith('/products')
     }
     if (path === '/dashboard/cart') {
@@ -630,27 +586,21 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
     console.log('Current path:', pathname);
     console.log('Is product page:', isProductPage);
     console.log('Is transparent navbar:', isTransparentNavbar);
-    // Clear loading overlay shortly after route change
     if (isRouteLoading) {
       const t = setTimeout(() => setIsRouteLoading(false), 300)
       return () => clearTimeout(t)
     }
   }, [pathname, isProductPage, isTransparentNavbar]);
 
-  // Handle back button click
   const handleBackClick = () => {
     router.back();
   };
   
-  // Handle share button click for product pages
   const handleShareProduct = () => {
-    // This will be handled by the product page itself
-    // We're just dispatching a custom event that the product page can listen for
     const shareEvent = new CustomEvent('shareProduct');
     window.dispatchEvent(shareEvent);
   };
 
-  // Get product name for product pages
   useEffect(() => {
     if (isProductPage) {
       const productId = pathname?.split('/').pop();
@@ -669,7 +619,6 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
 
   return (
     <div className={`${styles.mobileLayoutContainer} ${isProductPage ? styles.productPageContainer : ''}`}>
-      {/* Global loading overlay for navigation actions */}
       {isRouteLoading && (
         <div className="fixed inset-0 z-[1000] bg-white/90 backdrop-blur-sm flex items-center justify-center">
           <div className="flex items-center gap-3 text-black">

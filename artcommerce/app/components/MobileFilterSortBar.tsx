@@ -20,7 +20,6 @@ export default function MobileFilterSortBar({
   useEffect(() => {
     const handleScroll = () => {
       const scrollTop = window.scrollY
-      // Start sticking when scrolled past 120px (navbar height + some buffer)
       setIsSticky(scrollTop > 120)
     }
 

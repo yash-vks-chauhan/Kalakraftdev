@@ -11,28 +11,23 @@ export default function LayoutClientContent({ children }: { children: React.Reac
   const { isMobileMenuOpen } = useMobileMenu();
 
   useEffect(() => {
-    // Interactive light effect for product grid section
     const productGridSection = document.querySelector('.productGridSection') as HTMLElement | null;
     const lightEffect = document.querySelector('.lightEffect');
     
     if (productGridSection && !lightEffect) {
-      // Create light effect element if it doesn't exist
       const newLightEffect = document.createElement('div');
       newLightEffect.className = 'lightEffect';
       productGridSection.appendChild(newLightEffect);
       
-      // Add mouse move event listener
       productGridSection.addEventListener('mousemove', (e: MouseEvent) => {
         const rect = productGridSection.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
         
-        // Update CSS variables for the light position
         productGridSection.style.setProperty('--x-position', `${x}px`);
         productGridSection.style.setProperty('--y-position', `${y}px`);
       });
       
-      // Add watercolor splash elements
       const splash1 = document.createElement('div');
       splash1.className = 'watercolorSplash';
       productGridSection.appendChild(splash1);
@@ -41,12 +36,10 @@ export default function LayoutClientContent({ children }: { children: React.Reac
       splash2.className = 'watercolorSplash2';
       productGridSection.appendChild(splash2);
       
-      // Add black ink splash
       const inkSplash = document.createElement('div');
       inkSplash.className = 'inkSplash';
       productGridSection.appendChild(inkSplash);
       
-      // Add scroll indicator
       const scrollIndicator = document.createElement('div');
       scrollIndicator.className = 'scrollDownIndicator';
       
@@ -61,16 +54,13 @@ export default function LayoutClientContent({ children }: { children: React.Reac
       
       productGridSection.appendChild(scrollIndicator);
       
-      // Add brush accent
       const brushAccent = document.createElement('div');
       brushAccent.className = 'brushAccent';
       productGridSection.appendChild(brushAccent);
       
-      // Add section separator
       const sectionSeparator = document.createElement('div');
       sectionSeparator.className = 'sectionSeparator';
       
-      // Append after the product grid section
       if (productGridSection.parentNode) {
         productGridSection.parentNode.insertBefore(sectionSeparator, productGridSection.nextSibling);
       }

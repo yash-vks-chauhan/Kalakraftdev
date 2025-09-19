@@ -11,7 +11,6 @@ export function HeroCanvas() {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Set canvas size to match window size
     const resizeCanvas = () => {
       if (!canvas) return;
       canvas.width = window.innerWidth;
@@ -20,7 +19,6 @@ export function HeroCanvas() {
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
 
-    // Particle class for animation
     class Particle {
       x: number;
       y: number;
@@ -43,7 +41,6 @@ export function HeroCanvas() {
         this.x += this.speedX;
         this.y += this.speedY;
 
-        // Wrap around screen
         if (this.x > canvas.width) this.x = 0;
         if (this.x < 0) this.x = canvas.width;
         if (this.y > canvas.height) this.y = 0;
@@ -59,25 +56,21 @@ export function HeroCanvas() {
       }
     }
 
-    // Create particle array
     const particles: Particle[] = [];
     for (let i = 0; i < 100; i++) {
       particles.push(new Particle());
     }
 
-    // Animation loop
     let animationFrameId: number;
     const animate = () => {
       if (!canvas || !ctx) return;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       
-      // Update and draw particles
       particles.forEach(particle => {
         particle.update();
         particle.draw();
       });
 
-      // Connect particles within a certain distance
       for (let i = 0; i < particles.length; i++) {
         for (let j = i + 1; j < particles.length; j++) {
           const dx = particles[i].x - particles[j].x;
@@ -99,7 +92,6 @@ export function HeroCanvas() {
     };
     animate();
 
-    // Cleanup
     return () => {
       window.removeEventListener('resize', resizeCanvas);
       cancelAnimationFrame(animationFrameId);

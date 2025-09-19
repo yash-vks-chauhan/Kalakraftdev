@@ -1,4 +1,3 @@
-// File: app/components/AddToCartButton.tsx
 'use client'
 
 import { useState } from 'react'
@@ -32,7 +31,6 @@ export default function AddToCartButton({
 
   const handleAddToCart = async () => {
     if (!user) {
-      // If not logged in, redirect to /auth/login
       router.push('/auth/login')
       return
     }
@@ -48,7 +46,6 @@ export default function AddToCartButton({
     try {
       await addToCart(productId, quantity)
 
-      // Show the "Added to cart!" popup for 2 seconds
       setShowPopup(true)
       setTimeout(() => setShowPopup(false), 2000)
     } catch (err: any) {
@@ -99,7 +96,6 @@ export default function AddToCartButton({
         </p>
       )}
 
-      {/* Simple popup / toast */}
       {showPopup && (
         <div className="absolute top-0 right-0 mt-[-1.5rem] mr-0 bg-black text-white text-sm px-3 py-1 rounded shadow-lg">
           Added to cart!

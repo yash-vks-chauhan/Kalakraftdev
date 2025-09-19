@@ -1,6 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
 
-// Enhanced cosmos-style animation keyframes with center flow transition
 const cosmosStyleAnimation = `
 @keyframes stackEntrance {
   0% {
@@ -148,7 +147,6 @@ export default function CosmosSection({ imageUrls = [] }: CosmosSectionProps) {
   const [images, setImages] = useState<string[]>([]);
   const [isFlowing, setIsFlowing] = useState(false);
 
-  // Default placeholder images
   const defaultImages = [
     'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=400&h=500&fit=crop',
     'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=500&fit=crop',
@@ -175,7 +173,6 @@ export default function CosmosSection({ imageUrls = [] }: CosmosSectionProps) {
   useEffect(() => {
     setImages(imageUrls.length > 0 ? imageUrls : defaultImages);
 
-    // Trigger flowing animation periodically
     const flowInterval = setInterval(() => {
       setIsFlowing(true);
       setTimeout(() => setIsFlowing(false), 6000);
@@ -184,43 +181,37 @@ export default function CosmosSection({ imageUrls = [] }: CosmosSectionProps) {
     return () => clearInterval(flowInterval);
   }, [imageUrls]);
 
-  // Create stack configurations - each stack has multiple cards
   const createStacks = () => {
     const stacks = [
-      // Left side stacks
       { 
         x: 15, y: 25, rotation: -8, cards: 5,
         entranceX: -600, entranceY: -300, entranceRotate: -45,
-        flowCenterX: 200, flowCenterY: -50 // Flow from left to right-center
+        flowCenterX: 200, flowCenterY: -50
       },
       { 
         x: 12, y: 70, rotation: 12, cards: 4,
         entranceX: -700, entranceY: 200, entranceRotate: 30,
-        flowCenterX: 150, flowCenterY: 80 // Flow from left to center-right
+        flowCenterX: 150, flowCenterY: 80
       },
-      
-      // Right side stacks
       { 
         x: 85, y: 30, rotation: 6, cards: 5,
         entranceX: 600, entranceY: -250, entranceRotate: 45,
-        flowCenterX: -200, flowCenterY: -30 // Flow from right to left-center
+        flowCenterX: -200, flowCenterY: -30
       },
       { 
         x: 88, y: 75, rotation: -10, cards: 4,
         entranceX: 650, entranceY: 300, entranceRotate: -30,
-        flowCenterX: -150, flowCenterY: 60 // Flow from right to center-left
+        flowCenterX: -150, flowCenterY: 60
       },
-      
-      // Top stacks
       { 
         x: 35, y: 15, rotation: 4, cards: 3,
         entranceX: -200, entranceY: -500, entranceRotate: 15,
-        flowCenterX: 50, flowCenterY: 100 // Flow from top-left to center
+        flowCenterX: 50, flowCenterY: 100
       },
       { 
         x: 65, y: 12, rotation: -6, cards: 4,
         entranceX: 250, entranceY: -550, entranceRotate: -20,
-        flowCenterX: -50, flowCenterY: 120 // Flow from top-right to center
+        flowCenterX: -50, flowCenterY: 120
       }
     ];
 
@@ -241,7 +232,6 @@ export default function CosmosSection({ imageUrls = [] }: CosmosSectionProps) {
           perspectiveOrigin: '50% 35%'
         }}
       >
-        {/* Center Content */}
         <div className="absolute inset-0 flex items-center justify-center z-50">
           <div className="text-center px-4 transform-gpu">
             <h1
@@ -276,7 +266,6 @@ export default function CosmosSection({ imageUrls = [] }: CosmosSectionProps) {
           </div>
         </div>
 
-        {/* Enhanced Cosmos-style Stacked Cards with Flow Animation */}
         {stacks.map((stack, stackIndex) => (
           <div
             key={stackIndex}
@@ -293,13 +282,12 @@ export default function CosmosSection({ imageUrls = [] }: CosmosSectionProps) {
               if (imageIndex >= images.length) imageIndex = 0;
               const currentImage = images[imageIndex++];
               
-              // Enhanced stack positioning for better upward view
               const stackOffsetY = cardIndex * -3;
               const stackOffsetX = cardIndex * 2;
               const stackDepth = cardIndex * -18;
               const stackRotation = stack.rotation + (cardIndex * 1.2);
               const stackOpacity = Math.max(0.5, 1 - cardIndex * 0.1);
-              const stackTilt = -35 - (cardIndex * 3); // Upward tilt
+              const stackTilt = -35 - (cardIndex * 3);
 
               return (
                 <div
@@ -369,7 +357,6 @@ export default function CosmosSection({ imageUrls = [] }: CosmosSectionProps) {
                       }}
                     />
                     
-                    {/* Enhanced upward-view lighting overlay */}
                     <div
                       className="absolute inset-0 opacity-60 group-hover:opacity-80 transition-opacity duration-400"
                       style={{
@@ -386,7 +373,6 @@ export default function CosmosSection({ imageUrls = [] }: CosmosSectionProps) {
                       }}
                     />
 
-                    {/* Enhanced hover glow for upward view */}
                     <div
                       className="absolute inset-0 opacity-0 group-hover:opacity-60 transition-opacity duration-500"
                       style={{
@@ -395,7 +381,6 @@ export default function CosmosSection({ imageUrls = [] }: CosmosSectionProps) {
                       }}
                     />
 
-                    {/* Bottom edge highlight for upward tilt */}
                     <div
                       className="absolute bottom-0 left-0 right-0 h-1 opacity-50 group-hover:opacity-70 transition-opacity duration-300"
                       style={{
@@ -404,7 +389,6 @@ export default function CosmosSection({ imageUrls = [] }: CosmosSectionProps) {
                       }}
                     />
 
-                    {/* Card number indicator for stacked effect */}
                     {cardIndex > 0 && (
                       <div
                         className="absolute top-2 right-2 w-1.5 h-1.5 bg-white/30 rounded-full opacity-50"
@@ -414,7 +398,6 @@ export default function CosmosSection({ imageUrls = [] }: CosmosSectionProps) {
                       />
                     )}
 
-                    {/* Flow animation glow effect */}
                     {isFlowing && cardIndex === 0 && (
                       <div
                         className="absolute inset-0 pointer-events-none"
@@ -431,18 +414,13 @@ export default function CosmosSection({ imageUrls = [] }: CosmosSectionProps) {
           </div>
         ))}
 
-        {/* Enhanced Background Effects */}
         <div className="absolute inset-0 pointer-events-none z-0">
-          {/* Central glow */}
           <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-white/1 rounded-full blur-3xl"></div>
-          
-          {/* Ambient lighting */}
           <div className="absolute top-1/4 left-1/4 w-40 h-40 bg-blue-500/2 rounded-full blur-3xl animate-pulse"></div>
           <div className="absolute bottom-1/4 right-1/4 w-48 h-48 bg-purple-500/2 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '3s' }}></div>
           <div className="absolute top-3/4 left-1/3 w-32 h-32 bg-cyan-500/2 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '6s' }}></div>
         </div>
 
-        {/* UI Elements */}
         <div
           className="absolute top-8 left-8 z-40"
           style={{ animation: 'fadeInScale3D 1.2s ease-out 2.5s both' }}
