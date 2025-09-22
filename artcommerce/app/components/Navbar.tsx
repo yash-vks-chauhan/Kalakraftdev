@@ -9,7 +9,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { useCart } from '../contexts/CartContext'
 import { useWishlist } from '../contexts/WishlistContext'
 import { Search as SearchIcon, Menu, X, User, LogOut, Grid, ShoppingBag, Heart, ShoppingCart, HelpCircle } from 'lucide-react'
-import OptimizedSearchModal from './OptimizedSearchModal'
+import SearchModal from './SearchModal'
 import styles from './Navbar.module.css'
 import { useMobileMenu } from '../contexts/MobileMenuContext'
 import { getImageUrl } from '../../lib/cloudinaryImages'
@@ -433,9 +433,9 @@ export default function Navbar() {
         </div>
       </nav>
 
-      <OptimizedSearchModal
+            <SearchModal
         open={searchOpen}
-        onClose={(instantClose) => handleSearchClose(instantClose)}
+        onClose={handleSearchClose}
       />
 
       {/* Mobile Menu */}
