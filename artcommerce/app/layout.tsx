@@ -27,16 +27,7 @@ export default function RootLayout({
         <link rel="preload" href="/images/featured2.png" as="image" />
         <link rel="preload" href="/images/featured3.JPG" as="image" />
         <style>{`
-          :root {
-            --cosmos-z-index: 50;
-          }
-          
-          /* Ensure text is visible in dark backgrounds */
-          .cosmos-text {
-            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-            position: relative;
-            z-index: var(--cosmos-z-index);
-          }
+          /* Global styles for the layout */
         `}</style>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover, shrink-to-fit=no" />
         <link id="favicon" rel="icon" href={getImageUrl('logo.png')} />

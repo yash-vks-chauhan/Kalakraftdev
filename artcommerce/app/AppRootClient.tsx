@@ -11,7 +11,7 @@ import MobileMenuPanel from './components/MobileMenuPanel'
 import MobileLayout from './components/MobileLayout'
 import AppContentWrapper from './components/AppContentWrapper'
 import styles from './components/Navbar.module.css'
-import { isMobileDevice } from '../lib/utils'
+import { useDeviceDetection } from './hooks/useDeviceDetection'
 import { getImageUrl, getOptimizedImageUrl } from '../lib/cloudinaryImages'
 
 export default function AppRootClient({ children }: { children: React.ReactNode }) {
@@ -19,54 +19,14 @@ export default function AppRootClient({ children }: { children: React.ReactNode 
   const isFirstPathRef = useRef(true);
   const { isMobileMenuOpen, setIsMobileMenuOpen } = useMobileMenu();
   const pathname = usePathname();
-  const [isMobile, setIsMobile] = useState(false);
-  const [forceDesktopView, setForceDesktopView] = useState(false);
-  const [isSmallScreen, setIsSmallScreen] = useState(false);
   const [globalClientError, setGlobalClientError] = useState<string | null>(null);
 
   // Treat certain routes as mobile-only regardless of preference
   const mobileOnlyRoutes = new Set<string>(['/cart/mobile']);
   const isMobileOnlyRoute = mobileOnlyRoutes.has(pathname);
 
-  // Check if device is mobile on client side
-  useEffect(() => {
-    const checkMobile = () => {
-      try {
-        // Check if user has a preference saved
-        const savedViewPreference = localStorage.getItem('viewPreference');
-        
-        if (!isMobileOnlyRoute && savedViewPreference === 'desktop') {
-          setForceDesktopView(true);
-          return;
-        }
-        
-        // Use the utility function for mobile detection
-        const mobileDetected = isMobileDevice();
-        
-        setIsMobile(mobileDetected);
-        setIsSmallScreen(window.innerWidth <= 1024);
-        
-        // If mobile detected but desktop preference exists, clear it
-        if (mobileDetected && savedViewPreference === 'desktop') {
-          localStorage.removeItem('viewPreference');
-          setForceDesktopView(false);
-        }
-      } catch (error) {
-        console.error('Error in mobile detection:', error);
-        // Fallback to basic detection
-        const fallbackMobile = window.innerWidth <= 1024;
-        setIsMobile(fallbackMobile);
-        setIsSmallScreen(fallbackMobile);
-      }
-    };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    
-    return () => {
-      window.removeEventListener('resize', checkMobile);
-    };
-  }, [isMobileOnlyRoute]);
+  // Use optimized device detection hook
+  const { isMobile, forceDesktopView, isSmallScreen, switchToDesktopView, switchToMobileView } = useDeviceDetection(isMobileOnlyRoute);
 
   // Global client-side error catcher (helps on mobile when app error screen hides details)
   useEffect(() => {
@@ -144,28 +104,8 @@ export default function AppRootClient({ children }: { children: React.ReactNode 
     }
   };
 
-  const switchToDesktopView = () => {
-    setForceDesktopView(true);
-    localStorage.setItem('viewPreference', 'desktop');
-  };
-
-  const switchToMobileView = () => {
-    setForceDesktopView(false);
-    localStorage.setItem('viewPreference', 'mobile');
-    setIsMobile(true);
-  };
-
   // Show desktop view if forced or not mobile, but never on mobile-only routes
   const showDesktopView = (forceDesktopView || !isMobile) && !isMobileOnlyRoute;
-
-  // Ensure mobile-only routes clear any forced desktop preference
-  useEffect(() => {
-    if (isMobileOnlyRoute && forceDesktopView) {
-      setForceDesktopView(false);
-      localStorage.setItem('viewPreference', 'mobile');
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isMobileOnlyRoute]);
 
   // Always use standard layout pipeline; mobile-only routes are handled via showDesktopView and MobileLayout
 

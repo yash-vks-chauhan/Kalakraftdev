@@ -635,7 +635,7 @@ export default function ProductDetailsPage() {
             {similarProducts.map(p => (
               <Link key={p.id} href={`/products/${p.id}`} className={styles.similarItem}>
                 <div className={styles.similarImageContainer}>
-                  <img src={p.imageUrls[0] || '/images/logo-mask.png'} alt={p.name} className={styles.similarImg} />
+                  <img src={p.imageUrls[0] || '/images/logo-mask.png'} alt={p.name} className={styles.similarImg} loading="lazy" />
                 </div>
                 <div className={styles.similarInfo}>
                   <p className={styles.similarName}>{p.name}</p>

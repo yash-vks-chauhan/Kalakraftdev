@@ -755,7 +755,7 @@ export default function MobileProductDetails({
                         return (
                           <div key={index} className={styles.galleryItem}>
                             <div className={styles.galleryImageWrap}>
-                              <img src={image.url} alt={`Styling idea ${index + 1}`} className={styles.galleryImage} />
+                              <img src={image.url} alt={`Styling idea ${index + 1}`} className={styles.galleryImage} loading="lazy" />
                               <div className={styles.galleryOverlay}>
                                 <span className={styles.galleryLabel}>
                                   Featured Styling

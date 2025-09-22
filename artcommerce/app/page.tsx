@@ -1616,6 +1616,7 @@ return (
       className={styles.videoBackground}
       style={{ display: 'none' }}
       id="videoFallback"
+      loading="lazy"
     />
   </picture>
 
@@ -1657,6 +1658,8 @@ src={getImageUrl('logo.png')}
 alt="Kalakraft Logo"
 
 className={styles.logo}
+
+loading="lazy"
 
 data-aos="fade-in"
 
@@ -2113,6 +2116,7 @@ onClick={() => handleCarouselNav('next')}
       alt="Resin art creation process" 
       className={styles.artistryFeatureImage} 
       data-aos="fade-left"
+      loading="lazy"
     />
     
     <div className={styles.artistryContent}>

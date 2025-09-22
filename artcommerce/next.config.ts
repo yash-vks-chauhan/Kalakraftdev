@@ -11,8 +11,10 @@ const nextConfig: NextConfig = {
   },
   distDir: '.next',
   images: {
-    domains: ['localhost', 'firebasestorage.googleapis.com', 'lh3.googleusercontent.com', 'res.cloudinary.com'],
-    unoptimized: true,
+    domains: ['localhost', 'firebasestorage.googleapis.com', 'lh3.googleusercontent.com', 'res.cloudinary.com', 'ik.imagekit.io', 'images.unsplash.com'],
+    formats: ['image/webp', 'image/avif'],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     remotePatterns: [
       {
         protocol: 'https',
@@ -35,11 +37,11 @@ const nextConfig: NextConfig = {
       }
     });
 
-    // Configure asset size limits
+    // Configure reasonable asset size limits
     config.performance = {
       ...config.performance,
-      maxAssetSize: 25 * 1024 * 1024, // 25MB
-      maxEntrypointSize: 25 * 1024 * 1024 // 25MB
+      maxAssetSize: 512 * 1024, // 512KB for individual assets
+      maxEntrypointSize: 1024 * 1024 // 1MB for entry points
     };
     
     return config;

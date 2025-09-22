@@ -589,7 +589,7 @@ export default function MobileNewProductPage() {
                   <div className={styles.imageGrid}>
                     {imageUrls.map((url, i) => (
                       <div key={i} className={styles.imagePreview}>
-                        <img src={url} alt={`Product ${i + 1}`} />
+                        <img src={url} alt={`Product ${i + 1}`} loading="lazy" />
                         <button
                           type="button"
                           onClick={() => handleRemoveImage(i)}
@@ -645,7 +645,7 @@ export default function MobileNewProductPage() {
                   <div className={styles.stylingGrid}>
                     {stylingIdeas.map((idea, idx) => (
                       <div key={idea.url} className={styles.stylingItem}>
-                        <img src={idea.url} alt="Styling idea" className={styles.stylingImage} />
+                        <img src={idea.url} alt="Styling idea" className={styles.stylingImage} loading="lazy" />
                         <input
                           type="text"
                           value={idea.text}

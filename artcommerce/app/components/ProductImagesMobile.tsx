@@ -304,7 +304,7 @@ export default function ProductImagesMobile({
                   sizes="100vw"
                   priority={index === 0}
                   className={`${styles.mainImage} ${imageLoaded[index] ? styles.loaded : ''}`}
-                  quality={100}
+                  quality={75}
                   draggable={false}
                   onLoad={() => handleImageLoad(index)}
                   style={{ 

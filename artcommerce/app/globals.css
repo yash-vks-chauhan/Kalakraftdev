@@ -19,11 +19,6 @@ section {
   scroll-snap-align: start;
   min-height: 100vh;
   position: relative;
-}
-
-
-/* Remove overflow: hidden from section to allow CosmosSection to work properly */
-section:not(:has(.cosmos-card)) {
   overflow: hidden;
 }
 

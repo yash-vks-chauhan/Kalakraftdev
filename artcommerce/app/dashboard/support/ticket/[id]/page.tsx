@@ -97,7 +97,7 @@ export default function TicketThread() {
       <div className="mt-2 space-x-2 flex flex-wrap">
         {atts.map((att, idx) => (
           att.type === "image" ? (
-            <img key={idx} src={att.url} alt="attach" className="w-24 h-24 object-cover rounded" />
+            <img key={idx} src={att.url} alt="attach" className="w-24 h-24 object-cover rounded" loading="lazy" />
           ) : (
             <video key={idx} src={att.url} controls className="w-32 h-24 rounded" />
           )

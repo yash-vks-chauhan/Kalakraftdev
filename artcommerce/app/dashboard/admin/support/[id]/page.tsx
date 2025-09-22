@@ -153,7 +153,7 @@ export default function TicketDetailPage() {
         {attachments.map((att, idx) => (
           <div key={idx} className={styles.attachment}>
             {att.type === "image" ? (
-              <img src={att.url} alt="attachment" />
+              <img src={att.url} alt="attachment" loading="lazy" />
             ) : (
               <video src={att.url} controls />
             )}

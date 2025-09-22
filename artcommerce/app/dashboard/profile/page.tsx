@@ -392,7 +392,7 @@ export default function ProfilePage() {
                   className={`${styles.avatarOption} ${avatarUrl === avatar.path ? styles.selected : ''}`}
                   title={`Select ${avatar.name} avatar`}
                 >
-                  <img src={avatar.path} alt={avatar.name} />
+                  <img src={avatar.path} alt={avatar.name} loading="lazy" />
                 </button>
               ))}
             </div>

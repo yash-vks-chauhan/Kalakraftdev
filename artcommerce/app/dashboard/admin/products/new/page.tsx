@@ -720,7 +720,7 @@ export default function NewProductPage() {
               <div className={styles.imagePreviewGrid}>
                 {stylingIdeas.map((idea, idx) => (
                   <div key={idea.url} className={styles.previewItem}>
-                    <img src={idea.url} alt="styling idea" className={styles.previewImg} />
+                    <img src={idea.url} alt="styling idea" className={styles.previewImg} loading="lazy" />
                     <input
                       type="text"
                       value={idea.text}
