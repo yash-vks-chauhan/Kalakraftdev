@@ -12,7 +12,7 @@ const createLoadingFallback = (className: string, loadingText: string) =>
     className: 'text-gray-400' 
   }, loadingText));
 
-// Lazy-loaded product components with optimal bundle splitting
+// Lazy-loaded components with optimal bundle splitting - Only existing components
 export const LazyProductCard = BundleOptimizer.createLazy({
   loader: () => import('./ProductCard'),
   fallback: FallbackComponents.ProductCard,
@@ -35,13 +35,6 @@ export const LazyOptimizedSearch = BundleOptimizer.createLazy({
 });
 
 // Dashboard components (admin only)
-export const LazyAdminDashboard = BundleOptimizer.createLazy({
-  loader: () => import('../dashboard/page'),
-  fallback: FallbackComponents.Spinner,
-  chunkName: 'admin-dashboard',
-  preload: false,
-});
-
 export const LazyAdminNotifications = BundleOptimizer.createLazy({
   loader: () => import('./AdminNotifications'),
   fallback: FallbackComponents.MinimalSpinner,
@@ -49,48 +42,42 @@ export const LazyAdminNotifications = BundleOptimizer.createLazy({
   preload: false,
 });
 
-// Product detail components
-export const LazyProductImageGallery = BundleOptimizer.createLazy({
-  loader: () => import('./ProductImageGallery'),
-  fallback: createLoadingFallback('bg-gray-200 h-96 rounded-lg', 'Loading gallery...'),
-  chunkName: 'product-gallery',
+// Product components
+export const LazyProductImages = BundleOptimizer.createLazy({
+  loader: () => import('./ProductImages'),
+  fallback: createLoadingFallback('bg-gray-200 h-96 rounded-lg', 'Loading images...'),
+  chunkName: 'product-images',
   preload: false,
 });
 
-export const LazyProductReviews = BundleOptimizer.createLazy({
-  loader: () => import('./ProductReviews'),
-  fallback: createLoadingFallback('bg-gray-100 p-8 rounded-lg', 'Loading reviews...'),
-  chunkName: 'product-reviews',
+export const LazyProductImagesMobile = BundleOptimizer.createLazy({
+  loader: () => import('./ProductImagesMobile'),
+  fallback: createLoadingFallback('bg-gray-200 h-64 rounded-lg', 'Loading mobile images...'),
+  chunkName: 'product-images-mobile',
   preload: false,
 });
 
-// Cart and checkout
-export const LazyMobileCartDrawer = BundleOptimizer.createLazy({
-  loader: () => import('./MobileCartDrawer'),
+// Cart and wishlist
+export const LazyWishlistModal = BundleOptimizer.createLazy({
+  loader: () => import('./WishlistModal'),
   fallback: FallbackComponents.MinimalSpinner,
-  chunkName: 'mobile-cart-drawer',
+  chunkName: 'wishlist-modal',
   preload: false,
 });
 
-export const LazyCheckoutForm = BundleOptimizer.createLazy({
-  loader: () => import('../checkout/CheckoutForm'),
+// Checkout page
+export const LazyCheckoutPage = BundleOptimizer.createLazy({
+  loader: () => import('../checkout/page'),
   fallback: createLoadingFallback('max-w-2xl mx-auto p-8 bg-white rounded-lg', 'Loading checkout...'),
-  chunkName: 'checkout-form',
+  chunkName: 'checkout-page',
   preload: false,
 });
 
-// 3D/Animation components (heavy)
+// 3D/Animation components (existing)
 export const LazyHeroCanvas = BundleOptimizer.createLazy({
-  loader: () => import('./HeroCanvas'),
+  loader: () => import('./HeroCanvas').then(module => ({ default: module.HeroCanvas })),
   fallback: createLoadingFallback('h-screen bg-gradient-to-br from-purple-900 to-blue-900', 'Loading 3D experience...'),
   chunkName: 'hero-canvas',
-  preload: false,
-});
-
-export const LazyCosmosSectionWithFiber = BundleOptimizer.createLazy({
-  loader: () => import('./CosmosSectionWithFiber'),
-  fallback: createLoadingFallback('h-64 bg-gray-900', 'Loading cosmos...'),
-  chunkName: 'cosmos-fiber',
   preload: false,
 });
 
@@ -152,13 +139,17 @@ export const initializeBundleOptimization = () => {
       name: 'optimized-search', 
       loader: () => import('./OptimizedSearch') 
     },
+    {
+      name: 'virtual-product-grid',
+      loader: () => import('./VirtualProductGrid')
+    },
   ];
 
   // Non-critical chunks to preload on idle
   const idleChunks = [
     { 
-      name: 'mobile-cart-drawer', 
-      loader: () => import('./MobileCartDrawer') 
+      name: 'wishlist-modal', 
+      loader: () => import('./WishlistModal') 
     },
     { 
       name: 'auth-modal', 
@@ -240,19 +231,18 @@ export const preloadRouteChunks = (route: string) => {
       () => import('./VirtualProductGrid'),
       () => import('./ProductCard'),
       () => import('./OptimizedSearch'),
+      () => import('./ProductImages'),
     ],
     '/admin': [
-      () => import('../dashboard/page'),
       () => import('./AdminNotifications'),
       () => import('./FileUpload'),
     ],
     '/checkout': [
-      () => import('../checkout/CheckoutForm'),
-      () => import('./MobileCartDrawer'),
+      () => import('../checkout/page'),
     ],
     '/': [
-      () => import('./HeroCanvas'),
-      () => import('./CosmosSectionWithFiber'),
+      () => import('./HeroCanvas').then(module => ({ default: module.HeroCanvas })),
+      () => import('./MobileVideoSection'),
     ],
   };
 
@@ -275,23 +265,21 @@ export const LazyComponents = {
   // Product components
   ProductCard: LazyProductCard,
   VirtualProductGrid: LazyVirtualProductGrid,
-  ProductImageGallery: LazyProductImageGallery,
-  ProductReviews: LazyProductReviews,
+  ProductImages: LazyProductImages,
+  ProductImagesMobile: LazyProductImagesMobile,
   
   // Search
   OptimizedSearch: LazyOptimizedSearch,
   
   // Admin
-  AdminDashboard: LazyAdminDashboard,
   AdminNotifications: LazyAdminNotifications,
   
   // Cart & Checkout
-  MobileCartDrawer: LazyMobileCartDrawer,
-  CheckoutForm: LazyCheckoutForm,
+  WishlistModal: LazyWishlistModal,
+  CheckoutPage: LazyCheckoutPage,
   
   // 3D & Animation
   HeroCanvas: LazyHeroCanvas,
-  CosmosSectionWithFiber: LazyCosmosSectionWithFiber,
   
   // Media
   MobileVideoSection: LazyMobileVideoSection,
