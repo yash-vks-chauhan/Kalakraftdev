@@ -2644,7 +2644,7 @@
   width: 100%;
   aspect-ratio: 3/4;
   overflow: hidden;
-  background: url('https://ik.imagekit.io/4pjvf8k9u/external/76.png?updatedAt=1758560506920') center center/cover;
+  background: #e8e8e8;
   border-radius: 12px;
   margin: 0 0 1rem 0;
   display: flex;
@@ -2665,16 +2665,15 @@
 }
 
 .featuredProductImage {
-  width: 70%;
-  height: 70%;
+  width: 90%;
+  height: 90%;
   object-fit: contain;
   transition: transform 0.3s ease;
   margin: auto;
   display: block;
-  position: absolute;
+  position: relative;
   top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translateY(-50%);
   filter: none;
   mix-blend-mode: normal;
   z-index: 3;
@@ -2759,7 +2758,7 @@
   width: 100%;
   aspect-ratio: 1/1.4;
   overflow: hidden;
-  background: url('https://ik.imagekit.io/4pjvf8k9u/external/89.png?updatedAt=1758559637609') center center/cover;
+  background: #e8e8e8;
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -2782,14 +2781,11 @@
 
 
 .featuredMobileImage {
-  width: 70%;
-  height: 70%;
+  width: 90%;
+  height: 90%;
   object-fit: contain;
   background: transparent;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  position: relative;
   z-index: 3;
   filter: none;
   mix-blend-mode: normal;
@@ -3037,7 +3033,7 @@
   width: 100%;
   aspect-ratio: 3/4;
   overflow: hidden;
-  background: url('https://ik.imagekit.io/4pjvf8k9u/external/89.png?updatedAt=1758559637609') center center/cover;
+  background: #e8e8e8;
   border-radius: 12px;
   margin: 0 0 1rem 0;
   display: flex;
@@ -3059,16 +3055,15 @@
 
 
 .bestSellerImage {
-  width: 70%;
-  height: 70%;
+  width: 90%;
+  height: 90%;
   object-fit: contain;
   transition: transform 0.3s ease;
   margin: auto;
   display: block;
-  position: absolute;
+  position: relative;
   top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translateY(-50%);
   filter: none;
   mix-blend-mode: normal;
   z-index: 3;
@@ -3244,7 +3239,7 @@
   width: 100%;
   aspect-ratio: 1/1.4;
   overflow: hidden;
-  background: url('https://ik.imagekit.io/4pjvf8k9u/external/89.png?updatedAt=1758559637609') center center/cover;
+  background: #e8e8e8;
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -3270,14 +3265,11 @@
 
 
 .bestSellerMobileImage {
-  width: 70%;
-  height: 70%;
+  width: 90%;
+  height: 90%;
   object-fit: contain;
   background: transparent;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  position: relative;
   z-index: 3;
   filter: none;
   mix-blend-mode: normal;
