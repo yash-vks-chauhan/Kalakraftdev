@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google'
 import AppRootClient from './AppRootClient'
 import { MobileMenuProvider } from './contexts/MobileMenuContext'
 import { getImageUrl, getOptimizedImageUrl } from '../lib/cloudinaryImages'
+import PerformanceOptimizer from './components/PerformanceOptimizer'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -68,9 +69,12 @@ export default function RootLayout({
           }}
         />
       </head>
-      <MobileMenuProvider>
-        <AppRootClient>{children}</AppRootClient>
-      </MobileMenuProvider>
+      <body>
+        <MobileMenuProvider>
+          <AppRootClient>{children}</AppRootClient>
+          <PerformanceOptimizer />
+        </MobileMenuProvider>
+      </body>
     </html>
   )
 }

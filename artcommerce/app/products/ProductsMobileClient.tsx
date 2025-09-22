@@ -7,6 +7,8 @@ import WishlistButton from '../components/WishlistButton'
 import MobileFilterSortBar from '../components/MobileFilterSortBar'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { FiFilter, FiX, FiChevronRight, FiStar, FiPackage, FiTrendingUp, FiGrid, FiHeart } from 'react-icons/fi'
+import { useProductFilters } from '../hooks/useProductFilters'
+import { useImagePreload } from '../hooks/useImagePreload'
 
 // Define known categories similar to desktop version
 const KNOWN_CATEGORIES = [
@@ -31,22 +33,34 @@ const ProductCard = ({ product, formatPrice }) => {
   const imageContainerRef = useRef(null);
   const containerWidth = useRef(0);
   
+  // Optimized image preloading
+  const { isImageLoaded, preloadImage } = useImagePreload(product.imageUrls, {
+    priorityCount: 1, // Only preload first image immediately
+    maxConcurrentPreloads: 2,
+    enableLazyLoading: true
+  });
+  
   // Hide hints after first interaction or after timeout
   useEffect(() => {
     const timer = setTimeout(() => setShowHints(false), 4000);
     return () => clearTimeout(timer);
   }, []);
   
-  // Preload images for smoother transitions
+  // Preload next/previous images on swipe
   useEffect(() => {
-    if (!product.imageUrls || product.imageUrls.length <= 1) return;
+    if (product.imageUrls.length <= 1) return;
     
-    // Preload all images
-    product.imageUrls.forEach(url => {
-      const img = new Image();
-      img.src = url;
-    });
-  }, [product.imageUrls]);
+    // Preload adjacent images when current changes
+    const nextIndex = currentImageIndex + 1;
+    const prevIndex = currentImageIndex - 1;
+    
+    if (nextIndex < product.imageUrls.length) {
+      preloadImage(product.imageUrls[nextIndex]);
+    }
+    if (prevIndex >= 0) {
+      preloadImage(product.imageUrls[prevIndex]);
+    }
+  }, [currentImageIndex, product.imageUrls, preloadImage]);
   
   // Direct touch event handlers for better reliability
   const handleTouchStart = (e) => {
@@ -275,25 +289,21 @@ const ProductCard = ({ product, formatPrice }) => {
 export default function ProductsMobileClient() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const currentCategory = searchParams.get('category') || ''
-  const currentTag = searchParams.get('usageTag') || ''
-  const priceMinParam = searchParams.get('priceMin') || ''
-  const priceMaxParam = searchParams.get('priceMax') || ''
-  const sortParam = searchParams.get('sort') || ''
-  const ratingMinParam = searchParams.get('ratingMin') || ''
-  const lowStockParam = searchParams.get('lowStock') === 'true'
-  const inStockOnlyParam = searchParams.get('inStock') === 'true'
-
+  
+  // Consolidated state management using optimized hooks
+  const { 
+    filters, 
+    tempFilters, 
+    updateTempFilter, 
+    applyTempFilters, 
+    resetTempFilters 
+  } = useProductFilters()
+  
+  // Remaining component state (reduced from 15+ to 7 variables)
   const [products, setProducts] = useState([])
   const [usageTags, setUsageTags] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [priceMin, setPriceMin] = useState(priceMinParam)
-  const [priceMax, setPriceMax] = useState(priceMaxParam)
-  const [sortOrder, setSortOrder] = useState(sortParam)
-  const [lowStockOnly, setLowStockOnly] = useState(lowStockParam)
-  const [inStockOnly, setInStockOnly] = useState(inStockOnlyParam)
-  const [ratingMin, setRatingMin] = useState(ratingMinParam)
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false)
   const [isSortOpen, setIsSortOpen] = useState(false)
   const [openSections, setOpenSections] = useState({
@@ -303,16 +313,17 @@ export default function ProductsMobileClient() {
     sort: true
   });
   
-  // Temporary filter state for apply/cancel functionality
-  const [tempFilters, setTempFilters] = useState({
+  // Extract individual filter values for easier use
+  const {
     category: currentCategory,
-    tag: currentTag,
-    priceMin: priceMinParam,
-    priceMax: priceMaxParam,
-    ratingMin: ratingMinParam,
-    lowStock: lowStockParam,
-    inStock: inStockOnlyParam
-  });
+    usageTag: currentTag,
+    priceMin,
+    priceMax,
+    sortOrder,
+    ratingMin,
+    lowStockOnly,
+    inStockOnly
+  } = filters
   
   // Get current category name for display
   const getCurrentCategoryName = () => {
@@ -334,7 +345,6 @@ export default function ProductsMobileClient() {
 
   // Handle sort selection
   const handleSortSelect = (sortValue: string) => {
-    setSortOrder(sortValue);
     const qs = new URLSearchParams(searchParams.toString());
     if (sortValue === '' || sortValue === 'newest') {
       qs.delete('sort');
@@ -358,12 +368,12 @@ export default function ProductsMobileClient() {
     const qs = new URLSearchParams();
     
     if (tempFilters.category) qs.set('category', tempFilters.category);
-    if (tempFilters.tag) qs.set('usageTag', tempFilters.tag);
+    if (tempFilters.usageTag) qs.set('usageTag', tempFilters.usageTag);
     if (tempFilters.priceMin) qs.set('priceMin', tempFilters.priceMin);
     if (tempFilters.priceMax) qs.set('priceMax', tempFilters.priceMax);
     if (tempFilters.ratingMin) qs.set('ratingMin', tempFilters.ratingMin);
-    if (tempFilters.lowStock) qs.set('lowStock', 'true');
-    if (tempFilters.inStock) qs.set('inStock', 'true');
+    if (tempFilters.lowStockOnly) qs.set('lowStock', 'true');
+    if (tempFilters.inStockOnly) qs.set('inStock', 'true');
     
     router.replace(qs.toString() ? `/products?${qs}` : '/products');
     setIsMobileFilterOpen(false);
@@ -371,30 +381,13 @@ export default function ProductsMobileClient() {
 
   // Clear all filters
   const clearAllFilters = () => {
-    setTempFilters({
-      category: '',
-      tag: '',
-      priceMin: '',
-      priceMax: '',
-      ratingMin: '',
-      lowStock: false,
-      inStock: false
-    });
     router.replace('/products');
     setIsMobileFilterOpen(false);
   };
 
   // Reset temp filters when opening filter drawer
   const handleFilterOpen = () => {
-    setTempFilters({
-      category: currentCategory,
-      tag: currentTag,
-      priceMin: priceMinParam,
-      priceMax: priceMaxParam,
-      ratingMin: ratingMinParam,
-      lowStock: lowStockParam,
-      inStock: inStockOnlyParam
-    });
+    resetTempFilters();
     setIsMobileFilterOpen(true);
   };
 
@@ -520,10 +513,9 @@ export default function ProductsMobileClient() {
                   name="categoryFilter"
                   checked={tempFilters.category === cat.slug}
                   onChange={() => {
-                    setTempFilters(prev => ({
-                      ...prev,
-                      category: prev.category === cat.slug ? '' : cat.slug
-                    }))
+                    updateTempFilter('category', 
+                      tempFilters.category === cat.slug ? '' : cat.slug
+                    )
                   }}
                 />
                 {cat.name}
@@ -555,10 +547,9 @@ export default function ProductsMobileClient() {
                   name="ratingFilter"
                   checked={Number(tempFilters.ratingMin) === thr}
                   onChange={() => {
-                    setTempFilters(prev => ({
-                      ...prev,
-                      ratingMin: Number(prev.ratingMin) === thr ? '' : String(thr)
-                    }))
+                    updateTempFilter('ratingMin', 
+                      Number(tempFilters.ratingMin) === thr ? '' : String(thr)
+                    )
                   }}
                 />
                 {thr}+ stars
@@ -586,12 +577,9 @@ export default function ProductsMobileClient() {
             <label className={styles.filterOption}>
               <input
                 type="checkbox"
-                checked={tempFilters.lowStock}
+                checked={tempFilters.lowStockOnly}
                 onChange={e => {
-                  setTempFilters(prev => ({
-                    ...prev,
-                    lowStock: e.target.checked
-                  }))
+                  updateTempFilter('lowStockOnly', e.target.checked)
                 }}
               />
               Only low stock
@@ -599,12 +587,9 @@ export default function ProductsMobileClient() {
             <label className={styles.filterOption}>
               <input
                 type="checkbox"
-                checked={tempFilters.inStock}
+                checked={tempFilters.inStockOnly}
                 onChange={e => {
-                  setTempFilters(prev => ({
-                    ...prev,
-                    inStock: e.target.checked
-                  }))
+                  updateTempFilter('inStockOnly', e.target.checked)
                 }}
               />
               In stock only

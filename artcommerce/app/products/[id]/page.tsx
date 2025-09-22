@@ -9,6 +9,7 @@ import WishlistButton from '../../components/WishlistButton'
 import Link from 'next/link'
 import styles from './product_details.module.css'
 import MobileProductDetails from './MobileProductDetails'
+import { useDeviceDetection } from '../../hooks/useDeviceDetection'
 
 // SVG icons for navigation
 const ChevronLeft = () => (
@@ -76,7 +77,10 @@ export default function ProductDetailsPage() {
   const [avgRating, setAvgRating] = useState<number>(0)
   const [ratingCount, setRatingCount] = useState<number>(0)
   const [reviews, setReviews] = useState<any[]>([])
-  const [isMobile, setIsMobile] = useState(false)
+
+  // Use optimized device detection hook
+  const { isSmallScreen } = useDeviceDetection()
+  const isMobile = isSmallScreen
   
   // New state for section toggles
   const [expandedSections, setExpandedSections] = useState({
@@ -85,25 +89,12 @@ export default function ProductDetailsPage() {
     styling: true // Keep styling expanded by default
   })
 
-  // Check if the device is mobile
-  useEffect(() => {
-    const checkIfMobile = () => {
-      setIsMobile(window.innerWidth <= 1024);
-    };
-    
-    // Initial check
-    checkIfMobile();
-    
-    // Add event listener for window resize
-    window.addEventListener('resize', checkIfMobile);
-    
-    // Cleanup
-    return () => {
-      window.removeEventListener('resize', checkIfMobile);
-    };
-  }, []);
-
-  // Fetch product details on mount
+  // Section toggle state for mobile
+  const [sections, setSections] = useState({
+    details: true,
+    reviews: false,
+    styling: true // Keep styling expanded by default
+  })  // Fetch product details on mount
   useEffect(() => {
     if (!id) {
       router.replace('/products')

@@ -6,8 +6,13 @@ import Link from 'next/link'
 import Image from 'next/image'
 import WishlistButton from '../components/WishlistButton'
 import styles from './products.module.css'
+import animationStyles from './products-animations.module.css'
 import { FiChevronLeft, FiChevronRight, FiFilter, FiGrid, FiStar, FiPackage, FiTrendingUp, FiX } from 'react-icons/fi'
 import { DataCache } from '../../lib/dataCache'
+import { useDeviceDetection } from '../hooks/useDeviceDetection'
+import { useProductFilters } from '../hooks/useProductFilters'
+import { useIntersectionImagePreload } from '../hooks/useImagePreload'
+import { useScrollCardAnimations } from '../hooks/useOptimizedScroll'
 
 const LOW_STOCK_THRESHOLD = 5 // Products with stock <= 5 will show low stock warning
 
@@ -41,47 +46,41 @@ interface Product {
 export default function ProductsClient() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const currentCategory = searchParams.get('category') || ''
-  const currentTag = searchParams.get('usageTag') || ''
-  const priceMinParam = searchParams.get('priceMin') || ''
-  const priceMaxParam = searchParams.get('priceMax') || ''
-  const sortParam = searchParams.get('sort') || ''
-  const ratingMinParam = searchParams.get('ratingMin') || ''
-  const lowStockParam = searchParams.get('lowStock') === 'true'
   const productGridRef = useRef<HTMLDivElement>(null)
 
+  // Consolidated state management using optimized hooks
+  const { filters, updateFilter, clearAllFilters } = useProductFilters()
+  const { isSmallScreen } = useDeviceDetection()
+  const { applyCardAnimations } = useScrollCardAnimations()
+  
+  // Remaining component state (reduced from 15+ to 6 variables)
   const [products, setProducts] = useState<Product[]>([])
   const [usageTags, setUsageTags] = useState<string[]>([])
   const [loading, setLoading] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
-  const [scrollY, setScrollY] = useState(0)
-  const [priceMin, setPriceMin] = useState(priceMinParam)
-  const [priceMax, setPriceMax] = useState(priceMaxParam)
-  const [sortOrder, setSortOrder] = useState(sortParam)
-  const [lowStockOnly, setLowStockOnly] = useState(lowStockParam)
-  const inStockOnlyParam = searchParams.get('inStock') === 'true'
-  const [inStockOnly, setInStockOnly] = useState(inStockOnlyParam)
-  const [ratingMin, setRatingMin] = useState(ratingMinParam)
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false)
-  const [isMobileView, setIsMobileView] = useState(false)
 
-  // Check if we're in mobile view
+  const isMobileView = isSmallScreen
+  
+  // Extract individual filter values for easier use
+  const {
+    category: currentCategory,
+    usageTag: currentTag,
+    priceMin,
+    priceMax,
+    sortOrder,
+    ratingMin,
+    lowStockOnly,
+    inStockOnly
+  } = filters
+
+  // Reset sidebar state when switching between views
   useEffect(() => {
-    const checkMobile = () => {
-      const isMobile = window.innerWidth <= 1024
-      setIsMobileView(isMobile)
-      
-      // Reset sidebar state when switching between views
-      if (!isMobile && !isSidebarOpen) {
-        setIsSidebarOpen(true)
-      }
+    if (!isMobileView && !isSidebarOpen) {
+      setIsSidebarOpen(true)
     }
-    
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
-  }, [isSidebarOpen])
+  }, [isMobileView, isSidebarOpen])
   
   // Ensure sidebar toggle button position updates correctly
   useEffect(() => {
@@ -204,33 +203,12 @@ export default function ProductsClient() {
     fetchProducts()
   }, [currentCategory, currentTag, priceMin, priceMax, sortOrder, lowStockOnly, inStockOnly, ratingMin])
 
-  // Handle scroll animations
+  // Apply scroll-based card animations (optimized)
   useEffect(() => {
-    const handleScroll = () => {
-      setScrollY(window.scrollY)
+    if (!isMobileView) {
+      applyCardAnimations(productGridRef)
     }
-
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
-
-  // Apply scroll-based transformations to products
-  useEffect(() => {
-    if (!productGridRef.current || isMobileView) return;
-
-    const cards = productGridRef.current.querySelectorAll(`.${styles.productCard}`)
-    cards.forEach((card, index) => {
-      const rect = card.getBoundingClientRect()
-      const centerY = rect.top + rect.height / 2
-      const distanceFromCenter = Math.abs(window.innerHeight / 2 - centerY)
-      const scale = Math.max(0.9, 1 - distanceFromCenter / 1000)
-      const opacity = Math.max(0.6, 1 - distanceFromCenter / 800)
-      const translateY = distanceFromCenter * 0.05
-      
-      ;(card as HTMLElement).style.transform = `scale(${scale}) translateY(${translateY}px)`
-      ;(card as HTMLElement).style.opacity = opacity.toString()
-    })
-  }, [scrollY, products, isMobileView])
+  })
 
   // Close mobile filter drawer when switching to desktop view
   useEffect(() => {
@@ -353,15 +331,8 @@ export default function ProductsClient() {
                 name="ratingFilter"
                 checked={Number(ratingMin) === thr}
                 onChange={() => {
-                  const qs = new URLSearchParams(searchParams.toString())
-                  if (Number(ratingMin) === thr) {
-                    setRatingMin('')
-                    qs.delete('ratingMin')
-                  } else {
-                    setRatingMin(String(thr))
-                    qs.set('ratingMin', String(thr))
-                  }
-                  router.replace(qs.toString()?`/products?${qs}`:'/products')
+                  const newValue = Number(ratingMin) === thr ? '' : String(thr)
+                  updateFilter('ratingMin', newValue)
                   if (isMobileView) setIsMobileFilterOpen(false)
                 }}
               />
@@ -370,10 +341,7 @@ export default function ProductsClient() {
           ))}
           {ratingMin && (
             <button className={styles.clearButton} onClick={() => {
-              setRatingMin('')
-              const qs = new URLSearchParams(searchParams.toString())
-              qs.delete('ratingMin')
-              router.replace(qs.toString()?`/products?${qs}`:'/products')
+              updateFilter('ratingMin', '')
             }}>Clear</button>
           )}
         </div>
@@ -394,12 +362,7 @@ export default function ProductsClient() {
               type="checkbox"
               checked={lowStockOnly}
               onChange={e => {
-                setLowStockOnly(e.target.checked)
-                const qs = new URLSearchParams(searchParams.toString())
-                if (e.target.checked) qs.set('lowStock','true')
-                else qs.delete('lowStock')
-                if (inStockOnly) qs.set('inStock','true')
-                router.replace(qs.toString()?`/products?${qs}`:'/products')
+                updateFilter('lowStockOnly', e.target.checked)
                 if (isMobileView) setIsMobileFilterOpen(false)
               }}
             />
@@ -410,10 +373,7 @@ export default function ProductsClient() {
               type="checkbox"
               checked={inStockOnly}
               onChange={e=>{
-                setInStockOnly(e.target.checked)
-                const qs=new URLSearchParams(searchParams.toString())
-                if(e.target.checked) qs.set('inStock','true'); else qs.delete('inStock')
-                router.replace(qs.toString()?`/products?${qs}`:'/products')
+                updateFilter('inStockOnly', e.target.checked)
                 if (isMobileView) setIsMobileFilterOpen(false)
               }}
             />
@@ -432,16 +392,13 @@ export default function ProductsClient() {
           <FiChevronRight className={styles.arrow} />
         </summary>
         <div className={styles.filterContent}>
-          <label className={styles.filterOption}>
+                      <label className={styles.filterOption}>
             <input
               type="radio"
               name="sortoption"
               checked={sortOrder === '' || sortOrder === 'newest'}
               onChange={() => {
-                setSortOrder('')
-                const qs = new URLSearchParams(searchParams.toString())
-                qs.delete('sort')
-                router.replace(qs.toString()?`/products?${qs}`:'/products')
+                updateFilter('sortOrder', '')
                 if (isMobileView) setIsMobileFilterOpen(false)
               }}
             /> Newest
@@ -452,10 +409,7 @@ export default function ProductsClient() {
               name="sortoption"
               checked={sortOrder === 'oldest'}
               onChange={() => {
-                setSortOrder('oldest')
-                const qs = new URLSearchParams(searchParams.toString())
-                qs.set('sort','oldest')
-                router.replace(`/products?${qs}`)
+                updateFilter('sortOrder', 'oldest')
                 if (isMobileView) setIsMobileFilterOpen(false)
               }}
             /> Oldest
@@ -466,10 +420,7 @@ export default function ProductsClient() {
               name="sortoption"
               checked={sortOrder === 'price_asc'}
               onChange={() => {
-                setSortOrder('price_asc')
-                const qs = new URLSearchParams(searchParams.toString())
-                qs.set('sort','price_asc')
-                router.replace(`/products?${qs}`)
+                updateFilter('sortOrder', 'price_asc')
                 if (isMobileView) setIsMobileFilterOpen(false)
               }}
             /> Low to High
@@ -480,20 +431,14 @@ export default function ProductsClient() {
               name="sortoption"
               checked={sortOrder === 'price_desc'}
               onChange={() => {
-                setSortOrder('price_desc')
-                const qs = new URLSearchParams(searchParams.toString())
-                qs.set('sort','price_desc')
-                router.replace(`/products?${qs}`)
+                updateFilter('sortOrder', 'price_desc')
                 if (isMobileView) setIsMobileFilterOpen(false)
               }}
             /> High to Low
           </label>
           {sortOrder && sortOrder !== '' && (
             <button className={styles.clearButton} onClick={() => {
-              setSortOrder('')
-              const qs = new URLSearchParams(searchParams.toString())
-              qs.delete('sort')
-              router.replace(qs.toString()?`/products?${qs}`:'/products')
+              updateFilter('sortOrder', '')
             }}>Clear</button>
           )}
         </div>
@@ -506,7 +451,7 @@ export default function ProductsClient() {
       {/* Desktop Sidebar Toggle Button */}
       {!isMobileView && (
         <button 
-          className={`${styles.sidebarToggle} ${!isSidebarOpen ? styles.sidebarToggleClosed : ''}`}
+          className={`${animationStyles.sidebarToggle || styles.sidebarToggle} ${!isSidebarOpen ? animationStyles.sidebarToggleClosed || styles.sidebarToggleClosed : ''}`}
           onClick={() => {
             setIsSidebarOpen(!isSidebarOpen);
           }}
@@ -518,7 +463,7 @@ export default function ProductsClient() {
 
       {/* Desktop Sidebar */}
       {!isMobileView && (
-        <aside className={`${styles.sidebar} ${!isSidebarOpen ? styles.sidebarClosed : ''}`}>
+        <aside className={`${animationStyles.sidebar || styles.sidebar} ${!isSidebarOpen ? animationStyles.sidebarClosed || styles.sidebarClosed : ''}`}>
           {renderFilters()}
         </aside>
       )}
@@ -526,7 +471,7 @@ export default function ProductsClient() {
 
       {/* Mobile Filter Drawer */}
       {isMobileView && (
-        <div className={`${styles.mobileFilterDrawer} ${isMobileFilterOpen ? styles.mobileFilterDrawerOpen : ''}`}>
+        <div className={`${animationStyles.mobileFilterDrawer || styles.mobileFilterDrawer} ${isMobileFilterOpen ? animationStyles.mobileFilterDrawerOpen || styles.mobileFilterDrawerOpen : ''}`}>
           <div className={styles.mobileFilterHeader}>
             <h2>Filters</h2>
             <button 
@@ -544,9 +489,9 @@ export default function ProductsClient() {
       )}
 
       {/* Mobile Filter Overlay */}
-      {isMobileView && isMobileFilterOpen && (
+      {isMobileView && (
         <div 
-          className={styles.mobileFilterOverlay} 
+          className={`${animationStyles.mobileFilterOverlay || styles.mobileFilterOverlay} ${isMobileFilterOpen ? animationStyles.mobileFilterOverlayVisible : ''}`}
           onClick={() => setIsMobileFilterOpen(false)}
         />
       )}
@@ -592,10 +537,7 @@ export default function ProductsClient() {
               <div className={styles.mobileFilterTag}>
                 {ratingMin}+ ★
                 <button onClick={() => {
-                  setRatingMin('')
-                  const qs = new URLSearchParams(searchParams.toString())
-                  qs.delete('ratingMin')
-                  router.replace(qs.toString() ? `/products?${qs}` : '/products')
+                  updateFilter('ratingMin', '')
                 }}>×</button>
               </div>
             )}
@@ -603,10 +545,7 @@ export default function ProductsClient() {
               <div className={styles.mobileFilterTag}>
                 Low Stock
                 <button onClick={() => {
-                  setLowStockOnly(false)
-                  const qs = new URLSearchParams(searchParams.toString())
-                  qs.delete('lowStock')
-                  router.replace(qs.toString() ? `/products?${qs}` : '/products')
+                  updateFilter('lowStockOnly', false)
                 }}>×</button>
               </div>
             )}
@@ -614,10 +553,7 @@ export default function ProductsClient() {
               <div className={styles.mobileFilterTag}>
                 In Stock
                 <button onClick={() => {
-                  setInStockOnly(false)
-                  const qs = new URLSearchParams(searchParams.toString())
-                  qs.delete('inStock')
-                  router.replace(qs.toString() ? `/products?${qs}` : '/products')
+                  updateFilter('inStockOnly', false)
                 }}>×</button>
               </div>
             )}
@@ -627,10 +563,7 @@ export default function ProductsClient() {
                  sortOrder === 'price_asc' ? 'Price: Low-High' : 
                  sortOrder === 'price_desc' ? 'Price: High-Low' : 'Newest'}
                 <button onClick={() => {
-                  setSortOrder('')
-                  const qs = new URLSearchParams(searchParams.toString())
-                  qs.delete('sort')
-                  router.replace(qs.toString() ? `/products?${qs}` : '/products')
+                  updateFilter('sortOrder', '')
                 }}>×</button>
               </div>
             )}
@@ -647,6 +580,7 @@ export default function ProductsClient() {
                 href={`/products/${prod.id}`} 
                 key={prod.id}
                 className={styles.productCard}
+                data-animate-on-scroll="true"
                 style={{
                   animationDelay: `${index * 0.1}s`
                 }}
