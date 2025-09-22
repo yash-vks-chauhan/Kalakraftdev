@@ -10,6 +10,7 @@ import { useMobileMenu } from './contexts/MobileMenuContext'
 import MobileMenuPanel from './components/MobileMenuPanel'
 import MobileLayout from './components/MobileLayout'
 import AppContentWrapper from './components/AppContentWrapper'
+import PerformanceOptimizer from './components/PerformanceOptimizer'
 import styles from './components/Navbar.module.css'
 import { useDeviceDetection } from './hooks/useDeviceDetection'
 import { getImageUrl, getOptimizedImageUrl } from '../lib/cloudinaryImages'
@@ -159,6 +160,9 @@ export default function AppRootClient({ children }: { children: React.ReactNode 
             </>
           )}
         </AppContentWrapper>
+        
+        {/* Performance Optimizer */}
+        <PerformanceOptimizer />
       </Providers>
     </body>
   );
