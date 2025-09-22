@@ -2665,15 +2665,16 @@
 }
 
 .featuredProductImage {
-  width: 90%;
-  height: 90%;
+  width: 70%;
+  height: 70%;
   object-fit: contain;
   transition: transform 0.3s ease;
   margin: auto;
   display: block;
-  position: relative;
+  position: absolute;
   top: 50%;
-  transform: translateY(-50%);
+  left: 50%;
+  transform: translate(-50%, -50%);
   filter: none;
   mix-blend-mode: normal;
   z-index: 3;
@@ -2781,11 +2782,14 @@
 
 
 .featuredMobileImage {
-  width: 90%;
-  height: 90%;
+  width: 70%;
+  height: 70%;
   object-fit: contain;
   background: transparent;
-  position: relative;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   z-index: 3;
   filter: none;
   mix-blend-mode: normal;
@@ -3055,15 +3059,16 @@
 
 
 .bestSellerImage {
-  width: 90%;
-  height: 90%;
+  width: 70%;
+  height: 70%;
   object-fit: contain;
   transition: transform 0.3s ease;
   margin: auto;
   display: block;
-  position: relative;
+  position: absolute;
   top: 50%;
-  transform: translateY(-50%);
+  left: 50%;
+  transform: translate(-50%, -50%);
   filter: none;
   mix-blend-mode: normal;
   z-index: 3;
@@ -3265,11 +3270,14 @@
 
 
 .bestSellerMobileImage {
-  width: 90%;
-  height: 90%;
+  width: 70%;
+  height: 70%;
   object-fit: contain;
   background: transparent;
-  position: relative;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   z-index: 3;
   filter: none;
   mix-blend-mode: normal;
