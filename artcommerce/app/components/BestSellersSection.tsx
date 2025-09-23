@@ -31,7 +31,7 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
   
   const { user } = useAuth()
   const { addToCart } = useCart()
-  const { wishlist, addToWishlist, removeFromWishlist } = useWishlist()
+  const { wishlist = [], addToWishlist, removeFromWishlist } = useWishlist()
   const router = useRouter()
   
   const carouselRef = useRef<HTMLDivElement>(null)
