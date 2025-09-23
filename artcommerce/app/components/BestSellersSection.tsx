@@ -143,7 +143,7 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
   // Update gap size based on screen width
   useEffect(() => {
     const updateGapSize = () => {
-      setGapSize(window.innerWidth <= 480 ? 1.5 : 2)
+      setGapSize(window.innerWidth <= 480 ? 1 : 2)
     }
     
     updateGapSize()
@@ -429,7 +429,7 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
                   key={product.id} 
                   className={styles.mobileCarouselSlide}
                   style={{
-                    transform: `translateX(calc(${(index - currentIndex) * 100}% + ${(index - currentIndex) * gapSize}rem + ${dragOffset}px))`,
+                    transform: `translateX(calc(${(index - currentIndex) * 100}vw + ${(index - currentIndex) * gapSize}rem + ${dragOffset}px))`,
                     transition: isDragging.current ? 'none' : 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
                   }}
                 >

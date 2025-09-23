@@ -3493,20 +3493,21 @@
 /* Mobile Carousel Container */
 .bestSellersMobileCarousel {
   position: relative;
-  padding: 2rem 1rem;
+  padding: 2rem 0;
   overflow: hidden;
+  width: 100vw;
+  margin-left: calc(-50vw + 50%);
 }
 
 .mobileCarouselContainer {
-  width: 100%;
-  max-width: 100%;
-  margin: 0 auto;
+  width: 100vw;
+  margin: 0;
   overflow: hidden;
   position: relative;
   user-select: none;
   -webkit-user-select: none;
   -webkit-touch-callout: none;
-  padding: 0 2rem;
+  padding: 0;
 }
 
 .mobileCarouselWrapper {
@@ -3519,10 +3520,10 @@
   position: absolute;
   top: 0;
   left: 0;
-  width: calc(100% - 2rem);
+  width: 100vw;
   height: 100%;
   display: flex;
-  margin: 0 1rem;
+  padding: 0 1rem;
 }
 
 /* Mobile Product Card */
@@ -3816,12 +3817,13 @@
 /* Responsive adjustments */
 @media (max-width: 480px) {
   .mobileCarouselContainer {
-    padding: 0 1.5rem;
+    width: 100vw;
+    padding: 0;
   }
   
   .mobileCarouselSlide {
-    width: calc(100% - 1.5rem);
-    margin: 0 0.75rem;
+    width: 100vw;
+    padding: 0 0.75rem;
   }
   
   .mobileCarouselWrapper {
@@ -3867,11 +3869,13 @@
   }
   
   .mobileCarouselPrev {
-    left: -6px;
+    left: 10px;
+    z-index: 10;
   }
   
   .mobileCarouselNext {
-    right: -6px;
+    right: 10px;
+    z-index: 10;
   }
 }
 
