@@ -964,4 +964,114 @@
 
 .actionMenuItem:not(:last-child) {
   border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+/* ============================================
+   MOBILE DASHBOARD SKELETON LOADING STYLES
+   ============================================ */
+
+/* Base skeleton shimmer animation */
+@keyframes skeletonShimmer {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
+}
+
+.skeletonShimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200px 100%;
+  animation: skeletonShimmer 1.5s infinite linear;
+}
+
+/* Metrics Skeleton Styles */
+.skeletonMetricTitle {
+  width: 60%;
+  height: 16px;
+  border-radius: 2px;
+  background: #f0f0f0;
+  margin-bottom: 8px;
+}
+
+.skeletonMetricValue {
+  width: 80%;
+  height: 28px;
+  border-radius: 4px;
+  background: #f0f0f0;
+}
+
+/* Orders Skeleton Styles */
+.skeletonOrderImage {
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+  background: #f0f0f0;
+}
+
+.skeletonProductName {
+  width: 85%;
+  height: 14px;
+  border-radius: 2px;
+  background: #f0f0f0;
+  margin-bottom: 4px;
+}
+
+.skeletonOrderNumber {
+  width: 60%;
+  height: 12px;
+  border-radius: 2px;
+  background: #f0f0f0;
+}
+
+.skeletonOrderDate {
+  width: 70px;
+  height: 12px;
+  border-radius: 2px;
+  background: #f0f0f0;
+}
+
+.skeletonOrderStatus {
+  width: 50px;
+  height: 16px;
+  border-radius: 8px;
+  background: #f0f0f0;
+}
+
+/* Scroll indicator skeleton */
+.scrollDot.skeletonShimmer {
+  background: #f0f0f0;
+  opacity: 0.6;
+}
+
+/* Enhanced shimmer effect for better visual feedback */
+@media (prefers-reduced-motion: no-preference) {
+  .skeletonShimmer {
+    animation: skeletonShimmer 1.5s ease-in-out infinite;
+  }
+}
+
+/* Respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .skeletonShimmer {
+    animation: none;
+    background: #f0f0f0;
+  }
+  
+  .skeletonShimmer::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%);
+    animation: skeletonPulse 2s ease-in-out infinite;
+  }
+}
+
+@keyframes skeletonPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 } 

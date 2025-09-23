@@ -665,9 +665,34 @@ export default function ProductsMobileClient() {
       )}
 
       {loading ? (
-        <div className={styles.loading}>
-          <div className={styles.loadingSpinner}></div>
-          <p>Loading products...</p>
+        <div className={styles.list}>
+          {[...Array(6)].map((_, index) => (
+            <div key={index} className={styles.cardWrapper}>
+              <div className={styles.productCardSkeleton}>
+                <div className={styles.skeletonImageContainer}>
+                  <div className={styles.skeletonImage}></div>
+                  <div className={styles.skeletonIndicators}>
+                    <div className={styles.skeletonIndicator}></div>
+                    <div className={styles.skeletonIndicator}></div>
+                    <div className={styles.skeletonIndicator}></div>
+                  </div>
+                </div>
+                
+                <div className={styles.skeletonInfo}>
+                  <div className={styles.skeletonCategory}></div>
+                  <div className={styles.skeletonName}></div>
+                  <div className={styles.skeletonPriceRow}>
+                    <div className={styles.skeletonPrice}></div>
+                    <div className={styles.skeletonRating}></div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className={styles.skeletonWishlistContainer}>
+                <div className={styles.skeletonWishlistButton}></div>
+              </div>
+            </div>
+          ))}
         </div>
       ) : error ? (
         <div className={styles.error}>
@@ -724,21 +749,51 @@ export default function ProductsMobileClient() {
               </button>
             </div>
             <div className={styles.mobileFilterContent}>
-              {renderFilters()}
+              {loading ? (
+                <div className={styles.filterSkeletonContainer}>
+                  {[...Array(3)].map((_, index) => (
+                    <div key={index} className={styles.filterSectionSkeleton}>
+                      <div className={styles.filterHeaderSkeleton}>
+                        <div className={styles.filterTitleSkeleton}></div>
+                        <div className={styles.filterArrowSkeleton}></div>
+                      </div>
+                      <div className={styles.filterOptionsSkeleton}>
+                        {[...Array(4)].map((_, optIndex) => (
+                          <div key={optIndex} className={styles.filterOptionSkeleton}>
+                            <div className={styles.filterCheckboxSkeleton}></div>
+                            <div className={styles.filterLabelSkeleton}></div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                renderFilters()
+              )}
             </div>
             <div className={styles.mobileFilterActions}>
-              <button 
-                className={styles.clearFilterButton}
-                onClick={clearAllFilters}
-              >
-                Clear All
-              </button>
-              <button 
-                className={styles.applyFilterButton}
-                onClick={applyFilters}
-              >
-                Apply
-              </button>
+              {loading ? (
+                <>
+                  <div className={styles.filterButtonSkeleton}></div>
+                  <div className={styles.filterButtonSkeleton}></div>
+                </>
+              ) : (
+                <>
+                  <button 
+                    className={styles.clearFilterButton}
+                    onClick={clearAllFilters}
+                  >
+                    Clear All
+                  </button>
+                  <button 
+                    className={styles.applyFilterButton}
+                    onClick={applyFilters}
+                  >
+                    Apply
+                  </button>
+                </>
+              )}
             </div>
           </>
         )}

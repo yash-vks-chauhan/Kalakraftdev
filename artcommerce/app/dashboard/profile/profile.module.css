@@ -1007,3 +1007,221 @@
 details[open] > .summaryWithArrow::after {
   transform: translateY(-50%) rotate(225deg);
 } 
+
+/* Profile Skeleton Styles */
+.profileSkeleton {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  padding: 2rem 3rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.skeletonTitle {
+  width: 300px;
+  height: 40px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 8px;
+  margin-bottom: 2.5rem;
+}
+
+.skeletonSection {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(8px);
+  border: 2px solid rgba(0, 0, 0, 0.15);
+  border-radius: 24px;
+  padding: 2.5rem;
+  margin-bottom: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.skeletonSectionTitle {
+  width: 200px;
+  height: 24px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 6px;
+  margin-bottom: 2rem;
+}
+
+.skeletonAvatar {
+  width: 120px;
+  height: 120px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 20px;
+  margin-bottom: 2rem;
+}
+
+.skeletonFormRow {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.skeletonFormGroup {
+  flex: 1;
+}
+
+.skeletonLabel {
+  width: 80px;
+  height: 16px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+  margin-bottom: 0.75rem;
+}
+
+.skeletonInput {
+  width: 100%;
+  height: 48px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+}
+
+.skeletonButton {
+  width: 150px;
+  height: 48px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+  margin-top: 1.5rem;
+}
+
+.skeletonAvatarGrid {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  margin: 2rem 0;
+}
+
+.skeletonAvatarOption {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 16px;
+}
+
+.skeletonAddressItem {
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.skeletonAddressName {
+  width: 150px;
+  height: 20px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+  margin-bottom: 0.75rem;
+}
+
+.skeletonAddressLine {
+  width: 100%;
+  height: 16px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+}
+
+.skeletonAddressLine:last-child {
+  width: 60%;
+  margin-bottom: 1.5rem;
+}
+
+.skeletonAddressActions {
+  display: flex;
+  gap: 1rem;
+}
+
+.skeletonAddressButton {
+  width: 80px;
+  height: 40px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeletonTitle,
+  .skeletonSectionTitle,
+  .skeletonAvatar,
+  .skeletonLabel,
+  .skeletonInput,
+  .skeletonButton,
+  .skeletonAvatarOption,
+  .skeletonAddressName,
+  .skeletonAddressLine,
+  .skeletonAddressButton {
+    animation: none;
+    background: #f0f0f0;
+  }
+}
+
+@media (max-width: 768px) {
+  .profileSkeleton {
+    padding: 1rem;
+  }
+
+  .skeletonSection {
+    padding: 1.5rem;
+    border-radius: 16px;
+  }
+
+  .skeletonTitle {
+    width: 250px;
+    height: 32px;
+    margin-bottom: 2rem;
+  }
+
+  .skeletonFormRow {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .skeletonAvatarGrid {
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+    margin: 1.5rem 0;
+  }
+
+  .skeletonAvatarOption {
+    width: 60px;
+    height: 60px;
+  }
+
+  .skeletonAvatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 16px;
+  }
+}

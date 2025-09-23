@@ -18,6 +18,79 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '../../contexts/AuthContext'
 import styles from './profile.module.css'
+
+// Profile Skeleton Component
+const ProfileSkeleton = () => (
+  <main className={styles.profileContainer}>
+    {/* Profile Header Skeleton */}
+    <div className={styles.profileHeader}>
+      <div className={styles.avatarSection}>
+        <div className={`${styles.skeletonAvatar} ${styles.skeletonShimmer}`}></div>
+        <div className={styles.userInfo}>
+          <div className={`${styles.skeletonUserName} ${styles.skeletonShimmer}`}></div>
+          <div className={`${styles.skeletonUserEmail} ${styles.skeletonShimmer}`}></div>
+          <div className={`${styles.skeletonUserRole} ${styles.skeletonShimmer}`}></div>
+        </div>
+      </div>
+    </div>
+
+    {/* Profile Form Skeleton */}
+    <div className={styles.profileContent}>
+      <div className={styles.profileSection}>
+        <div className={`${styles.skeletonSectionTitle} ${styles.skeletonShimmer}`}></div>
+        
+        {/* Basic Info Form Skeleton */}
+        <div className={styles.formGrid}>
+          <div className={styles.inputGroup}>
+            <div className={`${styles.skeletonLabel} ${styles.skeletonShimmer}`}></div>
+            <div className={`${styles.skeletonInput} ${styles.skeletonShimmer}`}></div>
+          </div>
+          <div className={styles.inputGroup}>
+            <div className={`${styles.skeletonLabel} ${styles.skeletonShimmer}`}></div>
+            <div className={`${styles.skeletonInput} ${styles.skeletonShimmer}`}></div>
+          </div>
+          <div className={styles.inputGroup}>
+            <div className={`${styles.skeletonLabel} ${styles.skeletonShimmer}`}></div>
+            <div className={`${styles.skeletonInput} ${styles.skeletonShimmer}`}></div>
+          </div>
+        </div>
+        
+        {/* Avatar Selection Skeleton */}
+        <div className={styles.avatarSelection}>
+          <div className={`${styles.skeletonLabel} ${styles.skeletonShimmer}`}></div>
+          <div className={styles.avatarGrid}>
+            {[1, 2, 3, 4, 5, 6].map((index) => (
+              <div key={index} className={`${styles.skeletonAvatarOption} ${styles.skeletonShimmer}`}></div>
+            ))}
+          </div>
+        </div>
+        
+        {/* Save Button Skeleton */}
+        <div className={`${styles.skeletonButton} ${styles.skeletonShimmer}`}></div>
+      </div>
+
+      {/* Addresses Section Skeleton */}
+      <div className={styles.profileSection}>
+        <div className={`${styles.skeletonSectionTitle} ${styles.skeletonShimmer}`}></div>
+        
+        <div className={styles.addressesList}>
+          {[1, 2].map((index) => (
+            <div key={index} className={styles.addressCard}>
+              <div className={`${styles.skeletonAddressText} ${styles.skeletonShimmer}`}></div>
+              <div className={`${styles.skeletonAddressText} ${styles.skeletonShimmer}`}></div>
+              <div className={styles.addressActions}>
+                <div className={`${styles.skeletonAddressButton} ${styles.skeletonShimmer}`}></div>
+                <div className={`${styles.skeletonAddressButton} ${styles.skeletonShimmer}`}></div>
+              </div>
+            </div>
+          ))}
+        </div>
+        
+        <div className={`${styles.skeletonButton} ${styles.skeletonShimmer}`}></div>
+      </div>
+    </div>
+  </main>
+);
 import Image from 'next/image'
 
 export default function ProfilePage() {
@@ -318,19 +391,7 @@ export default function ProfilePage() {
   }
 
   if (isLoading) {
-    return (
-      <div className={styles.loadingContainer}>
-        <div className={styles.loader}>
-          <Image 
-            src="/images/loading.png" 
-            alt="Loading..."
-            width={60}
-            height={60}
-            priority
-          />
-        </div>
-      </div>
-    )
+    return <ProfileSkeleton />
   }
 
   if (!user) return null

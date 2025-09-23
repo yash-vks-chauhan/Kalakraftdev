@@ -9,6 +9,35 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import styles from './wishlist.module.css'
+import { Heart, Trash2 } from 'lucide-react'
+
+// Wishlist Skeleton Component
+const WishlistSkeleton = () => (
+  <main className={styles.container}>
+    <div className={styles.header}>
+      <div className={`${styles.skeletonTitle} ${styles.skeletonShimmer}`}></div>
+      <div className={`${styles.skeletonCount} ${styles.skeletonShimmer}`}></div>
+    </div>
+    
+    <div className={styles.grid}>
+      {[1, 2, 3, 4, 5, 6].map((index) => (
+        <div key={index} className={styles.productCard}>
+          <div className={styles.imageContainer}>
+            <div className={`${styles.skeletonImage} ${styles.skeletonShimmer}`}></div>
+          </div>
+          <div className={styles.cardContent}>
+            <div className={`${styles.skeletonProductName} ${styles.skeletonShimmer}`}></div>
+            <div className={`${styles.skeletonProductPrice} ${styles.skeletonShimmer}`}></div>
+            <div className={styles.cardActions}>
+              <div className={`${styles.skeletonButton} ${styles.skeletonShimmer}`}></div>
+              <div className={`${styles.skeletonRemoveButton} ${styles.skeletonShimmer}`}></div>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  </main>
+);
 
 type AnimationType = 'removing' | 'moving';
 
@@ -99,11 +128,7 @@ export default function DashboardWishlistPage() {
   }
 
   if (authLoading || wishlistLoading) {
-    return (
-        <div className={styles.loadingContainer}>
-            <div className={styles.spinner} style={{width: '50px', height: '50px', borderLeftColor: '#111827'}}></div>
-        </div>
-    )
+    return <WishlistSkeleton />
   }
   
   if (!user) {

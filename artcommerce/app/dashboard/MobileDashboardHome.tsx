@@ -7,6 +7,59 @@ import styles from './mobile-dashboard.module.css'
 import desktopStyles from './dashboard.module.css'
 import { useState, useEffect, useRef } from 'react'
 
+// Mobile Dashboard Skeleton Components
+const MetricsSkeleton = () => (
+  <div className={styles.metricsScrollContainer}>
+    <div className={styles.metricsRow}>
+      <div className={styles.metricCard}>
+        <div className={`${styles.skeletonMetricTitle} ${styles.skeletonShimmer}`}></div>
+        <div className={`${styles.skeletonMetricValue} ${styles.skeletonShimmer}`}></div>
+      </div>
+      <div className={styles.metricCard}>
+        <div className={`${styles.skeletonMetricTitle} ${styles.skeletonShimmer}`}></div>
+        <div className={`${styles.skeletonMetricValue} ${styles.skeletonShimmer}`}></div>
+      </div>
+      <div className={styles.metricCard}>
+        <div className={`${styles.skeletonMetricTitle} ${styles.skeletonShimmer}`}></div>
+        <div className={`${styles.skeletonMetricValue} ${styles.skeletonShimmer}`}></div>
+      </div>
+    </div>
+    <div className={styles.scrollIndicator}>
+      {[0, 1, 2].map((i) => (
+        <div key={i} className={`${styles.scrollDot} ${styles.skeletonShimmer}`}></div>
+      ))}
+    </div>
+  </div>
+);
+
+const OrdersSkeleton = () => (
+  <div className={styles.ordersScrollContainer}>
+    <div className={styles.ordersRow}>
+      {[1, 2, 3].map((index) => (
+        <div key={index} className={styles.orderCard}>
+          <div className={styles.orderCardLink}>
+            <div className={styles.orderImageContainer}>
+              <div className={`${styles.skeletonOrderImage} ${styles.skeletonShimmer}`}></div>
+            </div>
+            
+            <div className={styles.orderContent}>
+              <div className={styles.orderHeader}>
+                <div className={`${styles.skeletonProductName} ${styles.skeletonShimmer}`}></div>
+                <div className={`${styles.skeletonOrderNumber} ${styles.skeletonShimmer}`}></div>
+              </div>
+              
+              <div className={styles.orderMeta}>
+                <div className={`${styles.skeletonOrderDate} ${styles.skeletonShimmer}`}></div>
+                <div className={`${styles.skeletonOrderStatus} ${styles.skeletonShimmer}`}></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
 export default function MobileDashboardHome() {
   const { user, logout, token } = useAuth()
   const [showRecent, setShowRecent] = useState(true)
@@ -218,43 +271,47 @@ export default function MobileDashboardHome() {
               <RefreshCw size={16} className={refreshing ? styles.refreshing : ''} />
             </button>
           </div>
-          <div className={styles.metricsScrollContainer}>
-            <div className={styles.metricsRow} ref={metricsRowRef}>
-              <div className={styles.metricCard}>
-                <h3 className={styles.metricTitle}>Orders</h3>
-                <p className={styles.metricValue}>{metrics?.totalOrders || '0'}</p>
-              </div>
-              <div className={styles.metricCard}>
-                <h3 className={styles.metricTitle}>Revenue</h3>
-                <p className={styles.metricValue}>₹{metrics?.revenue ? metrics.revenue.toFixed(2) : '0.00'}</p>
-              </div>
-              {metrics?.statusCounts?.map((sc: any) => (
-                <div key={sc.status} className={styles.metricCard}>
-                  <h3 className={styles.metricTitle}>
-                    {sc.status.charAt(0).toUpperCase() + sc.status.slice(1)}
-                  </h3>
-                  <p className={styles.metricValue}>{sc._count.status}</p>
+          {refreshing || !metrics ? (
+            <MetricsSkeleton />
+          ) : (
+            <div className={styles.metricsScrollContainer}>
+              <div className={styles.metricsRow} ref={metricsRowRef}>
+                <div className={styles.metricCard}>
+                  <h3 className={styles.metricTitle}>Orders</h3>
+                  <p className={styles.metricValue}>{metrics?.totalOrders || '0'}</p>
                 </div>
-              ))}
+                <div className={styles.metricCard}>
+                  <h3 className={styles.metricTitle}>Revenue</h3>
+                  <p className={styles.metricValue}>₹{metrics?.revenue ? metrics.revenue.toFixed(2) : '0.00'}</p>
+                </div>
+                {metrics?.statusCounts?.map((sc: any) => (
+                  <div key={sc.status} className={styles.metricCard}>
+                    <h3 className={styles.metricTitle}>
+                      {sc.status.charAt(0).toUpperCase() + sc.status.slice(1)}
+                    </h3>
+                    <p className={styles.metricValue}>{sc._count.status}</p>
+                  </div>
+                ))}
+              </div>
+              <div className={styles.scrollIndicator}>
+                {[0, 1, ...(metrics?.statusCounts?.map((_: any, i: number) => i + 2) || [])].map((i) => (
+                  <div 
+                    key={i} 
+                    className={`${styles.scrollDot} ${activeMetricDot === i ? styles.activeDot : ''}`}
+                    onClick={() => {
+                      if (metricsRowRef.current) {
+                        const itemWidth = metricsRowRef.current.scrollWidth / (metrics?.statusCounts?.length + 2 || 3)
+                        metricsRowRef.current.scrollTo({
+                          left: itemWidth * i,
+                          behavior: 'smooth'
+                        })
+                      }
+                    }}
+                  ></div>
+                ))}
+              </div>
             </div>
-            <div className={styles.scrollIndicator}>
-              {[0, 1, ...(metrics?.statusCounts?.map((_: any, i: number) => i + 2) || [])].map((i) => (
-                <div 
-                  key={i} 
-                  className={`${styles.scrollDot} ${activeMetricDot === i ? styles.activeDot : ''}`}
-                  onClick={() => {
-                    if (metricsRowRef.current) {
-                      const itemWidth = metricsRowRef.current.scrollWidth / (metrics?.statusCounts?.length + 2 || 3)
-                      metricsRowRef.current.scrollTo({
-                        left: itemWidth * i,
-                        behavior: 'smooth'
-                      })
-                    }
-                  }}
-                ></div>
-              ))}
-            </div>
-          </div>
+          )}
         </>
       )}
 
@@ -270,10 +327,7 @@ export default function MobileDashboardHome() {
         </div>
         <div className={`${styles.expandableSection} ${showRecent ? styles.expanded : ''}`}>
         {loadingOrders ? (
-          <div className={styles.emptyState}>
-            <RefreshCw className={`${styles.emptyStateIcon} ${styles.refreshing}`} size={24} />
-            <p>Loading recent orders...</p>
-          </div>
+          <OrdersSkeleton />
         ) : recentOrders.length > 0 ? (
           <div className={styles.ordersScrollContainer}>
             <div className={styles.ordersRow}>

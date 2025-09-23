@@ -227,9 +227,22 @@ const FeaturedProductsGrid = () => {
 
   if (loading) {
     return (
-      <div className={styles.mobileFeaturedLoading}>
-        <div className={styles.mobileFeaturedLoadingSpinner}></div>
-        <p>Loading featured products...</p>
+      <div className={styles.mobileFeaturedProductsGrid}>
+        {[1, 2, 3, 4].map((_, index) => (
+          <div key={index} className={styles.mobileFeaturedCard}>
+            <div className={styles.mobileFeaturedCardInner}>
+              <div className={styles.mobileFeaturedImageContainer}>
+                <div className={`${styles.skeletonImage} ${styles.skeletonShimmer}`}></div>
+              </div>
+              
+              <div className={styles.mobileFeaturedCardInfo}>
+                <div className={`${styles.skeletonCategory} ${styles.skeletonShimmer}`}></div>
+                <div className={`${styles.skeletonProductName} ${styles.skeletonShimmer}`}></div>
+                <div className={`${styles.skeletonPrice} ${styles.skeletonShimmer}`}></div>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
     );
   }
@@ -763,6 +776,275 @@ const MobileFeaturedCarousel = ({ products = [] }) => {
   );
 };
 
+// Mobile Featured Categories Skeleton Component
+const MobileFeaturedCategoriesSkeleton = () => {
+  return (
+    <div className={`${styles.featuredCategoriesSection} ${styles.mobileOnly}`}>
+      {/* Section Header Skeleton */}
+      <div className={styles.sectionHeader}>
+        <div className={styles.headerLine}></div>
+        <div className={`${styles.skeletonTitle} ${styles.skeletonShimmer}`}></div>
+        <div className={styles.headerLine}></div>
+      </div>
+
+      <div className={styles.featuredDescription}>
+        <div className={`${styles.skeletonDescription} ${styles.skeletonShimmer}`}></div>
+      </div>
+
+      {/* Category Buttons Skeleton */}
+      <div className={styles.categoryButtonsContainer}>
+        {[1, 2, 3, 4].map((_, index) => (
+          <div key={index} className={`${styles.skeletonCategoryButton} ${styles.skeletonShimmer}`}></div>
+        ))}
+      </div>
+
+      {/* Products Grid Skeleton */}
+      <div className={styles.featuredProductsContainer}>
+        <div className={`${styles.featuredProductsMobile} ${styles.mobileOnly}`}>
+          <div className={styles.featuredProductsMobileGrid}>
+            {[1, 2, 3, 4].map((_, index) => (
+              <div key={index} className={styles.featuredMobileCard}>
+                <div className={styles.featuredMobileCardWrapper}>
+                  <div className={styles.featuredMobileImageContainer}>
+                    <div className={`${styles.skeletonImage} ${styles.skeletonShimmer}`}></div>
+                  </div>
+                  
+                  <div className={styles.featuredMobileCardInfo}>
+                    <div className={`${styles.skeletonProductName} ${styles.skeletonShimmer}`}></div>
+                    <div className={`${styles.skeletonPrice} ${styles.skeletonShimmer}`}></div>
+                  </div>
+                  
+                  {/* Wishlist Button Skeleton */}
+                  <div className={styles.featuredMobileWishlistContainer}>
+                    <div className={`${styles.skeletonWishlistButton} ${styles.skeletonShimmer}`}></div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Mobile Featured Carousel Skeleton Component  
+const MobileFeaturedCarouselSkeleton = () => {
+  return (
+    <div style={{ position: 'relative', width: '100%' }}>
+      <div 
+        style={{
+          position: 'relative',
+          width: '100%',
+          height: '700px',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          marginBottom: '2rem',
+          zIndex: 3,
+          overflow: 'hidden',
+        }}
+      >
+        {/* Spotlight image skeleton */}
+        <div style={{
+          position: 'absolute',
+          top: '0',
+          left: '0',
+          width: '100%',
+          height: '100%',
+          zIndex: 1,
+          opacity: 0.9,
+        }} className={`${styles.skeletonShimmer}`}></div>
+        
+        {/* Main card skeleton */}
+        <div style={{
+          position: 'absolute',
+          width: '280px',
+          height: '420px',
+          borderRadius: '8px',
+          overflow: 'hidden',
+          left: '50%',
+          top: '50%',
+          marginLeft: '-140px',
+          marginTop: '-210px',
+          border: '1px solid rgba(0, 0, 0, 0.08)',
+          boxShadow: '0 12px 30px rgba(0, 0, 0, 0.12)',
+          background: '#fff',
+          zIndex: 100,
+        }}>
+          <div style={{
+            width: '100%',
+            aspectRatio: '1/1.1',
+            position: 'relative',
+            overflow: 'hidden',
+            background: '#f5f5f5',
+          }} className={`${styles.skeletonShimmer}`}></div>
+          
+          <div style={{
+            padding: '14px',
+            background: '#fff',
+            position: 'relative',
+            minHeight: '80px',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'flex-start',
+            gap: '8px',
+          }}>
+            <div className={`${styles.skeletonCategory} ${styles.skeletonShimmer}`}></div>
+            <div className={`${styles.skeletonProductName} ${styles.skeletonShimmer}`}></div>
+            <div className={`${styles.skeletonPrice} ${styles.skeletonShimmer}`}></div>
+          </div>
+        </div>
+        
+        {/* Side cards skeletons */}
+        {[-1, 1].map((direction, index) => (
+          <div key={index} style={{
+            position: 'absolute',
+            width: '280px',
+            height: '420px',
+            borderRadius: '8px',
+            overflow: 'hidden',
+            left: '50%',
+            top: '50%',
+            marginLeft: '-140px',
+            marginTop: '-210px',
+            border: '1px solid rgba(0, 0, 0, 0.08)',
+            boxShadow: '0 5px 15px rgba(0, 0, 0, 0.05)',
+            background: '#fff',
+            transform: `translateX(${direction * 120}px) scale(0.85)`,
+            opacity: 0.6,
+            zIndex: 90,
+          }} className={`${styles.skeletonShimmer}`}>
+            <div style={{
+              width: '100%',
+              aspectRatio: '1/1.1',
+              background: '#f5f5f5',
+            }}></div>
+            <div style={{
+              padding: '14px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '6px',
+            }}>
+              <div style={{ height: '12px', background: '#f0f0f0', borderRadius: '2px', width: '60%' }}></div>
+              <div style={{ height: '16px', background: '#f0f0f0', borderRadius: '2px', width: '80%' }}></div>
+              <div style={{ height: '14px', background: '#f0f0f0', borderRadius: '2px', width: '50%' }}></div>
+            </div>
+          </div>
+        ))}
+      </div>
+      
+      {/* Navigation skeleton */}
+      <div style={{
+        position: 'relative',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        gap: '20px',
+        marginTop: '10px',
+      }}>
+        {/* Progress bar skeleton */}
+        <div style={{
+          position: 'absolute',
+          top: '-20px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '80px',
+          height: '2px',
+          borderRadius: '1px',
+        }} className={`${styles.skeletonShimmer}`}></div>
+
+        {/* Dot indicators skeleton */}
+        <div style={{
+          display: 'flex',
+          gap: '12px',
+          padding: '12px 20px',
+          background: 'rgba(255, 255, 255, 0.9)',
+          borderRadius: '25px',
+          border: '1px solid rgba(0, 0, 0, 0.05)',
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+        }}>
+          {[1, 2, 3, 4, 5, 6, 7, 8].map((_, index) => (
+            <div key={index} style={{
+              width: '10px',
+              height: '10px',
+              borderRadius: '50%',
+            }} className={`${styles.skeletonShimmer}`}></div>
+          ))}
+        </div>
+
+        {/* Counter skeleton */}
+        <div style={{
+          position: 'absolute',
+          bottom: '-35px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '30px',
+          height: '12px',
+          borderRadius: '2px',
+        }} className={`${styles.skeletonShimmer}`}></div>
+      </div>
+    </div>
+  );
+};
+
+// Mobile Explore Section Skeleton Component
+const MobileExploreSkeleton = () => {
+  return (
+    <section className={`${styles.mobileExploreSection} ${styles.mobileOnly}`} style={{ padding: '5rem 1.5rem 6rem' }}>
+      {/* Header skeleton */}
+      <div className={styles.mobileExploreHeader}>
+        <div className={styles.headerLine}></div>
+        <div className={`${styles.skeletonTitle} ${styles.skeletonShimmer}`}></div>
+        <div className={styles.headerLine}></div>
+        <div className={`${styles.skeletonDescription} ${styles.skeletonShimmer}`} style={{
+          width: '300px',
+          height: '16px',
+          margin: '1.5rem auto 0',
+          borderRadius: '2px'
+        }}></div>
+      </div>
+
+      {/* Grid skeleton */}
+      <div className={styles.mobileExploreGrid}>
+        {[1, 2, 3, 4, 5, 6].map((_, index) => (
+          <div key={index} className={styles.mobileExploreCard}>
+            <div className={styles.mobileExploreCardInner}>
+              <div className={`${styles.skeletonImage} ${styles.skeletonShimmer}`} style={{
+                width: '100%',
+                height: '140px',
+                borderRadius: '6px'
+              }}></div>
+              <div className={styles.mobileExploreCardContent}>
+                <div className={`${styles.skeletonProductName} ${styles.skeletonShimmer}`} style={{
+                  width: '80%',
+                  height: '16px',
+                  margin: '0 auto'
+                }}></div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Button skeleton */}
+      <div style={{
+        textAlign: 'center',
+        marginTop: '3.5rem',
+        position: 'relative',
+        zIndex: 2
+      }}>
+        <div className={`${styles.skeletonButton} ${styles.skeletonShimmer}`} style={{
+          width: '160px',
+          height: '44px',
+          margin: '0 auto',
+          borderRadius: '22px'
+        }}></div>
+      </div>
+    </section>
+  );
+};
+
 // Featured Categories Section Component
 const FeaturedCategoriesSection = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -883,10 +1165,38 @@ const FeaturedCategoriesSection = () => {
       {/* Products Display */}
       <div className={styles.featuredProductsContainer} data-aos="fade-up" data-aos-delay="300">
         {loading ? (
-          <div className={styles.featuredLoading}>
-            <div className={styles.loadingSpinner}></div>
-            <p>Loading products...</p>
-          </div>
+          <>
+            {/* Desktop Loading */}
+            <div className={`${styles.featuredLoading} ${styles.desktopOnly}`}>
+              <div className={styles.loadingSpinner}></div>
+              <p>Loading products...</p>
+            </div>
+            
+            {/* Mobile Skeleton Loading */}
+            <div className={`${styles.mobileOnly}`}>
+              <div className={styles.featuredProductsMobileGrid}>
+                {[1, 2, 3, 4].map((_, index) => (
+                  <div key={index} className={styles.featuredMobileCard}>
+                    <div className={styles.featuredMobileCardWrapper}>
+                      <div className={styles.featuredMobileImageContainer}>
+                        <div className={`${styles.skeletonImage} ${styles.skeletonShimmer}`}></div>
+                      </div>
+                      
+                      <div className={styles.featuredMobileCardInfo}>
+                        <div className={`${styles.skeletonProductName} ${styles.skeletonShimmer}`}></div>
+                        <div className={`${styles.skeletonPrice} ${styles.skeletonShimmer}`}></div>
+                      </div>
+                      
+                      {/* Wishlist Button Skeleton */}
+                      <div className={styles.featuredMobileWishlistContainer}>
+                        <div className={`${styles.skeletonWishlistButton} ${styles.skeletonShimmer}`}></div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
         ) : error ? (
           <div className={styles.featuredError}>
             <p>Unable to load products</p>
@@ -1747,7 +2057,11 @@ onClick={() => handleCarouselNav('next')}
 
     {/* Replace the grid with our new stacked carousel */}
     <div>
-      <MobileFeaturedCarousel products={featuredProducts} />
+      {featuredProducts.length === 0 ? (
+        <MobileFeaturedCarouselSkeleton />
+      ) : (
+        <MobileFeaturedCarousel products={featuredProducts} />
+      )}
     </div>
 
     {/* View all button */}
@@ -1757,9 +2071,18 @@ onClick={() => handleCarouselNav('next')}
       position: 'relative',
       zIndex: 2
     }}>
-      <Link href="/products" className={styles.mobileFeaturedViewAllButton}>
-        View All Products
-      </Link>
+      {featuredProducts.length === 0 ? (
+        <div className={`${styles.skeletonButton} ${styles.skeletonShimmer}`} style={{
+          width: '140px',
+          height: '40px',
+          margin: '0 auto',
+          borderRadius: '20px'
+        }}></div>
+      ) : (
+        <Link href="/products" className={styles.mobileFeaturedViewAllButton}>
+          View All Products
+        </Link>
+      )}
     </div>
 
     {/* Subtle accent elements */}
@@ -1838,48 +2161,71 @@ onClick={() => handleCarouselNav('next')}
       </p>
     </div>
 
-    <div className={styles.mobileExploreGrid}>
-      {[
-        {
-          title: 'Artistic Journals',
-          image: 'https://res.cloudinary.com/downe8107/image/upload/v1752441188/84D2D636-027E-484D-B886-1BFEE0B9F5CD_1_201_a_ca4hrv.jpg'
-        },
-        {
-          title: 'Wall Clocks',
-          image: 'https://res.cloudinary.com/downe8107/image/upload/v1752441196/F0CFF91C-3B7B-4AA9-AECE-35A6DA417194_1_201_a_w5rmde.jpg'
-        },
-        {
-          title: 'Resin Trays',
-          image: 'https://res.cloudinary.com/downe8107/image/upload/v1752441176/2E1812EC-BB3C-4C7D-8480-C1539B7A0FBB_1_201_a_xc2yjx.jpg'
-        },
-        {
-          title: 'Rangoli Art',
-          image: 'https://res.cloudinary.com/downe8107/image/upload/v1752440782/6F66291E-3673-47F4-8989-701EBB8BB8BE_1_201_a_uxx8zk.jpg'
-        },
-        {
-          title: 'Pattachitra Panels',
-          image: 'https://res.cloudinary.com/downe8107/image/upload/v1752441169/65B82642-5A77-4A31-88BC-B36E2B5DB7DE_1_201_a_e7bed1.jpg'
-        },
-        {
-          title: 'Krishna Embroidery',
-          image: 'https://res.cloudinary.com/downe8107/image/upload/v1752441212/2E077407-F784-4515-8960-988FB394B218_1_201_a_p1as8c.jpg'
-        }
-      ].map((item, index) => (
-        <div key={index} className={styles.mobileExploreCard}>
-          <div className={styles.mobileExploreCardInner}>
-            <img
-              src={item.image}
-              alt={item.title}
-              className={styles.mobileExploreImage}
-              onError={(e) => (e.currentTarget.src = 'https://placehold.co/300x300/333/666?text=Image+Not+Found')}
-            />
-            <div className={styles.mobileExploreCardContent}>
-              <h3 className={styles.mobileExploreCardTitle}>{item.title}</h3>
+    {featuredProducts.length === 0 ? (
+      <div className={styles.mobileExploreGrid}>
+        {[1, 2, 3, 4, 5, 6].map((_, index) => (
+          <div key={index} className={styles.mobileExploreCard}>
+            <div className={styles.mobileExploreCardInner}>
+              <div className={`${styles.skeletonImage} ${styles.skeletonShimmer}`} style={{
+                width: '100%',
+                height: '140px',
+                borderRadius: '6px'
+              }}></div>
+              <div className={styles.mobileExploreCardContent}>
+                <div className={`${styles.skeletonProductName} ${styles.skeletonShimmer}`} style={{
+                  width: '80%',
+                  height: '16px',
+                  margin: '0 auto'
+                }}></div>
+              </div>
             </div>
           </div>
-        </div>
-      ))}
-    </div>
+        ))}
+      </div>
+    ) : (
+      <div className={styles.mobileExploreGrid}>
+        {[
+          {
+            title: 'Artistic Journals',
+            image: 'https://res.cloudinary.com/downe8107/image/upload/v1752441188/84D2D636-027E-484D-B886-1BFEE0B9F5CD_1_201_a_ca4hrv.jpg'
+          },
+          {
+            title: 'Wall Clocks',
+            image: 'https://res.cloudinary.com/downe8107/image/upload/v1752441196/F0CFF91C-3B7B-4AA9-AECE-35A6DA417194_1_201_a_w5rmde.jpg'
+          },
+          {
+            title: 'Resin Trays',
+            image: 'https://res.cloudinary.com/downe8107/image/upload/v1752441176/2E1812EC-BB3C-4C7D-8480-C1539B7A0FBB_1_201_a_xc2yjx.jpg'
+          },
+          {
+            title: 'Rangoli Art',
+            image: 'https://res.cloudinary.com/downe8107/image/upload/v1752440782/6F66291E-3673-47F4-8989-701EBB8BB8BE_1_201_a_uxx8zk.jpg'
+          },
+          {
+            title: 'Pattachitra Panels',
+            image: 'https://res.cloudinary.com/downe8107/image/upload/v1752441169/65B82642-5A77-4A31-88BC-B36E2B5DB7DE_1_201_a_e7bed1.jpg'
+          },
+          {
+            title: 'Krishna Embroidery',
+            image: 'https://res.cloudinary.com/downe8107/image/upload/v1752441212/2E077407-F784-4515-8960-988FB394B218_1_201_a_p1as8c.jpg'
+          }
+        ].map((item, index) => (
+          <div key={index} className={styles.mobileExploreCard}>
+            <div className={styles.mobileExploreCardInner}>
+              <img
+                src={item.image}
+                alt={item.title}
+                className={styles.mobileExploreImage}
+                onError={(e) => (e.currentTarget.src = 'https://placehold.co/300x300/333/666?text=Image+Not+Found')}
+              />
+              <div className={styles.mobileExploreCardContent}>
+                <h3 className={styles.mobileExploreCardTitle}>{item.title}</h3>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    )}
 
     {/* Subtle accent elements */}
     <div style={{
@@ -1934,9 +2280,18 @@ onClick={() => handleCarouselNav('next')}
       position: 'relative',
       zIndex: 2
     }}>
-      <Link href="/products" className={styles.exploreAllButton}>
-        View All Collections
-      </Link>
+      {featuredProducts.length === 0 ? (
+        <div className={`${styles.skeletonButton} ${styles.skeletonShimmer}`} style={{
+          width: '160px',
+          height: '44px',
+          margin: '0 auto',
+          borderRadius: '22px'
+        }}></div>
+      ) : (
+        <Link href="/products" className={styles.exploreAllButton}>
+          View All Collections
+        </Link>
+      )}
     </div>
   </section>
   
