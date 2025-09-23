@@ -3499,15 +3499,14 @@
 
 .mobileCarouselContainer {
   width: 100%;
-  max-width: 400px;
+  max-width: 100%;
   margin: 0 auto;
   overflow: hidden;
-  border-radius: 16px;
   position: relative;
   user-select: none;
   -webkit-user-select: none;
   -webkit-touch-callout: none;
-  padding: 0 1rem;
+  padding: 0 2rem;
 }
 
 .mobileCarouselWrapper {
@@ -3520,9 +3519,10 @@
   position: absolute;
   top: 0;
   left: 0;
-  width: 100%;
+  width: calc(100% - 2rem);
   height: 100%;
   display: flex;
+  margin: 0 1rem;
 }
 
 /* Mobile Product Card */
@@ -3815,6 +3815,15 @@
 
 /* Responsive adjustments */
 @media (max-width: 480px) {
+  .mobileCarouselContainer {
+    padding: 0 1.5rem;
+  }
+  
+  .mobileCarouselSlide {
+    width: calc(100% - 1.5rem);
+    margin: 0 0.75rem;
+  }
+  
   .mobileCarouselWrapper {
     height: 360px;
   }

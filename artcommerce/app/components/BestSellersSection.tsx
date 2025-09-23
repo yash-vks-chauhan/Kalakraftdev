@@ -28,6 +28,7 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [addingToCart, setAddingToCart] = useState<{ [key: string]: boolean }>({})
+  const [gapSize, setGapSize] = useState(2) // Default gap in rem
   
   // Auto-play states
   const [isAutoPlaying, setIsAutoPlaying] = useState(true)
@@ -138,6 +139,18 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
     })
     setImageLoadStates(initialStates)
   }, [products])
+
+  // Update gap size based on screen width
+  useEffect(() => {
+    const updateGapSize = () => {
+      setGapSize(window.innerWidth <= 480 ? 1.5 : 2)
+    }
+    
+    updateGapSize()
+    window.addEventListener('resize', updateGapSize)
+    
+    return () => window.removeEventListener('resize', updateGapSize)
+  }, [])
 
   // Fetch best sellers
   useEffect(() => {
@@ -416,7 +429,7 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
                   key={product.id} 
                   className={styles.mobileCarouselSlide}
                   style={{
-                    transform: `translateX(calc(${(index - currentIndex) * 100}% + ${dragOffset}px))`,
+                    transform: `translateX(calc(${(index - currentIndex) * 100}% + ${(index - currentIndex) * gapSize}rem + ${dragOffset}px))`,
                     transition: isDragging.current ? 'none' : 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
                   }}
                 >
