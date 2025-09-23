@@ -32,7 +32,7 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
   
   // Auto-play states
   const [isAutoPlaying, setIsAutoPlaying] = useState(true)
-  const [autoPlaySpeed] = useState(4000) // 4 seconds
+  const [autoPlaySpeed] = useState(5000) // 5 seconds for more elegant timing
   const autoPlayRef = useRef<NodeJS.Timeout | null>(null)
   
   // Image loading states
@@ -70,14 +70,29 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
     setImageLoadStates(prev => ({ ...prev, [productId]: 'error' }))
   }
 
-  // Auto-play functionality
+  // Enhanced infinite scroll navigation with smoother transitions
+  const goToNext = useCallback(() => {
+    if (isTransitioning) return
+    setIsTransitioning(true)
+    setCurrentIndex(prev => (prev + 1) % products.length)
+    setTimeout(() => setIsTransitioning(false), 600)
+  }, [isTransitioning, products.length])
+
+  const goToPrevious = useCallback(() => {
+    if (isTransitioning) return
+    setIsTransitioning(true)
+    setCurrentIndex(prev => (prev - 1 + products.length) % products.length)
+    setTimeout(() => setIsTransitioning(false), 600)
+  }, [isTransitioning, products.length])
+
+  // Auto-play functionality with explicit direction
   const startAutoPlay = useCallback(() => {
     if (!isAutoPlaying || products.length <= 1) return
     
     autoPlayRef.current = setTimeout(() => {
-      setCurrentIndex(prev => (prev + 1) % products.length) // Infinite loop
+      goToNext() // Use the goToNext function for consistency
     }, autoPlaySpeed)
-  }, [isAutoPlaying, products.length, autoPlaySpeed])
+  }, [isAutoPlaying, products.length, autoPlaySpeed, goToNext])
 
   const stopAutoPlay = useCallback(() => {
     if (autoPlayRef.current) {
@@ -90,21 +105,6 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
   const toggleAutoPlay = () => {
     setIsAutoPlaying(prev => !prev)
   }
-
-  // Enhanced infinite scroll navigation
-  const goToNext = useCallback(() => {
-    if (isTransitioning) return
-    setIsTransitioning(true)
-    setCurrentIndex(prev => (prev + 1) % products.length) // Infinite loop
-    setTimeout(() => setIsTransitioning(false), 400)
-  }, [isTransitioning, products.length])
-
-  const goToPrevious = useCallback(() => {
-    if (isTransitioning) return
-    setIsTransitioning(true)
-    setCurrentIndex(prev => (prev - 1 + products.length) % products.length) // Infinite loop
-    setTimeout(() => setIsTransitioning(false), 400)
-  }, [isTransitioning, products.length])
 
   // Auto-play effect
   useEffect(() => {
@@ -241,9 +241,9 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
     setTimeout(() => {
       setIsTransitioning(false)
       if (isAutoPlaying) {
-        setTimeout(startAutoPlay, 1000) // Resume auto-play after delay
+        setTimeout(startAutoPlay, 1500) // Resume auto-play after delay
       }
-    }, 400)
+    }, 600)
   }
 
   // Add to cart function
@@ -430,7 +430,8 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
                   className={styles.mobileCarouselSlide}
                   style={{
                     transform: `translateX(calc(${(index - currentIndex) * 100}vw + ${(index - currentIndex) * gapSize}rem + ${dragOffset}px))`,
-                    transition: isDragging.current ? 'none' : 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+                    transition: isDragging.current ? 'none' : 'transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
+                    willChange: 'transform'
                   }}
                 >
                   <div className={styles.mobileProductCard}>
