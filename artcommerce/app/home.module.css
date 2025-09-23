@@ -2963,7 +2963,7 @@
 
 .bestSellersSection {
   position: relative;
-  padding: 6rem 2rem 8rem;
+  padding: 8rem 2rem 10rem;
   background: #ffffff;
   overflow: hidden;
 }
@@ -2971,7 +2971,7 @@
 .bestSellersDescription {
   text-align: center;
   max-width: 600px;
-  margin: 0 auto 3rem;
+  margin: 0 auto 4rem;
   color: #666;
   font-size: 1.1rem;
   line-height: 1.6;
@@ -3455,7 +3455,7 @@
 /* Responsive Design */
 @media (max-width: 768px) {
   .bestSellersSection {
-    padding: 4rem 1rem 6rem;
+    padding: 6rem 1rem 8rem;
   }
   
   .bestSellersDesktop {
@@ -3492,7 +3492,7 @@
 /* Mobile Carousel Container */
 .bestSellersMobileCarousel {
   position: relative;
-  padding: 0 1rem;
+  padding: 2rem 1rem;
   overflow: hidden;
 }
 
@@ -3528,8 +3528,8 @@
   overflow: hidden;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
   border: 1px solid rgba(0, 0, 0, 0.05);
-  min-height: 200px;
-  max-height: 200px;
+  min-height: 320px;
+  max-height: 320px;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   transform-origin: center center;
   will-change: transform;
@@ -3575,7 +3575,7 @@
 /* Right Side - Details Section */
 .mobileProductDetailsSection {
   flex: 1;
-  padding: 16px 16px 16px 20px;
+  padding: 24px 20px 24px 24px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -3590,19 +3590,19 @@
 }
 
 .mobileProductCategory {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   color: #666;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
   font-weight: 500;
 }
 
 .mobileProductName {
-  font-size: 1rem;
+  font-size: 1.1rem;
   font-weight: 600;
   color: #000;
-  margin: 0 0 8px 0;
+  margin: 0 0 12px 0;
   line-height: 1.3;
   text-decoration: none;
   display: -webkit-box;
@@ -3617,10 +3617,10 @@
 }
 
 .mobileProductPrice {
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   font-weight: 700;
   color: #000;
-  margin: 0 0 16px 0;
+  margin: 0 0 20px 0;
 }
 
 /* Mobile Action Buttons */
@@ -3636,8 +3636,8 @@
   color: #fff;
   border: none;
   border-radius: 8px;
-  padding: 10px 12px;
-  font-size: 0.85rem;
+  padding: 12px 14px;
+  font-size: 0.9rem;
   font-weight: 500;
   display: flex;
   align-items: center;
@@ -3672,8 +3672,8 @@
 }
 
 .mobileWishlistButton {
-  flex: 0 0 40px;
-  height: 40px;
+  flex: 0 0 44px;
+  height: 44px;
   background: transparent;
   border: 1px solid rgba(0, 0, 0, 0.15);
   border-radius: 8px;
