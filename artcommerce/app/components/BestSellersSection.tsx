@@ -70,20 +70,14 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
     setImageLoadStates(prev => ({ ...prev, [productId]: 'error' }))
   }
 
-  // Enhanced infinite scroll navigation with smoother transitions
-  const goToNext = useCallback(() => {
-    if (isTransitioning) return
-    setIsTransitioning(true)
-    setCurrentIndex(prev => (prev + 1) % products.length)
-    setTimeout(() => setIsTransitioning(false), 600)
-  }, [isTransitioning, products.length])
+  // Simple infinite scroll navigation
+  const goToNext = () => {
+    setCurrentIndex((prevIndex) => (prevIndex + 1) % products.length);
+  };
 
-  const goToPrevious = useCallback(() => {
-    if (isTransitioning) return
-    setIsTransitioning(true)
-    setCurrentIndex(prev => (prev - 1 + products.length) % products.length)
-    setTimeout(() => setIsTransitioning(false), 600)
-  }, [isTransitioning, products.length])
+  const goToPrevious = () => {
+    setCurrentIndex((prevIndex) => (prevIndex - 1 + products.length) % products.length);
+  };
 
   // Auto-play functionality with explicit direction
   const startAutoPlay = useCallback(() => {
@@ -430,8 +424,7 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
                   className={styles.mobileCarouselSlide}
                   style={{
                     transform: `translateX(calc(${(index - currentIndex) * 100}vw + ${(index - currentIndex) * gapSize}rem + ${dragOffset}px))`,
-                    transition: isDragging.current ? 'none' : 'transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
-                    willChange: 'transform'
+                    transition: isDragging.current ? 'none' : 'transform 0.25s ease'
                   }}
                 >
                   <div className={styles.mobileProductCard}>
@@ -459,39 +452,42 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
                     {/* Right side - Product Details */}
                     <div className={styles.mobileProductDetailsSection}>
                       <div className={styles.mobileProductDetails}>
+                        {/* Product Category */}
                         {product.category && (
                           <span className={styles.mobileProductCategory}>
                             {product.category.name}
                           </span>
                         )}
                         
+                        {/* Product Name */}
                         <Link href={`/products/${product.id}`}>
                           <h3 className={styles.mobileProductName}>
                             {product.name}
                           </h3>
                         </Link>
                         
+                        {/* Product Price */}
                         <p className={styles.mobileProductPrice}>
                           {formatPrice(product.price)}
                         </p>
 
+                        {/* Action Buttons */}
                         <div className={styles.mobileProductActions}>
                           <button
                             className={styles.mobileAddToCartButton}
                             onClick={() => handleAddToCart(product.id)}
                             disabled={addingToCart[product.id]}
+                            title={addingToCart[product.id] ? 'Adding...' : 'Add to Cart'}
                           >
-                            <ShoppingCart size={16} />
-                            <span>
-                              {addingToCart[product.id] ? 'Adding...' : 'Add to Cart'}
-                            </span>
+                            <ShoppingCart size={18} />
                           </button>
 
                           <button
                             className={`${styles.mobileWishlistButton} ${isInWishlistStatus ? styles.mobileWishlistActive : ''}`}
                             onClick={() => handleWishlistToggle(product.id)}
+                            title={isInWishlistStatus ? 'Remove from Wishlist' : 'Add to Wishlist'}
                           >
-                            <Heart size={16} />
+                            <Heart size={18} fill={isInWishlistStatus ? 'currentColor' : 'none'} />
                           </button>
                         </div>
                       </div>

@@ -3514,8 +3514,6 @@
   position: relative;
   width: 100%;
   height: 400px;
-  perspective: 1200px;
-  transform-style: preserve-3d;
 }
 
 .mobileCarouselSlide {
@@ -3527,31 +3525,26 @@
   display: flex;
   padding: 0 1rem;
   will-change: transform;
-  backface-visibility: hidden;
-  transform-style: preserve-3d;
 }
 
 /* Mobile Product Card */
 .mobileProductCard {
   display: flex;
   background: #fff;
-  border-radius: 20px;
+  border-radius: 16px;
   overflow: hidden;
-  border: 2px solid rgba(0, 0, 0, 0.08);
+  border: 2px solid rgba(0, 0, 0, 0.12);
   height: 400px;
   width: 100%;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.3s ease;
   transform-origin: center center;
-  will-change: transform, box-shadow;
+  will-change: transform;
   backface-visibility: hidden;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
 }
 
 .mobileProductCard:active {
   transform: scale(0.98);
-  border-color: rgba(0, 0, 0, 0.15);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
-  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  border-color: rgba(0, 0, 0, 0.2);
 }
 
 /* Left Side - Image Section */
@@ -3576,12 +3569,12 @@
   align-items: center;
   justify-content: center;
   padding: 20px;
-  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.2s ease;
   will-change: transform;
 }
 
 .mobileProductCard:hover .mobileProductImageContainer {
-  transform: scale(1.02);
+  transform: scale(1.01);
 }
 
 .mobileProductImage {
@@ -3589,53 +3582,58 @@
   height: 100%;
   object-fit: contain;
   border-radius: 12px;
-  transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-  will-change: transform, filter;
+  transition: transform 0.2s ease;
+  will-change: transform;
 }
 
 .mobileProductCard:hover .mobileProductImage {
-  transform: scale(1.05);
+  transform: scale(1.02);
   filter: brightness(1.05) contrast(1.02);
 }
 
 /* Right Side - Details Section */
 .mobileProductDetailsSection {
   flex: 0 0 35%;
-  padding: 30px 20px 30px 24px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: space-between;
   background: #fff;
+  border-radius: 0 16px 16px 0;
 }
 
 .mobileProductDetails {
   display: flex;
   flex-direction: column;
   height: 100%;
-  justify-content: center;
+  justify-content: space-between;
+  gap: 8px;
 }
 
 .mobileProductCategory {
-  font-size: 0.75rem;
-  color: #666;
+  font-size: 0.65rem;
+  color: #888;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  margin-bottom: 12px;
+  letter-spacing: 0.05em;
+  margin: 0;
   font-weight: 500;
+  line-height: 1;
 }
 
 .mobileProductName {
-  font-size: 1.1rem;
+  font-size: 0.95rem;
   font-weight: 600;
   color: #000;
-  margin: 0 0 16px 0;
-  line-height: 1.3;
+  margin: 0;
+  line-height: 1.2;
   text-decoration: none;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  flex: 1;
+  max-height: 2.4rem;
 }
 
 .mobileProductName:hover {
@@ -3643,17 +3641,19 @@
 }
 
 .mobileProductPrice {
-  font-size: 1.2rem;
+  font-size: 1rem;
   font-weight: 700;
   color: #000;
-  margin: 0 0 24px 0;
+  margin: 0;
+  line-height: 1;
 }
 
 /* Mobile Action Buttons */
 .mobileProductActions {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   align-items: center;
+  margin-top: 4px;
 }
 
 .mobileAddToCartButton {
@@ -3661,91 +3661,48 @@
   background: #000;
   color: #fff;
   border: none;
-  border-radius: 12px;
-  padding: 12px 14px;
-  font-size: 0.9rem;
-  font-weight: 500;
+  border-radius: 6px;
+  padding: 10px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
   cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  transition: all 0.2s ease;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
-  will-change: transform, background, box-shadow;
-  transform-origin: center center;
-  position: relative;
-  overflow: hidden;
-}
-
-.mobileAddToCartButton::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: left 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  min-width: 36px;
 }
 
 .mobileAddToCartButton:hover {
-  background: #1a1a1a;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
-}
-
-.mobileAddToCartButton:hover::before {
-  left: 100%;
+  background: #333;
+  transform: scale(1.02);
 }
 
 .mobileAddToCartButton:active {
-  transform: translateY(0) scale(0.97);
-  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.2);
+  transform: scale(0.98);
 }
 
 .mobileAddToCartButton:disabled {
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;
-  box-shadow: none;
 }
 
 .mobileWishlistButton {
-  flex: 0 0 44px;
-  height: 44px;
+  flex: 0 0 36px;
+  height: 36px;
   background: transparent;
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.2s ease;
   color: #666;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
-  will-change: transform, background, border-color, color;
-  transform-origin: center center;
-  position: relative;
-  overflow: hidden;
-}
-
-.mobileWishlistButton::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  background: rgba(0, 0, 0, 0.05);
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .mobileWishlistButton:hover {
@@ -3754,14 +3711,13 @@
   transform: scale(1.05);
 }
 
-.mobileWishlistButton:hover::before {
-  width: 100%;
-  height: 100%;
-}
-
 .mobileWishlistButton:active {
   transform: scale(0.95);
-  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mobileWishlistActive {
+  color: #ff4757;
+  border-color: #ff4757;
 }
 
 .mobileWishlistButton.mobileWishlistActive {
@@ -3781,44 +3737,36 @@
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  background: rgba(255, 255, 255, 0.95);
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 50%;
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.2s ease;
   color: #333;
   z-index: 10;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  will-change: transform, box-shadow;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   user-select: none;
   -webkit-tap-highlight-color: transparent;
 }
 
 .mobileCarouselNav:hover {
   background: #fff;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
-  transform: translateY(-50%) scale(1.08);
-  border-color: rgba(0, 0, 0, 0.12);
+  transform: translateY(-50%) scale(1.05);
 }
 
 .mobileCarouselNav:active {
-  transform: translateY(-50%) scale(0.94);
-  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  transform: translateY(-50%) scale(0.95);
 }
 
 .mobileCarouselNav:disabled {
   opacity: 0.3;
   cursor: not-allowed;
   transform: translateY(-50%);
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
 }
 
 .mobileCarouselPrev {
@@ -3839,44 +3787,24 @@
 }
 
 .mobileCarouselDot {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   border: none;
-  background: rgba(0, 0, 0, 0.15);
+  background: rgba(0, 0, 0, 0.2);
   cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.2s ease;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
-  will-change: transform, background, box-shadow;
-  position: relative;
-}
-
-.mobileCarouselDot::before {
-  content: '';
-  position: absolute;
-  top: -4px;
-  left: -4px;
-  right: -4px;
-  bottom: -4px;
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.05);
-  transform: scale(0);
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .mobileCarouselDot:hover {
-  background: rgba(0, 0, 0, 0.3);
-  transform: scale(1.15);
-}
-
-.mobileCarouselDot:hover::before {
-  transform: scale(1);
+  background: rgba(0, 0, 0, 0.4);
+  transform: scale(1.2);
 }
 
 .mobileCarouselDot:active {
-  transform: scale(0.85);
-  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: scale(0.9);
 }
 
 .mobileCarouselDot:disabled {
@@ -3886,18 +3814,11 @@
 
 .mobileCarouselDotActive {
   background: #000;
-  transform: scale(1.2);
-  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.25);
-}
-
-.mobileCarouselDotActive::before {
-  transform: scale(1);
-  background: rgba(0, 0, 0, 0.1);
+  transform: scale(1.3);
 }
 
 .mobileCarouselDotActive:hover {
-  transform: scale(1.3);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  transform: scale(1.4);
 }
 
 /* Responsive adjustments */
@@ -3925,28 +3846,32 @@
   }
   
   .mobileProductDetailsSection {
-    padding: 20px 16px 20px 20px;
+    padding: 14px;
+  }
+  
+  .mobileProductCategory {
+    font-size: 0.6rem;
   }
   
   .mobileProductName {
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     -webkit-line-clamp: 2;
     line-clamp: 2;
   }
   
   .mobileProductPrice {
-    font-size: 1.1rem;
-    margin-bottom: 16px;
+    font-size: 0.95rem;
   }
   
   .mobileAddToCartButton {
-    padding: 10px 12px;
-    font-size: 0.85rem;
+    padding: 8px;
+    height: 32px;
+    min-width: 32px;
   }
   
   .mobileWishlistButton {
-    flex: 0 0 40px;
-    height: 40px;
+    flex: 0 0 32px;
+    height: 32px;
   }
   
   .mobileCarouselNav {
