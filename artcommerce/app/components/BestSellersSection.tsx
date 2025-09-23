@@ -1,12 +1,12 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { useCart } from '../contexts/CartContext'
 import { useWishlist } from '../contexts/WishlistContext'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Heart, ShoppingCart, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Heart, ShoppingCart, ChevronLeft, ChevronRight, Play, Pause } from 'lucide-react'
 
 interface Product {
   id: string
@@ -28,6 +28,14 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [addingToCart, setAddingToCart] = useState<{ [key: string]: boolean }>({})
+  
+  // Auto-play states
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true)
+  const [autoPlaySpeed] = useState(4000) // 4 seconds
+  const autoPlayRef = useRef<NodeJS.Timeout | null>(null)
+  
+  // Image loading states
+  const [imageLoadStates, setImageLoadStates] = useState<{ [key: string]: 'loading' | 'loaded' | 'error' }>({})
   
   const { user } = useAuth()
   const { addToCart } = useCart()
@@ -51,6 +59,85 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
       minimumFractionDigits: 0
     }).format(price)
   }
+
+  // Image loading handlers
+  const handleImageLoad = (productId: string) => {
+    setImageLoadStates(prev => ({ ...prev, [productId]: 'loaded' }))
+  }
+
+  const handleImageError = (productId: string) => {
+    setImageLoadStates(prev => ({ ...prev, [productId]: 'error' }))
+  }
+
+  // Auto-play functionality
+  const startAutoPlay = useCallback(() => {
+    if (!isAutoPlaying || products.length <= 1) return
+    
+    autoPlayRef.current = setTimeout(() => {
+      setCurrentIndex(prev => (prev + 1) % products.length) // Infinite loop
+    }, autoPlaySpeed)
+  }, [isAutoPlaying, products.length, autoPlaySpeed])
+
+  const stopAutoPlay = useCallback(() => {
+    if (autoPlayRef.current) {
+      clearTimeout(autoPlayRef.current)
+      autoPlayRef.current = null
+    }
+  }, [])
+
+  // Toggle auto-play
+  const toggleAutoPlay = () => {
+    setIsAutoPlaying(prev => !prev)
+  }
+
+  // Enhanced infinite scroll navigation
+  const goToNext = useCallback(() => {
+    if (isTransitioning) return
+    setIsTransitioning(true)
+    setCurrentIndex(prev => (prev + 1) % products.length) // Infinite loop
+    setTimeout(() => setIsTransitioning(false), 400)
+  }, [isTransitioning, products.length])
+
+  const goToPrevious = useCallback(() => {
+    if (isTransitioning) return
+    setIsTransitioning(true)
+    setCurrentIndex(prev => (prev - 1 + products.length) % products.length) // Infinite loop
+    setTimeout(() => setIsTransitioning(false), 400)
+  }, [isTransitioning, products.length])
+
+  // Auto-play effect
+  useEffect(() => {
+    if (isAutoPlaying && products.length > 1) {
+      startAutoPlay()
+    } else {
+      stopAutoPlay()
+    }
+
+    return () => stopAutoPlay()
+  }, [currentIndex, isAutoPlaying, startAutoPlay, stopAutoPlay, products.length])
+
+  // Pause auto-play on user interaction
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        stopAutoPlay()
+      } else if (isAutoPlaying) {
+        startAutoPlay()
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }, [isAutoPlaying, startAutoPlay, stopAutoPlay])
+
+  // Initialize image loading states
+  useEffect(() => {
+    const initialStates: { [key: string]: 'loading' | 'loaded' | 'error' } = {}
+    products.forEach(product => {
+      initialStates[product.id] = 'loading'
+    })
+    setImageLoadStates(initialStates)
+  }, [products])
 
   // Fetch best sellers
   useEffect(() => {
@@ -80,6 +167,9 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
   const handleTouchStart = (e: React.TouchEvent) => {
     if (isTransitioning) return
     
+    // Pause auto-play during touch interaction
+    stopAutoPlay()
+    
     const touch = e.touches[0]
     touchStartX.current = touch.clientX
     touchStartY.current = touch.clientY
@@ -98,24 +188,12 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
     if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 10) {
       e.preventDefault()
       
-      // Apply drag offset with rubber band effect at boundaries
-      let constrainedDelta = deltaX
-      const maxDrag = 80
-      
-      // Left boundary (can't go before first item)
-      if (currentIndex === 0 && deltaX > 0) {
-        constrainedDelta = Math.sign(deltaX) * maxDrag * (1 - Math.exp(-Math.abs(deltaX) / maxDrag))
-      }
-      // Right boundary (can't go after last item)
-      else if (currentIndex === products.length - 1 && deltaX < 0) {
-        constrainedDelta = Math.sign(deltaX) * maxDrag * (1 - Math.exp(-Math.abs(deltaX) / maxDrag))
-      }
-      
-      setDragOffset(constrainedDelta)
+      // Apply drag offset with rubber band effect (no boundaries for infinite scroll)
+      setDragOffset(deltaX)
     }
   }
 
-    const handleTouchEnd = (e: React.TouchEvent) => {
+  const handleTouchEnd = (e: React.TouchEvent) => {
     if (!isDragging.current) return
     
     isDragging.current = false
@@ -130,33 +208,29 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
     const shouldSwipeLeft = deltaX < -swipeThreshold
     const shouldSwipeRight = deltaX > swipeThreshold
     
-    if (shouldSwipeLeft && currentIndex < products.length - 1) {
+    if (shouldSwipeLeft) {
       goToNext()
-    } else if (shouldSwipeRight && currentIndex > 0) {
+    } else if (shouldSwipeRight) {
       goToPrevious()
     }
-  }
-
-  // Navigation functions with enhanced animations
-  const goToNext = () => {
-    if (isTransitioning || currentIndex >= products.length - 1) return
-    setIsTransitioning(true)
-    setCurrentIndex(prev => prev + 1)
-    setTimeout(() => setIsTransitioning(false), 400)
-  }
-
-  const goToPrevious = () => {
-    if (isTransitioning || currentIndex <= 0) return
-    setIsTransitioning(true)
-    setCurrentIndex(prev => prev - 1)
-    setTimeout(() => setIsTransitioning(false), 400)
+    
+    // Resume auto-play after touch interaction
+    if (isAutoPlaying) {
+      setTimeout(startAutoPlay, 1000) // Delay restart
+    }
   }
 
   const goToSlide = (index: number) => {
     if (isTransitioning || index === currentIndex) return
+    stopAutoPlay() // Pause auto-play on manual navigation
     setIsTransitioning(true)
     setCurrentIndex(index)
-    setTimeout(() => setIsTransitioning(false), 400)
+    setTimeout(() => {
+      setIsTransitioning(false)
+      if (isAutoPlaying) {
+        setTimeout(startAutoPlay, 1000) // Resume auto-play after delay
+      }
+    }, 400)
   }
 
   // Add to cart function
@@ -205,15 +279,71 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
           <h2 className={styles.sectionTitle}>Best Sellers</h2>
           <div className={styles.headerLine}></div>
         </div>
-        <div className={styles.bestSellersLoading}>
-          <div className={styles.loadingSpinner}></div>
-          <p>Loading best sellers...</p>
+        
+        {/* Desktop Skeleton */}
+        <div className={`${styles.bestSellersDesktop} ${styles.desktopOnly}`}>
+          {[...Array(4)].map((_, index) => (
+            <div key={index} className={styles.bestSellerCardSkeleton}>
+              <div className={styles.skeletonImage}></div>
+              <div className={styles.skeletonContent}>
+                <div className={styles.skeletonTitle}></div>
+                <div className={styles.skeletonPrice}></div>
+              </div>
+            </div>
+          ))}
+        </div>
+        
+        {/* Mobile Skeleton */}
+        <div className={`${styles.bestSellersMobileCarousel} ${styles.mobileOnly}`}>
+          <div className={styles.mobileCarouselContainer}>
+            <div className={styles.mobileCarouselWrapper}>
+              <div className={styles.mobileCarouselSlide}>
+                <div className={styles.mobileProductCardSkeleton}>
+                  <div className={styles.mobileSkeletonImageSection}>
+                    <div className={styles.mobileSkeletonImage}></div>
+                  </div>
+                  <div className={styles.mobileSkeletonDetailsSection}>
+                    <div className={styles.mobileSkeletonCategory}></div>
+                    <div className={styles.mobileSkeletonTitle}></div>
+                    <div className={styles.mobileSkeletonPrice}></div>
+                    <div className={styles.mobileSkeletonActions}>
+                      <div className={styles.mobileSkeletonButton}></div>
+                      <div className={styles.mobileSkeletonWishlist}></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
     )
   }
 
-  if (error || !products.length) {
+  if (error) {
+    return (
+      <section className={styles.bestSellersSection} data-aos="fade-up">
+        <div className={styles.sectionHeader} data-aos="fade-up">
+          <div className={styles.headerLine}></div>
+          <h2 className={styles.sectionTitle}>Best Sellers</h2>
+          <div className={styles.headerLine}></div>
+        </div>
+        <div className={styles.bestSellersError}>
+          <div className={styles.errorContent}>
+            <p>Unable to load best sellers at the moment.</p>
+            <button 
+              className={styles.retryButton}
+              onClick={() => window.location.reload()}
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  if (!products.length) {
     return null // Hide section if no data
   }
 
@@ -236,11 +366,18 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
           <div key={product.id} className={styles.bestSellerCard} data-aos="fade-up" data-aos-delay={`${300 + (index * 100)}`}>
             <Link href={`/products/${product.id}`}>
               <div className={styles.bestSellerImageContainer}>
+                {imageLoadStates[product.id] === 'loading' && (
+                  <div className={styles.imageLoadingSkeleton}></div>
+                )}
                 <img 
                   src={product.imageUrls[0] || 'https://placehold.co/300x300/f0f0f0/888?text=No+Image'} 
                   alt={product.name}
-                  className={styles.bestSellerImage}
-                  onError={(e) => (e.currentTarget.src = 'https://placehold.co/300x300/f0f0f0/888?text=No+Image')}
+                  className={`${styles.bestSellerImage} ${imageLoadStates[product.id] === 'loaded' ? styles.imageLoaded : ''}`}
+                  onLoad={() => handleImageLoad(product.id)}
+                  onError={(e) => {
+                    handleImageError(product.id)
+                    e.currentTarget.src = 'https://placehold.co/300x300/f0f0f0/888?text=No+Image'
+                  }}
                 />
               </div>
               <div className={styles.bestSellerInfo}>
@@ -254,6 +391,16 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
 
       {/* Best Sellers Mobile Carousel */}
       <div className={`${styles.bestSellersMobileCarousel} ${styles.mobileOnly}`} data-aos="fade-up" data-aos-delay="200">
+        {/* Auto-play Control */}
+        {products.length > 1 && (
+          <button 
+            className={styles.autoPlayToggle}
+            onClick={toggleAutoPlay}
+            title={isAutoPlaying ? 'Pause auto-play' : 'Start auto-play'}
+          >
+            {isAutoPlaying ? <Pause size={16} /> : <Play size={16} />}
+          </button>
+        )}
         <div 
           className={styles.mobileCarouselContainer}
           onTouchStart={handleTouchStart}
@@ -278,11 +425,18 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
                     <div className={styles.mobileProductImageSection}>
                       <Link href={`/products/${product.id}`} className={styles.mobileImageLink}>
                         <div className={styles.mobileProductImageContainer}>
+                          {imageLoadStates[product.id] === 'loading' && (
+                            <div className={styles.mobileImageLoadingSkeleton}></div>
+                          )}
                           <img
                             src={product.imageUrls[0] || 'https://placehold.co/300x300/f0f0f0/888?text=No+Image'}
                             alt={product.name}
-                            className={styles.mobileProductImage}
-                            onError={(e) => (e.currentTarget.src = 'https://placehold.co/300x300/f0f0f0/888?text=No+Image')}
+                            className={`${styles.mobileProductImage} ${imageLoadStates[product.id] === 'loaded' ? styles.mobileImageLoaded : ''}`}
+                            onLoad={() => handleImageLoad(product.id)}
+                            onError={(e) => {
+                              handleImageError(product.id)
+                              e.currentTarget.src = 'https://placehold.co/300x300/f0f0f0/888?text=No+Image'
+                            }}
                           />
                         </div>
                       </Link>
@@ -338,16 +492,28 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
         {/* Navigation arrows */}
         <button 
           className={`${styles.mobileCarouselNav} ${styles.mobileCarouselPrev}`}
-          onClick={goToPrevious}
-          disabled={currentIndex === 0 || isTransitioning}
+          onClick={() => {
+            stopAutoPlay()
+            goToPrevious()
+            if (isAutoPlaying) {
+              setTimeout(startAutoPlay, 1000)
+            }
+          }}
+          disabled={isTransitioning}
         >
           <ChevronLeft size={20} />
         </button>
 
         <button 
           className={`${styles.mobileCarouselNav} ${styles.mobileCarouselNext}`}
-          onClick={goToNext}
-          disabled={currentIndex === products.length - 1 || isTransitioning}
+          onClick={() => {
+            stopAutoPlay()
+            goToNext()
+            if (isAutoPlaying) {
+              setTimeout(startAutoPlay, 1000)
+            }
+          }}
+          disabled={isTransitioning}
         >
           <ChevronRight size={20} />
         </button>
