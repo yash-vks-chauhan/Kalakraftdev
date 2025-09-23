@@ -27,7 +27,7 @@ export default function CheckoutClient() {
   const [addresses, setAddresses] = useState<Address[]>([])
   const [addrLoading, setAddrLoading] = useState(false)
   const [addrError, setAddrError] = useState<string|null>(null)
-  const [selectedAddressId, setSelectedAddressId] = useState<number | null>(user?.defaultAddressId || null)
+  const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null)
   const [showAddForm, setShowAddForm] = useState(false)
   const [newAddr, setNewAddr] = useState({
     label: '', line1: '', line2: '', city: '', postalCode: '', country: ''
@@ -74,8 +74,8 @@ export default function CheckoutClient() {
         if (!res.ok) throw new Error(data.error || 'Failed to load addresses')
         
         setAddresses(data.addresses || [])
-        // If user has a default address, use it; otherwise use first address
-        if (data.addresses?.length > 0) {
+        // Only set selectedAddressId if it's not already set
+        if (data.addresses?.length > 0 && !selectedAddressId) {
           const defaultAddr = data.addresses.find((a: Address) => a.id === user.defaultAddressId)
           setSelectedAddressId(defaultAddr?.id || data.addresses[0].id)
         }
@@ -87,7 +87,7 @@ export default function CheckoutClient() {
       }
     }
     loadAddresses()
-  }, [user, router, token, selectedAddressId])
+  }, [user, router, token])
 
   // Calculate order totals
   const subtotal = cartItems.reduce(
@@ -356,32 +356,49 @@ export default function CheckoutClient() {
           <div>
             <h2 className={styles.sectionTitle}>Shipping Address</h2>
             
+            {/* Debug info */}
+            {process.env.NODE_ENV === 'development' && (
+              <div style={{ fontSize: '12px', color: '#666', marginBottom: '10px' }}>
+                Debug: selectedAddressId = {selectedAddressId}, addresses count = {addresses.length}
+              </div>
+            )}
+            
             {addrError && <p className={styles.error}>{addrError}</p>}
             
             {addresses.length > 0 ? (
               <div>
                 {addresses.map(a => (
-                  <label 
+                  <div 
                     key={a.id} 
                     className={`${styles.addressOption} ${selectedAddressId === a.id ? styles.addressOptionSelected : ''}`}
+                    onClick={() => {
+                      console.log('Address option clicked:', a.id);
+                      setSelectedAddressId(a.id);
+                    }}
                   >
-                    <input
-                      type="radio"
-                      name="shippingAddress"
-                      value={a.id}
-                      checked={selectedAddressId === a.id}
-                      onChange={() => setSelectedAddressId(a.id)}
-                      disabled={formProcessing}
-                    />
-                    <div className={styles.addressInfo}>
-                      <strong>{a.label}</strong>
-                      <br />
-                      {a.line1}
-                      {a.line2 && <><br />{a.line2}</>}
-                      <br />
-                      {a.city}, {a.postalCode}, {a.country}
-                    </div>
-                  </label>
+                    <label style={{ display: 'flex', alignItems: 'flex-start', cursor: 'pointer' }}>
+                      <input
+                        type="radio"
+                        name="shippingAddress"
+                        value={a.id}
+                        checked={selectedAddressId === a.id}
+                        onChange={(e) => {
+                          console.log('Address selection changed:', a.id, e.target.checked);
+                          setSelectedAddressId(a.id);
+                        }}
+                        disabled={formProcessing}
+                        style={{ marginRight: '8px', marginTop: '2px' }}
+                      />
+                      <div className={styles.addressInfo}>
+                        <strong>{a.label}</strong>
+                        <br />
+                        {a.line1}
+                        {a.line2 && <><br />{a.line2}</>}
+                        <br />
+                        {a.city}, {a.postalCode}, {a.country}
+                      </div>
+                    </label>
+                  </div>
                 ))}
               </div>
             ) : (
