@@ -74,7 +74,50 @@ export default function OrdersPage() {
   }
 
   if (loading) {
-    return <p className="text-center mt-8">Loading orders…</p>
+    return (
+      <main className="container mx-auto px-4 py-8">
+        <h1 className="text-3xl font-bold mb-6">Your Orders</h1>
+        <div className="space-y-8">
+          {[1, 2, 3].map((_, index) => (
+            <div key={index} className="border rounded-lg p-6 bg-white shadow-sm">
+              {/* Order Header Skeleton */}
+              <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-4">
+                <div className="h-6 bg-gray-200 rounded w-48 mb-2 md:mb-0 animate-pulse"></div>
+                <div className="h-4 bg-gray-200 rounded w-32 animate-pulse"></div>
+              </div>
+
+              <div className="h-4 bg-gray-200 rounded w-24 mb-4 animate-pulse"></div>
+
+              {/* Items Skeleton */}
+              <div className="mb-4 divide-y">
+                {[1, 2].map((_, itemIndex) => (
+                  <div key={itemIndex} className="py-3 flex flex-col sm:flex-row sm:justify-between sm:items-center">
+                    <div className="flex-1">
+                      <div className="h-4 bg-gray-200 rounded w-64 mb-2 animate-pulse"></div>
+                      <div className="h-3 bg-gray-200 rounded w-32 animate-pulse"></div>
+                    </div>
+                    <div className="h-4 bg-gray-200 rounded w-20 mt-2 sm:mt-0 animate-pulse"></div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Totals Skeleton */}
+              <div className="flex flex-col sm:flex-row sm:justify-end sm:space-x-8">
+                <div className="h-4 bg-gray-200 rounded w-24 mb-2 sm:mb-0 animate-pulse"></div>
+                <div className="h-4 bg-gray-200 rounded w-20 mb-2 sm:mb-0 animate-pulse"></div>
+                <div className="h-4 bg-gray-200 rounded w-24 mb-2 sm:mb-0 animate-pulse"></div>
+                <div className="h-5 bg-gray-200 rounded w-28 animate-pulse"></div>
+              </div>
+
+              {/* Button Skeleton */}
+              <div className="mt-4">
+                <div className="h-9 bg-gray-200 rounded-lg w-32 animate-pulse"></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </main>
+    )
   }
 
   if (error) {

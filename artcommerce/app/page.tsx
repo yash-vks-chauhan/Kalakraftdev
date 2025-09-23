@@ -1166,14 +1166,31 @@ const FeaturedCategoriesSection = () => {
       <div className={styles.featuredProductsContainer} data-aos="fade-up" data-aos-delay="300">
         {loading ? (
           <>
-            {/* Desktop Loading */}
-            <div className={`${styles.featuredLoading} ${styles.desktopOnly}`}>
-              <div className={styles.loadingSpinner}></div>
-              <p>Loading products...</p>
+            {/* Desktop Skeleton Loading */}
+            <div className={`${styles.featuredProductsDesktop} ${styles.desktopOnly}`}>
+              {[1, 2, 3, 4].map((_, index) => (
+                <div key={index} className={styles.featuredProductCard}>
+                  <div className={styles.featuredCardWrapper}>
+                    <div className={styles.featuredImageContainer}>
+                      <div className={`${styles.skeletonImage} ${styles.skeletonShimmer}`}></div>
+                    </div>
+                    
+                    <div className={styles.featuredCardInfo}>
+                      <div className={`${styles.skeletonProductName} ${styles.skeletonShimmer}`}></div>
+                      <div className={`${styles.skeletonPrice} ${styles.skeletonShimmer}`}></div>
+                    </div>
+                    
+                    {/* Wishlist Button Skeleton */}
+                    <div className={styles.featuredDesktopWishlistContainer}>
+                      <div className={`${styles.skeletonWishlistButton} ${styles.skeletonShimmer}`}></div>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
             
             {/* Mobile Skeleton Loading */}
-            <div className={`${styles.mobileOnly}`}>
+            <div className={`${styles.featuredProductsMobile} ${styles.mobileOnly}`}>
               <div className={styles.featuredProductsMobileGrid}>
                 {[1, 2, 3, 4].map((_, index) => (
                   <div key={index} className={styles.featuredMobileCard}>

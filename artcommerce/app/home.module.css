@@ -4252,6 +4252,33 @@
   background: #f0f0f0;
 }
 
+/* Featured Categories Desktop skeleton specific styles */
+.featuredProductCard .skeletonImage {
+  height: 250px;
+  border-radius: 12px 12px 0 0;
+}
+
+.featuredProductCard .skeletonProductName {
+  height: 16px;
+  width: 85%;
+  margin-bottom: 8px;
+}
+
+.featuredProductCard .skeletonPrice {
+  height: 18px;
+  width: 50%;
+}
+
+/* Smooth transitions for skeleton loading */
+.featuredProductsContainer {
+  transition: opacity 0.3s ease-in-out;
+}
+
+.featuredProductsDesktop,
+.featuredProductsMobile {
+  transition: opacity 0.2s ease-in-out;
+}
+
 /* Featured categories mobile skeleton adjustments */
 @media (max-width: 1024px) {
   .featuredMobileCard .skeletonImage {
