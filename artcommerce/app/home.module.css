@@ -3455,7 +3455,7 @@
 /* Responsive Design */
 @media (max-width: 768px) {
   .bestSellersSection {
-    padding: 6rem 1rem 8rem;
+    padding: 6rem 0.5rem 8rem;
   }
   
   .bestSellersDesktop {
@@ -3492,7 +3492,7 @@
 /* Mobile Carousel Container */
 .bestSellersMobileCarousel {
   position: relative;
-  padding: 2rem 1rem;
+  padding: 2rem 0.5rem;
   overflow: hidden;
 }
 
