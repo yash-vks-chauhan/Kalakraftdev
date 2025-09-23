@@ -2,7 +2,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '../contexts/AuthContext'
 import { useCart } from '../contexts/CartContext'
 import Link from 'next/link'
@@ -20,6 +20,7 @@ interface Address {
 
 export default function CheckoutPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { user, token } = useAuth()
   const { cartItems, clearCart } = useCart()
 
@@ -42,6 +43,19 @@ export default function CheckoutPage() {
   const [couponMessage, setCouponMessage] = useState<string | null>(null)
   const [couponLoading, setCouponLoading] = useState(false)
   const [formProcessing, setFormProcessing] = useState(false)
+
+  // Initialize coupon from URL parameters (from mobile cart)
+  useEffect(() => {
+    const urlCoupon = searchParams.get('coupon')
+    const urlDiscountType = searchParams.get('discountType') as 'percentage' | 'flat' | null
+    const urlDiscountAmount = searchParams.get('discountAmount')
+    
+    if (urlCoupon && urlDiscountType && urlDiscountAmount) {
+      setCoupon(urlCoupon)
+      setDiscount(parseFloat(urlDiscountAmount))
+      setCouponMessage(`Coupon "${urlCoupon}" applied!`)
+    }
+  }, [searchParams])
 
   // Load addresses when component mounts
   useEffect(() => {
@@ -86,7 +100,7 @@ export default function CheckoutPage() {
     setCouponMessage(null)
     setCouponLoading(true)
     try {
-      const res = await fetch('/api/coupons/redeem', {
+      const res = await fetch('/api/coupons/validate', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -135,6 +149,7 @@ export default function CheckoutPage() {
           productId: item.product.id,
           quantity: item.quantity,
         })),
+        ...(discount > 0 && coupon.trim() ? { couponCode: coupon.trim() } : {}),
       }
 
       const res = await fetch('/api/orders', {

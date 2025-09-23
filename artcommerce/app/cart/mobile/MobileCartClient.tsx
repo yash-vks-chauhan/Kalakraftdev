@@ -210,7 +210,7 @@ export default function MobileCartClient() {
           </div>
           <div className="container mx-auto px-4 py-2 flex items-center justify-between border-t border-gray-200">
             <div><p className="text-xs text-gray-500">Total</p><p className="text-lg font-semibold text-gray-900">₹{total.toFixed(2)}</p></div>
-            <Link href="/checkout" className="inline-flex items-center justify-center rounded-full bg-black text-white px-6 py-3 font-semibold">Proceed to Checkout</Link>
+            <Link href={`/checkout${promoCode && discount > 0 ? `?coupon=${encodeURIComponent(promoCode)}&discountType=${discountType}&discountAmount=${discount}` : ''}`} className="inline-flex items-center justify-center rounded-full bg-black text-white px-6 py-3 font-semibold">Proceed to Checkout</Link>
           </div>
           <div style={{ height: 'env(safe-area-inset-bottom)' }} />
         </div>
@@ -222,7 +222,7 @@ export default function MobileCartClient() {
               <div className="flex items-center justify-between"><h3 className="text-base font-semibold">Promo code</h3><button onClick={() => setPromoOpen(false)} className="text-sm">Close</button></div>
               <div className="flex items-center gap-2">
                 <input type="text" value={promoCode} onChange={(e) => setPromoCode(e.target.value.toUpperCase())} placeholder="ENTER CODE" className="flex-1 border-2 border-black px-3 py-2 rounded-md tracking-widest" />
-                <button disabled={!promoCode || applyingPromo} onClick={async () => { try { setApplyingPromo(true); const res = await fetch('/api/coupons/redeem', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: promoCode }) }); const data = await res.json(); if (res.ok) { setDiscount(data.amount); setDiscountType(data.type); setPromoOpen(false); } else { alert(data.error || 'Invalid code'); } } finally { setApplyingPromo(false); } }} className="inline-flex items-center justify-center rounded-full bg-black text-white px-4 py-2 text-sm font-semibold disabled:opacity-50">{applyingPromo ? 'Applying…' : (discountAmount > 0 ? 'Update' : 'Apply')}</button>
+                <button disabled={!promoCode || applyingPromo} onClick={async () => { try { setApplyingPromo(true); const res = await fetch('/api/coupons/validate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: promoCode }) }); const data = await res.json(); if (res.ok) { setDiscount(data.amount); setDiscountType(data.type); setPromoOpen(false); } else { alert(data.error || 'Invalid code'); } } finally { setApplyingPromo(false); } }} className="inline-flex items-center justify-center rounded-full bg-black text-white px-4 py-2 text-sm font-semibold disabled:opacity-50">{applyingPromo ? 'Applying…' : (discountAmount > 0 ? 'Update' : 'Apply')}</button>
               </div>
               {discountAmount > 0 && (<button onClick={() => { setDiscount(0); setDiscountType(null); setPromoCode('') }} className="text-sm text-red-600 underline">Remove promo code</button>)}
             </div>
