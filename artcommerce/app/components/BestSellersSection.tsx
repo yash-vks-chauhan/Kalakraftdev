@@ -31,7 +31,7 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
   
   const { user } = useAuth()
   const { addToCart } = useCart()
-  const { wishlist = [], addToWishlist, removeFromWishlist } = useWishlist()
+  const { wishlistItems = [], addToWishlist, removeFromWishlist, isInWishlist } = useWishlist()
   const router = useRouter()
   
   const carouselRef = useRef<HTMLDivElement>(null)
@@ -194,10 +194,10 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
       return
     }
 
-    const isInWishlist = wishlist.some(item => item.productId === Number(productId))
+    const isInWishlistStatus = isInWishlist(Number(productId))
     
     try {
-      if (isInWishlist) {
+      if (isInWishlistStatus) {
         await removeFromWishlist(Number(productId))
       } else {
         await addToWishlist(Number(productId))
@@ -279,7 +279,7 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
             }}
           >
             {products.map((product) => {
-              const isInWishlist = wishlist.some(item => item.productId === Number(product.id))
+              const isInWishlistStatus = isInWishlist(Number(product.id))
               
               return (
                 <div key={product.id} className={styles.mobileCarouselSlide}>
@@ -330,7 +330,7 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
                           </button>
 
                           <button
-                            className={`${styles.mobileWishlistButton} ${isInWishlist ? styles.mobileWishlistActive : ''}`}
+                            className={`${styles.mobileWishlistButton} ${isInWishlistStatus ? styles.mobileWishlistActive : ''}`}
                             onClick={() => handleWishlistToggle(product.id)}
                           >
                             <Heart size={16} />
