@@ -62,6 +62,8 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
         
         if (data.products && Array.isArray(data.products)) {
           setProducts(data.products)
+          console.log('Best sellers loaded:', data.products.length, 'products')
+          console.log('Products:', data.products.map(p => ({ id: p.id, name: p.name })))
         } else {
           setProducts([])
         }
@@ -141,8 +143,10 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
     const shouldSwipeRight = (deltaX > swipeThreshold) || (deltaX > 30 && velocity > velocityThreshold)
     
     if (shouldSwipeLeft && currentIndex < products.length - 1) {
+      console.log('Swiping left: currentIndex', currentIndex, '->', currentIndex + 1)
       goToNext()
     } else if (shouldSwipeRight && currentIndex > 0) {
+      console.log('Swiping right: currentIndex', currentIndex, '->', currentIndex - 1)  
       goToPrevious()
     }
   }
@@ -277,6 +281,7 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
               transform: `translateX(calc(-${currentIndex * 100}% + ${dragOffset}px))`,
               transition: isDragging.current ? 'none' : 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
             }}
+            onTransitionEnd={() => console.log('Transition ended, currentIndex:', currentIndex)}
           >
             {products.map((product) => {
               const isInWishlistStatus = isInWishlist(Number(product.id))
