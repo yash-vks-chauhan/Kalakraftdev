@@ -3484,3 +3484,306 @@
     margin-bottom: 2rem;
   }
 }
+
+/* ===============================================
+   MOBILE BEST SELLERS CAROUSEL STYLES
+   =============================================== */
+
+/* Mobile Carousel Container */
+.bestSellersMobileCarousel {
+  position: relative;
+  padding: 0 1rem;
+  overflow: hidden;
+}
+
+.mobileCarouselContainer {
+  width: 100%;
+  overflow: hidden;
+  border-radius: 16px;
+}
+
+.mobileCarouselTrack {
+  display: flex;
+  transition: transform 0.3s ease-in-out;
+  width: 100%;
+}
+
+.mobileCarouselSlide {
+  min-width: 100%;
+  flex-shrink: 0;
+}
+
+/* Mobile Product Card */
+.mobileProductCard {
+  display: flex;
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  min-height: 200px;
+  max-height: 200px;
+}
+
+/* Left Side - Image Section */
+.mobileProductImageSection {
+  flex: 0 0 45%;
+  position: relative;
+  background: #f8f8f8;
+  border-radius: 16px 0 0 16px;
+}
+
+.mobileImageLink {
+  display: block;
+  width: 100%;
+  height: 100%;
+  text-decoration: none;
+}
+
+.mobileProductImageContainer {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+}
+
+.mobileProductImage {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 12px;
+}
+
+/* Right Side - Details Section */
+.mobileProductDetailsSection {
+  flex: 1;
+  padding: 16px 16px 16px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: #fff;
+}
+
+.mobileProductDetails {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: center;
+}
+
+.mobileProductCategory {
+  font-size: 0.7rem;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.mobileProductName {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #000;
+  margin: 0 0 8px 0;
+  line-height: 1.3;
+  text-decoration: none;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.mobileProductName:hover {
+  color: #333;
+}
+
+.mobileProductPrice {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #000;
+  margin: 0 0 16px 0;
+}
+
+/* Mobile Action Buttons */
+.mobileProductActions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.mobileAddToCartButton {
+  flex: 1;
+  background: #000;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.mobileAddToCartButton:hover {
+  background: #333;
+  transform: translateY(-1px);
+}
+
+.mobileAddToCartButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.mobileWishlistButton {
+  flex: 0 0 40px;
+  height: 40px;
+  background: transparent;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #666;
+}
+
+.mobileWishlistButton:hover {
+  border-color: #000;
+  color: #000;
+}
+
+.mobileWishlistButton.mobileWishlistActive {
+  background: #000;
+  border-color: #000;
+  color: #fff;
+}
+
+/* Navigation Arrows */
+.mobileCarouselNav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #333;
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.mobileCarouselNav:hover {
+  background: #fff;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  transform: translateY(-50%) scale(1.05);
+}
+
+.mobileCarouselNav:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  transform: translateY(-50%) scale(1);
+}
+
+.mobileCarouselPrev {
+  left: -8px;
+}
+
+.mobileCarouselNext {
+  right: -8px;
+}
+
+/* Pagination Dots */
+.mobileCarouselPagination {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+  padding: 0;
+}
+
+.mobileCarouselDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mobileCarouselDot:hover {
+  background: rgba(0, 0, 0, 0.4);
+  transform: scale(1.2);
+}
+
+.mobileCarouselDotActive {
+  background: #000;
+  transform: scale(1.3);
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .mobileProductCard {
+    min-height: 180px;
+    max-height: 180px;
+  }
+  
+  .mobileProductImageSection {
+    flex: 0 0 42%;
+  }
+  
+  .mobileProductDetailsSection {
+    padding: 12px 14px 12px 16px;
+  }
+  
+  .mobileProductName {
+    font-size: 0.9rem;
+    -webkit-line-clamp: 1;
+    line-clamp: 1;
+  }
+  
+  .mobileProductPrice {
+    font-size: 1rem;
+    margin-bottom: 12px;
+  }
+  
+  .mobileAddToCartButton {
+    padding: 8px 10px;
+    font-size: 0.8rem;
+  }
+  
+  .mobileWishlistButton {
+    flex: 0 0 36px;
+    height: 36px;
+  }
+  
+  .mobileCarouselNav {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .mobileCarouselPrev {
+    left: -6px;
+  }
+  
+  .mobileCarouselNext {
+    right: -6px;
+  }
+}

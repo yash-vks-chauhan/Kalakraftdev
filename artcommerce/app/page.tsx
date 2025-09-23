@@ -16,167 +16,12 @@ import Link from 'next/link'
 import MobileVideoSection from './components/MobileVideoSection'
 import { DataCache } from '../lib/dataCache'
 import WishlistButton from './components/WishlistButton'
+import BestSellersSection from './components/BestSellersSection'
 
 // Add this to detect mobile view
 const isMobileView = () => {
   if (typeof window === 'undefined') return false;
   return window.innerWidth <= 1024;
-};
-
-// Best Sellers Component
-const BestSellersSection = () => {
-  const [bestSellers, setBestSellers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  // Format price function
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 0,
-      minimumFractionDigits: 0
-    }).format(price);
-  };
-
-  // Fetch best sellers
-  useEffect(() => {
-    const fetchBestSellers = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch('/api/products/best-sellers?limit=4');
-        const data = await response.json();
-        
-        if (data.products && Array.isArray(data.products)) {
-          setBestSellers(data.products);
-        }
-      } catch (err) {
-        console.error('Error fetching best sellers:', err);
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchBestSellers();
-  }, []);
-
-  if (loading) {
-    return (
-      <section className={styles.bestSellersSection} data-aos="fade-up">
-        <div className={styles.sectionHeader} data-aos="fade-up">
-          <div className={styles.headerLine}></div>
-          <h2 className={styles.sectionTitle}>Best Sellers</h2>
-          <div className={styles.headerLine}></div>
-        </div>
-        <div className={styles.bestSellersLoading}>
-          <div className={styles.loadingSpinner}></div>
-          <p>Loading best sellers...</p>
-        </div>
-      </section>
-    );
-  }
-
-  if (error || !bestSellers.length) {
-    return null; // Hide section if no data
-  }
-
-  return (
-    <section className={styles.bestSellersSection} data-aos="fade-up">
-      {/* Section Header */}
-      <div className={styles.sectionHeader} data-aos="fade-up">
-        <div className={styles.headerLine}></div>
-        <h2 className={styles.sectionTitle}>Best Sellers</h2>
-        <div className={styles.headerLine}></div>
-      </div>
-
-      <div className={styles.bestSellersDescription} data-aos="fade-up" data-aos-delay="100">
-        <p>Discover our most loved creations, chosen by customers like you. These handcrafted pieces have won hearts and found their way into homes across the country.</p>
-      </div>
-
-      {/* Best Sellers Layout - Desktop */}
-      <div className={`${styles.bestSellersDesktop} ${styles.desktopOnly}`} data-aos="fade-up" data-aos-delay="200">
-        {bestSellers.map((product, index) => (
-          <div key={product.id} className={styles.bestSellerCard} data-aos="fade-up" data-aos-delay={`${300 + (index * 100)}`}
-               onClick={() => {
-                 if (navigator.vibrate) {
-                   navigator.vibrate([10, 5, 10]);
-                 }
-               }}>
-            <Link href={`/products/${product.id}`}>
-              <div className={styles.bestSellerCardInner}>
-                <div className={styles.bestSellerImageContainer}>
-                  <img
-                    src={product.imageUrls && product.imageUrls[0] ? product.imageUrls[0] : 'https://placehold.co/300x300/f0f0f0/888?text=No+Image'}
-                    alt={product.name}
-                    className={styles.bestSellerImage}
-                    onError={(e) => (e.currentTarget.src = 'https://placehold.co/300x300/f0f0f0/888?text=No+Image')}
-                  />
-                  
-                </div>
-                
-                <div className={styles.bestSellerCardInfo}>
-                  <h3 className={styles.bestSellerProductName}>{product.name}</h3>
-                  <p className={styles.bestSellerPrice}>{formatPrice(product.price)}</p>
-                </div>
-              </div>
-            </Link>
-            
-            {/* Wishlist Button - Outside Link to prevent navigation */}
-            <div className={styles.bestSellerWishlistContainer}>
-              <WishlistButton 
-                productId={product.id} 
-                className={styles.bestSellerWishlistButton}
-                preventNavigation={true}
-              />
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Best Sellers Grid - Mobile */}
-      <div className={`${styles.bestSellersMobile} ${styles.mobileOnly}`}>
-        <div className={styles.bestSellersMobileGrid}>
-          {bestSellers.map((product, index) => (
-            <div key={product.id} className={styles.bestSellerMobileCard}
-                 onClick={() => {
-                   if (navigator.vibrate) {
-                     navigator.vibrate([10, 5, 10]);
-                   }
-                 }}>
-              <div className={styles.bestSellerMobileCardWrapper}>
-                <Link href={`/products/${product.id}`} className={styles.bestSellerMobileLink}>
-                  <div className={styles.bestSellerMobileImageContainer}>
-                    <img
-                      src={product.imageUrls && product.imageUrls[0] ? product.imageUrls[0] : 'https://placehold.co/300x300/f0f0f0/888?text=No+Image'}
-                      alt={product.name}
-                      className={styles.bestSellerMobileImage}
-                      onError={(e) => (e.currentTarget.src = 'https://placehold.co/300x300/f0f0f0/888?text=No+Image')}
-                    />
-                  </div>
-                  
-                  <div className={styles.bestSellerMobileCardInfo}>
-                    <h3 className={styles.bestSellerMobileProductName}>{product.name}</h3>
-                    <p className={styles.bestSellerMobilePrice}>{formatPrice(product.price)}</p>
-                  </div>
-                </Link>
-                
-                {/* Wishlist Button - Outside Link to prevent navigation */}
-                <div className={styles.bestSellerMobileWishlistContainer}>
-                  <WishlistButton 
-                    productId={product.id} 
-                    className={styles.bestSellerMobileWishlistButton}
-                    preventNavigation={true}
-                  />
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-    </section>
-  );
 };
 
 // Featured Products Grid Component
@@ -1879,7 +1724,7 @@ onClick={() => handleCarouselNav('next')}
   </section>
   
   {/* Best Sellers Section */}
-  <BestSellersSection />
+  <BestSellersSection styles={styles} />
   
   {/* Featured Discoveries Section - Moved up after Best Sellers (Mobile Only) */}
   <section className={`${styles.mobileFeaturedSection} ${styles.mobileOnly}`}>
