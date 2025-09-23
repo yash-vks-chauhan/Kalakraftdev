@@ -3500,12 +3500,19 @@
   width: 100%;
   overflow: hidden;
   border-radius: 16px;
+  touch-action: pan-y pinch-zoom; /* Allow vertical scroll but capture horizontal */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .mobileCarouselTrack {
   display: flex;
-  transition: transform 0.3s ease-in-out;
   width: 100%;
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform-style: preserve-3d;
 }
 
 .mobileCarouselSlide {
@@ -3523,6 +3530,15 @@
   border: 1px solid rgba(0, 0, 0, 0.05);
   min-height: 200px;
   max-height: 200px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transform-origin: center center;
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+.mobileProductCard:active {
+  transform: scale(0.98);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
 }
 
 /* Left Side - Image Section */
@@ -3628,20 +3644,31 @@
   justify-content: center;
   gap: 6px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  will-change: transform, background;
+  transform-origin: center center;
 }
 
 .mobileAddToCartButton:hover {
   background: #333;
   transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.mobileAddToCartButton:active {
+  transform: translateY(0) scale(0.98);
+  transition: transform 0.1s ease;
 }
 
 .mobileAddToCartButton:disabled {
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;
+  box-shadow: none;
 }
 
 .mobileWishlistButton {
@@ -3654,19 +3681,35 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   color: #666;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  will-change: transform, background, border-color;
+  transform-origin: center center;
 }
 
 .mobileWishlistButton:hover {
   border-color: #000;
   color: #000;
+  transform: scale(1.05);
+}
+
+.mobileWishlistButton:active {
+  transform: scale(0.95);
+  transition: transform 0.1s ease;
 }
 
 .mobileWishlistButton.mobileWishlistActive {
   background: #000;
   border-color: #000;
   color: #fff;
+  transform: scale(1.05);
+}
+
+.mobileWishlistButton.mobileWishlistActive:hover {
+  background: #333;
+  transform: scale(1.1);
 }
 
 /* Navigation Arrows */
@@ -3683,10 +3726,15 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   color: #333;
   z-index: 10;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  will-change: transform;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .mobileCarouselNav:hover {
@@ -3695,10 +3743,16 @@
   transform: translateY(-50%) scale(1.05);
 }
 
+.mobileCarouselNav:active {
+  transform: translateY(-50%) scale(0.95);
+  transition: transform 0.1s ease;
+}
+
 .mobileCarouselNav:disabled {
   opacity: 0.3;
   cursor: not-allowed;
-  transform: translateY(-50%) scale(1);
+  transform: translateY(-50%);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .mobileCarouselPrev {
@@ -3725,7 +3779,10 @@
   border: none;
   background: rgba(0, 0, 0, 0.2);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  will-change: transform, background;
 }
 
 .mobileCarouselDot:hover {
@@ -3733,9 +3790,25 @@
   transform: scale(1.2);
 }
 
+.mobileCarouselDot:active {
+  transform: scale(0.9);
+  transition: transform 0.1s ease;
+}
+
+.mobileCarouselDot:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
 .mobileCarouselDotActive {
   background: #000;
   transform: scale(1.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.mobileCarouselDotActive:hover {
+  transform: scale(1.4);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.3);
 }
 
 /* Responsive adjustments */

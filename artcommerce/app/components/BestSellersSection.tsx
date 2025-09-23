@@ -36,7 +36,11 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
   
   const carouselRef = useRef<HTMLDivElement>(null)
   const touchStartX = useRef(0)
-  const touchEndX = useRef(0)
+  const touchStartY = useRef(0)
+  const currentX = useRef(0)
+  const isDragging = useRef(false)
+  const startTime = useRef(0)
+  const [dragOffset, setDragOffset] = useState(0)
 
   // Format price function
   const formatPrice = (price: number) => {
@@ -72,44 +76,97 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
     fetchBestSellers()
   }, [])
 
-  // Handle touch events for swiping
+  // Enhanced touch handling for smooth card-like swiping
   const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX
+    if (isTransitioning) return
+    
+    const touch = e.touches[0]
+    touchStartX.current = touch.clientX
+    touchStartY.current = touch.clientY
+    currentX.current = touch.clientX
+    isDragging.current = true
+    startTime.current = Date.now()
+    
+    // Prevent default to ensure smooth tracking
+    e.preventDefault()
   }
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    touchEndX.current = e.touches[0].clientX
+    if (!isDragging.current || isTransitioning) return
+    
+    const touch = e.touches[0]
+    currentX.current = touch.clientX
+    
+    const deltaX = touch.clientX - touchStartX.current
+    const deltaY = touch.clientY - touchStartY.current
+    
+    // Only handle horizontal swipes (prevent interfering with vertical scroll)
+    if (Math.abs(deltaX) > Math.abs(deltaY)) {
+      e.preventDefault()
+      
+      // Apply rubber band effect at boundaries
+      let constrainedDelta = deltaX
+      const maxDrag = 100
+      
+      // Left boundary (can't go before first item)
+      if (currentIndex === 0 && deltaX > 0) {
+        constrainedDelta = Math.sign(deltaX) * maxDrag * (1 - Math.exp(-Math.abs(deltaX) / maxDrag))
+      }
+      // Right boundary (can't go after last item)
+      else if (currentIndex === products.length - 1 && deltaX < 0) {
+        constrainedDelta = Math.sign(deltaX) * maxDrag * (1 - Math.exp(-Math.abs(deltaX) / maxDrag))
+      }
+      
+      setDragOffset(constrainedDelta)
+    }
   }
 
-  const handleTouchEnd = () => {
-    if (!touchStartX.current || !touchEndX.current) return
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (!isDragging.current) return
     
-    const distance = touchStartX.current - touchEndX.current
-    const isLeftSwipe = distance > 50
-    const isRightSwipe = distance < -50
-
-    if (isLeftSwipe && currentIndex < products.length - 1) {
+    isDragging.current = false
+    const endTime = Date.now()
+    const deltaTime = endTime - startTime.current
+    const deltaX = currentX.current - touchStartX.current
+    const velocity = Math.abs(deltaX) / deltaTime // pixels per millisecond
+    
+    // Reset drag offset with animation
+    setDragOffset(0)
+    
+    // Determine if we should swipe based on distance and velocity
+    const swipeThreshold = 80
+    const velocityThreshold = 0.3
+    
+    const shouldSwipeLeft = (deltaX < -swipeThreshold) || (deltaX < -30 && velocity > velocityThreshold)
+    const shouldSwipeRight = (deltaX > swipeThreshold) || (deltaX > 30 && velocity > velocityThreshold)
+    
+    if (shouldSwipeLeft && currentIndex < products.length - 1) {
       goToNext()
-    }
-    
-    if (isRightSwipe && currentIndex > 0) {
+    } else if (shouldSwipeRight && currentIndex > 0) {
       goToPrevious()
     }
   }
 
-  // Navigation functions
+  // Navigation functions with enhanced animations
   const goToNext = () => {
     if (isTransitioning || currentIndex >= products.length - 1) return
     setIsTransitioning(true)
     setCurrentIndex(prev => prev + 1)
-    setTimeout(() => setIsTransitioning(false), 300)
+    setTimeout(() => setIsTransitioning(false), 400)
   }
 
   const goToPrevious = () => {
     if (isTransitioning || currentIndex <= 0) return
     setIsTransitioning(true)
     setCurrentIndex(prev => prev - 1)
-    setTimeout(() => setIsTransitioning(false), 300)
+    setTimeout(() => setIsTransitioning(false), 400)
+  }
+
+  const goToSlide = (index: number) => {
+    if (isTransitioning || index === currentIndex) return
+    setIsTransitioning(true)
+    setCurrentIndex(index)
+    setTimeout(() => setIsTransitioning(false), 400)
   }
 
   // Add to cart function
@@ -216,7 +273,10 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
         >
           <div 
             className={styles.mobileCarouselTrack}
-            style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+            style={{ 
+              transform: `translateX(calc(-${currentIndex * 100}% + ${dragOffset}px))`,
+              transition: isDragging.current ? 'none' : 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+            }}
           >
             {products.map((product) => {
               const isInWishlist = wishlist.some(item => item.productId === Number(product.id))
@@ -308,7 +368,8 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
             <button
               key={index}
               className={`${styles.mobileCarouselDot} ${index === currentIndex ? styles.mobileCarouselDotActive : ''}`}
-              onClick={() => !isTransitioning && setCurrentIndex(index)}
+              onClick={() => goToSlide(index)}
+              disabled={isTransitioning}
             />
           ))}
         </div>
