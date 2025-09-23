@@ -2981,18 +2981,18 @@
 /* Best Sellers Layout - Desktop */
 .bestSellersDesktop {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1.5rem;
-  max-width: 1600px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 0 3rem;
+  padding: 0 4rem;
 }
 
 @media (max-width: 1024px) and (min-width: 769px) {
   .bestSellersDesktop {
     grid-template-columns: repeat(2, 1fr);
     gap: 1.5rem;
-    padding: 0 1rem;
+    padding: 0 2rem;
   }
 }
 
@@ -3031,7 +3031,7 @@
 .bestSellerImageContainer {
   position: relative;
   width: 100%;
-  aspect-ratio: 3/4;
+  aspect-ratio: 4/3;
   overflow: hidden;
   background: #e8e8e8;
   border-radius: 12px;
@@ -3455,7 +3455,7 @@
 /* Responsive Design */
 @media (max-width: 768px) {
   .bestSellersSection {
-    padding: 6rem 0 8rem;
+    padding: 5rem 1rem 7rem;
   }
   
   .bestSellersDesktop {
@@ -3463,6 +3463,7 @@
     align-items: center;
     gap: 1.5rem;
     max-width: 400px;
+    padding: 0 1rem;
   }
   
   .bestSellersMobileGrid {
@@ -3492,13 +3493,13 @@
 /* Mobile Carousel Container */
 .bestSellersMobileCarousel {
   position: relative;
-  padding: 2rem 0;
+  padding: 2rem 1rem;
   overflow: hidden;
 }
 
 .mobileCarouselContainer {
   width: 100%;
-  max-width: 350px;
+  max-width: 400px;
   margin: 0 auto;
   overflow: hidden;
   border-radius: 16px;
@@ -3506,12 +3507,13 @@
   user-select: none;
   -webkit-user-select: none;
   -webkit-touch-callout: none;
+  padding: 0 1rem;
 }
 
 .mobileCarouselWrapper {
   position: relative;
   width: 100%;
-  height: 480px;
+  height: 400px;
 }
 
 .mobileCarouselSlide {
@@ -3530,7 +3532,7 @@
   border-radius: 16px;
   overflow: hidden;
   border: 2px solid rgba(0, 0, 0, 0.12);
-  height: 480px;
+  height: 400px;
   width: 100%;
   transition: transform 0.2s ease, border-color 0.2s ease;
   transform-origin: center center;
@@ -3814,11 +3816,11 @@
 /* Responsive adjustments */
 @media (max-width: 480px) {
   .mobileCarouselWrapper {
-    height: 480px;
+    height: 360px;
   }
   
   .mobileProductCard {
-    height: 480px;
+    height: 360px;
   }
   
   .mobileProductImageSection {
