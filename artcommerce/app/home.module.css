@@ -3873,6 +3873,15 @@
     flex: 0 0 32px;
     height: 32px;
   }
+
+  .mobileShareButton {
+    flex: 0 0 32px;
+    height: 32px;
+  }
+
+  .mobileRatingCount {
+    font-size: 0.6rem;
+  }
   
   .mobileCarouselNav {
     width: 40px;
@@ -4277,6 +4286,67 @@
 .featuredProductsDesktop,
 .featuredProductsMobile {
   transition: opacity 0.2s ease-in-out;
+}
+
+
+
+/* Mobile Rating Styles */
+.mobileProductRating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 4px 0;
+}
+
+.mobileRatingStars {
+  display: flex;
+  gap: 1px;
+}
+
+.mobileStar {
+  color: #fbbf24;
+}
+
+.mobileStarFilled {
+  color: #fbbf24;
+}
+
+.mobileStarEmpty {
+  color: #e5e7eb;
+}
+
+.mobileRatingCount {
+  font-size: 0.65rem;
+  color: #666;
+  margin-left: 2px;
+  line-height: 1;
+}
+
+/* Mobile Share Button */
+.mobileShareButton {
+  flex: 0 0 36px;
+  height: 36px;
+  background: transparent;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #666;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mobileShareButton:hover {
+  border-color: #007AFF;
+  color: #007AFF;
+  transform: scale(1.05);
+}
+
+.mobileShareButton:active {
+  transform: scale(0.95);
 }
 
 /* Featured categories mobile skeleton adjustments */

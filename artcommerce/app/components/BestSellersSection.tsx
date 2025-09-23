@@ -6,7 +6,7 @@ import { useCart } from '../contexts/CartContext'
 import { useWishlist } from '../contexts/WishlistContext'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Heart, ShoppingCart, ChevronLeft, ChevronRight, Play, Pause } from 'lucide-react'
+import { Heart, ShoppingCart, ChevronLeft, ChevronRight, Play, Pause, Share, Star } from 'lucide-react'
 
 interface Product {
   id: string
@@ -15,6 +15,8 @@ interface Product {
   imageUrls: string[]
   category?: { name: string }
   stockQuantity?: number
+  avgRating?: number
+  ratingCount?: number
 }
 
 interface BestSellersProps {
@@ -29,6 +31,7 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [addingToCart, setAddingToCart] = useState<{ [key: string]: boolean }>({})
   const [gapSize, setGapSize] = useState(2) // Default gap in rem
+  const [ratingsLoaded, setRatingsLoaded] = useState(false)
   
   // Auto-play states
   const [isAutoPlaying, setIsAutoPlaying] = useState(true)
@@ -155,7 +158,8 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
         const data = await response.json()
         
         if (data.products && Array.isArray(data.products)) {
-          setProducts(data.products)
+          // Fetch ratings for the products
+          await fetchRatings(data.products)
         } else {
           setProducts([])
         }
@@ -275,6 +279,57 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
       }
     } catch (error) {
       console.error('Error toggling wishlist:', error)
+    }
+  }
+
+  // Fetch ratings for products
+  const fetchRatings = async (productList: Product[]) => {
+    try {
+      const productsWithRatings = await Promise.all(
+        productList.map(async (product) => {
+          try {
+            const response = await fetch(`/api/products/${product.id}/review`)
+            if (response.ok) {
+              const { avg, count } = await response.json()
+              return {
+                ...product,
+                avgRating: avg || 0,
+                ratingCount: count || 0
+              }
+            }
+          } catch (error) {
+            console.error(`Error fetching rating for product ${product.id}:`, error)
+          }
+          return { ...product, avgRating: 0, ratingCount: 0 }
+        })
+      )
+      setProducts(productsWithRatings)
+      setRatingsLoaded(true)
+    } catch (error) {
+      console.error('Error fetching ratings:', error)
+      setRatingsLoaded(true)
+    }
+  }
+
+  // Share product function
+  const handleShare = async (product: Product) => {
+    const shareData = {
+      title: product.name,
+      text: `Check out this amazing ${product.name}!`,
+      url: `${window.location.origin}/products/${product.id}`
+    }
+
+    try {
+      if (navigator.share && navigator.canShare(shareData)) {
+        await navigator.share(shareData)
+      } else {
+        // Fallback: copy URL to clipboard
+        await navigator.clipboard.writeText(shareData.url)
+        // You could add a toast notification here
+        console.log('Product URL copied to clipboard!')
+      }
+    } catch (error) {
+      console.error('Error sharing:', error)
     }
   }
 
@@ -466,6 +521,29 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
                           </h3>
                         </Link>
                         
+                        {/* Rating */}
+                        {ratingsLoaded && (product.avgRating! > 0 || product.ratingCount! > 0) && (
+                          <div className={styles.mobileProductRating}>
+                            <div className={styles.mobileRatingStars}>
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <Star
+                                  key={star}
+                                  size={12}
+                                  className={`${styles.mobileStar} ${
+                                    star <= Math.round(product.avgRating || 0)
+                                      ? styles.mobileStarFilled
+                                      : styles.mobileStarEmpty
+                                  }`}
+                                  fill={star <= Math.round(product.avgRating || 0) ? 'currentColor' : 'none'}
+                                />
+                              ))}
+                            </div>
+                            <span className={styles.mobileRatingCount}>
+                              ({product.ratingCount || 0})
+                            </span>
+                          </div>
+                        )}
+                        
                         {/* Product Price */}
                         <p className={styles.mobileProductPrice}>
                           {formatPrice(product.price)}
@@ -488,6 +566,14 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
                             title={isInWishlistStatus ? 'Remove from Wishlist' : 'Add to Wishlist'}
                           >
                             <Heart size={18} fill={isInWishlistStatus ? 'currentColor' : 'none'} />
+                          </button>
+
+                          <button
+                            className={styles.mobileShareButton}
+                            onClick={() => handleShare(product)}
+                            title="Share Product"
+                          >
+                            <Share size={18} />
                           </button>
                         </div>
                       </div>
