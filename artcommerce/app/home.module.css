@@ -3498,7 +3498,7 @@
 
 .mobileCarouselContainer {
   width: 100%;
-  max-width: 420px;
+  max-width: 350px;
   margin: 0 auto;
   overflow: hidden;
   border-radius: 16px;
@@ -3511,7 +3511,7 @@
 .mobileCarouselWrapper {
   position: relative;
   width: 100%;
-  height: 320px;
+  height: 400px;
 }
 
 .mobileCarouselSlide {
@@ -3529,11 +3529,10 @@
   background: #fff;
   border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  height: 320px;
+  border: 2px solid rgba(0, 0, 0, 0.12);
+  height: 400px;
   width: 100%;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.2s ease, border-color 0.2s ease;
   transform-origin: center center;
   will-change: transform;
   backface-visibility: hidden;
@@ -3541,7 +3540,7 @@
 
 .mobileProductCard:active {
   transform: scale(0.98);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  border-color: rgba(0, 0, 0, 0.2);
 }
 
 /* Left Side - Image Section */
@@ -3577,7 +3576,7 @@
 
 /* Right Side - Details Section */
 .mobileProductDetailsSection {
-  flex: 1;
+  flex: 0 0 35%;
   padding: 20px 16px 20px 20px;
   display: flex;
   flex-direction: column;
@@ -3659,7 +3658,6 @@
 .mobileAddToCartButton:hover {
   background: #333;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .mobileAddToCartButton:active {
@@ -3671,7 +3669,6 @@
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;
-  box-shadow: none;
 }
 
 .mobileWishlistButton {
