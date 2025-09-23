@@ -3529,8 +3529,8 @@
   overflow: hidden;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
   border: 1px solid rgba(0, 0, 0, 0.05);
-  min-height: 320px;
-  max-height: 320px;
+  height: 320px;
+  width: 100%;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   transform-origin: center center;
   will-change: transform;
@@ -3569,8 +3569,8 @@
 .mobileProductImage {
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  border-radius: 12px;
+  object-fit: contain;
+  border-radius: 8px;
 }
 
 /* Right Side - Details Section */

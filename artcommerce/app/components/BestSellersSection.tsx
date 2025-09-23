@@ -85,60 +85,32 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
     touchStartY.current = touch.clientY
     currentX.current = touch.clientX
     isDragging.current = true
-    startTime.current = Date.now()
-    
-    // Prevent default to ensure smooth tracking
-    e.preventDefault()
   }
 
   const handleTouchMove = (e: React.TouchEvent) => {
     if (!isDragging.current || isTransitioning) return
     
     const touch = e.touches[0]
-    currentX.current = touch.clientX
-    
     const deltaX = touch.clientX - touchStartX.current
     const deltaY = touch.clientY - touchStartY.current
     
     // Only handle horizontal swipes (prevent interfering with vertical scroll)
-    if (Math.abs(deltaX) > Math.abs(deltaY)) {
+    if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 10) {
       e.preventDefault()
-      
-      // Apply rubber band effect at boundaries
-      let constrainedDelta = deltaX
-      const maxDrag = 100
-      
-      // Left boundary (can't go before first item)
-      if (currentIndex === 0 && deltaX > 0) {
-        constrainedDelta = Math.sign(deltaX) * maxDrag * (1 - Math.exp(-Math.abs(deltaX) / maxDrag))
-      }
-      // Right boundary (can't go after last item)
-      else if (currentIndex === products.length - 1 && deltaX < 0) {
-        constrainedDelta = Math.sign(deltaX) * maxDrag * (1 - Math.exp(-Math.abs(deltaX) / maxDrag))
-      }
-      
-      setDragOffset(constrainedDelta)
     }
   }
 
-  const handleTouchEnd = (e: React.TouchEvent) => {
+    const handleTouchEnd = (e: React.TouchEvent) => {
     if (!isDragging.current) return
     
     isDragging.current = false
-    const endTime = Date.now()
-    const deltaTime = endTime - startTime.current
-    const deltaX = currentX.current - touchStartX.current
-    const velocity = Math.abs(deltaX) / deltaTime // pixels per millisecond
+    const touch = e.changedTouches[0]
+    const deltaX = touch.clientX - touchStartX.current
     
-    // Reset drag offset with animation
-    setDragOffset(0)
-    
-    // Determine if we should swipe based on distance and velocity
-    const swipeThreshold = 80
-    const velocityThreshold = 0.3
-    
-    const shouldSwipeLeft = (deltaX < -swipeThreshold) || (deltaX < -30 && velocity > velocityThreshold)
-    const shouldSwipeRight = (deltaX > swipeThreshold) || (deltaX > 30 && velocity > velocityThreshold)
+    // Determine if swipe is significant enough (minimum 50px)
+    const swipeThreshold = 50
+    const shouldSwipeLeft = deltaX < -swipeThreshold
+    const shouldSwipeRight = deltaX > swipeThreshold
     
     if (shouldSwipeLeft && currentIndex < products.length - 1) {
       goToNext()
@@ -264,7 +236,12 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
 
       {/* Best Sellers Mobile Carousel */}
       <div className={`${styles.bestSellersMobileCarousel} ${styles.mobileOnly}`} data-aos="fade-up" data-aos-delay="200">
-        <div className={styles.mobileCarouselContainer}>
+        <div 
+          className={styles.mobileCarouselContainer}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
           <div className={styles.mobileCarouselWrapper}>
             {products.map((product, index) => {
               const isInWishlistStatus = isInWishlist(Number(product.id))
