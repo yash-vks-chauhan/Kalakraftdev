@@ -283,11 +283,12 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
             }}
             onTransitionEnd={() => console.log('Transition ended, currentIndex:', currentIndex)}
           >
-            {products.map((product) => {
+            {products.map((product, index) => {
               const isInWishlistStatus = isInWishlist(Number(product.id))
+              console.log(`Rendering product ${index}:`, product.name, 'ID:', product.id)
               
               return (
-                <div key={product.id} className={styles.mobileCarouselSlide}>
+                <div key={`${product.id}-${index}`} className={styles.mobileCarouselSlide}>
                   <div className={styles.mobileProductCard}>
                     {/* Left side - Product Image */}
                     <div className={styles.mobileProductImageSection}>
