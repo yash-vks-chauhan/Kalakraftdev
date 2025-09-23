@@ -264,25 +264,20 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
 
       {/* Best Sellers Mobile Carousel */}
       <div className={`${styles.bestSellersMobileCarousel} ${styles.mobileOnly}`} data-aos="fade-up" data-aos-delay="200">
-        <div 
-          className={styles.mobileCarouselContainer}
-          ref={carouselRef}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-        >
-          <div 
-            className={styles.mobileCarouselTrack}
-            style={{ 
-              transform: `translateX(calc(-${currentIndex * 100}% + ${dragOffset}px))`,
-              transition: isDragging.current ? 'none' : 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
-            }}
-          >
+        <div className={styles.mobileCarouselContainer}>
+          <div className={styles.mobileCarouselWrapper}>
             {products.map((product, index) => {
               const isInWishlistStatus = isInWishlist(Number(product.id))
               
               return (
-                <div key={`${product.id}-${index}`} className={styles.mobileCarouselSlide}>
+                <div 
+                  key={product.id} 
+                  className={styles.mobileCarouselSlide}
+                  style={{
+                    transform: `translateX(${(index - currentIndex) * 100}%)`,
+                    transition: isTransitioning ? 'transform 0.4s ease-out' : 'none'
+                  }}
+                >
                   <div className={styles.mobileProductCard}>
                     {/* Left side - Product Image */}
                     <div className={styles.mobileProductImageSection}>
