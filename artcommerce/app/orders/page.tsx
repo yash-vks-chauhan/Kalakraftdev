@@ -26,6 +26,9 @@ interface Order {
   tax: number
   shippingFee: number
   totalAmount: number
+  couponCode?: string
+  discountAmount?: number
+  discountedTotal?: number
   createdAt: string
   orderItems: OrderItem[]   // ← Note the property name is orderItems
 }
@@ -168,6 +171,15 @@ export default function OrdersPage() {
                   {order.shippingFee.toFixed(2)}
                 </span>
               </div>
+              {order.discountAmount && order.discountAmount > 0 && (
+                <div className="mb-2 sm:mb-0">
+                  <span className="text-gray-600">Discount:</span>{' '}
+                  <span className="font-semibold text-green-600">
+                    -{order.orderItems[0].product.currency}{' '}
+                    {order.discountAmount.toFixed(2)}
+                  </span>
+                </div>
+              )}
               <div>
                 <span className="text-gray-600">Total:</span>{' '}
                 <span className="text-lg font-semibold">
@@ -175,6 +187,26 @@ export default function OrdersPage() {
                   {order.totalAmount.toFixed(2)}
                 </span>
               </div>
+            </div>
+
+            {/* Coupon Information */}
+            {order.couponCode && order.discountAmount && order.discountAmount > 0 && (
+              <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-md">
+                <p className="text-sm text-green-800">
+                  <strong>Coupon Applied:</strong> {order.couponCode} - Saved{' '}
+                  {order.orderItems[0].product.currency} {order.discountAmount.toFixed(2)}
+                </p>
+              </div>
+            )}
+
+            {/* View Details Button */}
+            <div className="mt-4">
+              <Link
+                href={`/orders/${order.orderNumber}`}
+                className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+              >
+                View Details
+              </Link>
             </div>
           </div>
         ))}

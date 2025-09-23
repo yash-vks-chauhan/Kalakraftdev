@@ -356,13 +356,6 @@ export default function CheckoutClient() {
           <div>
             <h2 className={styles.sectionTitle}>Shipping Address</h2>
             
-            {/* Debug info */}
-            {process.env.NODE_ENV === 'development' && (
-              <div style={{ fontSize: '12px', color: '#666', marginBottom: '10px' }}>
-                Debug: selectedAddressId = {selectedAddressId}, addresses count = {addresses.length}
-              </div>
-            )}
-            
             {addrError && <p className={styles.error}>{addrError}</p>}
             
             {addresses.length > 0 ? (
@@ -372,7 +365,6 @@ export default function CheckoutClient() {
                     key={a.id} 
                     className={`${styles.addressOption} ${selectedAddressId === a.id ? styles.addressOptionSelected : ''}`}
                     onClick={() => {
-                      console.log('Address option clicked:', a.id);
                       setSelectedAddressId(a.id);
                     }}
                   >
@@ -383,7 +375,6 @@ export default function CheckoutClient() {
                         value={a.id}
                         checked={selectedAddressId === a.id}
                         onChange={(e) => {
-                          console.log('Address selection changed:', a.id, e.target.checked);
                           setSelectedAddressId(a.id);
                         }}
                         disabled={formProcessing}

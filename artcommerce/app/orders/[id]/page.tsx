@@ -48,21 +48,14 @@ interface Order {
   tax: number
   shippingFee: number
   totalAmount: number
-  shippingAddress: {
-    line1: string
-    city: string
-    postalCode: string
-    country: string
-  }
-  billingAddress: {
-    line1: string
-    city: string
-    postalCode: string
-    country: string
-  }
+  couponCode?: string | null
+  discountAmount?: number | null
+  discountedTotal?: number | null
+  shippingAddress: any // JSON field
+  billingAddress: any // JSON field
   paymentMethod: string
   paymentStatus: string
-  createdAt: string
+  createdAt: Date
   orderItems: OrderItem[]
 }
 
@@ -89,7 +82,7 @@ export default async function OrderDetailsPage({
   const order = await prisma.order.findFirst({
     where: {
       orderNumber: orderNumber,
-      userId: userId,
+      userId: userId.toString(),
     },
     include: {
       orderItems: {
@@ -135,6 +128,20 @@ export default async function OrderDetailsPage({
         })}
       </p>
 
+      {/* Coupon Information (if applicable) */}
+      {order.couponCode && order.discountAmount && order.discountAmount > 0 && (
+        <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+          <h3 className="text-lg font-semibold text-green-800 mb-2">Discount Applied</h3>
+          <p className="text-green-700">
+            <strong>Coupon Code:</strong> {order.couponCode}
+          </p>
+          <p className="text-green-700">
+            <strong>Discount Amount:</strong> -{order.orderItems[0]?.product?.currency || '₹'}{' '}
+            {order.discountAmount.toFixed(2)}
+          </p>
+        </div>
+      )}
+
       {/* ─── Items Table ────────────────────────────────────────────────── */}
       <h2 className="text-2xl font-semibold mb-2">Items</h2>
       <table className="w-full border-collapse mb-6">
@@ -147,7 +154,7 @@ export default async function OrderDetailsPage({
           </tr>
         </thead>
         <tbody>
-          {order.orderItems.map((item) => {
+          {order.orderItems?.map((item) => {
             const unitPrice = item.priceAtPurchase.toFixed(2)
             const lineTotal = (item.quantity * item.priceAtPurchase).toFixed(2)
             return (
@@ -173,7 +180,7 @@ export default async function OrderDetailsPage({
               Subtotal:
             </td>
             <td className="border px-4 py-2 text-right font-semibold">
-              {order.orderItems[0].product.currency}{' '}
+              {order.orderItems?.[0]?.product?.currency || '₹'}{' '}
               {order.subtotal.toFixed(2)}
             </td>
           </tr>
@@ -185,7 +192,7 @@ export default async function OrderDetailsPage({
               Tax (5%):
             </td>
             <td className="border px-4 py-2 text-right font-semibold">
-              {order.orderItems[0].product.currency}{' '}
+              {order.orderItems?.[0]?.product?.currency || '₹'}{' '}
               {order.tax.toFixed(2)}
             </td>
           </tr>
@@ -197,10 +204,24 @@ export default async function OrderDetailsPage({
               Shipping Fee:
             </td>
             <td className="border px-4 py-2 text-right font-semibold">
-              {order.orderItems[0].product.currency}{' '}
+              {order.orderItems?.[0]?.product?.currency || '₹'}{' '}
               {order.shippingFee.toFixed(2)}
             </td>
           </tr>
+          {order.discountAmount && order.discountAmount > 0 && (
+            <tr>
+              <td
+                colSpan={3}
+                className="border px-4 py-2 text-right font-semibold text-green-700"
+              >
+                Discount{order.couponCode ? ` (${order.couponCode})` : ''}:
+              </td>
+              <td className="border px-4 py-2 text-right font-semibold text-green-700">
+                -{order.orderItems?.[0]?.product?.currency || '₹'}{' '}
+                {order.discountAmount.toFixed(2)}
+              </td>
+            </tr>
+          )}
           <tr className="bg-gray-100">
             <td
               colSpan={3}
@@ -209,7 +230,7 @@ export default async function OrderDetailsPage({
               Total:
             </td>
             <td className="border px-4 py-2 text-right text-lg font-bold">
-              {order.orderItems[0].product.currency}{' '}
+              {order.orderItems?.[0]?.product?.currency || '₹'}{' '}
               {order.totalAmount.toFixed(2)}
             </td>
           </tr>
@@ -222,21 +243,21 @@ export default async function OrderDetailsPage({
           <h2 className="text-2xl font-semibold mb-2">
             Shipping Address
           </h2>
-          <p>{order.shippingAddress.line1}</p>
+          <p>{(order.shippingAddress as any).line1}</p>
           <p>
-            {order.shippingAddress.city}, {order.shippingAddress.postalCode}
+            {(order.shippingAddress as any).city}, {(order.shippingAddress as any).postalCode}
           </p>
-          <p>{order.shippingAddress.country}</p>
+          <p>{(order.shippingAddress as any).country}</p>
         </div>
         <div>
           <h2 className="text-2xl font-semibold mb-2">
             Billing Address
           </h2>
-          <p>{order.billingAddress.line1}</p>
+          <p>{(order.billingAddress as any).line1}</p>
           <p>
-            {order.billingAddress.city}, {order.billingAddress.postalCode}
+            {(order.billingAddress as any).city}, {(order.billingAddress as any).postalCode}
           </p>
-          <p>{order.billingAddress.country}</p>
+          <p>{(order.billingAddress as any).country}</p>
         </div>
       </div>
 
