@@ -3455,7 +3455,7 @@
 /* Responsive Design */
 @media (max-width: 768px) {
   .bestSellersSection {
-    padding: 6rem 0.5rem 8rem;
+    padding: 6rem 0 8rem;
   }
   
   .bestSellersDesktop {
@@ -3492,12 +3492,14 @@
 /* Mobile Carousel Container */
 .bestSellersMobileCarousel {
   position: relative;
-  padding: 2rem 0.5rem;
+  padding: 2rem 0;
   overflow: hidden;
 }
 
 .mobileCarouselContainer {
   width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
   overflow: hidden;
   border-radius: 16px;
   position: relative;
@@ -3544,7 +3546,7 @@
 
 /* Left Side - Image Section */
 .mobileProductImageSection {
-  flex: 0 0 50%;
+  flex: 0 0 65%;
   position: relative;
   background: #f8f8f8;
   border-radius: 16px 0 0 16px;
@@ -3576,7 +3578,7 @@
 /* Right Side - Details Section */
 .mobileProductDetailsSection {
   flex: 1;
-  padding: 24px 20px 24px 24px;
+  padding: 20px 16px 20px 20px;
   display: flex;
   flex-direction: column;
   justify-content: center;

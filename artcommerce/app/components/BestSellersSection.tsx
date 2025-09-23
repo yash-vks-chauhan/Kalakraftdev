@@ -97,6 +97,21 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
     // Only handle horizontal swipes (prevent interfering with vertical scroll)
     if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 10) {
       e.preventDefault()
+      
+      // Apply drag offset with rubber band effect at boundaries
+      let constrainedDelta = deltaX
+      const maxDrag = 80
+      
+      // Left boundary (can't go before first item)
+      if (currentIndex === 0 && deltaX > 0) {
+        constrainedDelta = Math.sign(deltaX) * maxDrag * (1 - Math.exp(-Math.abs(deltaX) / maxDrag))
+      }
+      // Right boundary (can't go after last item)
+      else if (currentIndex === products.length - 1 && deltaX < 0) {
+        constrainedDelta = Math.sign(deltaX) * maxDrag * (1 - Math.exp(-Math.abs(deltaX) / maxDrag))
+      }
+      
+      setDragOffset(constrainedDelta)
     }
   }
 
@@ -107,8 +122,11 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
     const touch = e.changedTouches[0]
     const deltaX = touch.clientX - touchStartX.current
     
-    // Determine if swipe is significant enough (minimum 50px)
-    const swipeThreshold = 50
+    // Reset drag offset with animation
+    setDragOffset(0)
+    
+    // Determine if swipe is significant enough (minimum 60px)
+    const swipeThreshold = 60
     const shouldSwipeLeft = deltaX < -swipeThreshold
     const shouldSwipeRight = deltaX > swipeThreshold
     
@@ -251,8 +269,8 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
                   key={product.id} 
                   className={styles.mobileCarouselSlide}
                   style={{
-                    transform: `translateX(${(index - currentIndex) * 100}%)`,
-                    transition: isTransitioning ? 'transform 0.4s ease-out' : 'none'
+                    transform: `translateX(calc(${(index - currentIndex) * 100}% + ${dragOffset}px))`,
+                    transition: isDragging.current ? 'none' : 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
                   }}
                 >
                   <div className={styles.mobileProductCard}>
