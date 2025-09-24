@@ -1657,7 +1657,7 @@
   }
   
   /* Disable scroll animations on mobile for smoother experience */
-  [data-aos] {
+  :global([data-aos]) {
     opacity: 1 !important;
     transform: none !important;
     transition: none !important;
@@ -1839,6 +1839,38 @@
     text-rendering: optimizeSpeed !important;
     -webkit-font-smoothing: antialiased !important;
     -moz-osx-font-smoothing: grayscale !important;
+  }
+  
+  /* Optimize skeleton animations for mobile */
+  .skeletonShimmer {
+    animation-duration: 1.8s !important;
+    animation-timing-function: ease-in-out !important;
+  }
+  
+  .skeletonShimmer::before,
+  .skeletonShimmer::after {
+    animation-duration: 2s !important;
+  }
+  
+  /* Reduce skeleton complexity on mobile for better performance */
+  .skeletonCard {
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06) !important;
+  }
+  
+  /* Mobile skeleton spacing adjustments */
+  .skeletonSectionHeader {
+    margin-bottom: 2rem !important;
+  }
+  
+  .skeletonCategoryButtons {
+    margin: 1.5rem auto 2.5rem !important;
+    gap: 8px !important;
+  }
+  
+  .skeletonCategoryButton {
+    width: 70px !important;
+    height: 32px !important;
+    border-radius: 16px !important;
   }
 }
 
@@ -4364,86 +4396,341 @@
    MOBILE HOME SKELETON LOADING STYLES
    ============================================ */
 
-/* Base skeleton shimmer animation */
+/* Professional skeleton shimmer animation */
 @keyframes skeletonShimmer {
   0% {
     background-position: -200px 0;
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
   }
   100% {
     background-position: calc(200px + 100%) 0;
+    opacity: 1;
+  }
+}
+
+/* Enhanced shimmer with multiple layers for professional look */
+@keyframes skeletonPulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
   }
 }
 
 .skeletonShimmer {
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background: linear-gradient(
+    90deg,
+    #f8f8f8 0%,
+    #f0f0f0 20%,
+    #e8e8e8 50%,
+    #f0f0f0 80%,
+    #f8f8f8 100%
+  );
   background-size: 200px 100%;
-  animation: skeletonShimmer 1.5s infinite linear;
+  animation: skeletonShimmer 2s infinite ease-in-out;
+  position: relative;
+  overflow: hidden;
 }
 
-/* Generic skeleton elements */
+/* Add a secondary shimmer layer for premium effect */
+.skeletonShimmer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.8) 50%,
+    transparent 100%
+  );
+  background-size: 50px 100%;
+  animation: skeletonShimmer 1.8s infinite ease-in-out;
+  animation-delay: 0.3s;
+}
+
+/* Glimmer effect for extra polish */
+.skeletonShimmer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.4) 50%,
+    transparent 100%
+  );
+  animation: skeletonGlimmer 3s infinite ease-in-out;
+}
+
+@keyframes skeletonGlimmer {
+  0% {
+    left: -100%;
+  }
+  50% {
+    left: 100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+/* Professional skeleton elements with realistic proportions */
 .skeletonImage {
   width: 100%;
   height: 200px;
-  border-radius: 6px;
-  background: #f0f0f0;
+  border-radius: 12px;
+  background: #f8f8f8;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .skeletonTitle {
-  width: 60%;
-  height: 32px;
-  border-radius: 4px;
-  background: #f0f0f0;
+  width: 65%;
+  height: 28px;
+  border-radius: 6px;
+  background: #f8f8f8;
   margin: 0 auto;
+  position: relative;
+  overflow: hidden;
 }
 
 .skeletonDescription {
-  width: 80%;
+  width: 85%;
   height: 16px;
-  border-radius: 2px;
-  background: #f0f0f0;
+  border-radius: 4px;
+  background: #f8f8f8;
   margin: 0 auto;
+  position: relative;
+  overflow: hidden;
 }
 
 .skeletonProductName {
-  width: 85%;
-  height: 16px;
-  border-radius: 2px;
-  background: #f0f0f0;
-  margin-bottom: 8px;
+  width: 90%;
+  height: 18px;
+  border-radius: 4px;
+  background: #f8f8f8;
+  margin-bottom: 10px;
+  position: relative;
+  overflow: hidden;
 }
 
 .skeletonCategory {
-  width: 50%;
-  height: 12px;
-  border-radius: 2px;
-  background: #f0f0f0;
-  margin-bottom: 6px;
+  width: 60%;
+  height: 14px;
+  border-radius: 4px;
+  background: #f8f8f8;
+  margin-bottom: 8px;
+  position: relative;
+  overflow: hidden;
 }
 
 .skeletonPrice {
-  width: 40%;
-  height: 18px;
-  border-radius: 2px;
-  background: #f0f0f0;
+  width: 50%;
+  height: 20px;
+  border-radius: 4px;
+  background: #f8f8f8;
+  position: relative;
+  overflow: hidden;
 }
 
 .skeletonButton {
-  background: #f0f0f0;
-  border-radius: 6px;
+  background: #f8f8f8;
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #f0f0f0;
 }
 
 .skeletonWishlistButton {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  background: #f0f0f0;
+  background: #f8f8f8;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
 }
 
 .skeletonCategoryButton {
-  height: 36px;
-  width: 80px;
-  border-radius: 18px;
+  height: 38px;
+  width: 90px;
+  border-radius: 20px;
+  background: #f8f8f8;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #f0f0f0;
+  margin: 0 4px;
+}
+
+/* Enhanced skeleton card styling */
+.skeletonCard {
+  background: #fff;
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  border: 1px solid #f5f5f5;
+  transition: all 0.3s ease;
+}
+
+.skeletonImageOverlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 60px;
+  height: 60px;
   background: #f0f0f0;
+  border-radius: 8px;
+  opacity: 0.7;
+}
+
+/* Staggered animation delays for skeleton cards */
+.skeletonCard:nth-child(1) .skeletonShimmer {
+  animation-delay: 0s;
+}
+
+.skeletonCard:nth-child(2) .skeletonShimmer {
+  animation-delay: 0.2s;
+}
+
+.skeletonCard:nth-child(3) .skeletonShimmer {
+  animation-delay: 0.4s;
+}
+
+.skeletonCard:nth-child(4) .skeletonShimmer {
+  animation-delay: 0.6s;
+}
+
+/* Professional skeleton loading state for section headers */
+.skeletonSectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 3rem;
+  gap: 1.5rem;
+}
+
+.skeletonSectionTitle {
+  width: 200px;
+  height: 36px;
+  border-radius: 6px;
+  background: #f8f8f8;
+  position: relative;
+  overflow: hidden;
+}
+
+.skeletonHeaderLine {
+  width: 80px;
+  height: 1px;
+  background: #f0f0f0;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Category buttons skeleton container */
+.skeletonCategoryButtons {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin: 2rem auto 3rem;
+  flex-wrap: wrap;
+  padding: 0 1rem;
+}
+
+/* Professional loading transition effects */
+.featuredProductsContainer {
+  transition: opacity 0.4s ease-in-out, transform 0.3s ease;
+  min-height: 400px;
+}
+
+.featuredProductsContainer.loading {
+  opacity: 0.9;
+}
+
+/* Skeleton fade-in animation */
+@keyframes skeletonFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.skeletonCard {
+  animation: skeletonFadeIn 0.6s ease-out;
+  animation-fill-mode: both;
+}
+
+/* Improved skeleton responsiveness */
+@media (max-width: 768px) {
+  .skeletonImage {
+    height: 160px;
+    border-radius: 8px;
+  }
+  
+  .skeletonProductName {
+    height: 14px;
+    margin-bottom: 6px;
+  }
+  
+  .skeletonPrice {
+    height: 16px;
+  }
+  
+  .skeletonSectionTitle {
+    width: 160px;
+    height: 28px;
+  }
+  
+  .skeletonHeaderLine {
+    width: 60px;
+  }
+}
+
+/* Skeleton hover effects for better interactivity feedback */
+.skeletonCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+
+/* Loading state visual enhancements */
+.featuredCategoriesSection.loading {
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Add subtle loading indicator */
+.skeletonLoadingIndicator {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #f0f0f0;
+  border-top: 2px solid #ccc;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  opacity: 0.6;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 /* Featured Categories Desktop skeleton specific styles */
@@ -4623,4 +4910,90 @@
 @keyframes skeletonPulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }
+}
+
+/* ===== SKELETON WRAPPER AND TRANSITION STYLES ===== */
+
+/* Skeleton products wrapper for smooth transitions */
+.skeletonProductsWrapper {
+  width: 100%;
+  opacity: 1;
+  animation: skeletonFadeIn 0.5s ease-out;
+}
+
+/* Content fade-in when loading completes */
+.featuredProductsDesktop:not(.skeleton),
+.featuredProductsMobile:not(.skeleton) {
+  animation: contentFadeIn 0.6s ease-out;
+}
+
+@keyframes contentFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Staggered skeleton loading animation */
+.skeletonSectionHeader {
+  animation: skeletonFadeIn 0.8s ease-out;
+  animation-delay: 0s;
+}
+
+.skeletonCategoryButtons {
+  animation: skeletonFadeIn 0.8s ease-out;
+  animation-delay: 0.2s;
+}
+
+.skeletonProductsWrapper {
+  animation-delay: 0.4s;
+}
+
+/* Premium loading state styling */
+.featuredCategoriesSection.loading {
+  position: relative;
+  overflow: hidden;
+}
+
+.featuredCategoriesSection.loading::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #d0d0d0, transparent);
+  animation: loadingBar 2s infinite ease-in-out;
+  z-index: 10;
+}
+
+@keyframes loadingBar {
+  0% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Mobile-specific skeleton refinements */
+@media (max-width: 768px) {
+  .skeletonProductsWrapper {
+    animation-delay: 0.3s;
+  }
+  
+  .featuredCategoriesSection.loading::before {
+    height: 2px;
+  }
+  
+  .skeletonShimmer {
+    animation-duration: 1.8s;
+  }
 }
