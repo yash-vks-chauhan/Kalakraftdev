@@ -2,7 +2,7 @@
 
 'use client'
 
-import { useState, FormEvent, useEffect, useCallback } from 'react'
+import React, { useState, FormEvent, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '../../../../../contexts/AuthContext'
 import styles from './mobile-new-product.module.css'
@@ -10,6 +10,7 @@ import { ArrowLeft, Save, X, Upload, Plus, Minus, Check, AlertCircle, Camera, Im
 import LoadingSpinner from '../../../../../components/LoadingSpinner'
 import { useDropzone } from 'react-dropzone'
 import ClientOnly from './ClientOnly'
+import MinimalMobileNewProduct from './minimal'
 
 // Step interface
 interface Step {
@@ -28,9 +29,12 @@ const STEPS: Step[] = [
 ]
 
 function MobileNewProductPage() {
-  const { token, user } = useAuth()
+  const { user, token } = useAuth()
   const router = useRouter()
+
+  // State declarations - completely safe initialization
   const [mounted, setMounted] = useState(false)
+  const [hydrated, setHydrated] = useState(false)
   const [showNotification, setShowNotification] = useState(false)
   const [notificationMessage, setNotificationMessage] = useState('')
   const [notificationType, setNotificationType] = useState<'success' | 'error'>('success')
@@ -194,6 +198,9 @@ function MobileNewProductPage() {
   // Mount effect with completely safe client-only execution
   useEffect(() => {
     setMounted(true)
+    // Additional hydration safety
+    const timer = setTimeout(() => setHydrated(true), 100)
+    return () => clearTimeout(timer)
   }, [])
 
   // Separate effect for draft loading that only runs after mount
@@ -1068,8 +1075,8 @@ function MobileNewProductPage() {
     }
   }
 
-  // Comprehensive safety checks
-  if (!mounted) {
+  // Ultra-safe hydration checks
+  if (!mounted || !hydrated) {
     return (
       <div className={styles.container}>
         <div className={styles.loading}>Loading...</div>
@@ -1273,15 +1280,26 @@ function MobileNewProductPage() {
   }
 }
 
-// Wrapped export to prevent hydration issues
+// Test with minimal component to isolate hydration issues
 export default function MobileNewProductPageWrapper() {
-  return (
-    <ClientOnly fallback={
+  return <MinimalMobileNewProduct />
+}
+
+// Extra safety wrapper
+function MobileNewProductPageSafe() {
+  const [isClient, setIsClient] = useState(false)
+  
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
+  if (!isClient) {
+    return (
       <div className={styles.container}>
-        <div className={styles.loading}>Loading...</div>
+        <div className={styles.loading}>Initializing...</div>
       </div>
-    }>
-      <MobileNewProductPage />
-    </ClientOnly>
-  )
+    )
+  }
+
+  return <MobileNewProductPage />
 }
