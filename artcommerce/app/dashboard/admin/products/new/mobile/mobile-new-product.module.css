@@ -1,6 +1,6 @@
 /* Modern Mobile New Product CSS - Grey, White & Black Theme */
 
-:root {
+:global(:root) {
   --primary: #000000;
   --primary-light: #333333;
   --primary-dark: #000000;
