@@ -1656,6 +1656,14 @@
     display: none !important;
   }
   
+  /* Disable scroll animations on mobile for smoother experience */
+  :global([data-aos]) {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
+  
   /* Disable AOS animations on mobile */
   .aos-animate,
   [data-aos="fade-up"],
