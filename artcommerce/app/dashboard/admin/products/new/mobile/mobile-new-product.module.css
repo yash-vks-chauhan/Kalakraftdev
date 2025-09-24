@@ -1213,22 +1213,30 @@
   }
 }
 
-/* Clear Draft Button */
-.clearDraftButton {
-  background: none;
-  border: none;
-  color: #6b7280;
-  cursor: pointer;
-  padding: 0.25rem;
-  margin-left: 0.5rem;
-  border-radius: 4px;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* Clear Form Button */
+.clearFormButton {
+  position: fixed;
+  top: 130px;
+  right: 1rem;
+  z-index: 100;
 }
 
-.clearDraftButton:hover {
-  background-color: #f3f4f6;
-  color: #ef4444;
+.clearButton {
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.clearButton:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.5);
 }

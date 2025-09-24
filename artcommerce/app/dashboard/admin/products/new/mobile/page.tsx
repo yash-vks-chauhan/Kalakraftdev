@@ -69,8 +69,7 @@ function MobileNewProductPage() {
   const [currentStep, setCurrentStep] = useState(1)
   const [completedSteps, setCompletedSteps] = useState<number[]>([])
   const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({})
-  const [autoSaveEnabled, setAutoSaveEnabled] = useState(true)
-  const [autoSaveStatus, setAutoSaveStatus] = useState('')
+  // Removed auto-save state variables
 
   // Smart suggestions based on product name
   const generateSlugFromName = (productName: string) => {
@@ -128,51 +127,7 @@ function MobileNewProductPage() {
     return validateStep(currentStep)
   }
 
-  // Auto-save functionality with complete safety
-  useEffect(() => {
-    if (!mounted || !autoSaveEnabled || currentStep === 1) return
-    if (typeof window === 'undefined' || !window.localStorage) return
-    
-    // Only save if there's meaningful data
-    const hasData = name?.trim() || description?.trim() || price > 0 || (Array.isArray(imageUrls) && imageUrls.length > 0)
-    if (!hasData) return
-    
-    const saveTimer = setTimeout(() => {
-      try {
-        const formData = {
-          name: String(name || ''), 
-          slug: String(slug || ''), 
-          shortDesc: String(shortDesc || ''), 
-          description: String(description || ''), 
-          specifications: String(specifications || ''), 
-          careInstructions: String(careInstructions || ''),
-          price: Number(price) || 0, 
-          currency: String(currency) || 'INR', 
-          stockQuantity: Number(stockQuantity) || 0, 
-          isActive: Boolean(isActive), 
-          categoryId: categoryId || '', 
-          imageUrls: Array.isArray(imageUrls) ? imageUrls.filter(url => url && typeof url === 'string') : [],
-          stylingIdeas: Array.isArray(stylingIdeas) ? stylingIdeas.filter(idea => idea && typeof idea === 'object') : [], 
-          usageTags: Array.isArray(usageTags) ? usageTags.filter(tag => tag && typeof tag === 'string') : [], 
-          currentStep: Number(currentStep) || 1,
-          timestamp: new Date().toISOString()
-        }
-        
-        // Final validation before save
-        if (formData.name.trim() || formData.description.trim() || formData.price > 0) {
-          window.localStorage.setItem('product-draft', JSON.stringify(formData))
-          setAutoSaveStatus('Auto-saved')
-          setTimeout(() => setAutoSaveStatus(''), 2000)
-        }
-      } catch (e) {
-        console.error('Failed to save draft:', e)
-        setAutoSaveStatus('Save failed')
-        setTimeout(() => setAutoSaveStatus(''), 2000)
-      }
-    }, 2000)
-    
-    return () => clearTimeout(saveTimer)
-  }, [mounted, name, slug, shortDesc, description, specifications, careInstructions, price, currency, stockQuantity, isActive, categoryId, imageUrls, stylingIdeas, usageTags, currentStep, autoSaveEnabled])
+  // Removed auto-save functionality to prevent hydration issues
 
   // Load draft on mount
   useEffect(() => {
@@ -203,70 +158,7 @@ function MobileNewProductPage() {
     return () => clearTimeout(timer)
   }, [])
 
-  // Separate effect for draft loading that only runs after mount
-  useEffect(() => {
-    if (!mounted) return
-    
-    const loadDraftSafely = async () => {
-      // Add additional delay to ensure DOM is ready
-      await new Promise(resolve => setTimeout(resolve, 100))
-      
-      try {
-        const draft = localStorage?.getItem?.('product-draft')
-        if (!draft || draft === 'undefined' || draft === 'null') return
-        
-        const parsed = JSON.parse(draft)
-        if (!parsed || typeof parsed !== 'object') {
-          localStorage.removeItem('product-draft')
-          return
-        }
-        
-        // Only show prompt if draft has meaningful data
-        const hasData = (parsed.name?.trim?.()) || 
-                       (parsed.description?.trim?.()) || 
-                       (typeof parsed.price === 'number' && parsed.price > 0) || 
-                       (Array.isArray(parsed.imageUrls) && parsed.imageUrls.length > 0)
-        
-        if (!hasData) {
-          localStorage.removeItem('product-draft')
-          return
-        }
-        
-        const shouldContinue = window.confirm?.('Continue with your saved draft?')
-        if (!shouldContinue) {
-          localStorage.removeItem('product-draft')
-          return
-        }
-        
-        // Safely restore draft data
-        if (parsed.name && typeof parsed.name === 'string') setName(parsed.name.trim())
-        if (parsed.slug && typeof parsed.slug === 'string') setSlug(parsed.slug.trim())
-        if (parsed.shortDesc && typeof parsed.shortDesc === 'string') setShortDesc(parsed.shortDesc.trim())
-        if (parsed.description && typeof parsed.description === 'string') setDescription(parsed.description.trim())
-        if (parsed.specifications && typeof parsed.specifications === 'string') setSpecifications(parsed.specifications.trim())
-        if (parsed.careInstructions && typeof parsed.careInstructions === 'string') setCareInstructions(parsed.careInstructions.trim())
-        if (typeof parsed.price === 'number' && parsed.price >= 0) setPrice(parsed.price)
-        if (parsed.currency && typeof parsed.currency === 'string') setCurrency(parsed.currency)
-        if (typeof parsed.stockQuantity === 'number' && parsed.stockQuantity >= 0) setStockQuantity(parsed.stockQuantity)
-        if (typeof parsed.isActive === 'boolean') setIsActive(parsed.isActive)
-        if (parsed.categoryId) setCategoryId(parsed.categoryId)
-        if (Array.isArray(parsed.imageUrls)) setImageUrls(parsed.imageUrls.filter(url => url && typeof url === 'string'))
-        if (Array.isArray(parsed.stylingIdeas)) setStylingIdeas(parsed.stylingIdeas.filter(idea => idea && typeof idea === 'object'))
-        if (Array.isArray(parsed.usageTags)) setUsageTags(parsed.usageTags.filter(tag => tag && typeof tag === 'string'))
-        if (typeof parsed.currentStep === 'number' && parsed.currentStep >= 1 && parsed.currentStep <= 5) setCurrentStep(parsed.currentStep)
-        
-      } catch (e) {
-        console.error('Failed to load draft:', e)
-        try {
-          localStorage.removeItem('product-draft')
-        } catch (clearError) {
-          console.error('Failed to clear corrupted draft:', clearError)
-        }
-      }
-    }
-    
-    loadDraftSafely()
-  }, [mounted])
+  // Removed draft loading functionality to prevent hydration issues
 
   // Smart slug generation
   useEffect(() => {
@@ -526,14 +418,7 @@ function MobileNewProductPage() {
     router.push('/dashboard/admin/products')
   }
 
-  function clearDraft() {
-    try {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        window.localStorage.removeItem('product-draft')
-      }
-    } catch (e) {
-      console.error('Failed to clear draft from localStorage:', e)
-    }
+  function clearForm() {
     // Reset all form fields
     setName('')
     setSlug('')
@@ -553,7 +438,7 @@ function MobileNewProductPage() {
     setCompletedSteps([])
     setFieldErrors({})
     
-    setNotificationMessage('Draft cleared - starting fresh!')
+    setNotificationMessage('Form cleared - starting fresh!')
     setNotificationType('success')
     setShowNotification(true)
     setTimeout(() => setShowNotification(false), 3000)
@@ -1189,22 +1074,17 @@ function MobileNewProductPage() {
         </form>
       </div>
 
-      {/* Auto-save indicator */}
-      {mounted && autoSaveEnabled && (
-        <div className={styles.autoSaveIndicator}>
-          <span>
-            {autoSaveStatus || '✓ Auto-saving'}
-          </span>
-          <button 
-            type="button" 
-            onClick={clearDraft}
-            className={styles.clearDraftButton}
-            title="Clear draft and start fresh"
-          >
-            <X size={14} />
-          </button>
-        </div>
-      )}
+      {/* Clear form button */}
+      <div className={styles.clearFormButton}>
+        <button 
+          type="button" 
+          onClick={clearForm}
+          className={styles.clearButton}
+          title="Clear form and start fresh"
+        >
+          <X size={14} /> Clear Form
+        </button>
+      </div>
 
       {/* Step Navigation */}
       <div className={styles.stepNavigation}>
