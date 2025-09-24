@@ -1754,15 +1754,20 @@
     backface-visibility: visible !important;
   }
   
-  /* Keep ALL carousel elements functional */
+  /* Keep ALL carousel elements functional - override global AOS disabling */
   .mobileCarouselSlide,
   .mobileCarouselContainer,
   .mobileCarouselWrapper,
   .bestSellersMobileCarousel,
-  .mobileProductCard {
+  .mobileProductCard,
+  .carouselTrack,
+  .carouselContainer {
     will-change: auto !important;
     backface-visibility: visible !important;
-    /* Preserve transform for carousel sliding - DO NOT override with transform: none */
+    /* Preserve transform for carousel sliding - override global AOS rules */
+    transform: revert !important;
+    transition: revert !important;
+    animation: revert !important;
   }
   
   /* Remove transform3d only for static elements */

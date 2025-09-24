@@ -294,5 +294,24 @@ body:has(> div > main[data-page="home"]) {
     transition: opacity 0.1s ease !important;
   }
   
-  /* Mobile carousel functionality preserved - no global transform overrides needed since AOS is disabled via JS */
+  /* Essential AOS disabling for mobile - make sure elements are visible */
+  [data-aos] {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
+  
+  .aos-animate,
+  [data-aos="fade-up"],
+  [data-aos="fade-in"],
+  [data-aos="fade-left"],
+  [data-aos="fade-right"],
+  [data-aos="zoom-in"],
+  [data-aos="slide-up"] {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
 }
