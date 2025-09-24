@@ -2,6 +2,16 @@
   --accent-color: #00a0a0;
 }
 
+/* Global mobile animation disabling - moved outside media query for CSS Modules compatibility */
+@media (max-width: 768px) {
+  :global([data-aos]) {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
 .videoContainer {
   position: relative;
   width: 100%;
@@ -1654,14 +1664,6 @@
   
   .desktopOnly {
     display: none !important;
-  }
-  
-  /* Disable scroll animations on mobile for smoother experience */
-  :global([data-aos]) {
-    opacity: 1 !important;
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
   }
   
   /* Disable AOS animations on mobile */
