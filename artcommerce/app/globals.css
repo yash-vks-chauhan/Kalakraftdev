@@ -279,6 +279,14 @@ body:has(> div > main[data-page="home"]) {
     scroll-behavior: smooth !important;
   }
   
+  html {
+    -webkit-overflow-scrolling: touch !important;
+  }
+  
+  body {
+    scroll-behavior: smooth !important;
+  }
+  
   [data-aos] {
     opacity: 1 !important;
     transform: none !important;

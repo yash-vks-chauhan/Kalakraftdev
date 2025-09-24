@@ -1697,15 +1697,6 @@
     animation: none !important;
   }
   
-  /* Ensure smooth mobile scrolling behavior */
-  html {
-    -webkit-overflow-scrolling: touch !important;
-  }
-  
-  body {
-    scroll-behavior: smooth !important;
-  }
-  
   /* Remove any floating or transform animations on mobile */
   .watercolorSplash,
   .watercolorSplash2,
@@ -1765,7 +1756,6 @@
   }
   
   /* Remove transform3d and translateZ for better performance on animated elements */
-  [data-aos],
   .productCard,
   .mobileFeaturedCard,
   .mobileExploreCard,
