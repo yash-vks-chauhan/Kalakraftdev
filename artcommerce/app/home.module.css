@@ -1675,16 +1675,15 @@
     transform: none !important;
   }
   
-  /* Remove card fade-in animations but preserve transforms */
+  /* Remove card fade-in animations */
   .productCard {
     animation: none !important;
     opacity: 1 !important;
-    /* Keep transform for carousel functionality */
+    transform: none !important;
   }
   
-  /* Keep carousel track animations disabled but preserve manual transforms */
+  /* Disable carousel automatic animations */
   .carouselTrack {
-    /* Only disable automatic animations, keep manual transforms */
     animation: none !important;
   }
   
@@ -1746,7 +1745,9 @@
     transform: none !important;
   }
   
-  /* Only disable transforms for non-carousel image elements */
+  /* Disable GPU acceleration properties that might cause jank */
+  .mobileCarouselSlide,
+  .mobileProductCard,
   .mobileProductImageContainer,
   .mobileProductImage {
     will-change: auto !important;
@@ -1754,38 +1755,17 @@
     backface-visibility: visible !important;
   }
   
-  /* Keep ALL carousel elements functional - override global AOS disabling */
-  .mobileCarouselSlide,
-  .mobileCarouselContainer,
-  .mobileCarouselWrapper,
-  .bestSellersMobileCarousel,
-  .mobileProductCard,
-  .carouselTrack,
-  .carouselContainer {
-    will-change: auto !important;
-    backface-visibility: visible !important;
-    /* Preserve transform for carousel sliding - override global AOS rules */
-    transform: revert !important;
-    transition: revert !important;
-    animation: revert !important;
-  }
-  
-  /* Remove transform3d only for static elements */
+  /* Remove transform3d and translateZ for better performance on animated elements */
+  .productCard,
   .mobileFeaturedCard,
   .mobileExploreCard,
   .featuredMobileCard,
   .bestSellerMobileCard,
+  .carouselTrack,
   .productImage,
   .mobileFeaturedImage,
   .mobileExploreImage {
     transform: none !important;
-  }
-  
-  /* Keep carousel track and product cards functional */
-  .productCard,
-  .carouselTrack {
-    /* Preserve transforms for carousel functionality */
-    animation: none !important; /* Only disable animations, keep transforms */
   }
   
   /* Only allow essential animations on mobile */
