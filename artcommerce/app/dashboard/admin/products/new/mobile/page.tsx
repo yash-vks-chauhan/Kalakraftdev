@@ -29,6 +29,7 @@ const STEPS: Step[] = [
 export default function MobileNewProductPage() {
   const { token, user } = useAuth()
   const router = useRouter()
+  const [mounted, setMounted] = useState(false)
   const [showNotification, setShowNotification] = useState(false)
   const [notificationMessage, setNotificationMessage] = useState('')
   const [notificationType, setNotificationType] = useState<'success' | 'error'>('success')
@@ -121,18 +122,22 @@ export default function MobileNewProductPage() {
     return validateStep(currentStep)
   }
 
-  // Auto-save functionality
+  // Auto-save functionality (client-side only)
   useEffect(() => {
-    if (!autoSaveEnabled) return
+    if (!autoSaveEnabled || typeof window === 'undefined') return
     
     const saveTimer = setTimeout(() => {
-      // Save to localStorage as draft
-      const formData = {
-        name, slug, shortDesc, description, specifications, careInstructions,
-        price, currency, stockQuantity, isActive, categoryId, imageUrls,
-        stylingIdeas, usageTags, currentStep
+      try {
+        // Save to localStorage as draft
+        const formData = {
+          name, slug, shortDesc, description, specifications, careInstructions,
+          price, currency, stockQuantity, isActive, categoryId, imageUrls,
+          stylingIdeas, usageTags, currentStep
+        }
+        localStorage.setItem('product-draft', JSON.stringify(formData))
+      } catch (e) {
+        console.error('Failed to save draft:', e)
       }
-      localStorage.setItem('product-draft', JSON.stringify(formData))
     }, 2000)
     
     return () => clearTimeout(saveTimer)
@@ -148,7 +153,8 @@ export default function MobileNewProductPage() {
     // Load categories and tags
     fetch('/api/categories')
       .then(r => r.json())
-      .then(json => setCategories(json.categories))
+      .then(json => setCategories(json.categories || []))
+      .catch(console.error)
     
     fetch('/api/products/usage-tags')
       .then(r => r.json())
@@ -156,41 +162,48 @@ export default function MobileNewProductPage() {
         if (Array.isArray(json.tags)) setAvailableTags(json.tags)
       })
       .catch(console.error)
+  }, [user])
+
+  // Mount effect
+  useEffect(() => {
+    setMounted(true)
     
-    // Load draft if exists
-    const draft = localStorage.getItem('product-draft')
-    if (draft) {
+    // Load draft if exists (client-side only)
+    if (typeof window !== 'undefined') {
       try {
-        const parsed = JSON.parse(draft)
-        if (confirm('Continue with your saved draft?')) {
-          setName(parsed.name || '')
-          setSlug(parsed.slug || '')
-          setShortDesc(parsed.shortDesc || '')
-          setDescription(parsed.description || '')
-          setSpecifications(parsed.specifications || '')
-          setCareInstructions(parsed.careInstructions || '')
-          setPrice(parsed.price || 0)
-          setCurrency(parsed.currency || 'INR')
-          setStockQuantity(parsed.stockQuantity || 0)
-          setIsActive(parsed.isActive ?? true)
-          setCategoryId(parsed.categoryId || '')
-          setImageUrls(parsed.imageUrls || [])
-          setStylingIdeas(parsed.stylingIdeas || [])
-          setUsageTags(parsed.usageTags || [])
-          setCurrentStep(parsed.currentStep || 1)
+        const draft = localStorage.getItem('product-draft')
+        if (draft) {
+          const parsed = JSON.parse(draft)
+          if (confirm('Continue with your saved draft?')) {
+            setName(parsed.name || '')
+            setSlug(parsed.slug || '')
+            setShortDesc(parsed.shortDesc || '')
+            setDescription(parsed.description || '')
+            setSpecifications(parsed.specifications || '')
+            setCareInstructions(parsed.careInstructions || '')
+            setPrice(parsed.price || 0)
+            setCurrency(parsed.currency || 'INR')
+            setStockQuantity(parsed.stockQuantity || 0)
+            setIsActive(parsed.isActive ?? true)
+            setCategoryId(parsed.categoryId || '')
+            setImageUrls(parsed.imageUrls || [])
+            setStylingIdeas(parsed.stylingIdeas || [])
+            setUsageTags(parsed.usageTags || [])
+            setCurrentStep(parsed.currentStep || 1)
+          }
         }
       } catch (e) {
         console.error('Failed to load draft:', e)
       }
     }
-  }, [user])
+  }, [])
 
   // Smart slug generation
   useEffect(() => {
     if (name && !slug) {
       setSlug(generateSlugFromName(name))
     }
-  }, [name, slug])
+  }, [name]) // Removed slug from dependencies to prevent infinite loop
 
   // Smart category suggestion
   useEffect(() => {
@@ -200,7 +213,7 @@ export default function MobileNewProductPage() {
         setCategoryId(suggestedId)
       }
     }
-  }, [name, categoryId, categories])
+  }, [name, categories]) // Removed categoryId from dependencies to prevent infinite loop
 
 
 
@@ -447,7 +460,11 @@ export default function MobileNewProductPage() {
     }
   }
 
-  if (isLoading || isSaving) return <LoadingSpinner overlay={true} message={isSaving ? "Saving product..." : "Loading..."} />
+  // Show loading until component is mounted (prevents hydration mismatch)
+  if (!mounted || isLoading || isSaving) {
+    return <LoadingSpinner overlay={true} message={isSaving ? "Saving product..." : "Loading..."} />
+  }
+  
   if (error) return <div className={styles.error}>{error}</div>
 
   // Helper Components
@@ -998,7 +1015,7 @@ export default function MobileNewProductPage() {
       </div>
 
       {/* Auto-save indicator */}
-      {autoSaveEnabled && (
+      {mounted && autoSaveEnabled && (
         <div className={styles.autoSaveIndicator}>
           <span>✓ Auto-saving</span>
         </div>
