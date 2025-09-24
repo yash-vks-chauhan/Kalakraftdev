@@ -1137,91 +1137,46 @@ const FeaturedCategoriesSection = () => {
   };
 
   return (
-    <section className={`${styles.featuredCategoriesSection} ${loading ? 'loading' : ''}`} data-aos="fade-up">
-      {loading && (
-        <div className={styles.skeletonLoadingIndicator}></div>
-      )}
-      
-      {loading ? (
-        // Complete skeleton loading state
-        <>
-          {/* Section Header Skeleton */}
-          <div className={styles.skeletonSectionHeader}>
-            <div className={`${styles.skeletonHeaderLine} ${styles.skeletonShimmer}`}></div>
-            <div className={`${styles.skeletonSectionTitle} ${styles.skeletonShimmer}`}></div>
-            <div className={`${styles.skeletonHeaderLine} ${styles.skeletonShimmer}`}></div>
-          </div>
+    <section className={styles.featuredCategoriesSection} data-aos="fade-up">
+      {/* Section Header */}
+      <div className={styles.sectionHeader} data-aos="fade-up">
+        <div className={styles.headerLine}></div>
+        <h2 className={styles.sectionTitle}>Featured Categories</h2>
+        <div className={styles.headerLine}></div>
+      </div>
 
-          {/* Description Skeleton */}
-          <div className={styles.featuredDescription}>
-            <div className={`${styles.skeletonDescription} ${styles.skeletonShimmer}`} 
-                 style={{ width: '70%', height: '16px', marginBottom: '8px' }}></div>
-            <div className={`${styles.skeletonDescription} ${styles.skeletonShimmer}`} 
-                 style={{ width: '50%', height: '16px' }}></div>
-          </div>
+      <div className={styles.featuredDescription} data-aos="fade-up" data-aos-delay="100">
+        <p>Explore our curated selection by category. Each piece is handcrafted with attention to detail and artistic flair.</p>
+      </div>
 
-          {/* Category Buttons Skeleton */}
-          <div className={styles.skeletonCategoryButtons}>
-            {[1, 2, 3, 4, 5].map((_, index) => (
-              <div key={index} className={`${styles.skeletonCategoryButton} ${styles.skeletonShimmer}`}></div>
-            ))}
-          </div>
-        </>
-      ) : (
-        // Actual content when not loading
-        <>
-          {/* Section Header */}
-          <div className={styles.sectionHeader} data-aos="fade-up">
-            <div className={styles.headerLine}></div>
-            <h2 className={styles.sectionTitle}>Featured Categories</h2>
-            <div className={styles.headerLine}></div>
-          </div>
-
-          <div className={styles.featuredDescription} data-aos="fade-up" data-aos-delay="100">
-            <p>Explore our curated selection by category. Each piece is handcrafted with attention to detail and artistic flair.</p>
-          </div>
-
-          {/* Category Buttons */}
-          <div className={styles.categoryButtonsContainer} data-aos="fade-up" data-aos-delay="200">
-            {categories.map((category) => (
-              <button
-                key={category.id}
-                className={`${styles.categoryButton} ${selectedCategory === category.slug ? styles.categoryButtonActive : ''}`}
-                onClick={() => handleCategoryClick(category.slug)}
-              >
-                {category.name}
-              </button>
-            ))}
-          </div>
-        </>
-      )}
+      {/* Category Buttons */}
+      <div className={styles.categoryButtonsContainer} data-aos="fade-up" data-aos-delay="200">
+        {categories.map((category) => (
+          <button
+            key={category.id}
+            className={`${styles.categoryButton} ${selectedCategory === category.slug ? styles.categoryButtonActive : ''}`}
+            onClick={() => handleCategoryClick(category.slug)}
+          >
+            {category.name}
+          </button>
+        ))}
+      </div>
 
       {/* Products Display */}
-      <div className={`${styles.featuredProductsContainer} ${loading ? 'loading' : ''}`} data-aos="fade-up" data-aos-delay="300">
+      <div className={styles.featuredProductsContainer} data-aos="fade-up" data-aos-delay="300">
         {loading ? (
-          <div className={styles.skeletonProductsWrapper}>
+          <>
             {/* Desktop Skeleton Loading */}
             <div className={`${styles.featuredProductsDesktop} ${styles.desktopOnly}`}>
               {[1, 2, 3, 4].map((_, index) => (
-                <div key={index} className={`${styles.featuredProductCard} ${styles.skeletonCard}`}
-                     style={{ animationDelay: `${index * 0.1}s` }}>
+                <div key={index} className={styles.featuredProductCard}>
                   <div className={styles.featuredCardWrapper}>
                     <div className={styles.featuredImageContainer}>
-                      <div className={`${styles.skeletonImage} ${styles.skeletonShimmer}`}>
-                        {/* Add skeleton product placeholder */}
-                        <div className={styles.skeletonImageOverlay}></div>
-                      </div>
+                      <div className={`${styles.skeletonImage} ${styles.skeletonShimmer}`}></div>
                     </div>
                     
                     <div className={styles.featuredCardInfo}>
-                      {/* Category skeleton */}
-                      <div className={`${styles.skeletonCategory} ${styles.skeletonShimmer}`}></div>
-                      {/* Product name skeleton */}
                       <div className={`${styles.skeletonProductName} ${styles.skeletonShimmer}`}></div>
-                      {/* Second line of product name */}
-                      <div className={`${styles.skeletonProductName} ${styles.skeletonShimmer}`} 
-                           style={{ width: '60%', marginBottom: '12px' }}></div>
-                      {/* Price skeleton */}
                       <div className={`${styles.skeletonPrice} ${styles.skeletonShimmer}`}></div>
                     </div>
                     
@@ -1238,37 +1193,27 @@ const FeaturedCategoriesSection = () => {
             <div className={`${styles.featuredProductsMobile} ${styles.mobileOnly}`}>
               <div className={styles.featuredProductsMobileGrid}>
                 {[1, 2, 3, 4].map((_, index) => (
-                  <div key={index} className={`${styles.featuredMobileCard} ${styles.skeletonCard}`}
-                       style={{ animationDelay: `${index * 0.1}s` }}>
+                  <div key={index} className={styles.featuredMobileCard}>
                     <div className={styles.featuredMobileCardWrapper}>
                       <div className={styles.featuredMobileImageContainer}>
-                        <div className={`${styles.skeletonImage} ${styles.skeletonShimmer}`}>
-                          <div className={styles.skeletonImageOverlay}></div>
-                        </div>
+                        <div className={`${styles.skeletonImage} ${styles.skeletonShimmer}`}></div>
                       </div>
                       
                       <div className={styles.featuredMobileCardInfo}>
-                        {/* Product name skeleton - mobile sized */}
-                        <div className={`${styles.skeletonProductName} ${styles.skeletonShimmer}`} 
-                             style={{ height: '14px', marginBottom: '6px' }}></div>
-                        <div className={`${styles.skeletonProductName} ${styles.skeletonShimmer}`} 
-                             style={{ width: '70%', height: '14px', marginBottom: '8px' }}></div>
-                        {/* Price skeleton - mobile sized */}
-                        <div className={`${styles.skeletonPrice} ${styles.skeletonShimmer}`} 
-                             style={{ height: '16px', width: '45%' }}></div>
+                        <div className={`${styles.skeletonProductName} ${styles.skeletonShimmer}`}></div>
+                        <div className={`${styles.skeletonPrice} ${styles.skeletonShimmer}`}></div>
                       </div>
                       
                       {/* Wishlist Button Skeleton */}
                       <div className={styles.featuredMobileWishlistContainer}>
-                        <div className={`${styles.skeletonWishlistButton} ${styles.skeletonShimmer}`} 
-                             style={{ width: '28px', height: '28px' }}></div>
+                        <div className={`${styles.skeletonWishlistButton} ${styles.skeletonShimmer}`}></div>
                       </div>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
-          </div>
+          </>
         ) : error ? (
           <div className={styles.featuredError}>
             <p>Unable to load products</p>
@@ -1726,21 +1671,15 @@ clearTimeout(resumeTimerRef.current)
 
 useEffect(() => {
 
-// Only initialize AOS on desktop, disable on mobile for smoother experience
+AOS.init({
 
-if (!isMobileView()) {
+duration: 800,
 
-  AOS.init({
+once: true,
 
-    duration: 800,
+easing: 'ease-in-out',
 
-    once: true,
-
-    easing: 'ease-in-out',
-
-  })
-
-}
+})
 
 }, [])
 

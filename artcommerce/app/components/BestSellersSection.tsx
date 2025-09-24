@@ -444,9 +444,47 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
               </div>
               <div className={styles.bestSellerInfo}>
                 <h3 className={styles.bestSellerTitle}>{product.name}</h3>
+                
+                {/* Rating */}
+                {ratingsLoaded && (product.avgRating! > 0 || product.ratingCount! > 0) && (
+                  <div className={styles.bestSellerRating}>
+                    <div className={styles.desktopRatingStars}>
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star
+                          key={star}
+                          size={14}
+                          className={`${styles.desktopStar} ${
+                            star <= Math.round(product.avgRating || 0)
+                              ? styles.desktopStarFilled
+                              : styles.desktopStarEmpty
+                          }`}
+                          fill={star <= Math.round(product.avgRating || 0) ? 'currentColor' : 'none'}
+                        />
+                      ))}
+                    </div>
+                    <span className={styles.desktopRatingCount}>
+                      ({product.ratingCount || 0})
+                    </span>
+                  </div>
+                )}
+                
                 <p className={styles.bestSellerPrice}>{formatPrice(product.price)}</p>
               </div>
             </Link>
+            
+            {/* Desktop Action Buttons */}
+            <div className={styles.bestSellerActions}>
+              <button
+                className={styles.desktopShareButton}
+                onClick={(e) => {
+                  e.preventDefault()
+                  handleShare(product)
+                }}
+                title="Share Product"
+              >
+                <Share size={16} />
+              </button>
+            </div>
           </div>
         ))}
       </div>
