@@ -1671,15 +1671,21 @@ clearTimeout(resumeTimerRef.current)
 
 useEffect(() => {
 
-AOS.init({
+// Only initialize AOS on desktop, disable on mobile for smoother experience
 
-duration: 800,
+if (!isMobileView()) {
 
-once: true,
+  AOS.init({
 
-easing: 'ease-in-out',
+    duration: 800,
 
-})
+    once: true,
+
+    easing: 'ease-in-out',
+
+  })
+
+}
 
 }, [])
 

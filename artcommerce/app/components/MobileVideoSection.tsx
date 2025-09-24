@@ -53,7 +53,7 @@ const MobileVideoSection: React.FC = () => {
         opacity: 0.6,
         transform: 'rotate(-20deg)',
         pointerEvents: 'none',
-        animation: 'gentle-float 18s infinite alternate ease-in-out'
+        // animation: 'gentle-float 18s infinite alternate ease-in-out' // Disabled for smoother mobile experience
       }} />
       
       {/* Watercolor accent 2 */}
@@ -70,7 +70,7 @@ const MobileVideoSection: React.FC = () => {
         opacity: 0.6,
         transform: 'rotate(15deg)',
         pointerEvents: 'none',
-        animation: 'gentle-float 15s infinite alternate-reverse ease-in-out'
+        // animation: 'gentle-float 15s infinite alternate-reverse ease-in-out' // Disabled for smoother mobile experience
       }} />
       
       {/* Section header */}

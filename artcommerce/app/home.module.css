@@ -1655,6 +1655,191 @@
   .desktopOnly {
     display: none !important;
   }
+  
+  /* Disable scroll animations on mobile for smoother experience */
+  [data-aos] {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
+  
+  /* Disable AOS animations on mobile */
+  .aos-animate,
+  [data-aos="fade-up"],
+  [data-aos="fade-in"],
+  [data-aos="fade-left"],
+  [data-aos="fade-right"],
+  [data-aos="zoom-in"],
+  [data-aos="slide-up"] {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
+  
+  /* Smooth mobile scrolling and disable scroll animations */
+  * {
+    scroll-behavior: smooth !important;
+  }
+  
+  /* Disable transform animations on mobile cards */
+  .mobileFeaturedCard,
+  .mobileExploreCard,
+  .featuredMobileCard,
+  .bestSellerMobileCard {
+    transform: none !important;
+    transition: opacity 0.2s ease !important;
+    animation: none !important;
+  }
+  
+  /* Smooth tap interactions instead of transform animations */
+  .mobileFeaturedCard:active,
+  .mobileExploreCard:active,
+  .featuredMobileCard:active,
+  .bestSellerMobileCard:active {
+    opacity: 0.8 !important;
+    transform: none !important;
+  }
+  
+  /* Remove card fade-in animations */
+  .productCard {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  
+  /* Disable carousel automatic animations */
+  .carouselTrack {
+    animation: none !important;
+  }
+  
+  /* Disable scroll indicator animations */
+  .scrollIndicator::before {
+    animation: none !important;
+  }
+  
+  /* Disable scroll arrows pulse animation */
+  .scrollArrow {
+    animation: none !important;
+  }
+  
+  /* Ensure smooth mobile scrolling behavior */
+  html {
+    -webkit-overflow-scrolling: touch !important;
+  }
+  
+  body {
+    scroll-behavior: smooth !important;
+  }
+  
+  /* Remove any floating or transform animations on mobile */
+  .watercolorSplash,
+  .watercolorSplash2,
+  .inkSplash,
+  .brushAccent {
+    animation: none !important;
+    transform: none !important;
+  }
+  
+  /* Disable hover animations on mobile */
+  .productCard:hover,
+  .mobileFeaturedCard:hover,
+  .mobileExploreCard:hover {
+    transform: none !important;
+    box-shadow: none !important;
+    animation: none !important;
+  }
+  
+  /* Remove loading animations that might interfere */
+  .card-fade-in {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  
+  /* Ensure images load instantly without animation */
+  .mobileFeaturedImage,
+  .mobileExploreImage,
+  .featuredMobileImage {
+    transition: none !important;
+    transform: none !important;
+  }
+  
+  /* Disable button animations for smoother interaction */
+  .discoverAllButton,
+  .mobileFeaturedViewAllButton,
+  .exploreAllButton {
+    transition: opacity 0.2s ease !important;
+    transform: none !important;
+    animation: none !important;
+  }
+  
+  .discoverAllButton:hover,
+  .mobileFeaturedViewAllButton:hover,
+  .exploreAllButton:hover {
+    transform: none !important;
+  }
+  
+  /* Disable GPU acceleration properties that might cause jank */
+  .mobileCarouselSlide,
+  .mobileProductCard,
+  .mobileProductImageContainer,
+  .mobileProductImage {
+    will-change: auto !important;
+    transform: none !important;
+    backface-visibility: visible !important;
+  }
+  
+  /* Remove transform3d and translateZ for better performance on animated elements */
+  [data-aos],
+  .productCard,
+  .mobileFeaturedCard,
+  .mobileExploreCard,
+  .featuredMobileCard,
+  .bestSellerMobileCard,
+  .carouselTrack,
+  .productImage,
+  .mobileFeaturedImage,
+  .mobileExploreImage {
+    transform: none !important;
+  }
+  
+  /* Only allow essential animations on mobile */
+  .mobileFeaturedCard:active,
+  .mobileExploreCard:active,
+  .featuredMobileCard:active,
+  .bestSellerMobileCard:active,
+  button:active,
+  a:active {
+    opacity: 0.7 !important;
+    transition: opacity 0.1s ease !important;
+  }
+  
+  /* Mobile performance optimizations */
+  .mobileOnly {
+    contain: layout style paint !important;
+    content-visibility: auto !important;
+  }
+  
+  .mobileOnly img {
+    content-visibility: auto !important;
+    contain-intrinsic-size: 300px 300px !important;
+  }
+  
+  /* Reduce layout thrashing on mobile */
+  .mobileFeaturedSection,
+  .mobileExploreSection,
+  .featuredCategoriesSection {
+    contain: layout style !important;
+  }
+  
+  /* Optimize text rendering on mobile */
+  .mobileOnly * {
+    text-rendering: optimizeSpeed !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
+  }
 }
 
 /* Mobile Explore Section Styles */
