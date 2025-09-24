@@ -1656,20 +1656,6 @@
     display: none !important;
   }
   
-  /* Disable AOS animations on mobile */
-  .aos-animate,
-  [data-aos="fade-up"],
-  [data-aos="fade-in"],
-  [data-aos="fade-left"],
-  [data-aos="fade-right"],
-  [data-aos="zoom-in"],
-  [data-aos="slide-up"] {
-    opacity: 1 !important;
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
-  }
-  
   /* Smooth mobile scrolling and disable scroll animations */
   * {
     scroll-behavior: smooth !important;
