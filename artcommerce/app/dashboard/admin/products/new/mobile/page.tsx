@@ -2,40 +2,17 @@
 
 'use client'
 
-import React, { useState, FormEvent, useEffect, useCallback } from 'react'
+import { useState, FormEvent, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '../../../../../contexts/AuthContext'
 import styles from './mobile-new-product.module.css'
-import { ArrowLeft, Save, X, Upload, Plus, Minus, Check, AlertCircle, Camera, Image as ImageIcon, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ArrowLeft, Save, X, Upload, Plus, Minus, Check, AlertCircle } from 'lucide-react'
 import LoadingSpinner from '../../../../../components/LoadingSpinner'
 import { useDropzone } from 'react-dropzone'
-import ClientOnly from './ClientOnly'
-import MinimalMobileNewProduct from './minimal'
-import SuperSimpleNewProduct from './simple'
 
-// Step interface
-interface Step {
-  id: number
-  title: string
-  icon: string
-  description: string
-}
-
-const STEPS: Step[] = [
-  { id: 1, title: "Basic Info", icon: "📝", description: "Product name and description" },
-  { id: 2, title: "Pricing", icon: "💰", description: "Price and inventory details" },
-  { id: 3, title: "Images", icon: "📸", description: "Product photos" },
-  { id: 4, title: "Styling", icon: "✨", description: "Styling ideas and tips" },
-  { id: 5, title: "Review", icon: "✅", description: "Final review and create" }
-]
-
-function MobileNewProductPage() {
-  const { user, token } = useAuth()
+export default function MobileNewProductPage() {
+  const { token, user } = useAuth()
   const router = useRouter()
-
-  // State declarations - completely safe initialization
-  const [mounted, setMounted] = useState(false)
-  const [hydrated, setHydrated] = useState(false)
   const [showNotification, setShowNotification] = useState(false)
   const [notificationMessage, setNotificationMessage] = useState('')
   const [notificationType, setNotificationType] = useState<'success' | 'error'>('success')
@@ -66,59 +43,30 @@ function MobileNewProductPage() {
   const [availableTags, setAvailableTags] = useState<string[]>([])
   const [newTagInput, setNewTagInput] = useState('')
 
-  // Step-based UI state
-  const [currentStep, setCurrentStep] = useState(1)
-  const [completedSteps, setCompletedSteps] = useState<number[]>([])
-  const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({})
-  // Removed auto-save state variables
+  // Mobile-specific UI state
+  const [currentSection, setCurrentSection] = useState(0)
+  const [expandedSections, setExpandedSections] = useState<{ [key: number]: boolean }>({
+    0: true
+  })
+  const [isNavbarVisible, setIsNavbarVisible] = useState(true)
 
-  // Smart suggestions based on product name
-  // Removed slug generation function to prevent hydration issues
+  const sections = [
+    'Basic Information',
+    'Pricing & Inventory',
+    'Product Images',
+    'Styling Ideas',
+    'Tags & Categories'
+  ]
 
-  // Removed smart category suggestion to prevent hydration issues
-
-  // Form validation
-  const validateStep = (step: number): boolean => {
-    const errors: { [key: string]: string } = {}
-    
-    switch (step) {
-      case 1:
-        if (!name.trim()) errors.name = 'Product name is required'
-        if (!slug.trim()) errors.slug = 'Product slug is required'
-        if (slug.length < 3) errors.slug = 'Slug must be at least 3 characters'
-        break
-      case 2:
-        if (price <= 0) errors.price = 'Price must be greater than 0'
-        if (!categoryId) errors.categoryId = 'Please select a category'
-        break
-      case 3:
-        if (imageUrls.length === 0) errors.images = 'At least one product image is required'
-        break
-    }
-    
-    setFieldErrors(errors)
-    return Object.keys(errors).length === 0
-  }
-
-  const canProceedToNextStep = (): boolean => {
-    return validateStep(currentStep)
-  }
-
-  // Removed auto-save functionality to prevent hydration issues
-
-  // Load draft on mount
   useEffect(() => {
     if (user?.role !== 'admin') {
       setError('Unauthorized')
       return
     }
-    
-    // Load categories and tags
     fetch('/api/categories')
       .then(r => r.json())
-      .then(json => setCategories(json.categories || []))
-      .catch(console.error)
-    
+      .then(json => setCategories(json.categories))
+    // Fetch existing tags for suggestions
     fetch('/api/products/usage-tags')
       .then(r => r.json())
       .then(json => {
@@ -127,19 +75,71 @@ function MobileNewProductPage() {
       .catch(console.error)
   }, [user])
 
-  // Mount effect with completely safe client-only execution
+  // Handle navbar visibility based on scroll
   useEffect(() => {
-    setMounted(true)
-    // Additional hydration safety
-    const timer = setTimeout(() => setHydrated(true), 100)
-    return () => clearTimeout(timer)
+    let prevScrollY = window.scrollY
+    let scrollDirection = 0
+    let lastScrollTime = Date.now()
+    let scrollVelocity = 0
+    let scrollTimer: NodeJS.Timeout | null = null
+    
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY
+      const currentTime = Date.now()
+      const timeDiff = currentTime - lastScrollTime
+      
+      // Calculate scroll velocity (pixels per millisecond)
+      scrollVelocity = Math.abs(currentScrollY - prevScrollY) / Math.max(timeDiff, 1)
+      
+      // Determine scroll direction (1 for down, -1 for up)
+      const currentDirection = currentScrollY > prevScrollY ? 1 : -1
+      
+      // Update scroll direction only if it changed
+      if (currentDirection !== scrollDirection) {
+        scrollDirection = currentDirection
+      }
+      
+      // Clear any existing timer
+      if (scrollTimer) {
+        clearTimeout(scrollTimer)
+      }
+      
+      // Navbar visibility logic (similar to MobileLayout footer logic)
+      if (currentScrollY < 50) {
+        // Always show navbar when near the top
+        setIsNavbarVisible(true)
+      } else if (
+        scrollDirection > 0 && // Scrolling down
+        scrollVelocity > 0.3 && // Fast scroll
+        currentScrollY > 100 // Not at the very top
+      ) {
+        // Hide navbar when scrolling down quickly
+        setIsNavbarVisible(false)
+      } else if (scrollDirection < 0) { // Scrolling up
+        // Show navbar immediately when scrolling up
+        setIsNavbarVisible(true)
+      }
+      
+      // Set a timer to show navbar after scrolling stops
+      scrollTimer = setTimeout(() => {
+        if (currentScrollY > 50) {
+          setIsNavbarVisible(true)
+        }
+      }, 150) // Show after 150ms of no scrolling
+      
+      // Update values for next iteration
+      prevScrollY = currentScrollY
+      lastScrollTime = currentTime
+    }
+
+    window.addEventListener('scroll', handleScroll)
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      if (scrollTimer) {
+        clearTimeout(scrollTimer)
+      }
+    }
   }, [])
-
-  // Removed draft loading functionality to prevent hydration issues
-
-    // Removed smart defaults to prevent hydration issues
-
-
 
   const handleRemoveImage = (indexToRemove: number) => {
     setImageUrls(prev => prev.filter((_, index) => index !== indexToRemove))
@@ -311,45 +311,33 @@ function MobileNewProductPage() {
   })
 
   async function handleSubmit(e: FormEvent) {
+    e.preventDefault()
+    setError(null)
+    setSubmitting(true)
     try {
-      e.preventDefault()
-      e.stopPropagation()
-      
-      if (!mounted || submitting) return
-      
-      setError(null)
-      setSubmitting(true)
-      
-      // Validate required fields
-      if (!name?.trim() || !slug?.trim()) {
-        throw new Error('Name and slug are required')
-      }
-      
-      // Validate data types
-      const validatedData = {
-        name: String(name).trim(),
-        slug: String(slug).trim(),
-        shortDesc: String(shortDesc || '').trim(),
-        description: String(description || '').trim(),
-        specifications: String(specifications || '').trim(),
-        careInstructions: String(careInstructions || '').trim(),
-        stylingIdeaImages: Array.isArray(stylingIdeas) ? stylingIdeas.filter(idea => idea && typeof idea === 'string') : [],
-        price: Number(price) || 0,
-        currency: String(currency) || 'INR',
-        stockQuantity: Number(stockQuantity) || 0,
-        isActive: Boolean(isActive),
-        categoryId: categoryId ? Number(categoryId) : null,
-        imageUrls: Array.isArray(imageUrls) ? imageUrls.filter(url => url && typeof url === 'string') : [],
-        usageTags: Array.isArray(usageTags) ? usageTags.filter(tag => tag && typeof tag === 'string') : [],
-      }
-      
+      if (!name || !slug) throw new Error('Name and slug are required')
       const res = await fetch('/api/admin/products', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify(validatedData)
+        body: JSON.stringify({
+          name,
+          slug,
+          shortDesc,
+          description,
+          specifications,
+          careInstructions,
+          stylingIdeaImages: stylingIdeas,
+          price,
+          currency,
+          stockQuantity,
+          isActive,
+          categoryId: categoryId ? Number(categoryId) : null,
+          imageUrls,
+          usageTags,
+        })
       })
       if (!res.ok) {
         const data = await res.json()
@@ -372,449 +360,298 @@ function MobileNewProductPage() {
   }
 
   function handleCancelClick() {
-    // Clear draft when canceling
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('product-draft')
-    }
     setIsSaving(true)
     router.push('/dashboard/admin/products')
   }
 
-  function clearForm() {
-    // Reset all form fields
-    setName('')
-    setSlug('')
-    setShortDesc('')
-    setDescription('')
-    setSpecifications('')
-    setCareInstructions('')
-    setPrice(0)
-    setCurrency('INR')
-    setStockQuantity(0)
-    setIsActive(true)
-    setCategoryId('')
-    setImageUrls([])
-    setStylingIdeas([])
-    setUsageTags([])
-    setCurrentStep(1)
-    setCompletedSteps([])
-    setFieldErrors({})
-    
-    setNotificationMessage('Form cleared - starting fresh!')
-    setNotificationType('success')
-    setShowNotification(true)
-    setTimeout(() => setShowNotification(false), 3000)
+  const toggleSection = (index: number) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [index]: !prev[index]
+    }))
   }
 
-  // Step navigation
-  const nextStep = () => {
-    if (validateStep(currentStep) && currentStep < STEPS.length) {
-      setCompletedSteps(prev => [...prev.filter(s => s !== currentStep), currentStep])
-      setCurrentStep(prev => prev + 1)
-    }
-  }
-
-  const prevStep = () => {
-    if (currentStep > 1) {
-      setCurrentStep(prev => prev - 1)
-    }
-  }
-
-  const goToStep = (step: number) => {
-    if (step <= currentStep || completedSteps.includes(step - 1)) {
-      setCurrentStep(step)
-    }
-  }
-
-  // Show loading until component is mounted (prevents hydration mismatch)
-  if (!mounted || isLoading || isSaving) {
-    return <LoadingSpinner overlay={true} message={isSaving ? "Saving product..." : "Loading..."} />
-  }
-
-  // Add safety check for auth
-  if (!user) {
-    return <LoadingSpinner overlay={true} message="Authenticating..." />
-  }
-  
+  if (isLoading || isSaving) return <LoadingSpinner overlay={true} message={isSaving ? "Saving product..." : "Loading..."} />
   if (error) return <div className={styles.error}>{error}</div>
 
-  // Helper Components
-  const ValidatedInput = ({ 
-    value, 
-    onChange, 
-    placeholder, 
-    required = false, 
-    type = "text", 
-    fieldName,
-    ...props 
-  }: any) => (
-    <div className={styles.formField}>
-      <input
-        type={type}
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder}
-        className={`${styles.floatingInput} ${fieldErrors[fieldName] ? styles.inputError : ''}`}
-        required={required}
-        {...props}
-      />
-      <label className={styles.floatingLabel}>{placeholder}</label>
-      {fieldErrors[fieldName] && (
-        <div className={styles.errorHint}>
-          <AlertCircle size={14} />
-          {fieldErrors[fieldName]}
+  return (
+    <div className={styles.container}>
+
+      {/* Notification */}
+      {showNotification && (
+        <div className={`${styles.notification} ${styles[notificationType]}`}>
+          {notificationType === 'success' ? (
+            <Check size={16} />
+          ) : (
+            <AlertCircle size={16} />
+          )}
+          {notificationMessage}
         </div>
       )}
-      {!fieldErrors[fieldName] && value && required && (
-        <div className={styles.successIcon}>
-          <Check size={16} />
-        </div>
-      )}
-    </div>
-  )
 
-  const ValidatedTextarea = ({ 
-    value, 
-    onChange, 
-    placeholder, 
-    rows = 4,
-    fieldName,
-    ...props 
-  }: any) => (
-    <div className={styles.formField}>
-      <textarea
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder}
-        rows={rows}
-        className={`${styles.floatingTextarea} ${fieldErrors[fieldName] ? styles.inputError : ''}`}
-        {...props}
-      />
-      <label className={styles.floatingLabel}>{placeholder}</label>
-      {fieldErrors[fieldName] && (
-        <div className={styles.errorHint}>
-          <AlertCircle size={14} />
-          {fieldErrors[fieldName]}
-        </div>
-      )}
-    </div>
-  )
-
-  // Removed SmartSuggestions component to prevent hydration issues
-
-  const ImageUploadCard = () => (
-    <div className={styles.imageUploadCard}>
-      <div className={styles.uploadIconContainer}>
-        <Camera size={32} className={styles.cameraIcon} />
-      </div>
-      <h3 className={styles.uploadTitle}>Add Product Photos</h3>
-      <p className={styles.uploadDescription}>Take or upload up to 5 high-quality images</p>
-      
-      <div className={styles.uploadOptions}>
-        <div {...getRootProps()} className={styles.uploadOption}>
-          <input {...getInputProps()} />
-          <Camera size={20} />
-          <span>Camera</span>
-        </div>
-        <div {...getRootProps()} className={styles.uploadOption}>
-          <input {...getInputProps()} />
-          <ImageIcon size={20} />
-          <span>Gallery</span>
-        </div>
-      </div>
-      
-      <div className={styles.uploadHint}>
-        <span>Maximum 20MB per image • {5 - imageUrls.length} remaining</span>
-      </div>
-    </div>
-  )
-
-  const ProductPreview = () => (
-    <div className={styles.previewContainer}>
-      <div className={styles.previewCard}>
-        <div className={styles.previewHeader}>
-          <h3>Review Your Product</h3>
-          <p>Double-check everything looks perfect</p>
-        </div>
-        
-        <div className={styles.previewContent}>
-          <div className={styles.productMockup}>
-            {imageUrls?.length > 0 ? (
-              <img src={imageUrls[0]} alt={name || 'Product'} className={styles.mockupImage} />
-            ) : (
-              <div className={styles.mockupPlaceholder}>
-                <Camera size={48} />
-                <span>No image uploaded</span>
-              </div>
-            )}
-          </div>
-          
-          <div className={styles.previewDetails}>
-            <div className={styles.previewRow}>
-              <span className={styles.previewLabel}>Name:</span>
-              <span className={styles.previewValue}>{name || 'Not set'}</span>
+      {/* Form Content */}
+      <div className={styles.content}>
+        <form id="product-form" onSubmit={handleSubmit}>
+          {/* Basic Information */}
+          <div className={styles.section}>
+            <div 
+              className={styles.sectionHeader}
+              onClick={() => toggleSection(0)}
+            >
+              <span className={styles.sectionTitle}>Basic Information</span>
+              {expandedSections[0] ? <Minus size={18} /> : <Plus size={18} />}
             </div>
-            <div className={styles.previewRow}>
-              <span className={styles.previewLabel}>Price:</span>
-              <span className={styles.previewValue}>{currency} {price || 0}</span>
-            </div>
-            <div className={styles.previewRow}>
-              <span className={styles.previewLabel}>Category:</span>
-              <span className={styles.previewValue}>
-                {categories?.find(c => c?.id === categoryId)?.name || 'Not selected'}
-              </span>
-            </div>
-            <div className={styles.previewRow}>
-              <span className={styles.previewLabel}>Stock:</span>
-              <span className={styles.previewValue}>{stockQuantity || 0}</span>
-            </div>
-            <div className={styles.previewRow}>
-              <span className={styles.previewLabel}>Images:</span>
-              <span className={styles.previewValue}>{imageUrls?.length || 0} uploaded</span>
-            </div>
-            {usageTags?.length > 0 && (
-              <div className={styles.previewRow}>
-                <span className={styles.previewLabel}>Tags:</span>
-                <div className={styles.previewTags}>
-                  {usageTags?.map(tag => (
-                    <span key={tag} className={styles.previewTag}>{tag || ''}</span>
-                  )) || null}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-
-  const renderStepContent = () => {
-    switch (currentStep) {
-      case 1:
-        return (
-          <div className={styles.stepContent}>
-            <div className={styles.stepDescription}>
-              <p>Let's start with the basic information about your product.</p>
-            </div>
-            
-            <ValidatedInput
-              value={name}
-              onChange={(e: any) => setName(e.target.value)}
-              placeholder="Product Name"
-              required
-              fieldName="name"
-            />
-
-            
-            <ValidatedInput
-              value={slug}
-              onChange={(e: any) => setSlug(e.target.value)}
-              placeholder="URL Slug"
-              required
-              fieldName="slug"
-            />
-
-            
-            <ValidatedInput
-              value={shortDesc}
-              onChange={(e: any) => setShortDesc(e.target.value)}
-              placeholder="Short Description"
-              fieldName="shortDesc"
-            />
-            
-            <ValidatedTextarea
-              value={description}
-              onChange={(e: any) => setDescription(e.target.value)}
-              placeholder="Full Description"
-              rows={4}
-              fieldName="description"
-            />
-            
-            <ValidatedTextarea
-              value={specifications}
-              onChange={(e: any) => setSpecifications(e.target.value)}
-              placeholder="Specifications (materials, dimensions, etc.)"
-              rows={3}
-              fieldName="specifications"
-            />
-            
-            <ValidatedTextarea
-              value={careInstructions}
-              onChange={(e: any) => setCareInstructions(e.target.value)}
-              placeholder="Care Instructions"
-              rows={3}
-              fieldName="careInstructions"
-            />
-          </div>
-        )
-
-      case 2:
-        return (
-          <div className={styles.stepContent}>
-            <div className={styles.stepDescription}>
-              <p>Set your pricing and inventory details.</p>
-            </div>
-            
-            <div className={styles.formField}>
-              <select
-                value={categoryId}
-                onChange={e => setCategoryId(e.target.value ? Number(e.target.value) : '')}
-                className={`${styles.floatingSelect} ${fieldErrors?.categoryId ? styles.inputError : ''}`}
-                required
-              >
-                <option value="">Select category</option>
-                {Array.isArray(categories) ? categories.map((c, index) => 
-                  c && c.id ? (
-                    <option key={`${c.id}-${index}`} value={c.id}>{c.name || 'Unknown Category'}</option>
-                  ) : null
-                ).filter(Boolean) : null}
-              </select>
-              <label className={styles.floatingLabel}>Category</label>
-              {fieldErrors.categoryId && (
-                <div className={styles.errorHint}>
-                  <AlertCircle size={14} />
-                  {fieldErrors.categoryId}
-                </div>
-              )}
-            </div>
-
-            
-            <div className={styles.formRow}>
-              <ValidatedInput
-                type="number"
-                value={price}
-                onChange={(e: any) => setPrice(parseFloat(e.target.value) || 0)}
-                placeholder="Price"
-                min="0"
-                step="0.01"
-                required
-                fieldName="price"
-              />
-              
-              <div className={styles.formField}>
-                <select
-                  value={currency}
-                  onChange={e => setCurrency(e.target.value)}
-                  className={styles.floatingSelect}
-                  required
-                >
-                  <option value="INR">INR</option>
-                  <option value="USD">USD</option>
-                  <option value="EUR">EUR</option>
-                </select>
-                <label className={styles.floatingLabel}>Currency</label>
-              </div>
-            </div>
-            
-            <ValidatedInput
-              type="number"
-              value={stockQuantity}
-              onChange={(e: any) => setStockQuantity(parseInt(e.target.value) || 0)}
-              placeholder="Stock Quantity"
-              min="0"
-              fieldName="stockQuantity"
-            />
-            
-            <div className={styles.checkboxContainer}>
-              <label className={styles.modernCheckboxLabel}>
-                <input
-                  type="checkbox"
-                  checked={isActive}
-                  onChange={e => setIsActive(e.target.checked)}
-                  className={styles.modernCheckbox}
-                />
-                <span className={styles.checkboxText}>Product is active and visible</span>
-              </label>
-            </div>
-          </div>
-        )
-
-      case 3:
-        return (
-          <div className={styles.stepContent}>
-            <div className={styles.stepDescription}>
-              <p>Add high-quality photos of your product.</p>
-            </div>
-            
-            {imageUrls.length === 0 ? (
-              <ImageUploadCard />
-            ) : (
-              <>
-                <div className={styles.imageGrid}>
-                  {imageUrls?.map((url, i) => (
-                    <div key={i} className={styles.imagePreview}>
-                      <img src={url} alt={`Product ${i + 1}`} loading="lazy" />
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveImage(i)}
-                        className={styles.removeButton}
-                      >
-                        <X size={16} />
-                      </button>
-                    </div>
-                  )) || null}
-                </div>
-                
-                {imageUrls.length < 5 && (
-                  <div {...getRootProps()} className={`${styles.addMoreButton} ${isDragActive ? styles.dragActive : ''}`}>
-                    <input {...getInputProps()} />
-                    <Plus size={20} />
-                    <span>Add More Images ({5 - imageUrls.length} remaining)</span>
-                  </div>
-                )}
-              </>
-            )}
-            
-            {Object.entries(uploadingFiles).map(([uploadId, isUploading]) => (
-              <div key={uploadId} className={styles.uploadProgress}>
-                <div className={styles.progressBar}>
-                  <div 
-                    className={styles.progressFill}
-                    style={{ width: `${uploadProgress[uploadId] || 0}%` }}
+            {expandedSections[0] && (
+              <div className={styles.sectionContent}>
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>Product Name *</label>
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={e => setName(e.target.value)}
+                    className={styles.input}
+                    placeholder="Enter product name"
+                    required
                   />
                 </div>
-                <span>Uploading... {uploadProgress[uploadId] || 0}%</span>
-              </div>
-            ))}
-            
-            {fieldErrors.images && (
-              <div className={styles.errorHint}>
-                <AlertCircle size={14} />
-                {fieldErrors.images}
+
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>Slug *</label>
+                  <input
+                    type="text"
+                    value={slug}
+                    onChange={e => setSlug(e.target.value)}
+                    className={styles.input}
+                    placeholder="product-url-slug"
+                    required
+                  />
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>Short Description</label>
+                  <input
+                    type="text"
+                    value={shortDesc}
+                    onChange={e => setShortDesc(e.target.value)}
+                    className={styles.input}
+                    placeholder="Brief description"
+                  />
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>Full Description</label>
+                  <textarea
+                    value={description}
+                    onChange={e => setDescription(e.target.value)}
+                    className={styles.textarea}
+                    placeholder="Detailed product description"
+                    rows={4}
+                  />
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>Specifications</label>
+                  <textarea
+                    value={specifications}
+                    onChange={e => setSpecifications(e.target.value)}
+                    className={styles.textarea}
+                    placeholder="Material, dimensions, etc."
+                    rows={3}
+                  />
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>Care Instructions</label>
+                  <textarea
+                    value={careInstructions}
+                    onChange={e => setCareInstructions(e.target.value)}
+                    className={styles.textarea}
+                    placeholder="Care and maintenance"
+                    rows={3}
+                  />
+                </div>
               </div>
             )}
           </div>
-        )
 
-      case 4:
-        return (
-          <div className={styles.stepContent}>
-            <div className={styles.stepDescription}>
-              <p>Add styling images and usage tags to help customers.</p>
+          {/* Pricing & Inventory */}
+          <div className={styles.section}>
+            <div 
+              className={styles.sectionHeader}
+              onClick={() => toggleSection(1)}
+            >
+              <span className={styles.sectionTitle}>Pricing & Inventory</span>
+              {expandedSections[1] ? <Minus size={18} /> : <Plus size={18} />}
             </div>
-            
-            <div className={styles.subSection}>
-              <h4 className={styles.subSectionTitle}>Styling Ideas</h4>
-              <div {...getStylingRootProps()} className={`${styles.stylingDropzone} ${isStylingDrag ? styles.dragActive : ''}`}>
-                <input {...getStylingInputProps()} />
-                <Upload size={24} />
-                <p>Add styling inspiration images</p>
+            {expandedSections[1] && (
+              <div className={styles.sectionContent}>
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>Category *</label>
+                  <select
+                    value={categoryId}
+                    onChange={e => setCategoryId(e.target.value ? Number(e.target.value) : '')}
+                    className={styles.select}
+                    required
+                  >
+                    <option value="">Select category</option>
+                    {categories.map(c => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className={styles.formRow}>
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>Price *</label>
+                    <input
+                      type="number"
+                      value={price}
+                      onChange={e => setPrice(parseFloat(e.target.value))}
+                      className={styles.input}
+                      min="0"
+                      step="0.01"
+                      placeholder="0.00"
+                      required
+                    />
+                  </div>
+
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>Currency</label>
+                    <select
+                      value={currency}
+                      onChange={e => setCurrency(e.target.value)}
+                      className={styles.select}
+                      required
+                    >
+                      <option value="INR">INR</option>
+                      <option value="USD">USD</option>
+                      <option value="EUR">EUR</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className={styles.formRow}>
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>Stock Quantity</label>
+                    <input
+                      type="number"
+                      value={stockQuantity}
+                      onChange={e => setStockQuantity(parseInt(e.target.value))}
+                      className={styles.input}
+                      min="0"
+                      placeholder="0"
+                    />
+                  </div>
+
+                  <div className={styles.formGroup}>
+                    <label className={styles.checkboxLabel}>
+                      <input
+                        type="checkbox"
+                        checked={isActive}
+                        onChange={e => setIsActive(e.target.checked)}
+                        className={styles.checkbox}
+                      />
+                      Product Active
+                    </label>
+                  </div>
+                </div>
               </div>
-              
-              {Array.isArray(stylingIdeas) && stylingIdeas.length > 0 && (
-                <div className={styles.stylingGrid}>
-                  {stylingIdeas.map((idea, idx) => 
-                    idea && idea.url ? (
-                      <div key={`${idea.url}-${idx}`} className={styles.stylingItem}>
+            )}
+          </div>
+
+          {/* Product Images */}
+          <div className={styles.section}>
+            <div 
+              className={styles.sectionHeader}
+              onClick={() => toggleSection(2)}
+            >
+              <span className={styles.sectionTitle}>Product Images</span>
+              {expandedSections[2] ? <Minus size={18} /> : <Plus size={18} />}
+            </div>
+            {expandedSections[2] && (
+              <div className={styles.sectionContent}>
+                <div {...getRootProps()} className={`${styles.dropzone} ${isDragActive ? styles.dropzoneDragActive : ''}`}>
+                  <input {...getInputProps()} />
+                  <Upload size={24} />
+                  <p className={styles.dropzoneText}>
+                    {isDragActive
+                      ? 'Drop images here...'
+                      : 'Tap to select images'}
+                  </p>
+                  <p className={styles.dropzoneSubtext}>
+                    {imageUrls.length === 5 
+                      ? 'Maximum reached'
+                      : `${5 - imageUrls.length} remaining (max 20MB each)`}
+                  </p>
+                </div>
+
+                {imageUrls.length > 0 && (
+                  <div className={styles.imageGrid}>
+                    {imageUrls.map((url, i) => (
+                      <div key={i} className={styles.imagePreview}>
+                        <img src={url} alt={`Product ${i + 1}`} loading="lazy" />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveImage(i)}
+                          className={styles.removeButton}
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {Object.entries(uploadingFiles).map(([uploadId, isUploading]) => (
+                  <div key={uploadId} className={styles.uploadProgress}>
+                    <Upload size={16} />
+                    <span>Uploading... {uploadProgress[uploadId] || 0}%</span>
+                  </div>
+                ))}
+
+                {Object.entries(uploadErrors).map(([uploadId, error]) => (
+                  <p key={uploadId} className={styles.uploadError}>
+                    <AlertCircle size={16} />
+                    {error}
+                  </p>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Styling Ideas */}
+          <div className={styles.section}>
+            <div 
+              className={styles.sectionHeader}
+              onClick={() => toggleSection(3)}
+            >
+              <span className={styles.sectionTitle}>Styling Ideas</span>
+              {expandedSections[3] ? <Minus size={18} /> : <Plus size={18} />}
+            </div>
+            {expandedSections[3] && (
+              <div className={styles.sectionContent}>
+                <div {...getStylingRootProps()} className={`${styles.dropzone} ${isStylingDrag ? styles.dropzoneDragActive : ''}`}>
+                  <input {...getStylingInputProps()} />
+                  <Upload size={24} />
+                  <p className={styles.dropzoneText}>
+                    {isStylingDrag
+                      ? 'Drop styling images here...'
+                      : 'Tap to select styling images'}
+                  </p>
+                  <p className={styles.dropzoneSubtext}>Max 20MB each</p>
+                </div>
+
+                {stylingIdeas.length > 0 && (
+                  <div className={styles.stylingGrid}>
+                    {stylingIdeas.map((idea, idx) => (
+                      <div key={idea.url} className={styles.stylingItem}>
                         <img src={idea.url} alt="Styling idea" className={styles.stylingImage} loading="lazy" />
                         <input
                           type="text"
-                          value={idea.text || ''}
+                          value={idea.text}
                           onChange={e => {
                             const val = e.target.value
-                            setStylingIdeas(prev => 
-                              Array.isArray(prev) ? prev.map((it, i) => i === idx ? { ...it, text: val } : it) : []
-                            )
+                            setStylingIdeas(prev => prev.map((it, i) => i === idx ? { ...it, text: val } : it))
                           }}
                           placeholder="Add caption..."
                           className={styles.stylingCaption}
@@ -827,307 +664,95 @@ function MobileNewProductPage() {
                           <X size={16} />
                         </button>
                       </div>
-                    ) : null
-                  ).filter(Boolean)}
-                </div>
-              )}
-            </div>
-            
-            <div className={styles.subSection}>
-              <h4 className={styles.subSectionTitle}>Usage Tags</h4>
-              <div className={styles.tagOptions}>
-                {Array.isArray(availableTags) ? availableTags.map((tag, index) => 
-                  tag && typeof tag === 'string' ? (
-                    <label key={`${tag}-${index}`} className={styles.tagOption}>
-                      <input
-                        type="checkbox"
-                        checked={Array.isArray(usageTags) && usageTags.includes(tag)}
-                        onChange={e => {
-                          setUsageTags(prev => {
-                            const currentTags = Array.isArray(prev) ? prev : [];
-                            return e.target.checked ? [...currentTags, tag] : currentTags.filter(t => t !== tag);
-                          });
-                        }}
-                        className={styles.modernCheckbox}
-                      />
-                      <span>{tag}</span>
-                    </label>
-                  ) : null
-                ).filter(Boolean) : null}
+                    ))}
+                  </div>
+                )}
               </div>
-              
-              <ValidatedInput
-                value={newTagInput}
-                onChange={(e: any) => setNewTagInput(e.target.value)}
-                placeholder="Add new tag and press Enter"
-                onKeyDown={(e: any) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault()
-                    const val = newTagInput.trim()
-                    if (val && !usageTags.includes(val)) {
-                      setUsageTags(prev => [...prev, val])
-                    }
-                    if (val && !availableTags.includes(val)) {
-                      setAvailableTags(prev => [...prev, val])
-                    }
-                    setNewTagInput('')
-                  }
-                }}
-                fieldName="newTag"
-              />
-              
-              {usageTags.length > 0 && (
-                <div className={styles.selectedTags}>
-                  {Array.isArray(usageTags) ? usageTags.map((tag, index) => 
-                    tag && typeof tag === 'string' ? (
-                      <span key={`${tag}-${index}`} className={styles.tag} onClick={() => setUsageTags(prev => Array.isArray(prev) ? prev.filter(t => t !== tag) : [])}>
-                        {tag} <X size={12} />
-                      </span>
-                    ) : null
-                  ).filter(Boolean) : null}
-                </div>
-              )}
-            </div>
-          </div>
-        )
-
-      case 5:
-        return <ProductPreview />
-
-      default:
-        return null
-    }
-  }
-
-  // Ultra-safe hydration checks with delays
-  if (!mounted || !hydrated) {
-    return (
-      <div className={styles.container}>
-        <div className={styles.loading}>Initializing...</div>
-      </div>
-    )
-  }
-
-  if (!user) {
-    return (
-      <div className={styles.container}>
-        <div className={styles.loading}>Loading user data...</div>
-      </div>
-    )
-  }
-
-  if (user.role !== 'admin') {
-    return (
-      <div className={styles.container}>
-        <div className={styles.error}>Access denied. Admin role required.</div>
-      </div>
-    )
-  }
-
-  if (!categories || categories.length === 0) {
-    return (
-      <div className={styles.container}>
-        <div className={styles.loading}>Loading categories...</div>
-      </div>
-    )
-  }
-
-  try {
-    return (
-      <div className={styles.container} key="main-container">
-        {/* Notification */}
-        {showNotification && (
-          <div className={`${styles.notification} ${styles[notificationType]}`} key="notification">
-            {notificationType === 'success' ? (
-              <Check size={16} key="success-icon" />
-            ) : (
-              <AlertCircle size={16} key="error-icon" />
             )}
-            {notificationMessage}
           </div>
-        )}
 
-      {/* Step Header */}
-      <div className={styles.stepHeader}>
-        <div className={styles.progressContainer}>
-          <div className={styles.progressBar}>
+          {/* Tags & Categories */}
+          <div className={styles.section}>
             <div 
-              className={styles.progressFill} 
-              style={{ width: `${(currentStep / STEPS.length) * 100}%` }} 
-            />
-          </div>
-          <div className={styles.stepInfo}>
-            <span className={styles.stepNumber}>Step {currentStep} of {STEPS?.length || 5}</span>
-            <h2 className={styles.stepTitle}>
-              <span className={styles.stepIcon}>{STEPS?.[currentStep - 1]?.icon || '📝'}</span>
-              {STEPS?.[currentStep - 1]?.title || 'Loading...'}
-            </h2>
-            <p className={styles.stepDescription}>{STEPS?.[currentStep - 1]?.description || 'Please wait...'}</p>
-          </div>
-        </div>
-        
-        {/* Step Indicators */}
-        <div 
-          role="tablist" 
-          aria-label="Product creation steps"
-          className={styles.stepIndicators}
-        >
-          {Array.isArray(STEPS) ? STEPS.map((step, index) => {
-            if (!step || typeof step.id !== 'number') return null;
-            return (
-              <button
-                key={step.id}
-                role="tab"
-                aria-selected={currentStep === step.id}
-                aria-controls={`panel-${step.id}`}
-                tabIndex={currentStep === step.id ? 0 : -1}
-                className={`${styles.stepIndicator} ${
-                  currentStep === step.id ? styles.stepIndicatorActive : ''
-                } ${
-                  Array.isArray(completedSteps) && completedSteps.includes(step.id) ? styles.stepIndicatorCompleted : ''
-                }`}
-                onClick={() => goToStep(step.id)}
-                disabled={step.id > currentStep && (!Array.isArray(completedSteps) || !completedSteps.includes(step.id - 1))}
-              >
-                <span className={styles.stepIndicatorIcon}>
-                  {Array.isArray(completedSteps) && completedSteps.includes(step.id) ? '✓' : (step.icon || '')}
-                </span>
-              </button>
-            );
-          }).filter(Boolean) : null}
-        </div>
-      </div>
-
-      {/* Step Content */}
-      <div className={styles.content}>
-        <form onSubmit={handleSubmit} key="product-form">
-          <div 
-            id={`panel-${currentStep}`}
-            role="tabpanel"
-            aria-labelledby={`tab-${currentStep}`}
-            className={styles.stepPanel}
-            key={`step-panel-${currentStep}`}
-          >
-            {renderStepContent() || <div key="loading-step">Loading step content...</div>}
+              className={styles.sectionHeader}
+              onClick={() => toggleSection(4)}
+            >
+              <span className={styles.sectionTitle}>Tags</span>
+              {expandedSections[4] ? <Minus size={18} /> : <Plus size={18} />}
+            </div>
+            {expandedSections[4] && (
+              <div className={styles.sectionContent}>
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>Usage Tags</label>
+                  <div className={styles.tagOptions}>
+                    {availableTags.map(tag => (
+                      <label key={tag} className={styles.tagOption}>
+                        <input
+                          type="checkbox"
+                          checked={usageTags.includes(tag)}
+                          onChange={e => {
+                            setUsageTags(prev => e.target.checked ? [...prev, tag] : prev.filter(t => t !== tag))
+                          }}
+                          className={styles.checkbox}
+                        />
+                        {tag}
+                      </label>
+                    ))}
+                  </div>
+                  <input
+                    type="text"
+                    value={newTagInput}
+                    onChange={e => setNewTagInput(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault()
+                        const val = newTagInput.trim()
+                        if (val && !usageTags.includes(val)) {
+                          setUsageTags(prev => [...prev, val])
+                        }
+                        if (val && !availableTags.includes(val)) {
+                          setAvailableTags(prev => [...prev, val])
+                        }
+                        setNewTagInput('')
+                      }
+                    }}
+                    className={styles.input}
+                    placeholder="Add new tag and press Enter"
+                  />
+                  {usageTags.length > 0 && (
+                    <div className={styles.selectedTags}>
+                      {usageTags.map(tag => (
+                        <span key={tag} className={styles.tag} onClick={() => setUsageTags(prev => prev.filter(t => t !== tag))}>
+                          {tag} <X size={12} />
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </form>
       </div>
 
-      {/* Clear form button */}
-      <div className={styles.clearFormButton}>
+      {/* Fixed Footer */}
+      <div className={`${styles.footer} ${isNavbarVisible ? styles.footerAboveNavbar : styles.footerInPlace}`}>
         <button 
-          type="button" 
-          onClick={clearForm}
-          className={styles.clearButton}
-          title="Clear form and start fresh"
-        >
-          <X size={14} /> Clear Form
-        </button>
-      </div>
-
-      {/* Step Navigation */}
-      <div className={styles.stepNavigation}>
-        {currentStep > 1 && (
-          <button 
-            type="button"
-            className={styles.backButton} 
-            onClick={prevStep}
-          >
-            <ChevronLeft size={18} />
-            Back
-          </button>
-        )}
-        
-        <div className={styles.navigationSpacer} />
-        
-        {currentStep < STEPS.length ? (
-          <button 
-            type="button"
-            className={styles.nextButton} 
-            disabled={!canProceedToNextStep()}
-            onClick={nextStep}
-          >
-            Continue
-            <ChevronRight size={18} />
-          </button>
-        ) : (
-          <button 
-            type="submit"
-            className={styles.createButton}
-            disabled={submitting || !canProceedToNextStep()}
-          >
-            {submitting ? (
-              <>
-                <div className={styles.spinner} />
-                Creating...
-              </>
-            ) : (
-              <>
-                🚀 Create Product
-              </>
-            )}
-          </button>
-        )}
-        
-        <button 
-          type="button"
           onClick={handleCancelClick} 
-          className={styles.cancelLink}
+          className={styles.cancelButton}
           disabled={submitting}
         >
           Cancel
         </button>
+        <button 
+          type="submit" 
+          form="product-form"
+          className={styles.submitButton}
+          disabled={submitting}
+        >
+          {submitting ? 'Creating...' : 'Create Product'}
+        </button>
       </div>
     </div>
-    )
-  } catch (error) {
-    console.error('Mobile product page error:', error)
-    return (
-      <div className={styles.container} style={{ padding: '2rem', textAlign: 'center' }}>
-        <div style={{ background: '#fee', border: '1px solid #fcc', borderRadius: '8px', padding: '1rem' }}>
-          <AlertCircle size={24} style={{ color: '#d00', marginBottom: '0.5rem' }} />
-          <h3 style={{ margin: '0 0 0.5rem', color: '#d00' }}>Something went wrong</h3>
-          <p style={{ margin: '0', color: '#666' }}>Please try refreshing the page</p>
-          <button 
-            onClick={() => window.location.reload()} 
-            style={{ 
-              marginTop: '1rem', 
-              padding: '0.5rem 1rem', 
-              background: '#007bff', 
-              color: 'white', 
-              border: 'none', 
-              borderRadius: '4px',
-              cursor: 'pointer'
-            }}
-          >
-            Refresh Page
-          </button>
-        </div>
-      </div>
-    )
-  }
-}
-
-// Test with super simple version to isolate hydration issues
-export default function MobileNewProductPageWrapper() {
-  return <SuperSimpleNewProduct />
-}
-
-// Extra safety wrapper
-function MobileNewProductPageSafe() {
-  const [isClient, setIsClient] = useState(false)
-  
-  useEffect(() => {
-    setIsClient(true)
-  }, [])
-
-  if (!isClient) {
-    return (
-      <div className={styles.container}>
-        <div className={styles.loading}>Initializing...</div>
-      </div>
-    )
-  }
-
-  return <MobileNewProductPage />
+  )
 }
