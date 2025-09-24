@@ -1075,11 +1075,11 @@ function MobileNewProductPage() {
     }
   }
 
-  // Ultra-safe hydration checks
+  // Ultra-safe hydration checks with delays
   if (!mounted || !hydrated) {
     return (
       <div className={styles.container}>
-        <div className={styles.loading}>Loading...</div>
+        <div className={styles.loading}>Initializing...</div>
       </div>
     )
   }
@@ -1087,7 +1087,7 @@ function MobileNewProductPage() {
   if (!user) {
     return (
       <div className={styles.container}>
-        <div className={styles.loading}>Authenticating...</div>
+        <div className={styles.loading}>Loading user data...</div>
       </div>
     )
   }
@@ -1100,16 +1100,24 @@ function MobileNewProductPage() {
     )
   }
 
-  try {
+  if (!categories || categories.length === 0) {
     return (
       <div className={styles.container}>
+        <div className={styles.loading}>Loading categories...</div>
+      </div>
+    )
+  }
+
+  try {
+    return (
+      <div className={styles.container} key="main-container">
         {/* Notification */}
         {showNotification && (
-          <div className={`${styles.notification} ${styles[notificationType]}`}>
+          <div className={`${styles.notification} ${styles[notificationType]}`} key="notification">
             {notificationType === 'success' ? (
-              <Check size={16} />
+              <Check size={16} key="success-icon" />
             ) : (
-              <AlertCircle size={16} />
+              <AlertCircle size={16} key="error-icon" />
             )}
             {notificationMessage}
           </div>
@@ -1168,14 +1176,15 @@ function MobileNewProductPage() {
 
       {/* Step Content */}
       <div className={styles.content}>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} key="product-form">
           <div 
             id={`panel-${currentStep}`}
             role="tabpanel"
             aria-labelledby={`tab-${currentStep}`}
             className={styles.stepPanel}
+            key={`step-panel-${currentStep}`}
           >
-            {renderStepContent() || <div>Loading step content...</div>}
+            {renderStepContent() || <div key="loading-step">Loading step content...</div>}
           </div>
         </form>
       </div>
@@ -1280,9 +1289,42 @@ function MobileNewProductPage() {
   }
 }
 
-// Test with minimal component to isolate hydration issues
+// Safe full component with triple-layer protection
 export default function MobileNewProductPageWrapper() {
-  return <MinimalMobileNewProduct />
+  const [isReady, setIsReady] = useState(false)
+
+  useEffect(() => {
+    // Triple safety: wait for DOM, then React, then our component
+    const timer1 = setTimeout(() => {
+      const timer2 = setTimeout(() => {
+        const timer3 = setTimeout(() => {
+          setIsReady(true)
+        }, 50)
+        return () => clearTimeout(timer3)
+      }, 50)
+      return () => clearTimeout(timer2)
+    }, 50)
+    
+    return () => clearTimeout(timer1)
+  }, [])
+
+  if (!isReady) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.loading}>Loading product creation...</div>
+      </div>
+    )
+  }
+
+  return (
+    <ClientOnly fallback={
+      <div className={styles.container}>
+        <div className={styles.loading}>Loading...</div>
+      </div>
+    }>
+      <MobileNewProductPageSafe />
+    </ClientOnly>
+  )
 }
 
 // Extra safety wrapper
