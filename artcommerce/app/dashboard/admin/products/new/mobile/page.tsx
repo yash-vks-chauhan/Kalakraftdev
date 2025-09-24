@@ -372,41 +372,25 @@ export default function MobileNewProductPage() {
     }
   }
 
-  function handleCancelClick(e: React.MouseEvent) {
-    e.preventDefault()
-    setIsSaving(true)
-    router.push('/dashboard/admin/products')
-  }
-
-  if (isLoading || isSaving) return <LoadingSpinner overlay={true} message={isSaving ? "Saving product..." : "Loading..."} />
-  if (error) return <div className={styles.error}>{error}</div>
-
   return (
-    <main className={styles.container}>
-      {showNotification && (
-        <div className={`${styles.notification} ${styles[notificationType]}`}>
-          {notificationType === 'success' ? (
-            <FiCheck className={styles.notificationIcon} />
-          ) : (
-            <FiAlertCircle className={styles.notificationIcon} />
-          )}
-          {notificationMessage}
+    <div className={styles.container}>
+      <div className={styles.header}>
+        <h1 className={styles.title}>Create New Product</h1>
+        <p className={styles.subtitle}>Add basic product information</p>
+      </div>
+
+      {error && (
+        <div className={styles.error} style={{ marginBottom: '1rem' }}>
+          {error}
         </div>
       )}
 
-      <div className={styles.header}>
-        <h1 className={styles.title}>Create New Product</h1>
-        <p className={styles.subtitle}>Add product information, pricing, inventory and images</p>
-      </div>
-
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} className={styles.form}>
         <div className={styles.card}>
-          <h2 className={styles.sectionTitle}>
-            <FiBox className={styles.sectionIcon} />
-            Basic Information
-          </h2>
+          <h2 className={styles.sectionTitle}>Basic Information</h2>
+          
           <div className={styles.formGroup}>
-            <label className={styles.label}>Product Name</label>
+            <label className={styles.label}>Product Name *</label>
             <input
               type="text"
               value={name}
@@ -418,7 +402,7 @@ export default function MobileNewProductPage() {
           </div>
 
           <div className={styles.formGroup}>
-            <label className={styles.label}>Slug</label>
+            <label className={styles.label}>Slug *</label>
             <input
               type="text"
               value={slug}
@@ -436,7 +420,7 @@ export default function MobileNewProductPage() {
               value={shortDesc}
               onChange={e => setShortDesc(e.target.value)}
               className={styles.input}
-              placeholder="Brief description for product listings"
+              placeholder="Brief description"
             />
           </div>
 
@@ -447,6 +431,7 @@ export default function MobileNewProductPage() {
               onChange={e => setDescription(e.target.value)}
               className={styles.textarea}
               placeholder="Detailed product description"
+              rows={4}
             />
           </div>
 
@@ -456,91 +441,44 @@ export default function MobileNewProductPage() {
               value={specifications}
               onChange={e => setSpecifications(e.target.value)}
               className={styles.textarea}
-              placeholder="Add specifications (e.g., material, dimensions)"
+              placeholder="Material, dimensions, etc."
+              rows={3}
             />
           </div>
 
           <div className={styles.formGroup}>
-            <label className={styles.label}>Care & Maintenance</label>
+            <label className={styles.label}>Care Instructions</label>
             <textarea
               value={careInstructions}
               onChange={e => setCareInstructions(e.target.value)}
               className={styles.textarea}
-              placeholder="Care and maintenance instructions"
+              placeholder="Care and maintenance"
+              rows={3}
             />
-          </div>
-
-          <div className={styles.formGroup}>
-            <label className={styles.label}>Purpose / Mood Tags</label>
-            <div className={styles.tagOptions} style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-              {availableTags.map(tag => (
-                <label key={tag} style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                  <input
-                    type="checkbox"
-                    checked={usageTags.includes(tag)}
-                    onChange={e => {
-                      setUsageTags(prev => e.target.checked ? [...prev, tag] : prev.filter(t => t !== tag))
-                    }}
-                  />
-                  {tag}
-                </label>
-              ))}
-            </div>
-            <input
-              type="text"
-              value={newTagInput}
-              onChange={e => setNewTagInput(e.target.value)}
-              onKeyDown={e => {
-                if (e.key === 'Enter') {
-                  e.preventDefault()
-                  const val = newTagInput.trim()
-                  if (val && !usageTags.includes(val)) {
-                    setUsageTags(prev => [...prev, val])
-                  }
-                  if (val && !availableTags.includes(val)) {
-                    setAvailableTags(prev => [...prev, val])
-                  }
-                  setNewTagInput('')
-                }
-              }}
-              className={styles.input}
-              placeholder="Add new tag and press Enter"
-            />
-            {usageTags.length > 0 && (
-              <div style={{ marginTop: '0.5rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                {usageTags.map(tag => (
-                  <span key={tag} style={{ background: '#eee', padding: '2px 6px', borderRadius: '4px', cursor: 'pointer' }} onClick={() => setUsageTags(prev => prev.filter(t => t !== tag))}>
-                    {tag} ✕
-                  </span>
-                ))}
-              </div>
-            )}
           </div>
         </div>
 
         <div className={styles.card}>
-          <h2 className={styles.sectionTitle}>
-            <FiDollarSign className={styles.sectionIcon} />
-            Pricing & Inventory
-          </h2>
+          <h2 className={styles.sectionTitle}>Pricing & Inventory</h2>
+          
           <div className={styles.formGroup}>
-            <label className={styles.label}>Category</label>
+            <label className={styles.label}>Category *</label>
             <select
               value={categoryId}
               onChange={e => setCategoryId(e.target.value ? Number(e.target.value) : '')}
               className={styles.select}
               required
             >
-              <option value="">Select a category</option>
+              <option value="">Select category</option>
               {categories.map(c => (
                 <option key={c.id} value={c.id}>{c.name}</option>
               ))}
             </select>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+          <div className={styles.formRow}>
             <div className={styles.formGroup}>
-              <label className={styles.label}>Price</label>
+              <label className={styles.label}>Price *</label>
               <input
                 type="number"
                 value={price}
@@ -561,14 +499,14 @@ export default function MobileNewProductPage() {
                 className={styles.select}
                 required
               >
-                <option value="INR">INR - Indian Rupee</option>
-                <option value="USD">USD - US Dollar</option>
-                <option value="EUR">EUR - Euro</option>
+                <option value="INR">INR</option>
+                <option value="USD">USD</option>
+                <option value="EUR">EUR</option>
               </select>
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+          <div className={styles.formRow}>
             <div className={styles.formGroup}>
               <label className={styles.label}>Stock Quantity</label>
               <input
@@ -577,17 +515,17 @@ export default function MobileNewProductPage() {
                 onChange={e => setStockQuantity(parseInt(e.target.value))}
                 className={styles.input}
                 min="0"
-                placeholder="Available quantity"
+                placeholder="0"
               />
             </div>
 
             <div className={styles.formGroup}>
-              <label className={styles.checkbox}>
+              <label className={styles.checkboxWrapper}>
                 <input
                   type="checkbox"
                   checked={isActive}
                   onChange={e => setIsActive(e.target.checked)}
-                  className={styles.checkboxInput}
+                  className={styles.checkbox}
                 />
                 <span className={styles.checkboxLabel}>Product Active</span>
               </label>
@@ -595,166 +533,26 @@ export default function MobileNewProductPage() {
           </div>
         </div>
 
-        <div className={styles.card}>
-          <h2 className={styles.sectionTitle}>
-            <FiImage className={styles.sectionIcon} />
-            Product Images
-          </h2>
-          <div className={styles.formGroup}>
-            <label className={styles.label}>Product Images</label>
-            
-            <div {...getRootProps()} className={`${styles.dropzone} ${isDragActive ? styles.dropzoneDragActive : ''}`}>
-              <input {...getInputProps()} />
-              <FiUpload className={styles.dropzoneIcon} />
-              <p className={styles.dropzoneText}>
-                {isDragActive
-                  ? 'Drop the images here...'
-                  : 'Drag & drop product images here, or click to select files'}
-              </p>
-              <p className={styles.dropzoneText}>
-                {imageUrls.length === 5 
-                  ? 'Maximum number of images reached'
-                  : `${5 - imageUrls.length} images remaining (max 20MB per image)`}
-              </p>
-            </div>
-
-            <div className={styles.imageGrid}>
-              {imageUrls.map((url, i) => (
-                <div
-                  key={i}
-                  className={styles.imagePreviewContainer}
-                  draggable
-                  onDragStart={() => setDraggingIndex(i)}
-                  onDragOver={e => e.preventDefault()}
-                  onDragEnd={() => setDraggingIndex(null)}
-                  onDrop={() => {
-                    if (draggingIndex !== null) {
-                      reorderImages(draggingIndex, i);
-                    }
-                    setDraggingIndex(null);
-                  }}
-                >
-                  <img
-                    src={url}
-                    alt={`Product preview ${i + 1}`}
-                    className={styles.imagePreview}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveImage(i)}
-                    className={styles.removeImageButton}
-                    title="Remove image"
-                  >
-                    <FiX />
-                  </button>
-                </div>
-              ))}
-              
-              {/* Show uploading files with progress */}
-              {Object.entries(uploadingFiles).map(([uploadId, isUploading]) => (
-                <div key={uploadId} className={styles.imagePreviewContainer}>
-                  <div className={styles.uploadingOverlay}>
-                    <FiUpload className={styles.uploadingIcon} />
-                    <div className={styles.uploadProgress}>
-                      <div 
-                        className={styles.uploadProgressBar} 
-                        style={{ width: `${uploadProgress[uploadId] || 0}%` }}
-                      />
-                    </div>
-                    <div className={styles.uploadProgressText}>
-                      {uploadProgress[uploadId] || 0}%
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {Object.entries(uploadErrors).map(([uploadId, error]) => (
-              <p key={uploadId} className={styles.uploadError}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <line x1="12" y1="8" x2="12" y2="12"></line>
-                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                </svg>
-                {error}
-              </p>
-            ))}
-          </div>
-        </div>
-
-        <div className={styles.card}>
-          <h2 className={styles.sectionTitle}>
-            <FiImage className={styles.sectionIcon} />
-            Artful Styling Ideas Images
-          </h2>
-          <div className={styles.formGroup}>
-            <label className={styles.label}>Styling Inspiration Images</label>
-            
-            <div {...getStylingRootProps()} className={`${styles.dropzone} ${isStylingDrag ? styles.dropzoneDragActive : ''}`}>
-              <input {...getStylingInputProps()} />
-              <FiUpload className={styles.dropzoneIcon} />
-              <p className={styles.dropzoneText}>
-                {isStylingDrag
-                  ? 'Drop the images here...'
-                  : 'Drag & drop styling inspiration images here, or click to select files (max 20MB per image)'}
-              </p>
-              <button type="button" className={styles.browseButton}>
-                <FiUpload />
-                Browse Files
-              </button>
-            </div>
-
-            {stylingIdeas.length > 0 && (
-              <div className={styles.imagePreviewGrid}>
-                {stylingIdeas.map((idea, idx) => (
-                  <div key={idea.url} className={styles.previewItem}>
-                    <img src={idea.url} alt="styling idea" className={styles.previewImg} loading="lazy" />
-                    <input
-                      type="text"
-                      value={idea.text}
-                      onChange={e => {
-                        const val = e.target.value
-                        setStylingIdeas(prev => prev.map((it,i)=> i===idx ? { ...it, text: val } : it))
-                      }}
-                      placeholder="Add a caption for this styling idea"
-                      className={styles.stylingCaptionInput}
-                    />
-                    <button 
-                      type="button" 
-                      onClick={() => handleRemoveStylingImage(idx)} 
-                      className={styles.removeBtn}
-                    >
-                      <FiX />
-                      Remove Image
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-
         <div className={styles.buttonGroup}>
           <button 
-            type="submit" 
-            className={styles.saveButton}
-            disabled={submitting}
-          >
-            <FiSave />
-            {submitting ? 'Creating...' : 'Create Product'}
-            <FiArrowRight className={styles.arrowIcon} />
-          </button>
-          <button 
-            onClick={handleCancelClick} 
+            type="button"
+            onClick={handleCancel}
             className={styles.cancelButton}
             disabled={submitting}
           >
-            <FiX />
             Cancel
-            <FiArrowRight className={styles.arrowIcon} />
+          </button>
+          <button 
+            type="submit" 
+            className={styles.submitButton}
+            disabled={submitting}
+          >
+            {submitting ? 'Creating...' : 'Create Product'}
           </button>
         </div>
       </form>
-    </main>
+
+      {submitting && <LoadingSpinner overlay={true} message="Creating product..." />}
+    </div>
   )
 }
