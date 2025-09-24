@@ -72,33 +72,9 @@ function MobileNewProductPage() {
   // Removed auto-save state variables
 
   // Smart suggestions based on product name
-  const generateSlugFromName = (productName: string) => {
-    return productName
-      .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
-      .trim()
-  }
+  // Removed slug generation function to prevent hydration issues
 
-  const suggestCategoryFromName = (productName: string) => {
-    const name = productName.toLowerCase()
-    const suggestions = [
-      { keywords: ['painting', 'canvas', 'artwork', 'art'], categoryName: 'Paintings' },
-      { keywords: ['sculpture', 'statue', 'carved'], categoryName: 'Sculptures' },
-      { keywords: ['jewelry', 'necklace', 'ring', 'earring'], categoryName: 'Jewelry' },
-      { keywords: ['textile', 'fabric', 'cloth', 'tapestry'], categoryName: 'Textiles' },
-      { keywords: ['ceramic', 'pottery', 'vase', 'bowl'], categoryName: 'Ceramics' }
-    ]
-    
-    for (const suggestion of suggestions) {
-      if (suggestion.keywords.some(keyword => name.includes(keyword))) {
-        const category = categories.find(c => c.name.toLowerCase().includes(suggestion.categoryName.toLowerCase()))
-        return category?.id
-      }
-    }
-    return null
-  }
+  // Removed smart category suggestion to prevent hydration issues
 
   // Form validation
   const validateStep = (step: number): boolean => {
@@ -160,22 +136,7 @@ function MobileNewProductPage() {
 
   // Removed draft loading functionality to prevent hydration issues
 
-  // Smart slug generation
-  useEffect(() => {
-    if (name && !slug) {
-      setSlug(generateSlugFromName(name))
-    }
-  }, [name]) // Removed slug from dependencies to prevent infinite loop
-
-  // Smart category suggestion
-  useEffect(() => {
-    if (name && !categoryId && categories.length > 0) {
-      const suggestedId = suggestCategoryFromName(name)
-      if (suggestedId) {
-        setCategoryId(suggestedId)
-      }
-    }
-  }, [name, categories]) // Removed categoryId from dependencies to prevent infinite loop
+    // Removed smart defaults to prevent hydration issues
 
 
 
@@ -538,30 +499,7 @@ function MobileNewProductPage() {
     </div>
   )
 
-  const SmartSuggestions = ({ field, value }: { field: string, value: any }) => {
-    if (field === 'slug' && name && slug === generateSlugFromName(name)) {
-      return (
-        <div className={styles.smartSuggestion}>
-          <span className={styles.suggestionIcon}>💡</span>
-          <span className={styles.suggestionText}>Auto-generated from product name</span>
-        </div>
-      )
-    }
-    
-    if (field === 'category' && name && categoryId) {
-      const suggestedId = suggestCategoryFromName(name)
-      if (suggestedId === categoryId) {
-        return (
-          <div className={styles.smartSuggestion}>
-            <span className={styles.suggestionIcon}>🎯</span>
-            <span className={styles.suggestionText}>Smart suggestion based on product name</span>
-          </div>
-        )
-      }
-    }
-    
-    return null
-  }
+  // Removed SmartSuggestions component to prevent hydration issues
 
   const ImageUploadCard = () => (
     <div className={styles.imageUploadCard}>
@@ -665,7 +603,7 @@ function MobileNewProductPage() {
               required
               fieldName="name"
             />
-            <SmartSuggestions field="name" value={name} />
+
             
             <ValidatedInput
               value={slug}
@@ -674,7 +612,7 @@ function MobileNewProductPage() {
               required
               fieldName="slug"
             />
-            <SmartSuggestions field="slug" value={slug} />
+
             
             <ValidatedInput
               value={shortDesc}
@@ -738,7 +676,7 @@ function MobileNewProductPage() {
                 </div>
               )}
             </div>
-            <SmartSuggestions field="category" value={categoryId} />
+
             
             <div className={styles.formRow}>
               <ValidatedInput
