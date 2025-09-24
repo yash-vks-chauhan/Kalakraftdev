@@ -1656,11 +1656,6 @@
     display: none !important;
   }
   
-  /* Smooth mobile scrolling and disable scroll animations */
-  * {
-    scroll-behavior: smooth !important;
-  }
-  
   /* Disable transform animations on mobile cards */
   .mobileFeaturedCard,
   .mobileExploreCard,

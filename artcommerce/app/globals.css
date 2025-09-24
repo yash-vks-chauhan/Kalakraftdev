@@ -274,6 +274,11 @@ body:has(> div > main[data-page="home"]) {
 
 /* Mobile AOS Animation Disabling - Global CSS for smooth mobile app experience */
 @media (max-width: 768px) {
+  /* Smooth mobile scrolling for app-like experience */
+  * {
+    scroll-behavior: smooth !important;
+  }
+  
   [data-aos] {
     opacity: 1 !important;
     transform: none !important;
