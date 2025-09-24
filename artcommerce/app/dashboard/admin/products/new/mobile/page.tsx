@@ -464,6 +464,11 @@ export default function MobileNewProductPage() {
   if (!mounted || isLoading || isSaving) {
     return <LoadingSpinner overlay={true} message={isSaving ? "Saving product..." : "Loading..."} />
   }
+
+  // Add safety check for auth
+  if (!user) {
+    return <LoadingSpinner overlay={true} message="Authenticating..." />
+  }
   
   if (error) return <div className={styles.error}>{error}</div>
 
@@ -591,8 +596,8 @@ export default function MobileNewProductPage() {
         
         <div className={styles.previewContent}>
           <div className={styles.productMockup}>
-            {imageUrls.length > 0 ? (
-              <img src={imageUrls[0]} alt={name} className={styles.mockupImage} />
+            {imageUrls?.length > 0 ? (
+              <img src={imageUrls[0]} alt={name || 'Product'} className={styles.mockupImage} />
             ) : (
               <div className={styles.mockupPlaceholder}>
                 <Camera size={48} />
@@ -613,24 +618,24 @@ export default function MobileNewProductPage() {
             <div className={styles.previewRow}>
               <span className={styles.previewLabel}>Category:</span>
               <span className={styles.previewValue}>
-                {categories.find(c => c.id === categoryId)?.name || 'Not selected'}
+                {categories?.find(c => c?.id === categoryId)?.name || 'Not selected'}
               </span>
             </div>
             <div className={styles.previewRow}>
               <span className={styles.previewLabel}>Stock:</span>
-              <span className={styles.previewValue}>{stockQuantity}</span>
+              <span className={styles.previewValue}>{stockQuantity || 0}</span>
             </div>
             <div className={styles.previewRow}>
               <span className={styles.previewLabel}>Images:</span>
-              <span className={styles.previewValue}>{imageUrls.length} uploaded</span>
+              <span className={styles.previewValue}>{imageUrls?.length || 0} uploaded</span>
             </div>
-            {usageTags.length > 0 && (
+            {usageTags?.length > 0 && (
               <div className={styles.previewRow}>
                 <span className={styles.previewLabel}>Tags:</span>
                 <div className={styles.previewTags}>
-                  {usageTags.map(tag => (
-                    <span key={tag} className={styles.previewTag}>{tag}</span>
-                  ))}
+                  {usageTags?.map(tag => (
+                    <span key={tag} className={styles.previewTag}>{tag || ''}</span>
+                  )) || null}
                 </div>
               </div>
             )}
@@ -711,13 +716,13 @@ export default function MobileNewProductPage() {
               <select
                 value={categoryId}
                 onChange={e => setCategoryId(e.target.value ? Number(e.target.value) : '')}
-                className={`${styles.floatingSelect} ${fieldErrors.categoryId ? styles.inputError : ''}`}
+                className={`${styles.floatingSelect} ${fieldErrors?.categoryId ? styles.inputError : ''}`}
                 required
               >
                 <option value="">Select category</option>
-                {categories.map(c => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
+                {categories?.map(c => (
+                  <option key={c?.id} value={c?.id}>{c?.name || 'Unknown Category'}</option>
+                )) || null}
               </select>
               <label className={styles.floatingLabel}>Category</label>
               {fieldErrors.categoryId && (
@@ -791,7 +796,7 @@ export default function MobileNewProductPage() {
             ) : (
               <>
                 <div className={styles.imageGrid}>
-                  {imageUrls.map((url, i) => (
+                  {imageUrls?.map((url, i) => (
                     <div key={i} className={styles.imagePreview}>
                       <img src={url} alt={`Product ${i + 1}`} loading="lazy" />
                       <button
@@ -802,7 +807,7 @@ export default function MobileNewProductPage() {
                         <X size={16} />
                       </button>
                     </div>
-                  ))}
+                  )) || null}
                 </div>
                 
                 {imageUrls.length < 5 && (
@@ -938,19 +943,20 @@ export default function MobileNewProductPage() {
     }
   }
 
-  return (
-    <div className={styles.container}>
-      {/* Notification */}
-      {showNotification && (
-        <div className={`${styles.notification} ${styles[notificationType]}`}>
-          {notificationType === 'success' ? (
-            <Check size={16} />
-          ) : (
-            <AlertCircle size={16} />
-          )}
-          {notificationMessage}
-        </div>
-      )}
+  try {
+    return (
+      <div className={styles.container}>
+        {/* Notification */}
+        {showNotification && (
+          <div className={`${styles.notification} ${styles[notificationType]}`}>
+            {notificationType === 'success' ? (
+              <Check size={16} />
+            ) : (
+              <AlertCircle size={16} />
+            )}
+            {notificationMessage}
+          </div>
+        )}
 
       {/* Step Header */}
       <div className={styles.stepHeader}>
@@ -962,12 +968,12 @@ export default function MobileNewProductPage() {
             />
           </div>
           <div className={styles.stepInfo}>
-            <span className={styles.stepNumber}>Step {currentStep} of {STEPS.length}</span>
+            <span className={styles.stepNumber}>Step {currentStep} of {STEPS?.length || 5}</span>
             <h2 className={styles.stepTitle}>
-              <span className={styles.stepIcon}>{STEPS[currentStep - 1].icon}</span>
-              {STEPS[currentStep - 1].title}
+              <span className={styles.stepIcon}>{STEPS?.[currentStep - 1]?.icon || '📝'}</span>
+              {STEPS?.[currentStep - 1]?.title || 'Loading...'}
             </h2>
-            <p className={styles.stepDescription}>{STEPS[currentStep - 1].description}</p>
+            <p className={styles.stepDescription}>{STEPS?.[currentStep - 1]?.description || 'Please wait...'}</p>
           </div>
         </div>
         
@@ -977,26 +983,26 @@ export default function MobileNewProductPage() {
           aria-label="Product creation steps"
           className={styles.stepIndicators}
         >
-          {STEPS.map((step, index) => (
+          {STEPS?.map((step, index) => (
             <button
-              key={step.id}
+              key={step?.id || index}
               role="tab"
-              aria-selected={currentStep === step.id}
-              aria-controls={`panel-${step.id}`}
-              tabIndex={currentStep === step.id ? 0 : -1}
+              aria-selected={currentStep === step?.id}
+              aria-controls={`panel-${step?.id}`}
+              tabIndex={currentStep === step?.id ? 0 : -1}
               className={`${styles.stepIndicator} ${
-                currentStep === step.id ? styles.stepIndicatorActive : ''
+                currentStep === step?.id ? styles.stepIndicatorActive : ''
               } ${
-                completedSteps.includes(step.id) ? styles.stepIndicatorCompleted : ''
+                completedSteps.includes(step?.id) ? styles.stepIndicatorCompleted : ''
               }`}
-              onClick={() => goToStep(step.id)}
-              disabled={step.id > currentStep && !completedSteps.includes(step.id - 1)}
+              onClick={() => goToStep(step?.id)}
+              disabled={step?.id > currentStep && !completedSteps.includes(step?.id - 1)}
             >
               <span className={styles.stepIndicatorIcon}>
-                {completedSteps.includes(step.id) ? '✓' : step.icon}
+                {completedSteps.includes(step?.id) ? '✓' : (step?.icon || '')}
               </span>
             </button>
-          ))}
+          )) || null}
         </div>
       </div>
 
@@ -1009,7 +1015,7 @@ export default function MobileNewProductPage() {
             aria-labelledby={`tab-${currentStep}`}
             className={styles.stepPanel}
           >
-            {renderStepContent()}
+            {renderStepContent() || <div>Loading step content...</div>}
           </div>
         </form>
       </div>
@@ -1075,5 +1081,31 @@ export default function MobileNewProductPage() {
         </button>
       </div>
     </div>
-  )
+    )
+  } catch (error) {
+    console.error('Mobile product page error:', error)
+    return (
+      <div className={styles.container} style={{ padding: '2rem', textAlign: 'center' }}>
+        <div style={{ background: '#fee', border: '1px solid #fcc', borderRadius: '8px', padding: '1rem' }}>
+          <AlertCircle size={24} style={{ color: '#d00', marginBottom: '0.5rem' }} />
+          <h3 style={{ margin: '0 0 0.5rem', color: '#d00' }}>Something went wrong</h3>
+          <p style={{ margin: '0', color: '#666' }}>Please try refreshing the page</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            style={{ 
+              marginTop: '1rem', 
+              padding: '0.5rem 1rem', 
+              background: '#007bff', 
+              color: 'white', 
+              border: 'none', 
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+          >
+            Refresh Page
+          </button>
+        </div>
+      </div>
+    )
+  }
 }
