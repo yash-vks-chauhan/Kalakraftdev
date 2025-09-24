@@ -1,22 +1,16 @@
 'use client'
 
-import { useState, FormEvent, useEffect, useCallback } from 'react'
+import { useState, FormEvent, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '../../../../../contexts/AuthContext'
 import styles from './mobile-new-product.module.css'
-import { FiBox, FiDollarSign, FiImage, FiSave, FiX, FiArrowRight, FiCheck, FiAlertCircle, FiUpload } from 'react-icons/fi'
 import LoadingSpinner from '../../../../../components/LoadingSpinner'
-import { useDropzone } from 'react-dropzone'
 
 export default function MobileNewProductPage() {
   const { token, user } = useAuth()
   const router = useRouter()
-  const [showNotification, setShowNotification] = useState(false)
-  const [notificationMessage, setNotificationMessage] = useState('')
-  const [notificationType, setNotificationType] = useState<'success' | 'error'>('success')
-  const [isLoading, setIsLoading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
-  const [isSaving, setIsSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   // Form state
   const [name, setName] = useState('')
@@ -25,34 +19,12 @@ export default function MobileNewProductPage() {
   const [description, setDescription] = useState('')
   const [specifications, setSpecifications] = useState('')
   const [careInstructions, setCareInstructions] = useState('')
-  const [stylingIdeas, setStylingIdeas] = useState<{ url: string; text: string }[]>([])
   const [price, setPrice] = useState<number>(0)
   const [currency, setCurrency] = useState('INR')
   const [stockQuantity, setStockQuantity] = useState<number>(0)
   const [isActive, setIsActive] = useState(true)
   const [categoryId, setCategoryId] = useState<number | ''>('')
-  const [imageUrls, setImageUrls] = useState<string[]>([])
   const [categories, setCategories] = useState<{ id: number; name: string }[]>([])
-  const [error, setError] = useState<string | null>(null)
-  const [uploadingFiles, setUploadingFiles] = useState<{ [key: string]: boolean }>({})
-  const [uploadProgress, setUploadProgress] = useState<{ [key: string]: number }>({})
-  const [uploadErrors, setUploadErrors] = useState<{ [key: string]: string }>({})
-  const [usageTags, setUsageTags] = useState<string[]>([])
-  const [availableTags, setAvailableTags] = useState<string[]>([])
-  const [newTagInput, setNewTagInput] = useState('')
-
-  // State for drag-and-drop reordering
-  const [draggingIndex, setDraggingIndex] = useState<number | null>(null)
-
-  // Function to reorder images array
-  const reorderImages = (fromIndex: number, toIndex: number) => {
-    setImageUrls(prev => {
-      const updated = [...prev];
-      const [moved] = updated.splice(fromIndex, 1);
-      updated.splice(toIndex, 0, moved);
-      return updated;
-    });
-  };
 
   useEffect(() => {
     if (user?.role !== 'admin') {
@@ -62,223 +34,246 @@ export default function MobileNewProductPage() {
     fetch('/api/categories')
       .then(r => r.json())
       .then(json => setCategories(json.categories))
-    // Fetch existing tags for suggestions
-    fetch('/api/products/usage-tags')
-      .then(r => r.json())
-      .then(json => {
-        if (Array.isArray(json.tags)) setAvailableTags(json.tags)
-      })
       .catch(console.error)
   }, [user])
 
-  const handleRemoveImage = (indexToRemove: number) => {
-    setImageUrls(prev => prev.filter((_, index) => index !== indexToRemove))
-  }
-
-  const handleRemoveStylingImage = (indexToRemove: number) => {
-    setStylingIdeas(prev => prev.filter((_, index) => index !== indexToRemove))
-  }
-
-  const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    // Check if adding these files would exceed the maximum of 5 images
-    if (imageUrls.length + acceptedFiles.length > 5) {
-      const overLimit = imageUrls.length + acceptedFiles.length - 5;
-      setUploadErrors(prev => ({
-        ...prev,
-        'image-limit': `Cannot upload ${acceptedFiles.length} images. Maximum limit is 5 images (${overLimit} too many)`
-      }));
-      
-      // Show error notification
-      setNotificationMessage(`Cannot upload ${acceptedFiles.length} images. Maximum limit is 5 images (${overLimit} too many)`);
-      setNotificationType('error');
-      setShowNotification(true);
-      
-      // Auto-hide notification after 5 seconds
-      setTimeout(() => {
-        setShowNotification(false);
-      }, 5000);
-      
-      return;
-    }
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault()
+    setError(null)
+    setSubmitting(true)
     
-    for (const file of acceptedFiles) {
-      // Check file size - 20MB limit
-      if (file.size > 20 * 1024 * 1024) {
-        const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
-        setUploadErrors(prev => ({
-          ...prev,
-          [`${file.name}-size`]: `File ${file.name} exceeds the 20MB size limit (size: ${fileSizeMB}MB)`
-        }));
-        
-        // Show error notification
-        setNotificationMessage(`File ${file.name} exceeds the 20MB size limit (size: ${fileSizeMB}MB)`);
-        setNotificationType('error');
-        setShowNotification(true);
-        
-        // Auto-hide notification after 5 seconds
-        setTimeout(() => {
-          setShowNotification(false);
-        }, 5000);
-        
-        continue;
+    try {
+      if (!name || !slug) {
+        throw new Error('Name and slug are required')
       }
-      
-      const uploadId = file.name + Date.now()
-      setUploadingFiles(prev => ({ ...prev, [uploadId]: true }))
-      setUploadProgress(prev => ({ ...prev, [uploadId]: 0 }))
-      
-      try {
-        // Upload directly to ImageKit via the backend route
-        const xhr = new XMLHttpRequest()
-        xhr.upload.onprogress = (event) => {
-          if (event.lengthComputable) {
-            const progress = Math.round((event.loaded * 100) / event.total)
-            setUploadProgress(prev => ({ ...prev, [uploadId]: progress }))
-          }
-        }
-        const uploadPromise = new Promise<{ url: string }>((resolve, reject) => {
-          xhr.open('POST', `/api/uploads/imagekit?filename=${encodeURIComponent(file.name)}&folder=products`, true)
 
-          xhr.onload = () => {
-            if (xhr.status >= 200 && xhr.status < 300) {
-              try {
-                resolve(JSON.parse(xhr.responseText))
-              } catch {
-                reject(new Error('Invalid response format'))
-              }
-            } else {
-              reject(new Error(`Upload failed with status ${xhr.status}`))
-            }
-          }
-          xhr.onerror = () => reject(new Error('Network error during upload'))
-          xhr.ontimeout = () => reject(new Error('Upload timed out'))
-          xhr.send(file)
+      const res = await fetch('/api/admin/products', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          name,
+          slug,
+          shortDesc,
+          description,
+          specifications,
+          careInstructions,
+          price,
+          currency,
+          stockQuantity,
+          isActive,
+          categoryId: categoryId ? Number(categoryId) : null,
         })
-        const result = await uploadPromise
-        setImageUrls(prev => [...prev, result.url])
-        
-        // Remove from uploading files
-        setUploadingFiles(prev => {
-          const newState = { ...prev }
-          delete newState[uploadId]
-          return newState
-        })
-        
-        // Show success notification
-        setNotificationMessage(`Image ${file.name} uploaded successfully`);
-        setNotificationType('success');
-        setShowNotification(true);
-        
-        // Auto-hide notification after 3 seconds
-        setTimeout(() => {
-          setShowNotification(false);
-        }, 3000);
-      } catch (error: any) {
-        console.error('Upload failed:', error)
-        
-        // Remove from uploading files
-        setUploadingFiles(prev => {
-          const newState = { ...prev }
-          delete newState[uploadId]
-          return newState
-        })
-        
-        // Add to upload errors
-        setUploadErrors(prev => ({
-          ...prev,
-          [uploadId]: `Failed to upload ${file.name}: ${error.message}`
-        }))
-        
-        // Show error notification
-        setNotificationMessage(`Failed to upload ${file.name}: ${error.message}`);
-        setNotificationType('error');
-        setShowNotification(true);
-        
-        // Auto-hide notification after 5 seconds
-        setTimeout(() => {
-          setShowNotification(false);
-        }, 5000);
+      })
+
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error || 'Failed to create product')
       }
+
+      // Success - redirect to products list
+      router.push('/dashboard/admin/products')
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setSubmitting(false)
     }
-  }, [imageUrls.length, setNotificationMessage, setNotificationType, setShowNotification]);
+  }
 
-  const onDropStyling = useCallback(async (acceptedFiles: File[]) => {
-    for (const file of acceptedFiles) {
-      // Check file size - 20MB limit
-      if (file.size > 20 * 1024 * 1024) {
-        const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
-        setNotificationMessage(`File ${file.name} exceeds the 20MB size limit (size: ${fileSizeMB}MB)`);
-        setNotificationType('error');
-        setShowNotification(true);
-        
-        // Auto-hide notification after 5 seconds
-        setTimeout(() => {
-          setShowNotification(false);
-        }, 5000);
-        continue;
-      }
-      
-      const uploadId = `styling-${file.name}-${Date.now()}`;
-      
-      // Show uploading notification
-      setNotificationMessage(`Uploading ${file.name}...`);
-      setNotificationType('success');
-      setShowNotification(true);
-      
-      try {
-        // Upload directly to ImageKit via the backend route
-        const xhr = new XMLHttpRequest()
-        xhr.upload.onprogress = (event) => {
-          if (event.lengthComputable) {
-            const progress = Math.round((event.loaded * 100) / event.total)
-            setUploadProgress(prev => ({ ...prev, [uploadId]: progress }))
-          }
-        }
-        const uploadPromise = new Promise<{ url: string }>((resolve, reject) => {
-          xhr.open('POST', `/api/uploads/imagekit?filename=${encodeURIComponent(file.name)}&folder=styling`, true)
+  function handleCancel() {
+    router.push('/dashboard/admin/products')
+  }
 
-          xhr.onload = () => {
-            if (xhr.status >= 200 && xhr.status < 300) {
-              try {
-                resolve(JSON.parse(xhr.responseText))
-              } catch {
-                reject(new Error('Invalid response format'))
-              }
-            } else {
-              reject(new Error(`Upload failed with status ${xhr.status}`))
-            }
-          }
-          xhr.onerror = () => reject(new Error('Network error during upload'))
-          xhr.ontimeout = () => reject(new Error('Upload timed out'))
-          xhr.send(file)
-        })
-        const result = await uploadPromise
-        setStylingIdeas(prev => [...prev, { url: result.url, text: '' }]);
-        
-        // Show success notification
-        setNotificationMessage(`Styling image ${file.name} uploaded successfully`);
-        setNotificationType('success');
-        setShowNotification(true);
-        
-        // Auto-hide notification after 3 seconds
-        setTimeout(() => {
-          setShowNotification(false);
-        }, 3000);
-      } catch (error: any) {
-        console.error('Styling image upload failed:', error);
-        
-        // Show error notification
-        setNotificationMessage(`Failed to upload styling image: ${error.message || 'Unknown error'}`);
-        setNotificationType('error');
-        setShowNotification(true);
-        
-        // Auto-hide notification after 5 seconds
-        setTimeout(() => {
-          setShowNotification(false);
-        }, 5000);
-      }
-    }
-  }, [setNotificationMessage, setNotificationType, setShowNotification]);
+  if (error === 'Unauthorized') {
+    return <div className={styles.error}>Unauthorized</div>
+  }
+
+  return (
+    <div className={styles.container}>
+      <div className={styles.header}>
+        <h1 className={styles.title}>Create New Product</h1>
+        <p className={styles.subtitle}>Add basic product information</p>
+      </div>
+
+      {error && (
+        <div className={styles.error} style={{ marginBottom: '1rem' }}>
+          {error}
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className={styles.form}>
+        <div className={styles.card}>
+          <h2 className={styles.sectionTitle}>Basic Information</h2>
+          
+          <div className={styles.formGroup}>
+            <label className={styles.label}>Product Name *</label>
+            <input
+              type="text"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              className={styles.input}
+              placeholder="Enter product name"
+              required
+            />
+          </div>
+
+          <div className={styles.formGroup}>
+            <label className={styles.label}>Slug *</label>
+            <input
+              type="text"
+              value={slug}
+              onChange={e => setSlug(e.target.value)}
+              className={styles.input}
+              placeholder="product-url-slug"
+              required
+            />
+          </div>
+
+          <div className={styles.formGroup}>
+            <label className={styles.label}>Short Description</label>
+            <input
+              type="text"
+              value={shortDesc}
+              onChange={e => setShortDesc(e.target.value)}
+              className={styles.input}
+              placeholder="Brief description"
+            />
+          </div>
+
+          <div className={styles.formGroup}>
+            <label className={styles.label}>Full Description</label>
+            <textarea
+              value={description}
+              onChange={e => setDescription(e.target.value)}
+              className={styles.textarea}
+              placeholder="Detailed product description"
+              rows={4}
+            />
+          </div>
+
+          <div className={styles.formGroup}>
+            <label className={styles.label}>Specifications</label>
+            <textarea
+              value={specifications}
+              onChange={e => setSpecifications(e.target.value)}
+              className={styles.textarea}
+              placeholder="Material, dimensions, etc."
+              rows={3}
+            />
+          </div>
+
+          <div className={styles.formGroup}>
+            <label className={styles.label}>Care Instructions</label>
+            <textarea
+              value={careInstructions}
+              onChange={e => setCareInstructions(e.target.value)}
+              className={styles.textarea}
+              placeholder="Care and maintenance"
+              rows={3}
+            />
+          </div>
+        </div>
+
+        <div className={styles.card}>
+          <h2 className={styles.sectionTitle}>Pricing & Inventory</h2>
+          
+          <div className={styles.formGroup}>
+            <label className={styles.label}>Category *</label>
+            <select
+              value={categoryId}
+              onChange={e => setCategoryId(e.target.value ? Number(e.target.value) : '')}
+              className={styles.select}
+              required
+            >
+              <option value="">Select category</option>
+              {categories.map(c => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className={styles.formRow}>
+            <div className={styles.formGroup}>
+              <label className={styles.label}>Price *</label>
+              <input
+                type="number"
+                value={price}
+                onChange={e => setPrice(parseFloat(e.target.value))}
+                className={styles.input}
+                min="0"
+                step="0.01"
+                placeholder="0.00"
+                required
+              />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label className={styles.label}>Currency</label>
+              <select
+                value={currency}
+                onChange={e => setCurrency(e.target.value)}
+                className={styles.select}
+                required
+              >
+                <option value="INR">INR</option>
+                <option value="USD">USD</option>
+                <option value="EUR">EUR</option>
+              </select>
+            </div>
+          </div>
+
+          <div className={styles.formRow}>
+            <div className={styles.formGroup}>
+              <label className={styles.label}>Stock Quantity</label>
+              <input
+                type="number"
+                value={stockQuantity}
+                onChange={e => setStockQuantity(parseInt(e.target.value))}
+                className={styles.input}
+                min="0"
+                placeholder="0"
+              />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label className={styles.checkboxWrapper}>
+                <input
+                  type="checkbox"
+                  checked={isActive}
+                  onChange={e => setIsActive(e.target.checked)}
+                  className={styles.checkbox}
+                />
+                <span className={styles.checkboxLabel}>Product Active</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div className={styles.buttonGroup}>
+          <button 
+            type="button"
+            onClick={handleCancel}
+            className={styles.cancelButton}
+            disabled={submitting}
+          >
+            Cancel
+          </button>
+          <button 
+            type="submit" 
+            className={styles.submitButton}
+            disabled={submitting}
+          >
+            {submitting ? 'Creating...' : 'Create Product'}
+          </button>
+        </div>
+      </form>
+
+      {submitting && <LoadingSpinner overlay={true} message="Creating product..." />}
+    </div>
+  )
+}
 
   const { getRootProps, getInputProps, isDragActive, fileRejections } = useDropzone({
     onDrop,

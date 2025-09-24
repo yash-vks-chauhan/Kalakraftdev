@@ -131,6 +131,28 @@
   margin-bottom: 1.5rem;
 }
 
+.formRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.checkboxWrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.checkbox {
+  margin: 0;
+}
+
+.checkboxLabel {
+  margin: 0;
+  color: #111827;
+  font-weight: 500;
+}
+
 .label {
   display: block;
   font-size: 1rem;
