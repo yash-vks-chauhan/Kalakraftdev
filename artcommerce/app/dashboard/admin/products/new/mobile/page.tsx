@@ -10,6 +10,25 @@ import { ArrowLeft, Save, X, Upload, Plus, Minus, Check, AlertCircle, Camera, Im
 import LoadingSpinner from '../../../../../components/LoadingSpinner'
 import { useDropzone } from 'react-dropzone'
 
+// Client-only wrapper to prevent hydration issues
+function ClientOnlyWrapper({ children }: { children: React.ReactNode }) {
+  const [hasMounted, setHasMounted] = useState(false)
+  
+  useEffect(() => {
+    setHasMounted(true)
+  }, [])
+  
+  if (!hasMounted) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.loading}>Loading...</div>
+      </div>
+    )
+  }
+  
+  return <>{children}</>
+}
+
 // Step interface
 interface Step {
   id: number
@@ -26,7 +45,7 @@ const STEPS: Step[] = [
   { id: 5, title: "Review", icon: "✅", description: "Final review and create" }
 ]
 
-export default function MobileNewProductPage() {
+function MobileNewProductPage() {
   const { token, user } = useAuth()
   const router = useRouter()
   const [mounted, setMounted] = useState(false)
@@ -824,9 +843,11 @@ export default function MobileNewProductPage() {
                 required
               >
                 <option value="">Select category</option>
-                {categories?.map(c => (
-                  <option key={c?.id} value={c?.id}>{c?.name || 'Unknown Category'}</option>
-                )) || null}
+                {Array.isArray(categories) ? categories.map((c, index) => 
+                  c && c.id ? (
+                    <option key={`${c.id}-${index}`} value={c.id}>{c.name || 'Unknown Category'}</option>
+                  ) : null
+                ).filter(Boolean) : null}
               </select>
               <label className={styles.floatingLabel}>Category</label>
               {fieldErrors.categoryId && (
@@ -960,30 +981,34 @@ export default function MobileNewProductPage() {
                 <p>Add styling inspiration images</p>
               </div>
               
-              {stylingIdeas.length > 0 && (
+              {Array.isArray(stylingIdeas) && stylingIdeas.length > 0 && (
                 <div className={styles.stylingGrid}>
-                  {stylingIdeas.map((idea, idx) => (
-                    <div key={idea.url} className={styles.stylingItem}>
-                      <img src={idea.url} alt="Styling idea" className={styles.stylingImage} loading="lazy" />
-                      <input
-                        type="text"
-                        value={idea.text}
-                        onChange={e => {
-                          const val = e.target.value
-                          setStylingIdeas(prev => prev.map((it, i) => i === idx ? { ...it, text: val } : it))
-                        }}
-                        placeholder="Add caption..."
-                        className={styles.stylingCaption}
-                      />
-                      <button 
-                        type="button" 
-                        onClick={() => handleRemoveStylingImage(idx)} 
-                        className={styles.removeButton}
-                      >
-                        <X size={16} />
-                      </button>
-                    </div>
-                  ))}
+                  {stylingIdeas.map((idea, idx) => 
+                    idea && idea.url ? (
+                      <div key={`${idea.url}-${idx}`} className={styles.stylingItem}>
+                        <img src={idea.url} alt="Styling idea" className={styles.stylingImage} loading="lazy" />
+                        <input
+                          type="text"
+                          value={idea.text || ''}
+                          onChange={e => {
+                            const val = e.target.value
+                            setStylingIdeas(prev => 
+                              Array.isArray(prev) ? prev.map((it, i) => i === idx ? { ...it, text: val } : it) : []
+                            )
+                          }}
+                          placeholder="Add caption..."
+                          className={styles.stylingCaption}
+                        />
+                        <button 
+                          type="button" 
+                          onClick={() => handleRemoveStylingImage(idx)} 
+                          className={styles.removeButton}
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
+                    ) : null
+                  ).filter(Boolean)}
                 </div>
               )}
             </div>
@@ -991,19 +1016,24 @@ export default function MobileNewProductPage() {
             <div className={styles.subSection}>
               <h4 className={styles.subSectionTitle}>Usage Tags</h4>
               <div className={styles.tagOptions}>
-                {availableTags.map(tag => (
-                  <label key={tag} className={styles.tagOption}>
-                    <input
-                      type="checkbox"
-                      checked={usageTags.includes(tag)}
-                      onChange={e => {
-                        setUsageTags(prev => e.target.checked ? [...prev, tag] : prev.filter(t => t !== tag))
-                      }}
-                      className={styles.modernCheckbox}
-                    />
-                    <span>{tag}</span>
-                  </label>
-                ))}
+                {Array.isArray(availableTags) ? availableTags.map((tag, index) => 
+                  tag && typeof tag === 'string' ? (
+                    <label key={`${tag}-${index}`} className={styles.tagOption}>
+                      <input
+                        type="checkbox"
+                        checked={Array.isArray(usageTags) && usageTags.includes(tag)}
+                        onChange={e => {
+                          setUsageTags(prev => {
+                            const currentTags = Array.isArray(prev) ? prev : [];
+                            return e.target.checked ? [...currentTags, tag] : currentTags.filter(t => t !== tag);
+                          });
+                        }}
+                        className={styles.modernCheckbox}
+                      />
+                      <span>{tag}</span>
+                    </label>
+                  ) : null
+                ).filter(Boolean) : null}
               </div>
               
               <ValidatedInput
@@ -1028,11 +1058,13 @@ export default function MobileNewProductPage() {
               
               {usageTags.length > 0 && (
                 <div className={styles.selectedTags}>
-                  {usageTags.map(tag => (
-                    <span key={tag} className={styles.tag} onClick={() => setUsageTags(prev => prev.filter(t => t !== tag))}>
-                      {tag} <X size={12} />
-                    </span>
-                  ))}
+                  {Array.isArray(usageTags) ? usageTags.map((tag, index) => 
+                    tag && typeof tag === 'string' ? (
+                      <span key={`${tag}-${index}`} className={styles.tag} onClick={() => setUsageTags(prev => Array.isArray(prev) ? prev.filter(t => t !== tag) : [])}>
+                        {tag} <X size={12} />
+                      </span>
+                    ) : null
+                  ).filter(Boolean) : null}
                 </div>
               )}
             </div>
@@ -1047,11 +1079,20 @@ export default function MobileNewProductPage() {
     }
   }
 
-  // Don't render until mounted to prevent hydration errors
-  if (!mounted) {
+  // Don't render until mounted and user is loaded to prevent hydration errors
+  if (!mounted || !user) {
     return (
       <div className={styles.container}>
         <div className={styles.loading}>Loading...</div>
+      </div>
+    )
+  }
+
+  // Additional safety check for user role
+  if (user.role !== 'admin') {
+    return (
+      <div className={styles.container}>
+        <div className={styles.error}>Access denied. Admin role required.</div>
       </div>
     )
   }
@@ -1096,26 +1137,29 @@ export default function MobileNewProductPage() {
           aria-label="Product creation steps"
           className={styles.stepIndicators}
         >
-          {STEPS?.map((step, index) => (
-            <button
-              key={step?.id || index}
-              role="tab"
-              aria-selected={currentStep === step?.id}
-              aria-controls={`panel-${step?.id}`}
-              tabIndex={currentStep === step?.id ? 0 : -1}
-              className={`${styles.stepIndicator} ${
-                currentStep === step?.id ? styles.stepIndicatorActive : ''
-              } ${
-                completedSteps.includes(step?.id) ? styles.stepIndicatorCompleted : ''
-              }`}
-              onClick={() => goToStep(step?.id)}
-              disabled={step?.id > currentStep && !completedSteps.includes(step?.id - 1)}
-            >
-              <span className={styles.stepIndicatorIcon}>
-                {completedSteps.includes(step?.id) ? '✓' : (step?.icon || '')}
-              </span>
-            </button>
-          )) || null}
+          {Array.isArray(STEPS) ? STEPS.map((step, index) => {
+            if (!step || typeof step.id !== 'number') return null;
+            return (
+              <button
+                key={step.id}
+                role="tab"
+                aria-selected={currentStep === step.id}
+                aria-controls={`panel-${step.id}`}
+                tabIndex={currentStep === step.id ? 0 : -1}
+                className={`${styles.stepIndicator} ${
+                  currentStep === step.id ? styles.stepIndicatorActive : ''
+                } ${
+                  Array.isArray(completedSteps) && completedSteps.includes(step.id) ? styles.stepIndicatorCompleted : ''
+                }`}
+                onClick={() => goToStep(step.id)}
+                disabled={step.id > currentStep && (!Array.isArray(completedSteps) || !completedSteps.includes(step.id - 1))}
+              >
+                <span className={styles.stepIndicatorIcon}>
+                  {Array.isArray(completedSteps) && completedSteps.includes(step.id) ? '✓' : (step.icon || '')}
+                </span>
+              </button>
+            );
+          }).filter(Boolean) : null}
         </div>
       </div>
 
@@ -1231,4 +1275,13 @@ export default function MobileNewProductPage() {
       </div>
     )
   }
+}
+
+// Wrapped export to prevent hydration issues
+export default function MobileNewProductPageWrapper() {
+  return (
+    <ClientOnlyWrapper>
+      <MobileNewProductPage />
+    </ClientOnlyWrapper>
+  )
 }
