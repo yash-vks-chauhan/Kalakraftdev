@@ -10,6 +10,17 @@
   padding-top: 70px;
 }
 
+/* Loading State */
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  color: #64748b;
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
 /* Notification */
 .notification {
   position: fixed;
@@ -1098,11 +1109,14 @@
   padding: 0.5rem 0.75rem;
   background: rgba(16, 185, 129, 0.9);
   color: white;
-  border-radius: var(--radius-sm);
+  border-radius: 20px;
   font-size: 0.75rem;
   font-weight: 600;
   z-index: 100;
-  animation: fadeInOut 2s ease-in-out;
+  animation: fadeIn 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 @keyframes fadeInOut {
@@ -1185,4 +1199,24 @@
     padding: 0.875rem 1.5rem;
     font-size: 0.75rem;
   }
+}
+
+/* Clear Draft Button */
+.clearDraftButton {
+  background: none;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 0.25rem;
+  margin-left: 0.5rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.clearDraftButton:hover {
+  background-color: #f3f4f6;
+  color: #ef4444;
 }
