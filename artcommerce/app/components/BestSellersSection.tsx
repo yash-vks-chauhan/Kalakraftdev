@@ -7,6 +7,7 @@ import { useWishlist } from '../contexts/WishlistContext'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Heart, ShoppingCart, ChevronLeft, ChevronRight, Play, Pause, Share, Star } from 'lucide-react'
+import styles from './BestSellersSection.module.css'
 
 interface Product {
   id: string
