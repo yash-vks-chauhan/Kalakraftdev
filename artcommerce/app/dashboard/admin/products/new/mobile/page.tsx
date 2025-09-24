@@ -11,6 +11,7 @@ import LoadingSpinner from '../../../../../components/LoadingSpinner'
 import { useDropzone } from 'react-dropzone'
 import ClientOnly from './ClientOnly'
 import MinimalMobileNewProduct from './minimal'
+import SuperSimpleNewProduct from './simple'
 
 // Step interface
 interface Step {
@@ -1107,42 +1108,9 @@ function MobileNewProductPage() {
   }
 }
 
-// Safe full component with triple-layer protection
+// Test with super simple version to isolate hydration issues
 export default function MobileNewProductPageWrapper() {
-  const [isReady, setIsReady] = useState(false)
-
-  useEffect(() => {
-    // Triple safety: wait for DOM, then React, then our component
-    const timer1 = setTimeout(() => {
-      const timer2 = setTimeout(() => {
-        const timer3 = setTimeout(() => {
-          setIsReady(true)
-        }, 50)
-        return () => clearTimeout(timer3)
-      }, 50)
-      return () => clearTimeout(timer2)
-    }, 50)
-    
-    return () => clearTimeout(timer1)
-  }, [])
-
-  if (!isReady) {
-    return (
-      <div className={styles.container}>
-        <div className={styles.loading}>Loading product creation...</div>
-      </div>
-    )
-  }
-
-  return (
-    <ClientOnly fallback={
-      <div className={styles.container}>
-        <div className={styles.loading}>Loading...</div>
-      </div>
-    }>
-      <MobileNewProductPageSafe />
-    </ClientOnly>
-  )
+  return <SuperSimpleNewProduct />
 }
 
 // Extra safety wrapper
