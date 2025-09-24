@@ -287,6 +287,13 @@ body:has(> div > main[data-page="home"]) {
     scroll-behavior: smooth !important;
   }
   
+  /* Mobile touch feedback for buttons and links */
+  button:active,
+  a:active {
+    opacity: 0.7 !important;
+    transition: opacity 0.1s ease !important;
+  }
+  
   [data-aos] {
     opacity: 1 !important;
     transform: none !important;
