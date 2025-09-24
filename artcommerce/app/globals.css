@@ -294,6 +294,7 @@ body:has(> div > main[data-page="home"]) {
     transition: opacity 0.1s ease !important;
   }
   
+  /* Disable AOS scroll animations but preserve carousel functionality */
   [data-aos] {
     opacity: 1 !important;
     transform: none !important;
@@ -312,5 +313,23 @@ body:has(> div > main[data-page="home"]) {
     transform: none !important;
     transition: none !important;
     animation: none !important;
+  }
+  
+  /* Preserve transforms for carousel and interactive elements */
+  .mobileCarouselSlide,
+  .mobileCarouselWrapper,
+  .mobileCarouselContainer,
+  .carouselTrack,
+  .carouselContainer,
+  .carouselNav,
+  .productCard,
+  .cardInner,
+  [class*="carousel"],
+  [class*="Carousel"],
+  [style*="transform"] {
+    transform: inherit !important;
+    transition: inherit !important;
+    animation: inherit !important;
+    opacity: inherit !important;
   }
 }
