@@ -271,3 +271,26 @@ body:has(> div > main[data-page="home"]) {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+/* Mobile AOS Animation Disabling - Global CSS for smooth mobile app experience */
+@media (max-width: 768px) {
+  [data-aos] {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
+  
+  .aos-animate {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  
+  [data-aos="fade-up"],
+  [data-aos="fade-in"],
+  [data-aos="fade-left"],
+  [data-aos="fade-right"] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
