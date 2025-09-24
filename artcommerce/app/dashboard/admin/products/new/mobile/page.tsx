@@ -9,25 +9,7 @@ import styles from './mobile-new-product.module.css'
 import { ArrowLeft, Save, X, Upload, Plus, Minus, Check, AlertCircle, Camera, Image as ImageIcon, ChevronLeft, ChevronRight } from 'lucide-react'
 import LoadingSpinner from '../../../../../components/LoadingSpinner'
 import { useDropzone } from 'react-dropzone'
-
-// Client-only wrapper to prevent hydration issues
-function ClientOnlyWrapper({ children }: { children: React.ReactNode }) {
-  const [hasMounted, setHasMounted] = useState(false)
-  
-  useEffect(() => {
-    setHasMounted(true)
-  }, [])
-  
-  if (!hasMounted) {
-    return (
-      <div className={styles.container}>
-        <div className={styles.loading}>Loading...</div>
-      </div>
-    )
-  }
-  
-  return <>{children}</>
-}
+import ClientOnly from './ClientOnly'
 
 // Step interface
 interface Step {
@@ -142,39 +124,39 @@ function MobileNewProductPage() {
     return validateStep(currentStep)
   }
 
-  // Auto-save functionality (client-side only)
+  // Auto-save functionality with complete safety
   useEffect(() => {
-    if (!autoSaveEnabled || typeof window === 'undefined' || !mounted || currentStep === 1) return
+    if (!mounted || !autoSaveEnabled || currentStep === 1) return
+    if (typeof window === 'undefined' || !window.localStorage) return
     
-    // Only save if there's meaningful data and user has started entering data
-    const hasData = name?.trim() || description?.trim() || price > 0 || (imageUrls && imageUrls.length > 0)
+    // Only save if there's meaningful data
+    const hasData = name?.trim() || description?.trim() || price > 0 || (Array.isArray(imageUrls) && imageUrls.length > 0)
     if (!hasData) return
     
     const saveTimer = setTimeout(() => {
       try {
-        // Validate data before saving
         const formData = {
-          name: name || '', 
-          slug: slug || '', 
-          shortDesc: shortDesc || '', 
-          description: description || '', 
-          specifications: specifications || '', 
-          careInstructions: careInstructions || '',
+          name: String(name || ''), 
+          slug: String(slug || ''), 
+          shortDesc: String(shortDesc || ''), 
+          description: String(description || ''), 
+          specifications: String(specifications || ''), 
+          careInstructions: String(careInstructions || ''),
           price: Number(price) || 0, 
-          currency: currency || 'USD', 
+          currency: String(currency) || 'INR', 
           stockQuantity: Number(stockQuantity) || 0, 
           isActive: Boolean(isActive), 
           categoryId: categoryId || '', 
-          imageUrls: Array.isArray(imageUrls) ? imageUrls : [],
-          stylingIdeas: Array.isArray(stylingIdeas) ? stylingIdeas : [], 
-          usageTags: Array.isArray(usageTags) ? usageTags : [], 
+          imageUrls: Array.isArray(imageUrls) ? imageUrls.filter(url => url && typeof url === 'string') : [],
+          stylingIdeas: Array.isArray(stylingIdeas) ? stylingIdeas.filter(idea => idea && typeof idea === 'object') : [], 
+          usageTags: Array.isArray(usageTags) ? usageTags.filter(tag => tag && typeof tag === 'string') : [], 
           currentStep: Number(currentStep) || 1,
           timestamp: new Date().toISOString()
         }
         
-        // Only save if data has substance
-        if (formData.name || formData.description || formData.price > 0) {
-          localStorage.setItem('product-draft', JSON.stringify(formData))
+        // Final validation before save
+        if (formData.name.trim() || formData.description.trim() || formData.price > 0) {
+          window.localStorage.setItem('product-draft', JSON.stringify(formData))
           setAutoSaveStatus('Auto-saved')
           setTimeout(() => setAutoSaveStatus(''), 2000)
         }
@@ -183,7 +165,7 @@ function MobileNewProductPage() {
         setAutoSaveStatus('Save failed')
         setTimeout(() => setAutoSaveStatus(''), 2000)
       }
-    }, 2000) // 2 second delay
+    }, 2000)
     
     return () => clearTimeout(saveTimer)
   }, [mounted, name, slug, shortDesc, description, specifications, careInstructions, price, currency, stockQuantity, isActive, categoryId, imageUrls, stylingIdeas, usageTags, currentStep, autoSaveEnabled])
@@ -209,72 +191,75 @@ function MobileNewProductPage() {
       .catch(console.error)
   }, [user])
 
-  // Mount effect with safe draft loading
+  // Mount effect with completely safe client-only execution
   useEffect(() => {
     setMounted(true)
+  }, [])
+
+  // Separate effect for draft loading that only runs after mount
+  useEffect(() => {
+    if (!mounted) return
     
-    // Delay draft loading to avoid SSR issues
-    const loadDraftTimer = setTimeout(() => {
-      if (typeof window !== 'undefined') {
+    const loadDraftSafely = async () => {
+      // Add additional delay to ensure DOM is ready
+      await new Promise(resolve => setTimeout(resolve, 100))
+      
+      try {
+        const draft = localStorage?.getItem?.('product-draft')
+        if (!draft || draft === 'undefined' || draft === 'null') return
+        
+        const parsed = JSON.parse(draft)
+        if (!parsed || typeof parsed !== 'object') {
+          localStorage.removeItem('product-draft')
+          return
+        }
+        
+        // Only show prompt if draft has meaningful data
+        const hasData = (parsed.name?.trim?.()) || 
+                       (parsed.description?.trim?.()) || 
+                       (typeof parsed.price === 'number' && parsed.price > 0) || 
+                       (Array.isArray(parsed.imageUrls) && parsed.imageUrls.length > 0)
+        
+        if (!hasData) {
+          localStorage.removeItem('product-draft')
+          return
+        }
+        
+        const shouldContinue = window.confirm?.('Continue with your saved draft?')
+        if (!shouldContinue) {
+          localStorage.removeItem('product-draft')
+          return
+        }
+        
+        // Safely restore draft data
+        if (parsed.name && typeof parsed.name === 'string') setName(parsed.name.trim())
+        if (parsed.slug && typeof parsed.slug === 'string') setSlug(parsed.slug.trim())
+        if (parsed.shortDesc && typeof parsed.shortDesc === 'string') setShortDesc(parsed.shortDesc.trim())
+        if (parsed.description && typeof parsed.description === 'string') setDescription(parsed.description.trim())
+        if (parsed.specifications && typeof parsed.specifications === 'string') setSpecifications(parsed.specifications.trim())
+        if (parsed.careInstructions && typeof parsed.careInstructions === 'string') setCareInstructions(parsed.careInstructions.trim())
+        if (typeof parsed.price === 'number' && parsed.price >= 0) setPrice(parsed.price)
+        if (parsed.currency && typeof parsed.currency === 'string') setCurrency(parsed.currency)
+        if (typeof parsed.stockQuantity === 'number' && parsed.stockQuantity >= 0) setStockQuantity(parsed.stockQuantity)
+        if (typeof parsed.isActive === 'boolean') setIsActive(parsed.isActive)
+        if (parsed.categoryId) setCategoryId(parsed.categoryId)
+        if (Array.isArray(parsed.imageUrls)) setImageUrls(parsed.imageUrls.filter(url => url && typeof url === 'string'))
+        if (Array.isArray(parsed.stylingIdeas)) setStylingIdeas(parsed.stylingIdeas.filter(idea => idea && typeof idea === 'object'))
+        if (Array.isArray(parsed.usageTags)) setUsageTags(parsed.usageTags.filter(tag => tag && typeof tag === 'string'))
+        if (typeof parsed.currentStep === 'number' && parsed.currentStep >= 1 && parsed.currentStep <= 5) setCurrentStep(parsed.currentStep)
+        
+      } catch (e) {
+        console.error('Failed to load draft:', e)
         try {
-          const draft = localStorage.getItem('product-draft')
-          if (draft && draft !== 'undefined' && draft !== 'null') {
-            const parsed = JSON.parse(draft)
-            
-            // Validate parsed data structure
-            if (parsed && typeof parsed === 'object') {
-              // Only show prompt if draft has meaningful data
-              const hasData = (parsed.name && parsed.name.trim()) || 
-                             (parsed.description && parsed.description.trim()) || 
-                             (parsed.price && parsed.price > 0) || 
-                             (Array.isArray(parsed.imageUrls) && parsed.imageUrls.length > 0)
-              
-              if (hasData) {
-                const shouldContinue = confirm('Continue with your saved draft?')
-                if (shouldContinue) {
-                  // Safely set all values with proper validation
-                  setName(parsed.name && typeof parsed.name === 'string' ? parsed.name.trim() : '')
-                  setSlug(parsed.slug && typeof parsed.slug === 'string' ? parsed.slug.trim() : '')
-                  setShortDesc(parsed.shortDesc && typeof parsed.shortDesc === 'string' ? parsed.shortDesc.trim() : '')
-                  setDescription(parsed.description && typeof parsed.description === 'string' ? parsed.description.trim() : '')
-                  setSpecifications(parsed.specifications && typeof parsed.specifications === 'string' ? parsed.specifications.trim() : '')
-                  setCareInstructions(parsed.careInstructions && typeof parsed.careInstructions === 'string' ? parsed.careInstructions.trim() : '')
-                  setPrice(parsed.price && typeof parsed.price === 'number' && parsed.price > 0 ? parsed.price : 0)
-                  setCurrency(parsed.currency && typeof parsed.currency === 'string' ? parsed.currency : 'INR')
-                  setStockQuantity(parsed.stockQuantity && typeof parsed.stockQuantity === 'number' && parsed.stockQuantity >= 0 ? parsed.stockQuantity : 0)
-                  setIsActive(typeof parsed.isActive === 'boolean' ? parsed.isActive : true)
-                  setCategoryId(parsed.categoryId || '')
-                  setImageUrls(Array.isArray(parsed.imageUrls) ? parsed.imageUrls.filter(url => url && typeof url === 'string') : [])
-                  setStylingIdeas(Array.isArray(parsed.stylingIdeas) ? parsed.stylingIdeas.filter(idea => idea && typeof idea === 'string') : [])
-                  setUsageTags(Array.isArray(parsed.usageTags) ? parsed.usageTags.filter(tag => tag && typeof tag === 'string') : [])
-                  setCurrentStep(parsed.currentStep && typeof parsed.currentStep === 'number' && parsed.currentStep >= 1 && parsed.currentStep <= 5 ? parsed.currentStep : 1)
-                } else {
-                  // User declined draft, clear it
-                  localStorage.removeItem('product-draft')
-                }
-              } else {
-                // Clear empty or invalid draft
-                localStorage.removeItem('product-draft')
-              }
-            } else {
-              // Invalid draft structure
-              localStorage.removeItem('product-draft')
-            }
-          }
-        } catch (e) {
-          console.error('Failed to load draft:', e)
-          // Clear corrupted draft
-          try {
-            localStorage.removeItem('product-draft')
-          } catch (clearError) {
-            console.error('Failed to clear corrupted draft:', clearError)
-          }
+          localStorage.removeItem('product-draft')
+        } catch (clearError) {
+          console.error('Failed to clear corrupted draft:', clearError)
         }
       }
-    }, 500) // 500ms delay to ensure proper hydration
+    }
     
-    return () => clearTimeout(loadDraftTimer)
-  }, [])
+    loadDraftSafely()
+  }, [mounted])
 
   // Smart slug generation
   useEffect(() => {
@@ -535,8 +520,12 @@ function MobileNewProductPage() {
   }
 
   function clearDraft() {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('product-draft')
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        window.localStorage.removeItem('product-draft')
+      }
+    } catch (e) {
+      console.error('Failed to clear draft from localStorage:', e)
     }
     // Reset all form fields
     setName('')
@@ -1079,8 +1068,8 @@ function MobileNewProductPage() {
     }
   }
 
-  // Don't render until mounted and user is loaded to prevent hydration errors
-  if (!mounted || !user) {
+  // Comprehensive safety checks
+  if (!mounted) {
     return (
       <div className={styles.container}>
         <div className={styles.loading}>Loading...</div>
@@ -1088,7 +1077,14 @@ function MobileNewProductPage() {
     )
   }
 
-  // Additional safety check for user role
+  if (!user) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.loading}>Authenticating...</div>
+      </div>
+    )
+  }
+
   if (user.role !== 'admin') {
     return (
       <div className={styles.container}>
@@ -1280,8 +1276,12 @@ function MobileNewProductPage() {
 // Wrapped export to prevent hydration issues
 export default function MobileNewProductPageWrapper() {
   return (
-    <ClientOnlyWrapper>
+    <ClientOnly fallback={
+      <div className={styles.container}>
+        <div className={styles.loading}>Loading...</div>
+      </div>
+    }>
       <MobileNewProductPage />
-    </ClientOnlyWrapper>
+    </ClientOnly>
   )
 }
