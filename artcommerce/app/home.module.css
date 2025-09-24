@@ -1656,6 +1656,11 @@
     display: none !important;
   }
   
+  /* Smooth mobile scrolling and disable scroll animations */
+  * {
+    scroll-behavior: smooth !important;
+  }
+  
   /* Disable transform animations on mobile cards */
   .mobileFeaturedCard,
   .mobileExploreCard,
@@ -1695,6 +1700,15 @@
   /* Disable scroll arrows pulse animation */
   .scrollArrow {
     animation: none !important;
+  }
+  
+  /* Ensure smooth mobile scrolling behavior */
+  html {
+    -webkit-overflow-scrolling: touch !important;
+  }
+  
+  body {
+    scroll-behavior: smooth !important;
   }
   
   /* Remove any floating or transform animations on mobile */
@@ -1756,6 +1770,7 @@
   }
   
   /* Remove transform3d and translateZ for better performance on animated elements */
+  [data-aos],
   .productCard,
   .mobileFeaturedCard,
   .mobileExploreCard,
@@ -1772,7 +1787,9 @@
   .mobileFeaturedCard:active,
   .mobileExploreCard:active,
   .featuredMobileCard:active,
-  .bestSellerMobileCard:active {
+  .bestSellerMobileCard:active,
+  button:active,
+  a:active {
     opacity: 0.7 !important;
     transition: opacity 0.1s ease !important;
   }

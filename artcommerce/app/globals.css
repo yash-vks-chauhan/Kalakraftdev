@@ -274,27 +274,6 @@ body:has(> div > main[data-page="home"]) {
 
 /* Mobile AOS Animation Disabling - Global CSS for smooth mobile app experience */
 @media (max-width: 768px) {
-  /* Smooth mobile scrolling for app-like experience */
-  * {
-    scroll-behavior: smooth !important;
-  }
-  
-  html {
-    -webkit-overflow-scrolling: touch !important;
-  }
-  
-  body {
-    scroll-behavior: smooth !important;
-  }
-  
-  /* Mobile touch feedback for buttons and links */
-  button:active,
-  a:active {
-    opacity: 0.7 !important;
-    transition: opacity 0.1s ease !important;
-  }
-  
-  /* Disable AOS scroll animations but preserve carousel functionality */
   [data-aos] {
     opacity: 1 !important;
     transform: none !important;
@@ -313,23 +292,5 @@ body:has(> div > main[data-page="home"]) {
     transform: none !important;
     transition: none !important;
     animation: none !important;
-  }
-  
-  /* Preserve transforms for carousel and interactive elements */
-  .mobileCarouselSlide,
-  .mobileCarouselWrapper,
-  .mobileCarouselContainer,
-  .carouselTrack,
-  .carouselContainer,
-  .carouselNav,
-  .productCard,
-  .cardInner,
-  [class*="carousel"],
-  [class*="Carousel"],
-  [style*="transform"] {
-    transform: inherit !important;
-    transition: inherit !important;
-    animation: inherit !important;
-    opacity: inherit !important;
   }
 }

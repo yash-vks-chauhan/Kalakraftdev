@@ -1374,55 +1374,7 @@ const [slidePosition, setSlidePosition] = useState(0)
 
 const resumeTimerRef = useRef<NodeJS.Timeout | null>(null)
 
-// Touch handling for Our Collections carousel
-const touchStartXRef = useRef(0)
-const touchStartYRef = useRef(0)
-const isDraggingCarousel = useRef(false)
 
-// Touch event handlers for Our Collections carousel
-const handleCarouselTouchStart = (e: React.TouchEvent) => {
-  const touch = e.touches[0]
-  touchStartXRef.current = touch.clientX
-  touchStartYRef.current = touch.clientY
-  isDraggingCarousel.current = true
-  
-  // Clear any existing timer to pause auto-scrolling
-  if (resumeTimerRef.current) {
-    clearTimeout(resumeTimerRef.current)
-  }
-}
-
-const handleCarouselTouchMove = (e: React.TouchEvent) => {
-  if (!isDraggingCarousel.current) return
-  
-  const touch = e.touches[0]
-  const deltaX = touch.clientX - touchStartXRef.current
-  const deltaY = touch.clientY - touchStartYRef.current
-  
-  // Only handle horizontal swipes (prevent interfering with vertical scroll)
-  if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 10) {
-    e.preventDefault()
-  }
-}
-
-const handleCarouselTouchEnd = (e: React.TouchEvent) => {
-  if (!isDraggingCarousel.current) return
-  
-  isDraggingCarousel.current = false
-  const touch = e.changedTouches[0]
-  const deltaX = touch.clientX - touchStartXRef.current
-  
-  // Determine if swipe is significant enough (minimum 60px)
-  const swipeThreshold = 60
-  const shouldSwipeLeft = deltaX < -swipeThreshold
-  const shouldSwipeRight = deltaX > swipeThreshold
-  
-  if (shouldSwipeLeft) {
-    handleCarouselNav('next')
-  } else if (shouldSwipeRight) {
-    handleCarouselNav('prev')
-  }
-}
 
 // Product categories for the grid - expanded with more items
 
@@ -2011,14 +1963,7 @@ bringing the beauty of fluid art into your everyday life.</p>
 
 </div>
 
-<div 
-  className={styles.carouselContainer} 
-  data-aos="fade-up" 
-  data-aos-delay="200"
-  onTouchStart={handleCarouselTouchStart}
-  onTouchMove={handleCarouselTouchMove}
-  onTouchEnd={handleCarouselTouchEnd}
->
+<div className={styles.carouselContainer} data-aos="fade-up" data-aos-delay="200">
 
 <div 
 
