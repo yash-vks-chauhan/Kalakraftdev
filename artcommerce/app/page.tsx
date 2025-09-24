@@ -1386,6 +1386,8 @@ const handleCarouselTouchStart = (e: React.TouchEvent) => {
   touchStartYRef.current = touch.clientY
   isDraggingCarousel.current = true
   
+  console.log('Carousel touch start:', touch.clientX)
+  
   // Clear any existing timer to pause auto-scrolling
   if (resumeTimerRef.current) {
     clearTimeout(resumeTimerRef.current)
@@ -1412,14 +1414,20 @@ const handleCarouselTouchEnd = (e: React.TouchEvent) => {
   const touch = e.changedTouches[0]
   const deltaX = touch.clientX - touchStartXRef.current
   
+  console.log('Carousel touch end - deltaX:', deltaX)
+  
   // Determine if swipe is significant enough (minimum 60px)
   const swipeThreshold = 60
   const shouldSwipeLeft = deltaX < -swipeThreshold
   const shouldSwipeRight = deltaX > swipeThreshold
   
+  console.log('Should swipe left:', shouldSwipeLeft, 'Should swipe right:', shouldSwipeRight)
+  
   if (shouldSwipeLeft) {
+    console.log('Calling handleCarouselNav(next)')
     handleCarouselNav('next')
   } else if (shouldSwipeRight) {
+    console.log('Calling handleCarouselNav(prev)')
     handleCarouselNav('prev')
   }
 }

@@ -294,42 +294,5 @@ body:has(> div > main[data-page="home"]) {
     transition: opacity 0.1s ease !important;
   }
   
-  /* Disable AOS scroll animations but preserve carousel functionality */
-  [data-aos] {
-    opacity: 1 !important;
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
-  }
-  
-  .aos-animate,
-  [data-aos="fade-up"],
-  [data-aos="fade-in"],
-  [data-aos="fade-left"],
-  [data-aos="fade-right"],
-  [data-aos="zoom-in"],
-  [data-aos="slide-up"] {
-    opacity: 1 !important;
-    transform: none !important;
-    transition: none !important;
-    animation: none !important;
-  }
-  
-  /* Preserve transforms for carousel and interactive elements */
-  .mobileCarouselSlide,
-  .mobileCarouselWrapper,
-  .mobileCarouselContainer,
-  .carouselTrack,
-  .carouselContainer,
-  .carouselNav,
-  .productCard,
-  .cardInner,
-  [class*="carousel"],
-  [class*="Carousel"],
-  [style*="transform"] {
-    transform: inherit !important;
-    transition: inherit !important;
-    animation: inherit !important;
-    opacity: inherit !important;
-  }
+  /* Mobile carousel functionality preserved - no global transform overrides needed since AOS is disabled via JS */
 }
