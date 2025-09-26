@@ -1,0 +1,130 @@
+.patternContainer {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.pattern {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  
+  /* Pattern variables */
+  --sz: 15px;
+  --c0: #000;
+  --c1: #c71175;
+  --ts: 50% / calc(var(--sz) * 8) calc(var(--sz) * 16);
+  
+  /* Dot patterns */
+  --dot: var(--c1) 0 calc(var(--sz) * 0.78),
+    #fff0 calc(calc(var(--sz) * 0.78) + 1px) 100%;
+  --dot2: radial-gradient(circle at 90% 0%, var(--dot)) var(--ts),
+    radial-gradient(circle at 65% 0%, var(--dot)) var(--ts),
+    radial-gradient(circle at 40% 0%, var(--dot)) var(--ts),
+    radial-gradient(circle at 15% 0%, var(--dot)) var(--ts);
+  
+  /* Conic gradients */
+  --cg1: conic-gradient(from -90deg at 5% 51%, var(--c0) 0 90deg, #fff0 0 100%)
+    var(--ts);
+  --cg2: conic-gradient(from -90deg at 25% 50%, var(--c1) 0 90deg, #fff0 0 100%)
+    var(--ts);
+  --cg3: conic-gradient(
+      from -90deg at 30% 38.5%,
+      var(--c0) 0 90deg,
+      #fff0 0 100%
+    )
+    var(--ts);
+  --cg4: conic-gradient(
+      from -90deg at 50% 37.5%,
+      var(--c1) 0 90deg,
+      #fff0 0 100%
+    )
+    var(--ts);
+  --cg5: conic-gradient(from -90deg at 55% 26%, var(--c0) 0 90deg, #fff0 0 100%)
+    var(--ts);
+  --cg6: conic-gradient(from -90deg at 75% 25%, var(--c1) 0 90deg, #fff0 0 100%)
+    var(--ts);
+  --cg7: conic-gradient(
+      from -90deg at 80% 13.5%,
+      var(--c0) 0 90deg,
+      #fff0 0 100%
+    )
+    var(--ts);
+  --cg8: conic-gradient(
+      from -90deg at 100% 12.5%,
+      var(--c1) 0 90deg,
+      #fff0 0 100%
+    )
+    var(--ts);
+
+  /* Complex background composition */
+  background: var(--dot2), var(--dot2),
+    radial-gradient(circle at 90% 100%, var(--dot)) var(--ts),
+    radial-gradient(circle at 65% 100%, var(--dot)) var(--ts),
+    radial-gradient(circle at 40% 100%, var(--dot)) var(--ts),
+    radial-gradient(circle at 15% 100%, var(--dot)) var(--ts),
+    radial-gradient(circle at 90% 12.5%, var(--dot)) var(--ts),
+    radial-gradient(circle at 65% 25%, var(--dot)) var(--ts),
+    radial-gradient(circle at 40% 37.5%, var(--dot)) var(--ts),
+    radial-gradient(circle at 15% 50%, var(--dot)) var(--ts), var(--cg1),
+    var(--cg1), var(--cg2), var(--cg2), var(--cg3), var(--cg3), var(--cg4),
+    var(--cg4), var(--cg5), var(--cg5), var(--cg6), var(--cg6), var(--cg7),
+    var(--cg7), var(--cg8), var(--cg8),
+    linear-gradient(-45deg, #fff0 0 32.25%, #0002 50%, #000 77.5%) var(--ts),
+    linear-gradient(-45deg, #fff0 0 32.25%, #000 60%) var(--ts),
+    repeating-linear-gradient(90deg, var(--c0) 0 5%, var(--c1) 0 25%) var(--ts);
+  
+  /* Reduce opacity for better content readability */
+  opacity: 0.15;
+  mix-blend-mode: multiply;
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+}
+
+/* Variant for lighter background */
+.patternContainer.light .pattern {
+  --c0: #333;
+  --c1: #e91e63;
+  opacity: 0.08;
+  mix-blend-mode: soft-light;
+}
+
+/* Variant for darker background */
+.patternContainer.dark .pattern {
+  --c0: #fff;
+  --c1: #ff6b9d;
+  opacity: 0.2;
+  mix-blend-mode: screen;
+}
+
+/* Animation variant - subtle movement */
+.patternContainer.animated .pattern {
+  animation: patternMove 60s linear infinite;
+}
+
+@keyframes patternMove {
+  0% {
+    transform: translateX(0) translateY(0);
+  }
+  25% {
+    transform: translateX(-10px) translateY(-5px);
+  }
+  50% {
+    transform: translateX(-5px) translateY(-10px);
+  }
+  75% {
+    transform: translateX(5px) translateY(-5px);
+  }
+  100% {
+    transform: translateX(0) translateY(0);
+  }
+}
