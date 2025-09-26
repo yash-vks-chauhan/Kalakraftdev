@@ -2521,27 +2521,7 @@
   display: none; /* Chrome, Safari and Opera */
 }
 
-/* Add scroll indicators */
-.categoryButtonsContainer::before,
-.categoryButtonsContainer::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  width: 30px;
-  height: 100%;
-  pointer-events: none;
-  z-index: 2;
-}
-
-.categoryButtonsContainer::before {
-  left: 0;
-  background: linear-gradient(to right, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0));
-}
-
-.categoryButtonsContainer::after {
-  right: 0;
-  background: linear-gradient(to left, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0));
-}
+/* Scroll indicators removed for clean appearance */
 
 .categoryButton {
   background: #f8f9fa;
@@ -2988,11 +2968,6 @@
     gap: 0.75rem;
     margin: 1.5rem auto 2.5rem;
     padding: 0 1rem 1rem;
-  }
-  
-  .categoryButtonsContainer::before,
-  .categoryButtonsContainer::after {
-    width: 20px;
   }
   
   /* Adjust pattern for mobile - behind content */
