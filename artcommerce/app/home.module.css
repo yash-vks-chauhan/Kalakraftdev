@@ -3918,8 +3918,8 @@
 /* Cart Button Position - Wheel Layout */
 .mobileActionWheelCart {
   position: absolute;
-  bottom: 60px;
-  left: 10px;
+  bottom: 55px;
+  left: 5px;
   background: rgba(255, 255, 255, 0.95);
   border: none;
   opacity: 0;
@@ -3931,8 +3931,8 @@
 /* Wishlist Button Position - Wheel Layout */
 .mobileActionWheelWishlist {
   position: absolute;
-  bottom: 35px;
-  left: -25px;
+  bottom: 26px;
+  left: -35px;
   background: rgba(255, 255, 255, 0.95);
   border: none;
   opacity: 0;
@@ -3954,8 +3954,8 @@
 /* Share Button Position - Wheel Layout */
 .mobileActionWheelShare {
   position: absolute;
-  bottom: 10px;
-  left: -25px;
+  bottom: -3px;
+  left: -35px;
   background: rgba(255, 255, 255, 0.95);
   border: none;
   opacity: 0;
@@ -4295,18 +4295,18 @@
   }
   
   .mobileActionWheelCart {
-    bottom: 55px;
-    left: 8px;
+    bottom: 50px;
+    left: 3px;
   }
   
   .mobileActionWheelWishlist {
-    bottom: 32px;
-    left: -22px;
+    bottom: 24px;
+    left: -32px;
   }
   
   .mobileActionWheelShare {
-    bottom: 8px;
-    left: -22px;
+    bottom: -2px;
+    left: -32px;
   }
   
   .mobileActionWheelButton {
