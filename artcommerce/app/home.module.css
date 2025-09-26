@@ -3879,31 +3879,33 @@
 }
 
 .mobileActionWheelExpanded .mobileActionWheelCart {
-  transform: translateX(-50%) scale(1);
+  opacity: 1;
+  visibility: visible;
+  transform: scale(1);
+}
+
+.mobileActionWheelExpanded .mobileActionWheelWishlist {
+  opacity: 1;
+  visibility: visible;
+  transform: scale(1);
 }
 
 .mobileActionWheelExpanded .mobileActionWheelShare {
-  transform: translateY(-50%) scale(1);
+  opacity: 1;
+  visibility: visible;
+  transform: scale(1);
 }
 
 /* Action Menu Container */
 .mobileActionMenu {
   position: absolute;
-  bottom: 20px;
-  right: 60px;
-  background: rgba(0, 0, 0, 0.95);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-radius: 22px;
-  padding: 6px 8px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
+  bottom: 0;
+  right: 0;
+  width: 52px;
+  height: 52px;
   opacity: 0;
   visibility: hidden;
-  transform: translateY(5px) translateX(-5px) scale(0.9);
   transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1);
   z-index: 16;
 }
 
@@ -3913,18 +3915,30 @@
   transform: translateY(0) translateX(0) scale(1);
 }
 
-/* Cart Button Position - Horizontal Layout */
+/* Cart Button Position - Wheel Layout */
 .mobileActionWheelCart {
-  position: relative;
+  position: absolute;
+  bottom: 60px;
+  right: 10px;
   background: rgba(255, 255, 255, 0.95);
   border: none;
+  opacity: 0;
+  visibility: hidden;
+  transform: scale(0.3);
+  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
-/* Wishlist Button Position - Horizontal Layout */
+/* Wishlist Button Position - Wheel Layout */
 .mobileActionWheelWishlist {
-  position: relative;
+  position: absolute;
+  bottom: 35px;
+  right: -25px;
   background: rgba(255, 255, 255, 0.95);
   border: none;
+  opacity: 0;
+  visibility: hidden;
+  transform: scale(0.3);
+  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
 .mobileActionWheelWishlistActive {
@@ -3937,11 +3951,17 @@
   color: #fff !important;
 }
 
-/* Share Button Position - Horizontal Layout */
+/* Share Button Position - Wheel Layout */
 .mobileActionWheelShare {
-  position: relative;
+  position: absolute;
+  bottom: 10px;
+  right: -25px;
   background: rgba(255, 255, 255, 0.95);
   border: none;
+  opacity: 0;
+  visibility: hidden;
+  transform: scale(0.3);
+  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
 .mobileActionWheelShare:hover {
@@ -4268,10 +4288,25 @@
   }
   
   .mobileActionMenu {
-    bottom: 20px;
-    right: 60px;
-    padding: 6px 10px;
-    gap: 6px;
+    bottom: 0;
+    right: 0;
+    width: 48px;
+    height: 48px;
+  }
+  
+  .mobileActionWheelCart {
+    bottom: 55px;
+    right: 8px;
+  }
+  
+  .mobileActionWheelWishlist {
+    bottom: 32px;
+    right: -22px;
+  }
+  
+  .mobileActionWheelShare {
+    bottom: 8px;
+    right: -22px;
   }
   
   .mobileActionWheelButton {
