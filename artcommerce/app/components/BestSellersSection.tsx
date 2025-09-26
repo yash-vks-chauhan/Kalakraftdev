@@ -476,7 +476,7 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
                   key={product.id} 
                   className={styles.mobileCarouselSlide}
                   style={{
-                    transform: `translateX(calc(${(index - currentIndex) * 85}vw + ${(index - currentIndex) * gapSize}rem + ${dragOffset}px))`,
+                    transform: `translateX(calc(${(index - currentIndex) * 100}vw + ${(index - currentIndex) * gapSize}rem + ${dragOffset}px))`,
                     transition: isDragging.current ? 'none' : 'transform 0.25s ease'
                   }}
                 >
