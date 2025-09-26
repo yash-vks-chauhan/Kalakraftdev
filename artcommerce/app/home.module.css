@@ -2766,6 +2766,11 @@
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
+.featuredProductCard:hover .featuredCardInfo {
+  border-color: rgba(0, 0, 0, 0.2);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
 .featuredProductCard:active {
   transform: translateY(0px) scale(0.96);
   transition: all 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
@@ -2886,6 +2891,11 @@
 .featuredMobileCard:hover .featuredMobileImageContainer {
   border-color: rgba(0, 0, 0, 0.2);
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.featuredMobileCard:hover .featuredMobileCardInfo {
+  border-color: rgba(0, 0, 0, 0.2);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .featuredMobileCard:active {
