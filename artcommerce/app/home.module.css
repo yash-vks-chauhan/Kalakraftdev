@@ -2430,52 +2430,26 @@
   right: 0;
   bottom: 0;
   z-index: -1;
-  opacity: 0.95;
+  opacity: 0.03;
   mix-blend-mode: normal;
   
-  /* Pattern variables */
-  --sz: 15px;
-  --c0: #000;
-  --c1: #6b0030;
-  --ts: 50% / calc(var(--sz) * 8) calc(var(--sz) * 16);
+  /* Professional art-focused pattern */
+  background-image: 
+    /* Subtle grid pattern */
+    linear-gradient(rgba(0,0,0,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,0,0,0.02) 1px, transparent 1px),
+    /* Diagonal texture lines */
+    repeating-linear-gradient(45deg, transparent, transparent 20px, rgba(0,0,0,0.008) 20px, rgba(0,0,0,0.008) 21px),
+    repeating-linear-gradient(-45deg, transparent, transparent 20px, rgba(0,0,0,0.008) 20px, rgba(0,0,0,0.008) 21px),
+    /* Subtle noise texture */
+    radial-gradient(circle at 25% 25%, rgba(0,0,0,0.01) 1px, transparent 1px),
+    radial-gradient(circle at 75% 75%, rgba(0,0,0,0.01) 1px, transparent 1px);
   
-  /* Dot patterns */
-  --dot: var(--c1) 0 calc(var(--sz) * 0.78),
-    #fff0 calc(calc(var(--sz) * 0.78) + 1px) 100%;
-  --dot2: radial-gradient(circle at 90% 0%, var(--dot)) var(--ts),
-    radial-gradient(circle at 65% 0%, var(--dot)) var(--ts),
-    radial-gradient(circle at 40% 0%, var(--dot)) var(--ts),
-    radial-gradient(circle at 15% 0%, var(--dot)) var(--ts);
+  background-size: 40px 40px, 40px 40px, 80px 80px, 80px 80px, 60px 60px, 60px 60px;
+  background-position: 0 0, 0 0, 0 0, 0 0, 0 0, 30px 30px;
   
-  /* Conic gradients */
-  --cg1: conic-gradient(from -90deg at 5% 51%, var(--c0) 0 90deg, #fff0 0 100%) var(--ts);
-  --cg2: conic-gradient(from -90deg at 25% 50%, var(--c1) 0 90deg, #fff0 0 100%) var(--ts);
-  --cg3: conic-gradient(from -90deg at 30% 38.5%, var(--c0) 0 90deg, #fff0 0 100%) var(--ts);
-  --cg4: conic-gradient(from -90deg at 50% 37.5%, var(--c1) 0 90deg, #fff0 0 100%) var(--ts);
-  --cg5: conic-gradient(from -90deg at 55% 26%, var(--c0) 0 90deg, #fff0 0 100%) var(--ts);
-  --cg6: conic-gradient(from -90deg at 75% 25%, var(--c1) 0 90deg, #fff0 0 100%) var(--ts);
-  --cg7: conic-gradient(from -90deg at 80% 13.5%, var(--c0) 0 90deg, #fff0 0 100%) var(--ts);
-  --cg8: conic-gradient(from -90deg at 100% 12.5%, var(--c1) 0 90deg, #fff0 0 100%) var(--ts);
-
-  /* Complex background composition */
-  background: var(--dot2), var(--dot2),
-    radial-gradient(circle at 90% 100%, var(--dot)) var(--ts),
-    radial-gradient(circle at 65% 100%, var(--dot)) var(--ts),
-    radial-gradient(circle at 40% 100%, var(--dot)) var(--ts),
-    radial-gradient(circle at 15% 100%, var(--dot)) var(--ts),
-    radial-gradient(circle at 90% 12.5%, var(--dot)) var(--ts),
-    radial-gradient(circle at 65% 25%, var(--dot)) var(--ts),
-    radial-gradient(circle at 40% 37.5%, var(--dot)) var(--ts),
-    radial-gradient(circle at 15% 50%, var(--dot)) var(--ts), var(--cg1),
-    var(--cg1), var(--cg2), var(--cg2), var(--cg3), var(--cg3), var(--cg4),
-    var(--cg4), var(--cg5), var(--cg5), var(--cg6), var(--cg6), var(--cg7),
-    var(--cg7), var(--cg8), var(--cg8),
-    linear-gradient(-45deg, #fff0 0 32.25%, #0002 50%, #000 77.5%) var(--ts),
-    linear-gradient(-45deg, #fff0 0 32.25%, #000 60%) var(--ts),
-    repeating-linear-gradient(90deg, var(--c0) 0 5%, var(--c1) 0 25%) var(--ts);
-  
-  /* Subtle animation */
-  animation: patternMove 120s linear infinite;
+  /* Gentle animation */
+  animation: patternMove 180s linear infinite;
 }
 
 @keyframes patternMove {
@@ -2659,9 +2633,9 @@
   align-items: center;
   justify-content: center;
   transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  /* iOS-style inward outline */
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06), inset 0 0 0 1px rgba(255, 255, 255, 0.7);
+  /* iOS-style inward outline with darker colors */
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.12), inset 0 0 0 1px rgba(0, 0, 0, 0.08);
 }
 
 .featuredImageContainer::before {
@@ -2787,9 +2761,9 @@
   justify-content: center;
   margin: 0 0 1rem 0;
   transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  /* iOS-style inward outline */
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06), inset 0 0 0 1px rgba(255, 255, 255, 0.7);
+  /* iOS-style inward outline with darker colors */
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.12), inset 0 0 0 1px rgba(0, 0, 0, 0.08);
 }
 
 .featuredMobileImageContainer::before {
@@ -2972,13 +2946,11 @@
   
   /* Adjust pattern for mobile - behind content */
   .patternLight::before {
-    --sz: 12px; /* Smaller pattern on mobile */
-    --c0: #000; /* Pure black */
-    --c1: #6b0030; /* Dark burgundy */
-    opacity: 1; /* Increased opacity to make background darker */
-    animation: patternMove 120s linear infinite; /* Same animation speed */
-    mix-blend-mode: normal; /* Normal blend mode for clarity */
-    z-index: -1; /* Behind content */
+    opacity: 0.02; /* Even more subtle for mobile text readability */
+    background-size: 30px 30px, 30px 30px, 60px 60px, 60px 60px, 45px 45px, 45px 45px;
+    animation: patternMove 180s linear infinite; /* Slower, more refined animation */
+    mix-blend-mode: normal;
+    z-index: -1;
   }
   
   .categoryButton {
