@@ -481,88 +481,6 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
 
       {/* Best Sellers Mobile Carousel */}
       <div className={`${styles.bestSellersMobileCarousel} ${styles.mobileOnly}`} data-aos="fade-up" data-aos-delay="200">
-        {/* Top Navigation Bar */}
-        {products.length > 1 && (
-          <div className={styles.mobileCarouselTopNav}>
-            {/* Left Side - Previous Arrow */}
-            <div className={styles.mobileTopNavLeft}>
-              <button 
-                className={styles.mobileTopNavArrow}
-                onClick={() => {
-                  stopAutoPlay()
-                  goToPrevious()
-                  if (isAutoPlaying) {
-                    setTimeout(() => {
-                      if (isAutoPlaying) {
-                        startAutoPlay()
-                      }
-                    }, 1500)
-                  }
-                }}
-                disabled={isTransitioning}
-                title="Previous slide"
-                aria-label="Previous slide"
-              >
-                <ChevronLeft size={16} />
-              </button>
-            </div>
-
-            {/* Center - Progress Capsules */}
-            <div className={styles.mobileTopNavCenter}>
-              {products.map((_, index) => (
-                <button
-                  key={index}
-                  className={`${styles.mobileProgressCapsule} ${
-                    index === currentIndex 
-                      ? `${styles.mobileProgressCapsuleActive} ${!isAutoPlaying || isPaused ? styles.paused : ''}` 
-                      : index < currentIndex 
-                        ? styles.mobileProgressCapsuleCompleted 
-                        : ''
-                  }`}
-                  onClick={() => goToSlide(index)}
-                  disabled={isTransitioning}
-                  title={`Go to slide ${index + 1}`}
-                  aria-label={`Go to slide ${index + 1} of ${products.length}`}
-                >
-                  <div className={styles.mobileProgressFill}></div>
-                </button>
-              ))}
-            </div>
-
-            {/* Right Side - Next Arrow & Auto-play Toggle */}
-            <div className={styles.mobileTopNavRight}>
-              <button 
-                className={styles.mobileTopNavArrow}
-                onClick={() => {
-                  stopAutoPlay()
-                  goToNext()
-                  if (isAutoPlaying) {
-                    setTimeout(() => {
-                      if (isAutoPlaying) {
-                        startAutoPlay()
-                      }
-                    }, 1500)
-                  }
-                }}
-                disabled={isTransitioning}
-                title="Next slide"
-                aria-label="Next slide"
-              >
-                <ChevronRight size={16} />
-              </button>
-              
-              <button 
-                className={`${styles.mobileTopNavAutoPlay} ${isAutoPlaying ? styles.mobileTopNavAutoPlayActive : ''}`}
-                onClick={toggleAutoPlay}
-                title={isAutoPlaying ? 'Pause auto-play' : 'Start auto-play'}
-                aria-label={isAutoPlaying ? 'Pause auto-play' : 'Start auto-play'}
-                style={{ marginLeft: '8px' }}
-              >
-                {isAutoPlaying ? <Pause size={14} /> : <Play size={14} />}
-              </button>
-            </div>
-          </div>
-        )}
         <div 
           className={styles.mobileCarouselContainer}
           onTouchStart={(e) => {
@@ -695,6 +613,87 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
           </div>
         </div>
 
+        {/* Bottom Navigation Bar */}
+        {products.length > 1 && (
+          <div className={styles.mobileCarouselBottomNav}>
+            {/* Left Side - Previous Arrow */}
+            <div className={styles.mobileBottomNavLeft}>
+              <button 
+                className={styles.mobileBottomNavArrow}
+                onClick={() => {
+                  stopAutoPlay()
+                  goToPrevious()
+                  if (isAutoPlaying) {
+                    setTimeout(() => {
+                      if (isAutoPlaying) {
+                        startAutoPlay()
+                      }
+                    }, 1500)
+                  }
+                }}
+                disabled={isTransitioning}
+                title="Previous slide"
+                aria-label="Previous slide"
+              >
+                <ChevronLeft size={18} />
+              </button>
+            </div>
+
+            {/* Center - Progress Capsules */}
+            <div className={styles.mobileBottomNavCenter}>
+              {products.map((_, index) => (
+                <button
+                  key={index}
+                  className={`${styles.mobileProgressCapsule} ${
+                    index === currentIndex 
+                      ? `${styles.mobileProgressCapsuleActive} ${!isAutoPlaying || isPaused ? styles.paused : ''}` 
+                      : index < currentIndex 
+                        ? styles.mobileProgressCapsuleCompleted 
+                        : ''
+                  }`}
+                  onClick={() => goToSlide(index)}
+                  disabled={isTransitioning}
+                  title={`Go to slide ${index + 1}`}
+                  aria-label={`Go to slide ${index + 1} of ${products.length}`}
+                >
+                  <div className={styles.mobileProgressFill}></div>
+                </button>
+              ))}
+            </div>
+
+            {/* Right Side - Next Arrow & Auto-play Toggle */}
+            <div className={styles.mobileBottomNavRight}>
+              <button 
+                className={styles.mobileBottomNavArrow}
+                onClick={() => {
+                  stopAutoPlay()
+                  goToNext()
+                  if (isAutoPlaying) {
+                    setTimeout(() => {
+                      if (isAutoPlaying) {
+                        startAutoPlay()
+                      }
+                    }, 1500)
+                  }
+                }}
+                disabled={isTransitioning}
+                title="Next slide"
+                aria-label="Next slide"
+              >
+                <ChevronRight size={18} />
+              </button>
+              
+              <button 
+                className={`${styles.mobileBottomNavAutoPlay} ${isAutoPlaying ? styles.mobileBottomNavAutoPlayActive : ''}`}
+                onClick={toggleAutoPlay}
+                title={isAutoPlaying ? 'Pause auto-play' : 'Start auto-play'}
+                aria-label={isAutoPlaying ? 'Pause auto-play' : 'Start auto-play'}
+              >
+                {isAutoPlaying ? <Pause size={16} /> : <Play size={16} />}
+              </button>
+            </div>
+          </div>
+        )}
 
       </div>
     </section>
