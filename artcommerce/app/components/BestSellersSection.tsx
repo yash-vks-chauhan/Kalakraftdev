@@ -365,6 +365,7 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
                     <div className={styles.mobileSkeletonCategory}></div>
                     <div className={styles.mobileSkeletonTitle}></div>
                     <div className={styles.mobileSkeletonPrice}></div>
+                    <div className={styles.mobileSkeletonStock}></div>
                     <div className={styles.mobileSkeletonActions}>
                       <div className={styles.mobileSkeletonButton}></div>
                       <div className={styles.mobileSkeletonWishlist}></div>
@@ -505,32 +506,65 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
                     {/* Right side - Product Details */}
                     <div className={styles.mobileProductDetailsSection}>
                       <div className={styles.mobileProductDetails}>
-                        {/* Product Category */}
-                        {product.category && (
-                          <span className={styles.mobileProductCategory}>
-                            {product.category.name}
-                          </span>
-                        )}
-                        
-                        {/* Product Name */}
-                        <Link href={`/products/${product.id}`}>
-                          <h3 className={styles.mobileProductName}>
-                            {product.name}
-                          </h3>
-                        </Link>
-                        
-                        {/* Product Price */}
-                        <p className={styles.mobileProductPrice}>
-                          {formatPrice(product.price)}
-                        </p>
+                        {/* Product Info Section */}
+                        <div className={styles.mobileProductInfo}>
+                          <div className={styles.mobileProductMeta}>
+                            {/* Product Category */}
+                            {product.category && (
+                              <span className={styles.mobileProductCategory}>
+                                {product.category.name}
+                              </span>
+                            )}
+                            
+                            {/* Product Name */}
+                            <Link href={`/products/${product.id}`}>
+                              <h3 className={styles.mobileProductName}>
+                                {product.name}
+                              </h3>
+                            </Link>
+                          </div>
+                          
+                          {/* Product Price */}
+                          <p className={styles.mobileProductPrice}>
+                            {formatPrice(product.price)}
+                          </p>
+
+                          {/* Stock Information */}
+                          {product.stockQuantity !== undefined && (
+                            <div className={styles.mobileProductStockInfo}>
+                              <span 
+                                className={`${styles.mobileStockIndicator} ${
+                                  product.stockQuantity === 0 
+                                    ? styles.mobileStockOutOfStock
+                                    : product.stockQuantity <= 5 
+                                      ? styles.mobileStockLowStock 
+                                      : styles.mobileStockInStock
+                                }`}
+                              >
+                                {product.stockQuantity === 0 
+                                  ? 'Out of Stock'
+                                  : product.stockQuantity <= 5 
+                                    ? `Only ${product.stockQuantity} left`
+                                    : 'In Stock'
+                                }
+                              </span>
+                            </div>
+                          )}
+                        </div>
 
                         {/* Action Buttons */}
                         <div className={styles.mobileProductActions}>
                           <button
                             className={styles.mobileAddToCartButton}
                             onClick={() => handleAddToCart(product.id)}
-                            disabled={addingToCart[product.id]}
-                            title={addingToCart[product.id] ? 'Adding...' : 'Add to Cart'}
+                            disabled={addingToCart[product.id] || product.stockQuantity === 0}
+                            title={
+                              product.stockQuantity === 0 
+                                ? 'Out of Stock' 
+                                : addingToCart[product.id] 
+                                  ? 'Adding...' 
+                                  : 'Add to Cart'
+                            }
                           >
                             <ShoppingCart size={18} />
                           </button>
