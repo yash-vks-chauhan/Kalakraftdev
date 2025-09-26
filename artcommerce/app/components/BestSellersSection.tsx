@@ -34,6 +34,7 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
   const [isAutoPlaying, setIsAutoPlaying] = useState(true)
   const [autoPlaySpeed] = useState(5000) // 5 seconds for more elegant timing
   const autoPlayRef = useRef<NodeJS.Timeout | null>(null)
+  const [isPaused, setIsPaused] = useState(false)
   
   // Image loading states
   const [imageLoadStates, setImageLoadStates] = useState<{ [key: string]: 'loading' | 'loaded' | 'error' }>({})
@@ -104,6 +105,23 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
   // Toggle auto-play
   const toggleAutoPlay = () => {
     setIsAutoPlaying(prev => !prev)
+  }
+
+  // Handle pause on interaction
+  const handleInteractionStart = () => {
+    setIsPaused(true)
+    stopAutoPlay()
+  }
+
+  const handleInteractionEnd = () => {
+    setIsPaused(false)
+    if (isAutoPlaying) {
+      setTimeout(() => {
+        if (isAutoPlaying && !isPaused) {
+          startAutoPlay()
+        }
+      }, 1000)
+    }
   }
 
   // Auto-play effect - simplified dependencies
@@ -209,6 +227,18 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
       return () => clearTimeout(initTimer)
     }
   }, [products.length, isAutoPlaying, loading, startAutoPlay])
+
+  // Reset progress animation when slide changes
+  useEffect(() => {
+    // Force re-render of progress capsules to reset animation
+    const progressElements = document.querySelectorAll(`.${styles.mobileProgressCapsuleActive} .${styles.mobileProgressFill}`)
+    progressElements.forEach((element) => {
+      const htmlElement = element as HTMLElement
+      htmlElement.style.animation = 'none'
+      htmlElement.offsetHeight // Trigger reflow
+      htmlElement.style.animation = ''
+    })
+  }, [currentIndex])
 
   // Enhanced touch handling for smooth card-like swiping
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -451,22 +481,101 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
 
       {/* Best Sellers Mobile Carousel */}
       <div className={`${styles.bestSellersMobileCarousel} ${styles.mobileOnly}`} data-aos="fade-up" data-aos-delay="200">
-        {/* Auto-play Control */}
+        {/* Top Navigation Bar */}
         {products.length > 1 && (
-          <button 
-            className={styles.autoPlayToggle}
-            onClick={toggleAutoPlay}
-            title={isAutoPlaying ? 'Pause auto-play' : 'Start auto-play'}
-            aria-label={isAutoPlaying ? 'Pause auto-play' : 'Start auto-play'}
-          >
-            {isAutoPlaying ? <Pause size={18} /> : <Play size={18} />}
-          </button>
+          <div className={styles.mobileCarouselTopNav}>
+            {/* Left Side - Previous Arrow */}
+            <div className={styles.mobileTopNavLeft}>
+              <button 
+                className={styles.mobileTopNavArrow}
+                onClick={() => {
+                  stopAutoPlay()
+                  goToPrevious()
+                  if (isAutoPlaying) {
+                    setTimeout(() => {
+                      if (isAutoPlaying) {
+                        startAutoPlay()
+                      }
+                    }, 1500)
+                  }
+                }}
+                disabled={isTransitioning}
+                title="Previous slide"
+                aria-label="Previous slide"
+              >
+                <ChevronLeft size={16} />
+              </button>
+            </div>
+
+            {/* Center - Progress Capsules */}
+            <div className={styles.mobileTopNavCenter}>
+              {products.map((_, index) => (
+                <button
+                  key={index}
+                  className={`${styles.mobileProgressCapsule} ${
+                    index === currentIndex 
+                      ? `${styles.mobileProgressCapsuleActive} ${!isAutoPlaying || isPaused ? styles.paused : ''}` 
+                      : index < currentIndex 
+                        ? styles.mobileProgressCapsuleCompleted 
+                        : ''
+                  }`}
+                  onClick={() => goToSlide(index)}
+                  disabled={isTransitioning}
+                  title={`Go to slide ${index + 1}`}
+                  aria-label={`Go to slide ${index + 1} of ${products.length}`}
+                >
+                  <div className={styles.mobileProgressFill}></div>
+                </button>
+              ))}
+            </div>
+
+            {/* Right Side - Next Arrow & Auto-play Toggle */}
+            <div className={styles.mobileTopNavRight}>
+              <button 
+                className={styles.mobileTopNavArrow}
+                onClick={() => {
+                  stopAutoPlay()
+                  goToNext()
+                  if (isAutoPlaying) {
+                    setTimeout(() => {
+                      if (isAutoPlaying) {
+                        startAutoPlay()
+                      }
+                    }, 1500)
+                  }
+                }}
+                disabled={isTransitioning}
+                title="Next slide"
+                aria-label="Next slide"
+              >
+                <ChevronRight size={16} />
+              </button>
+              
+              <button 
+                className={`${styles.mobileTopNavAutoPlay} ${isAutoPlaying ? styles.mobileTopNavAutoPlayActive : ''}`}
+                onClick={toggleAutoPlay}
+                title={isAutoPlaying ? 'Pause auto-play' : 'Start auto-play'}
+                aria-label={isAutoPlaying ? 'Pause auto-play' : 'Start auto-play'}
+                style={{ marginLeft: '8px' }}
+              >
+                {isAutoPlaying ? <Pause size={14} /> : <Play size={14} />}
+              </button>
+            </div>
+          </div>
         )}
         <div 
           className={styles.mobileCarouselContainer}
-          onTouchStart={handleTouchStart}
+          onTouchStart={(e) => {
+            handleInteractionStart()
+            handleTouchStart(e)
+          }}
           onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
+          onTouchEnd={(e) => {
+            handleTouchEnd(e)
+            handleInteractionEnd()
+          }}
+          onMouseEnter={handleInteractionStart}
+          onMouseLeave={handleInteractionEnd}
         >
           <div className={styles.mobileCarouselWrapper}>
             {products.map((product, index) => {
@@ -586,54 +695,7 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
           </div>
         </div>
 
-        {/* Navigation arrows */}
-        <button 
-          className={`${styles.mobileCarouselNav} ${styles.mobileCarouselPrev}`}
-          onClick={() => {
-            stopAutoPlay()
-            goToPrevious()
-            if (isAutoPlaying) {
-              setTimeout(() => {
-                if (isAutoPlaying) {
-                  startAutoPlay()
-                }
-              }, 1500)
-            }
-          }}
-          disabled={isTransitioning}
-        >
-          <ChevronLeft size={20} />
-        </button>
 
-        <button 
-          className={`${styles.mobileCarouselNav} ${styles.mobileCarouselNext}`}
-          onClick={() => {
-            stopAutoPlay()
-            goToNext()
-            if (isAutoPlaying) {
-              setTimeout(() => {
-                if (isAutoPlaying) {
-                  startAutoPlay()
-                }
-              }, 1500)
-            }
-          }}
-          disabled={isTransitioning}
-        >
-          <ChevronRight size={20} />
-        </button>
-
-        {/* Pagination dots */}
-        <div className={styles.mobileCarouselPagination}>
-          {products.map((_, index) => (
-            <button
-              key={index}
-              className={`${styles.mobileCarouselDot} ${index === currentIndex ? styles.mobileCarouselDotActive : ''}`}
-              onClick={() => goToSlide(index)}
-              disabled={isTransitioning}
-            />
-          ))}
-        </div>
       </div>
     </section>
   )
