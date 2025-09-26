@@ -6,7 +6,7 @@ import styles from './productsMobile.module.css'
 import WishlistButton from '../components/WishlistButton'
 import MobileFilterSortBar from '../components/MobileFilterSortBar'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { FiFilter, FiX, FiChevronRight, FiStar, FiPackage, FiTrendingUp, FiGrid, FiHeart } from 'react-icons/fi'
+import { FiFilter, FiX, FiChevronRight, FiStar, FiPackage, FiTrendingUp, FiGrid, FiHeart, FiChevronLeft } from 'react-icons/fi'
 import { useProductFilters } from '../hooks/useProductFilters'
 import { useImagePreload } from '../hooks/useImagePreload'
 
@@ -300,6 +300,7 @@ export default function ProductsMobileClient() {
   } = useProductFilters()
   
   // Remaining component state (reduced from 15+ to 7 variables)
+  const [allProducts, setAllProducts] = useState([])
   const [products, setProducts] = useState([])
   const [usageTags, setUsageTags] = useState([])
   const [loading, setLoading] = useState(true)
@@ -312,6 +313,10 @@ export default function ProductsMobileClient() {
     stock: true,
     sort: true
   });
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1)
+  const productsPerPage = 12
   
   // Extract individual filter values for easier use
   const {
@@ -342,6 +347,43 @@ export default function ProductsMobileClient() {
       default: return 'Recommended';
     }
   };
+
+  // Pagination calculations
+  const totalProducts = allProducts.length
+  const totalPages = Math.ceil(totalProducts / productsPerPage)
+  const startIndex = (currentPage - 1) * productsPerPage
+  const endIndex = startIndex + productsPerPage
+  const paginatedProducts = allProducts.slice(startIndex, endIndex)
+
+  // Update products when pagination changes
+  useEffect(() => {
+    setProducts(paginatedProducts)
+  }, [allProducts, currentPage, productsPerPage])
+
+  // Pagination handlers
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1)
+      // Scroll to top of products list
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1)
+      // Scroll to top of products list
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }
+
+  const handlePageSelect = (page) => {
+    if (page !== currentPage && page >= 1 && page <= totalPages) {
+      setCurrentPage(page)
+      // Scroll to top of products list
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }
 
   // Handle sort selection
   const handleSortSelect = (sortValue: string) => {
@@ -460,7 +502,8 @@ export default function ProductsMobileClient() {
           })
         }
         
-        setProducts(filteredProducts)
+        setAllProducts(filteredProducts)
+        setCurrentPage(1) // Reset to first page when filters change
       } catch (err) {
         setError(err.message)
       } finally {
@@ -717,15 +760,99 @@ export default function ProductsMobileClient() {
           </button>
         </div>
       ) : (
-        <div className={styles.list}>
-          {products.map(product => (
-            <ProductCard 
-              key={product.id} 
-              product={product} 
-              formatPrice={formatPrice}
-            />
-          ))}
-        </div>
+        <>
+          <div className={styles.list}>
+            {products.map(product => (
+              <ProductCard 
+                key={product.id} 
+                product={product} 
+                formatPrice={formatPrice}
+              />
+            ))}
+          </div>
+          
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className={styles.paginationContainer}>
+              <div className={styles.paginationInfo}>
+                <div className={styles.paginationInfoText}>
+                  Showing {startIndex + 1} to {Math.min(endIndex, totalProducts)} of {totalProducts} products
+                </div>
+                <div className={styles.paginationInfoText}>
+                  Page {currentPage} of {totalPages}
+                </div>
+              </div>
+              
+              <div className={styles.paginationControls}>
+                {/* Previous Button */}
+                <button
+                  onClick={handlePreviousPage}
+                  disabled={currentPage === 1}
+                  className={styles.paginationButton}
+                >
+                  <FiChevronLeft size={16} />
+                  Previous
+                </button>
+                
+                {/* Page Numbers */}
+                <div className={styles.paginationNumbers}>
+                  {/* First page */}
+                  {currentPage > 3 && (
+                    <>
+                      <button
+                        onClick={() => handlePageSelect(1)}
+                        className={styles.pageNumber}
+                      >
+                        1
+                      </button>
+                      {currentPage > 4 && <span className={styles.paginationDots}>...</span>}
+                    </>
+                  )}
+                  
+                  {/* Current page and nearby pages */}
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    const pageStart = Math.max(1, Math.min(currentPage - 2, totalPages - 4))
+                    const page = pageStart + i
+                    if (page > totalPages) return null
+                    
+                    return (
+                      <button
+                        key={page}
+                        onClick={() => handlePageSelect(page)}
+                        className={`${styles.pageNumber} ${page === currentPage ? styles.pageNumberActive : ''}`}
+                      >
+                        {page}
+                      </button>
+                    )
+                  })}
+                  
+                  {/* Last page */}
+                  {currentPage < totalPages - 2 && (
+                    <>
+                      {currentPage < totalPages - 3 && <span className={styles.paginationDots}>...</span>}
+                      <button
+                        onClick={() => handlePageSelect(totalPages)}
+                        className={styles.pageNumber}
+                      >
+                        {totalPages}
+                      </button>
+                    </>
+                  )}
+                </div>
+                
+                {/* Next Button */}
+                <button
+                  onClick={handleNextPage}
+                  disabled={currentPage === totalPages}
+                  className={styles.paginationButton}
+                >
+                  Next
+                  <FiChevronRight size={16} />
+                </button>
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       {/* Mobile Filter Drawer */}

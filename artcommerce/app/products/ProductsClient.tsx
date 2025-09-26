@@ -57,12 +57,17 @@ export default function ProductsClient() {
   const { applyCardAnimations } = useScrollCardAnimations()
   
   // Remaining component state (reduced from 15+ to 6 variables)
+  const [allProducts, setAllProducts] = useState<Product[]>([])
   const [products, setProducts] = useState<Product[]>([])
   const [usageTags, setUsageTags] = useState<string[]>([])
   const [loading, setLoading] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false)
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1)
+  const productsPerPage = 16
 
   const isMobileView = isSmallScreen
   
@@ -77,6 +82,40 @@ export default function ProductsClient() {
     lowStockOnly,
     inStockOnly
   } = filters
+
+  // Pagination calculations
+  const totalProducts = allProducts.length
+  const totalPages = Math.ceil(totalProducts / productsPerPage)
+  const startIndex = (currentPage - 1) * productsPerPage
+  const endIndex = startIndex + productsPerPage
+  const paginatedProducts = allProducts.slice(startIndex, endIndex)
+
+  // Update products when pagination changes
+  useEffect(() => {
+    setProducts(paginatedProducts)
+  }, [allProducts, currentPage, productsPerPage])
+
+  // Pagination handlers
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1)
+      productGridRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }
+  }
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1)
+      productGridRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }
+  }
+
+  const handlePageSelect = (page: number) => {
+    if (page !== currentPage && page >= 1 && page <= totalPages) {
+      setCurrentPage(page)
+      productGridRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }
+  }
 
   // Reset sidebar state when switching between views
   useEffect(() => {
@@ -196,7 +235,8 @@ export default function ProductsClient() {
           })
         }
         
-        setProducts(filteredProducts)
+        setAllProducts(filteredProducts)
+        setCurrentPage(1) // Reset to first page when filters change
       } catch (err: any) {
         setError(err.message)
       } finally {
@@ -593,6 +633,88 @@ export default function ProductsClient() {
                 className={animationStyles.productCard}
               />
             ))}
+          </div>
+        )}
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className={styles.paginationContainer}>
+            <div className={styles.paginationInfo}>
+              <span className={styles.paginationInfoText}>
+                Showing {startIndex + 1} to {Math.min(endIndex, totalProducts)} of {totalProducts} products
+              </span>
+              <span className={styles.paginationInfoText}>
+                Page {currentPage} of {totalPages}
+              </span>
+            </div>
+            
+            <div className={styles.paginationControls}>
+              {/* Previous Button */}
+              <button
+                onClick={handlePreviousPage}
+                disabled={currentPage === 1}
+                className={styles.paginationButton}
+              >
+                <FiChevronLeft size={16} />
+                Previous
+              </button>
+              
+              {/* Page Numbers */}
+              <div className={styles.paginationNumbers}>
+                {/* First page */}
+                {currentPage > 3 && (
+                  <>
+                    <button
+                      onClick={() => handlePageSelect(1)}
+                      className={styles.pageNumber}
+                    >
+                      1
+                    </button>
+                    {currentPage > 4 && <span className={styles.paginationDots}>...</span>}
+                  </>
+                )}
+                
+                {/* Current page and nearby pages */}
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  const pageStart = Math.max(1, Math.min(currentPage - 2, totalPages - 4))
+                  const page = pageStart + i
+                  if (page > totalPages) return null
+                  
+                  return (
+                    <button
+                      key={page}
+                      onClick={() => handlePageSelect(page)}
+                      className={`${styles.pageNumber} ${page === currentPage ? styles.pageNumberActive : ''}`}
+                    >
+                      {page}
+                    </button>
+                  )
+                })}
+                
+                {/* Last page */}
+                {currentPage < totalPages - 2 && (
+                  <>
+                    {currentPage < totalPages - 3 && <span className={styles.paginationDots}>...</span>}
+                    <button
+                      onClick={() => handlePageSelect(totalPages)}
+                      className={styles.pageNumber}
+                    >
+                      {totalPages}
+                    </button>
+                  </>
+                )}
+              </div>
+              
+              {/* Next Button */}
+              <button
+                onClick={handleNextPage}
+                disabled={currentPage === totalPages}
+                className={styles.paginationButton}
+              >
+                Next
+                <FiChevronRight size={16} />
+              </button>
+            </div>
           </div>
         )}
       </main>
