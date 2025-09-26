@@ -3963,7 +3963,7 @@
 /* Share Button Position - Wheel Layout */
 .mobileActionWheelShare {
   position: absolute;
-  bottom: -33px;
+  bottom: -10px;
   left: -25px;
   background: rgba(255, 255, 255, 0.95);
   border: none;
@@ -4314,7 +4314,7 @@
   }
   
   .mobileActionWheelShare {
-    bottom: -30px;
+    bottom: -8px;
     left: -20px;
   }
   
