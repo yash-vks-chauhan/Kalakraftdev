@@ -3856,6 +3856,28 @@
   transform: scale(0.9);
 }
 
+.mobileActionWheelCart:hover {
+  background: #000;
+  color: #fff;
+  border-color: #000;
+  transform: translateX(-50%) scale(1.1);
+}
+
+.mobileActionWheelCart:active {
+  transform: translateX(-50%) scale(0.9);
+}
+
+.mobileActionWheelShare:hover {
+  background: #007bff;
+  color: #fff;
+  border-color: #007bff;
+  transform: translateY(-50%) scale(1.1);
+}
+
+.mobileActionWheelShare:active {
+  transform: translateY(-50%) scale(0.9);
+}
+
 /* Show buttons when expanded */
 .mobileActionWheelExpanded .mobileActionWheelButton {
   opacity: 1;
@@ -3863,23 +3885,26 @@
   transform: scale(1);
 }
 
-/* Cart Button Position */
+.mobileActionWheelExpanded .mobileActionWheelCart {
+  transform: translateX(-50%) scale(1);
+}
+
+.mobileActionWheelExpanded .mobileActionWheelShare {
+  transform: translateY(-50%) scale(1);
+}
+
+/* Cart Button Position - Top */
 .mobileActionWheelCart {
-  top: -70px;
-  right: 4px;
+  top: -80px;
+  left: 50%;
+  transform: translateX(-50%) scale(0);
   transition-delay: 0.1s;
 }
 
-.mobileActionWheelCart:hover {
-  background: #000;
-  color: #fff;
-  border-color: #000;
-}
-
-/* Wishlist Button Position */
+/* Wishlist Button Position - Top Right */
 .mobileActionWheelWishlist {
-  top: -50px;
-  right: -50px;
+  top: -60px;
+  right: -60px;
   transition-delay: 0.2s;
 }
 
@@ -3895,18 +3920,15 @@
   border-color: #ff4757;
 }
 
-/* Share Button Position */
+/* Share Button Position - Right */
 .mobileActionWheelShare {
-  top: 4px;
-  right: -70px;
+  top: 50%;
+  right: -80px;
+  transform: translateY(-50%) scale(0);
   transition-delay: 0.3s;
 }
 
-.mobileActionWheelShare:hover {
-  background: #007bff;
-  color: #fff;
-  border-color: #007bff;
-}
+
 
 /* Backdrop for closing menu */
 .mobileActionWheelBackdrop {
@@ -4225,18 +4247,20 @@
   }
   
   .mobileActionWheelCart {
-    top: -64px;
-    right: 2px;
+    top: -70px;
+    left: 50%;
+    transform: translateX(-50%) scale(0);
   }
   
   .mobileActionWheelWishlist {
-    top: -46px;
-    right: -46px;
+    top: -50px;
+    right: -50px;
   }
   
   .mobileActionWheelShare {
-    top: 2px;
-    right: -64px;
+    top: 50%;
+    right: -70px;
+    transform: translateY(-50%) scale(0);
   }
 }
 
