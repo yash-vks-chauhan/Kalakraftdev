@@ -1137,17 +1137,17 @@ const FeaturedCategoriesSection = () => {
   };
 
   return (
-    <section className={styles.featuredCategoriesSection} data-aos="fade-up">
-      {/* Section Header */}
-      <div className={styles.sectionHeader} data-aos="fade-up">
-        <div className={styles.headerLine}></div>
-        <h2 className={styles.sectionTitle}>Featured Categories</h2>
-        <div className={styles.headerLine}></div>
-      </div>
+      <section className={`${styles.featuredCategoriesSection} ${styles.patternLight}`} data-aos="fade-up">
+        {/* Section Header */}
+        <div className={styles.sectionHeader} data-aos="fade-up">
+          <div className={styles.headerLine}></div>
+          <h2 className={styles.sectionTitle}>Featured Categories</h2>
+          <div className={styles.headerLine}></div>
+        </div>
 
-      <div className={styles.featuredDescription} data-aos="fade-up" data-aos-delay="100">
-        <p>Explore our curated selection by category. Each piece is handcrafted with attention to detail and artistic flair.</p>
-      </div>
+        <div className={styles.featuredDescription} data-aos="fade-up" data-aos-delay="100">
+          <p>Explore our curated selection by category. Each piece is handcrafted with attention to detail and artistic flair.</p>
+        </div>
 
       {/* Category Buttons */}
       <div className={styles.categoryButtonsContainer} data-aos="fade-up" data-aos-delay="200">

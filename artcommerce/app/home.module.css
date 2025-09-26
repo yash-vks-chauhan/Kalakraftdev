@@ -2462,6 +2462,92 @@
   overflow: hidden;
 }
 
+/* Pattern Background for Featured Categories */
+.patternLight {
+  position: relative;
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 50%, #f8f9fa 100%);
+}
+
+.patternLight::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
+  opacity: 0.06;
+  mix-blend-mode: multiply;
+  
+  /* Pattern variables */
+  --sz: 15px;
+  --c0: #333;
+  --c1: #c71175;
+  --ts: 50% / calc(var(--sz) * 8) calc(var(--sz) * 16);
+  
+  /* Dot patterns */
+  --dot: var(--c1) 0 calc(var(--sz) * 0.78),
+    #fff0 calc(calc(var(--sz) * 0.78) + 1px) 100%;
+  --dot2: radial-gradient(circle at 90% 0%, var(--dot)) var(--ts),
+    radial-gradient(circle at 65% 0%, var(--dot)) var(--ts),
+    radial-gradient(circle at 40% 0%, var(--dot)) var(--ts),
+    radial-gradient(circle at 15% 0%, var(--dot)) var(--ts);
+  
+  /* Conic gradients */
+  --cg1: conic-gradient(from -90deg at 5% 51%, var(--c0) 0 90deg, #fff0 0 100%) var(--ts);
+  --cg2: conic-gradient(from -90deg at 25% 50%, var(--c1) 0 90deg, #fff0 0 100%) var(--ts);
+  --cg3: conic-gradient(from -90deg at 30% 38.5%, var(--c0) 0 90deg, #fff0 0 100%) var(--ts);
+  --cg4: conic-gradient(from -90deg at 50% 37.5%, var(--c1) 0 90deg, #fff0 0 100%) var(--ts);
+  --cg5: conic-gradient(from -90deg at 55% 26%, var(--c0) 0 90deg, #fff0 0 100%) var(--ts);
+  --cg6: conic-gradient(from -90deg at 75% 25%, var(--c1) 0 90deg, #fff0 0 100%) var(--ts);
+  --cg7: conic-gradient(from -90deg at 80% 13.5%, var(--c0) 0 90deg, #fff0 0 100%) var(--ts);
+  --cg8: conic-gradient(from -90deg at 100% 12.5%, var(--c1) 0 90deg, #fff0 0 100%) var(--ts);
+
+  /* Complex background composition */
+  background: var(--dot2), var(--dot2),
+    radial-gradient(circle at 90% 100%, var(--dot)) var(--ts),
+    radial-gradient(circle at 65% 100%, var(--dot)) var(--ts),
+    radial-gradient(circle at 40% 100%, var(--dot)) var(--ts),
+    radial-gradient(circle at 15% 100%, var(--dot)) var(--ts),
+    radial-gradient(circle at 90% 12.5%, var(--dot)) var(--ts),
+    radial-gradient(circle at 65% 25%, var(--dot)) var(--ts),
+    radial-gradient(circle at 40% 37.5%, var(--dot)) var(--ts),
+    radial-gradient(circle at 15% 50%, var(--dot)) var(--ts), var(--cg1),
+    var(--cg1), var(--cg2), var(--cg2), var(--cg3), var(--cg3), var(--cg4),
+    var(--cg4), var(--cg5), var(--cg5), var(--cg6), var(--cg6), var(--cg7),
+    var(--cg7), var(--cg8), var(--cg8),
+    linear-gradient(-45deg, #fff0 0 32.25%, #0002 50%, #000 77.5%) var(--ts),
+    linear-gradient(-45deg, #fff0 0 32.25%, #000 60%) var(--ts),
+    repeating-linear-gradient(90deg, var(--c0) 0 5%, var(--c1) 0 25%) var(--ts);
+  
+  /* Subtle animation */
+  animation: patternMove 120s linear infinite;
+}
+
+@keyframes patternMove {
+  0% {
+    transform: translateX(0) translateY(0);
+  }
+  25% {
+    transform: translateX(-5px) translateY(-3px);
+  }
+  50% {
+    transform: translateX(-3px) translateY(-5px);
+  }
+  75% {
+    transform: translateX(3px) translateY(-3px);
+  }
+  100% {
+    transform: translateX(0) translateY(0);
+  }
+}
+
+/* Ensure content appears above pattern */
+.featuredCategoriesSection > * {
+  position: relative;
+  z-index: 1;
+}
+
 /* Category Buttons Container */
 .categoryButtonsContainer {
   display: flex;
@@ -2936,6 +3022,19 @@
   .categoryButtonsContainer::before,
   .categoryButtonsContainer::after {
     width: 20px;
+  }
+  
+  /* Adjust pattern for mobile */
+  .patternLight::before {
+    --sz: 12px; /* Smaller pattern on mobile */
+    --c1: #e91e63; /* Slightly different pink shade for mobile */
+    opacity: 0.04; /* Slightly more subtle on mobile */
+    animation: patternMove 180s linear infinite; /* Slower animation */
+  }
+  
+  /* Additional mobile pattern background gradient */
+  .patternLight {
+    background: linear-gradient(135deg, #fafafa 0%, #ffffff 30%, #f9f9f9 70%, #fafafa 100%);
   }
   
   .categoryButton {
