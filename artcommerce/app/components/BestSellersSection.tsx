@@ -79,14 +79,20 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
     setCurrentIndex((prevIndex) => (prevIndex - 1 + products.length) % products.length);
   };
 
-  // Auto-play functionality with explicit direction
+  // Auto-play functionality with proper cleanup
   const startAutoPlay = useCallback(() => {
     if (!isAutoPlaying || products.length <= 1) return
     
+    // Clear any existing timeout first
+    if (autoPlayRef.current) {
+      clearTimeout(autoPlayRef.current)
+      autoPlayRef.current = null
+    }
+    
     autoPlayRef.current = setTimeout(() => {
-      goToNext() // Use the goToNext function for consistency
+      setCurrentIndex((prevIndex) => (prevIndex + 1) % products.length)
     }, autoPlaySpeed)
-  }, [isAutoPlaying, products.length, autoPlaySpeed, goToNext])
+  }, [isAutoPlaying, products.length, autoPlaySpeed])
 
   const stopAutoPlay = useCallback(() => {
     if (autoPlayRef.current) {
@@ -100,7 +106,7 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
     setIsAutoPlaying(prev => !prev)
   }
 
-  // Auto-play effect
+  // Auto-play effect - simplified dependencies
   useEffect(() => {
     if (isAutoPlaying && products.length > 1) {
       startAutoPlay()
@@ -109,21 +115,43 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
     }
 
     return () => stopAutoPlay()
-  }, [currentIndex, isAutoPlaying, startAutoPlay, stopAutoPlay, products.length])
+  }, [currentIndex, isAutoPlaying, products.length, startAutoPlay, stopAutoPlay])
 
-  // Pause auto-play on user interaction
+  // Pause auto-play on user interaction and visibility changes
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.hidden) {
         stopAutoPlay()
-      } else if (isAutoPlaying) {
+      } else if (isAutoPlaying && products.length > 1) {
+        // Add a small delay before restarting when tab becomes visible
+        setTimeout(() => {
+          if (isAutoPlaying && !document.hidden) {
+            startAutoPlay()
+          }
+        }, 500)
+      }
+    }
+
+    const handleFocus = () => {
+      if (isAutoPlaying && products.length > 1) {
         startAutoPlay()
       }
     }
 
+    const handleBlur = () => {
+      stopAutoPlay()
+    }
+
     document.addEventListener('visibilitychange', handleVisibilityChange)
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
-  }, [isAutoPlaying, startAutoPlay, stopAutoPlay])
+    window.addEventListener('focus', handleFocus)
+    window.addEventListener('blur', handleBlur)
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      window.removeEventListener('focus', handleFocus)
+      window.removeEventListener('blur', handleBlur)
+    }
+  }, [isAutoPlaying, products.length, startAutoPlay, stopAutoPlay])
 
   // Initialize image loading states
   useEffect(() => {
@@ -170,6 +198,18 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
     fetchBestSellers()
   }, [])
 
+  // Initialize auto-play when products are loaded
+  useEffect(() => {
+    if (products.length > 1 && isAutoPlaying && !loading) {
+      // Small delay to ensure component is fully rendered
+      const initTimer = setTimeout(() => {
+        startAutoPlay()
+      }, 1000)
+      
+      return () => clearTimeout(initTimer)
+    }
+  }, [products.length, isAutoPlaying, loading, startAutoPlay])
+
   // Enhanced touch handling for smooth card-like swiping
   const handleTouchStart = (e: React.TouchEvent) => {
     if (isTransitioning) return
@@ -182,6 +222,7 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
     touchStartY.current = touch.clientY
     currentX.current = touch.clientX
     isDragging.current = true
+    startTime.current = Date.now()
   }
 
   const handleTouchMove = (e: React.TouchEvent) => {
@@ -206,14 +247,17 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
     isDragging.current = false
     const touch = e.changedTouches[0]
     const deltaX = touch.clientX - touchStartX.current
+    const endTime = Date.now()
+    const touchTime = endTime - startTime.current
     
     // Reset drag offset with animation
     setDragOffset(0)
     
-    // Determine if swipe is significant enough (minimum 60px)
-    const swipeThreshold = 60
-    const shouldSwipeLeft = deltaX < -swipeThreshold
-    const shouldSwipeRight = deltaX > swipeThreshold
+    // Determine if swipe is significant enough (minimum 50px or fast swipe)
+    const swipeThreshold = 50
+    const isQuickSwipe = touchTime < 300 && Math.abs(deltaX) > 30
+    const shouldSwipeLeft = deltaX < -swipeThreshold || (isQuickSwipe && deltaX < 0)
+    const shouldSwipeRight = deltaX > swipeThreshold || (isQuickSwipe && deltaX > 0)
     
     if (shouldSwipeLeft) {
       goToNext()
@@ -221,9 +265,13 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
       goToPrevious()
     }
     
-    // Resume auto-play after touch interaction
+    // Resume auto-play after touch interaction with a longer delay
     if (isAutoPlaying) {
-      setTimeout(startAutoPlay, 1000) // Delay restart
+      setTimeout(() => {
+        if (isAutoPlaying) { // Check again in case it was toggled
+          startAutoPlay()
+        }
+      }, 2000) // Longer delay to prevent immediate restart
     }
   }
 
@@ -235,7 +283,11 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
     setTimeout(() => {
       setIsTransitioning(false)
       if (isAutoPlaying) {
-        setTimeout(startAutoPlay, 1500) // Resume auto-play after delay
+        setTimeout(() => {
+          if (isAutoPlaying) {
+            startAutoPlay()
+          }
+        }, 2000) // Resume auto-play after longer delay
       }
     }, 600)
   }
@@ -404,8 +456,9 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
             className={styles.autoPlayToggle}
             onClick={toggleAutoPlay}
             title={isAutoPlaying ? 'Pause auto-play' : 'Start auto-play'}
+            aria-label={isAutoPlaying ? 'Pause auto-play' : 'Start auto-play'}
           >
-            {isAutoPlaying ? <Pause size={16} /> : <Play size={16} />}
+            {isAutoPlaying ? <Pause size={18} /> : <Play size={18} />}
           </button>
         )}
         <div 
@@ -423,7 +476,7 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
                   key={product.id} 
                   className={styles.mobileCarouselSlide}
                   style={{
-                    transform: `translateX(calc(${(index - currentIndex) * 100}vw + ${(index - currentIndex) * gapSize}rem + ${dragOffset}px))`,
+                    transform: `translateX(calc(${(index - currentIndex) * 85}vw + ${(index - currentIndex) * gapSize}rem + ${dragOffset}px))`,
                     transition: isDragging.current ? 'none' : 'transform 0.25s ease'
                   }}
                 >
@@ -506,7 +559,11 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
             stopAutoPlay()
             goToPrevious()
             if (isAutoPlaying) {
-              setTimeout(startAutoPlay, 1000)
+              setTimeout(() => {
+                if (isAutoPlaying) {
+                  startAutoPlay()
+                }
+              }, 1500)
             }
           }}
           disabled={isTransitioning}
@@ -520,7 +577,11 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
             stopAutoPlay()
             goToNext()
             if (isAutoPlaying) {
-              setTimeout(startAutoPlay, 1000)
+              setTimeout(() => {
+                if (isAutoPlaying) {
+                  startAutoPlay()
+                }
+              }, 1500)
             }
           }}
           disabled={isTransitioning}

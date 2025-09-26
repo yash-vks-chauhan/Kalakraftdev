@@ -3556,18 +3556,31 @@
 .mobileCarouselWrapper {
   position: relative;
   width: 100%;
-  height: 400px;
+  height: 320px; /* Decreased from 400px */
 }
 
 .mobileCarouselSlide {
   position: absolute;
   top: 0;
   left: 0;
-  width: 100vw;
+  width: 85vw; /* Changed from 100vw to show part of next card */
   height: 100%;
   display: flex;
   padding: 0 1rem;
   will-change: transform;
+}
+
+/* Add peek effect for next card visibility */
+.mobileCarouselContainer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 15vw; /* Overlay for the peeking card area */
+  height: 100%;
+  background: linear-gradient(to left, rgba(255, 255, 255, 0.3), transparent);
+  pointer-events: none;
+  z-index: 5;
 }
 
 /* Mobile Product Card */
@@ -3576,10 +3589,15 @@
   background: #fff;
   border-radius: 16px;
   overflow: hidden;
-  border: 2px solid rgba(0, 0, 0, 0.12);
-  height: 400px;
+  /* iOS-style inward outline */
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  box-shadow: 
+    inset 0 1px 2px rgba(0, 0, 0, 0.1),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.05),
+    0 2px 8px rgba(0, 0, 0, 0.08);
+  height: 320px; /* Decreased from 400px */
   width: 100%;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   transform-origin: center center;
   will-change: transform;
   backface-visibility: hidden;
@@ -3587,6 +3605,11 @@
 
 .mobileProductCard:active {
   transform: scale(0.98);
+  /* Enhanced inward shadow on press */
+  box-shadow: 
+    inset 0 2px 4px rgba(0, 0, 0, 0.2),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.15),
+    0 1px 4px rgba(0, 0, 0, 0.1);
   border-color: rgba(0, 0, 0, 0.2);
 }
 
@@ -3594,8 +3617,10 @@
 .mobileProductImageSection {
   flex: 0 0 65%;
   position: relative;
-  background: #f8f8f8;
+  background: #f5f5f5;
   border-radius: 16px 0 0 16px;
+  /* Subtle inward shadow for depth */
+  box-shadow: inset 1px 0 2px rgba(0, 0, 0, 0.05);
 }
 
 .mobileImageLink {
@@ -3643,6 +3668,10 @@
   justify-content: space-between;
   background: #fff;
   border-radius: 0 16px 16px 0;
+  /* Subtle left border to separate from image */
+  border-left: 1px solid rgba(0, 0, 0, 0.08);
+  /* Inward shadow for iOS-style depth */
+  box-shadow: inset -1px 0 2px rgba(0, 0, 0, 0.03);
 }
 
 .mobileProductDetails {
@@ -3703,59 +3732,85 @@
   flex: 1;
   background: #000;
   color: #fff;
-  border: none;
-  border-radius: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
   padding: 10px;
   height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   user-select: none;
   -webkit-tap-highlight-color: transparent;
   min-width: 36px;
+  /* iOS-style inward shadow */
+  box-shadow: 
+    inset 0 1px 2px rgba(255, 255, 255, 0.1),
+    0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .mobileAddToCartButton:hover {
-  background: #333;
+  background: #1a1a1a;
   transform: scale(1.02);
 }
 
 .mobileAddToCartButton:active {
   transform: scale(0.98);
+  /* Enhanced inward shadow on press */
+  box-shadow: 
+    inset 0 2px 4px rgba(0, 0, 0, 0.3),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.2),
+    0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .mobileAddToCartButton:disabled {
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;
+  box-shadow: 
+    inset 0 1px 2px rgba(255, 255, 255, 0.05),
+    0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .mobileWishlistButton {
   flex: 0 0 36px;
   height: 36px;
-  background: transparent;
-  border: 1px solid rgba(0, 0, 0, 0.15);
-  border-radius: 6px;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   color: #666;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
+  /* iOS-style inward shadow */
+  box-shadow: 
+    inset 0 1px 2px rgba(0, 0, 0, 0.05),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.03),
+    0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .mobileWishlistButton:hover {
-  border-color: #000;
+  border-color: rgba(0, 0, 0, 0.2);
   color: #000;
   transform: scale(1.05);
+  box-shadow: 
+    inset 0 1px 2px rgba(0, 0, 0, 0.08),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.05),
+    0 2px 4px rgba(0, 0, 0, 0.12);
 }
 
 .mobileWishlistButton:active {
   transform: scale(0.95);
+  /* Enhanced inward shadow on press */
+  box-shadow: 
+    inset 0 2px 4px rgba(0, 0, 0, 0.15),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.1),
+    0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .mobileWishlistActive {
@@ -3765,14 +3820,20 @@
 
 .mobileWishlistButton.mobileWishlistActive {
   background: #000;
-  border-color: #000;
+  border-color: rgba(0, 0, 0, 0.2);
   color: #fff;
   transform: scale(1.05);
+  box-shadow: 
+    inset 0 1px 2px rgba(255, 255, 255, 0.1),
+    0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .mobileWishlistButton.mobileWishlistActive:hover {
-  background: #333;
+  background: #1a1a1a;
   transform: scale(1.1);
+  box-shadow: 
+    inset 0 1px 2px rgba(255, 255, 255, 0.15),
+    0 3px 6px rgba(0, 0, 0, 0.25);
 }
 
 /* Navigation Arrows */
@@ -3780,8 +3841,8 @@
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 50%;
   width: 40px;
   height: 40px;
@@ -3789,27 +3850,47 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   color: #333;
   z-index: 10;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   user-select: none;
   -webkit-tap-highlight-color: transparent;
+  /* iOS-style inward shadow */
+  box-shadow: 
+    inset 0 1px 2px rgba(0, 0, 0, 0.08),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.04),
+    0 2px 8px rgba(0, 0, 0, 0.15),
+    0 1px 3px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .mobileCarouselNav:hover {
-  background: #fff;
+  background: rgba(255, 255, 255, 1);
   transform: translateY(-50%) scale(1.05);
+  box-shadow: 
+    inset 0 1px 2px rgba(0, 0, 0, 0.1),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.06),
+    0 3px 12px rgba(0, 0, 0, 0.2),
+    0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
 .mobileCarouselNav:active {
   transform: translateY(-50%) scale(0.95);
+  /* Enhanced inward shadow on press */
+  box-shadow: 
+    inset 0 2px 4px rgba(0, 0, 0, 0.15),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.1),
+    0 1px 4px rgba(0, 0, 0, 0.1);
 }
 
 .mobileCarouselNav:disabled {
   opacity: 0.3;
   cursor: not-allowed;
   transform: translateY(-50%);
+  box-shadow: 
+    inset 0 1px 2px rgba(0, 0, 0, 0.05),
+    0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .mobileCarouselPrev {
@@ -3836,32 +3917,43 @@
   border: none;
   background: rgba(0, 0, 0, 0.2);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   user-select: none;
   -webkit-tap-highlight-color: transparent;
+  /* Subtle iOS-style inward shadow */
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .mobileCarouselDot:hover {
   background: rgba(0, 0, 0, 0.4);
   transform: scale(1.2);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.15);
 }
 
 .mobileCarouselDot:active {
   transform: scale(0.9);
+  box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.2);
 }
 
 .mobileCarouselDot:disabled {
   cursor: not-allowed;
   opacity: 0.5;
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
 }
 
 .mobileCarouselDotActive {
   background: #000;
   transform: scale(1.3);
+  box-shadow: 
+    inset 0 1px 2px rgba(255, 255, 255, 0.1),
+    0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .mobileCarouselDotActive:hover {
   transform: scale(1.4);
+  box-shadow: 
+    inset 0 1px 2px rgba(255, 255, 255, 0.15),
+    0 2px 4px rgba(0, 0, 0, 0.4);
 }
 
 /* Responsive adjustments */
@@ -3872,16 +3964,16 @@
   }
   
   .mobileCarouselSlide {
-    width: 100vw;
+    width: 85vw; /* Show part of next card on mobile too */
     padding: 0 0.75rem;
   }
   
   .mobileCarouselWrapper {
-    height: 360px;
+    height: 280px; /* Decreased from 360px */
   }
   
   .mobileProductCard {
-    height: 360px;
+    height: 280px; /* Decreased from 360px */
   }
   
   .mobileProductImageSection {
@@ -3889,7 +3981,7 @@
   }
   
   .mobileProductDetailsSection {
-    padding: 14px;
+    padding: 12px; /* Slightly reduced padding */
   }
   
   .mobileProductCategory {
@@ -3897,13 +3989,13 @@
   }
   
   .mobileProductName {
-    font-size: 0.9rem;
+    font-size: 0.85rem; /* Slightly smaller to fit reduced height */
     -webkit-line-clamp: 2;
     line-clamp: 2;
   }
   
   .mobileProductPrice {
-    font-size: 0.95rem;
+    font-size: 0.9rem; /* Slightly smaller */
   }
   
   .mobileAddToCartButton {
@@ -3983,7 +4075,7 @@
   border-radius: 16px;
   overflow: hidden;
   border: 2px solid rgba(0, 0, 0, 0.05);
-  height: 480px;
+  height: 320px; /* Updated to match new card height */
   width: 100%;
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
@@ -4098,28 +4190,61 @@
   top: 16px;
   right: 16px;
   z-index: 10;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.85);
   color: #fff;
-  border: none;
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 50%;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.3s ease;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  /* iOS-style inward shadow for depth */
+  box-shadow: 
+    inset 0 1px 2px rgba(255, 255, 255, 0.1),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05),
+    0 3px 12px rgba(0, 0, 0, 0.25),
+    0 1px 3px rgba(0, 0, 0, 0.15);
 }
 
 .autoPlayToggle:hover {
-  background: rgba(0, 0, 0, 0.9);
-  transform: scale(1.1);
+  background: rgba(0, 0, 0, 0.95);
+  transform: scale(1.05);
+  border-color: rgba(255, 255, 255, 0.25);
+  box-shadow: 
+    inset 0 1px 2px rgba(255, 255, 255, 0.15),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 4px 16px rgba(0, 0, 0, 0.35),
+    0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .autoPlayToggle:active {
   transform: scale(0.95);
+  /* Enhanced inward shadow on press */
+  box-shadow: 
+    inset 0 2px 4px rgba(0, 0, 0, 0.3),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.2),
+    0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+@media (max-width: 480px) {
+  .autoPlayToggle {
+    width: 40px;
+    height: 40px;
+    top: 12px;
+    right: 12px;
+    box-shadow: 
+      inset 0 1px 2px rgba(255, 255, 255, 0.08),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+      0 2px 8px rgba(0, 0, 0, 0.2),
+      0 1px 3px rgba(0, 0, 0, 0.1);
+  }
 }
 
 /* ===============================================
