@@ -5,8 +5,8 @@ import Link from 'next/link'
 import styles from './productsMobile.module.css'
 import WishlistButton from '../components/WishlistButton'
 import MobileFilterSortBar from '../components/MobileFilterSortBar'
-import LoadingSpinner from '../components/LoadingSpinner'
 import { useRouter, useSearchParams } from 'next/navigation'
+import MobileProductsSkeleton from './MobileProductsSkeleton'
 import { FiFilter, FiX, FiChevronRight, FiStar, FiPackage, FiTrendingUp, FiGrid, FiHeart, FiChevronLeft } from 'react-icons/fi'
 import { useProductFilters } from '../hooks/useProductFilters'
 import { useImagePreload } from '../hooks/useImagePreload'
@@ -709,11 +709,7 @@ export default function ProductsMobileClient() {
       )}
 
       {loading ? (
-        <LoadingSpinner 
-          size="large" 
-          overlay={true}
-          message="Loading products..."
-        />
+        <MobileProductsSkeleton />
       ) : error ? (
         <div className={styles.error}>
           <p>Error: {error}</p>
@@ -854,22 +850,40 @@ export default function ProductsMobileClient() {
             </div>
             <div className={styles.mobileFilterContent}>
               {loading ? (
-                <LoadingSpinner 
-                  size="medium" 
-                  overlay={false}
-                  message="Loading filters..."
-                />
+                <div className={styles.filterSkeletonContainer}>
+                  {[...Array(3)].map((_, index) => (
+                    <div key={index} className={styles.filterSectionSkeleton}>
+                      <div className={styles.filterHeaderSkeleton}>
+                        <div className={styles.filterTitleSkeleton}></div>
+                        <div className={styles.filterArrowSkeleton}></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               ) : (
                 renderFilters()
               )}
             </div>
             <div className={styles.mobileFilterActions}>
               {loading ? (
-                <LoadingSpinner 
-                  size="small" 
-                  overlay={false}
-                  message=""
-                />
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <div style={{
+                    height: '40px',
+                    width: '80px',
+                    background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+                    backgroundSize: '200% 100%',
+                    animation: 'shimmer 2s infinite',
+                    borderRadius: '6px'
+                  }}></div>
+                  <div style={{
+                    height: '40px',
+                    width: '100px',
+                    background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+                    backgroundSize: '200% 100%',
+                    animation: 'shimmer 2s infinite',
+                    borderRadius: '6px'
+                  }}></div>
+                </div>
               ) : (
                 <>
                   <button 
