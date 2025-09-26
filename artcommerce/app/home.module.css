@@ -2597,9 +2597,14 @@
 }
 
 .featuredProductCard:active {
-  transform: none;
-  transition: none;
-  filter: none;
+  transform: scale(0.98) translateY(1px);
+  transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+  filter: brightness(0.95);
+}
+
+.featuredProductCard:active .featuredImageContainer {
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2), inset 0 0 0 1px rgba(0, 0, 0, 0.15);
+  background: #dedede;
 }
 
 .featuredCardInner {
@@ -2614,13 +2619,13 @@
   width: 100%;
   aspect-ratio: 3/4;
   overflow: hidden;
-  background: #f0f0f0;
+  background: #e8e8e8;
   border-radius: 12px;
   margin: 0 0 1rem 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: none;
+  transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
   /* iOS-style inward outline with darker colors */
   border: 1px solid rgba(0, 0, 0, 0.15);
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.12), inset 0 0 0 1px rgba(0, 0, 0, 0.08);
@@ -2724,9 +2729,14 @@
 }
 
 .featuredMobileCard:active {
-  transform: none;
-  transition: none;
-  filter: none;
+  transform: scale(0.97) translateY(1px);
+  transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+  filter: brightness(0.95);
+}
+
+.featuredMobileCard:active .featuredMobileImageContainer {
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2), inset 0 0 0 1px rgba(0, 0, 0, 0.15);
+  background: #dedede;
 }
 
 .featuredMobileLink {
@@ -2742,13 +2752,13 @@
   width: 100%;
   aspect-ratio: 1/1.4;
   overflow: hidden;
-  background: #f0f0f0;
+  background: #e8e8e8;
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 0 0 1rem 0;
-  transition: none;
+  transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
   /* iOS-style inward outline with darker colors */
   border: 1px solid rgba(0, 0, 0, 0.15);
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.12), inset 0 0 0 1px rgba(0, 0, 0, 0.08);
