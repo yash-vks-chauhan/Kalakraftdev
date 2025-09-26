@@ -9,6 +9,7 @@ import desktopStyles from './products-list.module.css'
 import { 
   Package, 
   ChevronRight, 
+  ChevronLeft,
   RefreshCw, 
   PlusCircle, 
   Star, 
@@ -54,6 +55,13 @@ export default function MobileProductManagement() {
   const [activeFilter, setActiveFilter] = useState<'active' | 'inactive'>('active')
   const [showActionsMenu, setShowActionsMenu] = useState(false)
   
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalProducts, setTotalProducts] = useState(0)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const [productsPerPage, setProductsPerPage] = useState(10)
+  const [isPageTransitioning, setIsPageTransitioning] = useState(false)
+  
   // Refs for toggle buttons
   const activeButtonRef = useRef<HTMLButtonElement>(null);
   const inactiveButtonRef = useRef<HTMLButtonElement>(null);
@@ -86,13 +94,20 @@ export default function MobileProductManagement() {
 
   useEffect(() => {
     filterProducts()
-  }, [allProducts, activeFilter])
+  }, [allProducts, activeFilter, currentPage])
 
   const filterProducts = () => {
     if (allProducts.length === 0) return;
     
     const filtered = allProducts.filter(p => activeFilter === 'active' ? p.isActive : !p.isActive);
-    setDisplayProducts(filtered);
+    setTotalProducts(filtered.length);
+    
+    // Apply pagination
+    const startIndex = (currentPage - 1) * productsPerPage;
+    const endIndex = startIndex + productsPerPage;
+    const paginatedProducts = filtered.slice(startIndex, endIndex);
+    
+    setDisplayProducts(paginatedProducts);
   }
 
   const fetchProducts = async () => {
@@ -192,6 +207,49 @@ export default function MobileProductManagement() {
   const handleFilterChange = (filter: 'active' | 'inactive') => {
     setExpandedProduct(null);
     setActiveFilter(filter);
+    setCurrentPage(1); // Reset to first page when changing filter
+  };
+
+  // Pagination handlers
+  const totalPages = Math.ceil(totalProducts / productsPerPage);
+  
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setIsPageTransitioning(true);
+      setExpandedProduct(null); // Close any expanded items
+      setTimeout(() => {
+        setCurrentPage(currentPage - 1);
+        setIsPageTransitioning(false);
+      }, 150);
+    }
+  };
+  
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setIsPageTransitioning(true);
+      setExpandedProduct(null); // Close any expanded items
+      setTimeout(() => {
+        setCurrentPage(currentPage + 1);
+        setIsPageTransitioning(false);
+      }, 150);
+    }
+  };
+  
+  const handlePageSelect = (page: number) => {
+    if (page !== currentPage) {
+      setIsPageTransitioning(true);
+      setExpandedProduct(null); // Close any expanded items
+      setTimeout(() => {
+        setCurrentPage(page);
+        setIsPageTransitioning(false);
+      }, 150);
+    }
+  };
+  
+  const handleItemsPerPageChange = (newItemsPerPage: number) => {
+    setProductsPerPage(newItemsPerPage);
+    setCurrentPage(1); // Reset to first page
+    setExpandedProduct(null);
   };
 
   if (user?.role !== 'admin') {
@@ -242,8 +300,27 @@ export default function MobileProductManagement() {
       <div className="flex flex-col gap-3 mb-4">
         <div className="flex items-center justify-between">
           <div className="text-sm font-medium text-gray-500">
-            {activeFilter === 'active' ? 'Active Products' : 'Inactive Products'}: <span className="text-black">{displayProducts.length}</span>
-            <span className="text-xs text-gray-400 ml-1">of {allProducts.length}</span>
+            {activeFilter === 'active' ? 'Active Products' : 'Inactive Products'}: <span className="text-black">{totalProducts}</span>
+            <span className="text-xs text-gray-400 ml-1">total</span>
+            {totalPages > 1 && (
+              <div className="text-xs text-gray-400 mt-1">
+                Page {currentPage} of {totalPages} (showing {displayProducts.length})
+              </div>
+            )}
+            <div className="text-xs text-gray-400 mt-1 flex items-center gap-2">
+              <span>Show:</span>
+              <select
+                value={productsPerPage}
+                onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
+                className="text-xs border border-gray-200 rounded px-1 py-0.5 bg-white"
+              >
+                <option value={5}>5</option>
+                <option value={10}>10</option>
+                <option value={15}>15</option>
+                <option value={20}>20</option>
+              </select>
+              <span>per page</span>
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <button 
@@ -336,117 +413,201 @@ export default function MobileProductManagement() {
           <p className={styles.emptyStateText}>No {activeFilter} products found</p>
         </div>
       ) : (
-        <ul className={styles.menuList}>
-          {displayProducts.map(product => (
-            <li key={product.id}>
-              <div 
-                className={styles.menuItem}
-                onClick={() => setExpandedProduct(expandedProduct === product.id ? null : product.id)}
-              >
-                <div className={styles.menuIcon}>
-                  {product.imageUrls && product.imageUrls.length > 0 ? (
-                    <img 
-                      src={product.imageUrls[0]} 
-                      alt={product.name}
-                      className={styles.productImage}
-                      onError={(e) => {
-                        // Fallback to Package icon if image fails to load
-                        const target = e.target as HTMLImageElement;
-                        target.style.display = 'none';
-                        target.nextElementSibling?.classList.remove('hidden');
-                      }}
+        <>
+          <ul className={`${styles.menuList} ${isPageTransitioning ? styles.paginationTransition : ''}`}>
+            {displayProducts.map(product => (
+              <li key={product.id}>
+                <div 
+                  className={styles.menuItem}
+                  onClick={() => setExpandedProduct(expandedProduct === product.id ? null : product.id)}
+                >
+                  <div className={styles.menuIcon}>
+                    {product.imageUrls && product.imageUrls.length > 0 ? (
+                      <img 
+                        src={product.imageUrls[0]} 
+                        alt={product.name}
+                        className={styles.productImage}
+                        onError={(e) => {
+                          // Fallback to Package icon if image fails to load
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          target.nextElementSibling?.classList.remove('hidden');
+                        }}
+                      />
+                    ) : null}
+                    <Package 
+                      size={18} 
+                      className={product.imageUrls && product.imageUrls.length > 0 ? 'hidden' : ''} 
                     />
-                  ) : null}
-                  <Package 
-                    size={18} 
-                    className={product.imageUrls && product.imageUrls.length > 0 ? 'hidden' : ''} 
-                  />
-                </div>
-                <div className={styles.menuItemText}>
-                  <div className="font-medium">{product.name}</div>
-                  <div className="text-xs text-gray-500 flex items-center gap-1">
-                    <DollarSign size={10} /> 
-                    {product.currency} {product.price?.toFixed(2)}
+                  </div>
+                  <div className={styles.menuItemText}>
+                    <div className="font-medium">{product.name}</div>
+                    <div className="text-xs text-gray-500 flex items-center gap-1">
+                      <DollarSign size={10} /> 
+                      {product.currency} {product.price?.toFixed(2)}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {product.isActive ? (
+                      <CircleCheck size={16} className="text-green-500" />
+                    ) : (
+                      <CircleX size={16} className="text-gray-400" />
+                    )}
+                    <ChevronRight 
+                      size={20} 
+                      className={`transform transition-transform duration-300 ${expandedProduct === product.id ? "rotate-90" : ""}`} 
+                    />
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  {product.isActive ? (
-                    <CircleCheck size={16} className="text-green-500" />
-                  ) : (
-                    <CircleX size={16} className="text-gray-400" />
-                  )}
-                  <ChevronRight 
-                    size={20} 
-                    className={`transform transition-transform duration-300 ${expandedProduct === product.id ? "rotate-90" : ""}`} 
-                  />
+                
+                <div className={`${styles.expandableContent} ${expandedProduct === product.id ? styles.expanded : ''} bg-gray-50 rounded-b-lg border-t border-gray-100`}>
+                  <div className="p-4 space-y-4" data-product-id={product.id}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-sm">
+                        <span className="text-gray-500">Stock:</span>
+                        <span className={`font-medium ${product.stockQuantity <= 5 ? 'text-orange-600' : ''}`}>
+                          {product.stockQuantity}
+                        </span>
+                      </div>
+                      
+                      <div className="flex items-center gap-2 text-sm">
+                        <span className="text-gray-500">Sold:</span>
+                        <span className="font-medium text-gray-800">
+                          {product.totalSold || 0}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-sm">
+                        <span className="text-gray-500">Status:</span>
+                        <label className={desktopStyles.statusSwitch} onClick={e => e.stopPropagation()}>
+                          <input
+                            type="checkbox"
+                            checked={product.isActive}
+                            onChange={() => handleToggleStatus(product.id, !product.isActive)}
+                          />
+                          <span className={desktopStyles.statusSlider} />
+                        </label>
+                      </div>
+                    </div>
+                    
+                    <div className="flex flex-wrap gap-2">
+                      <Link
+                        href={`/dashboard/admin/products/${product.id}`}
+                        className="flex items-center gap-1 bg-gray-100 text-gray-800 text-sm px-3 py-2 rounded-md flex-1 justify-center"
+                      >
+                        <Edit size={14} />
+                        Edit
+                      </Link>
+                      
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleDelete(product.id, product.name)
+                        }}
+                        className="flex items-center gap-1 bg-red-100 text-red-800 text-sm px-3 py-2 rounded-md flex-1 justify-center"
+                      >
+                        <Trash2 size={14} />
+                        Delete
+                      </button>
+                    </div>
+                    
+                    <Link
+                      href={`/dashboard/admin/products/${product.id}`}
+                      className="flex items-center justify-center gap-1 bg-black text-white text-sm px-3 py-2 rounded-md w-full"
+                    >
+                      <BarChart3 size={14} />
+                      View Details
+                    </Link>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+          
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className={styles.paginationContainer}>
+              <div className={styles.paginationInfo}>
+                <div className={styles.paginationInfoText}>
+                  Showing {((currentPage - 1) * productsPerPage) + 1} to {Math.min(currentPage * productsPerPage, totalProducts)} of {totalProducts}
+                </div>
+                <div className={styles.paginationInfoText}>
+                  Page {currentPage} of {totalPages}
                 </div>
               </div>
               
-              <div className={`${styles.expandableContent} ${expandedProduct === product.id ? styles.expanded : ''} bg-gray-50 rounded-b-lg border-t border-gray-100`}>
-                <div className="p-4 space-y-4" data-product-id={product.id}>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-sm">
-                      <span className="text-gray-500">Stock:</span>
-                      <span className={`font-medium ${product.stockQuantity <= 5 ? 'text-orange-600' : ''}`}>
-                        {product.stockQuantity}
-                      </span>
-                    </div>
-                    
-                    <div className="flex items-center gap-2 text-sm">
-                      <span className="text-gray-500">Sold:</span>
-                      <span className="font-medium text-gray-800">
-                        {product.totalSold || 0}
-                      </span>
-                    </div>
-                  </div>
+              <div className={styles.paginationControls}>
+                {/* Previous Button */}
+                <button
+                  onClick={handlePreviousPage}
+                  disabled={currentPage === 1}
+                  className={styles.paginationButton}
+                >
+                  <ChevronRight size={16} className="rotate-180" />
+                  Previous
+                </button>
+                
+                {/* Page Numbers - show first, last, current and nearby pages */}
+                <div className={styles.paginationNumbers}>
+                  {/* First page */}
+                  {currentPage > 3 && (
+                    <>
+                      <button
+                        onClick={() => handlePageSelect(1)}
+                        className={styles.pageNumber}
+                      >
+                        1
+                      </button>
+                      {currentPage > 4 && <span className={styles.paginationDots}>...</span>}
+                    </>
+                  )}
                   
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-sm">
-                      <span className="text-gray-500">Status:</span>
-                      <label className={desktopStyles.statusSwitch} onClick={e => e.stopPropagation()}>
-                        <input
-                          type="checkbox"
-                          checked={product.isActive}
-                          onChange={() => handleToggleStatus(product.id, !product.isActive)}
-                        />
-                        <span className={desktopStyles.statusSlider} />
-                      </label>
-                    </div>
-                  </div>
+                  {/* Current page and nearby pages */}
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    const pageNum = Math.max(1, Math.min(totalPages - 4, currentPage - 2)) + i;
+                    if (pageNum <= totalPages) {
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => handlePageSelect(pageNum)}
+                          className={`${styles.pageNumber} ${pageNum === currentPage ? styles.active : ''}`}
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    }
+                    return null;
+                  })}
                   
-                  <div className="flex flex-wrap gap-2">
-                    <Link
-                      href={`/dashboard/admin/products/${product.id}`}
-                      className="flex items-center gap-1 bg-gray-100 text-gray-800 text-sm px-3 py-2 rounded-md flex-1 justify-center"
-                    >
-                      <Edit size={14} />
-                      Edit
-                    </Link>
-                    
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleDelete(product.id, product.name)
-                      }}
-                      className="flex items-center gap-1 bg-red-100 text-red-800 text-sm px-3 py-2 rounded-md flex-1 justify-center"
-                    >
-                      <Trash2 size={14} />
-                      Delete
-                    </button>
-                  </div>
-                  
-                  <Link
-                    href={`/dashboard/admin/products/${product.id}`}
-                    className="flex items-center justify-center gap-1 bg-black text-white text-sm px-3 py-2 rounded-md w-full"
-                  >
-                    <BarChart3 size={14} />
-                    View Details
-                  </Link>
+                  {/* Last page */}
+                  {currentPage < totalPages - 2 && (
+                    <>
+                      {currentPage < totalPages - 3 && <span className={styles.paginationDots}>...</span>}
+                      <button
+                        onClick={() => handlePageSelect(totalPages)}
+                        className={styles.pageNumber}
+                      >
+                        {totalPages}
+                      </button>
+                    </>
+                  )}
                 </div>
+                
+                {/* Next Button */}
+                <button
+                  onClick={handleNextPage}
+                  disabled={currentPage === totalPages}
+                  className={styles.paginationButton}
+                >
+                  Next
+                  <ChevronRight size={16} />
+                </button>
               </div>
-            </li>
-          ))}
-        </ul>
+            </div>
+          )}
+        </>
       )}
     </div>
   )
