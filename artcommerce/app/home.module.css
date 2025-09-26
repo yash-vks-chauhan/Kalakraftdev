@@ -3884,7 +3884,7 @@
 .mobileActionMenu {
   position: absolute;
   bottom: 60px;
-  right: -10px;
+  right: 50px;
   background: rgba(0, 0, 0, 0.9);
   backdrop-filter: blur(10px);
   border-radius: 25px;

@@ -6,7 +6,7 @@ import { useCart } from '../contexts/CartContext'
 import { useWishlist } from '../contexts/WishlistContext'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Heart, ShoppingCart, ChevronLeft, ChevronRight, Play, Pause, Plus, Share2 } from 'lucide-react'
+import { Heart, ShoppingCart, ChevronLeft, ChevronRight, Play, Pause, Plus, Share } from 'lucide-react'
 
 interface Product {
   id: string
@@ -704,7 +704,7 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
                               title="Share Product"
                               aria-label="Share Product"
                             >
-                              <Share2 size={14} />
+                              <Share size={14} />
                             </button>
                           </div>
                         </div>
