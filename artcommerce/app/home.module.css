@@ -559,25 +559,26 @@
 /* Section Header - Mobile app style left aligned */
 .sectionHeader {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: flex-start;
-  margin-bottom: 3rem;
+  margin-bottom: 2rem;
   gap: 2rem;
   position: relative;
   z-index: 2;
-  padding: 0 2rem;
+  padding: 0 3rem;
 }
 
 .sectionTitle {
   font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-  font-size: 2.75rem;
-  font-weight: 800;
+  font-size: 3.5rem;
+  font-weight: 900;
   color: #1a1a1a;
   text-align: left;
   white-space: nowrap;
   position: relative;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.05em;
   margin: 0;
+  line-height: 1.1;
 }
 
 .headerLine {
@@ -1961,10 +1962,12 @@
 .mobileFeaturedImageContainer {
   width: 100%;
   aspect-ratio: 1/1.2;
-  background: transparent;
+  background: #d5d5d5;
   position: relative;
   overflow: hidden;
-  border-radius: 0;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.15), inset 0 0 0 1px rgba(0, 0, 0, 0.12);
 }
 
 .mobileFeaturedImage {
@@ -2526,7 +2529,7 @@
 .featuredDescription {
   text-align: left;
   max-width: 600px;
-  margin: 0 0 3rem 2rem;
+  margin: 0 0 3rem 3rem;
   color: #4a4a4a;
   font-size: 1.125rem;
   line-height: 1.6;
@@ -2603,8 +2606,8 @@
 }
 
 .featuredProductCard:active .featuredImageContainer {
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2), inset 0 0 0 1px rgba(0, 0, 0, 0.15);
-  background: #dedede;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.25), inset 0 0 0 1px rgba(0, 0, 0, 0.2);
+  background: #c8c8c8;
 }
 
 .featuredCardInner {
@@ -2619,7 +2622,7 @@
   width: 100%;
   aspect-ratio: 3/4;
   overflow: hidden;
-  background: #e8e8e8;
+  background: #d5d5d5;
   border-radius: 12px;
   margin: 0 0 1rem 0;
   display: flex;
@@ -2627,8 +2630,8 @@
   justify-content: center;
   transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
   /* iOS-style inward outline with darker colors */
-  border: 1px solid rgba(0, 0, 0, 0.15);
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.12), inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.15), inset 0 0 0 1px rgba(0, 0, 0, 0.12);
 }
 
 .featuredImageContainer::before {
@@ -2735,8 +2738,8 @@
 }
 
 .featuredMobileCard:active .featuredMobileImageContainer {
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2), inset 0 0 0 1px rgba(0, 0, 0, 0.15);
-  background: #dedede;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.25), inset 0 0 0 1px rgba(0, 0, 0, 0.2);
+  background: #c8c8c8;
 }
 
 .featuredMobileLink {
@@ -2752,7 +2755,7 @@
   width: 100%;
   aspect-ratio: 1/1.4;
   overflow: hidden;
-  background: #e8e8e8;
+  background: #d5d5d5;
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -2760,8 +2763,8 @@
   margin: 0 0 1rem 0;
   transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
   /* iOS-style inward outline with darker colors */
-  border: 1px solid rgba(0, 0, 0, 0.15);
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.12), inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.15), inset 0 0 0 1px rgba(0, 0, 0, 0.12);
 }
 
 .featuredMobileImageContainer::before {
@@ -2937,18 +2940,21 @@
   }
   
   .sectionHeader {
-    padding: 0 1rem;
+    padding: 0 1.5rem;
     justify-content: flex-start;
+    align-items: flex-start;
   }
   
   .sectionTitle {
-    font-size: 2.25rem;
+    font-size: 2.75rem;
     text-align: left;
+    font-weight: 900;
+    line-height: 1.1;
   }
   
   .featuredDescription {
     text-align: left;
-    margin: 0 0 2rem 1rem;
+    margin: 0 0 2rem 1.5rem;
     font-size: 1rem;
   }
   
