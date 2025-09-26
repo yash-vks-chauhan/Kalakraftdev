@@ -5,6 +5,7 @@ import Link from 'next/link'
 import styles from './productsMobile.module.css'
 import WishlistButton from '../components/WishlistButton'
 import MobileFilterSortBar from '../components/MobileFilterSortBar'
+import LoadingSpinner from '../components/LoadingSpinner'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { FiFilter, FiX, FiChevronRight, FiStar, FiPackage, FiTrendingUp, FiGrid, FiHeart, FiChevronLeft } from 'react-icons/fi'
 import { useProductFilters } from '../hooks/useProductFilters'
@@ -708,35 +709,11 @@ export default function ProductsMobileClient() {
       )}
 
       {loading ? (
-        <div className={styles.list}>
-          {[...Array(6)].map((_, index) => (
-            <div key={index} className={styles.cardWrapper}>
-              <div className={styles.productCardSkeleton}>
-                <div className={styles.skeletonImageContainer}>
-                  <div className={styles.skeletonImage}></div>
-                  <div className={styles.skeletonIndicators}>
-                    <div className={styles.skeletonIndicator}></div>
-                    <div className={styles.skeletonIndicator}></div>
-                    <div className={styles.skeletonIndicator}></div>
-                  </div>
-                </div>
-                
-                <div className={styles.skeletonInfo}>
-                  <div className={styles.skeletonCategory}></div>
-                  <div className={styles.skeletonName}></div>
-                  <div className={styles.skeletonPriceRow}>
-                    <div className={styles.skeletonPrice}></div>
-                    <div className={styles.skeletonRating}></div>
-                  </div>
-                </div>
-              </div>
-              
-              <div className={styles.skeletonWishlistContainer}>
-                <div className={styles.skeletonWishlistButton}></div>
-              </div>
-            </div>
-          ))}
-        </div>
+        <LoadingSpinner 
+          size="large" 
+          overlay={true}
+          message="Loading products..."
+        />
       ) : error ? (
         <div className={styles.error}>
           <p>Error: {error}</p>
@@ -877,34 +854,22 @@ export default function ProductsMobileClient() {
             </div>
             <div className={styles.mobileFilterContent}>
               {loading ? (
-                <div className={styles.filterSkeletonContainer}>
-                  {[...Array(3)].map((_, index) => (
-                    <div key={index} className={styles.filterSectionSkeleton}>
-                      <div className={styles.filterHeaderSkeleton}>
-                        <div className={styles.filterTitleSkeleton}></div>
-                        <div className={styles.filterArrowSkeleton}></div>
-                      </div>
-                      <div className={styles.filterOptionsSkeleton}>
-                        {[...Array(4)].map((_, optIndex) => (
-                          <div key={optIndex} className={styles.filterOptionSkeleton}>
-                            <div className={styles.filterCheckboxSkeleton}></div>
-                            <div className={styles.filterLabelSkeleton}></div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <LoadingSpinner 
+                  size="medium" 
+                  overlay={false}
+                  message="Loading filters..."
+                />
               ) : (
                 renderFilters()
               )}
             </div>
             <div className={styles.mobileFilterActions}>
               {loading ? (
-                <>
-                  <div className={styles.filterButtonSkeleton}></div>
-                  <div className={styles.filterButtonSkeleton}></div>
-                </>
+                <LoadingSpinner 
+                  size="small" 
+                  overlay={false}
+                  message=""
+                />
               ) : (
                 <>
                   <button 

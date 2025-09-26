@@ -8,6 +8,7 @@ import WishlistButton from '../components/WishlistButton'
 import ProductCard from '../components/ProductCard'
 import VirtualProductGrid from '../components/VirtualProductGrid'
 import LazyComponents from '../components/LazyComponents'
+import LoadingSpinner from '../components/LoadingSpinner'
 import styles from './products.module.css'
 import animationStyles from './products-animations.module.css'
 import { FiChevronLeft, FiChevronRight, FiFilter, FiGrid, FiStar, FiPackage, FiTrendingUp, FiX } from 'react-icons/fi'
@@ -261,15 +262,11 @@ export default function ProductsClient() {
   }, [isMobileView])
 
   if (loading) return (
-    <div className={styles.loadingContainer}>
-      <Image
-        src="/images/loading.png"
-        alt="Loading..."
-        width={50}
-        height={50}
-        className={styles.loadingSpinner}
-      />
-    </div>
+    <LoadingSpinner 
+      size="large" 
+      overlay={true}
+      message="Loading products..."
+    />
   )
   if (error) return <p className={styles.errorMessage}>Error: {error}</p>
 
