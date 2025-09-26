@@ -568,14 +568,14 @@
 }
 
 .sectionTitle {
-  font-family: 'Inter', sans-serif;
-  font-size: 1.75rem;
-  font-weight: 600;
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-size: 2.5rem;
+  font-weight: 700;
   color: #1a1a1a;
   text-align: center;
   white-space: nowrap;
   position: relative;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
   margin: 0;
 }
 
@@ -2430,43 +2430,26 @@
   right: 0;
   bottom: 0;
   z-index: -1;
-  opacity: 0.03;
+  opacity: 1;
   mix-blend-mode: normal;
   
-  /* Professional art-focused pattern */
-  background-image: 
-    /* Subtle grid pattern */
-    linear-gradient(rgba(0,0,0,0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,0,0,0.02) 1px, transparent 1px),
-    /* Diagonal texture lines */
-    repeating-linear-gradient(45deg, transparent, transparent 20px, rgba(0,0,0,0.008) 20px, rgba(0,0,0,0.008) 21px),
-    repeating-linear-gradient(-45deg, transparent, transparent 20px, rgba(0,0,0,0.008) 20px, rgba(0,0,0,0.008) 21px),
-    /* Subtle noise texture */
-    radial-gradient(circle at 25% 25%, rgba(0,0,0,0.01) 1px, transparent 1px),
-    radial-gradient(circle at 75% 75%, rgba(0,0,0,0.01) 1px, transparent 1px);
-  
-  background-size: 40px 40px, 40px 40px, 80px 80px, 80px 80px, 60px 60px, 60px 60px;
-  background-position: 0 0, 0 0, 0 0, 0 0, 0 0, 30px 30px;
-  
-  /* Gentle animation */
-  animation: patternMove 180s linear infinite;
+  /* Using your custom texture pattern image */
+  background: #f5f5f5;
+  background-image: url('https://ik.imagekit.io/4pjvf8k9u/external/texture-pattern.png?updatedAt=1758908400351');
+  background-size: 400px 400px;
+  background-repeat: repeat;
+  background-position: 0 0;
 }
 
-@keyframes patternMove {
+@keyframes gentleFlow {
   0% {
-    transform: translateX(0) translateY(0);
-  }
-  25% {
-    transform: translateX(-5px) translateY(-3px);
+    background-position: 0% 0%, 100% 100%, 0% 100%, 100% 0%;
   }
   50% {
-    transform: translateX(-3px) translateY(-5px);
-  }
-  75% {
-    transform: translateX(3px) translateY(-3px);
+    background-position: 2% 1%, 98% 99%, 1% 99%, 99% 1%;
   }
   100% {
-    transform: translateX(0) translateY(0);
+    background-position: 0% 0%, 100% 100%, 0% 100%, 100% 0%;
   }
 }
 
@@ -2501,18 +2484,18 @@
   background: #f8f9fa;
   border: 1px solid rgba(0, 0, 0, 0.08);
   color: #374151;
-  padding: 0.6rem 1.2rem;
-  font-family: 'Inter', sans-serif;
-  font-weight: 500;
+  padding: 0.75rem 1.5rem;
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-weight: 600;
   text-transform: none;
-  font-size: 0.875rem;
-  letter-spacing: -0.01em;
+  font-size: 1rem;
+  letter-spacing: -0.02em;
   cursor: pointer;
   transition: all 0.2s ease;
-  border-radius: 8px;
+  border-radius: 10px;
   position: relative;
   overflow: hidden;
-  min-width: 100px;
+  min-width: 120px;
   white-space: nowrap;
   flex-shrink: 0;
 }
@@ -2537,14 +2520,14 @@
 /* Featured Description */
 .featuredDescription {
   text-align: center;
-  max-width: 520px;
+  max-width: 600px;
   margin: 0 auto 3rem;
   color: #4a4a4a;
-  font-size: 0.95rem;
-  line-height: 1.5;
+  font-size: 1.125rem;
+  line-height: 1.6;
   font-weight: 400;
-  font-family: 'Inter', sans-serif;
-  letter-spacing: -0.01em;
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  letter-spacing: -0.02em;
 }
 
 /* Featured Products Container */
@@ -2676,22 +2659,22 @@
 }
 
 .featuredProductName {
-  font-size: 0.95rem;
-  font-weight: 500;
+  font-size: 1.125rem;
+  font-weight: 600;
   color: #1f2937;
   margin-bottom: 0.5rem;
   line-height: 1.3;
-  font-family: 'Inter', sans-serif;
-  letter-spacing: -0.01em;
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  letter-spacing: -0.02em;
 }
 
 .featuredProductPrice {
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: 1.25rem;
+  font-weight: 700;
   color: #111827;
   margin: 0;
-  font-family: 'Inter', sans-serif;
-  letter-spacing: -0.01em;
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  letter-spacing: -0.02em;
 }
 
 /* Featured Products Mobile Layout */
@@ -2946,11 +2929,15 @@
   
   /* Adjust pattern for mobile - behind content */
   .patternLight::before {
-    opacity: 0.02; /* Even more subtle for mobile text readability */
-    background-size: 30px 30px, 30px 30px, 60px 60px, 60px 60px, 45px 45px, 45px 45px;
-    animation: patternMove 180s linear infinite; /* Slower, more refined animation */
+    opacity: 1;
     mix-blend-mode: normal;
     z-index: -1;
+    /* Mobile version using same texture pattern */
+    background: #f5f5f5;
+    background-image: url('https://ik.imagekit.io/4pjvf8k9u/external/texture-pattern.png?updatedAt=1758908400351');
+    background-size: 300px 300px;
+    background-repeat: repeat;
+    background-position: 0 0;
   }
   
   .categoryButton {
