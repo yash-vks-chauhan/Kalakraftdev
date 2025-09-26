@@ -3536,8 +3536,8 @@
 /* Mobile Carousel Container */
 .bestSellersMobileCarousel {
   position: relative;
-  padding: 2rem 0;
-  overflow: hidden;
+  padding: 2rem 0 4rem 0;
+  overflow: visible;
   width: 100vw;
   margin-left: calc(-50vw + 50%);
 }
@@ -3545,7 +3545,7 @@
 .mobileCarouselContainer {
   width: 100vw;
   margin: 0;
-  overflow: hidden;
+  overflow: visible;
   position: relative;
   user-select: none;
   -webkit-user-select: none;
@@ -3557,6 +3557,7 @@
   position: relative;
   width: 100%;
   height: 340px;
+  overflow: visible;
 }
 
 .mobileCarouselSlide {
@@ -3568,6 +3569,7 @@
   display: flex;
   padding: 0 1rem;
   will-change: transform;
+  overflow: visible;
 }
 
 /* Mobile Product Card */
@@ -3575,7 +3577,7 @@
   display: flex;
   background: #fff;
   border-radius: 16px;
-  overflow: hidden;
+  overflow: visible;
   border: 2px solid rgba(0, 0, 0, 0.08);
   height: 340px;
   width: 100%;
@@ -3596,6 +3598,7 @@
   border: 1px solid rgba(0, 0, 0, 0.04);
   border-radius: 14px;
   pointer-events: none;
+  z-index: 1;
 }
 
 .mobileProductCard:active {
@@ -3622,6 +3625,8 @@
   position: relative;
   background: #f8f8f8;
   border-radius: 16px 0 0 16px;
+  overflow: hidden;
+  z-index: 2;
 }
 
 .mobileImageLink {
@@ -3669,6 +3674,8 @@
   justify-content: space-between;
   background: #fff;
   border-radius: 0 16px 16px 0;
+  overflow: hidden;
+  z-index: 2;
 }
 
 .mobileProductDetails {
@@ -3777,7 +3784,7 @@
   position: absolute;
   bottom: 16px;
   right: 16px;
-  z-index: 5;
+  z-index: 15;
 }
 
 .mobileActionWheelMain {
@@ -3908,7 +3915,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 4;
+  z-index: 14;
   background: transparent;
   opacity: 0;
   visibility: hidden;
