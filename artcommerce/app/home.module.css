@@ -3676,6 +3676,7 @@
   border-radius: 0 16px 16px 0;
   overflow: hidden;
   z-index: 2;
+  position: relative;
 }
 
 .mobileProductDetails {
@@ -3888,8 +3889,8 @@
 /* Action Menu Container */
 .mobileActionMenu {
   position: absolute;
-  bottom: 55px;
-  right: 55px;
+  bottom: 60px;
+  right: 0px;
   background: rgba(0, 0, 0, 0.95);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -4268,7 +4269,7 @@
   
   .mobileActionMenu {
     bottom: 56px;
-    right: -8px;
+    right: 4px;
     padding: 6px 10px;
     gap: 6px;
   }
