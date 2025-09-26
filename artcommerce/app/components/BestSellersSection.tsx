@@ -646,7 +646,9 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
 
 
                         {/* Rotating Action Wheel */}
-                        <div className={styles.mobileActionWheel}>
+                        <div className={`${styles.mobileActionWheel} ${
+                          expandedWheel === product.id ? styles.mobileActionWheelExpanded : ''
+                        }`}>
                           {/* Backdrop for closing menu */}
                           {expandedWheel === product.id && (
                             <div 
@@ -657,9 +659,7 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
                           
                           {/* Main Action Button */}
                           <button
-                            className={`${styles.mobileActionWheelMain} ${
-                              expandedWheel === product.id ? styles.mobileActionWheelExpanded : ''
-                            }`}
+                            className={styles.mobileActionWheelMain}
                             onClick={() => toggleActionWheel(product.id)}
                             title="More actions"
                             aria-label="More actions"
@@ -673,7 +673,7 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
                           </button>
 
                           {/* Action Menu */}
-                          <div className={`${styles.mobileActionMenu} ${expandedWheel === product.id ? styles.mobileActionWheelExpanded : ''}`}>
+                          <div className={styles.mobileActionMenu}>
                             {/* Cart Action */}
                             <button
                               className={`${styles.mobileActionWheelButton} ${styles.mobileActionWheelCart}`}
