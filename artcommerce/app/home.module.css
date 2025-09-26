@@ -570,16 +570,12 @@
 .sectionTitle {
   font-family: 'Cormorant Garamond', serif;
   font-size: 2.5rem;
-  font-weight: 600;
-  color: #000;
+  font-weight: 400;
+  color: #333;
   text-align: center;
   white-space: nowrap;
   position: relative;
   letter-spacing: 0.05em;
-  background: rgba(255, 255, 255, 0.95);
-  padding: 1rem 2rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .sectionTitle::before {
@@ -611,10 +607,9 @@
 
 .headerLine {
   width: 100%;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0,0,0,0.1), transparent); /* Subtle black gradient line */
   position: relative;
-  border-radius: 1px;
 }
 
 /* Decorative dots */
@@ -2467,23 +2462,6 @@
   overflow: hidden;
 }
 
-.featuredCategoriesSection::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: radial-gradient(ellipse 100% 100% at 50% 50%, 
-    transparent 0%, 
-    transparent 60%, 
-    rgba(0, 0, 0, 0.1) 80%, 
-    rgba(0, 0, 0, 0.2) 95%, 
-    rgba(0, 0, 0, 0.3) 100%);
-  pointer-events: none;
-  z-index: 1;
-}
-
 /* Pattern Background for Featured Categories */
 .patternLight {
   position: relative;
@@ -2498,101 +2476,76 @@
   right: 0;
   bottom: 0;
   z-index: -1;
-  opacity: 0.9;
-  mix-blend-mode: overlay;
-  filter: contrast(1.3) brightness(0.8) saturate(1.2);
+  opacity: 0.95;
+  mix-blend-mode: normal;
   
-  /* Cinematic Pattern variables */
-  --sz: 18px;
-  --c0: #0a0a0a;
-  --c1: #8b0000;
-  --c2: #2a0a0a;
-  --c3: #ff6b6b;
-  --ts: 50% / calc(var(--sz) * 10) calc(var(--sz) * 20);
+  /* Pattern variables */
+  --sz: 15px;
+  --c0: #000;
+  --c1: #6b0030;
+  --ts: 50% / calc(var(--sz) * 8) calc(var(--sz) * 16);
   
-  /* Cinematic Dot patterns with depth */
-  --dot: var(--c1) 0 calc(var(--sz) * 0.85),
-    var(--c3) calc(var(--sz) * 0.85) calc(var(--sz) * 1.2),
-    #fff0 calc(calc(var(--sz) * 1.2) + 1px) 100%;
-  --dot2: radial-gradient(circle at 85% 5%, var(--dot)) var(--ts),
-    radial-gradient(circle at 60% 8%, var(--dot)) var(--ts),
-    radial-gradient(circle at 35% 12%, var(--dot)) var(--ts),
-    radial-gradient(circle at 10% 15%, var(--dot)) var(--ts);
+  /* Dot patterns */
+  --dot: var(--c1) 0 calc(var(--sz) * 0.78),
+    #fff0 calc(calc(var(--sz) * 0.78) + 1px) 100%;
+  --dot2: radial-gradient(circle at 90% 0%, var(--dot)) var(--ts),
+    radial-gradient(circle at 65% 0%, var(--dot)) var(--ts),
+    radial-gradient(circle at 40% 0%, var(--dot)) var(--ts),
+    radial-gradient(circle at 15% 0%, var(--dot)) var(--ts);
   
-  /* Cinematic Conic gradients with dramatic lighting */
-  --cg1: conic-gradient(from -110deg at 8% 48%, var(--c0) 0 75deg, var(--c2) 75deg 120deg, #fff0 120deg 100%) var(--ts);
-  --cg2: conic-gradient(from -85deg at 22% 52%, var(--c1) 0 85deg, var(--c3) 85deg 140deg, #fff0 140deg 100%) var(--ts);
-  --cg3: conic-gradient(from -95deg at 28% 35%, var(--c0) 0 80deg, var(--c2) 80deg 130deg, #fff0 130deg 100%) var(--ts);
-  --cg4: conic-gradient(from -105deg at 48% 40%, var(--c1) 0 90deg, var(--c3) 90deg 150deg, #fff0 150deg 100%) var(--ts);
-  --cg5: conic-gradient(from -75deg at 58% 28%, var(--c0) 0 70deg, var(--c2) 70deg 125deg, #fff0 125deg 100%) var(--ts);
-  --cg6: conic-gradient(from -120deg at 72% 22%, var(--c1) 0 95deg, var(--c3) 95deg 160deg, #fff0 160deg 100%) var(--ts);
-  --cg7: conic-gradient(from -65deg at 82% 15%, var(--c0) 0 65deg, var(--c2) 65deg 115deg, #fff0 115deg 100%) var(--ts);
-  --cg8: conic-gradient(from -135deg at 95% 10%, var(--c1) 0 100deg, var(--c3) 100deg 170deg, #fff0 170deg 100%) var(--ts);
+  /* Conic gradients */
+  --cg1: conic-gradient(from -90deg at 5% 51%, var(--c0) 0 90deg, #fff0 0 100%) var(--ts);
+  --cg2: conic-gradient(from -90deg at 25% 50%, var(--c1) 0 90deg, #fff0 0 100%) var(--ts);
+  --cg3: conic-gradient(from -90deg at 30% 38.5%, var(--c0) 0 90deg, #fff0 0 100%) var(--ts);
+  --cg4: conic-gradient(from -90deg at 50% 37.5%, var(--c1) 0 90deg, #fff0 0 100%) var(--ts);
+  --cg5: conic-gradient(from -90deg at 55% 26%, var(--c0) 0 90deg, #fff0 0 100%) var(--ts);
+  --cg6: conic-gradient(from -90deg at 75% 25%, var(--c1) 0 90deg, #fff0 0 100%) var(--ts);
+  --cg7: conic-gradient(from -90deg at 80% 13.5%, var(--c0) 0 90deg, #fff0 0 100%) var(--ts);
+  --cg8: conic-gradient(from -90deg at 100% 12.5%, var(--c1) 0 90deg, #fff0 0 100%) var(--ts);
 
-  /* Cinematic layered background composition */
-  background: 
-    /* Top lighting layer */
-    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(255, 107, 107, 0.15) 0%, transparent 70%),
-    /* Side dramatic lighting */
-    linear-gradient(135deg, rgba(139, 0, 0, 0.3) 0%, transparent 40%, rgba(42, 10, 10, 0.2) 100%),
-    /* Pattern layers */
-    var(--dot2), var(--dot2),
-    radial-gradient(circle at 85% 95%, var(--dot)) var(--ts),
-    radial-gradient(circle at 60% 90%, var(--dot)) var(--ts),
-    radial-gradient(circle at 35% 85%, var(--dot)) var(--ts),
-    radial-gradient(circle at 10% 80%, var(--dot)) var(--ts),
-    radial-gradient(circle at 92% 15%, var(--dot)) var(--ts),
-    radial-gradient(circle at 68% 20%, var(--dot)) var(--ts),
-    radial-gradient(circle at 42% 30%, var(--dot)) var(--ts),
-    radial-gradient(circle at 18% 45%, var(--dot)) var(--ts), 
-    var(--cg1), var(--cg2), var(--cg3), var(--cg4), var(--cg5), var(--cg6), var(--cg7), var(--cg8),
-    /* Cinematic shadow gradients */
-    linear-gradient(-55deg, #fff0 0 28%, rgba(139, 0, 0, 0.4) 45%, rgba(10, 10, 10, 0.8) 75%) var(--ts),
-    linear-gradient(-35deg, #fff0 0 25%, rgba(42, 10, 10, 0.6) 40%, var(--c0) 65%) var(--ts),
-    /* Base cinematic stripes */
-    repeating-linear-gradient(95deg, var(--c0) 0 4%, var(--c1) 4% 8%, var(--c2) 8% 12%, var(--c1) 12% 20%) var(--ts),
-    /* Deep base layer */
-    linear-gradient(180deg, rgba(10, 10, 10, 0.9) 0%, rgba(42, 10, 10, 0.7) 50%, rgba(10, 10, 10, 0.9) 100%);
+  /* Complex background composition */
+  background: var(--dot2), var(--dot2),
+    radial-gradient(circle at 90% 100%, var(--dot)) var(--ts),
+    radial-gradient(circle at 65% 100%, var(--dot)) var(--ts),
+    radial-gradient(circle at 40% 100%, var(--dot)) var(--ts),
+    radial-gradient(circle at 15% 100%, var(--dot)) var(--ts),
+    radial-gradient(circle at 90% 12.5%, var(--dot)) var(--ts),
+    radial-gradient(circle at 65% 25%, var(--dot)) var(--ts),
+    radial-gradient(circle at 40% 37.5%, var(--dot)) var(--ts),
+    radial-gradient(circle at 15% 50%, var(--dot)) var(--ts), var(--cg1),
+    var(--cg1), var(--cg2), var(--cg2), var(--cg3), var(--cg3), var(--cg4),
+    var(--cg4), var(--cg5), var(--cg5), var(--cg6), var(--cg6), var(--cg7),
+    var(--cg7), var(--cg8), var(--cg8),
+    linear-gradient(-45deg, #fff0 0 32.25%, #0002 50%, #000 77.5%) var(--ts),
+    linear-gradient(-45deg, #fff0 0 32.25%, #000 60%) var(--ts),
+    repeating-linear-gradient(90deg, var(--c0) 0 5%, var(--c1) 0 25%) var(--ts);
   
-  /* Cinematic animation with depth */
-  animation: cinematicPatternMove 180s ease-in-out infinite;
+  /* Subtle animation */
+  animation: patternMove 120s linear infinite;
 }
 
-@keyframes cinematicPatternMove {
+@keyframes patternMove {
   0% {
-    transform: translateX(0) translateY(0) scale(1);
-    filter: contrast(1.3) brightness(0.8) saturate(1.2) hue-rotate(0deg);
+    transform: translateX(0) translateY(0);
   }
-  15% {
-    transform: translateX(-8px) translateY(-4px) scale(1.01);
-    filter: contrast(1.4) brightness(0.75) saturate(1.3) hue-rotate(5deg);
-  }
-  35% {
-    transform: translateX(-12px) translateY(-8px) scale(1.02);
-    filter: contrast(1.5) brightness(0.7) saturate(1.4) hue-rotate(10deg);
+  25% {
+    transform: translateX(-5px) translateY(-3px);
   }
   50% {
-    transform: translateX(-6px) translateY(-12px) scale(1.01);
-    filter: contrast(1.4) brightness(0.75) saturate(1.3) hue-rotate(15deg);
+    transform: translateX(-3px) translateY(-5px);
   }
-  65% {
-    transform: translateX(4px) translateY(-8px) scale(1.02);
-    filter: contrast(1.5) brightness(0.7) saturate(1.4) hue-rotate(10deg);
-  }
-  85% {
-    transform: translateX(8px) translateY(-4px) scale(1.01);
-    filter: contrast(1.4) brightness(0.75) saturate(1.3) hue-rotate(5deg);
+  75% {
+    transform: translateX(3px) translateY(-3px);
   }
   100% {
-    transform: translateX(0) translateY(0) scale(1);
-    filter: contrast(1.3) brightness(0.8) saturate(1.2) hue-rotate(0deg);
+    transform: translateX(0) translateY(0);
   }
 }
 
-/* Content above pattern and vignette for interactivity */
+/* Content above pattern for interactivity */
 .featuredCategoriesSection > * {
   position: relative;
-  z-index: 2;
+  z-index: 1;
 }
 
 /* Category Buttons Container */
@@ -2628,18 +2581,18 @@
 
 .categoryButtonsContainer::before {
   left: 0;
-  background: transparent;
+  background: linear-gradient(to right, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0));
 }
 
 .categoryButtonsContainer::after {
   right: 0;
-  background: transparent;
+  background: linear-gradient(to left, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0));
 }
 
 .categoryButton {
-  background: rgba(255, 255, 255, 0.9);
-  border: 2px solid rgba(0, 0, 0, 0.2);
-  color: #000;
+  background: transparent;
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  color: #333;
   padding: 0.75rem 1.5rem;
   font-family: 'Inter', sans-serif;
   font-weight: 500;
@@ -2668,10 +2621,10 @@
 }
 
 .categoryButton:hover {
-  background: rgba(255, 255, 255, 1);
-  border-color: rgba(0, 0, 0, 0.3);
+  background-color: #f8f8f8;
+  border-color: rgba(0, 0, 0, 0.2);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 .categoryButton:hover::before {
@@ -2679,15 +2632,15 @@
 }
 
 .categoryButtonActive {
-  background: #000;
+  background-color: #333;
   color: #fff;
-  border-color: #000;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  border-color: #333;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .categoryButtonActive:hover {
-  background: #333;
-  border-color: #333;
+  background-color: #555;
+  border-color: #555;
 }
 
 /* Featured Description */
@@ -2699,10 +2652,12 @@
   font-size: 1.1rem;
   line-height: 1.6;
   font-weight: 400;
-  background: rgba(255, 255, 255, 0.9);
-  padding: 1.5rem 2rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  text-shadow: 0 1px 3px rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(5px);
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 /* Featured Products Container */
@@ -2832,24 +2787,19 @@
 
 .featuredProductName {
   font-size: 1.1rem;
-  font-weight: 500;
+  font-weight: 600;
   color: #000;
   margin-bottom: 1rem;
   line-height: 1.4;
-  background: rgba(255, 255, 255, 0.9);
-  padding: 0.5rem;
-  border-radius: 4px;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
 }
 
 .featuredProductPrice {
   font-size: 1.2rem;
-  font-weight: 600;
+  font-weight: 700;
   color: #000;
   margin: 0;
-  background: rgba(255, 255, 255, 0.9);
-  padding: 0.5rem;
-  border-radius: 4px;
-  display: inline-block;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
 }
 
 /* Featured Products Mobile Layout */
@@ -2960,9 +2910,9 @@
 
 .featuredMobileProductName {
   font-size: 0.85rem;
-  font-weight: 500;
-  color: #000;
-  margin-bottom: 0.5rem;
+  font-weight: 400;
+  color: #333;
+  margin-bottom: 0.25rem;
   line-height: 1.2;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2970,20 +2920,13 @@
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   white-space: normal;
-  background: rgba(255, 255, 255, 0.9);
-  padding: 0.5rem;
-  border-radius: 4px;
 }
 
 .featuredMobilePrice {
   font-size: 0.9rem;
-  font-weight: 600;
-  color: #000;
+  font-weight: 500;
+  color: #666;
   margin: 0;
-  background: rgba(255, 255, 255, 0.9);
-  padding: 0.5rem;
-  border-radius: 4px;
-  display: inline-block;
 }
 
 /* Desktop Wishlist Button Styles for Featured Section */
@@ -3107,17 +3050,14 @@
     width: 20px;
   }
   
-  /* Cinematic pattern for mobile - behind content */
+  /* Adjust pattern for mobile - behind content */
   .patternLight::before {
-    --sz: 14px; /* Optimized size for mobile */
-    --c0: #0a0a0a; /* Cinematic dark */
-    --c1: #8b0000; /* Cinematic red */
-    --c2: #2a0a0a; /* Mid tone */
-    --c3: #ff6b6b; /* Highlight */
-    opacity: 0.85; /* Slightly reduced for mobile */
-    animation: cinematicPatternMove 180s ease-in-out infinite; /* Cinematic animation */
-    mix-blend-mode: overlay; /* Cinematic blend */
-    filter: contrast(1.2) brightness(0.85) saturate(1.1); /* Mobile-optimized filters */
+    --sz: 12px; /* Smaller pattern on mobile */
+    --c0: #000; /* Pure black */
+    --c1: #6b0030; /* Dark burgundy */
+    opacity: 0.85; /* More visible on mobile */
+    animation: patternMove 120s linear infinite; /* Same animation speed */
+    mix-blend-mode: normal; /* Normal blend mode for clarity */
     z-index: -1; /* Behind content */
   }
   
