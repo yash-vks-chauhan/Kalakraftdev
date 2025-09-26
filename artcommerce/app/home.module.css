@@ -2458,14 +2458,14 @@
 .featuredCategoriesSection {
   position: relative;
   padding: 6rem 2rem 4rem;
-  background: #ffffff;
+  background: transparent;
   overflow: hidden;
 }
 
 /* Pattern Background for Featured Categories */
 .patternLight {
   position: relative;
-  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 50%, #f8f9fa 100%);
+  background: transparent;
 }
 
 .patternLight::before {
@@ -2995,6 +2995,7 @@
   justify-content: center;
   padding: 3rem 1rem;
   font-family: 'Inter', sans-serif;
+  background: transparent; /* Inherit pattern background */
 }
 
 .featuredError {
@@ -3005,6 +3006,7 @@
   font-family: 'Inter', sans-serif;
   color: #666;
   font-size: 0.9rem;
+  background: transparent; /* Inherit pattern background */
 }
 
 /* Responsive Design */
@@ -4280,7 +4282,7 @@
 }
 
 .skeletonShimmer {
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.3) 25%, rgba(255, 255, 255, 0.6) 50%, rgba(255, 255, 255, 0.3) 75%);
   background-size: 200px 100%;
   animation: skeletonShimmer 1.5s infinite linear;
 }
@@ -4290,14 +4292,16 @@
   width: 100%;
   height: 200px;
   border-radius: 6px;
-  background: #f0f0f0;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(1px);
 }
 
 .skeletonTitle {
   width: 60%;
   height: 32px;
   border-radius: 4px;
-  background: #f0f0f0;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(1px);
   margin: 0 auto;
 }
 
@@ -4305,7 +4309,8 @@
   width: 80%;
   height: 16px;
   border-radius: 2px;
-  background: #f0f0f0;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(1px);
   margin: 0 auto;
 }
 
@@ -4313,7 +4318,8 @@
   width: 85%;
   height: 16px;
   border-radius: 2px;
-  background: #f0f0f0;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(1px);
   margin-bottom: 8px;
 }
 
@@ -4321,7 +4327,8 @@
   width: 50%;
   height: 12px;
   border-radius: 2px;
-  background: #f0f0f0;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(1px);
   margin-bottom: 6px;
 }
 
@@ -4329,11 +4336,13 @@
   width: 40%;
   height: 18px;
   border-radius: 2px;
-  background: #f0f0f0;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(1px);
 }
 
 .skeletonButton {
-  background: #f0f0f0;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(1px);
   border-radius: 6px;
 }
 
@@ -4341,14 +4350,16 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: #f0f0f0;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(1px);
 }
 
 .skeletonCategoryButton {
   height: 36px;
   width: 80px;
   border-radius: 18px;
-  background: #f0f0f0;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(1px);
 }
 
 /* Featured Categories Desktop skeleton specific styles */
@@ -4432,7 +4443,8 @@
 /* Skeleton loading states for buttons and interactive elements */
 .skeletonButton {
   display: inline-block;
-  background: #f0f0f0;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(1px);
   border: none;
   cursor: not-allowed;
   opacity: 0.7;
@@ -4449,7 +4461,8 @@
 @media (prefers-reduced-motion: reduce) {
   .skeletonShimmer {
     animation: none;
-    background: #f0f0f0;
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(1px);
   }
   
   .skeletonShimmer::after {
