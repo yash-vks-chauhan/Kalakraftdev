@@ -2462,10 +2462,10 @@
   overflow: hidden;
 }
 
-/* Pattern Background for Featured Categories - Cinematic Dark Version */
+/* Pattern Background for Featured Categories */
 .patternLight {
   position: relative;
-  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0f0f0f 100%);
+  background: transparent;
 }
 
 .patternLight::before {
@@ -2476,35 +2476,34 @@
   right: 0;
   bottom: 0;
   z-index: -1;
-  opacity: 0.25;
-  mix-blend-mode: overlay;
+  opacity: 0.95;
+  mix-blend-mode: normal;
   
-  /* Enhanced cinematic pattern variables */
-  --sz: 18px;
-  --c0: #000000;
-  --c1: #1a1a1a;
-  --c2: #333333;
-  --ts: 50% / calc(var(--sz) * 10) calc(var(--sz) * 20);
+  /* Pattern variables */
+  --sz: 15px;
+  --c0: #000;
+  --c1: #6b0030;
+  --ts: 50% / calc(var(--sz) * 8) calc(var(--sz) * 16);
   
-  /* Sophisticated dot patterns with depth */
-  --dot: var(--c1) 0 calc(var(--sz) * 0.85),
-    rgba(255, 255, 255, 0.02) calc(calc(var(--sz) * 0.85) + 1px) 100%;
-  --dot2: radial-gradient(circle at 85% 0%, var(--dot)) var(--ts),
-    radial-gradient(circle at 60% 0%, var(--dot)) var(--ts),
-    radial-gradient(circle at 35% 0%, var(--dot)) var(--ts),
-    radial-gradient(circle at 10% 0%, var(--dot)) var(--ts);
+  /* Dot patterns */
+  --dot: var(--c1) 0 calc(var(--sz) * 0.78),
+    #fff0 calc(calc(var(--sz) * 0.78) + 1px) 100%;
+  --dot2: radial-gradient(circle at 90% 0%, var(--dot)) var(--ts),
+    radial-gradient(circle at 65% 0%, var(--dot)) var(--ts),
+    radial-gradient(circle at 40% 0%, var(--dot)) var(--ts),
+    radial-gradient(circle at 15% 0%, var(--dot)) var(--ts);
   
-  /* Cinematic conic gradients with film noir feel */
-  --cg1: conic-gradient(from -90deg at 5% 51%, var(--c0) 0 90deg, rgba(0,0,0,0) 0 100%) var(--ts);
-  --cg2: conic-gradient(from -90deg at 25% 50%, var(--c2) 0 90deg, rgba(0,0,0,0) 0 100%) var(--ts);
-  --cg3: conic-gradient(from -90deg at 30% 38.5%, var(--c0) 0 90deg, rgba(0,0,0,0) 0 100%) var(--ts);
-  --cg4: conic-gradient(from -90deg at 50% 37.5%, var(--c1) 0 90deg, rgba(0,0,0,0) 0 100%) var(--ts);
-  --cg5: conic-gradient(from -90deg at 55% 26%, var(--c0) 0 90deg, rgba(0,0,0,0) 0 100%) var(--ts);
-  --cg6: conic-gradient(from -90deg at 75% 25%, var(--c2) 0 90deg, rgba(0,0,0,0) 0 100%) var(--ts);
-  --cg7: conic-gradient(from -90deg at 80% 13.5%, var(--c0) 0 90deg, rgba(0,0,0,0) 0 100%) var(--ts);
-  --cg8: conic-gradient(from -90deg at 100% 12.5%, var(--c1) 0 90deg, rgba(0,0,0,0) 0 100%) var(--ts);
+  /* Conic gradients */
+  --cg1: conic-gradient(from -90deg at 5% 51%, var(--c0) 0 90deg, #fff0 0 100%) var(--ts);
+  --cg2: conic-gradient(from -90deg at 25% 50%, var(--c1) 0 90deg, #fff0 0 100%) var(--ts);
+  --cg3: conic-gradient(from -90deg at 30% 38.5%, var(--c0) 0 90deg, #fff0 0 100%) var(--ts);
+  --cg4: conic-gradient(from -90deg at 50% 37.5%, var(--c1) 0 90deg, #fff0 0 100%) var(--ts);
+  --cg5: conic-gradient(from -90deg at 55% 26%, var(--c0) 0 90deg, #fff0 0 100%) var(--ts);
+  --cg6: conic-gradient(from -90deg at 75% 25%, var(--c1) 0 90deg, #fff0 0 100%) var(--ts);
+  --cg7: conic-gradient(from -90deg at 80% 13.5%, var(--c0) 0 90deg, #fff0 0 100%) var(--ts);
+  --cg8: conic-gradient(from -90deg at 100% 12.5%, var(--c1) 0 90deg, #fff0 0 100%) var(--ts);
 
-  /* Professional cinematic background composition */
+  /* Complex background composition */
   background: var(--dot2), var(--dot2),
     radial-gradient(circle at 90% 100%, var(--dot)) var(--ts),
     radial-gradient(circle at 65% 100%, var(--dot)) var(--ts),
@@ -2517,36 +2516,29 @@
     var(--cg1), var(--cg2), var(--cg2), var(--cg3), var(--cg3), var(--cg4),
     var(--cg4), var(--cg5), var(--cg5), var(--cg6), var(--cg6), var(--cg7),
     var(--cg7), var(--cg8), var(--cg8),
-    linear-gradient(-45deg, rgba(0,0,0,0) 0 32.25%, rgba(0,0,0,0.3) 50%, #000 77.5%) var(--ts),
-    linear-gradient(-45deg, rgba(0,0,0,0) 0 32.25%, #000 60%) var(--ts),
-    repeating-linear-gradient(90deg, var(--c0) 0 5%, var(--c1) 0 25%) var(--ts),
-    /* Add film grain texture */
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.1'/%3E%3C/svg%3E");
+    linear-gradient(-45deg, #fff0 0 32.25%, #0002 50%, #000 77.5%) var(--ts),
+    linear-gradient(-45deg, #fff0 0 32.25%, #000 60%) var(--ts),
+    repeating-linear-gradient(90deg, var(--c0) 0 5%, var(--c1) 0 25%) var(--ts);
   
-  /* Slower, more cinematic animation */
-  animation: cinematicMove 180s linear infinite;
+  /* Subtle animation */
+  animation: patternMove 120s linear infinite;
 }
 
-@keyframes cinematicMove {
+@keyframes patternMove {
   0% {
-    transform: translateX(0) translateY(0) scale(1);
-    opacity: 0.25;
+    transform: translateX(0) translateY(0);
   }
   25% {
-    transform: translateX(-3px) translateY(-2px) scale(1.01);
-    opacity: 0.3;
+    transform: translateX(-5px) translateY(-3px);
   }
   50% {
-    transform: translateX(-2px) translateY(-4px) scale(1.02);
-    opacity: 0.35;
+    transform: translateX(-3px) translateY(-5px);
   }
   75% {
-    transform: translateX(2px) translateY(-2px) scale(1.01);
-    opacity: 0.3;
+    transform: translateX(3px) translateY(-3px);
   }
   100% {
-    transform: translateX(0) translateY(0) scale(1);
-    opacity: 0.25;
+    transform: translateX(0) translateY(0);
   }
 }
 
@@ -2598,9 +2590,9 @@
 }
 
 .categoryButton {
-  background: rgba(0, 0, 0, 0.3);
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  color: #ffffff;
+  background: transparent;
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  color: #333;
   padding: 0.75rem 1.5rem;
   font-family: 'Inter', sans-serif;
   font-weight: 500;
@@ -2615,9 +2607,6 @@
   min-width: 120px;
   white-space: nowrap;
   flex-shrink: 0;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
 }
 
 .categoryButton::before {
@@ -2632,11 +2621,10 @@
 }
 
 .categoryButton:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.4);
+  background-color: #f8f8f8;
+  border-color: rgba(0, 0, 0, 0.2);
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
-  color: #ffffff;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 .categoryButton:hover::before {
@@ -2644,17 +2632,15 @@
 }
 
 .categoryButtonActive {
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: #333;
   color: #fff;
-  border-color: rgba(255, 255, 255, 0.6);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  border-color: #333;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .categoryButtonActive:hover {
-  background-color: rgba(255, 255, 255, 0.25);
-  border-color: rgba(255, 255, 255, 0.8);
+  background-color: #555;
+  border-color: #555;
 }
 
 /* Featured Description */
@@ -2662,18 +2648,16 @@
   text-align: center;
   max-width: 600px;
   margin: 0 auto 2rem;
-  color: #ffffff;
+  color: #000;
   font-size: 1.1rem;
   line-height: 1.6;
   font-weight: 400;
-  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.8);
-  background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  padding: 1.5rem 2rem;
+  text-shadow: 0 1px 3px rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(5px);
+  padding: 1rem 2rem;
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 /* Featured Products Container */
@@ -2804,18 +2788,18 @@
 .featuredProductName {
   font-size: 1.1rem;
   font-weight: 600;
-  color: #ffffff;
+  color: #000;
   margin-bottom: 1rem;
   line-height: 1.4;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
 }
 
 .featuredProductPrice {
   font-size: 1.2rem;
   font-weight: 700;
-  color: #ffffff;
+  color: #000;
   margin: 0;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
 }
 
 /* Featured Products Mobile Layout */
@@ -3066,15 +3050,14 @@
     width: 20px;
   }
   
-  /* Cinematic pattern adjustments for mobile */
+  /* Adjust pattern for mobile - behind content */
   .patternLight::before {
-    --sz: 14px; /* Optimized pattern size for mobile */
-    --c0: #000000; /* Pure black */
-    --c1: #1a1a1a; /* Dark grey */
-    --c2: #333333; /* Medium grey */
-    opacity: 0.2; /* Slightly more subtle on mobile */
-    animation: cinematicMove 180s linear infinite; /* Consistent cinematic animation */
-    mix-blend-mode: overlay; /* Maintain cinematic blend mode */
+    --sz: 12px; /* Smaller pattern on mobile */
+    --c0: #000; /* Pure black */
+    --c1: #6b0030; /* Dark burgundy */
+    opacity: 0.85; /* More visible on mobile */
+    animation: patternMove 120s linear infinite; /* Same animation speed */
+    mix-blend-mode: normal; /* Normal blend mode for clarity */
     z-index: -1; /* Behind content */
   }
   
