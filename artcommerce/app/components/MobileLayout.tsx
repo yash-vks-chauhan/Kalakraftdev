@@ -30,6 +30,7 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
   const [searchQuery, setSearchQuery] = useState('')
   const pathname = usePathname()
   const isHomePage = pathname === '/'
+  const isProductsPage = pathname === '/products' || pathname.startsWith('/products?')
   const [isScrolled, setIsScrolled] = useState(false)
   const [isFooterVisible, setIsFooterVisible] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
@@ -139,8 +140,8 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
         setIsFooterVisible(true)
       } else if (
         scrollDirection > 0 &&
-        scrollVelocity > 0.3 &&
-        currentScrollY > 100
+        scrollVelocity > (isProductsPage ? 0.7 : 0.3) && // Higher threshold for products page
+        currentScrollY > (isProductsPage ? 200 : 100) // More scroll needed on products page
       ) {
         setIsFooterVisible(false)
       } else if (scrollDirection < 0) {
@@ -151,7 +152,7 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
         if (currentScrollY > 50) {
           setIsFooterVisible(true)
         }
-      }, 150)
+      }, isProductsPage ? 300 : 150) // Longer timeout for products page
       
       prevScrollY = currentScrollY
       lastScrollTime = currentTime
@@ -166,7 +167,7 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
         clearTimeout(scrollTimer)
       }
     }
-  }, [lastScrollY])
+  }, [lastScrollY, isProductsPage])
 
   useEffect(() => {
     let currentIndex = 0
@@ -834,7 +835,7 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
       </div>
       
       {/* Mobile Footer Navigation */}
-      <nav className={`${styles.mobileFooter} ${isFooterVisible ? styles.footerVisible : styles.footerHidden}`}>
+      <nav className={`${styles.mobileFooter} ${(isFooterVisible || isProductsPage) ? styles.footerVisible : styles.footerHidden}`}>
         <button 
           onClick={handleHomeClick}
           className={`${styles.footerNavItem} ${isActivePath('/') ? styles.active : ''}`}

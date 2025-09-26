@@ -147,13 +147,13 @@
 /* Mobile Content */
 .mobileContent {
   flex: 1;
-  padding: 70px 0 70px 0; /* Remove horizontal padding, keep top/bottom padding for header/footer */
+  padding: 70px 0 90px 0; /* Increased bottom padding for pagination */
 }
 
 /* Home page specific content styles */
 .homeContent {
   /* Remove horizontal padding on homepage, keep bottom padding for footer */
-  padding: 0 0 70px 0;
+  padding: 0 0 90px 0; /* Increased bottom padding to match mobileContent */
   margin-top: 0; /* Remove top margin for home page */
 }
 
