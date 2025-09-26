@@ -67,7 +67,7 @@ export default function ProductsClient() {
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1)
-  const productsPerPage = 16
+  const productsPerPage = 15
 
   const isMobileView = isSmallScreen
   

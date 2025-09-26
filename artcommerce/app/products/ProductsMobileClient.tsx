@@ -316,7 +316,7 @@ export default function ProductsMobileClient() {
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1)
-  const productsPerPage = 12
+  const productsPerPage = 15
   
   // Extract individual filter values for easier use
   const {
@@ -770,89 +770,8 @@ export default function ProductsMobileClient() {
             />
           ))}
         </div>
-      )}
 
-      {/* Pagination Controls */}
-      {totalPages > 1 && !loading && products.length > 0 && (
-        <div className={styles.paginationContainer}>
-          <div className={styles.paginationInfo}>
-            <div className={styles.paginationInfoText}>
-              Showing {((currentPage - 1) * productsPerPage) + 1} to {Math.min(currentPage * productsPerPage, totalProducts)} of {totalProducts}
-            </div>
-            <div className={styles.paginationInfoText}>
-              Page {currentPage} of {totalPages}
-            </div>
-          </div>
-          
-          <div className={styles.paginationControls}>
-            {/* Previous Button */}
-            <button
-              onClick={handlePreviousPage}
-              disabled={currentPage === 1}
-              className={styles.paginationButton}
-            >
-              <FiChevronLeft size={14} />
-              Previous
-            </button>
-            
-            {/* Page Numbers - show first, last, current and nearby pages */}
-            <div className={styles.paginationNumbers}>
-              {/* First page */}
-              {currentPage > 3 && (
-                <>
-                  <button
-                    onClick={() => handlePageSelect(1)}
-                    className={styles.pageNumber}
-                  >
-                    1
-                  </button>
-                  {currentPage > 4 && <span className={styles.paginationDots}>...</span>}
-                </>
-              )}
-              
-              {/* Current page and nearby pages */}
-              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                const pageStart = Math.max(1, Math.min(currentPage - 2, totalPages - 4))
-                const page = pageStart + i
-                if (page > totalPages) return null
-                
-                return (
-                  <button
-                    key={page}
-                    onClick={() => handlePageSelect(page)}
-                    className={`${styles.pageNumber} ${page === currentPage ? styles.pageNumberActive : ''}`}
-                  >
-                    {page}
-                  </button>
-                )
-              })}
-              
-              {/* Last page */}
-              {currentPage < totalPages - 2 && (
-                <>
-                  {currentPage < totalPages - 3 && <span className={styles.paginationDots}>...</span>}
-                  <button
-                    onClick={() => handlePageSelect(totalPages)}
-                    className={styles.pageNumber}
-                  >
-                    {totalPages}
-                  </button>
-                </>
-              )}
-            </div>
-            
-            {/* Next Button */}
-            <button
-              onClick={handleNextPage}
-              disabled={currentPage === totalPages}
-              className={styles.paginationButton}
-            >
-              Next
-              <FiChevronRight size={14} />
-            </button>
-          </div>
-        </div>
-      )}          {/* Pagination Controls */}
+          {/* Pagination Controls */}
           {totalPages > 1 && (
             <div className={styles.paginationContainer}>
               <div className={styles.paginationInfo}>
