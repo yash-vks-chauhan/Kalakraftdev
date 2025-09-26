@@ -7,6 +7,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import styles from './orders.module.css'
+import LoadingSpinner from '../../components/LoadingSpinner'
 
 // Orders Skeleton Component
 const OrdersSkeleton = () => (
@@ -146,7 +147,7 @@ export default function DashboardOrdersPage() {
     <main className={styles.ordersContainer}>
       <h1 className={styles.title}>Your Orders</h1>
 
-      {loading && <OrdersSkeleton />}
+      {loading && <LoadingSpinner size="medium" message="Loading your orders..." />}
       {error && <p className={styles.errorMessage}>{error}</p>}
 
       {!loading && orders.length === 0 && (

@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useCart } from '../../contexts/CartContext'
 import { useAuth } from '../../contexts/AuthContext'
 import { useRouter } from 'next/navigation'
+import LoadingSpinner from '../../components/LoadingSpinner'
 import Link from 'next/link'
 
 /* eslint-disable @next/next/no-img-element */
@@ -68,23 +69,7 @@ export default function MobileCartClient() {
   if (!user) return (<main className="p-4 text-sm">Redirecting to login…</main>)
 
   if (authLoading || cartLoading) {
-    return (
-      <main className="container mx-auto px-4 pt-20 pb-28">
-        <ul className="space-y-3">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <li key={i} className="flex items-center gap-3 p-3 rounded-2xl border border-gray-200 bg-white">
-              <div className="h-20 w-20 rounded-xl border border-black bg-gray-100 animate-pulse" />
-              <div className="flex-1 space-y-2">
-                <div className="h-4 w-2/3 bg-gray-100 rounded animate-pulse" />
-                <div className="h-3 w-1/2 bg-gray-100 rounded animate-pulse" />
-                <div className="h-8 w-44 bg-gray-100 rounded-full animate-pulse" />
-              </div>
-              <div className="h-9 w-24 bg-gray-100 rounded-full animate-pulse" />
-            </li>
-          ))}
-        </ul>
-      </main>
-    )
+    return <LoadingSpinner overlay={true} message="Loading your cart..." />
   }
 
   if (cartItems.length === 0) {

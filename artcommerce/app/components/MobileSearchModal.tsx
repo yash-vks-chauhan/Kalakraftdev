@@ -14,6 +14,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { X, Search, ArrowLeft } from 'lucide-react'
+import InlineLoader from './InlineLoader'
 import { motion, AnimatePresence } from 'framer-motion'
 import WishlistButton from './WishlistButton'
 import styles from './MobileSearchModal.module.css'
@@ -720,8 +721,7 @@ function MobileSearchModalContent({ open, onClose }: Props) {
             <div className={styles.resultsContainer}>
               {loadingResults ? (
                 <div className={styles.loadingContainer}>
-                  <div className={styles.loadingSpinner}></div>
-                  <p className={styles.loadingText}>Searching...</p>
+                  <InlineLoader size="medium" message="Searching..." />
                 </div>
               ) : errorResults ? (
                 <div className={styles.errorContainer}>

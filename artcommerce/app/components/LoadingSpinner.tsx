@@ -1,25 +1,34 @@
-import Image from 'next/image'
+import React from 'react'
 import styles from './LoadingSpinner.module.css'
 
 interface LoadingSpinnerProps {
   overlay?: boolean
-  size?: number
+  size?: 'small' | 'medium' | 'large'
   message?: string
 }
 
-export default function LoadingSpinner({ overlay = false, size = 60, message }: LoadingSpinnerProps) {
+export default function LoadingSpinner({ overlay = false, size = 'medium', message }: LoadingSpinnerProps) {
+  const sizeClass = size === 'small' ? styles.small : size === 'large' ? styles.large : styles.medium
+
   if (overlay) {
     return (
       <div className={styles.loadingOverlay}>
         <div className={styles.spinnerContainer}>
-          <Image
-            src="/images/loading.png"
-            alt="Loading..."
-            width={size}
-            height={size}
-            className={styles.spinner}
-          />
-          {message && <p className={styles.loadingMessage}>{message}</p>}
+          <div className={`${styles.pl} ${sizeClass}`}>
+            <div className={styles.plDot} />
+            <div className={styles.plDot} />
+            <div className={styles.plDot} />
+            <div className={styles.plDot} />
+            <div className={styles.plDot} />
+            <div className={styles.plDot} />
+            <div className={styles.plDot} />
+            <div className={styles.plDot} />
+            <div className={styles.plDot} />
+            <div className={styles.plDot} />
+            <div className={styles.plDot} />
+            <div className={styles.plDot} />
+            <div className={styles.plText}>{message || 'Loading…'}</div>
+          </div>
         </div>
       </div>
     )
@@ -27,14 +36,21 @@ export default function LoadingSpinner({ overlay = false, size = 60, message }: 
 
   return (
     <div className={styles.spinnerContainer}>
-      <Image
-        src="/images/loading.png"
-        alt="Loading..."
-        width={size}
-        height={size}
-        className={styles.spinner}
-      />
-      {message && <p className={styles.loadingMessage}>{message}</p>}
+      <div className={`${styles.pl} ${sizeClass}`}>
+        <div className={styles.plDot} />
+        <div className={styles.plDot} />
+        <div className={styles.plDot} />
+        <div className={styles.plDot} />
+        <div className={styles.plDot} />
+        <div className={styles.plDot} />
+        <div className={styles.plDot} />
+        <div className={styles.plDot} />
+        <div className={styles.plDot} />
+        <div className={styles.plDot} />
+        <div className={styles.plDot} />
+        <div className={styles.plDot} />
+        <div className={styles.plText}>{message || 'Loading…'}</div>
+      </div>
     </div>
   )
 } 

@@ -11,6 +11,7 @@ import { useNotificationContext } from '../contexts/NotificationContext'
 import styles from './SearchModal.module.css'
 import Fuse from 'fuse.js'
 import { getImageUrl } from '@/lib/cloudinaryImages'
+import InlineLoader from './InlineLoader'
 // helper to highlight matched substrings
 const getHighlightedText = (text: string, indices: number[][]) => {
   let lastIndex = 0;
@@ -610,34 +611,7 @@ function SearchModalContent({ open, onClose }: Props) {
               <div className={styles.resultsContainer}>
                 {loadingResults ? (
                   <div className={styles.loadingContainer}>
-                    <div className={styles.loadingSpinnerWrapper}>
-                      <div className={styles.loadingSpinner}>
-                        <svg
-                          className={styles.loadingCircle}
-                          viewBox="0 0 50 50"
-                        >
-                          <circle
-                            cx="25"
-                            cy="25"
-                            r="20"
-                            fill="none"
-                            strokeWidth="4"
-                          />
-                        </svg>
-                      </div>
-                    </div>
-                    <div className={styles.emptyResultsText}>
-                      {'SEARCHING PRODUCTS'.split('').map((letter, index) => (
-                        <span key={index} className={styles.letter}>
-                          {letter === ' ' ? '\u00A0' : letter}
-                        </span>
-                      ))}
-                      <span className={styles.dots}>
-                        <span>.</span>
-                        <span>.</span>
-                        <span>.</span>
-                      </span>
-                    </div>
+                    <InlineLoader size="medium" message="Searching..." />
                   </div>
                 ) : errorResults ? (
                   <div className={styles.errorContainer}>
@@ -710,22 +684,7 @@ function SearchModalContent({ open, onClose }: Props) {
 
                               {isLoading && (
                                 <div className={styles.loadingOverlay}>
-                                  <div
-                                    className={styles.loadingSpinnerSmall}
-                                  >
-                                    <svg
-                                      className={styles.loadingCircleSmall}
-                                      viewBox="0 0 50 50"
-                                    >
-                                      <circle
-                                        cx="25"
-                                        cy="25"
-                                        r="20"
-                                        fill="none"
-                                        strokeWidth="4"
-                                      />
-                                    </svg>
-                                  </div>
+                                  <InlineLoader size="small" />
                                 </div>
                               )}
 

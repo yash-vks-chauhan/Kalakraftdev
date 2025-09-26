@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
 import { useAuth } from '../../../contexts/AuthContext'
 import { useRouter } from 'next/navigation'
+import LoadingSpinner from '../../../components/LoadingSpinner'
 import styles from '../../mobile-dashboard.module.css'
 import desktopStyles from './products-list.module.css'
 import { 
@@ -257,14 +258,7 @@ export default function MobileProductManagement() {
   }
 
   if (isLoading || isTransitioning) {
-    return (
-      <div className="flex flex-col items-center justify-center h-screen">
-        <RefreshCw className="animate-spin h-8 w-8 text-gray-800 mb-4" />
-        <p className="text-gray-600 text-sm">
-          {isTransitioning ? 'Navigating...' : 'Loading products...'}
-        </p>
-      </div>
-    );
+    return <LoadingSpinner overlay={true} message={isTransitioning ? 'Navigating...' : 'Loading products...'} />
   }
 
   return (
@@ -399,8 +393,7 @@ export default function MobileProductManagement() {
 
       {isLoading ? (
         <div className={styles.emptyState}>
-          <RefreshCw className={`${styles.emptyStateIcon} ${styles.refreshing}`} size={24} />
-          <p className={styles.emptyStateText}>Loading products...</p>
+          <LoadingSpinner size="small" message="Loading products..." />
         </div>
       ) : error ? (
         <div className={styles.emptyState}>

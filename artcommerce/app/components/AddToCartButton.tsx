@@ -5,6 +5,7 @@ import { useCart } from '../contexts/CartContext'
 import { useAuth } from '../contexts/AuthContext'
 import { useRouter } from 'next/navigation'
 import clsx from 'clsx'
+import ButtonLoader from './ButtonLoader'
 
 type Props = {
   productId: number
@@ -86,7 +87,7 @@ export default function AddToCartButton({
                 : 'bg-black hover:bg-gray-900'
           )}
         >
-          {loading ? 'Adding…' : isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
+          {loading ? <ButtonLoader size="small" color="white" /> : isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
         </button>
       </div>
 

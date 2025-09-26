@@ -10,6 +10,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import styles from './wishlist.module.css'
 import { Heart, Trash2 } from 'lucide-react'
+import LoadingSpinner from '../../components/LoadingSpinner'
 
 // Wishlist Skeleton Component
 const WishlistSkeleton = () => (
@@ -128,7 +129,7 @@ export default function DashboardWishlistPage() {
   }
 
   if (authLoading || wishlistLoading) {
-    return <WishlistSkeleton />
+    return <LoadingSpinner overlay={true} message="Loading your wishlist..." />
   }
   
   if (!user) {

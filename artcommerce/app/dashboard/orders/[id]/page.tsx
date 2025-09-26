@@ -8,6 +8,7 @@ import { useAuth } from '../../../contexts/AuthContext'
 import { useRouter, useParams } from 'next/navigation'
 import styles from '../order_details.module.css'
 import React from 'react'
+import ButtonLoader from '../../../components/ButtonLoader'
 
 interface OrderItem {
   id: number
@@ -245,7 +246,7 @@ export default function OrderDetailsPage() {
                 disabled={isLoading}
                 className={styles.updateButton}
               >
-                {isLoading ? 'Updating…' : 'Update Status'}
+                {isLoading ? <ButtonLoader size="small" color="white" /> : 'Update Status'}
               </button>
             </form>
           )}

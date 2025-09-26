@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'react'
 import { useCart } from '../contexts/CartContext'
 import { useAuth } from '../contexts/AuthContext'
+import LoadingSpinner from '../components/LoadingSpinner'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -37,19 +38,7 @@ export default function CartPage() {
   }, [user, router])
 
   if (!user) return null
-  if (loading) return (
-    <div style={{ 
-      display: 'flex', 
-      justifyContent: 'center', 
-      alignItems: 'center', 
-      minHeight: '50vh',
-      flexDirection: 'column',
-      gap: '1rem'
-    }}>
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
-      <p style={{ color: '#6b7280', fontSize: '0.875rem' }}>Loading your cart...</p>
-    </div>
-  )
+  if (loading) return <LoadingSpinner overlay={true} message="Loading your cart..." />
 
   if (cartItems.length === 0) {
     return (

@@ -1,0 +1,60 @@
+.buttonLoader {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+
+.buttonLoader.small {
+  padding: 2px 4px;
+}
+
+.buttonLoader.medium {
+  padding: 4px 8px;
+}
+
+.dot {
+  border-radius: 50%;
+  animation: buttonDotPulse 1.4s ease-in-out infinite both;
+}
+
+.small .dot {
+  width: 3px;
+  height: 3px;
+}
+
+.medium .dot {
+  width: 4px;
+  height: 4px;
+}
+
+.white .dot {
+  background-color: white;
+}
+
+.dark .dot {
+  background-color: #374151;
+}
+
+.dot:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.dot:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+.dot:nth-child(3) {
+  animation-delay: 0s;
+}
+
+@keyframes buttonDotPulse {
+  0%, 80%, 100% {
+    transform: scale(0.5);
+    opacity: 0.5;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}

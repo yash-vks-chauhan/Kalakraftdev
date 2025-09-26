@@ -5,6 +5,7 @@ import { useAuth } from '../../../contexts/AuthContext'
 import Link from 'next/link'
 import { User, Package, ChevronRight, Mail, Calendar, RefreshCw, Shield, Trash2, Send, Users, LogOut } from 'lucide-react'
 import styles from '../../mobile-dashboard.module.css'
+import InlineLoader from '../../../components/InlineLoader'
 
 interface UserRow {
   id: number
@@ -241,8 +242,7 @@ export default function MobileUserManagement({ initialFilter = 'admin' }: Mobile
 
       {loading ? (
         <div className={styles.emptyState}>
-          <RefreshCw className={`${styles.emptyStateIcon} ${styles.refreshing}`} size={24} />
-          <p className={styles.emptyStateText}>Loading users...</p>
+          <InlineLoader size="medium" message="Loading users..." />
         </div>
       ) : displayUsers.length === 0 ? (
         <div className={styles.emptyState}>

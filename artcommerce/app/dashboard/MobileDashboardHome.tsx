@@ -6,6 +6,7 @@ import { useAuth } from '../contexts/AuthContext'
 import styles from './mobile-dashboard.module.css'
 import desktopStyles from './dashboard.module.css'
 import { useState, useEffect, useRef } from 'react'
+import InlineLoader from '../components/InlineLoader'
 
 // Mobile Dashboard Skeleton Components
 const MetricsSkeleton = () => (
@@ -327,7 +328,7 @@ export default function MobileDashboardHome() {
         </div>
         <div className={`${styles.expandableSection} ${showRecent ? styles.expanded : ''}`}>
         {loadingOrders ? (
-          <OrdersSkeleton />
+          <InlineLoader size="medium" message="Loading orders..." />
         ) : recentOrders.length > 0 ? (
           <div className={styles.ordersScrollContainer}>
             <div className={styles.ordersRow}>
