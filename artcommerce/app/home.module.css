@@ -564,7 +564,6 @@
   margin-bottom: 4rem;
   gap: 1.5rem;
   position: relative;
-  z-index: 2;
 }
 
 .sectionTitle {
@@ -2475,9 +2474,9 @@
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 0;
-  opacity: 0.8;
-  mix-blend-mode: normal;
+  z-index: 1;
+  opacity: 0.9;
+  mix-blend-mode: multiply;
   
   /* Pattern variables */
   --sz: 15px;
@@ -2542,10 +2541,9 @@
   }
 }
 
-/* Ensure content appears above pattern */
+/* Content without z-index to allow pattern visibility */
 .featuredCategoriesSection > * {
   position: relative;
-  z-index: 1;
 }
 
 /* Category Buttons Container */
@@ -2657,7 +2655,6 @@
 /* Featured Products Container */
 .featuredProductsContainer {
   position: relative;
-  z-index: 2;
 }
 
 /* Featured Products Desktop Layout */
