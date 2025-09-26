@@ -2458,7 +2458,7 @@
 .featuredCategoriesSection {
   position: relative;
   padding: 6rem 2rem 4rem;
-  background: transparent;
+  background: #fafafa;
   overflow: hidden;
 }
 
@@ -2476,7 +2476,7 @@
   right: 0;
   bottom: 0;
   z-index: 0;
-  opacity: 0.25;
+  opacity: 0.8;
   mix-blend-mode: normal;
   
   /* Pattern variables */
