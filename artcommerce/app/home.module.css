@@ -3814,7 +3814,7 @@
 }
 
 .mobileActionWheelExpanded {
-  transform: rotate(45deg) scale(1.1);
+  transform: rotate(45deg) scale(1.05);
 }
 
 .mobileActionWheelIcon {
@@ -3840,7 +3840,7 @@
   transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   opacity: 0;
   visibility: hidden;
-  transform: scale(0) rotate(-45deg);
+  transform: scale(0);
   color: #333;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
@@ -3848,25 +3848,25 @@
 }
 
 .mobileActionWheelButton:hover {
-  transform: scale(1.1) rotate(-45deg);
+  transform: scale(1.1);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
 }
 
 .mobileActionWheelButton:active {
-  transform: scale(0.9) rotate(-45deg);
+  transform: scale(0.9);
 }
 
 /* Show buttons when expanded */
 .mobileActionWheelExpanded .mobileActionWheelButton {
   opacity: 1;
   visibility: visible;
-  transform: scale(1) rotate(-45deg);
+  transform: scale(1);
 }
 
 /* Cart Button Position */
 .mobileActionWheelCart {
-  top: -60px;
-  right: -8px;
+  top: -70px;
+  right: 4px;
   transition-delay: 0.1s;
 }
 
@@ -3878,8 +3878,8 @@
 
 /* Wishlist Button Position */
 .mobileActionWheelWishlist {
-  top: -45px;
-  right: -45px;
+  top: -50px;
+  right: -50px;
   transition-delay: 0.2s;
 }
 
@@ -3897,8 +3897,8 @@
 
 /* Share Button Position */
 .mobileActionWheelShare {
-  top: -8px;
-  right: -60px;
+  top: 4px;
+  right: -70px;
   transition-delay: 0.3s;
 }
 
@@ -4225,18 +4225,18 @@
   }
   
   .mobileActionWheelCart {
-    top: -54px;
-    right: -6px;
+    top: -64px;
+    right: 2px;
   }
   
   .mobileActionWheelWishlist {
-    top: -40px;
-    right: -40px;
+    top: -46px;
+    right: -46px;
   }
   
   .mobileActionWheelShare {
-    top: -6px;
-    right: -54px;
+    top: 2px;
+    right: -64px;
   }
 }
 
