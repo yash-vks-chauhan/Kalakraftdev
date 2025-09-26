@@ -564,6 +564,7 @@
   margin-bottom: 4rem;
   gap: 1.5rem;
   position: relative;
+  z-index: 2;
 }
 
 .sectionTitle {
@@ -2474,8 +2475,8 @@
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 1;
-  opacity: 0.9;
+  z-index: -1;
+  opacity: 0.4;
   mix-blend-mode: multiply;
   
   /* Pattern variables */
@@ -2541,9 +2542,10 @@
   }
 }
 
-/* Content without z-index to allow pattern visibility */
+/* Content above pattern for interactivity */
 .featuredCategoriesSection > * {
   position: relative;
+  z-index: 1;
 }
 
 /* Category Buttons Container */
@@ -2655,6 +2657,7 @@
 /* Featured Products Container */
 .featuredProductsContainer {
   position: relative;
+  z-index: 2;
 }
 
 /* Featured Products Desktop Layout */
@@ -3023,17 +3026,14 @@
     width: 20px;
   }
   
-  /* Adjust pattern for mobile */
+  /* Adjust pattern for mobile - behind content */
   .patternLight::before {
     --sz: 12px; /* Smaller pattern on mobile */
-    --c1: #e91e63; /* Slightly different pink shade for mobile */
-    opacity: 0.04; /* Slightly more subtle on mobile */
-    animation: patternMove 180s linear infinite; /* Slower animation */
-  }
-  
-  /* Additional mobile pattern background gradient */
-  .patternLight {
-    background: linear-gradient(135deg, #fafafa 0%, #ffffff 30%, #f9f9f9 70%, #fafafa 100%);
+    --c1: #c71175; /* Keep same pink as desktop */
+    opacity: 0.3; /* Subtle but visible */
+    animation: patternMove 120s linear infinite; /* Same animation speed */
+    mix-blend-mode: multiply; /* Same blend mode as desktop */
+    z-index: -1; /* Behind content */
   }
   
   .categoryButton {
