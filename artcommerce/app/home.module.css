@@ -3787,6 +3787,11 @@
   bottom: 12px;
   right: 12px;
   z-index: 15;
+  pointer-events: none;
+}
+
+.mobileActionWheel * {
+  pointer-events: auto;
 }
 
 .mobileActionWheelMain {
@@ -3804,6 +3809,8 @@
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
   user-select: none;
   -webkit-tap-highlight-color: transparent;
+  position: relative;
+  z-index: 20;
 }
 
 .mobileActionWheelMain:hover {
@@ -3815,8 +3822,9 @@
   transform: scale(0.95);
 }
 
-.mobileActionWheelExpanded {
+.mobileActionWheelExpanded .mobileActionWheelMain {
   transform: rotate(45deg) scale(1.05);
+  z-index: 25;
 }
 
 .mobileActionWheelIcon {
@@ -3843,8 +3851,9 @@
   user-select: none;
   -webkit-tap-highlight-color: transparent;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  position: relative;
+  position: absolute;
   overflow: hidden;
+  z-index: 18;
 }
 
 .mobileActionWheelButton:hover {
@@ -3918,8 +3927,8 @@
 /* Cart Button Position - Wheel Layout */
 .mobileActionWheelCart {
   position: absolute;
-  bottom: 55px;
-  left: 5px;
+  bottom: 85px;
+  left: -25px;
   background: rgba(255, 255, 255, 0.95);
   border: none;
   opacity: 0;
@@ -3932,7 +3941,7 @@
 .mobileActionWheelWishlist {
   position: absolute;
   bottom: 26px;
-  left: -35px;
+  left: -75px;
   background: rgba(255, 255, 255, 0.95);
   border: none;
   opacity: 0;
@@ -3954,8 +3963,8 @@
 /* Share Button Position - Wheel Layout */
 .mobileActionWheelShare {
   position: absolute;
-  bottom: -3px;
-  left: -35px;
+  bottom: -33px;
+  left: -25px;
   background: rgba(255, 255, 255, 0.95);
   border: none;
   opacity: 0;
@@ -4295,18 +4304,18 @@
   }
   
   .mobileActionWheelCart {
-    bottom: 50px;
-    left: 3px;
+    bottom: 80px;
+    left: -20px;
   }
   
   .mobileActionWheelWishlist {
     bottom: 24px;
-    left: -32px;
+    left: -70px;
   }
   
   .mobileActionWheelShare {
-    bottom: -2px;
-    left: -32px;
+    bottom: -30px;
+    left: -20px;
   }
   
   .mobileActionWheelButton {
