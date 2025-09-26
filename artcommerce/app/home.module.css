@@ -3772,6 +3772,154 @@
   margin-top: 8px;
 }
 
+/* Rotating Action Wheel */
+.mobileActionWheel {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  z-index: 5;
+}
+
+.mobileActionWheelMain {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #000;
+  color: #fff;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mobileActionWheelMain:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.mobileActionWheelMain:active {
+  transform: scale(0.95);
+}
+
+.mobileActionWheelExpanded {
+  transform: rotate(45deg) scale(1.1);
+}
+
+.mobileActionWheelIcon {
+  transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.mobileActionWheelIconExpanded {
+  transform: rotate(45deg);
+}
+
+/* Action Wheel Buttons */
+.mobileActionWheelButton {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  opacity: 0;
+  visibility: hidden;
+  transform: scale(0) rotate(-45deg);
+  color: #333;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+}
+
+.mobileActionWheelButton:hover {
+  transform: scale(1.1) rotate(-45deg);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.mobileActionWheelButton:active {
+  transform: scale(0.9) rotate(-45deg);
+}
+
+/* Show buttons when expanded */
+.mobileActionWheelExpanded .mobileActionWheelButton {
+  opacity: 1;
+  visibility: visible;
+  transform: scale(1) rotate(-45deg);
+}
+
+/* Cart Button Position */
+.mobileActionWheelCart {
+  top: -60px;
+  right: -8px;
+  transition-delay: 0.1s;
+}
+
+.mobileActionWheelCart:hover {
+  background: #000;
+  color: #fff;
+  border-color: #000;
+}
+
+/* Wishlist Button Position */
+.mobileActionWheelWishlist {
+  top: -45px;
+  right: -45px;
+  transition-delay: 0.2s;
+}
+
+.mobileActionWheelWishlistActive {
+  background: #ff4757;
+  color: #fff;
+  border-color: #ff4757;
+}
+
+.mobileActionWheelWishlist:hover {
+  background: #ff4757;
+  color: #fff;
+  border-color: #ff4757;
+}
+
+/* Share Button Position */
+.mobileActionWheelShare {
+  top: -8px;
+  right: -60px;
+  transition-delay: 0.3s;
+}
+
+.mobileActionWheelShare:hover {
+  background: #007bff;
+  color: #fff;
+  border-color: #007bff;
+}
+
+/* Backdrop for closing menu */
+.mobileActionWheelBackdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 4;
+  background: transparent;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.mobileActionWheelBackdropVisible {
+  opacity: 1;
+  visibility: visible;
+}
+
 .mobileAddToCartButton {
   flex: 1;
   background: #000;
@@ -4052,6 +4200,36 @@
   .mobileProgressCapsule {
     width: 24px;
     height: 4px;
+  }
+  
+  .mobileActionWheel {
+    bottom: 12px;
+    right: 12px;
+  }
+  
+  .mobileActionWheelMain {
+    width: 44px;
+    height: 44px;
+  }
+  
+  .mobileActionWheelButton {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .mobileActionWheelCart {
+    top: -54px;
+    right: -6px;
+  }
+  
+  .mobileActionWheelWishlist {
+    top: -40px;
+    right: -40px;
+  }
+  
+  .mobileActionWheelShare {
+    top: -6px;
+    right: -54px;
   }
 }
 

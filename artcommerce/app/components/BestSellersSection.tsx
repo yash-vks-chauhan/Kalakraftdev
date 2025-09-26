@@ -6,7 +6,7 @@ import { useCart } from '../contexts/CartContext'
 import { useWishlist } from '../contexts/WishlistContext'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Heart, ShoppingCart, ChevronLeft, ChevronRight, Play, Pause } from 'lucide-react'
+import { Heart, ShoppingCart, ChevronLeft, ChevronRight, Play, Pause, Plus, Share2 } from 'lucide-react'
 
 interface Product {
   id: string
@@ -35,6 +35,9 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
   const [autoPlaySpeed] = useState(5000) // 5 seconds for more elegant timing
   const autoPlayRef = useRef<NodeJS.Timeout | null>(null)
   const [isPaused, setIsPaused] = useState(false)
+  
+  // Action wheel states
+  const [expandedWheel, setExpandedWheel] = useState<string | null>(null)
   
   // Image loading states
   const [imageLoadStates, setImageLoadStates] = useState<{ [key: string]: 'loading' | 'loaded' | 'error' }>({})
@@ -240,6 +243,25 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
     })
   }, [currentIndex])
 
+  // Close action wheel when slide changes
+  useEffect(() => {
+    setExpandedWheel(null)
+  }, [currentIndex])
+
+  // Close action wheel on escape key
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setExpandedWheel(null)
+      }
+    }
+
+    if (expandedWheel) {
+      document.addEventListener('keydown', handleEscape)
+      return () => document.removeEventListener('keydown', handleEscape)
+    }
+  }, [expandedWheel])
+
   // Enhanced touch handling for smooth card-like swiping
   const handleTouchStart = (e: React.TouchEvent) => {
     if (isTransitioning) return
@@ -357,6 +379,48 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
       }
     } catch (error) {
       console.error('Error toggling wishlist:', error)
+    }
+  }
+
+  // Action wheel functions
+  const toggleActionWheel = (productId: string) => {
+    setExpandedWheel(expandedWheel === productId ? null : productId)
+  }
+
+  const handleWheelAction = async (action: 'cart' | 'wishlist' | 'share', productId: string) => {
+    setExpandedWheel(null) // Close wheel after action
+    
+    switch (action) {
+      case 'cart':
+        await handleAddToCart(productId)
+        break
+      case 'wishlist':
+        await handleWishlistToggle(productId)
+        break
+      case 'share':
+        handleShare(productId)
+        break
+    }
+  }
+
+  const handleShare = (productId: string) => {
+    const product = products.find(p => p.id === productId)
+    if (!product) return
+
+    const shareData = {
+      title: product.name,
+      text: `Check out this amazing ${product.name}`,
+      url: `${window.location.origin}/products/${productId}`
+    }
+
+    if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+      navigator.share(shareData).catch(console.error)
+    } else {
+      // Fallback: Copy to clipboard
+      navigator.clipboard.writeText(shareData.url).then(() => {
+        // You could show a toast notification here
+        console.log('Link copied to clipboard')
+      }).catch(console.error)
     }
   }
 
@@ -603,6 +667,70 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
                           >
                             <Heart size={18} fill={isInWishlistStatus ? 'currentColor' : 'none'} />
                           </button>
+                        </div>
+
+                        {/* Rotating Action Wheel */}
+                        <div className={styles.mobileActionWheel}>
+                          {/* Backdrop for closing menu */}
+                          {expandedWheel === product.id && (
+                            <div 
+                              className={`${styles.mobileActionWheelBackdrop} ${styles.mobileActionWheelBackdropVisible}`}
+                              onClick={() => setExpandedWheel(null)}
+                            />
+                          )}
+                          
+                          {/* Main Action Button */}
+                          <button
+                            className={`${styles.mobileActionWheelMain} ${
+                              expandedWheel === product.id ? styles.mobileActionWheelExpanded : ''
+                            }`}
+                            onClick={() => toggleActionWheel(product.id)}
+                            title="More actions"
+                            aria-label="More actions"
+                          >
+                            <Plus 
+                              size={20} 
+                              className={`${styles.mobileActionWheelIcon} ${
+                                expandedWheel === product.id ? styles.mobileActionWheelIconExpanded : ''
+                              }`}
+                            />
+                          </button>
+
+                          {/* Action Buttons */}
+                          <div className={expandedWheel === product.id ? styles.mobileActionWheelExpanded : ''}>
+                            {/* Cart Action */}
+                            <button
+                              className={`${styles.mobileActionWheelButton} ${styles.mobileActionWheelCart}`}
+                              onClick={() => handleWheelAction('cart', product.id)}
+                              disabled={addingToCart[product.id] || product.stockQuantity === 0}
+                              title="Add to Cart"
+                              aria-label="Add to Cart"
+                            >
+                              <ShoppingCart size={16} />
+                            </button>
+
+                            {/* Wishlist Action */}
+                            <button
+                              className={`${styles.mobileActionWheelButton} ${styles.mobileActionWheelWishlist} ${
+                                isInWishlistStatus ? styles.mobileActionWheelWishlistActive : ''
+                              }`}
+                              onClick={() => handleWheelAction('wishlist', product.id)}
+                              title={isInWishlistStatus ? 'Remove from Wishlist' : 'Add to Wishlist'}
+                              aria-label={isInWishlistStatus ? 'Remove from Wishlist' : 'Add to Wishlist'}
+                            >
+                              <Heart size={16} fill={isInWishlistStatus ? 'currentColor' : 'none'} />
+                            </button>
+
+                            {/* Share Action */}
+                            <button
+                              className={`${styles.mobileActionWheelButton} ${styles.mobileActionWheelShare}`}
+                              onClick={() => handleWheelAction('share', product.id)}
+                              title="Share Product"
+                              aria-label="Share Product"
+                            >
+                              <Share2 size={16} />
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
