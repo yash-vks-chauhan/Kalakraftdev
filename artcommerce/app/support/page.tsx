@@ -6,7 +6,6 @@ import { useAuth } from "../contexts/AuthContext";
 import styles from "./support.module.css";
 import { FiUpload, FiX, FiSend, FiHelpCircle, FiTruck, FiPackage, FiAlertTriangle } from 'react-icons/fi';
 import Image from "next/image";
-import InlineLoader from '../components/InlineLoader';
 import ButtonLoader from '../components/ButtonLoader';
 
 export default function SupportPage() {
