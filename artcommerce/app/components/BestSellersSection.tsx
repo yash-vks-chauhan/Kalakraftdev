@@ -672,8 +672,8 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
                             />
                           </button>
 
-                          {/* Action Buttons */}
-                          <div className={expandedWheel === product.id ? styles.mobileActionWheelExpanded : ''}>
+                          {/* Action Menu */}
+                          <div className={`${styles.mobileActionMenu} ${expandedWheel === product.id ? styles.mobileActionWheelExpanded : ''}`}>
                             {/* Cart Action */}
                             <button
                               className={`${styles.mobileActionWheelButton} ${styles.mobileActionWheelCart}`}
@@ -682,7 +682,7 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
                               title="Add to Cart"
                               aria-label="Add to Cart"
                             >
-                              <ShoppingCart size={16} />
+                              <ShoppingCart size={14} />
                             </button>
 
                             {/* Wishlist Action */}
@@ -694,7 +694,7 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
                               title={isInWishlistStatus ? 'Remove from Wishlist' : 'Add to Wishlist'}
                               aria-label={isInWishlistStatus ? 'Remove from Wishlist' : 'Add to Wishlist'}
                             >
-                              <Heart size={16} fill={isInWishlistStatus ? 'currentColor' : 'none'} />
+                              <Heart size={14} fill={isInWishlistStatus ? 'currentColor' : 'none'} />
                             </button>
 
                             {/* Share Action */}
@@ -704,7 +704,7 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
                               title="Share Product"
                               aria-label="Share Product"
                             >
-                              <Share2 size={16} />
+                              <Share2 size={14} />
                             </button>
                           </div>
                         </div>
