@@ -643,31 +643,7 @@ const BestSellersSection = ({ styles }: BestSellersProps) => {
                           )}
                         </div>
 
-                        {/* Action Buttons */}
-                        <div className={styles.mobileProductActions}>
-                          <button
-                            className={styles.mobileAddToCartButton}
-                            onClick={() => handleAddToCart(product.id)}
-                            disabled={addingToCart[product.id] || product.stockQuantity === 0}
-                            title={
-                              product.stockQuantity === 0 
-                                ? 'Out of Stock' 
-                                : addingToCart[product.id] 
-                                  ? 'Adding...' 
-                                  : 'Add to Cart'
-                            }
-                          >
-                            <ShoppingCart size={18} />
-                          </button>
 
-                          <button
-                            className={`${styles.mobileWishlistButton} ${isInWishlistStatus ? styles.mobileWishlistActive : ''}`}
-                            onClick={() => handleWishlistToggle(product.id)}
-                            title={isInWishlistStatus ? 'Remove from Wishlist' : 'Add to Wishlist'}
-                          >
-                            <Heart size={18} fill={isInWishlistStatus ? 'currentColor' : 'none'} />
-                          </button>
-                        </div>
 
                         {/* Rotating Action Wheel */}
                         <div className={styles.mobileActionWheel}>
