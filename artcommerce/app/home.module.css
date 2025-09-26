@@ -2481,9 +2481,9 @@
 /* Scroll indicators removed for clean appearance */
 
 .categoryButton {
-  background: #f8f9fa;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  color: #374151;
+  background: #ffffff;
+  border: 2px solid #000000;
+  color: #000000;
   padding: 0.75rem 1.5rem;
   font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   font-weight: 600;
@@ -2491,30 +2491,34 @@
   font-size: 1rem;
   letter-spacing: -0.02em;
   cursor: pointer;
-  transition: all 0.2s ease;
-  border-radius: 10px;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  border-radius: 0;
   position: relative;
   overflow: hidden;
   min-width: 120px;
   white-space: nowrap;
   flex-shrink: 0;
+  box-shadow: none;
+  outline: none;
 }
 
 .categoryButton:hover {
-  background-color: #e5e7eb;
-  border-color: rgba(0, 0, 0, 0.12);
-  color: #1f2937;
+  background-color: #000000;
+  border-color: #000000;
+  color: #ffffff;
+  transform: translateY(-1px);
 }
 
 .categoryButtonActive {
-  background-color: #1f2937;
+  background-color: #000000;
   color: #ffffff;
-  border-color: #1f2937;
+  border-color: #000000;
 }
 
 .categoryButtonActive:hover {
-  background-color: #111827;
-  border-color: #111827;
+  background-color: #333333;
+  border-color: #333333;
+  transform: translateY(-1px);
 }
 
 /* Featured Description */
@@ -2786,13 +2790,13 @@
 }
 
 .featuredMobileProductName {
-  font-size: 0.875rem;
-  font-weight: 500;
+  font-size: 1rem;
+  font-weight: 600;
   color: #1f2937;
   margin-bottom: 0.25rem;
   line-height: 1.25;
-  font-family: 'Inter', sans-serif;
-  letter-spacing: -0.01em;
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  letter-spacing: -0.02em;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
@@ -2803,12 +2807,12 @@
 }
 
 .featuredMobilePrice {
-  font-size: 0.875rem;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: 700;
   color: #111827;
   margin: 0;
-  font-family: 'Inter', sans-serif;
-  letter-spacing: -0.01em;
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  letter-spacing: -0.02em;
 }
 
 /* Desktop Wishlist Button Styles for Featured Section */
@@ -2941,10 +2945,11 @@
   }
   
   .categoryButton {
-    padding: 0.5rem 1rem;
-    font-size: 0.8rem;
-    min-width: 80px;
-    border-radius: 6px;
+    padding: 0.6rem 1.2rem;
+    font-size: 0.9rem;
+    min-width: 100px;
+    border-radius: 0;
+    border-width: 2px;
   }
   
   .featuredDescription {
