@@ -140,8 +140,8 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
         setIsFooterVisible(true)
       } else if (
         scrollDirection > 0 &&
-        scrollVelocity > (isProductsPage ? 0.7 : 0.3) && // Higher threshold for products page
-        currentScrollY > (isProductsPage ? 200 : 100) // More scroll needed on products page
+        scrollVelocity > 0.3 && // Use same threshold for all pages
+        currentScrollY > 100 // Use same scroll distance for all pages
       ) {
         setIsFooterVisible(false)
       } else if (scrollDirection < 0) {
@@ -152,7 +152,7 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
         if (currentScrollY > 50) {
           setIsFooterVisible(true)
         }
-      }, isProductsPage ? 300 : 150) // Longer timeout for products page
+      }, 150) // Use same timeout for all pages
       
       prevScrollY = currentScrollY
       lastScrollTime = currentTime
