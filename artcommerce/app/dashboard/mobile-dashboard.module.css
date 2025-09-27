@@ -209,11 +209,13 @@
 /* Typography Layout System */
 .typographyLayout {
   padding: 20px;
-  background: transparent;
+  background: #FFFFFF;
+  border-radius: 12px;
+  margin: 16px;
   display: flex;
   flex-direction: column;
   gap: 32px;
-  margin: 0 0 24px 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
 /* Primary Metric - Editorial Hero */
