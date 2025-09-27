@@ -165,80 +165,80 @@ export default function MobileUserManagement({ initialFilter = 'admin' }: Mobile
 
   return (
     <div className={styles.mobileDashboardContainer}>
-      <h1 className={styles.mobileHeader}>
-        User Management
-        <button 
-          onClick={handleLogout}
-          className={showLogoutConfirm ? "text-red-500" : "text-gray-500"}
-        >
-          <LogOut size={20} />
-        </button>
-      </h1>
-      
-      <div className={styles.userProfile}>
-        {user.avatarUrl ? (
-          <img
-            src={user.avatarUrl}
-            alt={`${user.fullName}'s avatar`}
-            className={styles.avatar}
-          />
-        ) : (
-          <div className={styles.avatar}>
-            <User size={30} />
+      <header className={styles.mobileHeader}>
+        <div className={styles.headerContent}>
+          <div className={styles.headerLeft}>
+            <h1 className={styles.headerTitle}>Users</h1>
+            <p className={styles.headerSubtitle}>Manage user accounts</p>
           </div>
-        )}
-        <div className={styles.userInfo}>
-          <span className={styles.userName}>{user.fullName}</span>
-          <span className={styles.userRole}>{user.role}</span>
+          <div className={styles.headerActions}>
+            <button 
+              onClick={handleLogout}
+              className={`${styles.iconButton} ${showLogoutConfirm ? "text-red-500" : ""}`}
+            >
+              <LogOut size={20} />
+            </button>
+          </div>
         </div>
-      </div>
+      </header>
+      
+      <div className={styles.contentWrapper}>
+        <div className={styles.userProfile}>
+          {user.avatarUrl ? (
+            <img
+              src={user.avatarUrl}
+              alt={`${user.fullName}'s avatar`}
+              className={styles.avatar}
+            />
+          ) : (
+            <div className={styles.avatar}>
+              <User size={24} />
+            </div>
+          )}
+          <div className={styles.userInfo}>
+            <h2 className={styles.userName}>{user.fullName}</h2>
+            <p className={styles.userRole}>{user.role}</p>
+          </div>
+        </div>
 
-      <div className="flex flex-col gap-3 mb-4">
-        <div className="flex items-center justify-between">
-          <div className="text-sm font-medium text-gray-500">
-            {activeFilter === 'admin' ? 'Admins' : 'Regular Users'}: <span className="text-black">{displayUsers.length}</span>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-1">
+              {displayUsers.length} {activeFilter === 'admin' ? 'Admins' : 'Users'}
+            </h3>
+            <p className="text-sm text-gray-500">
+              {activeFilter === 'admin' ? 'Administrator accounts' : 'Regular user accounts'}
+            </p>
           </div>
           <button 
             onClick={fetchUsers}
-            className={loading ? `${styles.refreshButton} ${styles.refreshing}` : styles.refreshButton}
+            className={styles.iconButton}
             disabled={loading}
           >
-            <RefreshCw size={16} />
+            <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
           </button>
         </div>
         
-        <div className="relative z-10 flex items-center justify-between bg-gray-50 p-2 rounded-lg border border-gray-200">
-          <span className="text-sm font-medium ml-2 text-gray-600">Show:</span>
-          <div className="flex items-center bg-white rounded-full p-1 shadow-sm">
-            <button 
-              ref={adminButtonRef}
-              type="button"
-              onClick={() => handleFilterChange('admin')}
-              className={`flex-1 flex justify-center items-center gap-1 px-4 py-1.5 text-xs font-medium rounded-full transition-all duration-300 ${
-                activeFilter === 'admin' 
-                  ? 'bg-gray-800 text-white shadow-sm' 
-                  : 'text-gray-600 hover:bg-gray-100'
-              }`}
-            >
-              <Shield size={14} className={activeFilter === 'admin' ? 'text-white' : 'text-gray-500'} />
-              Admins
-            </button>
-            <button 
-              ref={userButtonRef}
-              type="button"
-              onClick={() => handleFilterChange('user')}
-              className={`flex-1 flex justify-center items-center gap-1 px-4 py-1.5 text-xs font-medium rounded-full transition-all duration-300 ${
-                activeFilter === 'user' 
-                  ? 'bg-gray-800 text-white shadow-sm' 
-                  : 'text-gray-600 hover:bg-gray-100'
-              }`}
-            >
-              <User size={14} className={activeFilter === 'user' ? 'text-white' : 'text-gray-500'} />
-              Users
-            </button>
-          </div>
+        <div className={styles.segmentedControl}>
+          <button 
+            ref={adminButtonRef}
+            type="button"
+            onClick={() => handleFilterChange('admin')}
+            className={`${styles.segment} ${activeFilter === 'admin' ? styles.active : ''}`}
+          >
+            <Shield size={14} style={{ marginRight: '6px' }} />
+            Admins ({allUsers.filter(u => u.role === 'admin').length})
+          </button>
+          <button 
+            ref={userButtonRef}
+            type="button"
+            onClick={() => handleFilterChange('user')}
+            className={`${styles.segment} ${activeFilter === 'user' ? styles.active : ''}`}
+          >
+            <User size={14} style={{ marginRight: '6px' }} />
+            Users ({allUsers.filter(u => u.role === 'user').length})
+          </button>
         </div>
-      </div>
 
       {loading ? (
         <div className={styles.emptyState}>
@@ -341,6 +341,7 @@ export default function MobileUserManagement({ initialFilter = 'admin' }: Mobile
           ))}
         </ul>
       )}
+      </div>
     </div>
   )
 } 

@@ -263,133 +263,113 @@ export default function MobileProductManagement() {
 
   return (
     <div className={styles.mobileDashboardContainer}>
-      <h1 className={styles.mobileHeader}>
-        Manage Products
-        <button 
-          onClick={handleLogout}
-          className={showLogoutConfirm ? "text-red-500" : "text-gray-500"}
-        >
-          <LogOut size={20} />
-        </button>
-      </h1>
-
-      <div className={styles.userProfile}>
-        {user.avatarUrl ? (
-          <img
-            src={user.avatarUrl}
-            alt={`${user.fullName}'s avatar`}
-            className={styles.avatar}
-          />
-        ) : (
-          <div className={styles.avatar}>
-            <User size={30} />
+      <header className={styles.mobileHeader}>
+        <div className={styles.headerContent}>
+          <div className={styles.headerLeft}>
+            <h1 className={styles.headerTitle}>Products</h1>
+            <p className={styles.headerSubtitle}>Manage your product catalog</p>
           </div>
-        )}
-        <div className={styles.userInfo}>
-          <span className={styles.userName}>{user.fullName}</span>
-          <span className={styles.userRole}>{user.role}</span>
-        </div>
-      </div>
-
-      <div className="flex flex-col gap-3 mb-4">
-        <div className="flex items-center justify-between">
-          <div className="text-sm font-medium text-gray-500">
-            {activeFilter === 'active' ? 'Active Products' : 'Inactive Products'}: <span className="text-black">{totalProducts}</span>
-            <span className="text-xs text-gray-400 ml-1">total</span>
-            {totalPages > 1 && (
-              <div className="text-xs text-gray-400 mt-1">
-                Page {currentPage} of {totalPages} (showing {displayProducts.length})
-              </div>
-            )}
-            <div className="text-xs text-gray-400 mt-1 flex items-center gap-2">
-              <span>Show:</span>
-              <select
-                value={productsPerPage}
-                onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
-                className="text-xs border border-gray-200 rounded px-1 py-0.5 bg-white"
-              >
-                <option value={5}>5</option>
-                <option value={10}>10</option>
-                <option value={15}>15</option>
-                <option value={20}>20</option>
-              </select>
-              <span>per page</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
+          <div className={styles.headerActions}>
             <button 
-              onClick={fetchProducts}
-              className={isLoading ? `${styles.refreshButton} ${styles.refreshing}` : styles.refreshButton}
-              disabled={isLoading}
+              onClick={handleLogout}
+              className={`${styles.iconButton} ${showLogoutConfirm ? "text-red-500" : ""}`}
             >
-              <RefreshCw size={16} />
+              <LogOut size={20} />
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <div className={styles.contentWrapper}>
+        <div className={styles.userProfile}>
+          {user.avatarUrl ? (
+            <img
+              src={user.avatarUrl}
+              alt={`${user.fullName}'s avatar`}
+              className={styles.avatar}
+            />
+          ) : (
+            <div className={styles.avatar}>
+              <User size={24} />
+            </div>
+          )}
+          <div className={styles.userInfo}>
+            <h2 className={styles.userName}>{user.fullName}</h2>
+            <p className={styles.userRole}>{user.role}</p>
+          </div>
+        </div>
+
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-1">
+            {totalProducts} Products
+          </h3>
+          <p className="text-sm text-gray-500">
+            {activeFilter === 'active' ? 'Active products' : 'Inactive products'}
+            {totalPages > 1 && ` • Page ${currentPage} of ${totalPages}`}
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <button 
+            onClick={fetchProducts}
+            className={styles.iconButton}
+            disabled={isLoading}
+          >
+            <RefreshCw size={16} className={isLoading ? 'animate-spin' : ''} />
+          </button>
+          
+          <div className="relative" ref={actionsMenuRef}>
+            <button 
+              onClick={() => setShowActionsMenu(!showActionsMenu)}
+              className={styles.iconButton}
+              aria-label="More actions"
+            >
+              <MoreVertical size={18} />
             </button>
             
-            <div className="relative" ref={actionsMenuRef}>
-              <button 
-                onClick={() => setShowActionsMenu(!showActionsMenu)}
-                className={`${styles.actionMenuButton} ${showActionsMenu ? styles.actionMenuButtonActive : ''}`}
-                aria-label="More actions"
-              >
-                <MoreVertical size={18} />
-              </button>
-              
-              {showActionsMenu && (
-                <div className={styles.actionMenuDropdown}>
-                  <Link
-                    href="/dashboard/admin/products/new"
-                    className={styles.actionMenuItem}
-                    onClick={() => setShowActionsMenu(false)}
-                  >
-                    <PlusCircle size={16} />
-                    <span>Add New Product</span>
-                  </Link>
-                  <Link
-                    href="/dashboard/admin/products/highest-rated"
-                    className={styles.actionMenuItem}
-                    onClick={() => setShowActionsMenu(false)}
-                  >
-                    <Star size={16} />
-                    <span>Highest Rated</span>
-                  </Link>
-                </div>
-              )}
-            </div>
+            {showActionsMenu && (
+              <div className={styles.actionMenuDropdown}>
+                <Link
+                  href="/dashboard/admin/products/new"
+                  className={styles.actionMenuItem}
+                  onClick={() => setShowActionsMenu(false)}
+                >
+                  <PlusCircle size={16} />
+                  <span>Add New Product</span>
+                </Link>
+                <Link
+                  href="/dashboard/admin/products/highest-rated"
+                  className={styles.actionMenuItem}
+                  onClick={() => setShowActionsMenu(false)}
+                >
+                  <Star size={16} />
+                  <span>Highest Rated</span>
+                </Link>
+              </div>
+            )}
           </div>
         </div>
         
-        <div className="relative z-10 flex items-center justify-between bg-gray-50 p-2 rounded-lg border border-gray-200">
-          <span className="text-sm font-medium ml-2 text-gray-600">Show:</span>
-          <div className="flex items-center bg-white rounded-full p-1 shadow-sm">
-            <button 
-              ref={activeButtonRef}
-              type="button"
-              onClick={() => handleFilterChange('active')}
-              className={`flex-1 flex justify-center items-center gap-1 px-4 py-1.5 text-xs font-medium rounded-full transition-all duration-300 ${
-                activeFilter === 'active' 
-                  ? 'bg-green-600 text-white shadow-sm' 
-                  : 'text-gray-600 hover:bg-gray-100'
-              }`}
-            >
-              <CircleCheck size={14} className={activeFilter === 'active' ? 'text-white' : 'text-green-500'} />
-              Active
-            </button>
-            <button 
-              ref={inactiveButtonRef}
-              type="button"
-              onClick={() => handleFilterChange('inactive')}
-              className={`flex-1 flex justify-center items-center gap-1 px-4 py-1.5 text-xs font-medium rounded-full transition-all duration-300 ${
-                activeFilter === 'inactive' 
-                  ? 'bg-gray-700 text-white shadow-sm' 
-                  : 'text-gray-600 hover:bg-gray-100'
-              }`}
-            >
-              <CircleX size={14} className={activeFilter === 'inactive' ? 'text-white' : 'text-gray-400'} />
-              Inactive
-            </button>
-          </div>
+        <div className={styles.segmentedControl}>
+          <button 
+            ref={activeButtonRef}
+            type="button"
+            onClick={() => handleFilterChange('active')}
+            className={`${styles.segment} ${activeFilter === 'active' ? styles.active : ''}`}
+          >
+            <CircleCheck size={14} style={{ marginRight: '6px' }} />
+            Active ({allProducts.filter(p => p.isActive).length})
+          </button>
+          <button 
+            ref={inactiveButtonRef}
+            type="button"
+            onClick={() => handleFilterChange('inactive')}
+            className={`${styles.segment} ${activeFilter === 'inactive' ? styles.active : ''}`}
+          >
+            <CircleX size={14} style={{ marginRight: '6px' }} />
+            Inactive ({allProducts.filter(p => !p.isActive).length})
+          </button>
         </div>
-      </div>
 
       {isLoading ? (
         <div className={styles.emptyState}>
@@ -407,117 +387,66 @@ export default function MobileProductManagement() {
         </div>
       ) : (
         <>
-          <ul className={`${styles.menuList} ${isPageTransitioning ? styles.paginationTransition : ''}`}>
+          <div className={`${styles.modernProductGrid} ${isPageTransitioning ? styles.paginationTransition : ''}`}>
             {displayProducts.map(product => (
-              <li key={product.id}>
-                <div 
-                  className={styles.menuItem}
-                  onClick={() => setExpandedProduct(expandedProduct === product.id ? null : product.id)}
-                >
-                  <div className={styles.menuIcon}>
-                    {product.imageUrls && product.imageUrls.length > 0 ? (
-                      <img 
-                        src={product.imageUrls[0]} 
-                        alt={product.name}
-                        className={styles.productImage}
-                        onError={(e) => {
-                          // Fallback to Package icon if image fails to load
-                          const target = e.target as HTMLImageElement;
-                          target.style.display = 'none';
-                          target.nextElementSibling?.classList.remove('hidden');
-                        }}
-                      />
-                    ) : null}
-                    <Package 
-                      size={18} 
-                      className={product.imageUrls && product.imageUrls.length > 0 ? 'hidden' : ''} 
+              <div key={product.id} className={styles.productCard}>
+                <div className={styles.productImageContainer}>
+                  {product.imageUrls && product.imageUrls.length > 0 ? (
+                    <img 
+                      src={product.imageUrls[0]} 
+                      alt={product.name}
+                      className={styles.productCardImage}
                     />
-                  </div>
-                  <div className={styles.menuItemText}>
-                    <div className="font-medium">{product.name}</div>
-                    <div className="text-xs text-gray-500 flex items-center gap-1">
-                      <DollarSign size={10} /> 
-                      {product.currency} {product.price?.toFixed(2)}
+                  ) : (
+                    <div className={styles.productPlaceholder}>
+                      <Package size={24} />
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2">
+                  )}
+                  <div className={styles.productBadge}>
                     {product.isActive ? (
-                      <CircleCheck size={16} className="text-green-500" />
+                      <span className={styles.activeBadge}>Active</span>
                     ) : (
-                      <CircleX size={16} className="text-gray-400" />
+                      <span className={styles.inactiveBadge}>Inactive</span>
                     )}
-                    <ChevronRight 
-                      size={20} 
-                      className={`transform transition-transform duration-300 ${expandedProduct === product.id ? "rotate-90" : ""}`} 
-                    />
                   </div>
                 </div>
                 
-                <div className={`${styles.expandableContent} ${expandedProduct === product.id ? styles.expanded : ''} bg-gray-50 rounded-b-lg border-t border-gray-100`}>
-                  <div className="p-4 space-y-4" data-product-id={product.id}>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-sm">
-                        <span className="text-gray-500">Stock:</span>
-                        <span className={`font-medium ${product.stockQuantity <= 5 ? 'text-orange-600' : ''}`}>
-                          {product.stockQuantity}
-                        </span>
-                      </div>
-                      
-                      <div className="flex items-center gap-2 text-sm">
-                        <span className="text-gray-500">Sold:</span>
-                        <span className="font-medium text-gray-800">
-                          {product.totalSold || 0}
-                        </span>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-sm">
-                        <span className="text-gray-500">Status:</span>
-                        <label className={desktopStyles.statusSwitch} onClick={e => e.stopPropagation()}>
-                          <input
-                            type="checkbox"
-                            checked={product.isActive}
-                            onChange={() => handleToggleStatus(product.id, !product.isActive)}
-                          />
-                          <span className={desktopStyles.statusSlider} />
-                        </label>
-                      </div>
-                    </div>
-                    
-                    <div className="flex flex-wrap gap-2">
-                      <Link
-                        href={`/dashboard/admin/products/${product.id}`}
-                        className="flex items-center gap-1 bg-gray-100 text-gray-800 text-sm px-3 py-2 rounded-md flex-1 justify-center"
-                      >
-                        <Edit size={14} />
-                        Edit
-                      </Link>
-                      
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleDelete(product.id, product.name)
-                        }}
-                        className="flex items-center gap-1 bg-red-100 text-red-800 text-sm px-3 py-2 rounded-md flex-1 justify-center"
-                      >
-                        <Trash2 size={14} />
-                        Delete
-                      </button>
-                    </div>
-                    
+                <div className={styles.productInfo}>
+                  <h3 className={styles.productName}>{product.name}</h3>
+                  <p className={styles.productPrice}>{product.currency} {product.price?.toFixed(2)}</p>
+                  <div className={styles.productMeta}>
+                    <span className={styles.productStock}>
+                      Stock: {product.stockQuantity}
+                    </span>
+                    <span className={styles.productSold}>
+                      Sold: {product.totalSold || 0}
+                    </span>
+                  </div>
+                  
+                  <div className={styles.productActions}>
                     <Link
                       href={`/dashboard/admin/products/${product.id}`}
-                      className="flex items-center justify-center gap-1 bg-black text-white text-sm px-3 py-2 rounded-md w-full"
+                      className={styles.quickAction}
                     >
-                      <BarChart3 size={14} />
-                      View Details
+                      <Edit size={16} />
                     </Link>
+                    <button
+                      onClick={() => handleToggleStatus(product.id, !product.isActive)}
+                      className={styles.quickAction}
+                    >
+                      {product.isActive ? <CircleX size={16} /> : <CircleCheck size={16} />}
+                    </button>
+                    <button
+                      onClick={() => handleDelete(product.id, product.name)}
+                      className={`${styles.quickAction} ${styles.deleteAction}`}
+                    >
+                      <Trash2 size={16} />
+                    </button>
                   </div>
                 </div>
-              </li>
+              </div>
             ))}
-          </ul>
+          </div>
           
           {/* Pagination Controls */}
           {totalPages > 1 && (
@@ -602,6 +531,7 @@ export default function MobileProductManagement() {
           )}
         </>
       )}
-    </div>
+      </div> {/* Close contentWrapper */}
+    </div> {/* Close mobileDashboardContainer */}
   )
 } 

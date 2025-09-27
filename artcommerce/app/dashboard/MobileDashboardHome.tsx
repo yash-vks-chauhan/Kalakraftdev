@@ -1,7 +1,7 @@
 "use client"
 
 import Link from 'next/link'
-import { ChevronRight, ChevronDown, ChevronUp, User, Package, ShoppingCart, Heart, Settings, Users, Tag, AlertTriangle, TicketCheck, Star, LogOut, RefreshCw, Clock, PackageOpen, Calendar, PlusCircle, BarChart3, Shield, UserCheck } from 'lucide-react'
+import { ChevronRight, ChevronDown, ChevronUp, User, Package, ShoppingCart, Heart, Settings, Users, Tag, AlertTriangle, TicketCheck, Star, LogOut, RefreshCw, Clock, PackageOpen, Calendar, PlusCircle, BarChart3, Shield, UserCheck, DollarSign } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import styles from './mobile-dashboard.module.css'
 import desktopStyles from './dashboard.module.css'
@@ -10,26 +10,16 @@ import InlineLoader from '../components/InlineLoader'
 
 // Mobile Dashboard Skeleton Components
 const MetricsSkeleton = () => (
-  <div className={styles.metricsScrollContainer}>
-    <div className={styles.metricsRow}>
-      <div className={styles.metricCard}>
-        <div className={`${styles.skeletonMetricTitle} ${styles.skeletonShimmer}`}></div>
-        <div className={`${styles.skeletonMetricValue} ${styles.skeletonShimmer}`}></div>
+  <div className={styles.metricsGrid}>
+    {[1, 2, 3, 4].map((i) => (
+      <div key={i} className={styles.metricCard}>
+        <div className={`${styles.modernSkeleton}`} style={{ width: '40px', height: '40px', borderRadius: '12px', marginBottom: '12px' }}></div>
+        <div className={styles.metricContent}>
+          <div className={`${styles.modernSkeleton}`} style={{ width: '60px', height: '28px', marginBottom: '4px' }}></div>
+          <div className={`${styles.modernSkeleton}`} style={{ width: '80px', height: '16px' }}></div>
+        </div>
       </div>
-      <div className={styles.metricCard}>
-        <div className={`${styles.skeletonMetricTitle} ${styles.skeletonShimmer}`}></div>
-        <div className={`${styles.skeletonMetricValue} ${styles.skeletonShimmer}`}></div>
-      </div>
-      <div className={styles.metricCard}>
-        <div className={`${styles.skeletonMetricTitle} ${styles.skeletonShimmer}`}></div>
-        <div className={`${styles.skeletonMetricValue} ${styles.skeletonShimmer}`}></div>
-      </div>
-    </div>
-    <div className={styles.scrollIndicator}>
-      {[0, 1, 2].map((i) => (
-        <div key={i} className={`${styles.scrollDot} ${styles.skeletonShimmer}`}></div>
-      ))}
-    </div>
+    ))}
   </div>
 );
 
@@ -218,43 +208,51 @@ export default function MobileDashboardHome() {
 
   return (
     <div className={styles.mobileDashboardContainer}>
-      <h1 className={styles.mobileHeader}>
-        Dashboard
-        <button 
-          onClick={handleLogout}
-          className={showLogoutConfirm ? "text-red-500" : "text-gray-500"}
-        >
-          <LogOut size={20} />
-        </button>
-      </h1>
-      
-      <div className={styles.userProfile}>
-        {user.avatarUrl ? (
-          <img
-            src={user.avatarUrl}
-            alt={`${user.fullName}'s avatar`}
-            className={styles.avatar}
-          />
-        ) : (
-          <div className={styles.avatar}>
-            <User size={30} />
+      <header className={styles.mobileHeader}>
+        <div className={styles.headerContent}>
+          <div className={styles.headerLeft}>
+            <h1 className={styles.headerTitle}>Dashboard</h1>
+            <p className={styles.headerSubtitle}>Welcome back, {user.fullName}</p>
           </div>
-        )}
-        <div className={styles.userInfo}>
-          <span className={styles.userName}>{user.fullName}</span>
-          <span className={styles.userRole}>{user.role}</span>
+          <div className={styles.headerActions}>
+            <button 
+              onClick={handleLogout}
+              className={`${styles.iconButton} ${showLogoutConfirm ? "text-red-500" : ""}`}
+            >
+              <LogOut size={20} />
+            </button>
+          </div>
         </div>
-      </div>
+      </header>
+      
+      <div className={styles.contentWrapper}>
+        <div className={styles.userProfile}>
+          {user.avatarUrl ? (
+            <img
+              src={user.avatarUrl}
+              alt={`${user.fullName}'s avatar`}
+              className={styles.avatar}
+            />
+          ) : (
+            <div className={styles.avatar}>
+              <User size={24} />
+            </div>
+          )}
+          <div className={styles.userInfo}>
+            <h2 className={styles.userName}>{user.fullName}</h2>
+            <p className={styles.userRole}>{user.role}</p>
+          </div>
+        </div>
 
       {user.role === 'admin' && (
         <>
-          <div className={styles.periodSelectorMobile}>
-            <div className={styles.periodSelectWrapper}>
+          <div className={styles.sectionHeader}>
+            <div className={styles.sectionTitleGroup}>
+              <h3 className={styles.sectionTitle}>Overview</h3>
               <select
-                id="mobile-period"
                 value={period}
                 onChange={handlePeriodChange}
-                className={styles.periodSelectMobile}
+                className={styles.modernSelect}
               >
                 <option value="today">Today</option>
                 <option value="week">Last 7 days</option>
@@ -265,7 +263,7 @@ export default function MobileDashboardHome() {
             </div>
             <button
               onClick={() => fetchMetrics()}
-              className={styles.periodRefreshButton}
+              className={styles.iconButton}
               disabled={refreshing}
               aria-label="Refresh metrics"
             >
@@ -275,42 +273,38 @@ export default function MobileDashboardHome() {
           {refreshing || !metrics ? (
             <MetricsSkeleton />
           ) : (
-            <div className={styles.metricsScrollContainer}>
-              <div className={styles.metricsRow} ref={metricsRowRef}>
-                <div className={styles.metricCard}>
-                  <h3 className={styles.metricTitle}>Orders</h3>
+            <div className={styles.metricsGrid}>
+              <div className={styles.metricCard}>
+                <div className={styles.metricIcon}>
+                  <Package size={20} />
+                </div>
+                <div className={styles.metricContent}>
                   <p className={styles.metricValue}>{metrics?.totalOrders || '0'}</p>
+                  <p className={styles.metricLabel}>Orders</p>
                 </div>
-                <div className={styles.metricCard}>
-                  <h3 className={styles.metricTitle}>Revenue</h3>
-                  <p className={styles.metricValue}>₹{metrics?.revenue ? metrics.revenue.toFixed(2) : '0.00'}</p>
+              </div>
+              <div className={styles.metricCard}>
+                <div className={styles.metricIcon}>
+                  <DollarSign size={20} />
                 </div>
-                {metrics?.statusCounts?.map((sc: any) => (
-                  <div key={sc.status} className={styles.metricCard}>
-                    <h3 className={styles.metricTitle}>
-                      {sc.status.charAt(0).toUpperCase() + sc.status.slice(1)}
-                    </h3>
-                    <p className={styles.metricValue}>{sc._count.status}</p>
+                <div className={styles.metricContent}>
+                  <p className={styles.metricValue}>₹{metrics?.revenue ? metrics.revenue.toFixed(0) : '0'}</p>
+                  <p className={styles.metricLabel}>Revenue</p>
+                </div>
+              </div>
+              {metrics?.statusCounts?.slice(0, 2).map((sc: any) => (
+                <div key={sc.status} className={styles.metricCard}>
+                  <div className={styles.metricIcon}>
+                    <BarChart3 size={20} />
                   </div>
-                ))}
-              </div>
-              <div className={styles.scrollIndicator}>
-                {[0, 1, ...(metrics?.statusCounts?.map((_: any, i: number) => i + 2) || [])].map((i) => (
-                  <div 
-                    key={i} 
-                    className={`${styles.scrollDot} ${activeMetricDot === i ? styles.activeDot : ''}`}
-                    onClick={() => {
-                      if (metricsRowRef.current) {
-                        const itemWidth = metricsRowRef.current.scrollWidth / (metrics?.statusCounts?.length + 2 || 3)
-                        metricsRowRef.current.scrollTo({
-                          left: itemWidth * i,
-                          behavior: 'smooth'
-                        })
-                      }
-                    }}
-                  ></div>
-                ))}
-              </div>
+                  <div className={styles.metricContent}>
+                    <p className={styles.metricValue}>{sc._count.status}</p>
+                    <p className={styles.metricLabel}>
+                      {sc.status.charAt(0).toUpperCase() + sc.status.slice(1)}
+                    </p>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </>
@@ -330,49 +324,42 @@ export default function MobileDashboardHome() {
         {loadingOrders ? (
           <InlineLoader size="medium" message="Loading orders..." />
         ) : recentOrders.length > 0 ? (
-          <div className={styles.ordersScrollContainer}>
-            <div className={styles.ordersRow}>
-              {recentOrders.map((order: any) => (
-                <div key={order.id} className={styles.orderCard}>
-                  <Link href={`/dashboard/orders/${order.id}`} className={styles.orderCardLink}>
-                    <div className={styles.orderImageContainer}>
-                      {getFirstProductImage(order) ? (
-                        <img 
-                          src={getFirstProductImage(order)} 
-                          alt={getProductName(order)}
-                          className={styles.orderImage}
-                        />
-                      ) : (
-                        <div className={styles.noOrderImage}>
-                          <Package size={24} />
-                        </div>
-                      )}
-                    </div>
-                    
-                    <div className={styles.orderContent}>
-                      <div className={styles.orderHeader}>
-                        <h3 className={styles.productName}>
-                          {getProductSummary(order)}
-                        </h3>
-                        <span className={styles.orderNumber}>
-                          Order #{order.id.toString().substring(0, 8)}
-                        </span>
-                      </div>
-                      
-                      <div className={styles.orderMeta}>
-                        <span className={styles.orderDate}>
-                          <Calendar size={12} style={{ display: 'inline', marginRight: '4px' }} />
-                          {formatDate(order.createdAt)}
-                        </span>
-                        <span className={`${styles.orderStatus} ${getStatusClass(order.status)}`}>
-                          {order.status}
-                        </span>
-                      </div>
-                    </div>
-                  </Link>
+          <div className={styles.modernOrdersList}>
+            {recentOrders.map((order: any) => (
+              <Link 
+                key={order.id} 
+                href={`/dashboard/orders/${order.id}`} 
+                className={styles.modernOrderItem}
+              >
+                <div className={styles.orderItemIcon}>
+                  {getFirstProductImage(order) ? (
+                    <img 
+                      src={getFirstProductImage(order)} 
+                      alt={getProductName(order)}
+                      className={styles.orderItemImage}
+                    />
+                  ) : (
+                    <Package size={20} />
+                  )}
                 </div>
-              ))}
-            </div>
+                
+                <div className={styles.orderItemContent}>
+                  <h4 className={styles.orderItemTitle}>
+                    {getProductSummary(order)}
+                  </h4>
+                  <p className={styles.orderItemSubtitle}>
+                    Order #{order.id.toString().substring(0, 8)} • {formatDate(order.createdAt)}
+                  </p>
+                </div>
+                
+                <div className={styles.orderItemStatus}>
+                  <span className={`${styles.statusBadge} ${styles[getStatusClass(order.status)]}`}>
+                    {order.status}
+                  </span>
+                  <ChevronRight size={16} className={styles.orderItemChevron} />
+                </div>
+              </Link>
+            ))}
           </div>
         ) : (
           <div className={styles.emptyState}>
@@ -436,66 +423,31 @@ export default function MobileDashboardHome() {
               </Link>
             </li>
             <li>
-              <div 
-                className={styles.menuItem}
-                onClick={() => setShowProductsMenu(!showProductsMenu)}
-              >
+              <Link href="/dashboard/admin/products" className={styles.menuItem}>
                 <div className={styles.menuIcon}>
                   <Tag size={18} />
                 </div>
-                <span className={styles.menuItemText}>Manage Products</span>
-                {showProductsMenu ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-              </div>
-              <div className={`${styles.expandableContent} ${showProductsMenu ? styles.expanded : ''}`}>
-                <div className="p-2 space-y-2">
-                  <Link href="/dashboard/admin/products" className={styles.submenuItem}>
-                    <BarChart3 size={16} />
-                    <span>Show All Products</span>
-                    <ChevronRight size={16} />
-                  </Link>
-                  <Link href="/dashboard/admin/products/new/mobile" className={styles.submenuItem}>
-                    <PlusCircle size={16} />
-                    <span>Add New Product</span>
-                    <ChevronRight size={16} />
-                  </Link>
-                  <Link href="/dashboard/admin/products/highest-rated" className={styles.submenuItem}>
-                    <Star size={16} />
-                    <span>Highest Rated Products</span>
-                    <ChevronRight size={16} />
-                  </Link>
-                  <Link href="/dashboard/admin/products/low-stock" className={styles.submenuItem}>
-                    <AlertTriangle size={16} />
-                    <span>Low-Stock Products</span>
-                    <ChevronRight size={16} />
-                  </Link>
-                </div>
-              </div>
+                <span className={styles.menuItemText}>All Products</span>
+                <ChevronRight size={20} />
+              </Link>
             </li>
             <li>
-              <div 
-                className={styles.menuItem}
-                onClick={() => setShowUsersMenu(!showUsersMenu)}
-              >
+              <Link href="/dashboard/admin/products/new" className={styles.menuItem}>
+                <div className={styles.menuIcon}>
+                  <PlusCircle size={18} />
+                </div>
+                <span className={styles.menuItemText}>Add Product</span>
+                <ChevronRight size={20} />
+              </Link>
+            </li>
+            <li>
+              <Link href="/dashboard/admin/users" className={styles.menuItem}>
                 <div className={styles.menuIcon}>
                   <Users size={18} />
                 </div>
-                <span className={styles.menuItemText}>User Management</span>
-                {showUsersMenu ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-              </div>
-              <div className={`${styles.expandableContent} ${showUsersMenu ? styles.expanded : ''}`}>
-                <div className="p-2 space-y-2">
-                  <Link href="/dashboard/admin/users?filter=admin" className={styles.submenuItem}>
-                    <Shield size={16} />
-                    <span>Admin Users</span>
-                    <ChevronRight size={16} />
-                  </Link>
-                  <Link href="/dashboard/admin/users?filter=user" className={styles.submenuItem}>
-                    <UserCheck size={16} />
-                    <span>Regular Users</span>
-                    <ChevronRight size={16} />
-                  </Link>
-                </div>
-              </div>
+                <span className={styles.menuItemText}>Manage Users</span>
+                <ChevronRight size={20} />
+              </Link>
             </li>
             <li>
               <Link href="/dashboard/admin/coupons" className={styles.menuItem}>
@@ -527,6 +479,7 @@ export default function MobileDashboardHome() {
           </>
         )}
       </ul>
+      </div>
     </div>
   )
 } 
