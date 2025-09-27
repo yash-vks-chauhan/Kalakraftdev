@@ -198,11 +198,16 @@
 }
 
 .userRole {
-  font-size: 1rem;
-  color: #8E8E93;
-  text-transform: capitalize;
-  font-weight: 500;
+  color: #666;
+  font-size: 0.85rem;
   margin: 0;
+}
+
+.welcomeText {
+  color: #888;
+  font-size: 0.8rem;
+  margin: 2px 0 0 0;
+  font-weight: 400;
 }
 
 /* ============================================
@@ -311,6 +316,45 @@
 .overviewHeaderControls {
   display: flex;
   align-items: center;
+  gap: 8px;
+}
+
+.periodSelectorButton {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  font-size: 0.75rem;
+  color: #333;
+  transition: all 0.2s ease;
+}
+
+.periodSelectorButton:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.periodSelectorButton:active {
+  transform: scale(0.98);
+}
+
+.accordionToggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: none;
+  border: none;
+  color: #666;
+  transition: all 0.2s ease;
+}
+
+.accordionToggle:hover {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 6px;
 }
 
 .customSelector {
@@ -1222,4 +1266,117 @@
 
 .hidden {
   display: none !important;
+}
+
+/* ============================================
+   PERIOD SELECTION MODAL
+   ============================================ */
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.periodModal {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 320px;
+  max-height: 80vh;
+  overflow: hidden;
+  animation: slideInUp 0.3s ease-out;
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 20px 16px 20px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.modalTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #000;
+  margin: 0;
+}
+
+.modalCloseButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: rgba(0, 0, 0, 0.05);
+  border: none;
+  border-radius: 8px;
+  font-size: 1.2rem;
+  color: #666;
+  transition: all 0.2s ease;
+}
+
+.modalCloseButton:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.periodModalOptions {
+  padding: 8px 0;
+}
+
+.periodModalOption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 16px 20px;
+  background: none;
+  border: none;
+  text-align: left;
+  transition: all 0.2s ease;
+}
+
+.periodModalOption:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.periodModalOption:active {
+  background: rgba(0, 0, 0, 0.08);
+  transform: scale(0.98);
+}
+
+.periodModalOption.active {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.optionLabel {
+  font-size: 0.9rem;
+  color: #000;
+  font-weight: 500;
+}
+
+.checkmark {
+  color: #007AFF;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

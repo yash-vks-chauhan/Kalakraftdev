@@ -74,6 +74,7 @@ export default function MobileDashboardHome() {
   const [showSystemMenu, setShowSystemMenu] = useState(false)
   const [showOverview, setShowOverview] = useState(true) // Default to open
   const [isScrolled, setIsScrolled] = useState(false)
+  const [showPeriodModal, setShowPeriodModal] = useState(false)
 
   useEffect(() => {
     if (user?.role === 'admin') {
@@ -263,10 +264,9 @@ export default function MobileDashboardHome() {
       </header>
       
       <div className={styles.contentWrapper}>
-        {/* Dashboard Title Section - Above user profile */}
+        {/* Dashboard Title Section */}
         <div className={styles.dashboardTitleSection}>
           <h1 className={styles.dashboardMainTitle}>Dashboard</h1>
-          <p className={styles.dashboardWelcome}>Welcome back, {user.fullName}</p>
         </div>
 
         <div className={styles.userProfile}>
@@ -284,6 +284,7 @@ export default function MobileDashboardHome() {
           <div className={styles.userInfo}>
             <h2 className={styles.userName}>{user.fullName}</h2>
             <p className={styles.userRole}>{user.role}</p>
+            <p className={styles.welcomeText}>Welcome back</p>
           </div>
         </div>
 
@@ -291,26 +292,38 @@ export default function MobileDashboardHome() {
         <>
           {/* Overview Accordion */}
           <div className={styles.iosSection}>
-            <div 
-              className={`${styles.iosAccordionHeader} ${showOverview ? styles.expanded : ''}`}
-              onClick={() => setShowOverview(prev => !prev)}
-            >
-              <div className={styles.iosAccordionTitleGroup}>
+            <div className={styles.iosAccordionHeader}>
+              <div 
+                className={styles.iosAccordionTitleGroup}
+                onClick={() => setShowOverview(prev => !prev)}
+              >
                 <div className={styles.iosAccordionIcon}>
                   <BarChart3 size={20} />
                 </div>
                 <h3 className={styles.iosAccordionTitle}>Overview</h3>
               </div>
               <div className={styles.overviewHeaderControls}>
-                <div className={styles.customSelector}>
+                <button 
+                  className={styles.periodSelectorButton}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowPeriodModal(true);
+                  }}
+                >
                   <span className={styles.selectorLabel}>
                     {period === 'today' ? 'Today' : 
                      period === 'week' ? 'Last 7 days' : 
                      period === 'month' ? 'This month' : 
                      period === 'year' ? 'This year' : 'All time'}
                   </span>
-                  <ChevronDown size={14} className={`${styles.iosChevron} ${showOverview ? styles.rotated : ''}`} />
-                </div>
+                  <ChevronDown size={14} />
+                </button>
+                <button
+                  className={styles.accordionToggle}
+                  onClick={() => setShowOverview(prev => !prev)}
+                >
+                  <ChevronDown size={16} className={`${styles.iosChevron} ${showOverview ? styles.rotated : ''}`} />
+                </button>
               </div>
             </div>
             
@@ -362,32 +375,7 @@ export default function MobileDashboardHome() {
             </div>
           </div>
 
-          {/* Period Selector as separate section */}
-          <div className={styles.iosSection}>
-            <div className={styles.periodSelectorContainer}>
-              <div className={styles.periodSelectorTitle}>Time Period</div>
-              <div className={styles.periodOptions}>
-                {[
-                  { value: 'today', label: 'Today' },
-                  { value: 'week', label: 'Last 7 days' },
-                  { value: 'month', label: 'This month' },
-                  { value: 'year', label: 'This year' },
-                  { value: 'all', label: 'All time' }
-                ].map((option) => (
-                  <button
-                    key={option.value}
-                    onClick={() => {
-                      setPeriod(option.value as any)
-                      fetchMetrics(option.value)
-                    }}
-                    className={`${styles.periodOption} ${period === option.value ? styles.active : ''}`}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
+
         </>
       )}
 
@@ -700,6 +688,47 @@ export default function MobileDashboardHome() {
         </>
       )}
       </div>
+
+      {/* Period Selection Modal */}
+      {showPeriodModal && (
+        <div className={styles.modalOverlay} onClick={() => setShowPeriodModal(false)}>
+          <div className={styles.periodModal} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h3 className={styles.modalTitle}>Select Time Period</h3>
+              <button 
+                className={styles.modalCloseButton}
+                onClick={() => setShowPeriodModal(false)}
+              >
+                ×
+              </button>
+            </div>
+            <div className={styles.periodModalOptions}>
+              {[
+                { value: 'today', label: 'Today' },
+                { value: 'week', label: 'Last 7 days' },
+                { value: 'month', label: 'This month' },
+                { value: 'year', label: 'This year' },
+                { value: 'all', label: 'All time' }
+              ].map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => {
+                    setPeriod(option.value as any);
+                    fetchMetrics(option.value);
+                    setShowPeriodModal(false);
+                  }}
+                  className={`${styles.periodModalOption} ${period === option.value ? styles.active : ''}`}
+                >
+                  <span className={styles.optionLabel}>{option.label}</span>
+                  {period === option.value && (
+                    <div className={styles.checkmark}>✓</div>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 } 
