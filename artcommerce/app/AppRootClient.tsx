@@ -26,6 +26,13 @@ export default function AppRootClient({ children }: { children: React.ReactNode 
   const mobileOnlyRoutes = new Set<string>(['/cart/mobile']);
   const isMobileOnlyRoute = mobileOnlyRoutes.has(pathname);
 
+  // Routes that should bypass MobileLayout (have their own navigation)
+  const bypassMobileLayoutRoutes = [
+    '/dashboard/admin/users/mobile',
+    '/dashboard/admin/products/mobile'
+  ];
+  const shouldBypassMobileLayout = bypassMobileLayoutRoutes.some(route => pathname.startsWith(route));
+
   // Use optimized device detection hook
   const { isMobile, forceDesktopView, isSmallScreen, switchToDesktopView, switchToMobileView } = useDeviceDetection(isMobileOnlyRoute);
 
@@ -121,12 +128,20 @@ export default function AppRootClient({ children }: { children: React.ReactNode 
         
         <AppContentWrapper>
           {!showDesktopView ? (
-            // Mobile Layout
-            <>
-              <UserNotifications />
-              <AdminNotifications />
-              <MobileLayout onSwitchToDesktop={switchToDesktopView}>{children}</MobileLayout>
-            </>
+            // Mobile Layout or Bypass
+            shouldBypassMobileLayout ? (
+              <>
+                <UserNotifications />
+                <AdminNotifications />
+                {children}
+              </>
+            ) : (
+              <>
+                <UserNotifications />
+                <AdminNotifications />
+                <MobileLayout onSwitchToDesktop={switchToDesktopView}>{children}</MobileLayout>
+              </>
+            )
           ) : (
             // Desktop Layout
             <>
