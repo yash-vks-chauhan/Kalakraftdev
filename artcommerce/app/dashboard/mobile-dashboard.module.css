@@ -12,6 +12,7 @@
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   margin: 0; /* Remove any external margins */
   padding: 0; /* Remove external padding, will be handled by contentWrapper */
+  overflow-x: hidden; /* Prevent horizontal scroll issues */
 }
 
 /* ============================================
@@ -130,6 +131,8 @@
   padding-top: 80px; /* Reduced since header is simpler now */
   flex: 1;
   padding-bottom: 2rem;
+  width: 100%; /* Ensure full width */
+  box-sizing: border-box; /* Include padding in width calculations */
 }
 
 /* Dashboard Title Section - Above user profile */
@@ -168,7 +171,7 @@
   padding: 24px;
   background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
   border-radius: 18px;
-  border: 1px solid rgba(0, 0, 0, 0.18);
+  border: 1px solid rgba(0, 0, 0, 0.18); /* Match dashboard outline style */
   margin: 0 20px 24px 20px;
   position: relative;
 }
@@ -331,7 +334,7 @@
   gap: 4px;
   padding: 6px 12px;
   background: rgba(0, 0, 0, 0.05);
-  border: 1px solid rgba(0, 0, 0, 0.15); /* More noticeable border */
+  border: 1px solid rgba(0, 0, 0, 0.18); /* Match dashboard outline style */
   border-radius: 8px;
   font-size: 0.75rem;
   color: #333;
@@ -383,10 +386,13 @@
 /* Typography Content inside accordion */
 .typographyContent {
   padding: 20px;
-  background: transparent;
+  background: #FFFFFF; /* Ensure white background for readability */
   display: flex;
   flex-direction: column;
   gap: 24px;
+  border-radius: 0 0 12px 12px; /* Round bottom corners */
+  margin: 0; /* Remove any margin */
+  min-height: fit-content; /* Ensure content fits properly */
 }
 
 /* Period Selector Section */
@@ -394,7 +400,7 @@
   background: #FFFFFF;
   border-radius: 12px;
   padding: 20px;
-  border: 1px solid rgba(0, 0, 0, 0.18); /* More noticeable professional border */
+  border: 1px solid rgba(0, 0, 0, 0.18); /* Match dashboard outline style */
 }
 
 .periodSelectorTitle {
@@ -418,7 +424,7 @@
   align-items: center;
   padding: 12px 16px;
   background: transparent;
-  border: 1px solid rgba(0, 0, 0, 0.15); /* More noticeable border */
+  border: 1px solid rgba(0, 0, 0, 0.18); /* Match dashboard outline style */
   border-radius: 8px;
   font-size: 0.9375rem;
   font-weight: 500;
@@ -533,6 +539,7 @@
   flex-direction: column;
   gap: 8px;
   padding-top: 16px;
+  padding-bottom: 4px; /* Add bottom padding to prevent cut-off */
   border-top: 1px solid rgba(0, 0, 0, 0.06);
 }
 
@@ -605,7 +612,7 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  border: 1px solid rgba(0, 0, 0, 0.12); /* Clean iOS-style border */
+  border: 1px solid rgba(0, 0, 0, 0.18); /* Match dashboard outline style */
   transition: all 0.2s ease;
   min-width: 140px;
   min-height: 140px;
@@ -616,7 +623,7 @@
 
 .metricCard:active {
   transform: scale(0.98);
-  border-color: rgba(0, 0, 0, 0.18); /* Slightly darker border on press */
+  border-color: rgba(0, 0, 0, 0.24); /* Slightly darker border on press */
 }
 
 .metricIcon {
@@ -838,7 +845,7 @@
   padding: 16px 20px;
   background: #FFFFFF;
   border-radius: 12px;
-  border: 1px solid rgba(0, 0, 0, 0.18);
+  border: 1px solid rgba(0, 0, 0, 0.18); /* Match dashboard outline style */
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
   margin-bottom: 0;
@@ -854,14 +861,14 @@
 /* When accordion is expanded, only round top corners */
 .iosAccordionHeader.expanded {
   border-radius: 12px 12px 0 0;
-  border-bottom: none;
-  border-color: rgba(0, 0, 0, 0.18); /* Match content border */
+  border: 1px solid rgba(0, 0, 0, 0.18); /* Match dashboard outline style */
+  border-bottom: none; /* Remove bottom border to connect with content */
 }
 
 /* When accordion is collapsed, round all corners */
 .iosAccordionHeader:not(.expanded) {
   border-radius: 12px;
-  border: 1px solid rgba(0, 0, 0, 0.12); /* Consistent visible border */
+  border: 1px solid rgba(0, 0, 0, 0.18); /* Match dashboard outline style */
 }
 
 .iosAccordionTitleGroup {
@@ -900,13 +907,13 @@
   margin: 0;
   background: #FFFFFF;
   border-radius: 0 0 12px 12px;
-  border: 1px solid rgba(0, 0, 0, 0.18);
+  border: 1px solid rgba(0, 0, 0, 0.18); /* Match dashboard outline style */
   border-top: none;
   will-change: max-height, opacity, transform;
 }
 
 .iosAccordionContent.expanded {
-  max-height: 300px;
+  max-height: 1000px; /* Further increased to ensure all overview content is visible */
   opacity: 1;
   transform: translateY(0);
 }
@@ -914,8 +921,10 @@
 /* Make menu group seamless with accordion header */
 .iosAccordionContent .iosMenuGroup {
   border-radius: 0 0 12px 12px; /* Match accordion content */
-  border: 1px solid rgba(0, 0, 0, 0.18); /* More noticeable professional border */
+  border: 1px solid rgba(0, 0, 0, 0.18); /* Match dashboard outline style */
   border-top: none; /* Remove top border to connect with header */
+  background: #FFFFFF; /* Ensure white background */
+  margin: 0; /* Remove any margin to prevent gaps */
 }
 
 /* ============================================
@@ -933,7 +942,7 @@
   padding: 16px 20px;
   background: #FFFFFF;
   border-radius: 12px;
-  border: 1px solid rgba(0, 0, 0, 0.18); /* More noticeable professional border */
+  border: 1px solid rgba(0, 0, 0, 0.18); /* Match dashboard outline style */
   cursor: pointer;
   transition: all 0.2s ease;
   margin-bottom: 8px;
@@ -952,7 +961,7 @@
 }
 
 .expandableContent.expanded {
-  max-height: 500px;
+  max-height: 600px; /* Increased from 500px for better content display */
   opacity: 1;
 }
 
@@ -965,7 +974,7 @@
   background: #FFFFFF;
   border-radius: 12px;
   overflow: hidden;
-  border: 1px solid rgba(0, 0, 0, 0.18); /* More noticeable professional border */
+  border: 1px solid rgba(0, 0, 0, 0.18); /* Match dashboard outline style */
   margin-top: 8px;
 }
 
@@ -1107,7 +1116,7 @@
   background: #FFFFFF;
   border-radius: 12px;
   margin-top: 8px;
-  border: 0.5px solid rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(0, 0, 0, 0.18); /* Match dashboard outline style */
 }
 
 .emptyStateSmall {
@@ -1116,7 +1125,7 @@
   background: #FFFFFF;
   border-radius: 12px;
   margin-top: 8px;
-  border: 0.5px solid rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(0, 0, 0, 0.18); /* Match dashboard outline style */
 }
 
 .emptyText {
@@ -1138,7 +1147,7 @@
   text-align: center;
   background: #FFFFFF;
   border-radius: 12px;
-  border: 0.5px solid rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(0, 0, 0, 0.18); /* Match dashboard outline style */
   margin: 16px;
 }
 
@@ -1252,6 +1261,20 @@
   
   .sectionHeader {
     margin: 0 12px 16px 12px;
+  }
+  
+  /* Ensure overview content displays properly on small screens */
+  .primaryNumber {
+    font-size: 48px; /* Reduced from 56px for smaller screens */
+  }
+  
+  .typographyContent {
+    padding: 16px; /* Reduced padding on small screens */
+    gap: 20px; /* Reduced gap on small screens */
+  }
+  
+  .iosAccordionContent.expanded {
+    max-height: 1200px; /* Further increased for smaller screens that may need more height */
   }
 }
 
