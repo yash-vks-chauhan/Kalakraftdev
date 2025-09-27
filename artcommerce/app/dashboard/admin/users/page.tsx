@@ -2,8 +2,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../../contexts/AuthContext'
 import Link from 'next/link'
-import MobileUserManagement from './MobileUserManagement'
-import { useIsMobile } from '../../../../lib/utils'
 import { useSearchParams } from 'next/navigation'
 
 interface UserRow {
@@ -20,17 +18,8 @@ export default function AdminUsersPage() {
   const [users, setUsers] = useState<UserRow[]>([])
   const [filteredUsers, setFilteredUsers] = useState<UserRow[]>([])
   const [loading, setLoading] = useState(true)
-  const isMobile = useIsMobile()
-  const [forceDesktopView, setForceDesktopView] = useState(false)
   const searchParams = useSearchParams()
   const filterParam = searchParams.get('filter')
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const pref = localStorage.getItem('viewPreference')
-      if (pref === 'desktop') setForceDesktopView(true)
-    }
-  }, [])
 
   useEffect(() => {
     if (user?.role !== 'admin') return
@@ -54,11 +43,6 @@ export default function AdminUsersPage() {
     
     const filtered = userList.filter(u => u.role === filter)
     setFilteredUsers(filtered)
-  }
-
-  // Use mobile view if on mobile device and not forcing desktop view
-  if (isMobile && !forceDesktopView) {
-    return <MobileUserManagement initialFilter={filterParam === 'user' ? 'user' : 'admin'} />
   }
 
   if (user?.role !== 'admin') {
