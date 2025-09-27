@@ -3880,74 +3880,68 @@
   border-color: #007bff;
 }
 
-/* Show buttons when expanded */
-.mobileActionWheelExpanded .mobileActionWheelButton {
-  opacity: 1;
-  visibility: visible;
-  transform: scale(1);
-}
+/* Professional menu - buttons are always visible when menu is shown */
 
-.mobileActionWheelExpanded .mobileActionWheelCart {
-  opacity: 1;
-  visibility: visible;
-  transform: scale(1);
-}
-
-.mobileActionWheelExpanded .mobileActionWheelWishlist {
-  opacity: 1;
-  visibility: visible;
-  transform: scale(1);
-}
-
-.mobileActionWheelExpanded .mobileActionWheelShare {
-  opacity: 1;
-  visibility: visible;
-  transform: scale(1);
-}
-
-/* Action Menu Container */
+/* Action Menu Container - Professional Horizontal Design */
 .mobileActionMenu {
   position: absolute;
-  bottom: 0;
-  right: 0;
-  width: 52px;
-  height: 52px;
+  bottom: 65px;
+  right: -45px;
+  background: rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 28px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
   opacity: 0;
   visibility: hidden;
-  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-  z-index: 16;
+  transform: translateY(10px) scale(0.9);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.2);
+  z-index: 18;
+  white-space: nowrap;
 }
 
 .mobileActionWheelExpanded .mobileActionMenu {
   opacity: 1;
   visibility: visible;
-  transform: translateY(0) translateX(0) scale(1);
+  transform: translateY(0) scale(1);
 }
 
-/* Cart Button Position - Wheel Layout */
+/* Cart Button - Professional Inline Design */
 .mobileActionWheelCart {
-  position: absolute;
-  bottom: 85px;
-  left: -25px;
+  position: relative;
   background: rgba(255, 255, 255, 0.95);
   border: none;
-  opacity: 0;
-  visibility: hidden;
-  transform: scale(0.3);
-  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
 }
 
-/* Wishlist Button Position - Wheel Layout */
+.mobileActionWheelCart:hover {
+  background: #1f2937 !important;
+  color: #fff !important;
+  transform: scale(1.1);
+}
+
+/* Wishlist Button - Professional Inline Design */
 .mobileActionWheelWishlist {
-  position: absolute;
-  bottom: 26px;
-  left: -75px;
+  position: relative;
   background: rgba(255, 255, 255, 0.95);
   border: none;
-  opacity: 0;
-  visibility: hidden;
-  transform: scale(0.3);
-  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
 }
 
 .mobileActionWheelWishlistActive {
@@ -3958,19 +3952,27 @@
 .mobileActionWheelWishlist:hover {
   background: #ef4444 !important;
   color: #fff !important;
+  transform: scale(1.1);
 }
 
-/* Share Button Position - Wheel Layout */
+/* Share Button - Professional Inline Design */
 .mobileActionWheelShare {
-  position: absolute;
-  bottom: -10px;
-  left: -25px;
+  position: relative;
   background: rgba(255, 255, 255, 0.95);
   border: none;
-  opacity: 0;
-  visibility: hidden;
-  transform: scale(0.3);
-  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.mobileActionWheelShare:hover {
+  background: #3b82f6 !important;
+  color: #fff !important;
+  transform: scale(1.1);
 }
 
 .mobileActionWheelShare:hover {
@@ -4297,25 +4299,17 @@
   }
   
   .mobileActionMenu {
-    bottom: 0;
-    right: 0;
-    width: 48px;
-    height: 48px;
+    bottom: 60px;
+    right: -40px;
+    padding: 6px 10px;
+    gap: 10px;
   }
   
-  .mobileActionWheelCart {
-    bottom: 80px;
-    left: -20px;
-  }
-  
-  .mobileActionWheelWishlist {
-    bottom: 24px;
-    left: -70px;
-  }
-  
+  .mobileActionWheelCart,
+  .mobileActionWheelWishlist,
   .mobileActionWheelShare {
-    bottom: -8px;
-    left: -20px;
+    width: 32px;
+    height: 32px;
   }
   
   .mobileActionWheelButton {
