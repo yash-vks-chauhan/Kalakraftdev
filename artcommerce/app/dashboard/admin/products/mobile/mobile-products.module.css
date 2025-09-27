@@ -1,0 +1,794 @@
+/* ============================================
+   MOBILE PRODUCTS PAGE - iOS STYLE
+   Clean, minimal design following mobile dashboard patterns
+   ============================================ */
+
+.container {
+  min-height: 100vh;
+  background: #E5E5EA;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* ============================================
+   HEADER SECTION
+   ============================================ */
+
+.header {
+  background: #FFFFFF;
+  border-radius: 12px;
+  padding: 24px 20px;
+  margin: 20px 20px 24px 20px;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+}
+
+.headerTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #000000;
+  margin: 0;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  font-size: 0.875rem;
+  color: #8E8E93;
+  margin: 0;
+  font-weight: 500;
+}
+
+.addButton {
+  width: 44px;
+  height: 44px;
+  border-radius: 22px;
+  background: #000000;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FFFFFF;
+  transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+  cursor: pointer;
+  font-size: 1.25rem;
+}
+
+.addButton:active {
+  transform: scale(0.94);
+  background: rgba(0, 0, 0, 0.8);
+}
+
+/* ============================================
+   SEARCH AND FILTER SECTION
+   ============================================ */
+
+.filterSection {
+  display: flex;
+  gap: 12px;
+  margin: 0 20px 24px 20px;
+}
+
+.searchContainer {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 16px;
+  color: #8E8E93;
+  font-size: 1rem;
+  z-index: 1;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 14px 16px 14px 44px;
+  background: #FFFFFF;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  border-radius: 12px;
+  font-size: 1rem;
+  color: #000000;
+  outline: none;
+  transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.searchInput:focus {
+  border-color: #000000;
+  background: #FFFFFF;
+}
+
+.searchInput::placeholder {
+  color: #8E8E93;
+}
+
+.filterContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.filterIcon {
+  position: absolute;
+  left: 16px;
+  color: #8E8E93;
+  font-size: 1rem;
+  z-index: 1;
+}
+
+.filterSelect {
+  padding: 14px 16px 14px 44px;
+  background: #FFFFFF;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  border-radius: 12px;
+  font-size: 1rem;
+  color: #000000;
+  outline: none;
+  cursor: pointer;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  background-size: 16px;
+  padding-right: 44px;
+  min-width: 140px;
+}
+
+.filterSelect:focus {
+  border-color: #000000;
+}
+
+/* ============================================
+   PRODUCTS GRID
+   ============================================ */
+
+.productsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin: 0 20px 32px 20px;
+}
+
+.productCard {
+  background: #FFFFFF;
+  border-radius: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+  transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+  position: relative;
+}
+
+.productCard:active {
+  transform: scale(0.98);
+}
+
+.productImageContainer {
+  position: relative;
+  width: 100%;
+  height: 160px;
+  overflow: hidden;
+}
+
+.productImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #F5F5F5;
+}
+
+.statusBadge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+}
+
+.activeStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: rgba(52, 199, 89, 0.9);
+  color: #FFFFFF;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  backdrop-filter: blur(10px);
+}
+
+.inactiveStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: rgba(0, 0, 0, 0.7);
+  color: #FFFFFF;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  backdrop-filter: blur(10px);
+}
+
+.productInfo {
+  padding: 16px;
+  flex: 1;
+}
+
+.productName {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #000000;
+  margin: 0 0 6px 0;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.productDesc {
+  font-size: 0.875rem;
+  color: #8E8E93;
+  margin: 0 0 12px 0;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.productMeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.priceContainer {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+}
+
+.currency {
+  font-size: 0.875rem;
+  color: #8E8E93;
+  font-weight: 500;
+}
+
+.price {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #000000;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Mono', monospace;
+}
+
+.stockInfo {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.stockLabel {
+  font-size: 0.75rem;
+  color: #8E8E93;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stockValue {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #000000;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Mono', monospace;
+}
+
+.stockValue.lowStock {
+  color: #FF3B30;
+}
+
+.salesInfo {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 16px;
+}
+
+.salesLabel {
+  font-size: 0.75rem;
+  color: #8E8E93;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.salesValue {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #34C759;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Mono', monospace;
+}
+
+/* ============================================
+   CARD ACTIONS
+   ============================================ */
+
+.cardActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px 16px 16px;
+  gap: 12px;
+}
+
+.editAction {
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
+  background: rgba(0, 122, 255, 0.1);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #007AFF;
+  transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.editAction:active {
+  transform: scale(0.9);
+  background: rgba(0, 122, 255, 0.2);
+}
+
+.deleteAction {
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
+  background: rgba(255, 59, 48, 0.1);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FF3B30;
+  transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.deleteAction:active {
+  transform: scale(0.9);
+  background: rgba(255, 59, 48, 0.2);
+}
+
+/* Status Toggle Switch */
+.statusToggle {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+  width: 48px;
+  height: 28px;
+}
+
+.statusToggle input {
+  position: absolute;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  margin: 0;
+  padding: 0;
+  cursor: pointer;
+  z-index: 1;
+}
+
+.toggleSlider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #E5E7EB;
+  transition: .3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  border-radius: 28px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.toggleSlider:before {
+  position: absolute;
+  content: "";
+  height: 24px;
+  width: 24px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  transition: .3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.statusToggle input:checked + .toggleSlider {
+  background-color: #34C759;
+}
+
+.statusToggle input:checked + .toggleSlider:before {
+  transform: translateX(20px);
+}
+
+.statusToggle input:active + .toggleSlider:before {
+  width: 28px;
+  transition: .1s ease;
+}
+
+/* ============================================
+   PAGINATION
+   ============================================ */
+
+.pagination {
+  background: #FFFFFF;
+  border-radius: 16px;
+  padding: 20px;
+  margin: 0 20px 32px 20px;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+}
+
+.paginationInfo {
+  font-size: 0.875rem;
+  color: #8E8E93;
+  font-weight: 500;
+  text-align: center;
+}
+
+.paginationControls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pageButton {
+  padding: 10px 16px;
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #000000;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.pageButton:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.pageButton:active {
+  transform: scale(0.96);
+}
+
+.pageButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.pageButton:disabled:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.pageNumbers {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.pageNumber {
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
+  background: transparent;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #000000;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pageNumber:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.pageNumber:active {
+  transform: scale(0.9);
+}
+
+.pageNumber.currentPage {
+  background: #000000;
+  color: #FFFFFF;
+  border-color: #000000;
+}
+
+.pageNumber.currentPage:hover {
+  background: #000000;
+}
+
+/* ============================================
+   EMPTY STATE
+   ============================================ */
+
+.emptyState {
+  background: #FFFFFF;
+  border-radius: 16px;
+  padding: 48px 20px;
+  margin: 0 20px;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.emptyIcon {
+  font-size: 3rem;
+  margin-bottom: 8px;
+}
+
+.emptyState h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #000000;
+  margin: 0;
+}
+
+.emptyState p {
+  font-size: 0.875rem;
+  color: #8E8E93;
+  margin: 0;
+  line-height: 1.4;
+  max-width: 280px;
+}
+
+.emptyActionButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: #000000;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  margin-top: 8px;
+}
+
+.emptyActionButton:active {
+  transform: scale(0.94);
+  background: rgba(0, 0, 0, 0.8);
+}
+
+/* ============================================
+   ERROR STATE
+   ============================================ */
+
+.errorCard {
+  background: #FFFFFF;
+  border-radius: 16px;
+  padding: 32px 20px;
+  margin: 20px;
+  border: 1px solid rgba(255, 59, 48, 0.2);
+  text-align: center;
+}
+
+.errorCard h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #FF3B30;
+  margin: 0 0 8px 0;
+}
+
+.errorCard p {
+  font-size: 0.875rem;
+  color: #8E8E93;
+  margin: 0;
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+@media (max-width: 375px) {
+  .header {
+    margin: 16px 16px 20px 16px;
+    padding: 20px 16px;
+  }
+  
+  .title {
+    font-size: 1.75rem;
+  }
+  
+  .filterSection {
+    margin: 0 16px 20px 16px;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .filterContainer {
+    width: 100%;
+  }
+  
+  .filterSelect {
+    width: 100%;
+    min-width: auto;
+  }
+  
+  .productsGrid {
+    margin: 0 16px 28px 16px;
+    gap: 12px;
+  }
+  
+  .productCard {
+    border-radius: 12px;
+  }
+  
+  .productImageContainer {
+    height: 140px;
+  }
+  
+  .productInfo {
+    padding: 12px;
+  }
+  
+  .cardActions {
+    padding: 0 12px 12px 12px;
+    gap: 8px;
+  }
+  
+  .pagination {
+    margin: 0 16px 28px 16px;
+    padding: 16px;
+  }
+  
+  .paginationControls {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .pageNumbers {
+    order: 2;
+    width: 100%;
+    justify-content: center;
+    margin-top: 8px;
+  }
+  
+  .emptyState {
+    margin: 0 16px;
+    padding: 40px 16px;
+  }
+}
+
+/* Single column on very small screens */
+@media (max-width: 320px) {
+  .productsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================
+   LOADING STATES
+   ============================================ */
+
+.loadingCard {
+  background: #FFFFFF;
+  border-radius: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.loadingImageContainer {
+  width: 100%;
+  height: 160px;
+  background: #F5F5F5;
+}
+
+.loadingInfo {
+  padding: 16px;
+}
+
+.loadingTitle {
+  width: 80%;
+  height: 16px;
+  background: #F5F5F5;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.loadingDesc {
+  width: 60%;
+  height: 12px;
+  background: #F5F5F5;
+  border-radius: 4px;
+  margin-bottom: 12px;
+}
+
+.loadingPrice {
+  width: 40%;
+  height: 14px;
+  background: #F5F5F5;
+  border-radius: 4px;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .productCard,
+  .addButton,
+  .pageButton,
+  .pageNumber,
+  .editAction,
+  .deleteAction,
+  .emptyActionButton {
+    transition: none;
+  }
+  
+  .loadingCard {
+    animation: none;
+  }
+}
+
+/* Focus styles for keyboard navigation */
+.addButton:focus,
+.pageButton:focus,
+.pageNumber:focus,
+.editAction:focus,
+.deleteAction:focus,
+.emptyActionButton:focus,
+.searchInput:focus,
+.filterSelect:focus {
+  outline: 2px solid #007AFF;
+  outline-offset: 2px;
+}
+
+.statusToggle input:focus + .toggleSlider {
+  box-shadow: 0 0 0 2px rgba(52, 199, 89, 0.3);
+}

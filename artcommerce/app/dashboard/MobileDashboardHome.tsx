@@ -292,7 +292,7 @@ export default function MobileDashboardHome() {
         <>
           {/* Overview Accordion */}
           <div className={styles.iosSection}>
-            <div className={`${styles.iosAccordionHeader} ${showOverview ? styles.expanded : ''}`}>
+            <div className={styles.iosAccordionHeader}>
               <div 
                 className={styles.iosAccordionTitleGroup}
                 onClick={() => setShowOverview(prev => !prev)}
@@ -538,13 +538,24 @@ export default function MobileDashboardHome() {
             
             <div className={`${styles.iosAccordionContent} ${showProductsMenu ? styles.expanded : ''}`}>
               <div className={styles.iosMenuGroup}>
-                <Link href="/dashboard/admin/products" className={styles.iosMenuItem}>
+                <Link href="/dashboard/admin/products/mobile" className={styles.iosMenuItem}>
                   <div className={styles.iosMenuIcon}>
                     <Package size={20} />
                   </div>
                   <div className={styles.iosMenuContent}>
                     <span className={styles.iosMenuTitle}>All Products</span>
                     <span className={styles.iosMenuSubtitle}>View and manage inventory</span>
+                  </div>
+                  <ChevronRight size={14} className={styles.iosChevron} />
+                </Link>
+                
+                <Link href="/dashboard/admin/products" className={styles.iosMenuItem}>
+                  <div className={styles.iosMenuIcon}>
+                    <PackageOpen size={20} />
+                  </div>
+                  <div className={styles.iosMenuContent}>
+                    <span className={styles.iosMenuTitle}>Products Table View</span>
+                    <span className={styles.iosMenuSubtitle}>Desktop table format</span>
                   </div>
                   <ChevronRight size={14} className={styles.iosChevron} />
                 </Link>
