@@ -434,6 +434,25 @@ export default function MobileDashboardHome() {
       {/* Admin Section */}
       {user.role === 'admin' && (
         <>
+          {/* Admin Management */}
+          <div className={styles.iosSection}>
+            <div className={styles.iosSectionHeader}>
+              <h3 className={styles.iosSectionTitle}>Admin</h3>
+            </div>
+            <div className={styles.iosMenuGroup}>
+              <Link href="/dashboard/admin/orders" className={styles.iosMenuItem}>
+                <div className={styles.iosMenuIcon}>
+                  <Package size={22} />
+                </div>
+                <div className={styles.iosMenuContent}>
+                  <span className={styles.iosMenuTitle}>All Orders</span>
+                  <span className={styles.iosMenuSubtitle}>Manage customer orders</span>
+                </div>
+                <ChevronRight size={16} className={styles.iosChevron} />
+              </Link>
+            </div>
+          </div>
+
           {/* Product Management Accordion */}
           <div className={styles.iosSection}>
             <div 
@@ -543,25 +562,6 @@ export default function MobileDashboardHome() {
                   <ChevronRight size={14} className={styles.iosChevron} />
                 </Link>
               </div>
-            </div>
-          </div>
-
-          {/* Order Management */}
-          <div className={styles.iosSection}>
-            <div className={styles.iosSectionHeader}>
-              <h3 className={styles.iosSectionTitle}>Order Management</h3>
-            </div>
-            <div className={styles.iosMenuGroup}>
-              <Link href="/dashboard/admin/orders" className={styles.iosMenuItem}>
-                <div className={styles.iosMenuIcon}>
-                  <Package size={22} />
-                </div>
-                <div className={styles.iosMenuContent}>
-                  <span className={styles.iosMenuTitle}>All Orders</span>
-                  <span className={styles.iosMenuSubtitle}>Manage customer orders</span>
-                </div>
-                <ChevronRight size={16} className={styles.iosChevron} />
-              </Link>
             </div>
           </div>
 

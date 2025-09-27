@@ -5,7 +5,7 @@
 
 .mobileDashboardContainer {
   min-height: 100vh;
-  background: #F2F2F7; /* iOS system background */
+  background: #E5E5EA; /* Darker professional grey */
   position: relative;
   z-index: 1;
   width: 100%;
@@ -17,15 +17,13 @@
    ============================================ */
 
 .mobileHeader {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-bottom: 0.5px solid rgba(0, 0, 0, 0.1);
+  background: #FFFFFF;
+  border-bottom: 1px solid #D1D1D6;
   padding: 1rem 1.25rem;
   position: sticky;
   top: 0;
   z-index: 100;
-  transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  transition: all 0.3s ease;
 }
 
 .headerContent {
@@ -70,7 +68,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #007AFF;
+  color: #000000;
   transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
   cursor: pointer;
 }
@@ -96,24 +94,22 @@
   gap: 16px;
   padding: 20px;
   background: #FFFFFF;
-  border-radius: 16px;
+  border-radius: 12px;
   margin: 16px 16px 24px 16px;
-  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.04);
-  border: 0.5px solid rgba(0, 0, 0, 0.06);
+  border: 1px solid #D1D1D6;
 }
 
 .avatar {
   width: 64px;
   height: 64px;
   border-radius: 32px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #8E8E93;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
   object-fit: cover;
-  border: 3px solid rgba(255, 255, 255, 0.8);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 2px solid #D1D1D6;
 }
 
 .userInfo {
@@ -152,33 +148,32 @@
 
 .metricCard {
   background: #FFFFFF;
-  border-radius: 16px;
+  border-radius: 12px;
   padding: 20px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.04);
-  border: 0.5px solid rgba(0, 0, 0, 0.06);
-  transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  border: 1px solid #D1D1D6;
+  transition: all 0.2s ease;
   min-height: 120px;
   justify-content: space-between;
 }
 
 .metricCard:active {
-  transform: scale(0.97);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  transform: scale(0.98);
+  border-color: #8E8E93;
 }
 
 .metricIcon {
   width: 44px;
   height: 44px;
   border-radius: 12px;
-  background: rgba(0, 122, 255, 0.1);
+  background: rgba(0, 0, 0, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 16px;
-  color: #007AFF;
+  color: #000000;
 }
 
 .metricContent {
@@ -277,10 +272,9 @@
 
 .iosMenuGroup {
   background: #FFFFFF;
-  border-radius: 16px;
+  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.04);
-  border: 0.5px solid rgba(0, 0, 0, 0.06);
+  border: 1px solid #D1D1D6;
 }
 
 .iosMenuItem {
@@ -308,12 +302,12 @@
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  background: rgba(0, 122, 255, 0.1);
+  background: rgba(0, 0, 0, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
   margin-right: 16px;
-  color: #007AFF;
+  color: #000000;
   flex-shrink: 0;
 }
 
@@ -339,8 +333,8 @@
 }
 
 .iosChevron {
-  color: #C7C7CC;
-  transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  color: #000000;
+  transition: transform 0.25s ease-in-out;
   flex-shrink: 0;
 }
 
@@ -358,17 +352,16 @@
   justify-content: space-between;
   padding: 16px 20px;
   background: #FFFFFF;
-  border-radius: 16px;
-  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.04);
-  border: 0.5px solid rgba(0, 0, 0, 0.06);
+  border-radius: 12px;
+  border: 1px solid #D1D1D6;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  transition: all 0.2s ease;
   margin-bottom: 8px;
 }
 
 .iosAccordionHeader:active {
-  background-color: rgba(0, 0, 0, 0.04);
-  transform: scale(0.99);
+  background-color: rgba(0, 0, 0, 0.05);
+  border-color: #8E8E93;
 }
 
 .iosAccordionTitleGroup {
@@ -381,11 +374,11 @@
   width: 36px;
   height: 36px;
   border-radius: 10px;
-  background: rgba(0, 122, 255, 0.1);
+  background: rgba(0, 0, 0, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #007AFF;
+  color: #000000;
 }
 
 .iosAccordionTitle {
@@ -398,13 +391,13 @@
 .iosAccordionContent {
   max-height: 0;
   overflow: hidden;
-  transition: max-height 0.4s cubic-bezier(0.4, 0.0, 0.2, 1),
-              opacity 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  transition: max-height 0.35s ease-in-out,
+              opacity 0.25s ease-in-out;
   opacity: 0;
 }
 
 .iosAccordionContent.expanded {
-  max-height: 600px;
+  max-height: 800px;
   opacity: 1;
 }
 
@@ -422,11 +415,10 @@
   justify-content: space-between;
   padding: 16px 20px;
   background: #FFFFFF;
-  border-radius: 16px;
-  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.04);
-  border: 0.5px solid rgba(0, 0, 0, 0.06);
+  border-radius: 12px;
+  border: 1px solid #D1D1D6;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  transition: all 0.2s ease;
   margin-bottom: 8px;
 }
 
@@ -437,27 +429,26 @@
 .expandableContent {
   max-height: 0;
   overflow: hidden;
-  transition: max-height 0.4s cubic-bezier(0.4, 0.0, 0.2, 1),
-              opacity 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  transition: max-height 0.35s ease-in-out,
+              opacity 0.25s ease-in-out;
   opacity: 0;
 }
 
 .expandableContent.expanded {
-  max-height: 400px;
+  max-height: 500px;
   opacity: 1;
 }
 
 .chevronIcon {
-  transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
-  color: #C7C7CC;
+  transition: transform 0.25s ease-in-out;
+  color: #000000;
 }
 
 .iosOrdersList {
   background: #FFFFFF;
-  border-radius: 16px;
+  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.04);
-  border: 0.5px solid rgba(0, 0, 0, 0.06);
+  border: 1px solid #D1D1D6;
   margin-top: 8px;
 }
 
@@ -485,12 +476,12 @@
   width: 40px;
   height: 40px;
   border-radius: 12px;
-  background: rgba(0, 122, 255, 0.1);
+  background: rgba(0, 0, 0, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
   margin-right: 16px;
-  color: #007AFF;
+  color: #000000;
   flex-shrink: 0;
   overflow: hidden;
 }
@@ -545,7 +536,7 @@
 }
 
 .statusDot.statusProcessing {
-  background: #007AFF;
+  background: #000000;
 }
 
 .statusDot.statusPending {
@@ -557,20 +548,18 @@
   display: flex;
   justify-content: center;
   background: #FFFFFF;
-  border-radius: 16px;
+  border-radius: 12px;
   margin-top: 8px;
-  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.04);
-  border: 0.5px solid rgba(0, 0, 0, 0.06);
+  border: 1px solid #D1D1D6;
 }
 
 .emptyStateSmall {
   padding: 24px;
   text-align: center;
   background: #FFFFFF;
-  border-radius: 16px;
+  border-radius: 12px;
   margin-top: 8px;
-  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.04);
-  border: 0.5px solid rgba(0, 0, 0, 0.06);
+  border: 1px solid #D1D1D6;
 }
 
 .emptyText {
@@ -591,15 +580,14 @@
   padding: 48px 20px;
   text-align: center;
   background: #FFFFFF;
-  border-radius: 16px;
-  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.04);
-  border: 0.5px solid rgba(0, 0, 0, 0.06);
+  border-radius: 12px;
+  border: 1px solid #D1D1D6;
   margin: 16px;
 }
 
 .emptyStateIcon {
   margin-bottom: 16px;
-  color: #C7C7CC;
+  color: #000000;
   width: 48px;
   height: 48px;
 }
