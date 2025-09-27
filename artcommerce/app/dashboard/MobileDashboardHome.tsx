@@ -1,7 +1,7 @@
 "use client"
 
 import Link from 'next/link'
-import { ChevronRight, ChevronDown, ChevronUp, User, Package, ShoppingCart, Heart, Settings, Users, Tag, AlertTriangle, TicketCheck, Star, LogOut, RefreshCw, Clock, PackageOpen, Calendar, PlusCircle, BarChart3, Shield, UserCheck, DollarSign, ArrowLeft, Home } from 'lucide-react'
+import { ChevronRight, ChevronDown, ChevronUp, ChevronLeft, User, Package, ShoppingCart, Heart, Settings, Users, Tag, AlertTriangle, TicketCheck, Star, LogOut, RefreshCw, Clock, PackageOpen, Calendar, PlusCircle, BarChart3, Shield, UserCheck, DollarSign, ArrowLeft, Home } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import styles from './mobile-dashboard.module.css'
 import desktopStyles from './dashboard.module.css'
@@ -245,29 +245,24 @@ export default function MobileDashboardHome() {
     <div 
       className={styles.mobileDashboardContainer}
     >
-      <header className={`${styles.mobileHeader} ${isScrolled ? styles.scrolled : ''}`}>
-        <div className={styles.headerContent}>
-          <div className={styles.headerLeft}>
-            <Link href="/" className={styles.backButton} title="Back to Home">
-              <Home size={18} />
-            </Link>
-          </div>
-          <div className={styles.headerActions}>
-            <button 
-              onClick={handleLogout}
-              className={`${styles.iconButton} ${showLogoutConfirm ? "text-red-500" : ""}`}
-            >
-              <LogOut size={20} />
-            </button>
-          </div>
+      {/* Custom Dashboard Navigation Header */}
+      <div className={styles.pageHeader}>
+        <div className={styles.headerTop}>
+          <Link href="/" className={styles.backButton}>
+            <ChevronLeft size={20} />
+          </Link>
+          <h1 className={styles.pageTitle}>Dashboard</h1>
+          <button 
+            onClick={handleLogout}
+            className={`${styles.logoutButton} ${showLogoutConfirm ? styles.confirmLogout : ''}`}
+            title={showLogoutConfirm ? "Confirm Logout" : "Logout"}
+          >
+            <LogOut size={18} />
+          </button>
         </div>
-      </header>
+      </div>
       
       <div className={styles.contentWrapper}>
-        {/* Dashboard Title Section */}
-        <div className={styles.dashboardTitleSection}>
-          <h1 className={styles.dashboardMainTitle}>Dashboard</h1>
-        </div>
 
         <div className={styles.userProfile}>
           {user.avatarUrl ? (

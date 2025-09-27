@@ -16,7 +16,88 @@
 }
 
 /* ============================================
-   HEADER SECTION - iOS Style
+   PAGE HEADER SECTION - Dedicated Navigation
+   ============================================ */
+
+.pageHeader {
+  background: #FFFFFF;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px 20px 24px 20px;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+}
+
+.headerTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.backButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: none;
+  background: rgba(0, 0, 0, 0.05);
+  color: #333;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  text-decoration: none;
+}
+
+.backButton:hover {
+  background: rgba(0, 0, 0, 0.1);
+  transform: translateX(-1px);
+}
+
+.pageTitle {
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+  flex: 1;
+  text-align: center;
+}
+
+.logoutButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: none;
+  background: rgba(220, 53, 69, 0.1);
+  color: #dc3545;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.logoutButton:hover {
+  background: rgba(220, 53, 69, 0.15);
+  transform: scale(1.05);
+}
+
+.logoutButton.confirmLogout {
+  background: #dc3545;
+  color: white;
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+/* ============================================
+   HEADER SECTION - iOS Style (Legacy)
    ============================================ */
 
 .mobileHeader {
@@ -928,7 +1009,7 @@
   padding: 0;
   margin: 0;
   background: #FFFFFF;
-  border-radius: 0 0 12px 12px !important;
+  border-radius: 0 !important;
   border-left: 1px solid rgba(0, 0, 0, 0.18);
   border-right: 1px solid rgba(0, 0, 0, 0.18);
   border-bottom: 1px solid rgba(0, 0, 0, 0.18);
@@ -945,12 +1026,12 @@
   border-right: 1px solid rgba(0, 0, 0, 0.18);
   border-bottom: 1px solid rgba(0, 0, 0, 0.18);
   border-top: none !important;
-  border-radius: 0 0 12px 12px !important;
+  border-radius: 0 !important;
 }
 
 /* Make menu group seamless with accordion header */
 .iosAccordionContent .iosMenuGroup {
-  border-radius: 0 0 12px 12px;
+  border-radius: 0 !important;
   border: none;
   background: #FFFFFF;
   margin: 0;
