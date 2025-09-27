@@ -29,9 +29,10 @@ export default function AppRootClient({ children }: { children: React.ReactNode 
   // Routes that should bypass MobileLayout (have their own navigation)
   const bypassMobileLayoutRoutes = [
     '/dashboard/admin/users/mobile',
-    '/dashboard/admin/products/mobile'
+    '/dashboard/admin/products/mobile',
+    '/dashboard'
   ];
-  const shouldBypassMobileLayout = bypassMobileLayoutRoutes.some(route => pathname.startsWith(route));
+  const shouldBypassMobileLayout = bypassMobileLayoutRoutes.some(route => pathname === route || (route !== '/dashboard' && pathname.startsWith(route)));
 
   // Use optimized device detection hook
   const { isMobile, forceDesktopView, isSmallScreen, switchToDesktopView, switchToMobileView } = useDeviceDetection(isMobileOnlyRoute);
