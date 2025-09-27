@@ -411,7 +411,7 @@ export default function NewProductPage() {
         <p className={styles.subtitle}>Add product information, pricing, inventory and images</p>
       </div>
 
-      <form onSubmit={handleSubmit}>
+      <form id="product-form" onSubmit={handleSubmit}>
         <div className={styles.card}>
           <h2 className={styles.sectionTitle}>
             <FiBox className={styles.sectionIcon} />

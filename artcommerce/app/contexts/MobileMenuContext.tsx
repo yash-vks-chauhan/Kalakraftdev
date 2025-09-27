@@ -29,8 +29,8 @@ export const MobileMenuProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   // This regex matches paths like /products/123 but not /products or /products/new
   const isProductPage = pathname ? /^\/products\/\d+$/.test(pathname) : false;
   
-  // Check if current page is the mobile create product page
-  const isCreateProductPage = pathname === '/dashboard/admin/products/new/mobile';
+  // Check if current page is the create product page (both mobile and desktop use same route now)
+  const isCreateProductPage = pathname === '/dashboard/admin/products/new';
   
   // Determine if navbar should be transparent (on product pages)
   const isTransparentNavbar = isProductPage;
