@@ -192,23 +192,35 @@ export default function MobileAdminProductsPage() {
   const getProductImage = (product: Product) => {
     try {
       if (product.imageUrls && product.imageUrls.length > 0) {
-        const imageUrl = Array.isArray(product.imageUrls) 
-          ? product.imageUrls[0] 
-          : typeof product.imageUrls === 'string' 
-            ? JSON.parse(product.imageUrls)[0]
-            : null
+        let imageUrl: string | null = null
+        
+        // Handle different imageUrls formats
+        if (Array.isArray(product.imageUrls)) {
+          imageUrl = product.imageUrls[0]
+        } else if (typeof product.imageUrls === 'string') {
+          try {
+            const parsed = JSON.parse(product.imageUrls)
+            imageUrl = Array.isArray(parsed) ? parsed[0] : product.imageUrls
+          } catch {
+            imageUrl = product.imageUrls
+          }
+        }
             
-        if (imageUrl) {
+        if (imageUrl && imageUrl.trim()) {
           // If it's already a full URL, use it directly
           if (imageUrl.startsWith('http')) {
             return imageUrl
           }
-          // If it's a Cloudinary path, use the optimization
+          // If it's a relative path, create full URL
+          if (imageUrl.startsWith('/')) {
+            return imageUrl
+          }
+          // If it's a Cloudinary ID/path, use the optimization
           return getOptimizedImageUrl(imageUrl, 'c_fill,w_300,h_300,q_auto')
         }
       }
     } catch (error) {
-      console.warn('Error processing product image:', error)
+      console.warn('Error processing product image for', product.name, ':', error)
     }
     // Use a fallback image that exists in the public directory
     return '/images/featured1.png'
@@ -235,9 +247,6 @@ export default function MobileAdminProductsPage() {
       <div className={styles.header}>
         <div className={styles.headerTop}>
           <h1 className={styles.title}>Products</h1>
-          <button onClick={handleAddNew} className={styles.addButton}>
-            <FiPlus />
-          </button>
         </div>
         <p className={styles.subtitle}>
           {pagination.totalProducts} product{pagination.totalProducts !== 1 ? 's' : ''} total
@@ -289,8 +298,9 @@ export default function MobileAdminProductsPage() {
         </div>
       ) : (
         <>
-          <div className={styles.productsGrid}>
-            {products.map((product) => (
+          <div className={styles.productsContainer}>
+            <div className={styles.productsGrid}>
+              {products.map((product) => (
               <div key={product.id} className={styles.productCard}>
                 <div className={styles.productImageContainer}>
                   <img
@@ -367,7 +377,8 @@ export default function MobileAdminProductsPage() {
                   </button>
                 </div>
               </div>
-            ))}
+              ))}
+            </div>
           </div>
 
           {/* Pagination */}

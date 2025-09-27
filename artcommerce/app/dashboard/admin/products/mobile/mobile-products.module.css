@@ -6,7 +6,7 @@
 .container {
   min-height: 100vh;
   background: #E5E5EA;
-  padding: 0;
+  padding: 0 0 20px 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
@@ -157,7 +157,7 @@
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 16px;
-  margin: 0 20px 32px 20px;
+  margin: 0 20px 24px 20px;
 }
 
 .productCard {
@@ -442,7 +442,7 @@
   background: #FFFFFF;
   border-radius: 16px;
   padding: 20px;
-  margin: 0 20px 32px 20px;
+  margin: 0 20px 20px 20px;
   border: 1px solid rgba(0, 0, 0, 0.18);
   display: flex;
   flex-direction: column;
@@ -650,7 +650,7 @@
   }
   
   .productsGrid {
-    margin: 0 16px 28px 16px;
+    margin: 0 16px 20px 16px;
     gap: 12px;
   }
   
@@ -672,7 +672,7 @@
   }
   
   .pagination {
-    margin: 0 16px 28px 16px;
+    margin: 0 16px 16px 16px;
     padding: 16px;
   }
   
