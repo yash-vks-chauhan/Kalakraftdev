@@ -672,7 +672,19 @@
    ============================================ */
 
 .iosSection {
-  margin: 0 16px 24px 16px;
+  margin: 0 16px 32px 16px; /* Increased bottom margin for better separation */
+  position: relative;
+}
+
+/* Add separator line between sections */
+.iosSection:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  bottom: -16px;
+  left: 20px;
+  right: 20px;
+  height: 1px;
+  background: rgba(0, 0, 0, 0.08);
 }
 
 .iosSectionHeader {
@@ -702,10 +714,11 @@
   align-items: center;
   padding: 16px 20px;
   background: #FFFFFF;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1); /* More visible separator */
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
   text-decoration: none;
   color: inherit;
-  transition: background-color 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+  transition: background-color 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   min-height: 60px;
   cursor: pointer;
 }
@@ -716,6 +729,7 @@
 
 .iosMenuItem:active {
   background-color: rgba(0, 0, 0, 0.04);
+  transform: scale(0.98);
 }
 
 .iosMenuIcon {
@@ -754,12 +768,16 @@
 
 .iosChevron {
   color: #000000;
-  transition: transform 0.25s ease-in-out;
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   flex-shrink: 0;
 }
 
 .chevronRotated {
   transform: rotate(90deg);
+}
+
+.iosChevron.rotated {
+  transform: rotate(180deg);
 }
 
 /* ============================================
@@ -780,8 +798,9 @@
 }
 
 .iosAccordionHeader:active {
-  background-color: rgba(0, 0, 0, 0.05);
-  border-color: #8E8E93;
+  background-color: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.18);
+  transform: scale(0.995);
 }
 
 /* When accordion is expanded, only round top corners */
@@ -824,17 +843,20 @@
 .iosAccordionContent {
   max-height: 0;
   overflow: hidden;
-  transition: max-height 0.35s ease-in-out,
-              opacity 0.25s ease-in-out;
+  transition: max-height 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              opacity 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   opacity: 0;
+  transform: translateY(-8px);
   padding: 0;
   margin: 0;
-  border-radius: 0 0 12px 12px; /* Round only bottom corners */
+  border-radius: 0 0 12px 12px;
 }
 
 .iosAccordionContent.expanded {
-  max-height: 800px;
+  max-height: 600px; /* Reduced for smoother animation */
   opacity: 1;
+  transform: translateY(0);
 }
 
 /* Make menu group seamless with accordion header */
