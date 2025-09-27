@@ -319,47 +319,47 @@ export default function MobileDashboardHome() {
           {refreshing || !metrics ? (
             <MetricsSkeleton />
           ) : (
-            <div className={styles.metricsContainer}>
-              <div className={styles.metricsGrid} ref={metricsRowRef}>
-              <div className={styles.metricCard}>
-                <div className={styles.metricIcon}>
-                  <Package size={20} />
-                </div>
-                <div className={styles.metricContent}>
-                  <p className={styles.metricValue}>{metrics?.totalOrders || '0'}</p>
-                  <p className={styles.metricLabel}>Orders</p>
-                </div>
+            <div className={styles.typographyLayout}>
+              {/* Primary Metric - Editorial Hero */}
+              <div className={styles.primaryMetric}>
+                <div className={styles.primaryNumber}>₹{metrics?.revenue ? metrics.revenue.toFixed(0) : '0'}</div>
+                <div className={styles.primaryLabel}>Revenue</div>
+                <div className={styles.primarySubtext}>This {period === 'today' ? 'day' : period}'s performance</div>
               </div>
-              <div className={styles.metricCard}>
-                <div className={styles.metricIcon}>
-                  <DollarSign size={20} />
-                </div>
-                <div className={styles.metricContent}>
-                  <p className={styles.metricValue}>₹{metrics?.revenue ? metrics.revenue.toFixed(0) : '0'}</p>
-                  <p className={styles.metricLabel}>Revenue</p>
-                </div>
-              </div>
-              {metrics?.statusCounts?.slice(0, 2).map((sc: any) => (
-                <div key={sc.status} className={styles.metricCard}>
-                  <div className={styles.metricIcon}>
-                    <BarChart3 size={20} />
-                  </div>
-                  <div className={styles.metricContent}>
-                    <p className={styles.metricValue}>{sc._count.status}</p>
-                    <p className={styles.metricLabel}>
-                      {sc.status.charAt(0).toUpperCase() + sc.status.slice(1)}
-                    </p>
+
+              {/* Secondary Metrics - Magazine Layout */}
+              <div className={styles.secondaryMetrics}>
+                <div className={styles.metricRow}>
+                  <div className={styles.metricNumber}>{metrics?.totalOrders || '0'}</div>
+                  <div className={styles.metricText}>
+                    <span className={styles.metricTitle}>Orders</span>
+                    <span className={styles.metricDescription}>Total processed</span>
                   </div>
                 </div>
-              ))}
-              </div>
-              <div className={styles.scrollIndicator}>
-                {Array.from({ length: Math.min(4, (metrics?.statusCounts?.length || 0) + 2) }).map((_, index) => (
-                  <div 
-                    key={index}
-                    className={`${styles.scrollDot} ${index === activeMetricDot ? styles.active : ''}`}
-                  />
+
+                {metrics?.statusCounts?.slice(0, 2).map((sc: any) => (
+                  <div key={sc.status} className={styles.metricRow}>
+                    <div className={styles.metricNumber}>{sc._count.status}</div>
+                    <div className={styles.metricText}>
+                      <span className={styles.metricTitle}>
+                        {sc.status.charAt(0).toUpperCase() + sc.status.slice(1)}
+                      </span>
+                      <span className={styles.metricDescription}>Status count</span>
+                    </div>
+                  </div>
                 ))}
+              </div>
+
+              {/* Tertiary Info - Minimal Context */}
+              <div className={styles.tertiaryInfo}>
+                <div className={styles.infoLine}>
+                  <span className={styles.infoLabel}>Period</span>
+                  <span className={styles.infoValue}>{period.charAt(0).toUpperCase() + period.slice(1)}</span>
+                </div>
+                <div className={styles.infoLine}>
+                  <span className={styles.infoLabel}>Updated</span>
+                  <span className={styles.infoValue}>Just now</span>
+                </div>
               </div>
             </div>
           )}
