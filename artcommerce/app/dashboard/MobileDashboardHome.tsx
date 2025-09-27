@@ -249,10 +249,6 @@ export default function MobileDashboardHome() {
             <Link href="/" className={styles.backButton} title="Back to Home">
               <Home size={18} />
             </Link>
-            <div>
-              <h1 className={styles.headerTitle}>Dashboard</h1>
-              <p className={styles.headerSubtitle}>Welcome back, {user.fullName}</p>
-            </div>
           </div>
           <div className={styles.headerActions}>
             <button 
@@ -266,6 +262,12 @@ export default function MobileDashboardHome() {
       </header>
       
       <div className={styles.contentWrapper}>
+        {/* Dashboard Title Section - Above user profile */}
+        <div className={styles.dashboardTitleSection}>
+          <h1 className={styles.dashboardMainTitle}>Dashboard</h1>
+          <p className={styles.dashboardWelcome}>Welcome back, {user.fullName}</p>
+        </div>
+
         <div className={styles.userProfile}>
           {user.avatarUrl ? (
             <img

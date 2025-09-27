@@ -129,9 +129,33 @@
 }
 
 .contentWrapper {
-  padding-top: 120px; /* Account for fixed header height */
+  padding-top: 80px; /* Reduced since header is simpler now */
   flex: 1;
   padding-bottom: 2rem;
+}
+
+/* Dashboard Title Section - Above user profile */
+.dashboardTitleSection {
+  padding: 0 20px 24px 20px;
+  text-align: left;
+}
+
+.dashboardMainTitle {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #000000;
+  margin: 0 0 8px 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.2;
+}
+
+.dashboardWelcome {
+  font-size: 1rem;
+  font-weight: 400;
+  color: #666666;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.4;
 }
 
 /* ============================================
@@ -216,8 +240,8 @@
   display: flex;
   flex-direction: column;
   gap: 24px; /* Reduced gap to accommodate header */
-  border: 0.5px solid rgba(60, 60, 67, 0.18); /* Match accordion border */
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04); /* Match accordion shadow */
+  border: 1px solid rgba(0, 0, 0, 0.12); /* More visible border */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08); /* Stronger shadow */
 }
 
 /* Overview Header inside card */
@@ -594,8 +618,8 @@
   background: #FFFFFF;
   border-radius: 12px;
   overflow: hidden;
-  border: 0.5px solid rgba(60, 60, 67, 0.18);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.12); /* More visible border */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08); /* Stronger shadow */
   margin: 0; /* Remove any margin */
 }
 
@@ -604,7 +628,7 @@
   align-items: center;
   padding: 16px 20px;
   background: #FFFFFF;
-  border-bottom: 0.5px solid rgba(0, 0, 0, 0.08);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1); /* More visible separator */
   text-decoration: none;
   color: inherit;
   transition: background-color 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
@@ -675,8 +699,8 @@
   padding: 16px 20px;
   background: #FFFFFF;
   border-radius: 12px 12px 0 0; /* Round only top corners when expanded */
-  border: 0.5px solid rgba(60, 60, 67, 0.18);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.12); /* More visible border */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08); /* Stronger shadow */
   cursor: pointer;
   transition: all 0.2s ease;
   margin-bottom: 0; /* Remove margin that was causing gap */
@@ -691,11 +715,13 @@
 .iosAccordionHeader.expanded {
   border-radius: 12px 12px 0 0;
   border-bottom: none; /* Connect with content */
+  border-color: rgba(0, 0, 0, 0.15); /* Slightly stronger when expanded */
 }
 
 /* When accordion is collapsed, round all corners */
 .iosAccordionHeader:not(.expanded) {
   border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.12); /* Consistent visible border */
 }
 
 .iosAccordionTitleGroup {
@@ -742,7 +768,9 @@
 .iosAccordionContent .iosMenuGroup {
   border-radius: 0 0 12px 12px; /* Match accordion content */
   border-top: none; /* Remove top border to connect with header */
-  box-shadow: none; /* Remove shadow, will be on parent */
+  border: 1px solid rgba(0, 0, 0, 0.12); /* Visible border but no top */
+  border-top: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08); /* Maintain shadow for depth */
 }
 
 /* ============================================
