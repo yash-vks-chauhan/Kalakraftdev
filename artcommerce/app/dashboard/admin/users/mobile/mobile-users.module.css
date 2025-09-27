@@ -289,6 +289,8 @@
   border-top: 1px solid rgba(0, 0, 0, 0.08);
   padding: 20px;
   background: rgba(0, 0, 0, 0.01);
+  border-bottom-left-radius: 16px;
+  border-bottom-right-radius: 16px;
 }
 
 .userDetails {

@@ -850,7 +850,7 @@
   padding: 16px 20px;
   background: #FFFFFF;
   border-radius: 12px;
-  border: 1px solid rgba(0, 0, 0, 0.18); /* Match dashboard outline style */
+  border: 1px solid rgba(0, 0, 0, 0.18);
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
   margin-bottom: 0;
@@ -866,14 +866,14 @@
 /* When accordion is expanded, only round top corners */
 .iosAccordionHeader.expanded {
   border-radius: 12px 12px 0 0;
-  border: 1px solid rgba(0, 0, 0, 0.18); /* Match dashboard outline style */
-  border-bottom: none; /* Remove bottom border to connect with content */
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  border-bottom: none;
 }
 
 /* When accordion is collapsed, round all corners */
 .iosAccordionHeader:not(.expanded) {
   border-radius: 12px;
-  border: 1px solid rgba(0, 0, 0, 0.18); /* Match dashboard outline style */
+  border: 1px solid rgba(0, 0, 0, 0.18);
 }
 
 .iosAccordionTitleGroup {
@@ -912,26 +912,29 @@
   margin: 0;
   background: #FFFFFF;
   border-radius: 0 0 12px 12px;
-  border: 1px solid rgba(0, 0, 0, 0.18); /* Match dashboard outline style */
+  border-left: 1px solid rgba(0, 0, 0, 0.18);
+  border-right: 1px solid rgba(0, 0, 0, 0.18);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.18);
   border-top: none;
   will-change: max-height, opacity, transform;
 }
 
 .iosAccordionContent.expanded {
-  max-height: 800px; /* Increased from 600px to accommodate full overview content */
+  max-height: 800px;
   opacity: 1;
   transform: translateY(0);
-  border: 1px solid rgba(0, 0, 0, 0.18); /* Match dashboard outline style */
-  border-top: none; /* Connect seamlessly with header */
+  border-left: 1px solid rgba(0, 0, 0, 0.18);
+  border-right: 1px solid rgba(0, 0, 0, 0.18);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.18);
+  border-top: none;
 }
 
 /* Make menu group seamless with accordion header */
 .iosAccordionContent .iosMenuGroup {
-  border-radius: 0 0 12px 12px; /* Match accordion content */
-  border: 1px solid rgba(0, 0, 0, 0.18); /* Match dashboard outline style */
-  border-top: none; /* Remove top border to connect with header */
-  background: #FFFFFF; /* Ensure white background */
-  margin: 0; /* Remove any margin to prevent gaps */
+  border-radius: 0 0 12px 12px;
+  border: none;
+  background: #FFFFFF;
+  margin: 0;
 }
 
 /* ============================================
