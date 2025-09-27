@@ -1,12 +1,25 @@
+/* Mobile Dashboard Container */
 .mobileDashboardContainer {
   min-height: 100vh;
-  background: #FFFFFF;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  -webkit-overflow-scrolling: touch;
-  animation: fadeInUp 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  background: var(--background);
+  color: var(--text);
+}
+
+/* Color Variables - Minimal White/Grey/Black Theme */
+:root {
+  --background: #ffffff;
+  --surface: #f8f9fa;
+  --surface-elevated: #ffffff;
+  --border: #e5e7eb;
+  --text: #111827;
+  --text-secondary: #6b7280;
+  --text-muted: #9ca3af;
+  --primary: #111827;
+  --primary-hover: #374151;
+  --success: #059669;
+  --warning: #d97706;
+  --error: #dc2626;
+  --overlay: rgba(0, 0, 0, 0.1);
 }
 
 @keyframes fadeInUp {
@@ -22,16 +35,15 @@
 
 /* Remove pseudo-element background */
 
+/* Header Styles */
 .mobileHeader {
-  background: #FFFFFF;
-  padding: 16px 20px;
-  border-bottom: 1px solid #F5F5F5;
+  background: var(--surface-elevated);
+  border-bottom: 1px solid var(--border);
+  padding: 1rem;
   position: sticky;
   top: 0;
   z-index: 100;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
 }
 
 .headerContent {
@@ -70,17 +82,17 @@
   width: 44px;
   height: 44px;
   border-radius: 12px;
-  background: #F5F5F5;
-  border: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #1D1D1F;
+  color: var(--text);
   transition: all 0.2s ease;
 }
 
 .iconButton:active {
-  background: #E5E5E5;
+  background: var(--border);
   transform: scale(0.96);
 }
 
@@ -106,27 +118,31 @@
   flex: 1;
 }
 
+/* User Profile Section */
 .userProfile {
-  background: #FFFFFF;
-  border-radius: 16px;
-  padding: 20px;
-  margin-bottom: 16px;
-  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.06);
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
+  padding: 1rem;
+  background: var(--surface-elevated);
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
 }
 
+/* Avatar Styles */
 .avatar {
-  width: 56px;
-  height: 56px;
-  border-radius: 16px;
-  object-fit: cover;
-  background: #F5F5F5;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 2px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #86868B;
+  color: var(--text-secondary);
+  object-fit: cover;
 }
 
 .userInfo {
@@ -173,10 +189,10 @@
   display: flex;
   align-items: center;
   padding: 16px 20px;
-  background: #FFFFFF;
-  border-bottom: 1px solid #F2F2F7;
+  background: var(--surface-elevated);
+  border-bottom: 1px solid var(--border);
   text-decoration: none;
-  color: #1D1D1F;
+  color: var(--text);
   font-size: 1rem;
   font-weight: 500;
   transition: background-color 0.2s ease;
@@ -188,17 +204,17 @@
 }
 
 .modernMenuItem:active {
-  background-color: #F2F2F7;
+  background-color: var(--surface);
 }
 
 .menuItem {
   display: flex;
   align-items: center;
   padding: 16px 20px;
-  background: #FFFFFF;
-  border-bottom: 1px solid #F2F2F7;
+  background: var(--surface-elevated);
+  border-bottom: 1px solid var(--border);
   text-decoration: none;
-  color: #1D1D1F;
+  color: var(--text);
   font-size: 1rem;
   font-weight: 500;
   transition: background-color 0.2s ease;
@@ -211,7 +227,7 @@
 }
 
 .menuItem:active {
-  background-color: #F2F2F7;
+  background-color: var(--surface);
 }
 
 /* Add smooth animation for expanded product details */
@@ -417,13 +433,14 @@
 /* Remove scroll indicators for cleaner look */
 
 .metricCard {
-  background: #FFFFFF;
-  border-radius: 16px;
-  padding: 20px;
+  background: var(--surface-elevated);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
   transition: all 0.2s ease;
   min-height: 100px;
   justify-content: space-between;
