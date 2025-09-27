@@ -186,37 +186,42 @@
   justify-content: center;
   color: white;
   object-fit: cover;
-  border: 2px solid rgba(0, 0, 0, 0.15);
+  border: 2px solid #000000; /* Changed to solid black border */
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.8);
 }
 
 .userInfo {
   flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .userName {
   font-size: 1.5rem;
   font-weight: 700;
   color: #000000;
-  margin: 0 0 2px 0;
+  margin: 0 0 4px 0;
   line-height: 1.2;
   letter-spacing: -0.02em;
+  order: 2; /* Place after welcome text */
 }
 
 .userRole {
-  color: #555;
+  color: #8E8E93; /* Match iOS secondary text color */
   font-size: 0.875rem;
   font-weight: 500;
-  margin: 0 0 4px 0;
+  margin: 0;
   text-transform: capitalize;
+  order: 3; /* Place last */
 }
 
 .welcomeText {
-  color: #666;
-  font-size: 0.8rem;
-  margin: 0;
-  font-weight: 400;
-  font-style: italic;
+  color: #8E8E93; /* Match iOS secondary text color for consistency */
+  font-size: 0.875rem; /* Increased size for better readability */
+  margin: 0 0 8px 0; /* Add bottom margin */
+  font-weight: 500; /* Increased weight for better prominence */
+  font-style: normal; /* Remove italic for cleaner look */
+  order: 1; /* Place first */
 }
 
 /* ============================================
@@ -390,7 +395,7 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
-  border-radius: 0 0 12px 12px; /* Round bottom corners */
+  border-radius: 0 0 12px 12px; /* Round bottom corners to match parent */
   margin: 0; /* Remove any margin */
   min-height: fit-content; /* Ensure content fits properly */
 }
@@ -913,9 +918,11 @@
 }
 
 .iosAccordionContent.expanded {
-  max-height: 1000px; /* Further increased to ensure all overview content is visible */
+  max-height: 800px; /* Increased from 600px to accommodate full overview content */
   opacity: 1;
   transform: translateY(0);
+  border: 1px solid rgba(0, 0, 0, 0.18); /* Match dashboard outline style */
+  border-top: none; /* Connect seamlessly with header */
 }
 
 /* Make menu group seamless with accordion header */

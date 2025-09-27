@@ -292,7 +292,7 @@ export default function MobileDashboardHome() {
         <>
           {/* Overview Accordion */}
           <div className={styles.iosSection}>
-            <div className={styles.iosAccordionHeader}>
+            <div className={`${styles.iosAccordionHeader} ${showOverview ? styles.expanded : ''}`}>
               <div 
                 className={styles.iosAccordionTitleGroup}
                 onClick={() => setShowOverview(prev => !prev)}
