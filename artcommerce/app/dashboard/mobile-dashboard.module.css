@@ -1009,7 +1009,7 @@
   padding: 0;
   margin: 0;
   background: #FFFFFF;
-  border-radius: 0 0 12px 12px !important;
+  border-radius: 0 !important;
   border-left: 1px solid rgba(0, 0, 0, 0.18);
   border-right: 1px solid rgba(0, 0, 0, 0.18);
   border-bottom: 1px solid rgba(0, 0, 0, 0.18);
@@ -1026,7 +1026,7 @@
   border-right: 1px solid rgba(0, 0, 0, 0.18);
   border-bottom: 1px solid rgba(0, 0, 0, 0.18);
   border-top: none !important;
-  border-radius: 0 0 12px 12px !important;
+  border-radius: 0 !important;
 }
 
 /* Make menu group seamless with accordion header */
