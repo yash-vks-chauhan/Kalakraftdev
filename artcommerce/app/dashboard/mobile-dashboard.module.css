@@ -5,7 +5,7 @@
 
 .mobileDashboardContainer {
   min-height: 100vh;
-  background: #E5E5EA; /* Darker professional grey */
+  background: #F2F2F7; /* iOS system grouped background */
   position: relative;
   z-index: 1;
   width: 100%;
@@ -18,12 +18,13 @@
 
 .mobileHeader {
   background: #FFFFFF;
-  border-bottom: 1px solid #D1D1D6;
+  border-bottom: 0.5px solid rgba(60, 60, 67, 0.36);
   padding: 1rem 1.25rem;
   position: sticky;
   top: 0;
   z-index: 99;
   transition: all 0.25s ease-in-out;
+  box-shadow: 0 0.5px 0 0 rgba(60, 60, 67, 0.18);
 }
 
 .mobileHeader.scrolled {
@@ -117,20 +118,22 @@
   background: #FFFFFF;
   border-radius: 12px;
   margin: 16px 16px 24px 16px;
-  border: 1px solid #D1D1D6;
+  border: 0.5px solid rgba(60, 60, 67, 0.18);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .avatar {
   width: 64px;
   height: 64px;
   border-radius: 32px;
-  background: #8E8E93;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
   object-fit: cover;
-  border: 2px solid #D1D1D6;
+  border: 3px solid #FFFFFF;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .userInfo {
@@ -228,7 +231,8 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  border: 1px solid #D1D1D6;
+  border: 0.5px solid rgba(60, 60, 67, 0.18);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
   transition: all 0.2s ease;
   min-width: 140px;
   min-height: 140px;
@@ -239,19 +243,20 @@
 
 .metricCard:active {
   transform: scale(0.98);
-  border-color: #8E8E93;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border-color: rgba(60, 60, 67, 0.36);
 }
 
 .metricIcon {
   width: 48px;
   height: 48px;
   border-radius: 16px;
-  background: rgba(0, 0, 0, 0.08);
+  background: rgba(120, 120, 128, 0.16);
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 12px;
-  color: #000000;
+  color: #007AFF;
 }
 
 .metricContent {
@@ -356,7 +361,8 @@
   background: #FFFFFF;
   border-radius: 12px;
   overflow: hidden;
-  border: 1px solid #D1D1D6;
+  border: 0.5px solid rgba(60, 60, 67, 0.18);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .iosMenuItem {
@@ -384,12 +390,12 @@
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(120, 120, 128, 0.16);
   display: flex;
   align-items: center;
   justify-content: center;
   margin-right: 16px;
-  color: #000000;
+  color: #007AFF;
   flex-shrink: 0;
 }
 
@@ -435,7 +441,8 @@
   padding: 16px 20px;
   background: #FFFFFF;
   border-radius: 12px;
-  border: 1px solid #D1D1D6;
+  border: 0.5px solid rgba(60, 60, 67, 0.18);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
   cursor: pointer;
   transition: all 0.2s ease;
   margin-bottom: 8px;
@@ -456,11 +463,11 @@
   width: 36px;
   height: 36px;
   border-radius: 10px;
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(120, 120, 128, 0.16);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #000000;
+  color: #007AFF;
 }
 
 .iosAccordionTitle {
@@ -498,7 +505,8 @@
   padding: 16px 20px;
   background: #FFFFFF;
   border-radius: 12px;
-  border: 1px solid #D1D1D6;
+  border: 0.5px solid rgba(60, 60, 67, 0.18);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
   cursor: pointer;
   transition: all 0.2s ease;
   margin-bottom: 8px;
@@ -530,7 +538,8 @@
   background: #FFFFFF;
   border-radius: 12px;
   overflow: hidden;
-  border: 1px solid #D1D1D6;
+  border: 0.5px solid rgba(60, 60, 67, 0.18);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
   margin-top: 8px;
 }
 
@@ -563,14 +572,14 @@
   width: 56px;
   height: 56px;
   border-radius: 8px;
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(120, 120, 128, 0.16);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #000000;
+  color: #007AFF;
   flex-shrink: 0;
   overflow: hidden;
-  border: 1px solid #E5E5EA;
+  border: 0.5px solid rgba(60, 60, 67, 0.18);
   transition: transform 0.2s ease;
 }
 
@@ -672,7 +681,8 @@
   background: #FFFFFF;
   border-radius: 12px;
   margin-top: 8px;
-  border: 1px solid #D1D1D6;
+  border: 0.5px solid rgba(60, 60, 67, 0.18);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .emptyStateSmall {
@@ -681,7 +691,8 @@
   background: #FFFFFF;
   border-radius: 12px;
   margin-top: 8px;
-  border: 1px solid #D1D1D6;
+  border: 0.5px solid rgba(60, 60, 67, 0.18);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .emptyText {
@@ -703,7 +714,8 @@
   text-align: center;
   background: #FFFFFF;
   border-radius: 12px;
-  border: 1px solid #D1D1D6;
+  border: 0.5px solid rgba(60, 60, 67, 0.18);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
   margin: 16px;
 }
 
