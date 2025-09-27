@@ -82,6 +82,11 @@ export default function MobileAdminProductsPage() {
 
       const data = await response.json()
       let allProducts = data.products || []
+      
+      // Debug: Log the first product to check image URLs structure
+      if (allProducts.length > 0) {
+        console.log('First product imageUrls:', allProducts[0].imageUrls, typeof allProducts[0].imageUrls)
+      }
 
       // Apply client-side filtering
       if (searchQuery) {
@@ -194,13 +199,19 @@ export default function MobileAdminProductsPage() {
             : null
             
         if (imageUrl) {
+          // If it's already a full URL, use it directly
+          if (imageUrl.startsWith('http')) {
+            return imageUrl
+          }
+          // If it's a Cloudinary path, use the optimization
           return getOptimizedImageUrl(imageUrl, 'c_fill,w_300,h_300,q_auto')
         }
       }
     } catch (error) {
       console.warn('Error processing product image:', error)
     }
-    return '/images/placeholder-product.png'
+    // Use a fallback image that exists in the public directory
+    return '/images/featured1.png'
   }
 
   if (isLoading && !products.length) {
@@ -287,6 +298,10 @@ export default function MobileAdminProductsPage() {
                     alt={product.name}
                     className={styles.productImage}
                     loading="lazy"
+                    onError={(e) => {
+                      console.log('Image load error for product:', product.name, 'URL:', getProductImage(product));
+                      (e.target as HTMLImageElement).src = '/images/featured1.png';
+                    }}
                   />
                   <div className={styles.statusBadge}>
                     {product.isActive ? (
@@ -305,7 +320,6 @@ export default function MobileAdminProductsPage() {
 
                 <div className={styles.productInfo}>
                   <h3 className={styles.productName}>{product.name}</h3>
-                  <p className={styles.productDesc}>{product.shortDesc || 'No description available'}</p>
                   
                   <div className={styles.productMeta}>
                     <div className={styles.priceContainer}>
