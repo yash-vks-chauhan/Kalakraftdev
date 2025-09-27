@@ -4,11 +4,10 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useAuth } from '../../../../contexts/AuthContext'
 import styles from './mobile-products.module.css'
-import { FiEdit2, FiTrash2, FiPlus, FiSearch, FiFilter, FiEye, FiEyeOff } from 'react-icons/fi'
+import { FiEdit2, FiTrash2, FiPlus, FiSearch, FiFilter, FiEye, FiEyeOff, FiChevronLeft } from 'react-icons/fi'
 import LoadingSpinner from '../../../../components/LoadingSpinner'
 import { useRouter } from 'next/navigation'
 import { getOptimizedImageUrl } from '../../../../../lib/cloudinaryImages'
-import MobileDashboardNavbar from '../../../../components/MobileDashboardNavbar'
 
 interface Product {
   id: number
@@ -244,16 +243,25 @@ export default function MobileAdminProductsPage() {
 
   return (
     <div className={styles.container}>
-      {/* Custom Mobile Navbar */}
-      <MobileDashboardNavbar 
-        title="Products"
-        backUrl="/dashboard"
-        rightContent={
+      {/* Page header with navigation */}
+      <div className={styles.pageHeader}>
+        <div className={styles.headerTop}>
+          <button 
+            onClick={() => router.push('/dashboard')}
+            className={styles.backButton}
+          >
+            <FiChevronLeft size={20} />
+          </button>
+          <h1 className={styles.pageTitle}>Dashboard</h1>
           <button onClick={handleAddNew} className={styles.addButton}>
             <FiPlus />
           </button>
-        }
-      />
+        </div>
+        <h2 className={styles.sectionTitle}>Products</h2>
+        <p className={styles.subtitle}>
+          {pagination.totalProducts} product{pagination.totalProducts !== 1 ? 's' : ''} total
+        </p>
+      </div>
 
       {/* Search and Filter */}
       <div className={styles.filterSection}>

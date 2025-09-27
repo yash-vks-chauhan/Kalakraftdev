@@ -838,7 +838,7 @@
 }
 
 .iosChevron {
-  transition: transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
   backface-visibility: hidden;
@@ -921,8 +921,9 @@
 .iosAccordionContent {
   max-height: 0;
   overflow: hidden;
-  transition: max-height 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-              opacity 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: max-height 0.4s cubic-bezier(0.4, 0.0, 0.2, 1),
+              opacity 0.3s cubic-bezier(0.4, 0.0, 0.2, 1),
+              padding 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
   opacity: 0;
   padding: 0;
   margin: 0;
@@ -932,13 +933,13 @@
   border-right: 1px solid rgba(0, 0, 0, 0.18);
   border-bottom: 1px solid rgba(0, 0, 0, 0.18);
   border-top: none !important;
-  will-change: max-height, opacity;
+  will-change: max-height, opacity, padding;
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
 }
 
 .iosAccordionContent.expanded {
-  max-height: 1000px;
+  max-height: 500px;
   opacity: 1;
   border-left: 1px solid rgba(0, 0, 0, 0.18);
   border-right: 1px solid rgba(0, 0, 0, 0.18);
@@ -953,6 +954,9 @@
   border: none;
   background: #FFFFFF;
   margin: 0;
+  transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 }
 
 /* ============================================
@@ -1309,7 +1313,7 @@
   }
   
   .iosAccordionContent.expanded {
-    max-height: 1200px; /* Further increased for smaller screens that may need more height */
+    max-height: 600px; /* Optimized for smaller screens for smoother animation */
   }
 }
 
@@ -1318,6 +1322,16 @@
   .modernSkeleton::after,
   .skeletonShimmer::after {
     animation: skeletonPulse 2s ease-in-out infinite;
+  }
+  
+  /* Reduce accordion animation for accessibility */
+  .iosAccordionContent {
+    transition: max-height 0.2s ease,
+                opacity 0.15s ease;
+  }
+  
+  .iosChevron {
+    transition: transform 0.1s ease;
   }
 }
 

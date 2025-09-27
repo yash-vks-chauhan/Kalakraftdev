@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '../../../../contexts/AuthContext'
 import { useSearchParams } from 'next/navigation'
 import styles from './mobile-users.module.css'
-import { FiSearch, FiFilter, FiChevronDown, FiChevronUp, FiTrash2, FiShoppingCart, FiMail, FiCalendar, FiUser, FiShield } from 'react-icons/fi'
+import { FiSearch, FiFilter, FiChevronDown, FiChevronUp, FiTrash2, FiShoppingCart, FiMail, FiCalendar, FiUser, FiShield, FiChevronLeft } from 'react-icons/fi'
 import LoadingSpinner from '../../../../components/LoadingSpinner'
-import MobileDashboardNavbar from '../../../../components/MobileDashboardNavbar'
 
 interface UserRow {
   id: number
@@ -20,6 +20,7 @@ interface UserRow {
 
 export default function MobileAdminUsersPage() {
   const { user, token } = useAuth()
+  const router = useRouter()
   const [users, setUsers] = useState<UserRow[]>([])
   const [filteredUsers, setFilteredUsers] = useState<UserRow[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -201,11 +202,25 @@ export default function MobileAdminUsersPage() {
 
   return (
     <div className={styles.container}>
-      {/* Custom Mobile Navbar */}
-      <MobileDashboardNavbar 
-        title="User Management"
-        backUrl="/dashboard"
-      />
+      {/* Page header with navigation */}
+      <div className={styles.pageHeader}>
+        <div className={styles.headerTop}>
+          <button 
+            onClick={() => router.push('/dashboard')}
+            className={styles.backButton}
+          >
+            <FiChevronLeft size={20} />
+          </button>
+          <h1 className={styles.pageTitle}>Dashboard</h1>
+        </div>
+        <h2 className={styles.sectionTitle}>User Management</h2>
+        <div className={styles.userStats}>
+          <div className={styles.statItem}>
+            <span className={styles.statNumber}>{filteredUsers.length}</span>
+            <span className={styles.statLabel}>Users</span>
+          </div>
+        </div>
+      </div>
 
       {/* Search and Filter */}
       <div className={styles.filterSection}>

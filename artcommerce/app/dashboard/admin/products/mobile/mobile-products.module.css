@@ -11,11 +11,78 @@
 }
 
 /* ============================================
-   HEADER SECTION
+   PAGE HEADER SECTION - Dedicated Navigation
+   ============================================ */
+
+.pageHeader {
+  background: #FFFFFF;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px 20px 24px 20px;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+}
+
+.headerTop {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.backButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: none;
+  background: rgba(0, 0, 0, 0.05);
+  color: #333;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.backButton:hover {
+  background: rgba(0, 0, 0, 0.1);
+  transform: translateX(-1px);
+}
+
+.backButton:active {
+  transform: translateX(-1px) scale(0.95);
+}
+
+.pageTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #000000;
+  margin: 0;
+  letter-spacing: -0.01em;
+  flex: 1;
+}
+
+.sectionTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #000000;
+  margin: 0 0 8px 0;
+  line-height: 1.2;
+}
+
+.subtitle {
+  font-size: 0.875rem;
+  color: #8E8E93;
+  margin: 0;
+  font-weight: 500;
+}
+
+/* ============================================
+   LEGACY HEADER SECTION (HIDDEN)
    ============================================ */
 
 .header {
-  display: none; /* Hide the header section since we have navbar now */
+  display: none; /* Hide the old header section */
 }
 
 .headerTop {

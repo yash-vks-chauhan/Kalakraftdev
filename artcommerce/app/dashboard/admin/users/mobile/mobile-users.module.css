@@ -11,11 +11,101 @@
 }
 
 /* ============================================
-   HEADER SECTION
+   PAGE HEADER SECTION - Dedicated Navigation
+   ============================================ */
+
+.pageHeader {
+  background: #FFFFFF;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px 20px 24px 20px;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+}
+
+.headerTop {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.backButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: none;
+  background: rgba(0, 0, 0, 0.05);
+  color: #333;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.backButton:hover {
+  background: rgba(0, 0, 0, 0.1);
+  transform: translateX(-1px);
+}
+
+.backButton:active {
+  transform: translateX(-1px) scale(0.95);
+}
+
+.pageTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #000000;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.sectionTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #000000;
+  margin: 0 0 16px 0;
+  line-height: 1.2;
+}
+
+.userStats {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.statItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.statNumber {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #000000;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Mono', monospace;
+  line-height: 1;
+}
+
+.statLabel {
+  font-size: 0.75rem;
+  color: #8E8E93;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 2px;
+}
+
+/* ============================================
+   LEGACY HEADER SECTION (HIDDEN)
    ============================================ */
 
 .header {
-  display: none; /* Hide the header section since we have navbar now */
+  display: none; /* Hide the old header section */
 }
 
 .headerTop {
