@@ -1,7 +1,7 @@
 "use client"
 
 import Link from 'next/link'
-import { ChevronRight, ChevronDown, ChevronUp, User, Package, ShoppingCart, Heart, Settings, Users, Tag, AlertTriangle, TicketCheck, Star, LogOut, RefreshCw, Clock, PackageOpen, Calendar, PlusCircle, BarChart3, Shield, UserCheck, DollarSign } from 'lucide-react'
+import { ChevronRight, ChevronDown, ChevronUp, User, Package, ShoppingCart, Heart, Settings, Users, Tag, AlertTriangle, TicketCheck, Star, LogOut, RefreshCw, Clock, PackageOpen, Calendar, PlusCircle, BarChart3, Shield, UserCheck, DollarSign, ArrowLeft, Home } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import styles from './mobile-dashboard.module.css'
 import desktopStyles from './dashboard.module.css'
@@ -252,8 +252,13 @@ export default function MobileDashboardHome() {
       <header className={`${styles.mobileHeader} ${isScrolled ? styles.scrolled : ''}`}>
         <div className={styles.headerContent}>
           <div className={styles.headerLeft}>
-            <h1 className={styles.headerTitle}>Dashboard</h1>
-            <p className={styles.headerSubtitle}>Welcome back, {user.fullName}</p>
+            <Link href="/" className={styles.backButton} title="Back to Home">
+              <Home size={18} />
+            </Link>
+            <div>
+              <h1 className={styles.headerTitle}>Dashboard</h1>
+              <p className={styles.headerSubtitle}>Welcome back, {user.fullName}</p>
+            </div>
           </div>
           <div className={styles.headerActions}>
             <button 
