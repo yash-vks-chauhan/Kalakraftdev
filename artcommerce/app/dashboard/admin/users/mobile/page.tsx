@@ -7,6 +7,7 @@ import { useSearchParams } from 'next/navigation'
 import styles from './mobile-users.module.css'
 import { FiSearch, FiFilter, FiChevronDown, FiChevronUp, FiTrash2, FiShoppingCart, FiMail, FiCalendar, FiUser, FiShield } from 'react-icons/fi'
 import LoadingSpinner from '../../../../components/LoadingSpinner'
+import MobileDashboardNavbar from '../../../../components/MobileDashboardNavbar'
 
 interface UserRow {
   id: number
@@ -200,21 +201,11 @@ export default function MobileAdminUsersPage() {
 
   return (
     <div className={styles.container}>
-      {/* Header */}
-      <div className={styles.header}>
-        <div className={styles.headerTop}>
-          <h1 className={styles.title}>User Management</h1>
-          <div className={styles.userStats}>
-            <div className={styles.statItem}>
-              <span className={styles.statNumber}>{filteredUsers.length}</span>
-              <span className={styles.statLabel}>Users</span>
-            </div>
-          </div>
-        </div>
-        <p className={styles.subtitle}>
-          Manage user accounts and permissions
-        </p>
-      </div>
+      {/* Custom Mobile Navbar */}
+      <MobileDashboardNavbar 
+        title="User Management"
+        backUrl="/dashboard"
+      />
 
       {/* Search and Filter */}
       <div className={styles.filterSection}>

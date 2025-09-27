@@ -395,9 +395,10 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
-  border-radius: 0 0 12px 12px; /* Round bottom corners to match parent */
+  border-radius: 0 !important; /* Remove any border radius from content - parent handles this */
   margin: 0; /* Remove any margin */
   min-height: fit-content; /* Ensure content fits properly */
+  border: none !important; /* Remove any borders from content */
 }
 
 /* Period Selector Section */
@@ -882,14 +883,14 @@
 
 /* When accordion is expanded, only round top corners */
 .iosAccordionHeader.expanded {
-  border-radius: 12px 12px 0 0;
+  border-radius: 12px 12px 0 0 !important;
   border: 1px solid rgba(0, 0, 0, 0.18);
-  border-bottom: none;
+  border-bottom: none !important;
 }
 
 /* When accordion is collapsed, round all corners */
 .iosAccordionHeader:not(.expanded) {
-  border-radius: 12px;
+  border-radius: 12px !important;
   border: 1px solid rgba(0, 0, 0, 0.18);
 }
 
@@ -926,11 +927,11 @@
   padding: 0;
   margin: 0;
   background: #FFFFFF;
-  border-radius: 0 0 12px 12px;
+  border-radius: 0 0 12px 12px !important;
   border-left: 1px solid rgba(0, 0, 0, 0.18);
   border-right: 1px solid rgba(0, 0, 0, 0.18);
   border-bottom: 1px solid rgba(0, 0, 0, 0.18);
-  border-top: none;
+  border-top: none !important;
   will-change: max-height, opacity;
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
@@ -942,7 +943,8 @@
   border-left: 1px solid rgba(0, 0, 0, 0.18);
   border-right: 1px solid rgba(0, 0, 0, 0.18);
   border-bottom: 1px solid rgba(0, 0, 0, 0.18);
-  border-top: none;
+  border-top: none !important;
+  border-radius: 0 0 12px 12px !important;
 }
 
 /* Make menu group seamless with accordion header */

@@ -8,6 +8,7 @@ import { FiEdit2, FiTrash2, FiPlus, FiSearch, FiFilter, FiEye, FiEyeOff } from '
 import LoadingSpinner from '../../../../components/LoadingSpinner'
 import { useRouter } from 'next/navigation'
 import { getOptimizedImageUrl } from '../../../../../lib/cloudinaryImages'
+import MobileDashboardNavbar from '../../../../components/MobileDashboardNavbar'
 
 interface Product {
   id: number
@@ -243,18 +244,16 @@ export default function MobileAdminProductsPage() {
 
   return (
     <div className={styles.container}>
-      {/* Header */}
-      <div className={styles.header}>
-        <div className={styles.headerTop}>
-          <h1 className={styles.title}>Products</h1>
+      {/* Custom Mobile Navbar */}
+      <MobileDashboardNavbar 
+        title="Products"
+        backUrl="/dashboard"
+        rightContent={
           <button onClick={handleAddNew} className={styles.addButton}>
             <FiPlus />
           </button>
-        </div>
-        <p className={styles.subtitle}>
-          {pagination.totalProducts} product{pagination.totalProducts !== 1 ? 's' : ''} total
-        </p>
-      </div>
+        }
+      />
 
       {/* Search and Filter */}
       <div className={styles.filterSection}>

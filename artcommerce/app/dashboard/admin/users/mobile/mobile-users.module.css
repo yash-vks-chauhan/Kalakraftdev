@@ -15,11 +15,7 @@
    ============================================ */
 
 .header {
-  background: #FFFFFF;
-  border-radius: 12px;
-  padding: 24px 20px;
-  margin: 20px 20px 24px 20px;
-  border: 1px solid rgba(0, 0, 0, 0.18);
+  display: none; /* Hide the header section since we have navbar now */
 }
 
 .headerTop {
@@ -82,7 +78,7 @@
 .filterSection {
   display: flex;
   gap: 12px;
-  margin: 0 20px 24px 20px;
+  margin: 20px 20px 24px 20px;
 }
 
 .searchContainer {
@@ -521,27 +517,8 @@
    ============================================ */
 
 @media (max-width: 375px) {
-  .header {
-    margin: 16px 16px 20px 16px;
-    padding: 20px 16px;
-  }
-  
-  .title {
-    font-size: 1.75rem;
-  }
-  
-  .headerTop {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-  
-  .userStats {
-    align-self: flex-end;
-  }
-  
   .filterSection {
-    margin: 0 16px 20px 16px;
+    margin: 16px 16px 20px 16px;
     flex-direction: column;
     gap: 12px;
   }
