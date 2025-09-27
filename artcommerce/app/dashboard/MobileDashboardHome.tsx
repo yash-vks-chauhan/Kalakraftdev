@@ -7,6 +7,7 @@ import styles from './mobile-dashboard.module.css'
 import desktopStyles from './dashboard.module.css'
 import { useState, useEffect, useRef } from 'react'
 import InlineLoader from '../components/InlineLoader'
+import MobileBottomNavbar from '../components/MobileBottomNavbar'
 
 // Mobile Dashboard Skeleton Components
 const MetricsSkeleton = () => (
@@ -724,6 +725,9 @@ export default function MobileDashboardHome() {
           </div>
         </div>
       )}
+
+      {/* Mobile Bottom Navigation */}
+      <MobileBottomNavbar />
     </div>
   )
 } 
