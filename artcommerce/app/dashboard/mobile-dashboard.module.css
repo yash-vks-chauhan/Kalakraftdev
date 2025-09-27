@@ -720,17 +720,6 @@
   position: relative;
 }
 
-/* Add separator line between sections */
-.iosSection:not(:last-child)::after {
-  content: '';
-  position: absolute;
-  bottom: -16px;
-  left: 20px;
-  right: 20px;
-  height: 1px;
-  background: rgba(0, 0, 0, 0.08);
-}
-
 .iosSectionHeader {
   margin-bottom: 8px;
 }
@@ -820,8 +809,16 @@
   transform: rotate(90deg);
 }
 
+.iosChevron {
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
 .iosChevron.rotated {
   transform: rotate(180deg);
+}
+
+.iosChevron.chevronRotated {
+  transform: rotate(90deg);
 }
 
 /* ============================================
@@ -834,24 +831,24 @@
   justify-content: space-between;
   padding: 16px 20px;
   background: #FFFFFF;
-  border-radius: 12px 12px 0 0; /* Round only top corners when expanded */
-  border: 1px solid rgba(0, 0, 0, 0.12); /* Clean iOS-style border */
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
   cursor: pointer;
-  transition: all 0.2s ease;
-  margin-bottom: 0; /* Remove margin that was causing gap */
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  margin-bottom: 0;
 }
 
 .iosAccordionHeader:active {
   background-color: rgba(0, 0, 0, 0.04);
   border-color: rgba(0, 0, 0, 0.18);
-  transform: scale(0.995);
+  transform: scale(0.98);
 }
 
 /* When accordion is expanded, only round top corners */
 .iosAccordionHeader.expanded {
   border-radius: 12px 12px 0 0;
-  border-bottom: none; /* Connect with content */
-  border-color: rgba(0, 0, 0, 0.15); /* Slightly stronger when expanded */
+  border-bottom: none;
+  border-color: rgba(0, 0, 0, 0.15);
 }
 
 /* When accordion is collapsed, round all corners */
@@ -887,18 +884,19 @@
 .iosAccordionContent {
   max-height: 0;
   overflow: hidden;
-  transition: max-height 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-              opacity 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-              transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: max-height 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              opacity 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   opacity: 0;
-  transform: translateY(-8px);
+  transform: translateY(-4px);
   padding: 0;
   margin: 0;
   border-radius: 0 0 12px 12px;
+  will-change: max-height, opacity, transform;
 }
 
 .iosAccordionContent.expanded {
-  max-height: 600px; /* Reduced for smoother animation */
+  max-height: 500px;
   opacity: 1;
   transform: translateY(0);
 }
