@@ -164,7 +164,15 @@ export default function MobileUserManagement({ initialFilter = 'admin' }: Mobile
   }
 
   return (
-    <div className={styles.mobileDashboardContainer}>
+    <div 
+      className={styles.mobileDashboardContainer}
+      style={{ 
+        backgroundColor: '#ffffff', 
+        color: '#111827',
+        minHeight: '100vh',
+        position: 'relative'
+      }}
+    >
       <header className={styles.mobileHeader}>
         <div className={styles.headerContent}>
           <div className={styles.headerLeft}>

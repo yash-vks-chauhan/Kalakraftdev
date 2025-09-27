@@ -42,9 +42,15 @@ body:has(> div > main[data-page="home"]) {
 }
 
 /* Mobile Dashboard Override - Force white background */
-body:has(.mobileDashboardContainer) {
+body:has(.mobileDashboardContainer),
+html:has(.mobileDashboardContainer) {
   background: #ffffff !important;
   color: #111827 !important;
+}
+
+/* Additional mobile dashboard overrides */
+body:has(.mobileDashboardContainer) * {
+  background-color: inherit;
 }
 
 .home-gradient {
