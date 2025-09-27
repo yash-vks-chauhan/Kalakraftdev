@@ -350,6 +350,7 @@ export default function MobileProductManagement() {
             </div>
           </div>
         </div>
+        </div>
         
         <div className={styles.segmentedControl}>
           <button 

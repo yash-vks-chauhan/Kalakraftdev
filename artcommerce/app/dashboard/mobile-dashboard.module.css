@@ -1343,7 +1343,143 @@
   opacity: 0.5;
 }
 
-/* Dark mode styles removed - keeping only grey, white, black theme */
+/* ============================================
+   DARK MODE SUPPORT
+   ============================================ */
+
+@media (prefers-color-scheme: dark) {
+  .mobileDashboardContainer {
+    background: #000000;
+  }
+  
+  .mobileHeader {
+    background: #000000;
+    border-bottom-color: #1C1C1E;
+  }
+  
+  .headerTitle {
+    color: #FFFFFF;
+  }
+  
+  .headerSubtitle {
+    color: #8E8E93;
+  }
+  
+  .iconButton {
+    background: #1C1C1E;
+    color: #FFFFFF;
+  }
+  
+  .iconButton:active {
+    background: #2C2C2E;
+  }
+  
+  .avatarButton {
+    background: #1C1C1E;
+  }
+  
+  .userProfile,
+  .metricCard,
+  .modernMenuList,
+  .menuList,
+  .emptyState {
+    background: #1C1C1E;
+    box-shadow: 0 2px 16px rgba(255, 255, 255, 0.02);
+  }
+  
+  .userName {
+    color: #FFFFFF;
+  }
+  
+  .userRole {
+    color: #8E8E93;
+  }
+  
+  .avatar {
+    background: #2C2C2E;
+    color: #8E8E93;
+  }
+  
+  .menuIcon {
+    background: #2C2C2E;
+    color: #FFFFFF;
+  }
+  
+  .modernMenuItem,
+  .menuItem {
+    background: #1C1C1E;
+    border-bottom-color: #2C2C2E;
+    color: #FFFFFF;
+  }
+  
+  .modernMenuItem:active,
+  .menuItem:active {
+    background-color: #2C2C2E;
+  }
+  
+  .metricIcon {
+    background: #2C2C2E;
+    color: #FFFFFF;
+  }
+  
+  .metricValue {
+    color: #FFFFFF;
+  }
+  
+  .metricLabel,
+  .metricTitle {
+    color: #8E8E93;
+  }
+  
+  .emptyStateIcon {
+    color: #48484A;
+  }
+  
+  .emptyStateText {
+    color: #8E8E93;
+  }
+  
+  .primaryButton {
+    background: #FFFFFF;
+    color: #000000;
+  }
+  
+  .primaryButton:active {
+    background: #E5E5E5;
+  }
+  
+  .secondaryButton {
+    background: #2C2C2E;
+    color: #FFFFFF;
+  }
+  
+  .secondaryButton:active {
+    background: #3A3A3C;
+  }
+  
+  .segmentedControl {
+    background: #2C2C2E;
+  }
+  
+  .segment {
+    color: #8E8E93;
+  }
+  
+  .segment.active {
+    background: #1C1C1E;
+    color: #FFFFFF;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+  
+  .modernSkeleton,
+  .skeletonShimmer {
+    background: #2C2C2E;
+  }
+  
+  .sectionDivider {
+    color: #8E8E93;
+  }
+}
 
 /* ============================================
    MODERN SECTION STYLES
@@ -1640,4 +1776,15 @@
 
 .deleteAction:active {
   background: #FFCCCC;
+}
+
+.sectionSubtitle {
+  font-size: 0.875rem;
+  color: #86868B;
+  margin: 2px 0 0 0;
+  line-height: 1.2;
+}
+
+.actionMenuContainer {
+  position: relative;
 }
