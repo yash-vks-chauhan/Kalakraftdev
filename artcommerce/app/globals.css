@@ -41,11 +41,11 @@ body:has(> div > main[data-page="home"]) {
   color: white;
 }
 
-/* Mobile Dashboard Override - Force white background */
+/* Mobile Dashboard Override - Clean white and light grey theme */
 body:has(.mobileDashboardContainer),
 html:has(.mobileDashboardContainer) {
   background: #ffffff !important;
-  color: #111827 !important;
+  color: #6b7280 !important;
 }
 
 /* Additional mobile dashboard overrides */

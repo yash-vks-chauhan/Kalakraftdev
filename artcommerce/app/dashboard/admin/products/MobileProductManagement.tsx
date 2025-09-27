@@ -266,7 +266,7 @@ export default function MobileProductManagement() {
       className={styles.mobileDashboardContainer}
       style={{ 
         backgroundColor: '#ffffff', 
-        color: '#111827',
+        color: '#6b7280',
         minHeight: '100vh',
         position: 'relative'
       }}
