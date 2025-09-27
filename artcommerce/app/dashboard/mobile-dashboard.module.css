@@ -243,7 +243,7 @@
   padding: 20px;
   background: #FFFFFF;
   border-radius: 12px;
-  margin: 0 16px 24px 16px; /* Match accordion spacing */
+  margin: 0 20px 24px 20px; /* Consistent spacing with other sections */
   display: flex;
   flex-direction: column;
   gap: 24px; /* Reduced gap to accommodate header */
@@ -664,7 +664,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin: 0 16px 20px 16px;
+  margin: 0 20px 20px 20px;
   padding: 0 4px;
 }
 
