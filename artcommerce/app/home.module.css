@@ -3882,7 +3882,7 @@
 
 /* Professional menu - buttons are always visible when menu is shown */
 
-/* Action Menu Container - Twitter-style Vertical Design */
+/* Action Menu Container - Professional Slide-Up Animation */
 .mobileActionMenu {
   position: absolute;
   bottom: 0;
@@ -3890,20 +3890,10 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  opacity: 0;
-  visibility: hidden;
-  transform: scale(0.8) translateX(20px);
-  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   z-index: 18;
 }
 
-.mobileActionWheelExpanded .mobileActionMenu {
-  opacity: 1;
-  visibility: visible;
-  transform: scale(1) translateX(0);
-}
-
-/* Cart Button - Twitter-style Floating Design */
+/* Cart Button - Professional Slide-Up Animation */
 .mobileActionWheelCart {
   position: relative;
   background: #ffffff;
@@ -3915,18 +3905,29 @@
   align-items: center;
   justify-content: center;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   color: #1f2937;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(60px) scale(0.8);
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition-delay: 0.2s;
+}
+
+.mobileActionWheelExpanded .mobileActionWheelCart {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+  transition-delay: 0.1s;
 }
 
 .mobileActionWheelCart:hover {
   background: #1f2937 !important;
   color: #fff !important;
-  transform: scale(1.1);
+  transform: translateY(0) scale(1.1);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
 }
 
-/* Wishlist Button - Twitter-style Floating Design */
+/* Wishlist Button - Professional Slide-Up Animation */
 .mobileActionWheelWishlist {
   position: relative;
   background: #ffffff;
@@ -3938,8 +3939,19 @@
   align-items: center;
   justify-content: center;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   color: #1f2937;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(40px) scale(0.8);
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition-delay: 0.1s;
+}
+
+.mobileActionWheelExpanded .mobileActionWheelWishlist {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+  transition-delay: 0.2s;
 }
 
 .mobileActionWheelWishlistActive {
@@ -3950,11 +3962,11 @@
 .mobileActionWheelWishlist:hover {
   background: #ef4444 !important;
   color: #fff !important;
-  transform: scale(1.1);
+  transform: translateY(0) scale(1.1);
   box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
 }
 
-/* Share Button - Twitter-style Floating Design */
+/* Share Button - Professional Slide-Up Animation */
 .mobileActionWheelShare {
   position: relative;
   background: #ffffff;
@@ -3966,14 +3978,25 @@
   align-items: center;
   justify-content: center;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   color: #1f2937;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(20px) scale(0.8);
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition-delay: 0ms;
+}
+
+.mobileActionWheelExpanded .mobileActionWheelShare {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+  transition-delay: 0.3s;
 }
 
 .mobileActionWheelShare:hover {
   background: #1d9bf0 !important;
   color: #fff !important;
-  transform: scale(1.1);
+  transform: translateY(0) scale(1.1);
   box-shadow: 0 6px 20px rgba(29, 155, 240, 0.4);
 }
 
@@ -4311,6 +4334,18 @@
   .mobileActionWheelShare {
     width: 44px;
     height: 44px;
+  }
+  
+  .mobileActionWheelCart {
+    transform: translateY(55px) scale(0.8);
+  }
+  
+  .mobileActionWheelWishlist {
+    transform: translateY(35px) scale(0.8);
+  }
+  
+  .mobileActionWheelShare {
+    transform: translateY(15px) scale(0.8);
   }
   
   .mobileActionWheelButton {
