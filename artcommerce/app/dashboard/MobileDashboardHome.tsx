@@ -243,7 +243,7 @@ export default function MobileDashboardHome() {
     <div 
       className={styles.mobileDashboardContainer}
       style={{ 
-        backgroundColor: '#ffffff', 
+        backgroundColor: '#E5E5EA', 
         color: '#6b7280',
         minHeight: '100vh',
         position: 'relative'
