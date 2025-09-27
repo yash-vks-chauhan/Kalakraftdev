@@ -20,7 +20,7 @@
 
 .mobileHeader {
   background: #FFFFFF;
-  border-bottom: 0.5px solid rgba(60, 60, 67, 0.36);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
   padding: 1rem 1.25rem;
   position: fixed;
   top: 0;
@@ -28,16 +28,14 @@
   right: 0;
   z-index: 9999; /* Higher than main navbar */
   transition: all 0.25s ease-in-out;
-  box-shadow: 0 0.5px 0 0 rgba(60, 60, 67, 0.18);
 }
 
 .mobileHeader.scrolled {
   padding: 0.75rem 1.25rem;
-  border-bottom: 0.5px solid rgba(60, 60, 67, 0.36);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .mobileHeader.scrolled .headerTitle {
@@ -170,8 +168,7 @@
   background: #FFFFFF;
   border-radius: 12px;
   margin: 16px 16px 24px 16px;
-  border: 0.5px solid rgba(60, 60, 67, 0.18);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.12); /* Clean iOS-style border */
 }
 
 .avatar {
@@ -185,7 +182,6 @@
   color: white;
   object-fit: cover;
   border: 3px solid #FFFFFF;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .userInfo {
@@ -240,8 +236,7 @@
   display: flex;
   flex-direction: column;
   gap: 24px; /* Reduced gap to accommodate header */
-  border: 1px solid rgba(0, 0, 0, 0.12); /* More visible border */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08); /* Stronger shadow */
+  border: 1px solid rgba(0, 0, 0, 0.12); /* Clean iOS-style border */
 }
 
 /* Overview Header inside card */
@@ -310,6 +305,88 @@
 .refreshButton:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+/* Overview Header Controls */
+.overviewHeaderControls {
+  display: flex;
+  align-items: center;
+}
+
+.customSelector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(120, 120, 128, 0.12);
+  border-radius: 8px;
+  padding: 6px 12px;
+  transition: all 0.2s ease;
+}
+
+.selectorLabel {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #000000;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Typography Content inside accordion */
+.typographyContent {
+  padding: 20px;
+  background: #FFFFFF;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Period Selector Section */
+.periodSelectorContainer {
+  background: #FFFFFF;
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid rgba(0, 0, 0, 0.12); /* Clean iOS-style border */
+}
+
+.periodSelectorTitle {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #8E8E93;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 16px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.periodOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.periodOption {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background: transparent;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: #000000;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  text-align: left;
+}
+
+.periodOption:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.periodOption.active {
+  background: #000000;
+  color: #FFFFFF;
+  border-color: #000000;
 }
 
 /* Primary Metric - Editorial Hero */
@@ -478,8 +555,7 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  border: 0.5px solid rgba(60, 60, 67, 0.18);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.12); /* Clean iOS-style border */
   transition: all 0.2s ease;
   min-width: 140px;
   min-height: 140px;
@@ -490,8 +566,7 @@
 
 .metricCard:active {
   transform: scale(0.98);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  border-color: rgba(60, 60, 67, 0.36);
+  border-color: rgba(0, 0, 0, 0.18); /* Slightly darker border on press */
 }
 
 .metricIcon {
@@ -618,8 +693,7 @@
   background: #FFFFFF;
   border-radius: 12px;
   overflow: hidden;
-  border: 1px solid rgba(0, 0, 0, 0.12); /* More visible border */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08); /* Stronger shadow */
+  border: 1px solid rgba(0, 0, 0, 0.12); /* Clean iOS-style border */
   margin: 0; /* Remove any margin */
 }
 
@@ -699,8 +773,7 @@
   padding: 16px 20px;
   background: #FFFFFF;
   border-radius: 12px 12px 0 0; /* Round only top corners when expanded */
-  border: 1px solid rgba(0, 0, 0, 0.12); /* More visible border */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08); /* Stronger shadow */
+  border: 1px solid rgba(0, 0, 0, 0.12); /* Clean iOS-style border */
   cursor: pointer;
   transition: all 0.2s ease;
   margin-bottom: 0; /* Remove margin that was causing gap */
@@ -767,10 +840,8 @@
 /* Make menu group seamless with accordion header */
 .iosAccordionContent .iosMenuGroup {
   border-radius: 0 0 12px 12px; /* Match accordion content */
+  border: 1px solid rgba(0, 0, 0, 0.12); /* Clean border */
   border-top: none; /* Remove top border to connect with header */
-  border: 1px solid rgba(0, 0, 0, 0.12); /* Visible border but no top */
-  border-top: none;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08); /* Maintain shadow for depth */
 }
 
 /* ============================================
@@ -788,8 +859,7 @@
   padding: 16px 20px;
   background: #FFFFFF;
   border-radius: 12px;
-  border: 0.5px solid rgba(60, 60, 67, 0.18);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.12); /* Clean iOS-style border */
   cursor: pointer;
   transition: all 0.2s ease;
   margin-bottom: 8px;
@@ -821,8 +891,7 @@
   background: #FFFFFF;
   border-radius: 12px;
   overflow: hidden;
-  border: 0.5px solid rgba(60, 60, 67, 0.18);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  border: 0.5px solid rgba(0, 0, 0, 0.12);
   margin-top: 8px;
 }
 
@@ -862,7 +931,7 @@
   color: #007AFF;
   flex-shrink: 0;
   overflow: hidden;
-  border: 0.5px solid rgba(60, 60, 67, 0.18);
+  border: 0.5px solid rgba(0, 0, 0, 0.12);
   transition: transform 0.2s ease;
 }
 
@@ -964,8 +1033,7 @@
   background: #FFFFFF;
   border-radius: 12px;
   margin-top: 8px;
-  border: 0.5px solid rgba(60, 60, 67, 0.18);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  border: 0.5px solid rgba(0, 0, 0, 0.12);
 }
 
 .emptyStateSmall {
@@ -974,8 +1042,7 @@
   background: #FFFFFF;
   border-radius: 12px;
   margin-top: 8px;
-  border: 0.5px solid rgba(60, 60, 67, 0.18);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  border: 0.5px solid rgba(0, 0, 0, 0.12);
 }
 
 .emptyText {
@@ -997,8 +1064,7 @@
   text-align: center;
   background: #FFFFFF;
   border-radius: 12px;
-  border: 0.5px solid rgba(60, 60, 67, 0.18);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  border: 0.5px solid rgba(0, 0, 0, 0.12);
   margin: 16px;
 }
 

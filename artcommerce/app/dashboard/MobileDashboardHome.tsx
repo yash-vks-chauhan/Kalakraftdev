@@ -72,6 +72,7 @@ export default function MobileDashboardHome() {
   const [showProductsMenu, setShowProductsMenu] = useState(false)
   const [showUsersMenu, setShowUsersMenu] = useState(false)
   const [showSystemMenu, setShowSystemMenu] = useState(false)
+  const [showOverview, setShowOverview] = useState(true) // Default to open
   const [isScrolled, setIsScrolled] = useState(false)
 
   useEffect(() => {
@@ -288,35 +289,33 @@ export default function MobileDashboardHome() {
 
       {user.role === 'admin' && (
         <>
-          {refreshing || !metrics ? (
-            <MetricsSkeleton />
-          ) : (
-            <div className={styles.typographyLayout}>
-              {/* Header with selector inside card */}
-              <div className={styles.overviewHeader}>
-                <h3 className={styles.overviewTitle}>Overview</h3>
-                <div className={styles.overviewControls}>
-                  <select
-                    value={period}
-                    onChange={handlePeriodChange}
-                    className={styles.inlineSelect}
-                  >
-                    <option value="today">Today</option>
-                    <option value="week">Last 7 days</option>
-                    <option value="month">This month</option>
-                    <option value="year">This year</option>
-                    <option value="all">All time</option>
-                  </select>
-                  <button
-                    onClick={() => fetchMetrics()}
-                    className={styles.refreshButton}
-                    disabled={refreshing}
-                    aria-label="Refresh metrics"
-                  >
-                    <RefreshCw size={16} className={refreshing ? styles.refreshing : ''} />
-                  </button>
+          {/* Overview Accordion */}
+          <div className={styles.iosSection}>
+            <div 
+              className={`${styles.iosAccordionHeader} ${showOverview ? styles.expanded : ''}`}
+              onClick={() => setShowOverview(prev => !prev)}
+            >
+              <div className={styles.iosAccordionTitleGroup}>
+                <div className={styles.iosAccordionIcon}>
+                  <BarChart3 size={20} />
+                </div>
+                <h3 className={styles.iosAccordionTitle}>Overview</h3>
+              </div>
+              <div className={styles.overviewHeaderControls}>
+                <div className={styles.customSelector}>
+                  <span className={styles.selectorLabel}>
+                    {period === 'today' ? 'Today' : 
+                     period === 'week' ? 'Last 7 days' : 
+                     period === 'month' ? 'This month' : 
+                     period === 'year' ? 'This year' : 'All time'}
+                  </span>
+                  <ChevronDown size={14} className={`${styles.iosChevron} ${showOverview ? styles.rotated : ''}`} />
                 </div>
               </div>
+            </div>
+            
+            <div className={`${styles.iosAccordionContent} ${showOverview ? styles.expanded : ''}`}>
+              <div className={styles.typographyContent}>
 
               {/* Primary Metric - Editorial Hero */}
               <div className={styles.primaryMetric}>
@@ -359,8 +358,36 @@ export default function MobileDashboardHome() {
                   <span className={styles.infoValue}>Just now</span>
                 </div>
               </div>
+              </div>
             </div>
-          )}
+          </div>
+
+          {/* Period Selector as separate section */}
+          <div className={styles.iosSection}>
+            <div className={styles.periodSelectorContainer}>
+              <div className={styles.periodSelectorTitle}>Time Period</div>
+              <div className={styles.periodOptions}>
+                {[
+                  { value: 'today', label: 'Today' },
+                  { value: 'week', label: 'Last 7 days' },
+                  { value: 'month', label: 'This month' },
+                  { value: 'year', label: 'This year' },
+                  { value: 'all', label: 'All time' }
+                ].map((option) => (
+                  <button
+                    key={option.value}
+                    onClick={() => {
+                      setPeriod(option.value as any)
+                      fetchMetrics(option.value)
+                    }}
+                    className={`${styles.periodOption} ${period === option.value ? styles.active : ''}`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
         </>
       )}
 
