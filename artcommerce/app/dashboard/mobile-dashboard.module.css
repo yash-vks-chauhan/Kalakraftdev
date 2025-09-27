@@ -5,7 +5,7 @@
 
 .mobileDashboardContainer {
   min-height: 100vh;
-  background: #F2F2F7; /* iOS system grouped background */
+  background: #E5E5EA; /* Darker grey for better contrast with white cards */
   position: relative;
   z-index: 1;
   width: 100%;
@@ -92,19 +92,19 @@
   width: 32px;
   height: 32px;
   border-radius: 16px;
-  background: rgba(120, 120, 128, 0.16);
+  background: rgba(0, 0, 0, 0.08);
   border: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #007AFF;
+  color: #000000;
   transition: all 0.2s ease;
   cursor: pointer;
   margin-right: 8px;
 }
 
 .backButton:active {
-  background: rgba(120, 120, 128, 0.24);
+  background: rgba(0, 0, 0, 0.16);
   transform: scale(0.94);
 }
 
@@ -490,11 +490,11 @@
   width: 36px;
   height: 36px;
   border-radius: 10px;
-  background: rgba(120, 120, 128, 0.16);
+  background: rgba(0, 0, 0, 0.08);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #007AFF;
+  color: #000000;
 }
 
 .iosAccordionTitle {
