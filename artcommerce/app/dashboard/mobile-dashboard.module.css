@@ -242,25 +242,12 @@
 .typographyLayout {
   padding: 20px;
   background: #FFFFFF;
-  border-radius: 0 0 12px 12px; /* Only bottom corners rounded for slide-in effect */
-  margin: 0 20px 24px 20px;
+  border-radius: 12px;
+  margin: 0 20px 24px 20px; /* Consistent spacing with other sections */
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  border: 1px solid rgba(0, 0, 0, 0.18);
-  height: auto;
-  overflow: visible;
-  animation: slideDownIn 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
-}
-@keyframes slideDownIn {
-  from {
-    opacity: 0;
-    transform: translateY(-32px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  gap: 24px; /* Reduced gap to accommodate header */
+  border: 1px solid rgba(0, 0, 0, 0.18); /* More noticeable professional border */
 }
 
 /* Overview Header inside card */
