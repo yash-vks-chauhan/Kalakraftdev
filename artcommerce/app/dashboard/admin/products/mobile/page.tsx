@@ -247,6 +247,9 @@ export default function MobileAdminProductsPage() {
       <div className={styles.header}>
         <div className={styles.headerTop}>
           <h1 className={styles.title}>Products</h1>
+          <button onClick={handleAddNew} className={styles.addButton}>
+            <FiPlus />
+          </button>
         </div>
         <p className={styles.subtitle}>
           {pagination.totalProducts} product{pagination.totalProducts !== 1 ? 's' : ''} total
@@ -298,9 +301,8 @@ export default function MobileAdminProductsPage() {
         </div>
       ) : (
         <>
-          <div className={styles.productsContainer}>
-            <div className={styles.productsGrid}>
-              {products.map((product) => (
+          <div className={styles.productsGrid}>
+            {products.map((product) => (
               <div key={product.id} className={styles.productCard}>
                 <div className={styles.productImageContainer}>
                   <img
@@ -377,8 +379,7 @@ export default function MobileAdminProductsPage() {
                   </button>
                 </div>
               </div>
-              ))}
-            </div>
+            ))}
           </div>
 
           {/* Pagination */}

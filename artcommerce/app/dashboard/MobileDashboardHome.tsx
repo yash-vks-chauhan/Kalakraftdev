@@ -594,7 +594,7 @@ export default function MobileDashboardHome() {
             
             <div className={`${styles.iosAccordionContent} ${showUsersMenu ? styles.expanded : ''}`}>
               <div className={styles.iosMenuGroup}>
-                <Link href="/dashboard/admin/users" className={styles.iosMenuItem}>
+                <Link href="/dashboard/admin/users/mobile" className={styles.iosMenuItem}>
                   <div className={styles.iosMenuIcon}>
                     <UserCheck size={20} />
                   </div>
@@ -605,7 +605,7 @@ export default function MobileDashboardHome() {
                   <ChevronRight size={14} className={styles.iosChevron} />
                 </Link>
                 
-                <Link href="/dashboard/admin/users?role=admin" className={styles.iosMenuItem}>
+                <Link href="/dashboard/admin/users/mobile?filter=admin" className={styles.iosMenuItem}>
                   <div className={styles.iosMenuIcon}>
                     <Shield size={20} />
                   </div>
@@ -616,7 +616,7 @@ export default function MobileDashboardHome() {
                   <ChevronRight size={14} className={styles.iosChevron} />
                 </Link>
                 
-                <Link href="/dashboard/admin/users?role=user" className={styles.iosMenuItem}>
+                <Link href="/dashboard/admin/users/mobile?filter=user" className={styles.iosMenuItem}>
                   <div className={styles.iosMenuIcon}>
                     <User size={20} />
                   </div>
