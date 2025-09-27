@@ -10,16 +10,23 @@ import InlineLoader from '../components/InlineLoader'
 
 // Mobile Dashboard Skeleton Components
 const MetricsSkeleton = () => (
-  <div className={styles.metricsGrid}>
-    {[1, 2, 3, 4].map((i) => (
-      <div key={i} className={styles.metricCard}>
-        <div className={`${styles.modernSkeleton}`} style={{ width: '40px', height: '40px', borderRadius: '12px', marginBottom: '12px' }}></div>
-        <div className={styles.metricContent}>
-          <div className={`${styles.modernSkeleton}`} style={{ width: '60px', height: '28px', marginBottom: '4px' }}></div>
-          <div className={`${styles.modernSkeleton}`} style={{ width: '80px', height: '16px' }}></div>
+  <div className={styles.metricsContainer}>
+    <div className={styles.metricsGrid}>
+      {[1, 2, 3, 4].map((i) => (
+        <div key={i} className={styles.metricCard}>
+          <div className={`${styles.modernSkeleton}`} style={{ width: '48px', height: '48px', borderRadius: '16px', marginBottom: '12px' }}></div>
+          <div className={styles.metricContent}>
+            <div className={`${styles.modernSkeleton}`} style={{ width: '50px', height: '24px', marginBottom: '4px' }}></div>
+            <div className={`${styles.modernSkeleton}`} style={{ width: '70px', height: '14px' }}></div>
+          </div>
         </div>
-      </div>
-    ))}
+      ))}
+    </div>
+    <div className={styles.scrollIndicator}>
+      {[1, 2, 3, 4].map((i) => (
+        <div key={i} className={styles.scrollDot}></div>
+      ))}
+    </div>
   </div>
 );
 
@@ -65,6 +72,7 @@ export default function MobileDashboardHome() {
   const [showProductsMenu, setShowProductsMenu] = useState(false)
   const [showUsersMenu, setShowUsersMenu] = useState(false)
   const [showSystemMenu, setShowSystemMenu] = useState(false)
+  const [isScrolled, setIsScrolled] = useState(false)
 
   useEffect(() => {
     if (user?.role === 'admin') {
@@ -92,6 +100,22 @@ export default function MobileDashboardHome() {
       metricsRow.removeEventListener('scroll', handleScroll)
     }
   }, [metrics])
+
+  // Add scroll event listener for header
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.scrollY
+      setIsScrolled(scrollTop > 20)
+    }
+
+    // Set initial scroll state
+    setIsScrolled(window.scrollY > 20)
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+    }
+  }, [])
 
   const fetchMetrics = async (p: string = period) => {
     if (user?.role !== 'admin' || !token) return
@@ -225,7 +249,7 @@ export default function MobileDashboardHome() {
         position: 'relative'
       }}
     >
-      <header className={styles.mobileHeader}>
+      <header className={`${styles.mobileHeader} ${isScrolled ? styles.scrolled : ''}`}>
         <div className={styles.headerContent}>
           <div className={styles.headerLeft}>
             <h1 className={styles.headerTitle}>Dashboard</h1>
@@ -290,7 +314,8 @@ export default function MobileDashboardHome() {
           {refreshing || !metrics ? (
             <MetricsSkeleton />
           ) : (
-            <div className={styles.metricsGrid}>
+            <div className={styles.metricsContainer}>
+              <div className={styles.metricsGrid} ref={metricsRowRef}>
               <div className={styles.metricCard}>
                 <div className={styles.metricIcon}>
                   <Package size={20} />
@@ -322,6 +347,15 @@ export default function MobileDashboardHome() {
                   </div>
                 </div>
               ))}
+              </div>
+              <div className={styles.scrollIndicator}>
+                {Array.from({ length: Math.min(4, (metrics?.statusCounts?.length || 0) + 2) }).map((_, index) => (
+                  <div 
+                    key={index}
+                    className={`${styles.scrollDot} ${index === activeMetricDot ? styles.active : ''}`}
+                  />
+                ))}
+              </div>
             </div>
           )}
         </>
