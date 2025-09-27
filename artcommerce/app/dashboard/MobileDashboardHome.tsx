@@ -162,11 +162,19 @@ export default function MobileDashboardHome() {
   const getStatusClass = (status: string) => {
     switch(status.toLowerCase()) {
       case 'completed':
-        return styles.statusCompleted
+      case 'delivered':
+        return 'statusCompleted'
       case 'processing':
-        return styles.statusProcessing
+      case 'confirmed':
+        return 'statusProcessing'
+      case 'shipped':
+      case 'out_for_delivery':
+        return 'statusShipped'
+      case 'cancelled':
+      case 'refunded':
+        return 'statusCancelled'
       default:
-        return styles.statusPending
+        return 'statusPending'
     }
   }
 
@@ -363,10 +371,15 @@ export default function MobileDashboardHome() {
                   <p className={styles.orderSubtitle}>
                     #{order.id.toString().substring(0, 8)} • {formatDate(order.createdAt)}
                   </p>
-                </div>
-                
-                <div className={styles.orderStatus}>
-                  <span className={`${styles.statusDot} ${styles[getStatusClass(order.status)]}`}></span>
+                  <div className={styles.orderMeta}>
+                    <span className={styles.orderPrice}>
+                      ₹{order.totalAmount?.toFixed(0) || '0'}
+                    </span>
+                    <div className={`${styles.orderStatus} ${styles[getStatusClass(order.status)]}`}>
+                      <span className={styles.statusDot}></span>
+                      {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                    </div>
+                  </div>
                 </div>
               </Link>
             ))}
