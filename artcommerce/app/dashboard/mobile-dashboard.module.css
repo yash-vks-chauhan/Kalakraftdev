@@ -455,6 +455,9 @@
   text-align: left;
   padding-bottom: 24px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  position: relative;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 }
 
 .primaryNumber {
@@ -546,6 +549,9 @@
   padding-top: 16px;
   padding-bottom: 4px; /* Add bottom padding to prevent cut-off */
   border-top: 1px solid rgba(0, 0, 0, 0.06);
+  position: relative;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 }
 
 .infoLine {
@@ -768,10 +774,13 @@
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
   text-decoration: none;
   color: inherit;
-  transition: background-color 0.15s cubic-bezier(0.4, 0.0, 0.2, 1),
-              transform 0.15s cubic-bezier(0.4, 0.0, 0.2, 1);
+  transition: background-color 0.12s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              transform 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   min-height: 60px;
   cursor: pointer;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: background-color, transform;
 }
 
 .iosMenuItem:last-child {
@@ -780,7 +789,7 @@
 
 .iosMenuItem:active {
   background-color: rgba(0, 0, 0, 0.04);
-  transform: scale(0.98);
+  transform: scale(0.97) translateZ(0);
 }
 
 .iosMenuIcon {
@@ -828,15 +837,19 @@
 }
 
 .iosChevron {
-  transition: transform 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+  transition: transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 .iosChevron.rotated {
-  transform: rotate(180deg);
+  transform: rotate(180deg) translateZ(0);
 }
 
 .iosChevron.chevronRotated {
-  transform: rotate(90deg);
+  transform: rotate(90deg) translateZ(0);
 }
 
 /* ============================================
@@ -852,15 +865,19 @@
   border-radius: 12px;
   border: 1px solid rgba(0, 0, 0, 0.18);
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+  transition: background-color 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              border-color 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              transform 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   margin-bottom: 0;
   will-change: transform, background-color, border-color;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 }
 
 .iosAccordionHeader:active {
   background-color: rgba(0, 0, 0, 0.06);
   border-color: rgba(0, 0, 0, 0.22);
-  transform: scale(0.99);
+  transform: scale(0.98) translateZ(0);
 }
 
 /* When accordion is expanded, only round top corners */
@@ -903,11 +920,9 @@
 .iosAccordionContent {
   max-height: 0;
   overflow: hidden;
-  transition: max-height 0.25s cubic-bezier(0.4, 0.0, 0.2, 1),
-              opacity 0.2s cubic-bezier(0.4, 0.0, 0.2, 1),
-              transform 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+  transition: max-height 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              opacity 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   opacity: 0;
-  transform: translateY(-2px);
   padding: 0;
   margin: 0;
   background: #FFFFFF;
@@ -916,13 +931,14 @@
   border-right: 1px solid rgba(0, 0, 0, 0.18);
   border-bottom: 1px solid rgba(0, 0, 0, 0.18);
   border-top: none;
-  will-change: max-height, opacity, transform;
+  will-change: max-height, opacity;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 }
 
 .iosAccordionContent.expanded {
-  max-height: 800px;
+  max-height: 1000px;
   opacity: 1;
-  transform: translateY(0);
   border-left: 1px solid rgba(0, 0, 0, 0.18);
   border-right: 1px solid rgba(0, 0, 0, 0.18);
   border-bottom: 1px solid rgba(0, 0, 0, 0.18);
@@ -965,19 +981,26 @@
 .expandableContent {
   max-height: 0;
   overflow: hidden;
-  transition: max-height 0.35s ease-in-out,
-              opacity 0.25s ease-in-out;
+  transition: max-height 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              opacity 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   opacity: 0;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: max-height, opacity;
 }
 
 .expandableContent.expanded {
-  max-height: 600px; /* Increased from 500px for better content display */
+  max-height: 800px;
   opacity: 1;
 }
 
 .chevronIcon {
-  transition: transform 0.25s ease-in-out;
+  transition: transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   color: #000000;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 .iosOrdersList {
