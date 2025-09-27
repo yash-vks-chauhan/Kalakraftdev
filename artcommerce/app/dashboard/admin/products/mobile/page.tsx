@@ -20,7 +20,7 @@ interface Product {
   categoryId: number | null
   totalSold: number
   imageUrls: string[]
-  shortDesc: string
+  shortDesc?: string
 }
 
 interface PaginationInfo {
@@ -59,19 +59,20 @@ export default function MobileAdminProductsPage() {
     }
 
     fetchProducts()
-  }, [token, user, currentPage, searchQuery, statusFilter])
+  }, [token, user])
+
+  // Handle search, filter, and pagination changes
+  useEffect(() => {
+    if (user?.role === 'admin' && token) {
+      fetchProducts()
+    }
+  }, [currentPage, searchQuery, statusFilter])
 
   const fetchProducts = async () => {
     setIsLoading(true)
     try {
-      const queryParams = new URLSearchParams({
-        page: currentPage.toString(),
-        limit: PRODUCTS_PER_PAGE.toString(),
-        ...(searchQuery && { search: searchQuery }),
-        ...(statusFilter !== 'all' && { status: statusFilter })
-      })
-
-      const response = await fetch(`/api/admin/products/paginated?${queryParams}`, {
+      // Use the same API as desktop version
+      const response = await fetch('/api/admin/products', {
         headers: { Authorization: `Bearer ${token}` }
       })
 
@@ -80,8 +81,38 @@ export default function MobileAdminProductsPage() {
       }
 
       const data = await response.json()
-      setProducts(data.products)
-      setPagination(data.pagination)
+      let allProducts = data.products || []
+
+      // Apply client-side filtering
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase()
+        allProducts = allProducts.filter((product: Product) =>
+          product.name.toLowerCase().includes(query) ||
+          product.shortDesc?.toLowerCase().includes(query)
+        )
+      }
+
+      if (statusFilter !== 'all') {
+        allProducts = allProducts.filter((product: Product) =>
+          statusFilter === 'active' ? product.isActive : !product.isActive
+        )
+      }
+
+      // Apply client-side pagination
+      const totalProducts = allProducts.length
+      const totalPages = Math.ceil(totalProducts / PRODUCTS_PER_PAGE)
+      const startIndex = (currentPage - 1) * PRODUCTS_PER_PAGE
+      const endIndex = startIndex + PRODUCTS_PER_PAGE
+      const paginatedProducts = allProducts.slice(startIndex, endIndex)
+
+      setProducts(paginatedProducts)
+      setPagination({
+        currentPage,
+        totalPages,
+        totalProducts,
+        hasNextPage: currentPage < totalPages,
+        hasPrevPage: currentPage > 1
+      })
     } catch (err: any) {
       setError(err.message)
     } finally {
@@ -99,8 +130,10 @@ export default function MobileAdminProductsPage() {
       })
       if (!res.ok) throw new Error((await res.json()).error)
       
-      // Refresh the current page
-      await fetchProducts()
+      // Remove from current products list and refresh
+      setProducts(products.filter(p => p.id !== id))
+      // Also refresh to get updated totals
+      setTimeout(() => fetchProducts(), 100)
     } catch (err: any) {
       alert('Failed to delete product: ' + err.message)
     } finally {
@@ -152,8 +185,20 @@ export default function MobileAdminProductsPage() {
   }
 
   const getProductImage = (product: Product) => {
-    if (product.imageUrls && product.imageUrls.length > 0) {
-      return getOptimizedImageUrl(product.imageUrls[0], 'c_fill,w_300,h_300,q_auto')
+    try {
+      if (product.imageUrls && product.imageUrls.length > 0) {
+        const imageUrl = Array.isArray(product.imageUrls) 
+          ? product.imageUrls[0] 
+          : typeof product.imageUrls === 'string' 
+            ? JSON.parse(product.imageUrls)[0]
+            : null
+            
+        if (imageUrl) {
+          return getOptimizedImageUrl(imageUrl, 'c_fill,w_300,h_300,q_auto')
+        }
+      }
+    } catch (error) {
+      console.warn('Error processing product image:', error)
     }
     return '/images/placeholder-product.png'
   }
@@ -260,7 +305,7 @@ export default function MobileAdminProductsPage() {
 
                 <div className={styles.productInfo}>
                   <h3 className={styles.productName}>{product.name}</h3>
-                  <p className={styles.productDesc}>{product.shortDesc}</p>
+                  <p className={styles.productDesc}>{product.shortDesc || 'No description available'}</p>
                   
                   <div className={styles.productMeta}>
                     <div className={styles.priceContainer}>
