@@ -242,12 +242,6 @@ export default function MobileDashboardHome() {
   return (
     <div 
       className={styles.mobileDashboardContainer}
-      style={{ 
-        backgroundColor: '#E5E5EA', 
-        color: '#6b7280',
-        minHeight: '100vh',
-        position: 'relative'
-      }}
     >
       <header className={`${styles.mobileHeader} ${isScrolled ? styles.scrolled : ''}`}>
         <div className={styles.headerContent}>
@@ -292,34 +286,36 @@ export default function MobileDashboardHome() {
 
       {user.role === 'admin' && (
         <>
-          <div className={styles.sectionHeader}>
-            <div className={styles.sectionTitleGroup}>
-              <h3 className={styles.sectionTitle}>Overview</h3>
-              <select
-                value={period}
-                onChange={handlePeriodChange}
-                className={styles.modernSelect}
-              >
-                <option value="today">Today</option>
-                <option value="week">Last 7 days</option>
-                <option value="month">This month</option>
-                <option value="year">This year</option>
-                <option value="all">All time</option>
-              </select>
-            </div>
-            <button
-              onClick={() => fetchMetrics()}
-              className={styles.iconButton}
-              disabled={refreshing}
-              aria-label="Refresh metrics"
-            >
-              <RefreshCw size={16} className={refreshing ? styles.refreshing : ''} />
-            </button>
-          </div>
           {refreshing || !metrics ? (
             <MetricsSkeleton />
           ) : (
             <div className={styles.typographyLayout}>
+              {/* Header with selector inside card */}
+              <div className={styles.overviewHeader}>
+                <h3 className={styles.overviewTitle}>Overview</h3>
+                <div className={styles.overviewControls}>
+                  <select
+                    value={period}
+                    onChange={handlePeriodChange}
+                    className={styles.inlineSelect}
+                  >
+                    <option value="today">Today</option>
+                    <option value="week">Last 7 days</option>
+                    <option value="month">This month</option>
+                    <option value="year">This year</option>
+                    <option value="all">All time</option>
+                  </select>
+                  <button
+                    onClick={() => fetchMetrics()}
+                    className={styles.refreshButton}
+                    disabled={refreshing}
+                    aria-label="Refresh metrics"
+                  >
+                    <RefreshCw size={16} className={refreshing ? styles.refreshing : ''} />
+                  </button>
+                </div>
+              </div>
+
               {/* Primary Metric - Editorial Hero */}
               <div className={styles.primaryMetric}>
                 <div className={styles.primaryNumber}>₹{metrics?.revenue ? metrics.revenue.toFixed(0) : '0'}</div>
@@ -508,7 +504,7 @@ export default function MobileDashboardHome() {
           {/* Product Management Accordion */}
           <div className={styles.iosSection}>
             <div 
-              className={styles.iosAccordionHeader}
+              className={`${styles.iosAccordionHeader} ${showProductsMenu ? styles.expanded : ''}`}
               onClick={() => setShowProductsMenu(prev => !prev)}
             >
               <div className={styles.iosAccordionTitleGroup}>
@@ -564,7 +560,7 @@ export default function MobileDashboardHome() {
           {/* User Management Accordion */}
           <div className={styles.iosSection}>
             <div 
-              className={styles.iosAccordionHeader}
+              className={`${styles.iosAccordionHeader} ${showUsersMenu ? styles.expanded : ''}`}
               onClick={() => setShowUsersMenu(prev => !prev)}
             >
               <div className={styles.iosAccordionTitleGroup}>
@@ -620,7 +616,7 @@ export default function MobileDashboardHome() {
           {/* System Management Accordion */}
           <div className={styles.iosSection}>
             <div 
-              className={styles.iosAccordionHeader}
+              className={`${styles.iosAccordionHeader} ${showSystemMenu ? styles.expanded : ''}`}
               onClick={() => setShowSystemMenu(prev => !prev)}
             >
               <div className={styles.iosAccordionTitleGroup}>

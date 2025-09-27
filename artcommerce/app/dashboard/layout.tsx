@@ -48,9 +48,13 @@ export default function DashboardLayout({
     redirect('/auth/login')
   }
 
-  // Mobile view without extra desktop wrappers
+  // Mobile view without extra desktop wrappers - no navbar interference
   if (isMobile && !forceDesktopView) {
-    return <>{children}</>
+    return (
+      <div style={{ position: 'relative', zIndex: 1 }}>
+        {children}
+      </div>
+    )
   }
 
   // Default desktop view wrappers

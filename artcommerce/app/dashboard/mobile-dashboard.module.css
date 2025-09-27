@@ -10,7 +10,8 @@
   z-index: 1;
   width: 100%;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  padding-top: 120px; /* Space for fixed header */
+  margin: 0; /* Remove any external margins */
+  padding: 0; /* Remove external padding, will be handled by contentWrapper */
 }
 
 /* ============================================
@@ -25,7 +26,7 @@
   top: 0;
   left: 0;
   right: 0;
-  z-index: 1000;
+  z-index: 9999; /* Higher than main navbar */
   transition: all 0.25s ease-in-out;
   box-shadow: 0 0.5px 0 0 rgba(60, 60, 67, 0.18);
 }
@@ -214,9 +215,77 @@
   margin: 0 16px 24px 16px; /* Match accordion spacing */
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: 24px; /* Reduced gap to accommodate header */
   border: 0.5px solid rgba(60, 60, 67, 0.18); /* Match accordion border */
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04); /* Match accordion shadow */
+}
+
+/* Overview Header inside card */
+.overviewHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.overviewTitle {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #8E8E93;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.overviewControls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.inlineSelect {
+  background: rgba(120, 120, 128, 0.12);
+  border: none;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #000000;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 12px;
+  padding-right: 28px;
+}
+
+.refreshButton {
+  background: rgba(120, 120, 128, 0.12);
+  border: none;
+  border-radius: 8px;
+  padding: 8px;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #000000;
+}
+
+.refreshButton:hover {
+  background: rgba(120, 120, 128, 0.20);
+}
+
+.refreshButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* Primary Metric - Editorial Hero */
@@ -527,6 +596,7 @@
   overflow: hidden;
   border: 0.5px solid rgba(60, 60, 67, 0.18);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  margin: 0; /* Remove any margin */
 }
 
 .iosMenuItem {
@@ -604,17 +674,28 @@
   justify-content: space-between;
   padding: 16px 20px;
   background: #FFFFFF;
-  border-radius: 12px;
+  border-radius: 12px 12px 0 0; /* Round only top corners when expanded */
   border: 0.5px solid rgba(60, 60, 67, 0.18);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
   cursor: pointer;
   transition: all 0.2s ease;
-  margin-bottom: 8px;
+  margin-bottom: 0; /* Remove margin that was causing gap */
 }
 
 .iosAccordionHeader:active {
   background-color: rgba(0, 0, 0, 0.05);
   border-color: #8E8E93;
+}
+
+/* When accordion is expanded, only round top corners */
+.iosAccordionHeader.expanded {
+  border-radius: 12px 12px 0 0;
+  border-bottom: none; /* Connect with content */
+}
+
+/* When accordion is collapsed, round all corners */
+.iosAccordionHeader:not(.expanded) {
+  border-radius: 12px;
 }
 
 .iosAccordionTitleGroup {
@@ -647,11 +728,21 @@
   transition: max-height 0.35s ease-in-out,
               opacity 0.25s ease-in-out;
   opacity: 0;
+  padding: 0;
+  margin: 0;
+  border-radius: 0 0 12px 12px; /* Round only bottom corners */
 }
 
 .iosAccordionContent.expanded {
   max-height: 800px;
   opacity: 1;
+}
+
+/* Make menu group seamless with accordion header */
+.iosAccordionContent .iosMenuGroup {
+  border-radius: 0 0 12px 12px; /* Match accordion content */
+  border-top: none; /* Remove top border to connect with header */
+  box-shadow: none; /* Remove shadow, will be on parent */
 }
 
 /* ============================================
