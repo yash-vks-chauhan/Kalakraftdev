@@ -1,37 +1,31 @@
-/* Mobile Dashboard Container - Pure white and light grey theme */
+/* ============================================
+   IOS-INSPIRED MOBILE DASHBOARD
+   Clean, minimal, white theme with iOS design principles
+   ============================================ */
+
 .mobileDashboardContainer {
   min-height: 100vh;
-  background: #ffffff !important;
-  color: #6b7280 !important;
+  background: #F2F2F7; /* iOS system background */
   position: relative;
   z-index: 1;
   width: 100%;
-  /* Override any parent background */
-  isolation: isolate;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+/* ============================================
+   HEADER SECTION - iOS Style
+   ============================================ */
 
-/* Remove pseudo-element background */
-
-/* Header Styles */
 .mobileHeader {
-  background: #ffffff;
-  border-bottom: 1px solid #f3f4f6;
-  padding: 1rem;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.1);
+  padding: 1rem 1.25rem;
   position: sticky;
   top: 0;
   z-index: 100;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
 }
 
 .headerContent {
@@ -46,91 +40,80 @@
 }
 
 .headerTitle {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #6b7280;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #000000;
   margin: 0;
   line-height: 1.2;
+  letter-spacing: -0.02em;
 }
 
 .headerSubtitle {
-  font-size: 0.875rem;
-  color: #9ca3af;
-  margin: 4px 0 0 0;
-  font-weight: 400;
+  font-size: 1rem;
+  color: #8E8E93;
+  margin: 2px 0 0 0;
+  font-weight: 500;
 }
 
 .headerActions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
 }
 
 .iconButton {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background: #f9fafb;
-  border: 1px solid #f3f4f6;
+  width: 36px;
+  height: 36px;
+  border-radius: 18px;
+  background: rgba(120, 120, 128, 0.16);
+  border: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #6b7280;
-  transition: all 0.2s ease;
+  color: #007AFF;
+  transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+  cursor: pointer;
 }
 
 .iconButton:active {
-  background: #f3f4f6;
-  transform: scale(0.96);
-}
-
-.avatarButton {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background: #F5F5F5;
-  border: none;
-  padding: 2px;
-  overflow: hidden;
-}
-
-.avatarButton img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 10px;
+  background: rgba(120, 120, 128, 0.24);
+  transform: scale(0.94);
 }
 
 .contentWrapper {
-  padding: 16px 20px;
+  padding: 0;
   flex: 1;
+  padding-bottom: 2rem;
 }
 
-/* User Profile Section */
+/* ============================================
+   USER PROFILE SECTION - iOS Card Style
+   ============================================ */
+
 .userProfile {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 1rem;
-  background: #ffffff;
-  border-radius: 12px;
-  margin-bottom: 1.5rem;
-  border: 1px solid #f3f4f6;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+  gap: 16px;
+  padding: 20px;
+  background: #FFFFFF;
+  border-radius: 16px;
+  margin: 16px 16px 24px 16px;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.04);
+  border: 0.5px solid rgba(0, 0, 0, 0.06);
 }
 
-/* Avatar Styles */
 .avatar {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: #f9fafb;
-  border: 2px solid #f3f4f6;
+  width: 64px;
+  height: 64px;
+  border-radius: 32px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #9ca3af;
+  color: white;
   object-fit: cover;
+  border: 3px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .userInfo {
@@ -138,1363 +121,97 @@
 }
 
 .userName {
-  font-size: 1.125rem;
+  font-size: 1.375rem;
   font-weight: 600;
-  color: #6b7280;
-  margin: 0 0 2px 0;
+  color: #000000;
+  margin: 0 0 4px 0;
   line-height: 1.3;
+  letter-spacing: -0.01em;
 }
 
 .userRole {
-  font-size: 0.875rem;
-  color: #9ca3af;
+  font-size: 1rem;
+  color: #8E8E93;
   text-transform: capitalize;
-  font-weight: 400;
+  font-weight: 500;
   margin: 0;
 }
 
-.modernMenuList {
-  background: #FFFFFF;
-  border-radius: 16px;
-  overflow: hidden;
-  margin: 16px 0;
-  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.06);
-  list-style: none;
-  padding: 0;
-}
+/* ============================================
+   METRICS SECTION - iOS Cards
+   ============================================ */
 
-.menuList {
-  background: #FFFFFF;
-  border-radius: 16px;
-  overflow: hidden;
-  margin: 16px 0;
-  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.06);
-  list-style: none;
-  padding: 0;
-}
-
-.modernMenuItem {
-  display: flex;
-  align-items: center;
-  padding: 16px 20px;
-  background: #ffffff;
-  border-bottom: 1px solid #f3f4f6;
-  text-decoration: none;
-  color: #6b7280;
-  font-size: 1rem;
-  font-weight: 500;
-  transition: background-color 0.2s ease;
-  min-height: 60px;
-}
-
-.modernMenuItem:last-child {
-  border-bottom: none;
-}
-
-.modernMenuItem:active {
-  background-color: #f9fafb;
-}
-
-.menuItem {
-  display: flex;
-  align-items: center;
-  padding: 16px 20px;
-  background: #ffffff;
-  border-bottom: 1px solid #f3f4f6;
-  text-decoration: none;
-  color: #6b7280;
-  font-size: 1rem;
-  font-weight: 500;
-  transition: background-color 0.2s ease;
-  min-height: 60px;
-  cursor: pointer;
-}
-
-.menuItem:last-child {
-  border-bottom: none;
-}
-
-.menuItem:active {
-  background-color: #f9fafb;
-}
-
-/* Add smooth animation for expanded product details */
-.expandableContent {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.3s cubic-bezier(0.4, 0.0, 0.2, 1), 
-              opacity 0.3s cubic-bezier(0.4, 0.0, 0.2, 1), 
-              transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
-  opacity: 0;
-  transform: translateY(-10px);
-}
-
-.expandableContent.expanded {
-  max-height: 500px; /* Large enough to fit content */
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* Status changing animation */
-.statusChanging {
-  animation: statusPulse 0.5s cubic-bezier(0.4, 0.0, 0.2, 1);
-}
-
-@keyframes statusPulse {
-  0% {
-    background-color: rgba(241, 245, 249, 0.8);
-  }
-  50% {
-    background-color: rgba(224, 242, 254, 0.8);
-  }
-  100% {
-    background-color: rgba(241, 245, 249, 0.8);
-  }
-}
-
-/* Filter changing animation */
-.filterChanging {
-  animation: filterTransition 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
-}
-
-@keyframes filterTransition {
-  0% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  50% {
-    opacity: 0.6;
-    transform: translateY(5px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Improve toggle buttons in filter */
-.relative.z-10 .rounded-full {
-  position: relative;
-  overflow: hidden;
-}
-
-.relative.z-10 .rounded-full button {
-  position: relative;
-  z-index: 1;
-  overflow: hidden;
-}
-
-.relative.z-10 .rounded-full button::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 70%);
-  transform: scale(0);
-  transition: transform 0.5s cubic-bezier(0.4, 0.0, 0.2, 1);
-  opacity: 0;
-  z-index: -1;
-}
-
-.relative.z-10 .rounded-full button:active::before {
-  transform: scale(2);
-  opacity: 1;
-  transition: transform 0.2s cubic-bezier(0.4, 0.0, 0.2, 1), opacity 0.1s linear;
-}
-
-/* Submenu styling for expandable sections */
-.submenuItem {
-  display: flex;
-  align-items: center;
-  padding: 0.75rem 1rem;
-  border-radius: 8px;
-  background: rgba(241, 245, 249, 0.8);
-  color: #1a202c;
-  text-decoration: none;
-  font-size: 0.9rem;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  margin-left: 1rem;
-  margin-right: 0.5rem;
-}
-
-.submenuItem:active {
-  background-color: rgba(226, 232, 240, 0.9);
-  transform: scale(0.98);
-}
-
-.submenuItem svg {
-  margin-right: 0.75rem;
-  color: #64748b;
-}
-
-.submenuItem span {
-  flex: 1;
-}
-
-.menuItemText {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.menuItemText .font-medium {
-  font-size: 1rem;
-  font-weight: 500;
-  color: #1D1D1F;
-  line-height: 1.3;
-}
-
-.menuItemText .text-xs {
-  font-size: 0.875rem;
-  color: #86868B;
-  font-weight: 400;
-}
-
-.menuIcon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  background: #F5F5F5;
-  margin-right: 16px;
-  flex-shrink: 0;
-  color: #1D1D1F;
-}
-
-.productImage {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-}
-
-/* Remove hover effects for mobile */
-
-.hidden {
-  display: none !important;
-}
-
-.sectionDivider {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #86868B;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin: 24px 20px 12px 20px;
-  padding: 0;
-}
-
-.metricsGrid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.75rem;
-  margin-bottom: 1.5rem;
-  position: relative;
-  z-index: 1;
-}
-
-/* New styles for horizontal scrolling metrics */
 .metricsGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
-  margin: 16px 0;
+  margin: 0 16px 24px 16px;
+  position: relative;
+  z-index: 1;
 }
-
-.metricsScrollContainer {
-  margin: 16px 0;
-}
-
-.metricsRow {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
-/* Remove scroll indicators for cleaner look */
 
 .metricCard {
-  background: #ffffff;
-  border: 1px solid #f3f4f6;
-  border-radius: 12px;
-  padding: 1rem;
+  background: #FFFFFF;
+  border-radius: 16px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
-  transition: all 0.2s ease;
-  min-height: 100px;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.04);
+  border: 0.5px solid rgba(0, 0, 0, 0.06);
+  transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  min-height: 120px;
   justify-content: space-between;
 }
 
 .metricCard:active {
-  transform: scale(0.98);
+  transform: scale(0.97);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
 
 .metricIcon {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border-radius: 12px;
-  background: #F5F5F5;
+  background: rgba(0, 122, 255, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 12px;
-  color: #1D1D1F;
+  margin-bottom: 16px;
+  color: #007AFF;
 }
 
 .metricContent {
   flex: 1;
+  width: 100%;
 }
 
 .metricValue {
-  font-size: 1.75rem;
-  font-weight: 600;
-  color: #1D1D1F;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #000000;
   margin: 0 0 4px 0;
-  line-height: 1.2;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
 }
 
 .metricLabel {
-  font-size: 0.875rem;
-  color: #86868B;
-  font-weight: 400;
+  font-size: 0.9375rem;
+  color: #8E8E93;
+  font-weight: 500;
   margin: 0;
 }
 
-.metricTitle {
-  font-size: 0.875rem;
-  color: #86868B;
-  font-weight: 400;
-  margin: 0 0 4px 0;
-}
-
-.refreshButton {
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  background: none;
-  border: none;
-  color: #64748b;
-  cursor: pointer;
-  z-index: 2;
-  transition: transform 0.3s ease;
-  padding: 0.5rem;
-}
-
-.refreshButton:active {
-  transform: rotate(180deg);
-}
-
-.refreshing {
-  animation: spin 1.5s linear infinite;
-}
-
-/* New styles for mobile period selector */
-.periodSelectorMobile {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1rem;
-  position: relative;
-  z-index: 1;
-}
-
-.periodSelectWrapper {
-  position: relative;
-  flex: 1;
-}
-
-.periodSelectWrapper::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  right: 12px;
-  transform: translateY(-50%);
-  width: 0;
-  height: 0;
-  border-left: 5px solid transparent;
-  border-right: 5px solid transparent;
-  border-top: 5px solid #64748b;
-  pointer-events: none;
-}
-
-.periodSelectMobile {
-  appearance: none;
-  width: 100%;
-  padding: 0.5rem 1rem;
-  font-size: 0.875rem;
-  border-radius: 8px;
-  border: 1px solid rgba(226, 232, 240, 0.8);
-  background-color: rgba(255, 255, 255, 0.8);
-  color: #1a202c;
-  font-weight: 500;
-  padding-right: 2rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-.refreshButton {
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  background: none;
-  border: none;
-  color: #64748b;
-  cursor: pointer;
-  z-index: 2;
-  transition: transform 0.3s ease;
-  padding: 0.5rem;
-}
-
-.refreshButton:active {
-  transform: rotate(180deg);
-}
-
-.periodRefreshButton {
-  position: relative;
-  background: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(226, 232, 240, 0.8);
-  border-radius: 8px;
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-left: 0.75rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  transition: transform 0.3s ease;
-}
-
-.periodRefreshButton:active {
-  transform: rotate(180deg);
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.activitySection {
-  margin: 1.5rem 0;
-  position: relative;
-  z-index: 1;
-}
-
-.activityHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1rem;
-  cursor: pointer;
-  user-select: none;
-}
-
-.activityTitle {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #1a202c;
-}
-
-.viewAllLink {
-  font-size: 0.85rem;
-  color: #4f46e5;
-  text-decoration: none;
-}
-
-/* Horizontal scrolling container for recent orders */
-.ordersScrollContainer {
-  position: relative;
-  width: 100%;
-  margin-bottom: 1rem;
-  overflow: hidden;
-}
-
-.ordersRow {
-  display: flex;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  gap: 1rem;
-  padding: 0.5rem 0.25rem;
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE and Edge */
-  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
-  scroll-behavior: smooth; /* Smooth scrolling animation */
-  padding-bottom: 0.75rem; /* Add some padding to avoid cut-off shadows */
-}
-
-.ordersRow::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
-}
-
-/* Update order card styles for horizontal layout */
-.orderCard {
-  display: flex;
-  flex-direction: column;
-  background: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(226, 232, 240, 0.8);
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  overflow: hidden;
-  transition: all 0.2s ease;
-  transform: translateZ(0); /* Hardware acceleration */
-  min-width: 220px; /* Fixed width for horizontal scrolling */
-  width: 220px;
-  flex-shrink: 0;
-  scroll-snap-align: start;
-  height: 280px; /* Fixed height to maintain consistency */
-}
-
-.orderCardLink {
-  display: flex;
-  flex-direction: column;
-  text-decoration: none;
-  color: inherit;
-  height: 100%;
-}
-
-.orderImageContainer {
-  position: relative;
-  width: 100%;
-  height: 140px;
-  overflow: hidden;
-  background-color: #f8fafc;
-}
-
-.orderImage {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.3s ease;
-}
-
-.orderCard:active .orderImage {
-  transform: scale(1.05);
-}
-
-.noOrderImage {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  background-color: #f1f5f9;
-  color: #94a3b8;
-}
-
-.orderContent {
-  padding: 0.75rem;
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  justify-content: space-between;
-}
-
-.orderHeader {
-  display: flex;
-  flex-direction: column;
-}
-
-.productName {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: #1a202c;
-  margin-bottom: 0.25rem;
-  line-height: 1.3;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.orderNumber {
-  font-size: 0.75rem;
-  color: #64748b;
-  font-weight: 500;
-}
-
-.orderMeta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 0.5rem;
-}
-
-.orderDate {
-  font-size: 0.75rem;
-  color: #64748b;
-  display: flex;
-  align-items: center;
-}
-
-.orderStatus {
-  font-size: 0.7rem;
-  font-weight: 500;
-  padding: 0.2rem 0.5rem;
-  border-radius: 1rem;
-  text-transform: capitalize;
-}
-
-/* Keep existing status classes but rename for order cards */
-.orderStatus.statusPending {
-  background-color: #fff7ed;
-  color: #c2410c;
-}
-
-.orderStatus.statusCompleted {
-  background-color: #f0fdf4;
-  color: #15803d;
-}
-
-.orderStatus.statusProcessing {
-  background-color: #eff6ff;
-  color: #1d4ed8;
-}
-
-/* Update existing activity list to work with new order cards */
-.activityList {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.activityItem {
-  display: flex;
-  align-items: center;
-  padding: 0.75rem;
-  background: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(226, 232, 240, 0.8);
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  transition: all 0.2s ease;
-  transform: translateZ(0); /* Hardware acceleration */
-}
-
-.activityItem:active {
-  transform: scale(0.98) translateZ(0);
-  background-color: rgba(241, 245, 249, 0.9);
-}
-
-.activityIcon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
-  background: rgba(241, 245, 249, 0.8);
-  margin-right: 1rem;
-  color: #64748b;
-  flex-shrink: 0;
-}
-
-.activityContent {
-  flex: 1;
-}
-
-.activityTitle {
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: #1a202c;
-  margin-bottom: 0.25rem;
-}
-
-.activityMeta {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.activityDate {
-  font-size: 0.75rem;
-  color: #64748b;
-}
-
-.activityStatus {
-  font-size: 0.7rem;
-  font-weight: 500;
-  padding: 0.2rem 0.5rem;
-  border-radius: 1rem;
-  text-transform: capitalize;
-}
-
-.statusPending {
-  background-color: #fff7ed;
-  color: #c2410c;
-}
-
-.statusCompleted {
-  background-color: #f0fdf4;
-  color: #15803d;
-}
-
-.statusProcessing {
-  background-color: #eff6ff;
-  color: #1d4ed8;
-}
-
-.emptyState {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 48px 20px;
-  text-align: center;
-  background: #FFFFFF;
-  border-radius: 16px;
-  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.06);
-  margin: 16px 0;
-}
-
-.emptyStateIcon {
-  margin-bottom: 16px;
-  color: #C7C7CC;
-  width: 48px;
-  height: 48px;
-}
-
-.emptyStateText {
-  font-size: 1rem;
-  font-weight: 500;
-  color: #86868B;
-  line-height: 1.4;
-}
-
-/* Mobile metrics: horizontal scroll on small screens */
-@media (max-width: 768px) {
-  .metricsGrid {
-    display: flex;
-    overflow-x: auto;
-    gap: 0.75rem;
-    padding: 0 1rem;
-  }
-}
-
-/* Add collapsible animation for recent orders section */
-.expandableSection {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out;
-  opacity: 0;
-  transform: translateZ(0); /* Hardware acceleration */
-}
-.expanded {
-  max-height: 500px;
-  opacity: 1;
-}
-
-/* Override desktop appearance:none for mobile period select */
-#mobile-period {
-  -webkit-appearance: menulist-button !important;
-  -moz-appearance: menulist-button !important;
-  appearance: menulist-button !important;
-  background-image: none !important;
-}
-
-.rotateIcon {
-  transition: transform 0.3s ease;
-  transform: rotate(0deg);
-}
-
-.activityHeader:active .rotateIcon {
-  transform: rotate(180deg);
-}
-
-.primaryButton {
-  background: #1D1D1F;
-  color: #FFFFFF;
-  border: none;
-  border-radius: 12px;
-  padding: 14px 24px;
-  font-weight: 600;
-  font-size: 16px;
-  transition: all 0.2s ease;
-  cursor: pointer;
-  min-height: 48px;
-}
-
-.primaryButton:active {
-  background: #000000;
-  transform: scale(0.98);
-}
-
-.secondaryButton {
-  background: #F5F5F5;
-  color: #1D1D1F;
-  border: none;
-  border-radius: 12px;
-  padding: 14px 24px;
-  font-weight: 500;
-  font-size: 16px;
-  transition: all 0.2s ease;
-  cursor: pointer;
-  min-height: 48px;
-}
-
-.secondaryButton:active {
-  background: #E5E5E5;
-  transform: scale(0.98);
-}
-
-/* Segmented Control */
-.segmentedControl {
-  background: #F5F5F5;
-  border-radius: 12px;
-  padding: 4px;
-  display: flex;
-  margin: 16px 0;
-}
-
-.segment {
-  flex: 1;
-  padding: 12px 16px;
-  border: none;
-  border-radius: 8px;
-  font-weight: 500;
-  font-size: 14px;
-  background: transparent;
-  color: #86868B;
-  transition: all 0.2s ease;
-  cursor: pointer;
-}
-
-.segment.active {
-  background: #FFFFFF;
-  color: #1D1D1F;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-} 
-
-/* Action menu button and dropdown styles */
-.actionMenuDropdown {
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
-  min-width: 200px;
-  background: #FFFFFF;
-  border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
-  z-index: 50;
-  overflow: hidden;
-  animation: fadeInMenu 0.2s ease-out;
-}
-
-@keyframes fadeInMenu {
-  from {
-    opacity: 0;
-    transform: translateY(-8px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-.actionMenuItem {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 16px 20px;
-  color: #1D1D1F;
-  text-decoration: none;
-  transition: background-color 0.2s;
-  font-size: 1rem;
-  font-weight: 500;
-  border-bottom: 1px solid #F2F2F7;
-}
-
-.actionMenuItem:last-child {
-  border-bottom: none;
-}
-
-.actionMenuItem:active {
-  background-color: #F2F2F7;
-}
-
-.actionMenuItem svg {
-  color: #86868B;
-  flex-shrink: 0;
-}
-
 /* ============================================
-   MOBILE DASHBOARD SKELETON LOADING STYLES
-   ============================================ */
-
-.modernSkeleton {
-  background: #F5F5F5;
-  border-radius: 8px;
-  position: relative;
-  overflow: hidden;
-}
-
-.modernSkeleton::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
-  animation: shimmer 1.5s infinite;
-}
-
-@keyframes shimmer {
-  0% { left: -100%; }
-  100% { left: 100%; }
-}
-
-/* Legacy skeleton for compatibility */
-@keyframes skeletonShimmer {
-  0% {
-    background-position: -200px 0;
-  }
-  100% {
-    background-position: calc(200px + 100%) 0;
-  }
-}
-
-.skeletonShimmer {
-  background: #F5F5F5;
-  position: relative;
-  overflow: hidden;
-}
-
-.skeletonShimmer::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
-  animation: shimmer 1.5s infinite;
-}
-
-/* Metrics Skeleton Styles */
-.skeletonMetricTitle {
-  width: 60%;
-  height: 16px;
-  border-radius: 2px;
-  background: #f0f0f0;
-  margin-bottom: 8px;
-}
-
-.skeletonMetricValue {
-  width: 80%;
-  height: 28px;
-  border-radius: 4px;
-  background: #f0f0f0;
-}
-
-/* Orders Skeleton Styles */
-.skeletonOrderImage {
-  width: 100%;
-  height: 100%;
-  border-radius: 8px;
-  background: #f0f0f0;
-}
-
-.skeletonProductName {
-  width: 85%;
-  height: 14px;
-  border-radius: 2px;
-  background: #f0f0f0;
-  margin-bottom: 4px;
-}
-
-.skeletonOrderNumber {
-  width: 60%;
-  height: 12px;
-  border-radius: 2px;
-  background: #f0f0f0;
-}
-
-.skeletonOrderDate {
-  width: 70px;
-  height: 12px;
-  border-radius: 2px;
-  background: #f0f0f0;
-}
-
-.skeletonOrderStatus {
-  width: 50px;
-  height: 16px;
-  border-radius: 8px;
-  background: #f0f0f0;
-}
-
-/* Scroll indicator skeleton */
-.scrollDot.skeletonShimmer {
-  background: #f0f0f0;
-  opacity: 0.6;
-}
-
-/* Enhanced shimmer effect for better visual feedback */
-@media (prefers-reduced-motion: no-preference) {
-  .skeletonShimmer {
-    animation: skeletonShimmer 1.5s ease-in-out infinite;
-  }
-}
-
-/* Respect reduced motion preferences */
-@media (prefers-reduced-motion: reduce) {
-  .skeletonShimmer {
-    animation: none;
-    background: #f0f0f0;
-  }
-  
-  .skeletonShimmer::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%);
-    animation: skeletonPulse 2s ease-in-out infinite;
-  }
-}
-
-@keyframes skeletonPulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-} 
-
-/* ============================================
-   MOBILE PAGINATION STYLES
-   ============================================ */
-
-.paginationContainer {
-  margin-top: 1.5rem;
-  padding-bottom: 1.5rem;
-  position: relative;
-  z-index: 1;
-}
-
-.paginationInfo {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 0.75rem;
-  padding: 0 0.25rem;
-}
-
-.paginationInfoText {
-  font-size: 0.875rem;
-  color: #64748b;
-  font-weight: 500;
-}
-
-.paginationControls {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  width: 100%;
-}
-
-.paginationButton {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0.625rem 0.875rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-  border: 1px solid rgba(226, 232, 240, 0.8);
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(8px);
-  color: #374151;
-  cursor: pointer;
-  user-select: none;
-  transform: translateZ(0); /* Hardware acceleration */
-}
-
-.paginationButton:disabled {
-  background: rgba(243, 244, 246, 0.8);
-  color: #9ca3af;
-  cursor: not-allowed;
-  border-color: rgba(229, 231, 235, 0.8);
-}
-
-.paginationButton:not(:disabled):active {
-  background: rgba(229, 231, 235, 0.9);
-  transform: scale(0.96) translateZ(0);
-}
-
-.paginationNumbers {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  -webkit-overflow-scrolling: touch;
-  padding: 0.25rem 0;
-  margin: 0 0.5rem;
-  max-width: 180px;
-}
-
-.paginationNumbers::-webkit-scrollbar {
-  display: none;
-}
-
-.pageNumber {
-  min-width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.875rem;
-  font-weight: 500;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-  cursor: pointer;
-  user-select: none;
-  border: 1px solid rgba(226, 232, 240, 0.8);
-  background: rgba(255, 255, 255, 0.8);
-  color: #374151;
-  scroll-snap-align: center;
-  flex-shrink: 0;
-}
-
-.pageNumber.active {
-  background: #111827;
-  color: white;
-  border-color: #111827;
-  box-shadow: 0 2px 4px rgba(17, 24, 39, 0.2);
-}
-
-.pageNumber:not(.active):active {
-  background: rgba(229, 231, 235, 0.9);
-  transform: scale(0.96);
-}
-
-.paginationDots {
-  color: #9ca3af;
-  font-weight: 500;
-  padding: 0 0.25rem;
-  user-select: none;
-}
-
-/* Enhanced mobile-specific pagination styles */
-@media (max-width: 640px) {
-  .paginationControls {
-    flex-wrap: wrap;
-    gap: 0.375rem;
-  }
-  
-  .paginationButton {
-    flex: 1;
-    min-width: 80px;
-    justify-content: center;
-    font-size: 0.8125rem;
-    padding: 0.5rem 0.75rem;
-  }
-  
-  .paginationNumbers {
-    max-width: 140px;
-    margin: 0 0.25rem;
-  }
-  
-  .pageNumber {
-    min-width: 28px;
-    height: 28px;
-    font-size: 0.8125rem;
-  }
-}
-
-/* Animation for page transitions */
-.paginationTransition {
-  animation: fadeInSlideUp 0.3s ease-out;
-}
-
-@keyframes fadeInSlideUp {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Loading state for pagination */
-.paginationLoading {
-  opacity: 0.6;
-  pointer-events: none;
-}
-
-.paginationLoading .paginationButton,
-.paginationLoading .pageNumber {
-  cursor: not-allowed;
-  opacity: 0.5;
-}
-
-/* ============================================
-   DARK MODE SUPPORT
-   ============================================ */
-
-@media (prefers-color-scheme: dark) {
-  .mobileDashboardContainer {
-    background: #000000;
-  }
-  
-  .mobileHeader {
-    background: #000000;
-    border-bottom-color: #1C1C1E;
-  }
-  
-  .headerTitle {
-    color: #FFFFFF;
-  }
-  
-  .headerSubtitle {
-    color: #8E8E93;
-  }
-  
-  .iconButton {
-    background: #1C1C1E;
-    color: #FFFFFF;
-  }
-  
-  .iconButton:active {
-    background: #2C2C2E;
-  }
-  
-  .avatarButton {
-    background: #1C1C1E;
-  }
-  
-  .userProfile,
-  .metricCard,
-  .modernMenuList,
-  .menuList,
-  .emptyState {
-    background: #1C1C1E;
-    box-shadow: 0 2px 16px rgba(255, 255, 255, 0.02);
-  }
-  
-  .userName {
-    color: #FFFFFF;
-  }
-  
-  .userRole {
-    color: #8E8E93;
-  }
-  
-  .avatar {
-    background: #2C2C2E;
-    color: #8E8E93;
-  }
-  
-  .menuIcon {
-    background: #2C2C2E;
-    color: #FFFFFF;
-  }
-  
-  .modernMenuItem,
-  .menuItem {
-    background: #1C1C1E;
-    border-bottom-color: #2C2C2E;
-    color: #FFFFFF;
-  }
-  
-  .modernMenuItem:active,
-  .menuItem:active {
-    background-color: #2C2C2E;
-  }
-  
-  .metricIcon {
-    background: #2C2C2E;
-    color: #FFFFFF;
-  }
-  
-  .metricValue {
-    color: #FFFFFF;
-  }
-  
-  .metricLabel,
-  .metricTitle {
-    color: #8E8E93;
-  }
-  
-  .emptyStateIcon {
-    color: #48484A;
-  }
-  
-  .emptyStateText {
-    color: #8E8E93;
-  }
-  
-  .primaryButton {
-    background: #FFFFFF;
-    color: #000000;
-  }
-  
-  .primaryButton:active {
-    background: #E5E5E5;
-  }
-  
-  .secondaryButton {
-    background: #2C2C2E;
-    color: #FFFFFF;
-  }
-  
-  .secondaryButton:active {
-    background: #3A3A3C;
-  }
-  
-  .segmentedControl {
-    background: #2C2C2E;
-  }
-  
-  .segment {
-    color: #8E8E93;
-  }
-  
-  .segment.active {
-    background: #1C1C1E;
-    color: #FFFFFF;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  }
-  
-  .modernSkeleton,
-  .skeletonShimmer {
-    background: #2C2C2E;
-  }
-  
-  .sectionDivider {
-    color: #8E8E93;
-  }
-}
-
-/* ============================================
-   MODERN SECTION STYLES
+   SECTION HEADERS - iOS Style
    ============================================ */
 
 .sectionHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 16px;
+  margin: 0 16px 16px 16px;
+  padding: 0 4px;
 }
 
 .sectionTitleGroup {
@@ -1506,29 +223,29 @@
 .sectionTitle {
   font-size: 1.125rem;
   font-weight: 600;
-  color: #1D1D1F;
+  color: #000000;
   margin: 0;
 }
 
 .modernSelect {
-  background: #F5F5F5;
+  background: rgba(120, 120, 128, 0.12);
   border: none;
-  border-radius: 8px;
-  padding: 8px 12px;
-  font-size: 0.875rem;
+  border-radius: 12px;
+  padding: 8px 14px;
+  font-size: 0.9375rem;
   font-weight: 500;
-  color: #1D1D1F;
+  color: #000000;
   cursor: pointer;
   outline: none;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
 }
 
 .modernSelect:focus {
-  background: #E5E5E5;
+  background: rgba(120, 120, 128, 0.16);
 }
 
 .refreshing {
-  animation: spin 1s linear infinite;
+  animation: spin 1.2s linear infinite;
 }
 
 @keyframes spin {
@@ -1537,259 +254,586 @@
 }
 
 /* ============================================
-   MODERN ORDERS LIST
+   IOS SECTIONS & MENU GROUPS
    ============================================ */
 
-.modernOrdersList {
+.iosSection {
+  margin: 0 16px 24px 16px;
+}
+
+.iosSectionHeader {
+  margin-bottom: 8px;
+}
+
+.iosSectionTitle {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #8E8E93;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0;
+  padding: 0 4px;
+}
+
+.iosMenuGroup {
   background: #FFFFFF;
   border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.04);
+  border: 0.5px solid rgba(0, 0, 0, 0.06);
 }
 
-.modernOrderItem {
+.iosMenuItem {
   display: flex;
   align-items: center;
   padding: 16px 20px;
-  border-bottom: 1px solid #F2F2F7;
+  background: #FFFFFF;
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.08);
   text-decoration: none;
   color: inherit;
-  transition: background-color 0.2s ease;
-  min-height: 72px;
+  transition: background-color 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+  min-height: 60px;
+  cursor: pointer;
 }
 
-.modernOrderItem:last-child {
+.iosMenuItem:last-child {
   border-bottom: none;
 }
 
-.modernOrderItem:active {
-  background-color: #F2F2F7;
+.iosMenuItem:active {
+  background-color: rgba(0, 0, 0, 0.04);
 }
 
-.orderItemIcon {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background: #F5F5F5;
+.iosMenuIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(0, 122, 255, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
   margin-right: 16px;
+  color: #007AFF;
   flex-shrink: 0;
-  overflow: hidden;
-  color: #86868B;
 }
 
-.orderItemImage {
+.iosMenuContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.iosMenuTitle {
+  font-size: 1.0625rem;
+  font-weight: 500;
+  color: #000000;
+  line-height: 1.3;
+}
+
+.iosMenuSubtitle {
+  font-size: 0.9375rem;
+  color: #8E8E93;
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+.iosChevron {
+  color: #C7C7CC;
+  transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  flex-shrink: 0;
+}
+
+.chevronRotated {
+  transform: rotate(90deg);
+}
+
+/* ============================================
+   ACCORDION COMPONENTS - iOS Style
+   ============================================ */
+
+.iosAccordionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: #FFFFFF;
+  border-radius: 16px;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.04);
+  border: 0.5px solid rgba(0, 0, 0, 0.06);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  margin-bottom: 8px;
+}
+
+.iosAccordionHeader:active {
+  background-color: rgba(0, 0, 0, 0.04);
+  transform: scale(0.99);
+}
+
+.iosAccordionTitleGroup {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.iosAccordionIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(0, 122, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #007AFF;
+}
+
+.iosAccordionTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #000000;
+  margin: 0;
+}
+
+.iosAccordionContent {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s cubic-bezier(0.4, 0.0, 0.2, 1),
+              opacity 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  opacity: 0;
+}
+
+.iosAccordionContent.expanded {
+  max-height: 600px;
+  opacity: 1;
+}
+
+/* ============================================
+   ACTIVITY SECTION & RECENT ORDERS
+   ============================================ */
+
+.activitySection {
+  margin: 0 16px 24px 16px;
+}
+
+.activityHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: #FFFFFF;
+  border-radius: 16px;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.04);
+  border: 0.5px solid rgba(0, 0, 0, 0.06);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  margin-bottom: 8px;
+}
+
+.activityHeader:active {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.expandableContent {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s cubic-bezier(0.4, 0.0, 0.2, 1),
+              opacity 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  opacity: 0;
+}
+
+.expandableContent.expanded {
+  max-height: 400px;
+  opacity: 1;
+}
+
+.chevronIcon {
+  transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  color: #C7C7CC;
+}
+
+.iosOrdersList {
+  background: #FFFFFF;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.04);
+  border: 0.5px solid rgba(0, 0, 0, 0.06);
+  margin-top: 8px;
+}
+
+.iosOrderItem {
+  display: flex;
+  align-items: center;
+  padding: 16px 20px;
+  background: #FFFFFF;
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.08);
+  text-decoration: none;
+  color: inherit;
+  transition: background-color 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+  min-height: 64px;
+}
+
+.iosOrderItem:last-child {
+  border-bottom: none;
+}
+
+.iosOrderItem:active {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.orderIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(0, 122, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16px;
+  color: #007AFF;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.orderImage {
   width: 100%;
   height: 100%;
   object-fit: cover;
   border-radius: 12px;
 }
 
-.orderItemContent {
+.orderDetails {
   flex: 1;
-  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
-.orderItemTitle {
-  font-size: 1rem;
+.orderTitle {
+  font-size: 1.0625rem;
   font-weight: 500;
-  color: #1D1D1F;
-  margin: 0 0 4px 0;
+  color: #000000;
+  margin: 0;
   line-height: 1.3;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.orderItemSubtitle {
-  font-size: 0.875rem;
-  color: #86868B;
+.orderSubtitle {
+  font-size: 0.9375rem;
+  color: #8E8E93;
   margin: 0;
   line-height: 1.2;
 }
 
-.orderItemStatus {
+.orderStatus {
   display: flex;
   align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
+  margin-left: 12px;
 }
 
-.statusBadge {
-  font-size: 0.75rem;
-  font-weight: 500;
-  padding: 4px 8px;
-  border-radius: 8px;
-  text-transform: capitalize;
+.statusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 4px;
+  background: #8E8E93;
 }
 
-.statusCompleted {
-  background-color: #E8F5E8;
-  color: #2D7D32;
+.statusDot.statusCompleted {
+  background: #34C759;
 }
 
-.statusProcessing {
-  background-color: #E3F2FD;
-  color: #1976D2;
+.statusDot.statusProcessing {
+  background: #007AFF;
 }
 
-.statusPending {
-  background-color: #FFF8E1;
-  color: #F57C00;
+.statusDot.statusPending {
+  background: #FF9500;
 }
 
-.orderItemChevron {
-  color: #C7C7CC;
+.loadingContainer {
+  padding: 24px;
+  display: flex;
+  justify-content: center;
+  background: #FFFFFF;
+  border-radius: 16px;
+  margin-top: 8px;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.04);
+  border: 0.5px solid rgba(0, 0, 0, 0.06);
+}
+
+.emptyStateSmall {
+  padding: 24px;
+  text-align: center;
+  background: #FFFFFF;
+  border-radius: 16px;
+  margin-top: 8px;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.04);
+  border: 0.5px solid rgba(0, 0, 0, 0.06);
+}
+
+.emptyText {
+  font-size: 0.9375rem;
+  color: #8E8E93;
+  margin: 0;
 }
 
 /* ============================================
-   MODERN PRODUCT GRID
+   EMPTY STATES - iOS Style
    ============================================ */
 
-.modernProductGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin: 16px 0;
-}
-
-.productCard {
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 20px;
+  text-align: center;
   background: #FFFFFF;
   border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.06);
-  transition: all 0.2s ease;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.04);
+  border: 0.5px solid rgba(0, 0, 0, 0.06);
+  margin: 16px;
 }
 
-.productCard:active {
-  transform: scale(0.98);
+.emptyStateIcon {
+  margin-bottom: 16px;
+  color: #C7C7CC;
+  width: 48px;
+  height: 48px;
 }
 
-.productImageContainer {
+.emptyStateText {
+  font-size: 1.0625rem;
+  font-weight: 500;
+  color: #8E8E93;
+  line-height: 1.4;
+}
+
+/* ============================================
+   SKELETON LOADING - iOS Style
+   ============================================ */
+
+.modernSkeleton {
+  background: rgba(120, 120, 128, 0.12);
+  border-radius: 12px;
   position: relative;
-  width: 100%;
-  height: 120px;
   overflow: hidden;
 }
 
-.productCardImage {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.productPlaceholder {
-  width: 100%;
-  height: 100%;
-  background: #F5F5F5;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #86868B;
-}
-
-.productBadge {
+.modernSkeleton::after {
+  content: '';
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  animation: shimmer 1.8s ease-in-out infinite;
 }
 
-.activeBadge {
-  background: #E8F5E8;
-  color: #2D7D32;
-  font-size: 0.75rem;
-  font-weight: 500;
-  padding: 4px 8px;
-  border-radius: 8px;
+@keyframes shimmer {
+  0% { left: -100%; }
+  100% { left: 100%; }
 }
 
-.inactiveBadge {
-  background: #F5F5F5;
-  color: #86868B;
-  font-size: 0.75rem;
-  font-weight: 500;
-  padding: 4px 8px;
-  border-radius: 8px;
-}
-
-.productInfo {
-  padding: 16px;
-}
-
-.productName {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #1D1D1F;
-  margin: 0 0 4px 0;
-  line-height: 1.3;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.productPrice {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #1D1D1F;
-  margin: 0 0 8px 0;
-}
-
-.productMeta {
-  display: flex;
-  justify-content: space-between;
-  margin: 8px 0 12px 0;
-}
-
-.productStock,
-.productSold {
-  font-size: 0.75rem;
-  color: #86868B;
-  font-weight: 400;
-}
-
-.productActions {
-  display: flex;
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.quickAction {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px;
-  border-radius: 8px;
-  background: #F5F5F5;
-  color: #1D1D1F;
-  text-decoration: none;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.quickAction:active {
-  background: #E5E5E5;
-}
-
-.deleteAction {
-  background: #FFE5E5;
-  color: #D32F2F;
-}
-
-.deleteAction:active {
-  background: #FFCCCC;
-}
-
-.sectionSubtitle {
-  font-size: 0.875rem;
-  color: #86868B;
-  margin: 2px 0 0 0;
-  line-height: 1.2;
-}
-
-.actionMenuContainer {
+.skeletonShimmer {
+  background: rgba(120, 120, 128, 0.12);
   position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+.skeletonShimmer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  animation: shimmer 1.8s ease-in-out infinite;
+}
+
+/* ============================================
+   ANIMATIONS & TRANSITIONS - iOS Smooth
+   ============================================ */
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes statusPulse {
+  0% {
+    background-color: rgba(0, 122, 255, 0.1);
+  }
+  50% {
+    background-color: rgba(0, 122, 255, 0.2);
+  }
+  100% {
+    background-color: rgba(0, 122, 255, 0.1);
+  }
+}
+
+.statusChanging {
+  animation: statusPulse 0.6s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+@media (max-width: 375px) {
+  .headerTitle {
+    font-size: 1.75rem;
+  }
+  
+  .metricsGrid {
+    gap: 10px;
+    margin: 0 12px 20px 12px;
+  }
+  
+  .iosSection {
+    margin: 0 12px 20px 12px;
+  }
+  
+  .sectionHeader {
+    margin: 0 12px 16px 12px;
+  }
+}
+
+/* Respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .modernSkeleton::after,
+  .skeletonShimmer::after {
+    animation: skeletonPulse 2s ease-in-out infinite;
+  }
+}
+
+@keyframes skeletonPulse {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 0.4; }
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+
+.hidden {
+  display: none !important;
+}
+
+/* ============================================
+   IOS DARK MODE SUPPORT
+   ============================================ */
+
+@media (prefers-color-scheme: dark) {
+  .mobileDashboardContainer {
+    background: #000000;
+  }
+  
+  .mobileHeader {
+    background: rgba(28, 28, 30, 0.95);
+    border-bottom-color: rgba(84, 84, 88, 0.6);
+  }
+  
+  .headerTitle {
+    color: #FFFFFF;
+  }
+  
+  .headerSubtitle {
+    color: #8E8E93;
+  }
+  
+  .iconButton {
+    background: rgba(120, 120, 128, 0.16);
+    color: #0A84FF;
+  }
+  
+  .iconButton:active {
+    background: rgba(120, 120, 128, 0.24);
+  }
+  
+  .userProfile,
+  .metricCard,
+  .iosMenuGroup,
+  .iosOrdersList,
+  .iosAccordionHeader,
+  .activityHeader,
+  .loadingContainer,
+  .emptyState,
+  .emptyStateSmall {
+    background: #1C1C1E;
+    border-color: rgba(84, 84, 88, 0.6);
+    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.3);
+  }
+  
+  .userName,
+  .sectionTitle,
+  .iosAccordionTitle,
+  .iosMenuTitle,
+  .orderTitle {
+    color: #FFFFFF;
+  }
+  
+  .userRole,
+  .iosMenuSubtitle,
+  .orderSubtitle,
+  .emptyText,
+  .emptyStateText {
+    color: #8E8E93;
+  }
+  
+  .iosMenuItem,
+  .iosOrderItem {
+    background: #1C1C1E;
+    border-bottom-color: rgba(84, 84, 88, 0.6);
+  }
+  
+  .iosMenuItem:active,
+  .iosOrderItem:active,
+  .iosAccordionHeader:active,
+  .activityHeader:active {
+    background-color: rgba(120, 120, 128, 0.16);
+  }
+  
+  .iosMenuIcon,
+  .orderIcon,
+  .metricIcon,
+  .iosAccordionIcon {
+    background: rgba(10, 132, 255, 0.16);
+    color: #0A84FF;
+  }
+  
+  .metricValue {
+    color: #FFFFFF;
+  }
+  
+  .metricLabel,
+  .iosSectionTitle {
+    color: #8E8E93;
+  }
+  
+  .modernSelect {
+    background: rgba(120, 120, 128, 0.16);
+    color: #FFFFFF;
+  }
+  
+  .modernSkeleton,
+  .skeletonShimmer {
+    background: rgba(120, 120, 128, 0.16);
+  }
+  
+  .iosChevron,
+  .chevronIcon {
+    color: #636366;
+  }
 }
