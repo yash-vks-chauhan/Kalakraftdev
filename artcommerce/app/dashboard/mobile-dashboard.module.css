@@ -1,8 +1,13 @@
 /* Mobile Dashboard Container */
 .mobileDashboardContainer {
   min-height: 100vh;
-  background: #ffffff;
-  color: #111827;
+  background: #ffffff !important;
+  color: #111827 !important;
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  /* Override any parent background */
+  isolation: isolate;
 }
 
 @keyframes fadeInUp {
