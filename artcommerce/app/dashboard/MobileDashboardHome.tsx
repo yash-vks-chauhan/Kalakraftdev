@@ -64,6 +64,7 @@ export default function MobileDashboardHome() {
   const metricsRowRef = useRef<HTMLDivElement>(null)
   const [showProductsMenu, setShowProductsMenu] = useState(false)
   const [showUsersMenu, setShowUsersMenu] = useState(false)
+  const [showSystemMenu, setShowSystemMenu] = useState(false)
 
   useEffect(() => {
     if (user?.role === 'admin') {
@@ -545,10 +546,10 @@ export default function MobileDashboardHome() {
             </div>
           </div>
 
-          {/* Other Admin Tools */}
+          {/* Order Management */}
           <div className={styles.iosSection}>
             <div className={styles.iosSectionHeader}>
-              <h3 className={styles.iosSectionTitle}>Administration</h3>
+              <h3 className={styles.iosSectionTitle}>Order Management</h3>
             </div>
             <div className={styles.iosMenuGroup}>
               <Link href="/dashboard/admin/orders" className={styles.iosMenuItem}>
@@ -561,39 +562,62 @@ export default function MobileDashboardHome() {
                 </div>
                 <ChevronRight size={16} className={styles.iosChevron} />
               </Link>
-              
-              <Link href="/dashboard/admin/support" className={styles.iosMenuItem}>
-                <div className={styles.iosMenuIcon}>
-                  <TicketCheck size={22} />
+            </div>
+          </div>
+
+          {/* System Management Accordion */}
+          <div className={styles.iosSection}>
+            <div 
+              className={styles.iosAccordionHeader}
+              onClick={() => setShowSystemMenu(prev => !prev)}
+            >
+              <div className={styles.iosAccordionTitleGroup}>
+                <div className={styles.iosAccordionIcon}>
+                  <Settings size={20} />
                 </div>
-                <div className={styles.iosMenuContent}>
-                  <span className={styles.iosMenuTitle}>Support Tickets</span>
-                  <span className={styles.iosMenuSubtitle}>Customer support</span>
-                </div>
-                <ChevronRight size={16} className={styles.iosChevron} />
-              </Link>
-              
-              <Link href="/dashboard/admin/reviews" className={styles.iosMenuItem}>
-                <div className={styles.iosMenuIcon}>
-                  <Star size={22} />
-                </div>
-                <div className={styles.iosMenuContent}>
-                  <span className={styles.iosMenuTitle}>Reviews & Ratings</span>
-                  <span className={styles.iosMenuSubtitle}>Product feedback</span>
-                </div>
-                <ChevronRight size={16} className={styles.iosChevron} />
-              </Link>
-              
-              <Link href="/dashboard/admin/coupons" className={styles.iosMenuItem}>
-                <div className={styles.iosMenuIcon}>
-                  <Tag size={22} />
-                </div>
-                <div className={styles.iosMenuContent}>
-                  <span className={styles.iosMenuTitle}>Coupon Manager</span>
-                  <span className={styles.iosMenuSubtitle}>Discount codes</span>
-                </div>
-                <ChevronRight size={16} className={styles.iosChevron} />
-              </Link>
+                <h3 className={styles.iosAccordionTitle}>System Management</h3>
+              </div>
+              <ChevronRight 
+                size={16} 
+                className={`${styles.iosChevron} ${showSystemMenu ? styles.chevronRotated : ''}`}
+              />
+            </div>
+            
+            <div className={`${styles.iosAccordionContent} ${showSystemMenu ? styles.expanded : ''}`}>
+              <div className={styles.iosMenuGroup}>
+                <Link href="/dashboard/admin/support" className={styles.iosMenuItem}>
+                  <div className={styles.iosMenuIcon}>
+                    <TicketCheck size={20} />
+                  </div>
+                  <div className={styles.iosMenuContent}>
+                    <span className={styles.iosMenuTitle}>Support Tickets</span>
+                    <span className={styles.iosMenuSubtitle}>Customer support</span>
+                  </div>
+                  <ChevronRight size={14} className={styles.iosChevron} />
+                </Link>
+                
+                <Link href="/dashboard/admin/reviews" className={styles.iosMenuItem}>
+                  <div className={styles.iosMenuIcon}>
+                    <Star size={20} />
+                  </div>
+                  <div className={styles.iosMenuContent}>
+                    <span className={styles.iosMenuTitle}>Reviews & Ratings</span>
+                    <span className={styles.iosMenuSubtitle}>Product feedback</span>
+                  </div>
+                  <ChevronRight size={14} className={styles.iosChevron} />
+                </Link>
+                
+                <Link href="/dashboard/admin/coupons" className={styles.iosMenuItem}>
+                  <div className={styles.iosMenuIcon}>
+                    <Tag size={20} />
+                  </div>
+                  <div className={styles.iosMenuContent}>
+                    <span className={styles.iosMenuTitle}>Coupon Manager</span>
+                    <span className={styles.iosMenuSubtitle}>Discount codes</span>
+                  </div>
+                  <ChevronRight size={14} className={styles.iosChevron} />
+                </Link>
+              </div>
             </div>
           </div>
         </>
