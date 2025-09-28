@@ -286,91 +286,108 @@ export default function MobileDashboardHome() {
 
       {user.role === 'admin' && (
         <>
-          {/* Overview Accordion */}
+          {/* Overview Section - Redesigned like Recent Activity */}
           <div className={styles.iosSection}>
-            <div className={styles.iosAccordionHeader}>
+            <div className={styles.iosSectionHeader}>
+              <h3 className={styles.iosSectionTitle}>Business Overview</h3>
+            </div>
+            <div className={styles.iosMenuGroup}>
               <div 
-                className={styles.iosAccordionTitleGroup}
+                className={styles.activityHeader}
                 onClick={() => setShowOverview(prev => !prev)}
               >
-                <div className={styles.iosAccordionIcon}>
-                  <BarChart3 size={20} />
-                </div>
-                <h3 className={styles.iosAccordionTitle}>Overview</h3>
-              </div>
-              <div className={styles.overviewHeaderControls}>
-                <button 
-                  className={styles.periodSelectorButton}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setShowPeriodModal(true);
-                  }}
-                >
-                  <span className={styles.selectorLabel}>
+                <h2 className={styles.sectionTitle}>Analytics Dashboard</h2>
+                <div className={styles.activityHeaderRight}>
+                  <button 
+                    className={styles.periodSelectorMini}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowPeriodModal(true);
+                    }}
+                  >
                     {period === 'today' ? 'Today' : 
-                     period === 'week' ? 'Last 7 days' : 
-                     period === 'month' ? 'This month' : 
-                     period === 'year' ? 'This year' : 'All time'}
-                  </span>
-                  <ChevronDown size={14} />
-                </button>
-                <button
-                  className={styles.accordionToggle}
-                  onClick={() => setShowOverview(prev => !prev)}
-                >
-                  <ChevronDown size={16} className={`${styles.iosChevron} ${showOverview ? styles.rotated : ''}`} />
-                </button>
-              </div>
-            </div>
-            
-            <div className={`${styles.iosAccordionContent} ${showOverview ? styles.expanded : ''}`}>
-              <div className={styles.typographyContent}>
-
-              {/* Primary Metric - Editorial Hero */}
-              <div className={styles.primaryMetric}>
-                <div className={styles.primaryNumber}>₹{metrics?.revenue ? metrics.revenue.toFixed(0) : '0'}</div>
-                <div className={styles.primaryLabel}>Revenue</div>
-                <div className={styles.primarySubtext}>This {period === 'today' ? 'day' : period}'s performance</div>
-              </div>
-
-              {/* Secondary Metrics - Magazine Layout */}
-              <div className={styles.secondaryMetrics}>
-                <div className={styles.metricRow}>
-                  <div className={styles.metricNumber}>{metrics?.totalOrders || '0'}</div>
-                  <div className={styles.metricText}>
-                    <span className={styles.metricTitle}>Orders</span>
-                    <span className={styles.metricDescription}>Total processed</span>
-                  </div>
+                     period === 'week' ? '7d' : 
+                     period === 'month' ? '1m' : 
+                     period === 'year' ? '1y' : 'All'}
+                  </button>
+                  <ChevronRight 
+                    size={16} 
+                    className={`${styles.chevronIcon} ${showOverview ? styles.chevronRotated : ''}`}
+                  />
                 </div>
+              </div>
+              <div className={`${styles.expandableContent} ${showOverview ? styles.expanded : ''}`}>
+                {metrics ? (
+                  <div className={styles.overviewMetricsList}>
+                    {/* Revenue Card */}
+                    <div className={styles.overviewMetricCard}>
+                      <div className={styles.metricCardIcon}>
+                        <DollarSign size={20} />
+                      </div>
+                      <div className={styles.metricCardContent}>
+                        <h4 className={styles.metricCardTitle}>Total Revenue</h4>
+                        <p className={styles.metricCardValue}>₹{metrics?.revenue ? metrics.revenue.toFixed(0) : '0'}</p>
+                        <p className={styles.metricCardSubtitle}>This {period === 'today' ? 'day' : period}</p>
+                      </div>
+                    </div>
 
-                {metrics?.statusCounts?.slice(0, 2).map((sc: any) => (
-                  <div key={sc.status} className={styles.metricRow}>
-                    <div className={styles.metricNumber}>{sc._count.status}</div>
-                    <div className={styles.metricText}>
-                      <span className={styles.metricTitle}>
-                        {sc.status.charAt(0).toUpperCase() + sc.status.slice(1)}
-                      </span>
-                      <span className={styles.metricDescription}>Status count</span>
+                    {/* Orders Card */}
+                    <div className={styles.overviewMetricCard}>
+                      <div className={styles.metricCardIcon}>
+                        <Package size={20} />
+                      </div>
+                      <div className={styles.metricCardContent}>
+                        <h4 className={styles.metricCardTitle}>Total Orders</h4>
+                        <p className={styles.metricCardValue}>{metrics?.totalOrders || '0'}</p>
+                        <p className={styles.metricCardSubtitle}>Orders processed</p>
+                      </div>
+                    </div>
+
+                    {/* Status Breakdown */}
+                    {metrics?.statusCounts?.slice(0, 3).map((sc: any) => (
+                      <div key={sc.status} className={styles.overviewMetricCard}>
+                        <div className={styles.metricCardIcon}>
+                          {sc.status === 'completed' && <PackageOpen size={20} />}
+                          {sc.status === 'processing' && <Clock size={20} />}
+                          {sc.status === 'shipped' && <Package size={20} />}
+                          {sc.status === 'pending' && <Calendar size={20} />}
+                          {!['completed', 'processing', 'shipped', 'pending'].includes(sc.status) && <BarChart3 size={20} />}
+                        </div>
+                        <div className={styles.metricCardContent}>
+                          <h4 className={styles.metricCardTitle}>
+                            {sc.status.charAt(0).toUpperCase() + sc.status.slice(1)} Orders
+                          </h4>
+                          <p className={styles.metricCardValue}>{sc._count.status}</p>
+                          <p className={styles.metricCardSubtitle}>Current status</p>
+                        </div>
+                      </div>
+                    ))}
+
+                    {/* Quick Stats */}
+                    <div className={styles.overviewQuickStats}>
+                      <div className={styles.quickStatItem}>
+                        <span className={styles.quickStatLabel}>Period</span>
+                        <span className={styles.quickStatValue}>
+                          {period === 'today' ? 'Today' : 
+                           period === 'week' ? 'Last 7 days' : 
+                           period === 'month' ? 'This month' : 
+                           period === 'year' ? 'This year' : 'All time'}
+                        </span>
+                      </div>
+                      <div className={styles.quickStatItem}>
+                        <span className={styles.quickStatLabel}>Last Updated</span>
+                        <span className={styles.quickStatValue}>Just now</span>
+                      </div>
                     </div>
                   </div>
-                ))}
-              </div>
-
-              {/* Tertiary Info - Minimal Context */}
-              <div className={styles.tertiaryInfo}>
-                <div className={styles.infoLine}>
-                  <span className={styles.infoLabel}>Period</span>
-                  <span className={styles.infoValue}>{period.charAt(0).toUpperCase() + period.slice(1)}</span>
-                </div>
-                <div className={styles.infoLine}>
-                  <span className={styles.infoLabel}>Updated</span>
-                  <span className={styles.infoValue}>Just now</span>
-                </div>
-              </div>
+                ) : (
+                  <div className={styles.loadingContainer}>
+                    <InlineLoader size="small" message="Loading metrics..." />
+                  </div>
+                )}
               </div>
             </div>
           </div>
-
 
         </>
       )}
