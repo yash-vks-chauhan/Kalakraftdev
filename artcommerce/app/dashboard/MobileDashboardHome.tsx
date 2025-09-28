@@ -9,7 +9,9 @@ import { useState, useEffect, useRef } from 'react'
 import InlineLoader from '../components/InlineLoader'
 import MobileBottomNavbar from '../components/MobileBottomNavbar'
 
-// Mobile Dashboard Skeleton Components
+//                <div className={styles.adminAccordionContent}>
+                  <span className={styles.adminAccordionTitle}>System Management</span>
+                </div>bile Dashboard Skeleton Components
 const MetricsSkeleton = () => (
   <div className={styles.metricsContainer}>
     <div className={styles.metricsGrid}>
@@ -526,7 +528,7 @@ export default function MobileDashboardHome() {
       {/* Admin Section */}
       {user.role === 'admin' && (
         <>
-          {/* Admin Management */}
+          {/* Admin Management Section */}
           <div className={styles.iosSection}>
             <div className={styles.iosSectionHeader}>
               <h3 className={styles.iosSectionTitle}>Admin</h3>
@@ -542,12 +544,7 @@ export default function MobileDashboardHome() {
                 </div>
                 <ChevronRight size={16} className={styles.iosChevron} />
               </Link>
-            </div>
-          </div>
-
-          {/* Admin Management Section */}
-          <div className={styles.iosSection}>
-            <div className={styles.iosMenuGroup}>
+              
               <div 
                 className={`${styles.adminAccordionHeader} ${showProductsMenu ? styles.expanded : ''}`}
                 onClick={() => setShowProductsMenu(prev => !prev)}
@@ -556,7 +553,8 @@ export default function MobileDashboardHome() {
                   <Tag size={18} />
                 </div>
                 <div className={styles.adminAccordionContent}>
-                  <span className={styles.adminAccordionTitle} data-count="3">Product Management</span>
+                  <span className={styles.adminAccordionTitle}>Product Management</span>
+                  <span className={styles.adminAccordionSubtitle}>Manage product catalog</span>
                 </div>
                 <ChevronRight 
                   size={14} 
@@ -609,7 +607,8 @@ export default function MobileDashboardHome() {
                   <Users size={18} />
                 </div>
                 <div className={styles.adminAccordionContent}>
-                  <span className={styles.adminAccordionTitle} data-count="3">User Management</span>
+                  <span className={styles.adminAccordionTitle}>User Management</span>
+                  <span className={styles.adminAccordionSubtitle}>Manage user accounts</span>
                 </div>
                 <ChevronRight 
                   size={14} 
@@ -662,7 +661,8 @@ export default function MobileDashboardHome() {
                   <Settings size={18} />
                 </div>
                 <div className={styles.adminAccordionContent}>
-                  <span className={styles.adminAccordionTitle} data-count="3">System Management</span>
+                  <span className={styles.adminAccordionTitle}>System Management</span>
+                  <span className={styles.adminAccordionSubtitle}>System settings & support</span>
                 </div>
                 <ChevronRight 
                   size={14} 
