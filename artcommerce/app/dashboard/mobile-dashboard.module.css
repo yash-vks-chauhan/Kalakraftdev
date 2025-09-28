@@ -925,13 +925,72 @@
   position: relative;
 }
 
+/* ============================================
+   ADMIN ACCORDION GROUP - Cohesive Design
+   ============================================ */
+
+.adminAccordionGroup {
+  margin: 0 20px 24px 20px;
+  background: #FFFFFF;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: box-shadow 0.2s ease;
+}
+
+.adminAccordionGroup:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.accordionGroupItem {
+  margin: 0 !important; /* Remove individual margins */
+}
+
+.accordionGroupItem .iosAccordionHeader {
+  border: none !important; /* Remove individual borders */
+  border-radius: 0 !important; /* Remove individual rounded corners */
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08); /* Subtle separator */
+}
+
+/* Last accordion in group - no bottom border */
+.lastAccordion .iosAccordionHeader:not(.expanded) {
+  border-bottom: none !important;
+}
+
+/* When any accordion is expanded, it needs proper borders */
+.accordionGroupItem .iosAccordionHeader.expanded {
+  border-bottom: none !important;
+}
+
+.accordionGroupItem .iosAccordionContent {
+  border: none !important; /* Remove individual borders */
+  border-radius: 0 !important; /* Remove individual rounded corners */
+}
+
+/* Add separator after expanded content */
+.accordionGroupItem .iosAccordionContent.expanded {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+/* Last accordion expanded content doesn't need bottom border */
+.lastAccordion .iosAccordionContent.expanded {
+  border-bottom: none !important;
+}
+
 /* Mobile iOS section adjustments */
 @media (max-width: 768px) {
   .iosSection {
     margin: 0 12px 16px 12px;
   }
   
-
+  .adminAccordionGroup {
+    margin: 0 12px 16px 12px;
+  }
+  
+  .accordionGroupItem .iosAccordionHeader {
+    padding: 12px 16px;
+  }
   
   .iosOrdersList {
     padding: 12px 12px 12px 12px;
@@ -1161,6 +1220,8 @@
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
 }
+
+
 
 .iosAccordionHeader:active {
   background-color: rgba(0, 0, 0, 0.06);

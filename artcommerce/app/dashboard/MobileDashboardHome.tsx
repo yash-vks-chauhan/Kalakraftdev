@@ -528,172 +528,177 @@ export default function MobileDashboardHome() {
             </div>
           </div>
 
-          {/* Product Management Accordion */}
-          <div className={styles.iosSection}>
-            <div 
-              className={`${styles.iosAccordionHeader} ${showProductsMenu ? styles.expanded : ''}`}
-              onClick={() => setShowProductsMenu(prev => !prev)}
-            >
-              <div className={styles.iosAccordionTitleGroup}>
-                <div className={styles.iosAccordionIcon}>
-                  <Tag size={20} />
-                </div>
-                <h3 className={styles.iosAccordionTitle}>Product Management</h3>
-              </div>
-              <ChevronRight 
-                size={16} 
-                className={`${styles.iosChevron} ${showProductsMenu ? styles.chevronRotated : ''}`}
-              />
-            </div>
+          {/* Admin Accordion Group */}
+          <div className={styles.adminAccordionGroup}>
             
-            <div className={`${styles.iosAccordionContent} ${showProductsMenu ? styles.expanded : ''}`}>
-              <div className={styles.iosMenuGroup}>
-                <Link href="/dashboard/admin/products/mobile" className={styles.iosMenuItem}>
-                  <div className={styles.iosMenuIcon}>
-                    <Package size={20} />
-                  </div>
-                  <div className={styles.iosMenuContent}>
-                    <span className={styles.iosMenuTitle}>All Products</span>
-                    <span className={styles.iosMenuSubtitle}>View and manage inventory</span>
-                  </div>
-                  <ChevronRight size={14} className={styles.iosChevron} />
-                </Link>
-                
-                <Link href="/dashboard/admin/products/new" className={styles.iosMenuItem}>
-                  <div className={styles.iosMenuIcon}>
-                    <PlusCircle size={20} />
-                  </div>
-                  <div className={styles.iosMenuContent}>
-                    <span className={styles.iosMenuTitle}>Add New Product</span>
-                    <span className={styles.iosMenuSubtitle}>Create product listing</span>
-                  </div>
-                  <ChevronRight size={14} className={styles.iosChevron} />
-                </Link>
-                
-                <Link href="/dashboard/admin/products/low-stock" className={styles.iosMenuItem}>
-                  <div className={styles.iosMenuIcon}>
-                    <AlertTriangle size={20} />
-                  </div>
-                  <div className={styles.iosMenuContent}>
-                    <span className={styles.iosMenuTitle}>Low Stock Alert</span>
-                    <span className={styles.iosMenuSubtitle}>Items running low</span>
-                  </div>
-                  <ChevronRight size={14} className={styles.iosChevron} />
-                </Link>
-              </div>
-            </div>
-          </div>
-
-          {/* User Management Accordion */}
-          <div className={styles.iosSection}>
-            <div 
-              className={`${styles.iosAccordionHeader} ${showUsersMenu ? styles.expanded : ''}`}
-              onClick={() => setShowUsersMenu(prev => !prev)}
-            >
-              <div className={styles.iosAccordionTitleGroup}>
-                <div className={styles.iosAccordionIcon}>
-                  <Users size={20} />
-                </div>
-                <h3 className={styles.iosAccordionTitle}>User Management</h3>
-              </div>
-              <ChevronRight 
-                size={16} 
-                className={`${styles.iosChevron} ${showUsersMenu ? styles.chevronRotated : ''}`}
-              />
-            </div>
-            
-            <div className={`${styles.iosAccordionContent} ${showUsersMenu ? styles.expanded : ''}`}>
-              <div className={styles.iosMenuGroup}>
-                <Link href="/dashboard/admin/users/mobile" className={styles.iosMenuItem}>
-                  <div className={styles.iosMenuIcon}>
-                    <UserCheck size={20} />
-                  </div>
-                  <div className={styles.iosMenuContent}>
-                    <span className={styles.iosMenuTitle}>All Users</span>
-                    <span className={styles.iosMenuSubtitle}>Manage user accounts</span>
-                  </div>
-                  <ChevronRight size={14} className={styles.iosChevron} />
-                </Link>
-                
-                <Link href="/dashboard/admin/users/mobile?filter=admin" className={styles.iosMenuItem}>
-                  <div className={styles.iosMenuIcon}>
-                    <Shield size={20} />
-                  </div>
-                  <div className={styles.iosMenuContent}>
-                    <span className={styles.iosMenuTitle}>Admin Users</span>
-                    <span className={styles.iosMenuSubtitle}>Administrative accounts</span>
-                  </div>
-                  <ChevronRight size={14} className={styles.iosChevron} />
-                </Link>
-                
-                <Link href="/dashboard/admin/users/mobile?filter=user" className={styles.iosMenuItem}>
-                  <div className={styles.iosMenuIcon}>
-                    <User size={20} />
-                  </div>
-                  <div className={styles.iosMenuContent}>
-                    <span className={styles.iosMenuTitle}>Regular Users</span>
-                    <span className={styles.iosMenuSubtitle}>Customer accounts</span>
-                  </div>
-                  <ChevronRight size={14} className={styles.iosChevron} />
-                </Link>
-              </div>
-            </div>
-          </div>
-
-          {/* System Management Accordion */}
-          <div className={styles.iosSection}>
-            <div 
-              className={`${styles.iosAccordionHeader} ${showSystemMenu ? styles.expanded : ''}`}
-              onClick={() => setShowSystemMenu(prev => !prev)}
-            >
-              <div className={styles.iosAccordionTitleGroup}>
-                <div className={styles.iosAccordionIcon}>
-                  <Settings size={20} />
-                </div>
-                <h3 className={styles.iosAccordionTitle}>System Management</h3>
-              </div>
-              <ChevronRight 
-                size={16} 
-                className={`${styles.iosChevron} ${showSystemMenu ? styles.chevronRotated : ''}`}
-              />
-            </div>
-            
-            <div className={`${styles.iosAccordionContent} ${showSystemMenu ? styles.expanded : ''}`}>
-              <div className={styles.iosMenuGroup}>
-                <Link href="/dashboard/admin/support" className={styles.iosMenuItem}>
-                  <div className={styles.iosMenuIcon}>
-                    <TicketCheck size={20} />
-                  </div>
-                  <div className={styles.iosMenuContent}>
-                    <span className={styles.iosMenuTitle}>Support Tickets</span>
-                    <span className={styles.iosMenuSubtitle}>Customer support</span>
-                  </div>
-                  <ChevronRight size={14} className={styles.iosChevron} />
-                </Link>
-                
-                <Link href="/dashboard/admin/reviews" className={styles.iosMenuItem}>
-                  <div className={styles.iosMenuIcon}>
-                    <Star size={20} />
-                  </div>
-                  <div className={styles.iosMenuContent}>
-                    <span className={styles.iosMenuTitle}>Reviews & Ratings</span>
-                    <span className={styles.iosMenuSubtitle}>Product feedback</span>
-                  </div>
-                  <ChevronRight size={14} className={styles.iosChevron} />
-                </Link>
-                
-                <Link href="/dashboard/admin/coupons" className={styles.iosMenuItem}>
-                  <div className={styles.iosMenuIcon}>
+            {/* Product Management Accordion */}
+            <div className={`${styles.iosSection} ${styles.accordionGroupItem} ${styles.firstAccordion}`}>
+              <div 
+                className={`${styles.iosAccordionHeader} ${showProductsMenu ? styles.expanded : ''}`}
+                onClick={() => setShowProductsMenu(prev => !prev)}
+              >
+                <div className={styles.iosAccordionTitleGroup}>
+                  <div className={styles.iosAccordionIcon}>
                     <Tag size={20} />
                   </div>
-                  <div className={styles.iosMenuContent}>
-                    <span className={styles.iosMenuTitle}>Coupon Manager</span>
-                    <span className={styles.iosMenuSubtitle}>Discount codes</span>
-                  </div>
-                  <ChevronRight size={14} className={styles.iosChevron} />
-                </Link>
+                  <h3 className={styles.iosAccordionTitle}>Product Management</h3>
+                </div>
+                <ChevronRight 
+                  size={16} 
+                  className={`${styles.iosChevron} ${showProductsMenu ? styles.chevronRotated : ''}`}
+                />
+              </div>
+              
+              <div className={`${styles.iosAccordionContent} ${showProductsMenu ? styles.expanded : ''}`}>
+                <div className={styles.iosMenuGroup}>
+                  <Link href="/dashboard/admin/products/mobile" className={styles.iosMenuItem}>
+                    <div className={styles.iosMenuIcon}>
+                      <Package size={20} />
+                    </div>
+                    <div className={styles.iosMenuContent}>
+                      <span className={styles.iosMenuTitle}>All Products</span>
+                      <span className={styles.iosMenuSubtitle}>View and manage inventory</span>
+                    </div>
+                    <ChevronRight size={14} className={styles.iosChevron} />
+                  </Link>
+                  
+                  <Link href="/dashboard/admin/products/new" className={styles.iosMenuItem}>
+                    <div className={styles.iosMenuIcon}>
+                      <PlusCircle size={20} />
+                    </div>
+                    <div className={styles.iosMenuContent}>
+                      <span className={styles.iosMenuTitle}>Add New Product</span>
+                      <span className={styles.iosMenuSubtitle}>Create product listing</span>
+                    </div>
+                    <ChevronRight size={14} className={styles.iosChevron} />
+                  </Link>
+                  
+                  <Link href="/dashboard/admin/products/low-stock" className={styles.iosMenuItem}>
+                    <div className={styles.iosMenuIcon}>
+                      <AlertTriangle size={20} />
+                    </div>
+                    <div className={styles.iosMenuContent}>
+                      <span className={styles.iosMenuTitle}>Low Stock Alert</span>
+                      <span className={styles.iosMenuSubtitle}>Items running low</span>
+                    </div>
+                    <ChevronRight size={14} className={styles.iosChevron} />
+                  </Link>
+                </div>
               </div>
             </div>
+
+            {/* User Management Accordion */}
+            <div className={`${styles.iosSection} ${styles.accordionGroupItem} ${styles.middleAccordion}`}>
+              <div 
+                className={`${styles.iosAccordionHeader} ${showUsersMenu ? styles.expanded : ''}`}
+                onClick={() => setShowUsersMenu(prev => !prev)}
+              >
+                <div className={styles.iosAccordionTitleGroup}>
+                  <div className={styles.iosAccordionIcon}>
+                    <Users size={20} />
+                  </div>
+                  <h3 className={styles.iosAccordionTitle}>User Management</h3>
+                </div>
+                <ChevronRight 
+                  size={16} 
+                  className={`${styles.iosChevron} ${showUsersMenu ? styles.chevronRotated : ''}`}
+                />
+              </div>
+              
+              <div className={`${styles.iosAccordionContent} ${showUsersMenu ? styles.expanded : ''}`}>
+                <div className={styles.iosMenuGroup}>
+                  <Link href="/dashboard/admin/users/mobile" className={styles.iosMenuItem}>
+                    <div className={styles.iosMenuIcon}>
+                      <UserCheck size={20} />
+                    </div>
+                    <div className={styles.iosMenuContent}>
+                      <span className={styles.iosMenuTitle}>All Users</span>
+                      <span className={styles.iosMenuSubtitle}>Manage user accounts</span>
+                    </div>
+                    <ChevronRight size={14} className={styles.iosChevron} />
+                  </Link>
+                  
+                  <Link href="/dashboard/admin/users/mobile?filter=admin" className={styles.iosMenuItem}>
+                    <div className={styles.iosMenuIcon}>
+                      <Shield size={20} />
+                    </div>
+                    <div className={styles.iosMenuContent}>
+                      <span className={styles.iosMenuTitle}>Admin Users</span>
+                      <span className={styles.iosMenuSubtitle}>Administrative accounts</span>
+                    </div>
+                    <ChevronRight size={14} className={styles.iosChevron} />
+                  </Link>
+                  
+                  <Link href="/dashboard/admin/users/mobile?filter=user" className={styles.iosMenuItem}>
+                    <div className={styles.iosMenuIcon}>
+                      <User size={20} />
+                    </div>
+                    <div className={styles.iosMenuContent}>
+                      <span className={styles.iosMenuTitle}>Regular Users</span>
+                      <span className={styles.iosMenuSubtitle}>Customer accounts</span>
+                    </div>
+                    <ChevronRight size={14} className={styles.iosChevron} />
+                  </Link>
+                </div>
+              </div>
+            </div>
+
+            {/* System Management Accordion */}
+            <div className={`${styles.iosSection} ${styles.accordionGroupItem} ${styles.lastAccordion}`}>
+              <div 
+                className={`${styles.iosAccordionHeader} ${showSystemMenu ? styles.expanded : ''}`}
+                onClick={() => setShowSystemMenu(prev => !prev)}
+              >
+                <div className={styles.iosAccordionTitleGroup}>
+                  <div className={styles.iosAccordionIcon}>
+                    <Settings size={20} />
+                  </div>
+                  <h3 className={styles.iosAccordionTitle}>System Management</h3>
+                </div>
+                <ChevronRight 
+                  size={16} 
+                  className={`${styles.iosChevron} ${showSystemMenu ? styles.chevronRotated : ''}`}
+                />
+              </div>
+              
+              <div className={`${styles.iosAccordionContent} ${showSystemMenu ? styles.expanded : ''}`}>
+                <div className={styles.iosMenuGroup}>
+                  <Link href="/dashboard/admin/support" className={styles.iosMenuItem}>
+                    <div className={styles.iosMenuIcon}>
+                      <TicketCheck size={20} />
+                    </div>
+                    <div className={styles.iosMenuContent}>
+                      <span className={styles.iosMenuTitle}>Support Tickets</span>
+                      <span className={styles.iosMenuSubtitle}>Customer support</span>
+                    </div>
+                    <ChevronRight size={14} className={styles.iosChevron} />
+                  </Link>
+                  
+                  <Link href="/dashboard/admin/reviews" className={styles.iosMenuItem}>
+                    <div className={styles.iosMenuIcon}>
+                      <Star size={20} />
+                    </div>
+                    <div className={styles.iosMenuContent}>
+                      <span className={styles.iosMenuTitle}>Reviews & Ratings</span>
+                      <span className={styles.iosMenuSubtitle}>Product feedback</span>
+                    </div>
+                    <ChevronRight size={14} className={styles.iosChevron} />
+                  </Link>
+                  
+                  <Link href="/dashboard/admin/coupons" className={styles.iosMenuItem}>
+                    <div className={styles.iosMenuIcon}>
+                      <Tag size={20} />
+                    </div>
+                    <div className={styles.iosMenuContent}>
+                      <span className={styles.iosMenuTitle}>Coupon Manager</span>
+                      <span className={styles.iosMenuSubtitle}>Discount codes</span>
+                    </div>
+                    <ChevronRight size={14} className={styles.iosChevron} />
+                  </Link>
+                </div>
+              </div>
+            </div>
+            
           </div>
         </>
       )}
