@@ -812,7 +812,7 @@
   align-items: center;
   padding: 16px 20px;
   background: #FFFFFF;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.15);
   text-decoration: none;
   color: inherit;
   transition: background-color 0.12s cubic-bezier(0.25, 0.46, 0.45, 0.94),
@@ -1614,6 +1614,226 @@
 @keyframes skeletonPulse {
   0%, 100% { opacity: 0.8; }
   50% { opacity: 0.4; }
+}
+
+/* ============================================
+   ADMIN COMPACT ACCORDION STYLES
+   ============================================ */
+
+.adminAccordionHeader {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  background: #FFFFFF;
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  transition: background-color 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  min-height: 44px;
+}
+
+.adminAccordionHeader:active {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.adminAccordionHeader:last-child {
+  border-bottom: none;
+}
+
+/* Expanded state styling */
+.adminAccordionHeader.expanded {
+  background: #F5F5F7 !important;
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.08);
+  border-left: 3px solid #007AFF;
+  box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.05);
+  position: relative;
+}
+
+/* Rotate chevron when expanded */
+.adminAccordionHeader.expanded .iosChevron {
+  transform: rotate(90deg);
+}
+
+/* Enhanced icon state when expanded */
+.adminAccordionHeader.expanded .adminAccordionIcon {
+  background: rgba(0, 122, 255, 0.15);
+  color: #007AFF;
+}
+
+.adminAccordionIcon {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  color: #000000;
+  flex-shrink: 0;
+}
+
+.adminAccordionContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.adminAccordionTitle {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: #000000;
+  margin: 0;
+  line-height: 1.3;
+}
+
+/* Add item count badge */
+.adminAccordionTitle::after {
+  content: attr(data-count);
+  display: inline-block;
+  background: rgba(0, 0, 0, 0.1);
+  color: #666;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 8px;
+  margin-left: 8px;
+  min-width: 16px;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+/* Enhanced badge when expanded */
+.adminAccordionHeader.expanded .adminAccordionTitle::after {
+  background: rgba(0, 122, 255, 0.2);
+  color: #007AFF;
+}
+
+.adminExpandableContent {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+  background: #F8F9FA;
+}
+
+.adminExpandableContent.expanded {
+  max-height: 300px;
+  border-left: 3px solid #007AFF;
+  position: relative;
+}
+
+/* Connection indicator */
+.adminExpandableContent.expanded::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -3px;
+  width: 3px;
+  height: 100%;
+  background: linear-gradient(to bottom, #007AFF, rgba(0, 122, 255, 0.3));
+}
+
+.adminSubMenuGroup {
+  padding: 8px 0;
+}
+
+.adminSubMenuItem {
+  display: flex;
+  align-items: center;
+  padding: 10px 20px 10px 40px;
+  background: transparent;
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.06);
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.12s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  min-height: 40px;
+  position: relative;
+  margin-left: 8px;
+  border-radius: 0 8px 8px 0;
+}
+
+.adminSubMenuItem:last-child {
+  border-bottom: none;
+}
+
+.adminSubMenuItem:active {
+  background-color: rgba(0, 122, 255, 0.08);
+  transform: translateX(2px);
+}
+
+.adminSubMenuItem:hover {
+  background-color: rgba(0, 122, 255, 0.04);
+}
+
+.adminSubMenuIcon {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  color: #000000;
+  flex-shrink: 0;
+}
+
+.adminSubMenuContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.adminSubMenuTitle {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #000000;
+  line-height: 1.3;
+}
+
+.adminSubMenuSubtitle {
+  font-size: 0.75rem;
+  color: #8E8E93;
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+/* Mobile adjustments for admin elements */
+@media (max-width: 768px) {
+  .adminAccordionHeader {
+    padding: 10px 16px;
+    min-height: 40px;
+  }
+  
+  .adminAccordionIcon {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    margin-right: 10px;
+  }
+  
+  .adminAccordionTitle {
+    font-size: 0.875rem;
+  }
+  
+  .adminSubMenuItem {
+    padding: 8px 16px 8px 32px;
+    min-height: 36px;
+  }
+  
+  .adminSubMenuIcon {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+  }
+  
+  .adminSubMenuTitle {
+    font-size: 0.75rem;
+  }
+  
+  .adminSubMenuSubtitle {
+    font-size: 0.7rem;
+  }
 }
 
 /* ============================================
