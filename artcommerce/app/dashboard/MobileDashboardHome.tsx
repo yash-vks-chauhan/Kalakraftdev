@@ -376,32 +376,31 @@ export default function MobileDashboardHome() {
       )}
 
       {/* Recent Activity Section */}
-      <div className={styles.activitySection}>
-        <div 
-          className={styles.activityHeaderEnhanced}
-          onClick={() => setShowRecent(prev => !prev)}
-        >
-          <div className={styles.activityHeaderLeft}>
-            <div className={styles.activityIcon}>
-              <Clock size={16} />
-            </div>
-            <h2 className={styles.sectionTitle}>Recent Activity</h2>
-          </div>
-          <div className={styles.activityHeaderRight}>
-            <Link 
-              href="/dashboard/orders" 
-              className={styles.viewAllLink}
-              onClick={(e) => e.stopPropagation()}
-            >
-              View All
-            </Link>
-            <ChevronRight 
-              size={16} 
-              className={`${styles.chevronIcon} ${showRecent ? styles.chevronRotated : ''}`}
-            />
-          </div>
+      <div className={styles.iosSection}>
+        <div className={styles.iosSectionHeader}>
+          <h3 className={styles.iosSectionTitle}>Recent Activity</h3>
         </div>
-        <div className={`${styles.expandableContent} ${showRecent ? styles.expanded : ''}`}>
+        <div className={styles.iosMenuGroup}>
+          <div 
+            className={styles.activityHeader}
+            onClick={() => setShowRecent(prev => !prev)}
+          >
+            <h2 className={styles.sectionTitle}>Recent Orders</h2>
+            <div className={styles.activityHeaderRight}>
+              <Link 
+                href="/dashboard/orders" 
+                className={styles.viewAllLink}
+                onClick={(e) => e.stopPropagation()}
+              >
+                View All
+              </Link>
+              <ChevronRight 
+                size={16} 
+                className={`${styles.chevronIcon} ${showRecent ? styles.chevronRotated : ''}`}
+              />
+            </div>
+          </div>
+          <div className={`${styles.expandableContent} ${showRecent ? styles.expanded : ''}`}>
         {loadingOrders ? (
           <div className={styles.loadingContainer}>
             <InlineLoader size="small" message="Loading..." />
@@ -451,6 +450,7 @@ export default function MobileDashboardHome() {
             <p className={styles.emptyText}>No recent activity</p>
           </div>
         )}
+          </div>
         </div>
       </div>
 
