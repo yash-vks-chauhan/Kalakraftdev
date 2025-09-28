@@ -9,6 +9,56 @@ import { useState, useEffect, useRef } from 'react'
 import InlineLoader from '../components/InlineLoader'
 import MobileBottomNavbar from '../components/MobileBottomNavbar'
 
+// Mobile Dashboard Skeleton Components
+const MetricsSkeleton = () => (
+  <div className={styles.metricsContainer}>
+    <div className={styles.metricsGrid}>
+      {[1, 2, 3, 4].map((i) => (
+        <div key={i} className={styles.metricCard}>
+          <div className={`${styles.modernSkeleton}`} style={{ width: '48px', height: '48px', borderRadius: '16px', marginBottom: '12px' }}></div>
+          <div className={styles.metricContent}>
+            <div className={`${styles.modernSkeleton}`} style={{ width: '50px', height: '24px', marginBottom: '4px' }}></div>
+            <div className={`${styles.modernSkeleton}`} style={{ width: '70px', height: '14px' }}></div>
+          </div>
+        </div>
+      ))}
+    </div>
+    <div className={styles.scrollIndicator}>
+      {[1, 2, 3, 4].map((i) => (
+        <div key={i} className={styles.scrollDot}></div>
+      ))}
+    </div>
+  </div>
+);
+
+const OrdersSkeleton = () => (
+  <div className={styles.ordersScrollContainer}>
+    <div className={styles.ordersRow}>
+      {[1, 2, 3].map((index) => (
+        <div key={index} className={styles.orderCard}>
+          <div className={styles.orderCardLink}>
+            <div className={styles.orderImageContainer}>
+              <div className={`${styles.skeletonOrderImage} ${styles.skeletonShimmer}`}></div>
+            </div>
+            
+            <div className={styles.orderContent}>
+              <div className={styles.orderHeader}>
+                <div className={`${styles.skeletonProductName} ${styles.skeletonShimmer}`}></div>
+                <div className={`${styles.skeletonOrderNumber} ${styles.skeletonShimmer}`}></div>
+              </div>
+              
+              <div className={styles.orderMeta}>
+                <div className={`${styles.skeletonOrderDate} ${styles.skeletonShimmer}`}></div>
+                <div className={`${styles.skeletonOrderStatus} ${styles.skeletonShimmer}`}></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
 export default function MobileDashboardHome() {
   const { user, logout, token } = useAuth()
   const [showRecent, setShowRecent] = useState(true)
@@ -23,13 +73,9 @@ export default function MobileDashboardHome() {
   const [showProductsMenu, setShowProductsMenu] = useState(false)
   const [showUsersMenu, setShowUsersMenu] = useState(false)
   const [showSystemMenu, setShowSystemMenu] = useState(false)
-  const isAnyAdminAccordionExpanded = showProductsMenu || showUsersMenu || showSystemMenu
-  const [showOverview, setShowOverview] = useState(true)
+  const [showOverview, setShowOverview] = useState(true) // Default to open
   const [isScrolled, setIsScrolled] = useState(false)
   const [showPeriodModal, setShowPeriodModal] = useState(false)
-
-  // Computed properties
-  const isAdmin = user?.role === 'admin'
 
   useEffect(() => {
     if (user?.role === 'admin') {
@@ -127,6 +173,7 @@ export default function MobileDashboardHome() {
       logout()
     } else {
       setShowLogoutConfirm(true)
+      // Auto hide after 3 seconds
       setTimeout(() => setShowLogoutConfirm(false), 3000)
     }
   }
@@ -192,11 +239,14 @@ export default function MobileDashboardHome() {
     
     return `${order.orderItems[0].product?.name || 'Unknown Product'} + ${itemCount - 1} more`
   }
-  
+
   if (!user) return null
 
   return (
-    <div className={styles.mobileDashboardContainer}>
+    <div 
+      className={styles.mobileDashboardContainer}
+    >
+      {/* Custom Dashboard Navigation Header */}
       <div className={styles.pageHeader}>
         <div className={styles.headerTop}>
           <Link href="/" className={styles.backButton}>
@@ -214,6 +264,7 @@ export default function MobileDashboardHome() {
       </div>
       
       <div className={styles.contentWrapper}>
+
         <div className={styles.userProfile}>
           {user.avatarUrl ? (
             <img
@@ -233,239 +284,486 @@ export default function MobileDashboardHome() {
           </div>
         </div>
 
-        {/* Analytics Overview for Admin Users */}
-        {isAdmin && (
-          <div className={styles.analyticsSection}>
-            <h2 className={styles.sectionTitle}>Analytics Overview</h2>
-            {metrics ? (
-              <div className={styles.metricsGrid}>
-                <div className={styles.metricCard}>
-                  <div className={styles.metricIcon}>📊</div>
-                  <div className={styles.metricValue}>{metrics.totalRevenue || '₹0'}</div>
-                  <div className={styles.metricLabel}>Total Revenue</div>
-                </div>
-                <div className={styles.metricCard}>
-                  <div className={styles.metricIcon}>🛍️</div>
-                  <div className={styles.metricValue}>{metrics.totalOrders || '0'}</div>
-                  <div className={styles.metricLabel}>Total Orders</div>
-                </div>
-                <div className={styles.metricCard}>
-                  <div className={styles.metricIcon}>👥</div>
-                  <div className={styles.metricValue}>{metrics.totalUsers || '0'}</div>
-                  <div className={styles.metricLabel}>Total Users</div>
-                </div>
-                <div className={styles.metricCard}>
-                  <div className={styles.metricIcon}>📦</div>
-                  <div className={styles.metricValue}>{metrics.totalProducts || '0'}</div>
-                  <div className={styles.metricLabel}>Total Products</div>
+      {user.role === 'admin' && (
+        <>
+          {/* Overview Section - Redesigned like Recent Activity */}
+          <div className={styles.iosSection}>
+            <div className={styles.iosSectionHeader}>
+              <h3 className={styles.iosSectionTitle}>Business Overview</h3>
+            </div>
+            <div className={styles.iosMenuGroup}>
+              <div 
+                className={styles.activityHeader}
+                onClick={() => setShowOverview(prev => !prev)}
+              >
+                <h2 className={styles.sectionTitle}>Analytics Dashboard</h2>
+                <div className={styles.activityHeaderRight}>
+                  <button 
+                    className={styles.periodSelectorMini}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowPeriodModal(true);
+                    }}
+                  >
+                    {period === 'today' ? 'Today' : 
+                     period === 'week' ? '7d' : 
+                     period === 'month' ? '1m' : 
+                     period === 'year' ? '1y' : 'All'}
+                  </button>
+                  <ChevronRight 
+                    size={16} 
+                    className={`${styles.chevronIcon} ${showOverview ? styles.chevronRotated : ''}`}
+                  />
                 </div>
               </div>
-            ) : (
-              <div className={styles.loadingMetrics}>
-                <InlineLoader />
-                <span>Loading analytics...</span>
+              <div className={`${styles.expandableContent} ${showOverview ? styles.expanded : ''}`}>
+                {metrics ? (
+                  <div className={styles.overviewMetricsList}>
+                    {/* Revenue Card */}
+                    <div className={styles.overviewMetricCard}>
+                      <div className={styles.metricCardIcon}>
+                        <DollarSign size={20} />
+                      </div>
+                      <div className={styles.metricCardContent}>
+                        <h4 className={styles.metricCardTitle}>Total Revenue</h4>
+                        <p className={styles.metricCardValue}>₹{metrics?.revenue ? metrics.revenue.toFixed(0) : '0'}</p>
+                        <p className={styles.metricCardSubtitle}>This {period === 'today' ? 'day' : period}</p>
+                      </div>
+                    </div>
+
+                    {/* Orders Card */}
+                    <div className={styles.overviewMetricCard}>
+                      <div className={styles.metricCardIcon}>
+                        <Package size={20} />
+                      </div>
+                      <div className={styles.metricCardContent}>
+                        <h4 className={styles.metricCardTitle}>Total Orders</h4>
+                        <p className={styles.metricCardValue}>{metrics?.totalOrders || '0'}</p>
+                        <p className={styles.metricCardSubtitle}>Orders processed</p>
+                      </div>
+                    </div>
+
+                    {/* Status Breakdown */}
+                    {metrics?.statusCounts?.slice(0, 3).map((sc: any) => (
+                      <div key={sc.status} className={styles.overviewMetricCard}>
+                        <div className={styles.metricCardIcon}>
+                          {sc.status === 'completed' && <PackageOpen size={20} />}
+                          {sc.status === 'processing' && <Clock size={20} />}
+                          {sc.status === 'shipped' && <Package size={20} />}
+                          {sc.status === 'pending' && <Calendar size={20} />}
+                          {!['completed', 'processing', 'shipped', 'pending'].includes(sc.status) && <BarChart3 size={20} />}
+                        </div>
+                        <div className={styles.metricCardContent}>
+                          <h4 className={styles.metricCardTitle}>
+                            {sc.status.charAt(0).toUpperCase() + sc.status.slice(1)} Orders
+                          </h4>
+                          <p className={styles.metricCardValue}>{sc._count.status}</p>
+                          <p className={styles.metricCardSubtitle}>Current status</p>
+                        </div>
+                      </div>
+                    ))}
+
+                    {/* Quick Stats */}
+                    <div className={styles.overviewQuickStats}>
+                      <div className={styles.quickStatItem}>
+                        <span className={styles.quickStatLabel}>Period</span>
+                        <span className={styles.quickStatValue}>
+                          {period === 'today' ? 'Today' : 
+                           period === 'week' ? 'Last 7 days' : 
+                           period === 'month' ? 'This month' : 
+                           period === 'year' ? 'This year' : 'All time'}
+                        </span>
+                      </div>
+                      <div className={styles.quickStatItem}>
+                        <span className={styles.quickStatLabel}>Last Updated</span>
+                        <span className={styles.quickStatValue}>Just now</span>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className={styles.loadingContainer}>
+                    <InlineLoader size="small" message="Loading metrics..." />
+                  </div>
+                )}
               </div>
-            )}
+            </div>
+          </div>
+
+        </>
+      )}
+
+      {/* Recent Activity Section */}
+      <div className={styles.iosSection}>
+        <div className={styles.iosSectionHeader}>
+          <h3 className={styles.iosSectionTitle}>Recent Activity</h3>
+        </div>
+        <div className={styles.iosMenuGroup}>
+          <div 
+            className={styles.activityHeader}
+            onClick={() => setShowRecent(prev => !prev)}
+          >
+            <h2 className={styles.sectionTitle}>Recent Orders</h2>
+            <div className={styles.activityHeaderRight}>
+              <Link 
+                href="/dashboard/orders" 
+                className={styles.viewAllLink}
+                onClick={(e) => e.stopPropagation()}
+              >
+                View All
+              </Link>
+              <ChevronRight 
+                size={16} 
+                className={`${styles.chevronIcon} ${showRecent ? styles.chevronRotated : ''}`}
+              />
+            </div>
+          </div>
+          <div className={`${styles.expandableContent} ${showRecent ? styles.expanded : ''}`}>
+        {loadingOrders ? (
+          <div className={styles.loadingContainer}>
+            <InlineLoader size="small" message="Loading..." />
+          </div>
+        ) : recentOrders.length > 0 ? (
+          <div className={styles.iosOrdersList}>
+            {recentOrders.slice(0, 3).map((order: any) => (
+              <Link 
+                key={order.id} 
+                href={`/dashboard/orders/${order.id}`} 
+                className={styles.iosOrderItem}
+              >
+                <div className={styles.orderIcon}>
+                  {getFirstProductImage(order) ? (
+                    <img 
+                      src={getFirstProductImage(order)} 
+                      alt={getProductName(order)}
+                      className={styles.orderImage}
+                    />
+                  ) : (
+                    <Package size={20} />
+                  )}
+                </div>
+                
+                <div className={styles.orderDetails}>
+                  <h4 className={styles.orderTitle}>
+                    {getProductSummary(order)}
+                  </h4>
+                  <p className={styles.orderSubtitle}>
+                    #{order.id.toString().substring(0, 8)} • {formatDate(order.createdAt)}
+                  </p>
+                  <div className={styles.orderMeta}>
+                    <span className={styles.orderPrice}>
+                      ₹{order.totalAmount?.toFixed(0) || '0'}
+                    </span>
+                    <div className={`${styles.orderStatus} ${styles[getStatusClass(order.status)]}`}>
+                      <span className={styles.statusDot}></span>
+                      {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <div className={styles.emptyStateSmall}>
+            <p className={styles.emptyText}>No recent activity</p>
           </div>
         )}
+          </div>
+        </div>
+      </div>
 
-        {/* Unified Admin Section with Parallax Effects */}
-        {isAdmin && (
-          <div className={styles.adminUnifiedGroup}>
-            <h2 className={styles.sectionTitle}>Admin Panel</h2>
-            
-            {/* All Orders Accordion */}
-            <div 
-              className={`${styles.accordionItem} ${showProductsMenu ? styles.expanded : ''}`}
-              onClick={() => setShowProductsMenu(!showProductsMenu)}
-            >
-              <div className={`${styles.accordionHeader} ${showProductsMenu ? styles.expandedTitle : ''}`}>
-                <div className={`${styles.accordionIcon} ${showProductsMenu ? styles.expandedIcon : ''}`}>
-                  📦
-                </div>
-                <span>All Orders</span>
-                <ChevronDown 
-                  className={`${styles.chevron} ${showProductsMenu ? styles.rotated : ''}`} 
-                  size={20} 
-                />
-              </div>
-              {showProductsMenu && (
-                <div className={styles.accordionContent}>
-                  <a href="/dashboard/admin/orders" className={styles.subMenuItem}>
-                    <span>View All Orders</span>
-                    <ChevronRight size={16} />
-                  </a>
-                  <a href="/dashboard/admin/orders?status=pending" className={styles.subMenuItem}>
-                    <span>Pending Orders</span>
-                    <ChevronRight size={16} />
-                  </a>
-                  <a href="/dashboard/admin/orders?status=processing" className={styles.subMenuItem}>
-                    <span>Processing Orders</span>
-                    <ChevronRight size={16} />
-                  </a>
-                  <a href="/dashboard/admin/orders?status=completed" className={styles.subMenuItem}>
-                    <span>Completed Orders</span>
-                    <ChevronRight size={16} />
-                  </a>
-                </div>
-              )}
+      {/* Personal Section */}
+      <div className={styles.iosSection}>
+        <div className={styles.iosSectionHeader}>
+          <h3 className={styles.iosSectionTitle}>Personal</h3>
+        </div>
+        <div className={styles.iosMenuGroup}>
+          <Link href="/dashboard/profile" className={styles.iosMenuItem}>
+            <div className={styles.iosMenuIcon}>
+              <Settings size={22} />
             </div>
-
-            {/* Product Management Accordion */}
-            <div 
-              className={`${styles.accordionItem} ${showUsersMenu ? styles.expanded : ''}`}
-              onClick={() => setShowUsersMenu(!showUsersMenu)}
-            >
-              <div className={`${styles.accordionHeader} ${showUsersMenu ? styles.expandedTitle : ''}`}>
-                <div className={`${styles.accordionIcon} ${showUsersMenu ? styles.expandedIcon : ''}`}>
-                  🎨
+            <div className={styles.iosMenuContent}>
+              <span className={styles.iosMenuTitle}>Profile Settings</span>
+              <span className={styles.iosMenuSubtitle}>Update your information</span>
+            </div>
+            <ChevronRight size={16} className={styles.iosChevron} />
+          </Link>
+          
+          <Link href="/dashboard/orders" className={styles.iosMenuItem}>
+            <div className={styles.iosMenuIcon}>
+              <Package size={22} />
+            </div>
+            <div className={styles.iosMenuContent}>
+              <span className={styles.iosMenuTitle}>Your Orders</span>
+              <span className={styles.iosMenuSubtitle}>Track your purchases</span>
+            </div>
+            <ChevronRight size={16} className={styles.iosChevron} />
+          </Link>
+          
+          <Link href="/dashboard/cart" className={styles.iosMenuItem}>
+            <div className={styles.iosMenuIcon}>
+              <ShoppingCart size={22} />
+            </div>
+            <div className={styles.iosMenuContent}>
+              <span className={styles.iosMenuTitle}>Shopping Cart</span>
+              <span className={styles.iosMenuSubtitle}>Items ready to purchase</span>
+            </div>
+            <ChevronRight size={16} className={styles.iosChevron} />
+          </Link>
+          
+          <Link href="/dashboard/wishlist" className={styles.iosMenuItem}>
+            <div className={styles.iosMenuIcon}>
+              <Heart size={22} />
+            </div>
+            <div className={styles.iosMenuContent}>
+              <span className={styles.iosMenuTitle}>Wishlist</span>
+              <span className={styles.iosMenuSubtitle}>Your saved items</span>
+            </div>
+            <ChevronRight size={16} className={styles.iosChevron} />
+          </Link>
+        </div>
+      </div>
+        
+      {/* Admin Section */}
+      {user.role === 'admin' && (
+        <>
+          {/* Admin Management */}
+          <div className={styles.iosSection}>
+            <div className={styles.iosSectionHeader}>
+              <h3 className={styles.iosSectionTitle}>Admin</h3>
+            </div>
+            <div className={styles.iosMenuGroup}>
+              <Link href="/dashboard/admin/orders" className={styles.iosMenuItem}>
+                <div className={styles.iosMenuIcon}>
+                  <Package size={22} />
                 </div>
-                <span>Product Management</span>
-                <ChevronDown 
-                  className={`${styles.chevron} ${showUsersMenu ? styles.rotated : ''}`} 
-                  size={20} 
+                <div className={styles.iosMenuContent}>
+                  <span className={styles.iosMenuTitle}>All Orders</span>
+                  <span className={styles.iosMenuSubtitle}>Manage customer orders</span>
+                </div>
+                <ChevronRight size={16} className={styles.iosChevron} />
+              </Link>
+            </div>
+          </div>
+
+          {/* Admin Accordion Group */}
+          <div className={styles.adminAccordionGroup}>
+            
+            {/* Product Management Accordion */}
+            <div className={`${styles.iosSection} ${styles.accordionGroupItem} ${styles.firstAccordion}`}>
+              <div 
+                className={`${styles.iosAccordionHeader} ${showProductsMenu ? styles.expanded : ''}`}
+                onClick={() => setShowProductsMenu(prev => !prev)}
+              >
+                <div className={styles.iosAccordionTitleGroup}>
+                  <div className={styles.iosAccordionIcon}>
+                    <Tag size={20} />
+                  </div>
+                  <h3 className={styles.iosAccordionTitle}>Product Management</h3>
+                </div>
+                <ChevronRight 
+                  size={16} 
+                  className={`${styles.iosChevron} ${showProductsMenu ? styles.chevronRotated : ''}`}
                 />
               </div>
-              {showUsersMenu && (
-                <div className={styles.accordionContent}>
-                  <a href="/dashboard/admin/products" className={styles.subMenuItem}>
-                    <span>All Products</span>
-                    <ChevronRight size={16} />
-                  </a>
-                  <a href="/dashboard/admin/products/new" className={styles.subMenuItem}>
-                    <span>Add New Product</span>
-                    <ChevronRight size={16} />
-                  </a>
-                  <a href="/dashboard/admin/products/low-stock" className={styles.subMenuItem}>
-                    <span>Low Stock Products</span>
-                    <ChevronRight size={16} />
-                  </a>
-                  <a href="/dashboard/admin/products/highest-rated" className={styles.subMenuItem}>
-                    <span>Highest Rated</span>
-                    <ChevronRight size={16} />
-                  </a>
+              
+              <div className={`${styles.iosAccordionContent} ${showProductsMenu ? styles.expanded : ''}`}>
+                <div className={styles.iosMenuGroup}>
+                  <Link href="/dashboard/admin/products/mobile" className={styles.iosMenuItem}>
+                    <div className={styles.iosMenuIcon}>
+                      <Package size={20} />
+                    </div>
+                    <div className={styles.iosMenuContent}>
+                      <span className={styles.iosMenuTitle}>All Products</span>
+                      <span className={styles.iosMenuSubtitle}>View and manage inventory</span>
+                    </div>
+                    <ChevronRight size={14} className={styles.iosChevron} />
+                  </Link>
+                  
+                  <Link href="/dashboard/admin/products/new" className={styles.iosMenuItem}>
+                    <div className={styles.iosMenuIcon}>
+                      <PlusCircle size={20} />
+                    </div>
+                    <div className={styles.iosMenuContent}>
+                      <span className={styles.iosMenuTitle}>Add New Product</span>
+                      <span className={styles.iosMenuSubtitle}>Create product listing</span>
+                    </div>
+                    <ChevronRight size={14} className={styles.iosChevron} />
+                  </Link>
+                  
+                  <Link href="/dashboard/admin/products/low-stock" className={styles.iosMenuItem}>
+                    <div className={styles.iosMenuIcon}>
+                      <AlertTriangle size={20} />
+                    </div>
+                    <div className={styles.iosMenuContent}>
+                      <span className={styles.iosMenuTitle}>Low Stock Alert</span>
+                      <span className={styles.iosMenuSubtitle}>Items running low</span>
+                    </div>
+                    <ChevronRight size={14} className={styles.iosChevron} />
+                  </Link>
                 </div>
-              )}
+              </div>
             </div>
 
             {/* User Management Accordion */}
-            <div 
-              className={`${styles.accordionItem} ${showSystemMenu ? styles.expanded : ''}`}
-              onClick={() => setShowSystemMenu(!showSystemMenu)}
-            >
-              <div className={`${styles.accordionHeader} ${showSystemMenu ? styles.expandedTitle : ''}`}>
-                <div className={`${styles.accordionIcon} ${showSystemMenu ? styles.expandedIcon : ''}`}>
-                  👥
+            <div className={`${styles.iosSection} ${styles.accordionGroupItem} ${styles.middleAccordion}`}>
+              <div 
+                className={`${styles.iosAccordionHeader} ${showUsersMenu ? styles.expanded : ''}`}
+                onClick={() => setShowUsersMenu(prev => !prev)}
+              >
+                <div className={styles.iosAccordionTitleGroup}>
+                  <div className={styles.iosAccordionIcon}>
+                    <Users size={20} />
+                  </div>
+                  <h3 className={styles.iosAccordionTitle}>User Management</h3>
                 </div>
-                <span>User Management</span>
-                <ChevronDown 
-                  className={`${styles.chevron} ${showSystemMenu ? styles.rotated : ''}`} 
-                  size={20} 
+                <ChevronRight 
+                  size={16} 
+                  className={`${styles.iosChevron} ${showUsersMenu ? styles.chevronRotated : ''}`}
                 />
               </div>
-              {showSystemMenu && (
-                <div className={styles.accordionContent}>
-                  <a href="/dashboard/admin/users" className={styles.subMenuItem}>
-                    <span>All Users</span>
-                    <ChevronRight size={16} />
-                  </a>
-                  <a href="/dashboard/admin/reviews" className={styles.subMenuItem}>
-                    <span>Reviews & Ratings</span>
-                    <ChevronRight size={16} />
-                  </a>
-                  <a href="/dashboard/admin/support" className={styles.subMenuItem}>
-                    <span>Support Tickets</span>
-                    <ChevronRight size={16} />
-                  </a>
-                  <a href="/dashboard/admin/coupons" className={styles.subMenuItem}>
-                    <span>Manage Coupons</span>
-                    <ChevronRight size={16} />
-                  </a>
+              
+              <div className={`${styles.iosAccordionContent} ${showUsersMenu ? styles.expanded : ''}`}>
+                <div className={styles.iosMenuGroup}>
+                  <Link href="/dashboard/admin/users/mobile" className={styles.iosMenuItem}>
+                    <div className={styles.iosMenuIcon}>
+                      <UserCheck size={20} />
+                    </div>
+                    <div className={styles.iosMenuContent}>
+                      <span className={styles.iosMenuTitle}>All Users</span>
+                      <span className={styles.iosMenuSubtitle}>Manage user accounts</span>
+                    </div>
+                    <ChevronRight size={14} className={styles.iosChevron} />
+                  </Link>
+                  
+                  <Link href="/dashboard/admin/users/mobile?filter=admin" className={styles.iosMenuItem}>
+                    <div className={styles.iosMenuIcon}>
+                      <Shield size={20} />
+                    </div>
+                    <div className={styles.iosMenuContent}>
+                      <span className={styles.iosMenuTitle}>Admin Users</span>
+                      <span className={styles.iosMenuSubtitle}>Administrative accounts</span>
+                    </div>
+                    <ChevronRight size={14} className={styles.iosChevron} />
+                  </Link>
+                  
+                  <Link href="/dashboard/admin/users/mobile?filter=user" className={styles.iosMenuItem}>
+                    <div className={styles.iosMenuIcon}>
+                      <User size={20} />
+                    </div>
+                    <div className={styles.iosMenuContent}>
+                      <span className={styles.iosMenuTitle}>Regular Users</span>
+                      <span className={styles.iosMenuSubtitle}>Customer accounts</span>
+                    </div>
+                    <ChevronRight size={14} className={styles.iosChevron} />
+                  </Link>
                 </div>
-              )}
+              </div>
             </div>
-          </div>
-        )}
 
-        {/* Personal Section for All Users */}
-        <div className={styles.personalSection}>
-          <h2 className={styles.sectionTitle}>Personal</h2>
-          <div className={styles.personalMenuItems}>
-            <a href="/dashboard/orders" className={styles.personalMenuItem}>
-              <div className={styles.personalIcon}>📋</div>
-              <span>My Orders</span>
-              <ChevronRight size={16} />
-            </a>
-            <a href="/dashboard/profile" className={styles.personalMenuItem}>
-              <div className={styles.personalIcon}>👤</div>
-              <span>Profile Settings</span>
-              <ChevronRight size={16} />
-            </a>
-            <a href="/dashboard/wishlist" className={styles.personalMenuItem}>
-              <div className={styles.personalIcon}>❤️</div>
-              <span>Wishlist</span>
-              <ChevronRight size={16} />
-            </a>
-            <a href="/dashboard/support" className={styles.personalMenuItem}>
-              <div className={styles.personalIcon}>🎧</div>
-              <span>Support</span>
-              <ChevronRight size={16} />
-            </a>
+            {/* System Management Accordion */}
+            <div className={`${styles.iosSection} ${styles.accordionGroupItem} ${styles.lastAccordion}`}>
+              <div 
+                className={`${styles.iosAccordionHeader} ${showSystemMenu ? styles.expanded : ''}`}
+                onClick={() => setShowSystemMenu(prev => !prev)}
+              >
+                <div className={styles.iosAccordionTitleGroup}>
+                  <div className={styles.iosAccordionIcon}>
+                    <Settings size={20} />
+                  </div>
+                  <h3 className={styles.iosAccordionTitle}>System Management</h3>
+                </div>
+                <ChevronRight 
+                  size={16} 
+                  className={`${styles.iosChevron} ${showSystemMenu ? styles.chevronRotated : ''}`}
+                />
+              </div>
+              
+              <div className={`${styles.iosAccordionContent} ${showSystemMenu ? styles.expanded : ''}`}>
+                <div className={styles.iosMenuGroup}>
+                  <Link href="/dashboard/admin/support" className={styles.iosMenuItem}>
+                    <div className={styles.iosMenuIcon}>
+                      <TicketCheck size={20} />
+                    </div>
+                    <div className={styles.iosMenuContent}>
+                      <span className={styles.iosMenuTitle}>Support Tickets</span>
+                      <span className={styles.iosMenuSubtitle}>Customer support</span>
+                    </div>
+                    <ChevronRight size={14} className={styles.iosChevron} />
+                  </Link>
+                  
+                  <Link href="/dashboard/admin/reviews" className={styles.iosMenuItem}>
+                    <div className={styles.iosMenuIcon}>
+                      <Star size={20} />
+                    </div>
+                    <div className={styles.iosMenuContent}>
+                      <span className={styles.iosMenuTitle}>Reviews & Ratings</span>
+                      <span className={styles.iosMenuSubtitle}>Product feedback</span>
+                    </div>
+                    <ChevronRight size={14} className={styles.iosChevron} />
+                  </Link>
+                  
+                  <Link href="/dashboard/admin/coupons" className={styles.iosMenuItem}>
+                    <div className={styles.iosMenuIcon}>
+                      <Tag size={20} />
+                    </div>
+                    <div className={styles.iosMenuContent}>
+                      <span className={styles.iosMenuTitle}>Coupon Manager</span>
+                      <span className={styles.iosMenuSubtitle}>Discount codes</span>
+                    </div>
+                    <ChevronRight size={14} className={styles.iosChevron} />
+                  </Link>
+                </div>
+              </div>
+            </div>
+            
+          </div>
+        </>
+      )}
+      </div>
+
+      {/* Period Selection Modal */}
+      {showPeriodModal && (
+        <div className={styles.modalOverlay} onClick={() => setShowPeriodModal(false)}>
+          <div className={styles.periodModal} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h3 className={styles.modalTitle}>Select Time Period</h3>
+              <button 
+                className={styles.modalCloseButton}
+                onClick={() => setShowPeriodModal(false)}
+              >
+                ×
+              </button>
+            </div>
+            <div className={styles.periodModalOptions}>
+              {[
+                { value: 'today', label: 'Today' },
+                { value: 'week', label: 'Last 7 days' },
+                { value: 'month', label: 'This month' },
+                { value: 'year', label: 'This year' },
+                { value: 'all', label: 'All time' }
+              ].map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => {
+                    setPeriod(option.value as any);
+                    fetchMetrics(option.value);
+                    setShowPeriodModal(false);
+                  }}
+                  className={`${styles.periodModalOption} ${period === option.value ? styles.active : ''}`}
+                >
+                  <span className={styles.optionLabel}>{option.label}</span>
+                  {period === option.value && (
+                    <div className={styles.checkmark}>✓</div>
+                  )}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
+      )}
 
-        {/* Recent Orders Section */}
-        {recentOrders.length > 0 && (
-          <div className={styles.recentOrdersSection}>
-            <div className={styles.sectionHeader}>
-              <h2 className={styles.sectionTitle}>Recent Orders</h2>
-              <Link href="/dashboard/orders" className={styles.viewAllLink}>
-                View All
-              </Link>
-            </div>
-            <div className={styles.ordersList}>
-              {recentOrders.slice(0, 5).map((order: any) => {
-                const firstImage = getFirstProductImage(order)
-                return (
-                  <Link key={order.id} href={`/dashboard/orders/${order.id}`} className={styles.orderItem}>
-                    <div className={styles.orderImageContainer}>
-                      {firstImage ? (
-                        <img 
-                          src={firstImage} 
-                          alt="Order item"
-                          className={styles.orderImage}
-                        />
-                      ) : (
-                        <div className={styles.orderImagePlaceholder}>
-                          <Package size={20} />
-                        </div>
-                      )}
-                    </div>
-                    <div className={styles.orderInfo}>
-                      <div className={styles.orderHeader}>
-                        <span className={styles.orderId}>#{order.id.slice(-8)}</span>
-                        <span className={`${styles.orderStatus} ${styles[getStatusClass(order.status)]}`}>
-                          {order.status}
-                        </span>
-                      </div>
-                      <div className={styles.orderDetails}>
-                        <span className={styles.orderDate}>{formatDate(order.createdAt)}</span>
-                        <span className={styles.orderTotal}>₹{order.total}</span>
-                      </div>
-                      <div className={styles.orderItems}>
-                        {order.orderItems?.length || 0} items
-                      </div>
-                    </div>
-                    <ChevronRight size={16} className={styles.orderChevron} />
-                  </Link>
-                )
-              })}
-            </div>
-          </div>
-        )}
-
-        <MobileBottomNavbar />
-      </div>
+      {/* Mobile Bottom Navigation */}
+      <MobileBottomNavbar />
     </div>
   )
-}
+} 

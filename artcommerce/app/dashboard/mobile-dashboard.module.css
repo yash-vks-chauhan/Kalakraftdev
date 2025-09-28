@@ -652,98 +652,54 @@
    ADMIN ACCORDION GROUP - Cohesive Design
    ============================================ */
 
-/* ============================================
-   UNIFIED ADMIN GROUP - Like Personal Section
-   ============================================ */
-
-.adminUnifiedGroup.hasExpanded {
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
-  transform: translateY(-1px);
-  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-/* Accordion Item Styling - Same as regular menu items when closed */
-.accordionItem {
-  /* Cursor pointer to indicate clickable */
-  cursor: pointer;
-}
-
-.accordionItem:active {
-  background-color: rgba(0, 0, 0, 0.04);
-  transform: scale(0.97) translateZ(0);
-}
-
-/* Parallax Effects for Expanded Icons */
-.expandedIcon {
-  transform: scale(1.15) !important;
-  background: rgba(0, 0, 0, 0.12) !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
-  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-}
-
-/* Parallax Effects for Expanded Titles */
-.expandedTitle {
-  font-size: 1.1875rem !important;
-  font-weight: 700 !important;
-  transform: scale(1.02) !important;
-  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-}
-
-/* Accordion Content - Hidden by default */
-.accordionContent {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.4s cubic-bezier(0.4, 0.0, 0.2, 1),
-              opacity 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
-  opacity: 0;
+.adminAccordionGroup {
+  margin: 0 20px 24px 20px;
   background: #FFFFFF;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: box-shadow 0.2s ease;
 }
 
-.accordionContent.expanded {
-  max-height: 300px;
-  opacity: 1;
+.adminAccordionGroup:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-/* Submenu Items - Indented */
-.subMenuItem {
-  padding-left: 60px !important; /* Extra indentation for sub-items */
-  background: rgba(0, 0, 0, 0.02);
-  border-top: 1px solid rgba(0, 0, 0, 0.04);
+.accordionGroupItem {
+  margin: 0 !important; /* Remove individual margins */
 }
 
-.subMenuItem:first-child {
-  border-top: 1px solid rgba(0, 0, 0, 0.08); /* Stronger border for first sub-item */
+.accordionGroupItem .iosAccordionHeader {
+  border: none !important; /* Remove individual borders */
+  border-radius: 0 !important; /* Remove individual rounded corners */
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08); /* Subtle separator */
 }
 
-.subMenuItem .iosMenuIcon {
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
+/* Last accordion in group - no bottom border */
+.lastAccordion .iosAccordionHeader:not(.expanded) {
+  border-bottom: none !important;
 }
 
-.subMenuItem .iosMenuTitle {
-  font-size: 0.9375rem;
+/* When any accordion is expanded, it needs proper borders */
+.accordionGroupItem .iosAccordionHeader.expanded {
+  border-bottom: none !important;
 }
 
-.subMenuItem .iosMenuSubtitle {
-  font-size: 0.8125rem;
+.accordionGroupItem .iosAccordionContent {
+  border: none !important; /* Remove individual borders */
+  border-radius: 0 !important; /* Remove individual rounded corners */
 }
 
-/* Enhanced shadow when any accordion is expanded */
-.adminAccordionGroup:has(.iosAccordionHeader.expanded),
-.adminAccordionGroup.hasExpanded {
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
-  transform: translateY(-1px);
-  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+/* Add separator after expanded content */
+.accordionGroupItem .iosAccordionContent.expanded {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 }
 
-/* Parallax effect for non-expanded accordion headers when sibling is expanded */
-.adminAccordionGroup.hasExpanded .iosAccordionHeader:not(.expanded) {
-  transform: scale(0.98) translateY(1px);
-  opacity: 0.85;
+/* Last accordion expanded content doesn't need bottom border */
+.lastAccordion .iosAccordionContent.expanded {
+  border-bottom: none !important;
 }
-
-
 
 /* Mobile iOS section adjustments */
 @media (max-width: 768px) {
@@ -757,20 +713,6 @@
   
   .accordionGroupItem .iosAccordionHeader {
     padding: 12px 16px;
-  }
-  
-  /* Mobile adjustments for parallax effects */
-  .iosAccordionHeader.expanded .iosAccordionIcon {
-    transform: scale(1.08); /* Slightly less scaling on mobile */
-  }
-  
-  .iosAccordionHeader.expanded .iosAccordionTitle {
-    font-size: 1.125rem; /* Less dramatic size increase on mobile */
-    transform: scale(1.01);
-  }
-  
-  .adminAccordionGroup.hasExpanded .iosAccordionHeader:not(.expanded) {
-    transform: scale(0.99) translateY(0.5px); /* Subtle effect on mobile */
   }
   
   .iosOrdersList {
@@ -956,15 +898,8 @@
 
 .iosChevron {
   color: #000000;
-  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   flex-shrink: 0;
-  transform-origin: center;
-}
-
-/* Enhanced chevron rotation for accordion headers */
-.iosAccordionHeader .iosChevron.chevronRotated {
-  transform: rotate(90deg) scale(1.1);
-  color: #007AFF;
 }
 
 .chevronRotated {
@@ -1045,15 +980,6 @@
   align-items: center;
   justify-content: center;
   color: #000000;
-  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-  transform-origin: center;
-}
-
-/* Expanded accordion icon scaling */
-.iosAccordionHeader.expanded .iosAccordionIcon {
-  transform: scale(1.1);
-  background: rgba(0, 0, 0, 0.12);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .iosAccordionTitle {
@@ -1061,16 +987,6 @@
   font-weight: 600;
   color: #000000;
   margin: 0;
-  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-  transform-origin: left center;
-}
-
-/* Expanded accordion title scaling */
-.iosAccordionHeader.expanded .iosAccordionTitle {
-  font-size: 1.1875rem;
-  font-weight: 700;
-  transform: scale(1.02);
-  color: #000000;
 }
 
 .iosAccordionContent {
@@ -1101,33 +1017,6 @@
   border-bottom: 1px solid rgba(0, 0, 0, 0.18);
   border-top: none !important;
   border-radius: 0 0 12px 12px !important;
-  transform: translateY(0);
-}
-
-/* Stagger animation for menu items inside expanded accordion */
-.iosAccordionContent.expanded .iosMenuItem {
-  animation: slideInStagger 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-  opacity: 0;
-  transform: translateY(10px);
-}
-
-.iosAccordionContent.expanded .iosMenuItem:nth-child(1) {
-  animation-delay: 0.1s;
-}
-
-.iosAccordionContent.expanded .iosMenuItem:nth-child(2) {
-  animation-delay: 0.15s;
-}
-
-.iosAccordionContent.expanded .iosMenuItem:nth-child(3) {
-  animation-delay: 0.2s;
-}
-
-@keyframes slideInStagger {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 /* Make menu group seamless with accordion header */
@@ -1167,104 +1056,66 @@
   background: rgba(0, 0, 0, 0.08);
 }
 
-.overviewMetricsScroll {
+.overviewMetricsList {
   display: flex;
-  gap: 12px;
+  flex-direction: column;
+  gap: 0;
   padding: 12px 20px 12px 20px;
-  overflow-x: auto;
-  scroll-behavior: smooth;
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* Internet Explorer 10+ */
   background: #FFFFFF;
-}
-
-.overviewMetricsScroll::-webkit-scrollbar {
-  display: none; /* WebKit */
 }
 
 .overviewMetricCard {
   display: flex;
-  flex-direction: column;
-  min-width: 160px;
-  max-width: 160px;
-  background: #FFFFFF;
-  border-radius: 16px;
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  flex-shrink: 0;
-}
-
-.overviewMetricCard:last-child {
-  margin-right: 20px;
-}
-
-.overviewMetricCard:active {
-  transform: scale(0.96);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-}
-
-.metricCardHeader {
-  width: 100%;
-  height: 100px;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  display: flex;
   align-items: center;
-  justify-content: center;
-  color: #007AFF;
-  overflow: hidden;
-  transition: transform 0.2s ease;
+  gap: 16px;
+  padding: 16px 0;
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-}
-
-.metricCardIcon {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  background: rgba(0, 122, 255, 0.1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #007AFF;
   transition: all 0.2s ease;
 }
 
-.overviewMetricCard:hover .metricCardHeader {
-  transform: scale(1.02);
+.overviewMetricCard:last-of-type {
+  border-bottom: none;
 }
 
-.overviewMetricCard:hover .metricCardIcon {
-  transform: scale(1.1);
-  background: rgba(0, 122, 255, 0.15);
+.overviewMetricCard:hover {
+  background: rgba(0, 0, 0, 0.02);
+  margin: 0 -20px;
+  padding: 16px 20px;
+  border-radius: 8px;
+}
+
+.metricCardIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #000000;
+  flex-shrink: 0;
 }
 
 .metricCardContent {
-  padding: 14px;
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  flex: 1;
+  gap: 2px;
 }
 
 .metricCardTitle {
   font-size: 0.875rem;
   font-weight: 600;
   color: #000000;
-  margin: 0 0 8px 0;
+  margin: 0;
   line-height: 1.3;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 
 .metricCardValue {
-  font-size: 1.25rem;
+  font-size: 1.125rem;
   font-weight: 700;
   color: #000000;
-  margin: 0 0 4px 0;
+  margin: 0;
   line-height: 1.2;
   font-family: -apple-system, BlinkMacSystemFont, 'SF Mono', monospace;
 }
@@ -1274,62 +1125,51 @@
   color: #8E8E93;
   margin: 0;
   line-height: 1.2;
-  text-transform: lowercase;
 }
 
+.overviewQuickStats {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 0 4px 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  margin-top: 8px;
+}
 
+.quickStatItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.quickStatLabel {
+  font-size: 0.75rem;
+  color: #8E8E93;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.quickStatValue {
+  font-size: 0.75rem;
+  color: #000000;
+  font-weight: 600;
+}
 
 /* Mobile adjustments for overview metrics */
 @media (max-width: 768px) {
-  .overviewMetricsScroll {
+  .overviewMetricsList {
     padding: 12px 16px 12px 16px;
   }
   
   .overviewMetricCard {
-    min-width: 140px;
-    max-width: 140px;
+    gap: 12px;
+    padding: 12px 0;
   }
   
-  .overviewMetricCard:last-child {
-    margin-right: 16px;
-  }
-  
-  .metricCardHeader {
-    height: 80px;
-  }
-  
-  .metricCardIcon {
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
-  }
-  
-  .metricCardContent {
-    padding: 12px;
-  }
-  
-  .metricCardTitle {
-    font-size: 0.8125rem;
-  }
-  
-  .metricCardValue {
-    font-size: 1.125rem;
-  }
-  
-  .metricCardSubtitle {
-    font-size: 0.7rem;
-  }
-}
-
-/* Additional improvements for very small screens */
-@media (max-width: 375px) {  
-  .overviewMetricCard {
-    min-width: 120px;
-    max-width: 120px;
-  }
-  
-  .metricCardHeader {
-    height: 70px;
+  .overviewMetricCard:hover {
+    margin: 0 -16px;
+    padding: 12px 16px;
   }
   
   .metricCardIcon {
@@ -1338,13 +1178,8 @@
     border-radius: 8px;
   }
   
-  .metricCardContent {
-    padding: 10px;
-  }
-  
   .metricCardTitle {
-    font-size: 0.75rem;
-    margin: 0 0 6px 0;
+    font-size: 0.8125rem;
   }
   
   .metricCardValue {
@@ -1352,7 +1187,7 @@
   }
   
   .metricCardSubtitle {
-    font-size: 0.65rem;
+    font-size: 0.7rem;
   }
 }
 
@@ -1559,16 +1394,6 @@
   gap: 6px;
   padding: 8px 0 4px 0;
   margin: 0 20px;
-}
-
-/* Analytics Scroll Indicator */
-.analyticsScrollIndicator {
-  display: flex;
-  justify-content: center;
-  gap: 6px;
-  padding: 8px 0 4px 0;
-  margin: 0 20px;
-  background: #FFFFFF;
 }
 
 .scrollIndicatorDot {
