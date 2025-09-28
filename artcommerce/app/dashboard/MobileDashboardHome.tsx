@@ -237,28 +237,35 @@ export default function MobileDashboardHome() {
         {isAdmin && (
           <div className={styles.analyticsSection}>
             <h2 className={styles.sectionTitle}>Analytics Overview</h2>
-            <div className={styles.metricsGrid}>
-              <div className={styles.metricCard}>
-                <div className={styles.metricIcon}>📊</div>
-                <div className={styles.metricValue}>{metrics.totalRevenue}</div>
-                <div className={styles.metricLabel}>Total Revenue</div>
+            {metrics ? (
+              <div className={styles.metricsGrid}>
+                <div className={styles.metricCard}>
+                  <div className={styles.metricIcon}>📊</div>
+                  <div className={styles.metricValue}>{metrics.totalRevenue || '₹0'}</div>
+                  <div className={styles.metricLabel}>Total Revenue</div>
+                </div>
+                <div className={styles.metricCard}>
+                  <div className={styles.metricIcon}>🛍️</div>
+                  <div className={styles.metricValue}>{metrics.totalOrders || '0'}</div>
+                  <div className={styles.metricLabel}>Total Orders</div>
+                </div>
+                <div className={styles.metricCard}>
+                  <div className={styles.metricIcon}>👥</div>
+                  <div className={styles.metricValue}>{metrics.totalUsers || '0'}</div>
+                  <div className={styles.metricLabel}>Total Users</div>
+                </div>
+                <div className={styles.metricCard}>
+                  <div className={styles.metricIcon}>📦</div>
+                  <div className={styles.metricValue}>{metrics.totalProducts || '0'}</div>
+                  <div className={styles.metricLabel}>Total Products</div>
+                </div>
               </div>
-              <div className={styles.metricCard}>
-                <div className={styles.metricIcon}>🛍️</div>
-                <div className={styles.metricValue}>{metrics.totalOrders}</div>
-                <div className={styles.metricLabel}>Total Orders</div>
+            ) : (
+              <div className={styles.loadingMetrics}>
+                <InlineLoader />
+                <span>Loading analytics...</span>
               </div>
-              <div className={styles.metricCard}>
-                <div className={styles.metricIcon}>👥</div>
-                <div className={styles.metricValue}>{metrics.totalUsers}</div>
-                <div className={styles.metricLabel}>Total Users</div>
-              </div>
-              <div className={styles.metricCard}>
-                <div className={styles.metricIcon}>📦</div>
-                <div className={styles.metricValue}>{metrics.totalProducts}</div>
-                <div className={styles.metricLabel}>Total Products</div>
-              </div>
-            </div>
+            )}
           </div>
         )}
 
