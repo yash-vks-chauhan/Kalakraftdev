@@ -378,14 +378,28 @@ export default function MobileDashboardHome() {
       {/* Recent Activity Section */}
       <div className={styles.activitySection}>
         <div 
-          className={styles.activityHeader}
+          className={styles.activityHeaderEnhanced}
           onClick={() => setShowRecent(prev => !prev)}
         >
-          <h2 className={styles.sectionTitle}>Recent Activity</h2>
-          <ChevronRight 
-            size={18} 
-            className={`${styles.chevronIcon} ${showRecent ? styles.chevronRotated : ''}`}
-          />
+          <div className={styles.activityHeaderLeft}>
+            <div className={styles.activityIcon}>
+              <Clock size={16} />
+            </div>
+            <h2 className={styles.sectionTitle}>Recent Activity</h2>
+          </div>
+          <div className={styles.activityHeaderRight}>
+            <Link 
+              href="/dashboard/orders" 
+              className={styles.viewAllLink}
+              onClick={(e) => e.stopPropagation()}
+            >
+              View All
+            </Link>
+            <ChevronRight 
+              size={16} 
+              className={`${styles.chevronIcon} ${showRecent ? styles.chevronRotated : ''}`}
+            />
+          </div>
         </div>
         <div className={`${styles.expandableContent} ${showRecent ? styles.expanded : ''}`}>
         {loadingOrders ? (
