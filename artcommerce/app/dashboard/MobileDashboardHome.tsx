@@ -9,9 +9,7 @@ import { useState, useEffect, useRef } from 'react'
 import InlineLoader from '../components/InlineLoader'
 import MobileBottomNavbar from '../components/MobileBottomNavbar'
 
-//                <div className={styles.adminAccordionContent}>
-                  <span className={styles.adminAccordionTitle}>System Management</span>
-                </div>bile Dashboard Skeleton Components
+// Mobile Dashboard Skeleton Components
 const MetricsSkeleton = () => (
   <div className={styles.metricsContainer}>
     <div className={styles.metricsGrid}>

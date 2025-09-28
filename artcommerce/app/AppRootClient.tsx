@@ -30,6 +30,7 @@ export default function AppRootClient({ children }: { children: React.ReactNode 
   const bypassMobileLayoutRoutes = [
     '/dashboard/admin/users/mobile',
     '/dashboard/admin/products/mobile',
+    '/dashboard/profile',
     '/dashboard'
   ];
   const shouldBypassMobileLayout = bypassMobileLayoutRoutes.some(route => pathname === route || (route !== '/dashboard' && pathname.startsWith(route)));

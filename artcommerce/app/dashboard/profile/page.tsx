@@ -17,7 +17,9 @@ import { useState, FormEvent, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '../../contexts/AuthContext'
+import { useIsMobile } from '../../../lib/utils'
 import styles from './profile.module.css'
+import MobileProfileSettings from './MobileProfileSettings'
 
 // Profile Skeleton Component
 const ProfileSkeleton = () => (
@@ -96,6 +98,23 @@ import Image from 'next/image'
 export default function ProfilePage() {
   const router = useRouter()
   const { user, token, logout, fetchProfile, loading: authLoading } = useAuth()
+  
+  const isMobile = useIsMobile()
+  const [forceDesktopView, setForceDesktopView] = useState(false)
+
+  const mobileView = isMobile && !forceDesktopView
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const pref = localStorage.getItem('viewPreference')
+      if (pref === 'desktop') setForceDesktopView(true)
+    }
+  }, [])
+
+  // Return mobile version if in mobile view
+  if (mobileView) {
+    return <MobileProfileSettings />
+  }
 
   // Core form state
   const [fullName, setFullName] = useState<string>('')

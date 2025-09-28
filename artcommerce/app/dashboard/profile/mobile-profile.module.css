@@ -1,0 +1,1039 @@
+/* ============================================
+   MOBILE PROFILE SETTINGS - iOS Style
+   Consistent with mobile dashboard design
+   ============================================ */
+
+.mobileProfileContainer {
+  min-height: 100vh;
+  background: #E5E5EA;
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+/* ============================================
+   PAGE HEADER SECTION - Same as Mobile Dashboard
+   ============================================ */
+
+.pageHeader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(8px) saturate(180%);
+  -webkit-backdrop-filter: blur(8px) saturate(180%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  padding: 0.75rem 2rem;
+  height: 85px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  z-index: 1000;
+  transition: all 0.3s ease;
+}
+
+@media (max-width: 768px) {
+  .pageHeader {
+    margin: 0.25rem;
+    padding: 0.5rem 1rem;
+    height: 70px;
+    border-radius: 1rem;
+    width: calc(100% - 0.5rem);
+    max-width: calc(100% - 0.5rem);
+    left: 0;
+    right: auto;
+  }
+}
+
+.headerTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.backButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: none;
+  background: rgba(0, 0, 0, 0.05);
+  color: #333;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.backButton:hover {
+  background: rgba(0, 0, 0, 0.1);
+  transform: translateX(-1px);
+}
+
+@media (max-width: 768px) {
+  .backButton {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+  }
+}
+
+.pageTitle {
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+  flex: 1;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .pageTitle {
+    font-size: 16px;
+    font-weight: 500;
+  }
+}
+
+.sectionTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #000000;
+  margin: 0;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .sectionTitle {
+    font-size: 1rem;
+  }
+}
+
+.contentWrapper {
+  padding-top: 85px;
+  flex: 1;
+  padding-bottom: 80px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .contentWrapper {
+    padding-top: 75px;
+    padding-bottom: 70px;
+  }
+}
+
+/* ============================================
+   MESSAGE COMPONENTS
+   ============================================ */
+
+.message {
+  padding: 1rem 1.25rem;
+  border-radius: 12px;
+  margin: 0 20px 16px 20px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  animation: slideIn 0.3s ease-out;
+}
+
+.success {
+  background: rgba(52, 199, 89, 0.1);
+  color: #34C759;
+  border: 1px solid rgba(52, 199, 89, 0.2);
+}
+
+.error {
+  background: rgba(255, 59, 48, 0.1);
+  color: #FF3B30;
+  border: 1px solid rgba(255, 59, 48, 0.2);
+}
+
+@media (max-width: 768px) {
+  .message {
+    margin: 0 12px 12px 12px;
+    padding: 0.875rem 1rem;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* ============================================
+   IOS SECTIONS & MENU GROUPS - From Mobile Dashboard
+   ============================================ */
+
+.iosSection {
+  margin: 0 20px 24px 20px;
+  position: relative;
+}
+
+@media (max-width: 768px) {
+  .iosSection {
+    margin: 0 12px 16px 12px;
+  }
+}
+
+.iosSectionHeader {
+  margin-bottom: 8px;
+}
+
+.iosSectionTitle {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #8E8E93;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0;
+  padding: 0 4px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.iosMenuGroup {
+  background: #FFFFFF;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  margin: 0;
+}
+
+.iosMenuItem {
+  display: flex;
+  align-items: center;
+  padding: 16px 20px;
+  background: #FFFFFF;
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.15);
+  transition: background-color 0.12s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              transform 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  min-height: 60px;
+  cursor: pointer;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: background-color, transform;
+}
+
+.iosMenuItem:last-child {
+  border-bottom: none;
+}
+
+.iosMenuItem:active {
+  background-color: rgba(0, 0, 0, 0.04);
+  transform: scale(0.97) translateZ(0);
+}
+
+@media (max-width: 768px) {
+  .iosMenuItem {
+    padding: 12px 16px;
+    min-height: 48px;
+  }
+}
+
+.iosMenuIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16px;
+  color: #000000;
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .iosMenuIcon {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    margin-right: 12px;
+  }
+}
+
+.iosMenuContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.iosMenuTitle {
+  font-size: 1.0625rem;
+  font-weight: 500;
+  color: #000000;
+  line-height: 1.3;
+}
+
+.iosMenuSubtitle {
+  font-size: 0.9375rem;
+  color: #8E8E93;
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+@media (max-width: 768px) {
+  .iosMenuTitle {
+    font-size: 0.9375rem;
+  }
+  
+  .iosMenuSubtitle {
+    font-size: 0.8125rem;
+  }
+}
+
+.iosChevron {
+  color: #000000;
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  flex-shrink: 0;
+}
+
+.chevronRotated {
+  transform: rotate(90deg);
+}
+
+/* ============================================
+   AVATAR COMPONENTS
+   ============================================ */
+
+.avatarPreview {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 768px) {
+  .avatarPreview {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+  }
+}
+
+.avatarSelectionContent {
+  padding: 20px;
+  background: #FFFFFF;
+}
+
+.avatarGrid {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.avatarOption {
+  width: 80px;
+  height: 80px;
+  padding: 8px;
+  border: 2px solid #e2e8f0;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatarOption:hover {
+  border-color: #000000;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.avatarOption.selected {
+  border-color: #000000;
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.avatarOption img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+@media (max-width: 768px) {
+  .avatarGrid {
+    gap: 12px;
+  }
+  
+  .avatarOption {
+    width: 60px;
+    height: 60px;
+    padding: 6px;
+    border-radius: 12px;
+  }
+}
+
+/* ============================================
+   INLINE INPUT COMPONENT
+   ============================================ */
+
+.inlineInput {
+  background: transparent;
+  border: none;
+  font-size: 0.9375rem;
+  color: #8E8E93;
+  text-align: right;
+  width: 100%;
+  outline: none;
+  font-family: inherit;
+  padding: 4px 0;
+}
+
+.inlineInput:focus {
+  color: #000000;
+}
+
+@media (max-width: 768px) {
+  .inlineInput {
+    font-size: 0.8125rem;
+  }
+}
+
+/* ============================================
+   EXPANDABLE CONTENT - From Mobile Dashboard
+   ============================================ */
+
+.expandableContent {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: max-height;
+}
+
+.expandableContent.expanded {
+  max-height: 500px;
+}
+
+/* ============================================
+   ADMIN ACCORDION STYLES - From Mobile Dashboard
+   ============================================ */
+
+.adminAccordionHeader {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  background: #FFFFFF;
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  transition: background-color 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  min-height: 44px;
+}
+
+.adminAccordionHeader:active {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.adminAccordionHeader.expanded {
+  background: #F5F5F7 !important;
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.08);
+  box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.05);
+}
+
+.adminAccordionIcon {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  color: #000000;
+  flex-shrink: 0;
+}
+
+.adminAccordionContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.adminAccordionTitle {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: #000000;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.adminAccordionSubtitle {
+  font-size: 0.8125rem;
+  color: #8E8E93;
+  font-weight: 400;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.adminExpandableContent {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+  background: #F8F9FA;
+}
+
+.adminExpandableContent.expanded {
+  max-height: 400px;
+}
+
+@media (max-width: 768px) {
+  .adminAccordionHeader {
+    padding: 10px 16px;
+    min-height: 40px;
+  }
+  
+  .adminAccordionIcon {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    margin-right: 10px;
+  }
+  
+  .adminAccordionTitle {
+    font-size: 0.875rem;
+  }
+  
+  .adminAccordionSubtitle {
+    font-size: 0.75rem;
+  }
+}
+
+/* ============================================
+   FORM COMPONENTS
+   ============================================ */
+
+.changeEmailForm,
+.changePasswordForm,
+.addressForm {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.formInput {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  background: #FFFFFF;
+  font-size: 0.9375rem;
+  color: #000000;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.formInput:focus {
+  outline: none;
+  border-color: #000000;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+}
+
+.formInput::placeholder {
+  color: #8E8E93;
+}
+
+@media (max-width: 768px) {
+  .changeEmailForm,
+  .changePasswordForm,
+  .addressForm {
+    padding: 16px;
+    gap: 12px;
+  }
+  
+  .formInput {
+    padding: 10px 12px;
+    font-size: 0.875rem;
+  }
+}
+
+/* ============================================
+   BUTTON COMPONENTS
+   ============================================ */
+
+.saveButton,
+.otpButton,
+.confirmButton {
+  padding: 12px 24px;
+  border: 1px solid #000000;
+  border-radius: 8px;
+  background: transparent;
+  color: #000000;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  font-family: inherit;
+}
+
+.saveButton:hover,
+.otpButton:hover,
+.confirmButton:hover {
+  background: #000000;
+  color: #FFFFFF;
+}
+
+.saveButton:disabled,
+.otpButton:disabled,
+.confirmButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: #E5E5EA;
+  border-color: #E5E5EA;
+  color: #8E8E93;
+}
+
+@media (max-width: 768px) {
+  .saveButton,
+  .otpButton,
+  .confirmButton {
+    padding: 10px 20px;
+    font-size: 0.8125rem;
+  }
+}
+
+.timerText {
+  font-size: 0.75rem;
+  color: #8E8E93;
+  text-align: center;
+  margin-top: 8px;
+}
+
+/* ============================================
+   ACTIVITY SECTION - From Mobile Dashboard  
+   ============================================ */
+
+.activityHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: #FFFFFF;
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.activityHeader:active {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.activityHeaderRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.viewAllLink {
+  font-size: 0.875rem;
+  color: #007AFF;
+  font-weight: 500;
+  text-decoration: none;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.viewAllLink:hover {
+  background: rgba(0, 122, 255, 0.1);
+}
+
+.chevronIcon {
+  transition: transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  color: #000000;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* ============================================
+   ORDERS LIST - From Mobile Dashboard
+   ============================================ */
+
+.iosOrdersList {
+  display: flex;
+  gap: 12px;
+  padding: 12px 20px 12px 20px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.iosOrdersList::-webkit-scrollbar {
+  display: none;
+}
+
+.iosOrderItem {
+  display: flex;
+  flex-direction: column;
+  min-width: 200px;
+  max-width: 200px;
+  background: #FFFFFF;
+  border-radius: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  flex-shrink: 0;
+}
+
+.iosOrderItem:last-child {
+  margin-right: 20px;
+}
+
+.iosOrderItem:active {
+  transform: scale(0.96);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+.orderIcon {
+  width: 100%;
+  height: 120px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #007AFF;
+  overflow: hidden;
+  transition: transform 0.2s ease;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.orderDetails {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.orderTitle {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #000000;
+  margin: 0;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.orderSubtitle {
+  font-size: 0.75rem;
+  color: #8E8E93;
+  margin: 0;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.orderPrice {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #000000;
+  margin: 0;
+  line-height: 1.2;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Mono', monospace;
+}
+
+.orderMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+  gap: 8px;
+}
+
+.orderStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+
+.orderStatus.statusDelivered,
+.orderStatus.statusCompleted {
+  background: rgba(52, 199, 89, 0.15);
+  color: #34C759;
+}
+
+.orderStatus.statusShipped,
+.orderStatus.statusProcessing {
+  background: rgba(0, 0, 0, 0.1);
+  color: #000000;
+}
+
+.orderStatus.statusPending {
+  background: rgba(255, 149, 0, 0.15);
+  color: #FF9500;
+}
+
+.orderStatus.statusCancelled {
+  background: rgba(255, 59, 48, 0.15);
+  color: #FF3B30;
+}
+
+.statusDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 3px;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .iosOrdersList {
+    padding: 12px 16px 12px 16px;
+  }
+  
+  .iosOrderItem {
+    min-width: 160px;
+    max-width: 160px;
+  }
+  
+  .iosOrderItem:last-child {
+    margin-right: 16px;
+  }
+  
+  .orderIcon {
+    height: 100px;
+  }
+  
+  .orderDetails {
+    padding: 12px;
+  }
+  
+  .orderTitle {
+    font-size: 0.8125rem;
+  }
+  
+  .orderSubtitle {
+    font-size: 0.7rem;
+  }
+  
+  .orderPrice {
+    font-size: 0.8125rem;
+  }
+}
+
+/* ============================================
+   ADDRESSES SECTION
+   ============================================ */
+
+.addressesList {
+  padding: 0;
+}
+
+.addressActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.defaultBadge {
+  background: rgba(0, 0, 0, 0.05);
+  color: #8E8E93;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.deleteAddressButton {
+  background: rgba(255, 59, 48, 0.1);
+  color: #FF3B30;
+  border: 1px solid rgba(255, 59, 48, 0.2);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.deleteAddressButton:hover {
+  background: #FF3B30;
+  color: #FFFFFF;
+}
+
+/* ============================================
+   LOGOUT SECTION
+   ============================================ */
+
+.logoutMenuItem {
+  display: flex;
+  align-items: center;
+  padding: 16px 20px;
+  background: #FFFFFF;
+  border: none;
+  width: 100%;
+  text-align: left;
+  transition: background-color 0.12s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  min-height: 60px;
+  cursor: pointer;
+  border-radius: 12px;
+}
+
+.logoutMenuItem:active {
+  background-color: rgba(255, 59, 48, 0.08);
+}
+
+.logoutMenuItem .iosMenuIcon {
+  background: rgba(255, 59, 48, 0.1);
+  color: #FF3B30;
+}
+
+.logoutMenuItem .iosMenuTitle {
+  color: #FF3B30;
+}
+
+.logoutMenuItem .iosMenuSubtitle {
+  color: #FF3B30;
+  opacity: 0.8;
+}
+
+@media (max-width: 768px) {
+  .logoutMenuItem {
+    padding: 12px 16px;
+    min-height: 48px;
+  }
+}
+
+/* ============================================
+   EMPTY STATES & LOADING
+   ============================================ */
+
+.emptyStateSmall {
+  padding: 24px;
+  text-align: center;
+  background: #FFFFFF;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+}
+
+.emptyText {
+  font-size: 0.9375rem;
+  color: #8E8E93;
+  margin: 0;
+}
+
+.loadingContainer {
+  padding: 24px;
+  display: flex;
+  justify-content: center;
+  background: #FFFFFF;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+}
+
+@media (max-width: 768px) {
+  .emptyStateSmall,
+  .loadingContainer {
+    padding: 20px;
+  }
+  
+  .emptyText {
+    font-size: 0.875rem;
+  }
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+@media (max-width: 375px) {
+  .iosSection {
+    margin: 0 8px 12px 8px;
+  }
+  
+  .message {
+    margin: 0 8px 12px 8px;
+  }
+  
+  .iosOrderItem {
+    min-width: 140px;
+    max-width: 140px;
+  }
+  
+  .orderIcon {
+    height: 80px;
+  }
+  
+  .orderDetails {
+    padding: 10px;
+  }
+  
+  .orderTitle {
+    font-size: 0.75rem;
+  }
+  
+  .orderSubtitle,
+  .orderPrice {
+    font-size: 0.7rem;
+  }
+  
+  .orderStatus {
+    font-size: 0.65rem;
+    padding: 3px 6px;
+  }
+}
+
+/* ============================================
+   ACCESSIBILITY & ANIMATIONS
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .expandableContent,
+  .adminExpandableContent {
+    transition: max-height 0.2s ease;
+  }
+  
+  .iosChevron,
+  .chevronIcon {
+    transition: transform 0.1s ease;
+  }
+  
+  .iosMenuItem,
+  .adminAccordionHeader,
+  .logoutMenuItem {
+    transition: background-color 0.1s ease;
+  }
+}
