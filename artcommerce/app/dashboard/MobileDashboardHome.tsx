@@ -73,6 +73,9 @@ export default function MobileDashboardHome() {
   const [showProductsMenu, setShowProductsMenu] = useState(false)
   const [showUsersMenu, setShowUsersMenu] = useState(false)
   const [showSystemMenu, setShowSystemMenu] = useState(false)
+  
+  // Check if any admin accordion is expanded for parallax effects
+  const isAnyAdminAccordionExpanded = showProductsMenu || showUsersMenu || showSystemMenu
   const [showOverview, setShowOverview] = useState(true) // Default to open
   const [isScrolled, setIsScrolled] = useState(false)
   const [showPeriodModal, setShowPeriodModal] = useState(false)
@@ -546,7 +549,7 @@ export default function MobileDashboardHome() {
           </div>
 
           {/* Admin Accordion Group */}
-          <div className={styles.adminAccordionGroup}>
+          <div className={`${styles.adminAccordionGroup} ${isAnyAdminAccordionExpanded ? styles.hasExpanded : ''}`}>
             
             {/* Product Management Accordion */}
             <div className={`${styles.iosSection} ${styles.accordionGroupItem} ${styles.firstAccordion}`}>
