@@ -101,15 +101,22 @@ export default function ProfilePage() {
   
   const isMobile = useIsMobile()
   const [forceDesktopView, setForceDesktopView] = useState(false)
+  const [isMounted, setIsMounted] = useState(false)
 
-  const mobileView = isMobile && !forceDesktopView
+  const mobileView = isMounted && isMobile && !forceDesktopView
 
   useEffect(() => {
+    setIsMounted(true)
     if (typeof window !== 'undefined') {
       const pref = localStorage.getItem('viewPreference')
       if (pref === 'desktop') setForceDesktopView(true)
     }
   }, [])
+
+  // Prevent hydration mismatch
+  if (!isMounted) {
+    return null
+  }
 
   // Return mobile version if in mobile view
   if (mobileView) {

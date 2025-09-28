@@ -85,6 +85,7 @@ export default function MobileProfileSettings() {
 
   // Loading state
   const [isLoading, setIsLoading] = useState<boolean>(true)
+  const [isMounted, setIsMounted] = useState<boolean>(false)
 
   // Load addresses
   const loadAddresses = useCallback(async () => {
@@ -103,8 +104,14 @@ export default function MobileProfileSettings() {
     }
   }, [token])
 
+  // Handle mounting
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
   // Initialize data
   useEffect(() => {
+    if (!isMounted) return
     if (authLoading) return
     if (!token) {
       router.replace('/auth/login')
@@ -123,18 +130,18 @@ export default function MobileProfileSettings() {
     }
 
     initializeData()
-  }, [authLoading, token, loadAddresses])
+  }, [isMounted, authLoading, token, loadAddresses, router])
 
   // Sync form data with user data
   useEffect(() => {
-    if (!user || isLoading) return
+    if (!isMounted || !user || isLoading) return
     setFullName(user.fullName)
     setAvatarUrl(user.avatarUrl || '')
-  }, [user, isLoading])
+  }, [isMounted, user, isLoading])
 
   // Timer effects
   useEffect(() => {
-    if (!emailOtpExpiresAt) return
+    if (!isMounted || !emailOtpExpiresAt) return
     const interval = setInterval(() => {
       const now = Date.now()
       const remaining = Math.max(0, Math.floor((emailOtpExpiresAt - now) / 1000))
@@ -146,10 +153,10 @@ export default function MobileProfileSettings() {
       }
     }, 1000)
     return () => clearInterval(interval)
-  }, [emailOtpExpiresAt])
+  }, [isMounted, emailOtpExpiresAt])
 
   useEffect(() => {
-    if (!passwordOtpExpiresAt) return
+    if (!isMounted || !passwordOtpExpiresAt) return
     const interval = setInterval(() => {
       const now = Date.now()
       const remaining = Math.max(0, Math.floor((passwordOtpExpiresAt - now) / 1000))
@@ -162,7 +169,7 @@ export default function MobileProfileSettings() {
       }
     }, 1000)
     return () => clearInterval(interval)
-  }, [passwordOtpExpiresAt])
+  }, [isMounted, passwordOtpExpiresAt])
 
   // Helper functions
   const formatTime = (seconds: number): string => {
@@ -335,6 +342,11 @@ export default function MobileProfileSettings() {
     logout()
   }
 
+  // Prevent hydration mismatch by not rendering until mounted
+  if (!isMounted) {
+    return null
+  }
+
   if (isLoading) {
     return (
       <div className={styles.mobileProfileContainer}>
@@ -355,7 +367,9 @@ export default function MobileProfileSettings() {
     )
   }
 
-  if (!user) return null
+  if (!user) {
+    return null
+  }
 
   return (
     <div className={styles.mobileProfileContainer}>
