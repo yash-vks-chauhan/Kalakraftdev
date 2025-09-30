@@ -61,6 +61,7 @@ export default function MobileProfileSettings() {
   const [error, setError] = useState<string | null>(null)
   const [showEmailChange, setShowEmailChange] = useState(false)
   const [showPasswordChange, setShowPasswordChange] = useState(false)
+  const [isPasswordModalClosing, setIsPasswordModalClosing] = useState(false)
   const [showOrders, setShowOrders] = useState(false)
   const [showAddresses, setShowAddresses] = useState(false)
   const [showAddAddress, setShowAddAddress] = useState(false)
@@ -217,6 +218,20 @@ export default function MobileProfileSettings() {
       }
     }
     return `Order #${order.id.toString().substring(0, 8)}`
+  }
+
+  // Handle modal close with animation
+  const handlePasswordModalClose = () => {
+    setIsPasswordModalClosing(true)
+    setTimeout(() => {
+      setShowPasswordChange(false)
+      setIsPasswordModalClosing(false)
+      // Reset form state when modal closes
+      setStep('send')
+      setOtp('')
+      setNewPassword('')
+      setConfirmPassword('')
+    }, 300) // Match the CSS animation duration
   }
 
   const getStatusClass = (status: string) => {
@@ -790,17 +805,17 @@ export default function MobileProfileSettings() {
           {/* Modal Backdrop */}
           <div 
             className={styles.modalBackdrop}
-            onClick={() => setShowPasswordChange(false)}
+            onClick={handlePasswordModalClose}
           />
           
           {/* Modal Content */}
-          <div className={styles.passwordModal}>
+          <div className={`${styles.passwordModal} ${isPasswordModalClosing ? styles.closing : ''}`}>
             <div className={styles.modalHeader}>
               <div className={styles.modalHandle}></div>
               <h3 className={styles.modalTitle}>Change Password</h3>
               <button 
                 className={styles.modalCloseButton}
-                onClick={() => setShowPasswordChange(false)}
+                onClick={handlePasswordModalClose}
               >
                 <X size={20} />
               </button>

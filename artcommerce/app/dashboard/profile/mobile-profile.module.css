@@ -1060,14 +1060,34 @@
   max-height: 85vh;
   animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   box-shadow: 0 -8px 25px rgba(0, 0, 0, 0.15);
+  transform: translateY(0);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+}
+
+.passwordModal.closing {
+  animation: slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateY(100%);
 }
 
 @keyframes slideUp {
   from {
     transform: translateY(100%);
+    opacity: 0;
   }
   to {
     transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(100%);
+    opacity: 0;
   }
 }
 
@@ -1106,7 +1126,7 @@
   transform: translateY(-50%);
   background: none;
   border: none;
-  color: #007AFF;
+  color: #000;
   cursor: pointer;
   padding: 8px;
   display: flex;
@@ -1117,8 +1137,8 @@
 }
 
 .modalCloseButton:hover {
-  color: #0056CC;
-  background: rgba(0, 122, 255, 0.1);
+  color: #333;
+  background: rgba(0, 0, 0, 0.1);
 }
 
 .modalContent {
@@ -1167,9 +1187,9 @@
 
 .formInput:focus {
   outline: none;
-  border-color: #007AFF;
+  border-color: #000;
   background: #FFFFFF;
-  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
 }
 
 .timerText {
@@ -1209,7 +1229,7 @@
   padding: 12px 20px;
   border: none;
   border-radius: 10px;
-  background: #007AFF;
+  background: #000;
   color: white;
   font-size: 1rem;
   font-weight: 500;
@@ -1224,7 +1244,7 @@
 
 .confirmButton:hover,
 .otpButton:hover {
-  background: #0056CC;
+  background: #333;
 }
 
 .confirmButton:disabled,
