@@ -300,6 +300,9 @@ export default function ProductsMobileClient() {
     resetTempFilters 
   } = useProductFilters()
   
+  // Ref for scroll-to-top functionality
+  const pageHeaderRef = useRef<HTMLDivElement>(null)
+  
   // Remaining component state (reduced from 15+ to 7 variables)
   const [allProducts, setAllProducts] = useState([])
   const [products, setProducts] = useState([])
@@ -382,7 +385,7 @@ export default function ProductsMobileClient() {
       setLoadingType('pagination')
       setCurrentPage(prevPage => prevPage - 1)
       // Scroll to top of products list
-      window.scrollTo({ top: 0, behavior: 'smooth' })
+      pageHeaderRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }
   }, [currentPage])
 
@@ -391,7 +394,7 @@ export default function ProductsMobileClient() {
       setLoadingType('pagination')
       setCurrentPage(prevPage => prevPage + 1)
       // Scroll to top of products list
-      window.scrollTo({ top: 0, behavior: 'smooth' })
+      pageHeaderRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }
   }, [currentPage, totalPages])
 
@@ -400,7 +403,7 @@ export default function ProductsMobileClient() {
       setLoadingType('pagination')
       setCurrentPage(page)
       // Scroll to top of products list
-      window.scrollTo({ top: 0, behavior: 'smooth' })
+      pageHeaderRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }
   }, [currentPage, totalPages])
 
@@ -669,7 +672,7 @@ export default function ProductsMobileClient() {
   return (
     <div className={styles.container}>
       {/* Page header with title */}
-      <div className={styles.pageHeader}>
+      <div className={styles.pageHeader} ref={pageHeaderRef}>
         <h1 className={styles.pageTitle}>{getCurrentCategoryName()}</h1>
         {products.length > 0 && (
           <p className={styles.resultCount}>{products.length} products</p>
