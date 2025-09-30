@@ -115,7 +115,6 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
     let lastScrollTime = Date.now()
     let scrollVelocity = 0
     let scrollTimer: NodeJS.Timeout | null = null
-    let ticking = false
     
     const handleScroll = () => {
       const currentScrollY = window.scrollY
@@ -136,23 +135,25 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
         clearTimeout(scrollTimer)
       }
       
+      // Unified footer visibility logic for all pages
       if (currentScrollY < 50) {
         setIsFooterVisible(true)
       } else if (
         scrollDirection > 0 &&
-        scrollVelocity > 0.3 && // Use same threshold for all pages
-        currentScrollY > 100 // Use same scroll distance for all pages
+        scrollVelocity > 0.3 &&
+        currentScrollY > 100
       ) {
         setIsFooterVisible(false)
       } else if (scrollDirection < 0) {
         setIsFooterVisible(true)
       }
       
+      // Show footer after scrolling stops
       scrollTimer = setTimeout(() => {
         if (currentScrollY > 50) {
           setIsFooterVisible(true)
         }
-      }, 150) // Use same timeout for all pages
+      }, 150)
       
       prevScrollY = currentScrollY
       lastScrollTime = currentTime
@@ -167,7 +168,7 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
         clearTimeout(scrollTimer)
       }
     }
-  }, [lastScrollY, isProductsPage])
+  }, [lastScrollY])
 
   useEffect(() => {
     let currentIndex = 0
@@ -835,7 +836,7 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
       </div>
       
       {/* Mobile Footer Navigation */}
-      <nav className={`${styles.mobileFooter} ${(isFooterVisible || isProductsPage) ? styles.footerVisible : styles.footerHidden}`}>
+      <nav className={`${styles.mobileFooter} ${isFooterVisible ? styles.footerVisible : styles.footerHidden}`}>
         <button 
           onClick={handleHomeClick}
           className={`${styles.footerNavItem} ${isActivePath('/') ? styles.active : ''}`}

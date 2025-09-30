@@ -16,92 +16,66 @@
 }
 
 /* ============================================
-   PAGE HEADER SECTION - Same as Mobile Dashboard
+   PAGE HEADER SECTION - Mobile Layout Style
    ============================================ */
 
 .pageHeader {
+  width: 100%;
+  height: 70px;
+  padding: 0 12px 0 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   position: fixed;
   top: 0;
   left: 0;
-  right: 0;
+  z-index: 1000;
   background: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(8px) saturate(180%);
   -webkit-backdrop-filter: blur(8px) saturate(180%);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  padding: 0.75rem 2rem;
-  height: 85px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  z-index: 1000;
   transition: all 0.3s ease;
 }
 
-@media (max-width: 768px) {
-  .pageHeader {
-    margin: 0.25rem;
-    padding: 0.5rem 1rem;
-    height: 70px;
-    border-radius: 1rem;
-    width: calc(100% - 0.5rem);
-    max-width: calc(100% - 0.5rem);
-    left: 0;
-    right: auto;
-  }
-}
-
-.headerTop {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  gap: 12px;
-  margin-bottom: 8px;
+.headerSpacer {
+  flex: 1;
 }
 
 .backButton {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
   border: none;
   background: rgba(0, 0, 0, 0.05);
-  color: #333;
+  color: #000;
   cursor: pointer;
   transition: all 0.2s ease;
   flex-shrink: 0;
+  margin-left: 8px;
 }
 
 .backButton:hover {
   background: rgba(0, 0, 0, 0.1);
-  transform: translateX(-1px);
+  transform: scale(1.05);
 }
 
-@media (max-width: 768px) {
-  .backButton {
-    width: 28px;
-    height: 28px;
-    border-radius: 6px;
-  }
+.backButton:active {
+  transform: scale(0.95);
 }
 
 .pageTitle {
-  font-size: 20px;
+  font-size: 1.125rem;
   font-weight: 600;
-  color: #333;
+  color: #000;
   margin: 0;
-  flex: 1;
   text-align: center;
-}
-
-@media (max-width: 768px) {
-  .pageTitle {
-    font-size: 16px;
-    font-weight: 500;
-  }
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 .sectionTitle {
@@ -119,7 +93,7 @@
 }
 
 .contentWrapper {
-  padding-top: 85px;
+  padding-top: 70px;
   flex: 1;
   padding-bottom: 80px;
   width: 100%;
@@ -128,7 +102,7 @@
 
 @media (max-width: 768px) {
   .contentWrapper {
-    padding-top: 75px;
+    padding-top: 70px;
     padding-bottom: 70px;
   }
 }
@@ -1035,5 +1009,240 @@
   .adminAccordionHeader,
   .logoutMenuItem {
     transition: background-color 0.1s ease;
+  }
+}
+
+/* ============================================
+   PASSWORD CHANGE MODAL
+   ============================================ */
+
+.modalBackdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 2000;
+  animation: backdropFadeIn 0.3s ease-out;
+}
+
+@keyframes backdropFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.passwordModal {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #FFFFFF;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  z-index: 2001;
+  max-height: 85vh;
+  animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 -8px 25px rgba(0, 0, 0, 0.15);
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.modalHeader {
+  position: relative;
+  padding: 16px 20px 12px;
+  border-bottom: 1px solid #E5E5EA;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modalHandle {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 36px;
+  height: 4px;
+  background: #C7C7CC;
+  border-radius: 2px;
+}
+
+.modalTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #000;
+  margin: 0;
+  text-align: center;
+}
+
+.modalCloseButton {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #007AFF;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.modalCloseButton:hover {
+  color: #0056CC;
+  background: rgba(0, 122, 255, 0.1);
+}
+
+.modalContent {
+  padding: 20px;
+  max-height: calc(85vh - 70px);
+  overflow-y: auto;
+}
+
+.changePasswordForm {
+  width: 100%;
+}
+
+.otpStep {
+  text-align: center;
+}
+
+.stepDescription {
+  color: #666;
+  margin-bottom: 24px;
+  line-height: 1.5;
+  font-size: 0.9rem;
+}
+
+.inputGroup {
+  margin-bottom: 20px;
+}
+
+.inputLabel {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #333;
+  font-size: 0.875rem;
+}
+
+.formInput {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #D1D1D6;
+  border-radius: 10px;
+  font-size: 1rem;
+  background: #F2F2F7;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.formInput:focus {
+  outline: none;
+  border-color: #007AFF;
+  background: #FFFFFF;
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+}
+
+.timerText {
+  display: block;
+  margin-top: 8px;
+  font-size: 0.8rem;
+  color: #FF3B30;
+  font-weight: 500;
+}
+
+.modalButtons {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.cancelButton {
+  flex: 1;
+  padding: 12px 20px;
+  border: 1px solid #D1D1D6;
+  border-radius: 10px;
+  background: #F2F2F7;
+  color: #333;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancelButton:hover {
+  background: #E5E5EA;
+}
+
+.confirmButton,
+.otpButton {
+  flex: 1;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 10px;
+  background: #007AFF;
+  color: white;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.otpButton {
+  width: 100%;
+  margin-top: 16px;
+}
+
+.confirmButton:hover,
+.otpButton:hover {
+  background: #0056CC;
+}
+
+.confirmButton:disabled,
+.otpButton:disabled {
+  background: #D1D1D6;
+  color: #8E8E93;
+  cursor: not-allowed;
+}
+
+/* Responsive adjustments for modal */
+@media (max-width: 375px) {
+  .modalContent {
+    padding: 16px;
+  }
+  
+  .modalHeader {
+    padding: 12px 16px 8px;
+  }
+  
+  .formInput {
+    padding: 10px 14px;
+    font-size: 0.9rem;
+  }
+  
+  .modalButtons {
+    flex-direction: column;
+  }
+  
+  .cancelButton,
+  .confirmButton {
+    width: 100%;
   }
 }

@@ -16,7 +16,8 @@ import {
   Settings,
   Shield,
   Activity,
-  LogOut
+  LogOut,
+  X
 } from 'lucide-react'
 import styles from './mobile-profile.module.css'
 import InlineLoader from '../../components/InlineLoader'
@@ -351,13 +352,11 @@ export default function MobileProfileSettings() {
     return (
       <div className={styles.mobileProfileContainer}>
         <div className={styles.pageHeader}>
-          <div className={styles.headerTop}>
-            <button onClick={() => router.push('/dashboard')} className={styles.backButton}>
-              <ChevronLeft size={20} />
-            </button>
-            <h1 className={styles.pageTitle}>Dashboard</h1>
-          </div>
-          <h2 className={styles.sectionTitle}>Profile Settings</h2>
+          <button onClick={() => router.push('/dashboard')} className={styles.backButton}>
+            <ChevronLeft size={24} strokeWidth={2} />
+          </button>
+          <h1 className={styles.pageTitle}>Profile Settings</h1>
+          <div className={styles.headerSpacer}></div>
         </div>
         
         <div className={styles.loadingContainer}>
@@ -375,13 +374,11 @@ export default function MobileProfileSettings() {
     <div className={styles.mobileProfileContainer}>
       {/* Page Header */}
       <div className={styles.pageHeader}>
-        <div className={styles.headerTop}>
-          <button onClick={() => router.push('/dashboard')} className={styles.backButton}>
-            <ChevronLeft size={20} />
-          </button>
-          <h1 className={styles.pageTitle}>Dashboard</h1>
-        </div>
-        <h2 className={styles.sectionTitle}>Profile Settings</h2>
+        <button onClick={() => router.push('/dashboard')} className={styles.backButton}>
+          <ChevronLeft size={24} strokeWidth={2} />
+        </button>
+        <h1 className={styles.pageTitle}>Profile Settings</h1>
+        <div className={styles.headerSpacer}></div>
       </div>
 
       <div className={styles.contentWrapper}>
@@ -536,72 +533,19 @@ export default function MobileProfileSettings() {
               </div>
             </div>
 
-            {/* Change Password Accordion */}
+            {/* Change Password Button */}
             <div 
-              className={`${styles.adminAccordionHeader} ${showPasswordChange ? styles.expanded : ''}`}
-              onClick={() => setShowPasswordChange(prev => !prev)}
+              className={styles.iosMenuItem}
+              onClick={() => setShowPasswordChange(true)}
             >
-              <div className={styles.adminAccordionIcon}>
+              <div className={styles.iosMenuIcon}>
                 <Shield size={18} />
               </div>
-              <div className={styles.adminAccordionContent}>
-                <span className={styles.adminAccordionTitle}>Change Password</span>
-                <span className={styles.adminAccordionSubtitle}>Update your password</span>
+              <div className={styles.iosMenuContent}>
+                <span className={styles.iosMenuTitle}>Change Password</span>
+                <span className={styles.iosMenuSubtitle}>Update your password</span>
               </div>
-              <ChevronRight size={14} className={`${styles.iosChevron} ${showPasswordChange ? styles.chevronRotated : ''}`} />
-            </div>
-
-            <div className={`${styles.adminExpandableContent} ${showPasswordChange ? styles.expanded : ''}`}>
-              <div className={styles.changePasswordForm}>
-                {step === 'send' ? (
-                  <button
-                    onClick={sendPasswordOtp}
-                    disabled={loading}
-                    className={styles.otpButton}
-                  >
-                    {loading ? 'Sending OTP…' : 'Send OTP to Email'}
-                  </button>
-                ) : (
-                  <form onSubmit={handleVerifyPassword}>
-                    <input
-                      type="text"
-                      placeholder="Enter OTP"
-                      value={otp}
-                      onChange={(e) => setOtp(e.target.value.toUpperCase())}
-                      required
-                      className={styles.formInput}
-                    />
-                    {passwordRemaining > 0 && (
-                      <span className={styles.timerText}>
-                        Expires in: {formatTime(passwordRemaining)}
-                      </span>
-                    )}
-                    <input
-                      type="password"
-                      placeholder="New Password"
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      required
-                      className={styles.formInput}
-                    />
-                    <input
-                      type="password"
-                      placeholder="Confirm Password"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      required
-                      className={styles.formInput}
-                    />
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className={styles.confirmButton}
-                    >
-                      {loading ? 'Updating…' : 'Update Password'}
-                    </button>
-                  </form>
-                )}
-              </div>
+              <ChevronRight size={14} className={styles.iosChevron} />
             </div>
           </div>
         </div>
@@ -791,6 +735,113 @@ export default function MobileProfileSettings() {
           </div>
         </div>
       </div>
+
+      {/* Password Change Modal */}
+      {showPasswordChange && (
+        <>
+          {/* Modal Backdrop */}
+          <div 
+            className={styles.modalBackdrop}
+            onClick={() => setShowPasswordChange(false)}
+          />
+          
+          {/* Modal Content */}
+          <div className={styles.passwordModal}>
+            <div className={styles.modalHeader}>
+              <div className={styles.modalHandle}></div>
+              <h3 className={styles.modalTitle}>Change Password</h3>
+              <button 
+                className={styles.modalCloseButton}
+                onClick={() => setShowPasswordChange(false)}
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className={styles.modalContent}>
+              <div className={styles.changePasswordForm}>
+                {step === 'send' ? (
+                  <div className={styles.otpStep}>
+                    <p className={styles.stepDescription}>
+                      We'll send an OTP to your email address to verify your identity before changing your password.
+                    </p>
+                    <button
+                      onClick={sendPasswordOtp}
+                      disabled={loading}
+                      className={styles.otpButton}
+                    >
+                      {loading ? 'Sending OTP…' : 'Send OTP to Email'}
+                    </button>
+                  </div>
+                ) : (
+                  <form onSubmit={handleVerifyPassword}>
+                    <div className={styles.inputGroup}>
+                      <label className={styles.inputLabel}>Enter OTP</label>
+                      <input
+                        type="text"
+                        placeholder="Enter the 6-digit OTP"
+                        value={otp}
+                        onChange={(e) => setOtp(e.target.value.toUpperCase())}
+                        required
+                        className={styles.formInput}
+                        maxLength={6}
+                      />
+                      {passwordRemaining > 0 && (
+                        <span className={styles.timerText}>
+                          Expires in: {formatTime(passwordRemaining)}
+                        </span>
+                      )}
+                    </div>
+                    
+                    <div className={styles.inputGroup}>
+                      <label className={styles.inputLabel}>New Password</label>
+                      <input
+                        type="password"
+                        placeholder="Enter new password"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        required
+                        className={styles.formInput}
+                        minLength={8}
+                      />
+                    </div>
+                    
+                    <div className={styles.inputGroup}>
+                      <label className={styles.inputLabel}>Confirm Password</label>
+                      <input
+                        type="password"
+                        placeholder="Confirm new password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        required
+                        className={styles.formInput}
+                        minLength={8}
+                      />
+                    </div>
+                    
+                    <div className={styles.modalButtons}>
+                      <button
+                        type="button"
+                        onClick={() => setShowPasswordChange(false)}
+                        className={styles.cancelButton}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={loading}
+                        className={styles.confirmButton}
+                      >
+                        {loading ? 'Updating…' : 'Update Password'}
+                      </button>
+                    </div>
+                  </form>
+                )}
+              </div>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Mobile Bottom Navigation */}
       <MobileBottomNavbar />
