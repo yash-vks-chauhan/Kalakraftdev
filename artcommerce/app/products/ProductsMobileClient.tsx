@@ -6,7 +6,7 @@ import styles from './productsMobile.module.css'
 import WishlistButton from '../components/WishlistButton'
 import MobileFilterSortBar from '../components/MobileFilterSortBar'
 import { useRouter, useSearchParams } from 'next/navigation'
-import MobileProductsSkeleton from './MobileProductsSkeleton'
+import OptimizedMobileSkeleton from './OptimizedMobileSkeleton'
 import { FiFilter, FiX, FiChevronRight, FiStar, FiPackage, FiTrendingUp, FiGrid, FiHeart, FiChevronLeft } from 'react-icons/fi'
 import { useProductFilters } from '../hooks/useProductFilters'
 import { useImagePreload } from '../hooks/useImagePreload'
@@ -305,6 +305,7 @@ export default function ProductsMobileClient() {
   const [products, setProducts] = useState([])
   const [usageTags, setUsageTags] = useState([])
   const [loading, setLoading] = useState(true)
+  const [loadingType, setLoadingType] = useState<'initial' | 'filter' | 'pagination'>('initial')
   const [error, setError] = useState(null)
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false)
   const [isSortOpen, setIsSortOpen] = useState(false)
@@ -378,6 +379,7 @@ export default function ProductsMobileClient() {
   // Pagination handlers
   const handlePreviousPage = useCallback(() => {
     if (currentPage > 1) {
+      setLoadingType('pagination')
       setCurrentPage(prevPage => prevPage - 1)
       // Scroll to top of products list
       window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -386,6 +388,7 @@ export default function ProductsMobileClient() {
 
   const handleNextPage = useCallback(() => {
     if (currentPage < totalPages) {
+      setLoadingType('pagination')
       setCurrentPage(prevPage => prevPage + 1)
       // Scroll to top of products list
       window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -394,6 +397,7 @@ export default function ProductsMobileClient() {
 
   const handlePageSelect = useCallback((page) => {
     if (page !== currentPage && page >= 1 && page <= totalPages) {
+      setLoadingType('pagination')
       setCurrentPage(page)
       // Scroll to top of products list
       window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -402,6 +406,7 @@ export default function ProductsMobileClient() {
 
   // Handle sort selection
   const handleSortSelect = (sortValue: string) => {
+    setLoadingType('filter')
     const qs = new URLSearchParams(searchParams.toString());
     if (sortValue === '' || sortValue === 'newest') {
       qs.delete('sort');
@@ -422,6 +427,7 @@ export default function ProductsMobileClient() {
 
   // Apply filters
   const applyFilters = () => {
+    setLoadingType('filter')
     const qs = new URLSearchParams();
     
     if (tempFilters.category) qs.set('category', tempFilters.category);
@@ -519,6 +525,7 @@ export default function ProductsMobileClient() {
         
         setAllProducts(filteredProducts)
         setCurrentPage(1) // Reset to first page when filters change
+        setLoadingType('initial') // Reset loading type
       } catch (err) {
         setError(err.message)
       } finally {
@@ -723,7 +730,7 @@ export default function ProductsMobileClient() {
       )}
 
       {loading ? (
-        <MobileProductsSkeleton />
+        <OptimizedMobileSkeleton mode={loadingType} />
       ) : error ? (
         <div className={styles.error}>
           <p>Error: {error}</p>
@@ -919,9 +926,14 @@ export default function ProductsMobileClient() {
                 <div className={styles.filterSkeletonContainer}>
                   {[...Array(3)].map((_, index) => (
                     <div key={index} className={styles.filterSectionSkeleton}>
-                      <div className={styles.filterHeaderSkeleton}>
-                        <div className={styles.filterTitleSkeleton}></div>
-                        <div className={styles.filterArrowSkeleton}></div>
+                      <div className={styles.filterHeaderSkeleton} />
+                      <div className={styles.filterOptionsSkeleton}>
+                        {[...Array(3)].map((_, optionIndex) => (
+                          <div key={optionIndex} className={styles.filterOptionSkeleton}>
+                            <div className={styles.filterCheckboxSkeleton} />
+                            <div className={styles.filterLabelSkeleton} />
+                          </div>
+                        ))}
                       </div>
                     </div>
                   ))}
@@ -932,23 +944,9 @@ export default function ProductsMobileClient() {
             </div>
             <div className={styles.mobileFilterActions}>
               {loading ? (
-                <div style={{ display: 'flex', gap: '12px' }}>
-                  <div style={{
-                    height: '40px',
-                    width: '80px',
-                    background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
-                    backgroundSize: '200% 100%',
-                    animation: 'shimmer 2s infinite',
-                    borderRadius: '6px'
-                  }}></div>
-                  <div style={{
-                    height: '40px',
-                    width: '100px',
-                    background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
-                    backgroundSize: '200% 100%',
-                    animation: 'shimmer 2s infinite',
-                    borderRadius: '6px'
-                  }}></div>
+                <div style={{ display: 'flex', gap: '12px', width: '100%' }}>
+                  <div className={styles.filterButtonSkeleton} style={{ flex: 1 }} />
+                  <div className={styles.filterButtonSkeleton} style={{ flex: 1 }} />
                 </div>
               ) : (
                 <>

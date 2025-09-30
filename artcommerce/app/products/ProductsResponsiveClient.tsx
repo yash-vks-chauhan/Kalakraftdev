@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import ProductsClient from './ProductsClient'
 import ProductsMobileClient from './ProductsMobileClient'
-import MobileProductsSkeleton from './MobileProductsSkeleton'
+import OptimizedMobileSkeleton from './OptimizedMobileSkeleton'
 import { useDeviceDetection } from '../hooks/useDeviceDetection'
 
 export default function ProductsResponsiveClient() {
@@ -19,7 +19,7 @@ export default function ProductsResponsiveClient() {
 
   // Prevent hydration mismatch by not rendering until mounted
   if (!mounted) {
-    return <MobileProductsSkeleton />
+    return <OptimizedMobileSkeleton mode="initial" />
   }
 
   return isMobile ? <ProductsMobileClient /> : <ProductsClient />

@@ -1254,29 +1254,15 @@ details[open] .arrow {
 }
 
 .filterHeaderSkeleton {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 0;
+  height: 16px;
+  width: 80%;
+  background: linear-gradient(90deg, #f8fafc 25%, #f1f5f9 50%, #f8fafc 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  border-radius: 4px;
   margin-bottom: 16px;
-}
-
-.filterTitleSkeleton {
-  height: 16px;
-  width: 80px;
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-  background-size: 200% 100%;
-  animation: shimmer 2s infinite;
-  border-radius: 4px;
-}
-
-.filterArrowSkeleton {
-  width: 16px;
-  height: 16px;
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-  background-size: 200% 100%;
-  animation: shimmer 2s infinite;
-  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
 }
 
 .filterOptionsSkeleton {
@@ -1295,29 +1281,34 @@ details[open] .arrow {
 .filterCheckboxSkeleton {
   width: 16px;
   height: 16px;
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background: linear-gradient(90deg, #f8fafc 25%, #f1f5f9 50%, #f8fafc 75%);
   background-size: 200% 100%;
-  animation: shimmer 2s infinite;
+  animation: shimmer 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   border-radius: 3px;
   flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
 }
 
 .filterLabelSkeleton {
   height: 14px;
   width: 60px;
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background: linear-gradient(90deg, #f8fafc 25%, #f1f5f9 50%, #f8fafc 75%);
   background-size: 200% 100%;
-  animation: shimmer 2s infinite;
+  animation: shimmer 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   border-radius: 4px;
+  position: relative;
+  overflow: hidden;
 }
 
 .filterButtonSkeleton {
   height: 44px;
-  width: 100px;
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background: linear-gradient(90deg, #f8fafc 25%, #f1f5f9 50%, #f8fafc 75%);
   background-size: 200% 100%;
-  animation: shimmer 2s infinite;
+  animation: shimmer 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   border-radius: 8px;
+  position: relative;
+  overflow: hidden;
 }
 
 /* ===============================================
