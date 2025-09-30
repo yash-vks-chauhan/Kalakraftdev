@@ -1779,29 +1779,174 @@
 }
 
 /* ============================================
-   ADDRESSES SECTION
+   ADDRESSES SECTION - ENHANCED
    ============================================ */
 
 .addressesList {
   padding: 0;
 }
 
-.addressActions {
+.addressItem {
+  display: flex;
+  align-items: flex-start;
+  padding: 16px 20px;
+  background: #FFFFFF;
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.15);
+  transition: background-color 0.12s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  min-height: 60px;
+  position: relative;
+}
+
+.addressItem:last-child {
+  border-bottom: none;
+}
+
+.addressItem:active {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.addressHeader {
   display: flex;
   align-items: center;
   gap: 8px;
+  margin-bottom: 4px;
+}
+
+.addressActions {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  margin-left: auto;
+  padding-top: 4px;
+}
+
+.addressMenuButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  position: relative;
+}
+
+.addressMenuButton:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.addressMenuButton:active {
+  background: rgba(0, 0, 0, 0.1);
+  transform: scale(0.95);
+}
+
+.threeDots {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: 20px;
+  height: 20px;
+}
+
+.threeDots span {
+  width: 3px;
+  height: 3px;
+  background: #8E8E93;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.addressMenuButton:hover .threeDots span {
+  background: #000000;
+  transform: scale(1.2);
+}
+
+.addressDropdownMenu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  min-width: 180px;
+  background: #FFFFFF;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12),
+              0 4px 16px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  z-index: 1000;
+  overflow: hidden;
+  animation: dropdownSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+@keyframes dropdownSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.addressMenuOption {
+  width: 100%;
+  padding: 12px 16px;
+  border: none;
+  background: transparent;
+  color: #000000;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.addressMenuOption:last-child {
+  border-bottom: none;
+}
+
+.addressMenuOption:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.addressMenuOption:active {
+  background: rgba(0, 0, 0, 0.08);
+  transform: scale(0.98);
+}
+
+.addressMenuOption.deleteOption {
+  color: #FF3B30;
+}
+
+.addressMenuOption.deleteOption:hover {
+  background: rgba(255, 59, 48, 0.08);
 }
 
 .defaultBadge {
-  background: rgba(0, 0, 0, 0.05);
-  color: #8E8E93;
-  padding: 3px 8px;
-  border-radius: 12px;
+  background: rgba(52, 199, 89, 0.12);
+  color: #34C759;
+  padding: 4px 8px;
+  border-radius: 8px;
   font-size: 0.75rem;
-  font-weight: 500;
+  font-weight: 600;
   flex-shrink: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: 1px solid rgba(52, 199, 89, 0.2);
 }
 
+/* Legacy styles for backward compatibility */
 .deleteAddressButton {
   background: rgba(255, 59, 48, 0.1);
   color: #FF3B30;
@@ -1817,6 +1962,70 @@
 .deleteAddressButton:hover {
   background: #FF3B30;
   color: #FFFFFF;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+  .addressItem {
+    padding: 12px 16px;
+    min-height: 48px;
+  }
+  
+  .addressMenuButton {
+    width: 32px;
+    height: 32px;
+    padding: 6px;
+  }
+  
+  .addressDropdownMenu {
+    min-width: 160px;
+    right: -8px;
+  }
+  
+  .addressMenuOption {
+    padding: 10px 12px;
+    font-size: 0.875rem;
+  }
+  
+  .defaultBadge {
+    padding: 3px 6px;
+    font-size: 0.6875rem;
+  }
+}
+
+@media (max-width: 375px) {
+  .addressDropdownMenu {
+    min-width: 140px;
+    right: -12px;
+  }
+  
+  .addressMenuOption {
+    padding: 8px 10px;
+    font-size: 0.8125rem;
+    gap: 8px;
+  }
+}
+
+/* Enhanced animations for better mobile feel */
+@keyframes dropdownSlideInMobile {
+  0% {
+    opacity: 0;
+    transform: translateY(-12px) scale(0.9);
+  }
+  60% {
+    opacity: 0.8;
+    transform: translateY(2px) scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 768px) {
+  .addressDropdownMenu {
+    animation: dropdownSlideInMobile 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
 }
 
 /* ============================================

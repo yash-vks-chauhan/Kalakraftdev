@@ -82,6 +82,8 @@ export default function MobileProfileSettings() {
   const [showAvatarSelection, setShowAvatarSelection] = useState(false)
   const [showAddressBottomSheet, setShowAddressBottomSheet] = useState(false)
   const [isAddressBottomSheetClosing, setIsAddressBottomSheetClosing] = useState(false)
+  const [activeAddressMenu, setActiveAddressMenu] = useState<number | null>(null)
+  const [editingAddress, setEditingAddress] = useState<Address | null>(null)
 
   // Address state
   const [addresses, setAddresses] = useState<Address[]>([])
@@ -244,8 +246,77 @@ export default function MobileProfileSettings() {
       setIsAddressBottomSheetClosing(false)
       // Reset form state when modal closes
       setNewAddr({ label:'', line1:'', line2:'', city:'', postalCode:'', country:'' })
+      setEditingAddress(null)
     }, 300) // Match the optimized CSS animation duration
   }
+
+  // Handle address menu actions
+  const handleSetDefaultAddress = async (addressId: number) => {
+    try {
+      const res = await fetch('/api/auth/set-default-address', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ addressId }),
+      })
+      if (res.ok) {
+        await fetchProfile()
+        setMessage('Default address updated successfully')
+      }
+    } catch (error) {
+      setError('Failed to update default address')
+    }
+    setActiveAddressMenu(null)
+  }
+
+  const handleEditAddress = (address: Address) => {
+    setEditingAddress(address)
+    setNewAddr({
+      label: address.label,
+      line1: address.line1,
+      line2: address.line2 || '',
+      city: address.city,
+      postalCode: address.postalCode,
+      country: address.country,
+    })
+    setShowAddressBottomSheet(true)
+    setActiveAddressMenu(null)
+  }
+
+  const handleDeleteAddress = async (addressId: number) => {
+    if (!confirm('Are you sure you want to delete this address?')) {
+      setActiveAddressMenu(null)
+      return
+    }
+    
+    try {
+      const res = await fetch(`/api/addresses/${addressId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (res.ok) {
+        setAddresses(addresses.filter(x => x.id !== addressId))
+        setMessage('Address deleted successfully')
+      }
+    } catch (error) {
+      setError('Failed to delete address')
+    }
+    setActiveAddressMenu(null)
+  }
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setActiveAddressMenu(null)
+    }
+    
+    if (activeAddressMenu !== null) {
+      document.addEventListener('click', handleClickOutside)
+      return () => document.removeEventListener('click', handleClickOutside)
+    }
+  }, [activeAddressMenu])
 
   // Handle modal close with animation
   const handlePasswordModalClose = () => {
@@ -761,33 +832,69 @@ export default function MobileProfileSettings() {
               ) : addresses.length > 0 ? (
                 <div className={styles.addressesList}>
                   {addresses.map(address => (
-                    <div key={address.id} className={styles.iosMenuItem}>
+                    <div key={address.id} className={styles.addressItem}>
                       <div className={styles.iosMenuIcon}>
                         <MapPin size={22} />
                       </div>
                       <div className={styles.iosMenuContent}>
-                        <span className={styles.iosMenuTitle}>{address.label}</span>
+                        <div className={styles.addressHeader}>
+                          <span className={styles.iosMenuTitle}>{address.label}</span>
+                          {user.defaultAddressId === address.id && (
+                            <span className={styles.defaultBadge}>Default</span>
+                          )}
+                        </div>
                         <span className={styles.iosMenuSubtitle}>
-                          {address.line1}, {address.city}
+                          {address.line1}
+                          {address.line2 && `, ${address.line2}`}
+                          <br />
+                          {address.city}, {address.postalCode}, {address.country}
                         </span>
                       </div>
                       <div className={styles.addressActions}>
-                        {user.defaultAddressId === address.id && (
-                          <span className={styles.defaultBadge}>Default</span>
-                        )}
                         <button
-                          onClick={async () => {
-                            if (!confirm('Delete this address?')) return
-                            await fetch(`/api/addresses/${address.id}`, {
-                              method: 'DELETE',
-                              headers: { Authorization: `Bearer ${token}` },
-                            })
-                            setAddresses(addresses.filter(x => x.id !== address.id))
+                          className={styles.addressMenuButton}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setActiveAddressMenu(activeAddressMenu === address.id ? null : address.id)
                           }}
-                          className={styles.deleteAddressButton}
                         >
-                          Delete
+                          <div className={styles.threeDots}>
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                          </div>
                         </button>
+                        
+                        {/* Dropdown Menu */}
+                        {activeAddressMenu === address.id && (
+                          <div className={styles.addressDropdownMenu}>
+                            <button
+                              onClick={() => handleEditAddress(address)}
+                              className={styles.addressMenuOption}
+                            >
+                              <Edit size={16} />
+                              <span>Edit Address</span>
+                            </button>
+                            
+                            {user.defaultAddressId !== address.id && (
+                              <button
+                                onClick={() => handleSetDefaultAddress(address.id)}
+                                className={styles.addressMenuOption}
+                              >
+                                <MapPin size={16} />
+                                <span>Set as Default</span>
+                              </button>
+                            )}
+                            
+                            <button
+                              onClick={() => handleDeleteAddress(address.id)}
+                              className={`${styles.addressMenuOption} ${styles.deleteOption}`}
+                            >
+                              <X size={16} />
+                              <span>Delete Address</span>
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -1108,8 +1215,12 @@ export default function MobileProfileSettings() {
             
             {/* Header */}
             <div className={styles.bottomSheetHeader}>
-              <h3 className={styles.bottomSheetTitle}>Add New Address</h3>
-              <p className={styles.bottomSheetSubtitle}>Enter your delivery address details</p>
+              <h3 className={styles.bottomSheetTitle}>
+                {editingAddress ? 'Edit Address' : 'Add New Address'}
+              </h3>
+              <p className={styles.bottomSheetSubtitle}>
+                {editingAddress ? 'Update your delivery address details' : 'Enter your delivery address details'}
+              </p>
               <button 
                 className={styles.bottomSheetCloseButton}
                 onClick={handleAddressBottomSheetClose}
@@ -1125,25 +1236,49 @@ export default function MobileProfileSettings() {
                   e.preventDefault()
                   setLoading(true)
                   try {
-                    const res = await fetch('/api/addresses', {
-                      method: 'POST',
-                      headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${token}`,
-                      },
-                      body: JSON.stringify(newAddr),
-                    })
+                    let res;
+                    if (editingAddress) {
+                      // Update existing address
+                      res = await fetch(`/api/addresses/${editingAddress.id}`, {
+                        method: 'PUT',
+                        headers: {
+                          'Content-Type': 'application/json',
+                          Authorization: `Bearer ${token}`,
+                        },
+                        body: JSON.stringify(newAddr),
+                      })
+                    } else {
+                      // Create new address
+                      res = await fetch('/api/addresses', {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json',
+                          Authorization: `Bearer ${token}`,
+                        },
+                        body: JSON.stringify(newAddr),
+                      })
+                    }
+                    
                     const json = await res.json()
                     if (!res.ok) {
                       setError(json.error)
                     } else {
-                      setAddresses([json.address, ...addresses])
+                      if (editingAddress) {
+                        // Update the address in the list
+                        setAddresses(addresses.map(addr => 
+                          addr.id === editingAddress.id ? json.address : addr
+                        ))
+                        setMessage('Address updated successfully')
+                      } else {
+                        // Add new address to the list
+                        setAddresses([json.address, ...addresses])
+                        setMessage('Address added successfully')
+                      }
                       setNewAddr({ label:'', line1:'', line2:'', city:'', postalCode:'', country:'' })
-                      setMessage('Address added successfully')
                       handleAddressBottomSheetClose()
                     }
                   } catch (error) {
-                    setError('Failed to add address')
+                    setError(editingAddress ? 'Failed to update address' : 'Failed to add address')
                   } finally {
                     setLoading(false)
                   }
@@ -1272,7 +1407,7 @@ export default function MobileProfileSettings() {
                     disabled={loading}
                     className={styles.bottomSheetSaveButton}
                   >
-                    {loading ? 'Saving...' : 'Save Address'}
+                    {loading ? (editingAddress ? 'Updating...' : 'Saving...') : (editingAddress ? 'Update Address' : 'Save Address')}
                   </button>
                 </div>
               </form>
