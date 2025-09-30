@@ -768,20 +768,37 @@ export default function ProductsMobileClient() {
           ))}
         </div>
 
-          {/* Pagination Controls - Modern Mobile Design */}
+          {/* Ultra-Modern Pagination Controls */}
           {totalPages > 1 && (
             <div className={styles.paginationContainer}>
-              {/* Simple page info */}
-              <div className={styles.paginationInfo}>
-                <span className={styles.paginationInfoText}>
-                  Page {currentPage} of {totalPages}
-                </span>
-                <span className={styles.paginationProducts}>
-                  {totalProducts} products total
-                </span>
+              {/* Progress Section with Visual Indicator */}
+              <div className={styles.paginationProgress}>
+                <div className={styles.progressBarContainer}>
+                  <div 
+                    className={styles.progressBar}
+                    style={{ width: `${(currentPage / totalPages) * 100}%` }}
+                  />
+                </div>
+                
+                <div className={styles.paginationInfo}>
+                  <div className={styles.paginationInfoLeft}>
+                    <span className={styles.paginationInfoText}>
+                      Page {currentPage} of {totalPages}
+                    </span>
+                    <span className={styles.paginationProducts}>
+                      {totalProducts} products total
+                    </span>
+                  </div>
+                  
+                  <div className={styles.paginationInfoRight}>
+                    <span className={styles.paginationPercentage}>
+                      {Math.round((currentPage / totalPages) * 100)}%
+                    </span>
+                  </div>
+                </div>
               </div>
               
-              {/* Simplified pagination controls */}
+              {/* Enhanced pagination controls */}
               <div className={styles.paginationControls}>
                 {/* Previous Button */}
                 <button
@@ -790,10 +807,10 @@ export default function ProductsMobileClient() {
                   className={`${styles.paginationArrow} ${currentPage === 1 ? styles.disabled : ''}`}
                   aria-label="Previous page"
                 >
-                  <FiChevronLeft size={20} />
+                  <FiChevronLeft size={22} />
                 </button>
                 
-                {/* Page indicator with quick jump */}
+                {/* Smart page indicator with enhanced logic */}
                 <div className={styles.pageIndicator}>
                   {/* Show first few pages if we're near the beginning */}
                   {currentPage <= 3 ? (
@@ -803,16 +820,19 @@ export default function ProductsMobileClient() {
                           key={page}
                           onClick={() => handlePageSelect(page)}
                           className={`${styles.pageNumber} ${page === currentPage ? styles.active : ''}`}
+                          aria-label={`Go to page ${page}`}
+                          aria-current={page === currentPage ? 'page' : undefined}
                         >
                           {page}
                         </button>
                       ))}
                       {totalPages > 5 && (
                         <>
-                          <span className={styles.dots}>...</span>
+                          <span className={styles.dots} aria-hidden="true">⋯</span>
                           <button
                             onClick={() => handlePageSelect(totalPages)}
                             className={styles.pageNumber}
+                            aria-label={`Go to last page ${totalPages}`}
                           >
                             {totalPages}
                           </button>
@@ -825,15 +845,18 @@ export default function ProductsMobileClient() {
                       <button
                         onClick={() => handlePageSelect(1)}
                         className={styles.pageNumber}
+                        aria-label="Go to first page"
                       >
                         1
                       </button>
-                      <span className={styles.dots}>...</span>
+                      <span className={styles.dots} aria-hidden="true">⋯</span>
                       {Array.from({ length: Math.min(5, totalPages) }, (_, i) => totalPages - 4 + i).filter(page => page > 0).map(page => (
                         <button
                           key={page}
                           onClick={() => handlePageSelect(page)}
                           className={`${styles.pageNumber} ${page === currentPage ? styles.active : ''}`}
+                          aria-label={`Go to page ${page}`}
+                          aria-current={page === currentPage ? 'page' : undefined}
                         >
                           {page}
                         </button>
@@ -845,23 +868,27 @@ export default function ProductsMobileClient() {
                       <button
                         onClick={() => handlePageSelect(1)}
                         className={styles.pageNumber}
+                        aria-label="Go to first page"
                       >
                         1
                       </button>
-                      <span className={styles.dots}>...</span>
+                      <span className={styles.dots} aria-hidden="true">⋯</span>
                       {[currentPage - 1, currentPage, currentPage + 1].map(page => (
                         <button
                           key={page}
                           onClick={() => handlePageSelect(page)}
                           className={`${styles.pageNumber} ${page === currentPage ? styles.active : ''}`}
+                          aria-label={`Go to page ${page}`}
+                          aria-current={page === currentPage ? 'page' : undefined}
                         >
                           {page}
                         </button>
                       ))}
-                      <span className={styles.dots}>...</span>
+                      <span className={styles.dots} aria-hidden="true">⋯</span>
                       <button
                         onClick={() => handlePageSelect(totalPages)}
                         className={styles.pageNumber}
+                        aria-label={`Go to last page ${totalPages}`}
                       >
                         {totalPages}
                       </button>
@@ -876,26 +903,28 @@ export default function ProductsMobileClient() {
                   className={`${styles.paginationArrow} ${currentPage === totalPages ? styles.disabled : ''}`}
                   aria-label="Next page"
                 >
-                  <FiChevronRight size={20} />
+                  <FiChevronRight size={22} />
                 </button>
               </div>
               
-              {/* Quick jump (for pages with many results) */}
+              {/* Premium quick jump (for pages with many results) */}
               {totalPages > 10 && (
                 <div className={styles.quickJump}>
                   <button 
                     onClick={() => handlePageSelect(1)}
                     className={styles.jumpButton}
                     disabled={currentPage === 1}
+                    aria-label="Jump to first page"
                   >
-                    First
+                    First Page
                   </button>
                   <button 
                     onClick={() => handlePageSelect(totalPages)}
                     className={styles.jumpButton}
                     disabled={currentPage === totalPages}
+                    aria-label="Jump to last page"
                   >
-                    Last
+                    Last Page
                   </button>
                 </div>
               )}
