@@ -250,7 +250,7 @@ export default function MobileProfileSettings() {
       setModalError(null)
       // Reset transition state
       setIsStepTransitioning(false)
-    }, 400) // Match the CSS animation duration
+    }, 300) // Match the optimized CSS animation duration
   }
 
   // Handle email modal close with animation
@@ -270,7 +270,7 @@ export default function MobileProfileSettings() {
       setEmailModalError(null)
       // Reset transition state
       setIsEmailStepTransitioning(false)
-    }, 400) // Match the CSS animation duration
+    }, 300) // Match the optimized CSS animation duration
   }
 
   const getStatusClass = (status: string) => {
@@ -341,7 +341,7 @@ export default function MobileProfileSettings() {
         setEmailRemaining(300)
         setEmailModalMessage('OTP sent to your current email address')
         setIsEmailStepTransitioning(false)
-      }, 300) // Wait for exit animation
+      }, 200) // Faster transition for better mobile performance
       
     } catch (err: any) {
       setEmailModalError(err.message)
@@ -408,7 +408,7 @@ export default function MobileProfileSettings() {
         setPasswordRemaining(300)
         setModalMessage('OTP sent to your email')
         setIsStepTransitioning(false)
-      }, 300) // Wait for exit animation
+      }, 200) // Faster transition for better mobile performance
       
     } catch (err: any) {
       setModalError(err.message)
@@ -871,7 +871,6 @@ export default function MobileProfileSettings() {
                       <div className={styles.floatingInputContainer}>
                         <input
                           type="text"
-                          placeholder="Enter the 6-digit OTP"
                           value={otp}
                           onChange={(e) => setOtp(e.target.value.toUpperCase())}
                           required
@@ -895,7 +894,6 @@ export default function MobileProfileSettings() {
                       <div className={styles.floatingInputContainer}>
                         <input
                           type="password"
-                          placeholder="Enter new password"
                           value={newPassword}
                           onChange={(e) => setNewPassword(e.target.value)}
                           required
@@ -914,7 +912,6 @@ export default function MobileProfileSettings() {
                       <div className={styles.floatingInputContainer}>
                         <input
                           type="password"
-                          placeholder="Confirm new password"
                           value={confirmPassword}
                           onChange={(e) => setConfirmPassword(e.target.value)}
                           required
@@ -991,7 +988,6 @@ export default function MobileProfileSettings() {
                       <div className={styles.floatingInputContainer}>
                         <input
                           type="email"
-                          placeholder="Enter new email address"
                           value={newEmail}
                           onChange={(e) => setNewEmail(e.target.value)}
                           required
@@ -1021,7 +1017,6 @@ export default function MobileProfileSettings() {
                         <div className={styles.floatingInputContainer}>
                           <input
                             type="text"
-                            placeholder="Enter the 6-digit OTP"
                             value={emailOtp}
                             onChange={(e) => setEmailOtp(e.target.value.toUpperCase())}
                             required

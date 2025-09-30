@@ -5,7 +5,7 @@
 
 .mobileProfileContainer {
   min-height: 100vh;
-  background: #E5E5EA;
+  background: #E5E5EA; /* Same grey background as mobile dashboard */
   position: relative;
   z-index: 1;
   width: 100%;
@@ -93,17 +93,17 @@
 }
 
 .contentWrapper {
-  padding-top: 70px;
+  padding-top: 75px; /* Match mobile dashboard navbar height exactly */
   flex: 1;
-  padding-bottom: 80px;
-  width: 100%;
-  box-sizing: border-box;
+  padding-bottom: 80px; /* Add bottom padding for mobile navbar */
+  width: 100%; /* Ensure full width */
+  box-sizing: border-box; /* Include padding in width calculations */
 }
 
 @media (max-width: 768px) {
   .contentWrapper {
-    padding-top: 70px;
-    padding-bottom: 70px;
+    padding-top: 55px; /* Match mobile navbar height */
+    padding-bottom: 70px; /* Smaller bottom padding for mobile */
   }
 }
 
@@ -187,7 +187,12 @@
   overflow: hidden;
   border: 1px solid rgba(0, 0, 0, 0.18);
   margin: 0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: box-shadow 0.2s ease;
+}
+
+.iosMenuGroup:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .iosMenuItem {
@@ -1091,7 +1096,7 @@
 }
 
 /* ============================================
-   PASSWORD CHANGE MODAL
+   OPTIMIZED MODAL ANIMATIONS FOR MOBILE
    ============================================ */
 
 .modalBackdrop {
@@ -1102,34 +1107,31 @@
   bottom: 0;
   background: rgba(0, 0, 0, 0.5);
   z-index: 2000;
-  animation: backdropFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-  backdrop-filter: blur(10px);
-  will-change: opacity, backdrop-filter;
+  animation: backdropFadeIn 0.3s ease-out;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  will-change: opacity;
 }
 
 .modalBackdrop.closing {
-  animation: backdropFadeOut 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: backdropFadeOut 0.25s ease-in;
 }
 
 @keyframes backdropFadeIn {
   from {
     opacity: 0;
-    backdrop-filter: blur(0px);
   }
   to {
     opacity: 1;
-    backdrop-filter: blur(10px);
   }
 }
 
 @keyframes backdropFadeOut {
   from {
     opacity: 1;
-    backdrop-filter: blur(10px);
   }
   to {
     opacity: 0;
-    backdrop-filter: blur(0px);
   }
 }
 
@@ -1143,67 +1145,35 @@
   border-top-right-radius: 20px;
   z-index: 2001;
   max-height: 85vh;
-  animation: slideUpElegant 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 -8px 25px rgba(0, 0, 0, 0.15),
-              0 -20px 40px rgba(0, 0, 0, 0.1);
+  animation: slideUp 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  box-shadow: 0 -8px 25px rgba(0, 0, 0, 0.15);
   transform: translateY(0);
-  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), 
-              opacity 0.4s ease,
-              box-shadow 0.4s ease;
-  will-change: transform, opacity, box-shadow;
+  will-change: transform, opacity;
 }
 
 .passwordModal.closing {
-  animation: slideDownElegant 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-  transform: translateY(100%);
-  opacity: 0;
+  animation: slideDown 0.3s cubic-bezier(0.55, 0.055, 0.675, 0.19);
 }
 
-@keyframes slideUpElegant {
-  0% {
-    transform: translateY(100%) scale(0.95);
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
     opacity: 0;
-    box-shadow: 0 -8px 25px rgba(0, 0, 0, 0),
-                0 -20px 40px rgba(0, 0, 0, 0);
   }
-  30% {
-    transform: translateY(15%) scale(0.98);
-    opacity: 0.7;
-    box-shadow: 0 -8px 25px rgba(0, 0, 0, 0.1),
-                0 -20px 40px rgba(0, 0, 0, 0.05);
-  }
-  70% {
-    transform: translateY(-2%) scale(1.01);
-    opacity: 0.95;
-    box-shadow: 0 -8px 25px rgba(0, 0, 0, 0.12),
-                0 -20px 40px rgba(0, 0, 0, 0.08);
-  }
-  100% {
-    transform: translateY(0) scale(1);
+  to {
+    transform: translateY(0);
     opacity: 1;
-    box-shadow: 0 -8px 25px rgba(0, 0, 0, 0.15),
-                0 -20px 40px rgba(0, 0, 0, 0.1);
   }
 }
 
-@keyframes slideDownElegant {
-  0% {
-    transform: translateY(0) scale(1);
+@keyframes slideDown {
+  from {
+    transform: translateY(0);
     opacity: 1;
-    box-shadow: 0 -8px 25px rgba(0, 0, 0, 0.15),
-                0 -20px 40px rgba(0, 0, 0, 0.1);
   }
-  30% {
-    transform: translateY(10%) scale(0.98);
-    opacity: 0.8;
-    box-shadow: 0 -8px 25px rgba(0, 0, 0, 0.1),
-                0 -20px 40px rgba(0, 0, 0, 0.05);
-  }
-  100% {
-    transform: translateY(100%) scale(0.95);
+  to {
+    transform: translateY(100%);
     opacity: 0;
-    box-shadow: 0 -8px 25px rgba(0, 0, 0, 0),
-                0 -20px 40px rgba(0, 0, 0, 0);
   }
 }
 
@@ -1214,7 +1184,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: fadeInUp 0.6s ease-out 0.2s both;
 }
 
 .modalHandle {
@@ -1226,7 +1195,6 @@
   height: 4px;
   background: #C7C7CC;
   border-radius: 2px;
-  animation: scaleIn 0.5s ease-out 0.15s both;
 }
 
 .modalTitle {
@@ -1235,7 +1203,6 @@
   color: #000;
   margin: 0;
   text-align: center;
-  animation: slideInDown 0.6s ease-out 0.25s both;
 }
 
 .modalCloseButton {
@@ -1252,14 +1219,13 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  animation: rotateIn 0.6s ease-out 0.35s both;
+  transition: all 0.2s ease;
 }
 
 .modalCloseButton:hover {
   color: #333;
   background: rgba(0, 0, 0, 0.1);
-  transform: translateY(-50%) rotate(90deg) scale(1.1);
+  transform: translateY(-50%) scale(1.1);
 }
 
 .modalContent {
@@ -1267,51 +1233,6 @@
   max-height: calc(85vh - 70px);
   overflow-y: auto;
   overflow-x: hidden;
-  animation: fadeInUp 0.7s ease-out 0.3s both;
-}
-
-@keyframes fadeInUp {
-  0% {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes scaleIn {
-  0% {
-    opacity: 0;
-    transform: translateX(-50%) scale(0.5);
-  }
-  100% {
-    opacity: 1;
-    transform: translateX(-50%) scale(1);
-  }
-}
-
-@keyframes slideInDown {
-  0% {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes rotateIn {
-  0% {
-    opacity: 0;
-    transform: translateY(-50%) rotate(-180deg) scale(0.8);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(-50%) rotate(0deg) scale(1);
-  }
 }
 
 .changePasswordForm {
@@ -1319,23 +1240,23 @@
   position: relative;
 }
 
-/* Content transition animations */
+/* Optimized content transition animations */
 .stepContent {
-  animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: fadeInUp 0.25s ease-out;
   transform: translateY(0);
   opacity: 1;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.2s ease;
 }
 
 .stepContent.exiting {
-  animation: fadeOutDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: fadeOutDown 0.2s ease-in;
   transform: translateY(-20px);
   opacity: 0;
 }
 
 @keyframes fadeInUp {
   from {
-    transform: translateY(30px);
+    transform: translateY(20px);
     opacity: 0;
   }
   to {
@@ -1350,7 +1271,7 @@
     opacity: 1;
   }
   to {
-    transform: translateY(-20px);
+    transform: translateY(-15px);
     opacity: 0;
   }
 }
