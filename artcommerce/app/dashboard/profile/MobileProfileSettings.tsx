@@ -80,6 +80,8 @@ export default function MobileProfileSettings() {
   const [showAddresses, setShowAddresses] = useState(false)
   const [showAddAddress, setShowAddAddress] = useState(false)
   const [showAvatarSelection, setShowAvatarSelection] = useState(false)
+  const [showAddressBottomSheet, setShowAddressBottomSheet] = useState(false)
+  const [isAddressBottomSheetClosing, setIsAddressBottomSheetClosing] = useState(false)
 
   // Address state
   const [addresses, setAddresses] = useState<Address[]>([])
@@ -232,6 +234,17 @@ export default function MobileProfileSettings() {
       }
     }
     return `Order #${order.id.toString().substring(0, 8)}`
+  }
+
+  // Handle address bottom sheet close with animation
+  const handleAddressBottomSheetClose = () => {
+    setIsAddressBottomSheetClosing(true)
+    setTimeout(() => {
+      setShowAddressBottomSheet(false)
+      setIsAddressBottomSheetClosing(false)
+      // Reset form state when modal closes
+      setNewAddr({ label:'', line1:'', line2:'', city:'', postalCode:'', country:'' })
+    }, 300) // Match the optimized CSS animation duration
   }
 
   // Handle modal close with animation
@@ -786,60 +799,20 @@ export default function MobileProfileSettings() {
               )}
             </div>
 
-            {/* Add New Address */}
-            <div 
-              className={`${styles.adminAccordionHeader} ${showAddAddress ? styles.expanded : ''}`}
-              onClick={() => setShowAddAddress(prev => !prev)}
+            {/* Add New Address Button */}
+            <button 
+              className={styles.addAddressButton}
+              onClick={() => setShowAddressBottomSheet(true)}
             >
-              <div className={styles.adminAccordionIcon}>
+              <div className={styles.addAddressIcon}>
                 <Plus size={18} />
               </div>
-              <div className={styles.adminAccordionContent}>
-                <span className={styles.adminAccordionTitle}>Add New Address</span>
-                <span className={styles.adminAccordionSubtitle}>Create new delivery address</span>
+              <div className={styles.addAddressContent}>
+                <span className={styles.addAddressTitle}>Add New Address</span>
+                <span className={styles.addAddressSubtitle}>Create new delivery address</span>
               </div>
-              <ChevronRight size={14} className={`${styles.iosChevron} ${showAddAddress ? styles.chevronRotated : ''}`} />
-            </div>
-
-            <div className={`${styles.adminExpandableContent} ${showAddAddress ? styles.expanded : ''}`}>
-              <form
-                onSubmit={async e => {
-                  e.preventDefault()
-                  const res = await fetch('/api/addresses', {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json',
-                      Authorization: `Bearer ${token}`,
-                    },
-                    body: JSON.stringify(newAddr),
-                  })
-                  const json = await res.json()
-                  if (!res.ok) {
-                    setError(json.error)
-                  } else {
-                    setAddresses([json.address, ...addresses])
-                    setNewAddr({ label:'', line1:'', line2:'', city:'', postalCode:'', country:'' })
-                    setShowAddAddress(false)
-                    setMessage('Address added successfully')
-                  }
-                }}
-                className={styles.addressForm}
-              >
-                {['label','line1','line2','city','postalCode','country'].map((field) => (
-                  <input
-                    key={field}
-                    type="text"
-                    placeholder={field[0].toUpperCase() + field.slice(1)}
-                    value={(newAddr as any)[field]}
-                    onChange={e => setNewAddr({ ...newAddr, [field]: e.target.value })}
-                    className={styles.formInput}
-                  />
-                ))}
-                <button type="submit" className={styles.saveButton}>
-                  Save Address
-                </button>
-              </form>
-            </div>
+              <ChevronRight size={14} className={styles.iosChevron} />
+            </button>
           </div>
         </div>
 
@@ -1114,6 +1087,195 @@ export default function MobileProfileSettings() {
                   </div>
                 )}
               </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Add Address Bottom Sheet Modal */}
+      {showAddressBottomSheet && (
+        <>
+          {/* Modal Backdrop */}
+          <div 
+            className={`${styles.bottomSheetBackdrop} ${isAddressBottomSheetClosing ? styles.closing : ''}`}
+            onClick={handleAddressBottomSheetClose}
+          />
+          
+          {/* Bottom Sheet Content */}
+          <div className={`${styles.addressBottomSheet} ${isAddressBottomSheetClosing ? styles.closing : ''}`}>
+            {/* Draggable Handle */}
+            <div className={styles.bottomSheetHandle} />
+            
+            {/* Header */}
+            <div className={styles.bottomSheetHeader}>
+              <h3 className={styles.bottomSheetTitle}>Add New Address</h3>
+              <p className={styles.bottomSheetSubtitle}>Enter your delivery address details</p>
+              <button 
+                className={styles.bottomSheetCloseButton}
+                onClick={handleAddressBottomSheetClose}
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            {/* Content */}
+            <div className={styles.bottomSheetContent}>
+              <form
+                onSubmit={async e => {
+                  e.preventDefault()
+                  setLoading(true)
+                  try {
+                    const res = await fetch('/api/addresses', {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`,
+                      },
+                      body: JSON.stringify(newAddr),
+                    })
+                    const json = await res.json()
+                    if (!res.ok) {
+                      setError(json.error)
+                    } else {
+                      setAddresses([json.address, ...addresses])
+                      setNewAddr({ label:'', line1:'', line2:'', city:'', postalCode:'', country:'' })
+                      setMessage('Address added successfully')
+                      handleAddressBottomSheetClose()
+                    }
+                  } catch (error) {
+                    setError('Failed to add address')
+                  } finally {
+                    setLoading(false)
+                  }
+                }}
+                className={styles.bottomSheetForm}
+              >
+                {/* Address Label */}
+                <div className={styles.bottomSheetInputGroup}>
+                  <div className={styles.bottomSheetFloatingInputContainer}>
+                    <input
+                      type="text"
+                      value={newAddr.label}
+                      onChange={e => setNewAddr({ ...newAddr, label: e.target.value })}
+                      required
+                      className={styles.bottomSheetFloatingInput}
+                      id="addressLabel"
+                      data-filled={newAddr.label ? "true" : "false"}
+                    />
+                    <label htmlFor="addressLabel" className={styles.bottomSheetFloatingLabel}>
+                      Address Label (e.g., Home, Work)
+                    </label>
+                  </div>
+                </div>
+
+                {/* Street Address */}
+                <div className={styles.bottomSheetInputGroup}>
+                  <div className={styles.bottomSheetFloatingInputContainer}>
+                    <input
+                      type="text"
+                      value={newAddr.line1}
+                      onChange={e => setNewAddr({ ...newAddr, line1: e.target.value })}
+                      required
+                      className={styles.bottomSheetFloatingInput}
+                      id="addressLine1"
+                      data-filled={newAddr.line1 ? "true" : "false"}
+                    />
+                    <label htmlFor="addressLine1" className={styles.bottomSheetFloatingLabel}>
+                      Street Address
+                    </label>
+                  </div>
+                </div>
+
+                {/* Apartment/Suite (Optional) */}
+                <div className={styles.bottomSheetInputGroup}>
+                  <div className={styles.bottomSheetFloatingInputContainer}>
+                    <input
+                      type="text"
+                      value={newAddr.line2}
+                      onChange={e => setNewAddr({ ...newAddr, line2: e.target.value })}
+                      className={styles.bottomSheetFloatingInput}
+                      id="addressLine2"
+                      data-filled={newAddr.line2 ? "true" : "false"}
+                    />
+                    <label htmlFor="addressLine2" className={styles.bottomSheetFloatingLabel}>
+                      Apartment, Suite, etc. (Optional)
+                    </label>
+                  </div>
+                </div>
+
+                {/* City and Postal Code Row */}
+                <div className={styles.bottomSheetInputRow}>
+                  <div className={styles.bottomSheetInputGroup}>
+                    <div className={styles.bottomSheetFloatingInputContainer}>
+                      <input
+                        type="text"
+                        value={newAddr.city}
+                        onChange={e => setNewAddr({ ...newAddr, city: e.target.value })}
+                        required
+                        className={styles.bottomSheetFloatingInput}
+                        id="addressCity"
+                        data-filled={newAddr.city ? "true" : "false"}
+                      />
+                      <label htmlFor="addressCity" className={styles.bottomSheetFloatingLabel}>
+                        City
+                      </label>
+                    </div>
+                  </div>
+                  
+                  <div className={styles.bottomSheetInputGroup}>
+                    <div className={styles.bottomSheetFloatingInputContainer}>
+                      <input
+                        type="text"
+                        value={newAddr.postalCode}
+                        onChange={e => setNewAddr({ ...newAddr, postalCode: e.target.value })}
+                        required
+                        className={styles.bottomSheetFloatingInput}
+                        id="addressPostalCode"
+                        data-filled={newAddr.postalCode ? "true" : "false"}
+                      />
+                      <label htmlFor="addressPostalCode" className={styles.bottomSheetFloatingLabel}>
+                        Postal Code
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Country */}
+                <div className={styles.bottomSheetInputGroup}>
+                  <div className={styles.bottomSheetFloatingInputContainer}>
+                    <input
+                      type="text"
+                      value={newAddr.country}
+                      onChange={e => setNewAddr({ ...newAddr, country: e.target.value })}
+                      required
+                      className={styles.bottomSheetFloatingInput}
+                      id="addressCountry"
+                      data-filled={newAddr.country ? "true" : "false"}
+                    />
+                    <label htmlFor="addressCountry" className={styles.bottomSheetFloatingLabel}>
+                      Country
+                    </label>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className={styles.bottomSheetButtons}>
+                  <button
+                    type="button"
+                    onClick={handleAddressBottomSheetClose}
+                    className={styles.bottomSheetCancelButton}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className={styles.bottomSheetSaveButton}
+                  >
+                    {loading ? 'Saving...' : 'Save Address'}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         </>
