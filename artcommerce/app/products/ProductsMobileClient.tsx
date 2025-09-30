@@ -354,37 +354,51 @@ export default function ProductsMobileClient() {
   const totalPages = Math.ceil(totalProducts / productsPerPage)
   const startIndex = (currentPage - 1) * productsPerPage
   const endIndex = startIndex + productsPerPage
-  const paginatedProducts = allProducts.slice(startIndex, endIndex)
 
-  // Update products when pagination changes
+  // Update products when pagination or allProducts changes
   useEffect(() => {
+    if (allProducts.length === 0) {
+      setProducts([])
+      return
+    }
+    
+    // Ensure currentPage is valid
+    const validCurrentPage = Math.max(1, Math.min(currentPage, totalPages))
+    if (validCurrentPage !== currentPage) {
+      setCurrentPage(validCurrentPage)
+      return
+    }
+    
+    const validStartIndex = (validCurrentPage - 1) * productsPerPage
+    const validEndIndex = validStartIndex + productsPerPage
+    const paginatedProducts = allProducts.slice(validStartIndex, validEndIndex)
     setProducts(paginatedProducts)
-  }, [allProducts, currentPage, productsPerPage])
+  }, [allProducts, currentPage, totalPages, productsPerPage])
 
   // Pagination handlers
-  const handlePreviousPage = () => {
+  const handlePreviousPage = useCallback(() => {
     if (currentPage > 1) {
-      setCurrentPage(currentPage - 1)
+      setCurrentPage(prevPage => prevPage - 1)
       // Scroll to top of products list
       window.scrollTo({ top: 0, behavior: 'smooth' })
     }
-  }
+  }, [currentPage])
 
-  const handleNextPage = () => {
+  const handleNextPage = useCallback(() => {
     if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1)
+      setCurrentPage(prevPage => prevPage + 1)
       // Scroll to top of products list
       window.scrollTo({ top: 0, behavior: 'smooth' })
     }
-  }
+  }, [currentPage, totalPages])
 
-  const handlePageSelect = (page) => {
+  const handlePageSelect = useCallback((page) => {
     if (page !== currentPage && page >= 1 && page <= totalPages) {
       setCurrentPage(page)
       // Scroll to top of products list
       window.scrollTo({ top: 0, behavior: 'smooth' })
     }
-  }
+  }, [currentPage, totalPages])
 
   // Handle sort selection
   const handleSortSelect = (sortValue: string) => {
@@ -744,72 +758,104 @@ export default function ProductsMobileClient() {
           ))}
         </div>
 
-          {/* Pagination Controls */}
+          {/* Pagination Controls - Modern Mobile Design */}
           {totalPages > 1 && (
             <div className={styles.paginationContainer}>
+              {/* Simple page info */}
               <div className={styles.paginationInfo}>
-                <div className={styles.paginationInfoText}>
-                  Showing {startIndex + 1} to {Math.min(endIndex, totalProducts)} of {totalProducts} products
-                </div>
-                <div className={styles.paginationInfoText}>
+                <span className={styles.paginationInfoText}>
                   Page {currentPage} of {totalPages}
-                </div>
+                </span>
+                <span className={styles.paginationProducts}>
+                  {totalProducts} products total
+                </span>
               </div>
               
+              {/* Simplified pagination controls */}
               <div className={styles.paginationControls}>
                 {/* Previous Button */}
                 <button
                   onClick={handlePreviousPage}
                   disabled={currentPage === 1}
-                  className={styles.paginationButton}
+                  className={`${styles.paginationArrow} ${currentPage === 1 ? styles.disabled : ''}`}
+                  aria-label="Previous page"
                 >
-                  <FiChevronLeft size={16} />
-                  Previous
+                  <FiChevronLeft size={20} />
                 </button>
                 
-                {/* Page Numbers */}
-                <div className={styles.paginationNumbers}>
-                  {/* First page */}
-                  {currentPage > 3 && (
-                    <>
+                {/* Page indicator with quick jump */}
+                <div className={styles.pageIndicator}>
+                  {/* Show first few pages if we're near the beginning */}
+                  {currentPage <= 3 ? (
+                    <div className={styles.pageNumbers}>
+                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => i + 1).map(page => (
+                        <button
+                          key={page}
+                          onClick={() => handlePageSelect(page)}
+                          className={`${styles.pageNumber} ${page === currentPage ? styles.active : ''}`}
+                        >
+                          {page}
+                        </button>
+                      ))}
+                      {totalPages > 5 && (
+                        <>
+                          <span className={styles.dots}>...</span>
+                          <button
+                            onClick={() => handlePageSelect(totalPages)}
+                            className={styles.pageNumber}
+                          >
+                            {totalPages}
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  ) : currentPage >= totalPages - 2 ? (
+                    /* Show last few pages if we're near the end */
+                    <div className={styles.pageNumbers}>
                       <button
                         onClick={() => handlePageSelect(1)}
                         className={styles.pageNumber}
                       >
                         1
                       </button>
-                      {currentPage > 4 && <span className={styles.paginationDots}>...</span>}
-                    </>
-                  )}
-                  
-                  {/* Current page and nearby pages */}
-                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                    const pageStart = Math.max(1, Math.min(currentPage - 2, totalPages - 4))
-                    const page = pageStart + i
-                    if (page > totalPages) return null
-                    
-                    return (
+                      <span className={styles.dots}>...</span>
+                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => totalPages - 4 + i).filter(page => page > 0).map(page => (
+                        <button
+                          key={page}
+                          onClick={() => handlePageSelect(page)}
+                          className={`${styles.pageNumber} ${page === currentPage ? styles.active : ''}`}
+                        >
+                          {page}
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    /* Show current page with surrounding pages */
+                    <div className={styles.pageNumbers}>
                       <button
-                        key={page}
-                        onClick={() => handlePageSelect(page)}
-                        className={`${styles.pageNumber} ${page === currentPage ? styles.pageNumberActive : ''}`}
+                        onClick={() => handlePageSelect(1)}
+                        className={styles.pageNumber}
                       >
-                        {page}
+                        1
                       </button>
-                    )
-                  })}
-                  
-                  {/* Last page */}
-                  {currentPage < totalPages - 2 && (
-                    <>
-                      {currentPage < totalPages - 3 && <span className={styles.paginationDots}>...</span>}
+                      <span className={styles.dots}>...</span>
+                      {[currentPage - 1, currentPage, currentPage + 1].map(page => (
+                        <button
+                          key={page}
+                          onClick={() => handlePageSelect(page)}
+                          className={`${styles.pageNumber} ${page === currentPage ? styles.active : ''}`}
+                        >
+                          {page}
+                        </button>
+                      ))}
+                      <span className={styles.dots}>...</span>
                       <button
                         onClick={() => handlePageSelect(totalPages)}
                         className={styles.pageNumber}
                       >
                         {totalPages}
                       </button>
-                    </>
+                    </div>
                   )}
                 </div>
                 
@@ -817,12 +863,32 @@ export default function ProductsMobileClient() {
                 <button
                   onClick={handleNextPage}
                   disabled={currentPage === totalPages}
-                  className={styles.paginationButton}
+                  className={`${styles.paginationArrow} ${currentPage === totalPages ? styles.disabled : ''}`}
+                  aria-label="Next page"
                 >
-                  Next
-                  <FiChevronRight size={16} />
+                  <FiChevronRight size={20} />
                 </button>
               </div>
+              
+              {/* Quick jump (for pages with many results) */}
+              {totalPages > 10 && (
+                <div className={styles.quickJump}>
+                  <button 
+                    onClick={() => handlePageSelect(1)}
+                    className={styles.jumpButton}
+                    disabled={currentPage === 1}
+                  >
+                    First
+                  </button>
+                  <button 
+                    onClick={() => handlePageSelect(totalPages)}
+                    className={styles.jumpButton}
+                    disabled={currentPage === totalPages}
+                  >
+                    Last
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </>

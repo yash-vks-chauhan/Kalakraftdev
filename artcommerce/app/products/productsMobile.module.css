@@ -1345,152 +1345,260 @@ details[open] .arrow {
 }
 
 /* ===========================================
-   PAGINATION STYLES
+   MODERN MOBILE PAGINATION STYLES
    =========================================== */
 
 .paginationContainer {
-  background: #f8fafc;
-  border-top: 1px solid #e2e8f0;
-  padding: 16px;
-  margin: 16px 0 0 0;
+  background: #ffffff;
+  border-top: 1px solid #f1f5f9;
+  padding: 20px 16px;
+  margin: 24px 0 0 0;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-bottom: 20px; /* Add extra bottom margin to avoid footer overlap */
+  gap: 16px;
+  margin-bottom: 20px;
+  border-radius: 12px 12px 0 0;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.02);
 }
 
 .paginationInfo {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
 }
 
 .paginationInfoText {
-  font-size: 12px;
+  font-size: 16px;
+  color: #1e293b;
+  text-align: center;
+  font-weight: 600;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.paginationProducts {
+  font-size: 13px;
   color: #64748b;
   text-align: center;
-  font-weight: 500;
+  font-weight: 400;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 .paginationControls {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 12px;
 }
 
-.paginationButton {
+.paginationArrow {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 8px 12px;
-  background: #ffffff;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background: #f8fafc;
   border: 1px solid #e2e8f0;
-  border-radius: 8px;
+  border-radius: 12px;
   color: #374151;
-  font-size: 12px;
-  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
-  min-width: 80px;
-  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  flex-shrink: 0;
 }
 
-.paginationButton:hover:not(:disabled) {
+.paginationArrow:hover:not(.disabled) {
   background: #f1f5f9;
   border-color: #cbd5e1;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.paginationButton:disabled {
-  opacity: 0.5;
+.paginationArrow:active:not(.disabled) {
+  transform: translateY(0);
+  background: #e2e8f0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.paginationArrow.disabled {
+  opacity: 0.4;
   cursor: not-allowed;
+  background: #f9fafb;
+  border-color: #f1f5f9;
 }
 
-.paginationButton:active:not(:disabled) {
-  transform: translateY(1px);
-}
-
-.paginationNumbers {
-  display: flex;
-  align-items: center;
-  gap: 4px;
+.pageIndicator {
   flex: 1;
+  display: flex;
   justify-content: center;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   padding: 0 8px;
-  max-width: 160px;
 }
 
-.paginationNumbers::-webkit-scrollbar {
+.pageIndicator::-webkit-scrollbar {
   display: none;
 }
 
-.paginationNumbers {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+.pageNumbers {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: max-content;
 }
 
 .pageNumber {
-  min-width: 32px;
-  height: 32px;
+  min-width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  color: #374151;
-  font-size: 12px;
+  border-radius: 8px;
+  color: #475569;
+  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
   flex-shrink: 0;
 }
 
 .pageNumber:hover {
-  background: #f1f5f9;
+  background: #f8fafc;
   border-color: #cbd5e1;
+  transform: translateY(-1px);
 }
 
 .pageNumber:active {
-  transform: translateY(1px);
+  transform: translateY(0);
+  background: #f1f5f9;
 }
 
-.pageNumberActive {
-  background: #3b82f6 !important;
-  border-color: #3b82f6 !important;
-  color: white !important;
+.pageNumber.active {
+  background: #000000 !important;
+  border-color: #000000 !important;
+  color: #ffffff !important;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
-.paginationDots {
+.pageNumber.active:hover {
+  background: #1a1a1a !important;
+  transform: translateY(-1px);
+}
+
+.dots {
   color: #94a3b8;
-  font-weight: bold;
+  font-weight: 600;
   padding: 0 4px;
-  font-size: 12px;
+  font-size: 14px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  display: flex;
+  align-items: center;
+  user-select: none;
+}
+
+.quickJump {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  padding-top: 8px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.jumpButton {
+  padding: 8px 16px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.jumpButton:hover:not(:disabled) {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+}
+
+.jumpButton:active:not(:disabled) {
+  transform: translateY(0);
+  background: #e2e8f0;
+}
+
+.jumpButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 /* Enhanced mobile-specific pagination styles */
 @media (max-width: 480px) {
-  .paginationControls {
-    gap: 6px;
+  .paginationContainer {
+    padding: 16px 12px;
+    gap: 14px;
+    margin: 20px 0 0 0;
   }
   
-  .paginationButton {
-    padding: 6px 8px;
-    min-width: 70px;
-    font-size: 11px;
+  .paginationArrow {
+    width: 40px;
+    height: 40px;
   }
-
-  .paginationNumbers {
-    gap: 2px;
-    padding: 0 4px;
-    max-width: 140px;
+  
+  .pageNumber {
+    min-width: 32px;
+    height: 32px;
+    font-size: 13px;
   }
+  
+  .pageNumbers {
+    gap: 4px;
+  }
+  
+  .quickJump {
+    gap: 8px;
+  }
+  
+  .jumpButton {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+}
 
+@media (max-width: 360px) {
+  .paginationContainer {
+    padding: 14px 10px;
+    gap: 12px;
+  }
+  
+  .paginationArrow {
+    width: 36px;
+    height: 36px;
+  }
+  
   .pageNumber {
     min-width: 28px;
     height: 28px;
-    font-size: 11px;
+    font-size: 12px;
+  }
+  
+  .paginationInfoText {
+    font-size: 14px;
+  }
+  
+  .paginationProducts {
+    font-size: 12px;
   }
 } 
