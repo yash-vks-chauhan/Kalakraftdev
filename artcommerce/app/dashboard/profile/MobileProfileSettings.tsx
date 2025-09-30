@@ -3,6 +3,7 @@
 import { useState, FormEvent, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useAuth } from '../../contexts/AuthContext'
 import { 
   ChevronLeft, 
@@ -185,6 +186,37 @@ export default function MobileProfileSettings() {
       month: 'short', 
       day: 'numeric' 
     })
+  }
+
+  // Get first product image from order
+  const getOrderImage = (order: any) => {
+    if (order.orderItems && order.orderItems.length > 0) {
+      const firstItem = order.orderItems[0]
+      if (firstItem.product && firstItem.product.imageUrls) {
+        try {
+          const urls = Array.isArray(firstItem.product.imageUrls) 
+            ? firstItem.product.imageUrls 
+            : JSON.parse(firstItem.product.imageUrls || '[]')
+          return urls.length > 0 ? urls[0] : null
+        } catch {
+          return null
+        }
+      }
+    }
+    return null
+  }
+
+  // Get order display info
+  const getOrderDisplayInfo = (order: any) => {
+    if (order.orderItems && order.orderItems.length > 0) {
+      const itemCount = order.orderItems.length
+      if (itemCount === 1) {
+        return order.orderItems[0].product?.name || 'Product'
+      } else {
+        return `${order.orderItems[0].product?.name || 'Product'} +${itemCount - 1} more`
+      }
+    }
+    return `Order #${order.id.toString().substring(0, 8)}`
   }
 
   const getStatusClass = (status: string) => {
@@ -571,24 +603,40 @@ export default function MobileProfileSettings() {
             <div className={`${styles.expandableContent} ${showOrders ? styles.expanded : ''}`}>
               {user.orders && user.orders.length > 0 ? (
                 <div className={styles.iosOrdersList}>
-                  {user.orders.slice(0, 3).map(order => (
-                    <Link key={order.id} href={`/dashboard/orders/${order.id}`} className={styles.iosOrderItem}>
-                      <div className={styles.orderIcon}>
-                        <Package size={20} />
-                      </div>
-                      <div className={styles.orderDetails}>
-                        <h4 className={styles.orderTitle}>Order #{order.id.toString().substring(0, 8)}</h4>
-                        <p className={styles.orderSubtitle}>{formatDate(order.createdAt)}</p>
-                        <div className={styles.orderMeta}>
-                          <span className={styles.orderPrice}>₹{order.totalAmount?.toFixed(0) || '0'}</span>
-                          <div className={`${styles.orderStatus} ${styles[getStatusClass(order.status)]}`}>
-                            <span className={styles.statusDot}></span>
-                            {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                  {user.orders.slice(0, 3).map(order => {
+                    const orderImage = getOrderImage(order)
+                    const orderTitle = getOrderDisplayInfo(order)
+                    
+                    return (
+                      <Link key={order.id} href={`/dashboard/orders/${order.id}`} className={styles.iosOrderItem}>
+                        <div className={styles.orderIcon}>
+                          {orderImage ? (
+                            <Image
+                              src={orderImage}
+                              alt={orderTitle}
+                              width={60}
+                              height={60}
+                              className={styles.orderImage}
+                              priority={false}
+                            />
+                          ) : (
+                            <Package size={20} />
+                          )}
+                        </div>
+                        <div className={styles.orderDetails}>
+                          <h4 className={styles.orderTitle}>{orderTitle}</h4>
+                          <p className={styles.orderSubtitle}>{formatDate(order.createdAt)}</p>
+                          <div className={styles.orderMeta}>
+                            <span className={styles.orderPrice}>₹{order.totalAmount?.toFixed(0) || '0'}</span>
+                            <div className={`${styles.orderStatus} ${styles[getStatusClass(order.status)]}`}>
+                              <span className={styles.statusDot}></span>
+                              {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </Link>
-                  ))}
+                      </Link>
+                    )
+                  })}
                 </div>
               ) : (
                 <div className={styles.emptyStateSmall}>
