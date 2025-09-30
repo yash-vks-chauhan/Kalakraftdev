@@ -103,27 +103,7 @@ export default function ProfilePage() {
   const [forceDesktopView, setForceDesktopView] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
 
-  useEffect(() => {
-    setIsMounted(true)
-    if (typeof window !== 'undefined') {
-      const pref = localStorage.getItem('viewPreference')
-      if (pref === 'desktop') setForceDesktopView(true)
-    }
-  }, [])
-
-  // Prevent hydration mismatch by not rendering until mounted
-  if (!isMounted) {
-    return <ProfileSkeleton />
-  }
-
-  const mobileView = isMobile && !forceDesktopView
-
-  // Return mobile version if in mobile view
-  if (mobileView) {
-    return <MobileProfileSettings />
-  }
-
-  // Core form state
+  // Core form state - MUST be declared before any conditional returns
   const [fullName, setFullName] = useState<string>('')
   const [avatarUrl, setAvatarUrl] = useState<string>('')
 
@@ -171,7 +151,7 @@ export default function ProfilePage() {
   // Add a loading state
   const [isLoading, setIsLoading] = useState<boolean>(true)
 
-  // Memoized function to load addresses
+  // Memoized function to load addresses - MUST be before conditional returns
   const loadAddresses = useCallback(async () => {
     if (!token) return;
     try {
@@ -187,90 +167,6 @@ export default function ProfilePage() {
       setAddrLoading(false)
     }
   }, [token])
-
-  // Single initialization effect with cleanup
-  useEffect(() => {
-    // Wait for AuthContext to finish loading before taking any action.
-    if (authLoading) return;
-
-    // Once auth is resolved, redirect if unauthenticated.
-    if (!token) {
-      router.replace('/auth/login');
-      return;
-    }
-
-    // Auth is ready and the user is authenticated – fetch addresses once.
-    (async () => {
-      setIsLoading(true);
-      try {
-        await loadAddresses();
-      } catch (error) {
-        console.error('Failed to load addresses:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    })();
-    // We intentionally exclude fetchProfile here to avoid an endless loop caused by toggling the auth loading state.
-  }, [authLoading, token, loadAddresses]);
-
-  // Timer effect for email OTP with cleanup
-  useEffect(() => {
-    if (!emailOtpExpiresAt) return;
-    
-    let mounted = true;
-    const interval = setInterval(() => {
-      if (!mounted) return;
-      
-      const now = Date.now()
-      const remaining = Math.max(0, Math.floor((emailOtpExpiresAt - now) / 1000))
-      setEmailRemaining(remaining)
-      
-      if (remaining === 0) {
-        setOtpSent(false)
-        setEmailOtpExpiresAt(null)
-        setEmailOtp('')
-      }
-    }, 1000)
-
-    return () => {
-      mounted = false;
-      clearInterval(interval)
-    }
-  }, [emailOtpExpiresAt])
-
-  // Timer effect for password OTP with cleanup
-  useEffect(() => {
-    if (!passwordOtpExpiresAt) return;
-    
-    let mounted = true;
-    const interval = setInterval(() => {
-      if (!mounted) return;
-      
-      const now = Date.now()
-      const remaining = Math.max(0, Math.floor((passwordOtpExpiresAt - now) / 1000))
-      setPasswordRemaining(remaining)
-      
-      if (remaining === 0) {
-        setStep('send')
-        setPasswordOtpExpiresAt(null)
-        setOtp('')
-        setError('OTP for password change has expired. Please request a new one.')
-      }
-    }, 1000)
-
-    return () => {
-      mounted = false;
-      clearInterval(interval)
-    }
-  }, [passwordOtpExpiresAt])
-
-  // Sync form data with user data - only when user changes
-  useEffect(() => {
-    if (!user || isLoading) return;
-    
-    setFullName(user.fullName)
-    setAvatarUrl(user.avatarUrl || '')
-  }, [user, isLoading])
 
   // Format time helper function
   const formatTime = (seconds: number): string => {
@@ -360,8 +256,8 @@ export default function ProfilePage() {
     }
   }, [token, newEmail, emailOtp, fetchProfile])
 
-  // ===== Change Password =====
-  async function sendOtp() {
+  // Change password handlers - MUST be before conditional returns
+  const sendOtp = useCallback(async () => {
     setError(null)
     setMessage(null)
     setLoading(true)
@@ -385,9 +281,9 @@ export default function ProfilePage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [token])
 
-  async function handleVerify(e: FormEvent) {
+  const handleVerify = useCallback(async (e: FormEvent) => {
     e.preventDefault()
     setError(null)
     setMessage(null)
@@ -414,6 +310,110 @@ export default function ProfilePage() {
     } finally {
       setLoading(false)
     }
+  }, [token, otp, newPassword, confirmPassword, fetchProfile])
+
+  useEffect(() => {
+    setIsMounted(true)
+    if (typeof window !== 'undefined') {
+      const pref = localStorage.getItem('viewPreference')
+      if (pref === 'desktop') setForceDesktopView(true)
+    }
+  }, [])
+
+  // Single initialization effect with cleanup
+  useEffect(() => {
+    // Wait for AuthContext to finish loading before taking any action.
+    if (authLoading) return;
+
+    // Once auth is resolved, redirect if unauthenticated.
+    if (!token) {
+      router.replace('/auth/login');
+      return;
+    }
+
+    // Auth is ready and the user is authenticated – fetch addresses once.
+    (async () => {
+      setIsLoading(true);
+      try {
+        await loadAddresses();
+      } catch (error) {
+        console.error('Failed to load addresses:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    })();
+    // We intentionally exclude fetchProfile here to avoid an endless loop caused by toggling the auth loading state.
+  }, [authLoading, token, loadAddresses]);
+
+  // Timer effect for email OTP with cleanup
+  useEffect(() => {
+    if (!emailOtpExpiresAt) return;
+    
+    let mounted = true;
+    const interval = setInterval(() => {
+      if (!mounted) return;
+      
+      const now = Date.now()
+      const remaining = Math.max(0, Math.floor((emailOtpExpiresAt - now) / 1000))
+      setEmailRemaining(remaining)
+      
+      if (remaining === 0) {
+        setOtpSent(false)
+        setEmailOtpExpiresAt(null)
+        setEmailOtp('')
+      }
+    }, 1000)
+
+    return () => {
+      mounted = false;
+      clearInterval(interval)
+    }
+  }, [emailOtpExpiresAt])
+
+  // Timer effect for password OTP with cleanup
+  useEffect(() => {
+    if (!passwordOtpExpiresAt) return;
+    
+    let mounted = true;
+    const interval = setInterval(() => {
+      if (!mounted) return;
+      
+      const now = Date.now()
+      const remaining = Math.max(0, Math.floor((passwordOtpExpiresAt - now) / 1000))
+      setPasswordRemaining(remaining)
+      
+      if (remaining === 0) {
+        setStep('send')
+        setPasswordOtpExpiresAt(null)
+        setOtp('')
+        setError('OTP for password change has expired. Please request a new one.')
+      }
+    }, 1000)
+
+    return () => {
+      mounted = false;
+      clearInterval(interval)
+    }
+  }, [passwordOtpExpiresAt])
+
+  // Sync form data with user data - only when user changes
+  useEffect(() => {
+    if (!user || isLoading) return;
+    
+    setFullName(user.fullName)
+    setAvatarUrl(user.avatarUrl || '')
+  }, [user, isLoading])
+
+  // Prevent hydration mismatch by not rendering until mounted
+  if (!isMounted) {
+    return <ProfileSkeleton />
+  }
+
+  const mobileView = isMobile && !forceDesktopView
+
+  // Return mobile version if in mobile view
+  if (mobileView) {
+    return <MobileProfileSettings />
   }
 
   if (isLoading) {
@@ -503,20 +503,49 @@ export default function ProfilePage() {
               />
             </div>
 
-            {/* ===== Email display & change ===== */}
-            <div className={styles.formGroup}>
-              <label htmlFor="email" className={styles.label}>Email</label>
-              <input 
-                id="email" 
-                type="email" 
-                value={user.email} 
-                readOnly 
-                className={`${styles.input} ${styles.disabled}`}
-              />
-            </div>
+            <button type="submit" className={styles.button}>Update Profile</button>
+          </form>
+        </section>
 
-            <details className={styles.section}>
-              <summary className={`${styles.label} ${styles.summaryWithArrow}`}>Change Email Address</summary>
+        {/* ===== Security Section ===== */}
+        <section className={styles.section}>
+          <h2 className={styles.title}>Security</h2>
+          
+          {/* Current Email Display */}
+          <div className={styles.securityItem}>
+            <div className={styles.securityItemIcon}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M3 8L10.5 13.5L21 8M5 19H19C20.1046 19 21 18.1046 21 17V7C21 5.89543 20.1046 5 19 5H5C3.89543 5 3 5.89543 3 7V17C3 18.1046 3.89543 19 5 19Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+            <div className={styles.securityItemContent}>
+              <div className={styles.securityItemTitle}>Email</div>
+              <div className={styles.securityItemValue}>{user.email}</div>
+            </div>
+          </div>
+
+          <div className={styles.securityDivider}></div>
+
+          {/* Change Email */}
+          <details className={styles.securityItem}>
+            <summary className={styles.securityItemSummary}>
+              <div className={styles.securityItemIcon}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M11 4H4C3.46957 4 2.96086 4.21071 2.58579 4.58579C2.21071 4.96086 2 5.46957 2 6V18C2 18.5304 2.21071 19.0391 2.58579 19.4142C2.96086 19.7893 3.46957 20 4 20H16C16.5304 20 17.0391 19.7893 17.4142 19.4142C17.7893 19.0391 18 18.5304 18 18V13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M18.5 2.50023C18.8978 2.10243 19.4374 1.87891 20 1.87891C20.5626 1.87891 21.1022 2.10243 21.5 2.50023C21.8978 2.89804 22.1213 3.43762 22.1213 4.00023C22.1213 4.56284 21.8978 5.10243 21.5 5.50023L12 15.0002L8 16.0002L9 12.0002L18.5 2.50023Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+              <div className={styles.securityItemContent}>
+                <div className={styles.securityItemTitle}>Change Email</div>
+                <div className={styles.securityItemSubtitle}>Update email address</div>
+              </div>
+              <div className={styles.securityItemArrow}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M9 18L15 12L9 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+            </summary>
+            <div className={styles.securityItemDetails}>
               <div className={styles.formGroup}>
                 <input 
                   type="email" 
@@ -560,77 +589,95 @@ export default function ProfilePage() {
                   </button>
                 </div>
               )}
-            </details>
+            </div>
+          </details>
 
-            <button type="submit" className={styles.button}>Update Profile</button>
-          </form>
+          <div className={styles.securityDivider}></div>
+
+          {/* Change Password */}
+          <details className={styles.securityItem}>
+            <summary className={styles.securityItemSummary}>
+              <div className={styles.securityItemIcon}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 1C10.6193 1 9.5 2.11929 9.5 3.5V5H6C4.34315 5 3 6.34315 3 8V19C3 20.6569 4.34315 22 6 22H18C19.6569 22 21 20.6569 21 19V8C21 6.34315 19.6569 5 18 5H14.5V3.5C14.5 2.11929 13.3807 1 12 1Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <circle cx="12" cy="13" r="2" stroke="currentColor" strokeWidth="2"/>
+                </svg>
+              </div>
+              <div className={styles.securityItemContent}>
+                <div className={styles.securityItemTitle}>Change Password</div>
+                <div className={styles.securityItemSubtitle}>Update your password</div>
+              </div>
+              <div className={styles.securityItemArrow}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M9 18L15 12L9 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+            </summary>
+            <div className={styles.securityItemDetails}>
+              {step === 'send' ? (
+                <button
+                  onClick={sendOtp}
+                  disabled={loading}
+                  className={styles.button}
+                >
+                  {loading ? 'Sending OTP…' : 'Send OTP to my email'}
+                </button>
+              ) : (
+                <form onSubmit={handleVerify}>
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>
+                      OTP Code
+                      <input
+                        value={otp}
+                        onChange={(e) => setOtp(e.target.value.toUpperCase())}
+                        required
+                        className={styles.input}
+                      />
+                    </label>
+                    {passwordRemaining > 0 && (
+                      <span className={styles.label}>
+                        Expires in: {formatTime(passwordRemaining)}
+                      </span>
+                    )}
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>
+                      New Password
+                      <input
+                        type="password"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        required
+                        className={styles.input}
+                      />
+                    </label>
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>
+                      Confirm Password
+                      <input
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        required
+                        className={styles.input}
+                      />
+                    </label>
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className={styles.button}
+                  >
+                    {loading ? 'Updating…' : 'Update Password'}
+                  </button>
+                </form>
+              )}
+            </div>
+          </details>
         </section>
 
-        {/* ===== Change Password ===== */}
-        <section className={styles.section}>
-          <h2 className={styles.title}>Change Password</h2>
-          {step === 'send' ? (
-            <button
-              onClick={sendOtp}
-              disabled={loading}
-              className={styles.button}
-            >
-              {loading ? 'Sending OTP…' : 'Send OTP to my email'}
-            </button>
-          ) : (
-            <form onSubmit={handleVerify}>
-              <div className={styles.formGroup}>
-                <label className={styles.label}>
-                  OTP Code
-                  <input
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value.toUpperCase())}
-                    required
-                    className={styles.input}
-                  />
-                </label>
-                {passwordRemaining > 0 && (
-                  <span className={styles.label}>
-                    Expires in: {formatTime(passwordRemaining)}
-                  </span>
-                )}
-              </div>
-              <div className={styles.formGroup}>
-                <label className={styles.label}>
-                  New Password
-                  <input
-                    type="password"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    required
-                    className={styles.input}
-                  />
-                </label>
-              </div>
-              <div className={styles.formGroup}>
-                <label className={styles.label}>
-                  Confirm Password
-                  <input
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    required
-                    className={styles.input}
-                  />
-                </label>
-              </div>
-              <button
-                type="submit"
-                disabled={loading}
-                className={styles.button}
-              >
-                {loading ? 'Updating…' : 'Update Password'}
-              </button>
-            </form>
-          )}
-        </section>
-
-        {/* ===== Order History ===== */}
+        {/* ===== Recent Orders ===== */}
         <section className={styles.section}>
           <h2 className={styles.title}>Your Order History</h2>
           {user.orders && user.orders.length > 0 ? (
