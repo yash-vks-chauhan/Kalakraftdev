@@ -51,17 +51,19 @@ export function isMobileDevice(): boolean {
 
 export function useIsMobile(): boolean {
   const [isMobile, setIsMobile] = React.useState(false);
+  const [isInitialized, setIsInitialized] = React.useState(false);
   
   React.useEffect(() => {
     if (typeof window === 'undefined') return;
     
-    setIsMobile(isMobileDevice());
     const checkMobile = () => {
       setIsMobile(isMobileDevice());
     };
     
     // Check on initial load and when window is resized
     checkMobile();
+    setIsInitialized(true);
+    
     window.addEventListener('resize', checkMobile);
     
     return () => {
@@ -69,5 +71,6 @@ export function useIsMobile(): boolean {
     };
   }, []);
   
-  return isMobile;
+  // Return false until initialized to prevent hydration mismatch
+  return isInitialized ? isMobile : false;
 } 

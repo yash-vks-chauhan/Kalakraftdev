@@ -103,8 +103,6 @@ export default function ProfilePage() {
   const [forceDesktopView, setForceDesktopView] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
 
-  const mobileView = isMounted && isMobile && !forceDesktopView
-
   useEffect(() => {
     setIsMounted(true)
     if (typeof window !== 'undefined') {
@@ -113,10 +111,12 @@ export default function ProfilePage() {
     }
   }, [])
 
-  // Prevent hydration mismatch
+  // Prevent hydration mismatch by not rendering until mounted
   if (!isMounted) {
-    return null
+    return <ProfileSkeleton />
   }
+
+  const mobileView = isMobile && !forceDesktopView
 
   // Return mobile version if in mobile view
   if (mobileView) {

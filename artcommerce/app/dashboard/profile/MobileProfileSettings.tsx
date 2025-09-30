@@ -23,6 +23,7 @@ import {
 import styles from './mobile-profile.module.css'
 import InlineLoader from '../../components/InlineLoader'
 import MobileBottomNavbar from '../../components/MobileBottomNavbar'
+import RocketLoader from '../../components/RocketLoader'
 
 interface Address {
   id: number
@@ -858,7 +859,7 @@ export default function MobileProfileSettings() {
                       disabled={loading}
                       className={styles.otpButton}
                     >
-                      {loading ? 'Sending OTP…' : 'Send OTP to Email'}
+                      {loading ? <RocketLoader /> : 'Send OTP to Email'}
                     </button>
                   </div>
                 )}
@@ -867,16 +868,22 @@ export default function MobileProfileSettings() {
                   <div className={styles.stepContent}>
                     <form onSubmit={handleVerifyPassword}>
                     <div className={styles.inputGroup}>
-                      <label className={styles.inputLabel}>Enter OTP</label>
-                      <input
-                        type="text"
-                        placeholder="Enter the 6-digit OTP"
-                        value={otp}
-                        onChange={(e) => setOtp(e.target.value.toUpperCase())}
-                        required
-                        className={styles.formInput}
-                        maxLength={6}
-                      />
+                      <div className={styles.floatingInputContainer}>
+                        <input
+                          type="text"
+                          placeholder="Enter the 6-digit OTP"
+                          value={otp}
+                          onChange={(e) => setOtp(e.target.value.toUpperCase())}
+                          required
+                          className={styles.floatingInput}
+                          maxLength={6}
+                          id="passwordOtpInput"
+                          data-filled={otp ? "true" : "false"}
+                        />
+                        <label htmlFor="passwordOtpInput" className={styles.floatingLabel}>
+                          Enter OTP
+                        </label>
+                      </div>
                       {passwordRemaining > 0 && (
                         <span className={styles.timerText}>
                           Expires in: {formatTime(passwordRemaining)}
@@ -885,29 +892,41 @@ export default function MobileProfileSettings() {
                     </div>
                     
                     <div className={styles.inputGroup}>
-                      <label className={styles.inputLabel}>New Password</label>
-                      <input
-                        type="password"
-                        placeholder="Enter new password"
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                        required
-                        className={styles.formInput}
-                        minLength={8}
-                      />
+                      <div className={styles.floatingInputContainer}>
+                        <input
+                          type="password"
+                          placeholder="Enter new password"
+                          value={newPassword}
+                          onChange={(e) => setNewPassword(e.target.value)}
+                          required
+                          className={styles.floatingInput}
+                          minLength={8}
+                          id="newPasswordInput"
+                          data-filled={newPassword ? "true" : "false"}
+                        />
+                        <label htmlFor="newPasswordInput" className={styles.floatingLabel}>
+                          New Password
+                        </label>
+                      </div>
                     </div>
                     
                     <div className={styles.inputGroup}>
-                      <label className={styles.inputLabel}>Confirm Password</label>
-                      <input
-                        type="password"
-                        placeholder="Confirm new password"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        required
-                        className={styles.formInput}
-                        minLength={8}
-                      />
+                      <div className={styles.floatingInputContainer}>
+                        <input
+                          type="password"
+                          placeholder="Confirm new password"
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          required
+                          className={styles.floatingInput}
+                          minLength={8}
+                          id="confirmPasswordInput"
+                          data-filled={confirmPassword ? "true" : "false"}
+                        />
+                        <label htmlFor="confirmPasswordInput" className={styles.floatingLabel}>
+                          Confirm Password
+                        </label>
+                      </div>
                     </div>
                     
                     <div className={styles.modalButtons}>
@@ -969,22 +988,28 @@ export default function MobileProfileSettings() {
                       Enter your new email address. We'll send an OTP to your current email to verify the change.
                     </p>
                     <div className={styles.inputGroup}>
-                      <label className={styles.inputLabel}>New Email Address</label>
-                      <input
-                        type="email"
-                        placeholder="Enter new email address"
-                        value={newEmail}
-                        onChange={(e) => setNewEmail(e.target.value)}
-                        required
-                        className={styles.formInput}
-                      />
+                      <div className={styles.floatingInputContainer}>
+                        <input
+                          type="email"
+                          placeholder="Enter new email address"
+                          value={newEmail}
+                          onChange={(e) => setNewEmail(e.target.value)}
+                          required
+                          className={styles.floatingInput}
+                          id="newEmailInput"
+                          data-filled={newEmail ? "true" : "false"}
+                        />
+                        <label htmlFor="newEmailInput" className={styles.floatingLabel}>
+                          New Email Address
+                        </label>
+                      </div>
                     </div>
                     <button
                       onClick={handleRequestEmailOtp}
                       disabled={loading || !newEmail}
                       className={styles.otpButton}
                     >
-                      {loading ? 'Sending OTP…' : 'Send OTP to Current Email'}
+                      {loading ? <RocketLoader /> : 'Send OTP to Current Email'}
                     </button>
                   </div>
                 )}
@@ -993,16 +1018,22 @@ export default function MobileProfileSettings() {
                   <div className={styles.stepContent}>
                     <form onSubmit={(e) => { e.preventDefault(); handleConfirmEmailChange(); }}>
                       <div className={styles.inputGroup}>
-                        <label className={styles.inputLabel}>Enter OTP</label>
-                        <input
-                          type="text"
-                          placeholder="Enter the 6-digit OTP"
-                          value={emailOtp}
-                          onChange={(e) => setEmailOtp(e.target.value.toUpperCase())}
-                          required
-                          className={styles.formInput}
-                          maxLength={6}
-                        />
+                        <div className={styles.floatingInputContainer}>
+                          <input
+                            type="text"
+                            placeholder="Enter the 6-digit OTP"
+                            value={emailOtp}
+                            onChange={(e) => setEmailOtp(e.target.value.toUpperCase())}
+                            required
+                            className={styles.floatingInput}
+                            maxLength={6}
+                            id="emailOtpInput"
+                            data-filled={emailOtp ? "true" : "false"}
+                          />
+                          <label htmlFor="emailOtpInput" className={styles.floatingLabel}>
+                            Enter OTP
+                          </label>
+                        </div>
                         {emailRemaining > 0 && (
                           <span className={styles.timerText}>
                             Expires in: {formatTime(emailRemaining)}
@@ -1011,14 +1042,20 @@ export default function MobileProfileSettings() {
                       </div>
                       
                       <div className={styles.inputGroup}>
-                        <label className={styles.inputLabel}>Confirm New Email</label>
-                        <input
-                          type="email"
-                          placeholder="Confirm new email address"
-                          value={newEmail}
-                          disabled
-                          className={styles.formInput}
-                        />
+                        <div className={styles.floatingInputContainer}>
+                          <input
+                            type="email"
+                            placeholder="Confirm new email address"
+                            value={newEmail}
+                            disabled
+                            className={styles.floatingInput}
+                            id="confirmEmailInput"
+                            data-filled={newEmail ? "true" : "false"}
+                          />
+                          <label htmlFor="confirmEmailInput" className={styles.floatingLabel}>
+                            Confirm New Email
+                          </label>
+                        </div>
                       </div>
                       
                       <div className={styles.modalButtons}>
