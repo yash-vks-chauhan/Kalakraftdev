@@ -496,75 +496,116 @@ export default function MobileProfileSettings() {
         {message && <div className={`${styles.message} ${styles.success}`}>{message}</div>}
         {error && <div className={`${styles.message} ${styles.error}`}>{error}</div>}
 
-        {/* Personal Section */}
-        <div className={styles.iosSection}>
-          <div className={styles.iosSectionHeader}>
-            <h3 className={styles.iosSectionTitle}>Personal</h3>
-          </div>
-          <div className={styles.iosMenuGroup}>
-            {/* Avatar Selection */}
-            <div 
-              className={styles.iosMenuItem}
-              onClick={() => setShowAvatarSelection(prev => !prev)}
-            >
-              <div className={styles.iosMenuIcon}>
-                {avatarUrl ? (
-                  <img src={avatarUrl} className={styles.avatarPreview} alt="Avatar" />
-                ) : (
-                  <User size={22} />
-                )}
-              </div>
-              <div className={styles.iosMenuContent}>
-                <span className={styles.iosMenuTitle}>Profile Picture</span>
-                <span className={styles.iosMenuSubtitle}>Tap to change avatar</span>
-              </div>
-              <ChevronRight size={16} className={styles.iosChevron} />
-            </div>
-
-            {/* Avatar Selection Expandable */}
-            <div className={`${styles.expandableContent} ${showAvatarSelection ? styles.expanded : ''}`}>
-              <div className={styles.avatarSelectionContent}>
-                <div className={styles.avatarGrid}>
-                  {[
-                    { name: 'Robot', path: '/avatars/robot.svg' },
-                    { name: 'Fox', path: '/avatars/fox.svg' },
-                    { name: 'Owl', path: '/avatars/owl.svg' }
-                  ].map(avatar => (
-                    <button
-                      key={avatar.name}
-                      type="button"
-                      onClick={() => {
-                        setAvatarUrl(avatar.path)
-                        setShowAvatarSelection(false)
-                      }}
-                      className={`${styles.avatarOption} ${avatarUrl === avatar.path ? styles.selected : ''}`}
-                    >
-                      <img src={avatar.path} alt={avatar.name} />
-                    </button>
-                  ))}
+        {/* Profile Header Section */}
+        <div className={styles.profileHeaderSection}>
+          <div className={styles.profileHeaderCard}>
+            {/* Profile Picture Container */}
+            <div className={styles.profileImageContainer}>
+              <div className={styles.profileImageWrapper}>
+                <div className={styles.profileImageBorder}>
+                  <img 
+                    src={avatarUrl || '/avatars/robot.svg'} 
+                    alt="Profile" 
+                    className={styles.profileImage}
+                  />
                 </div>
                 <button 
-                  onClick={handleProfileSubmit}
-                  className={styles.saveButton}
+                  className={styles.editImageButton}
+                  onClick={() => setShowAvatarSelection(prev => !prev)}
+                  aria-label="Edit profile picture"
                 >
-                  Save Changes
+                  <Edit size={14} />
                 </button>
               </div>
             </div>
 
-            {/* Name Field */}
-            <div className={styles.iosMenuItem}>
-              <div className={styles.iosMenuIcon}>
-                <User size={22} />
-              </div>
-              <div className={styles.iosMenuContent}>
-                <span className={styles.iosMenuTitle}>Full Name</span>
+            {/* Profile Info Container */}
+            <div className={styles.profileInfoContainer}>
+              <div className={styles.profileNameSection}>
                 <input 
                   value={fullName} 
                   onChange={e => setFullName(e.target.value)}
-                  className={styles.inlineInput}
+                  className={styles.profileNameInput}
                   onBlur={handleProfileSubmit}
+                  placeholder="Enter your name"
                 />
+                <div className={styles.profileEmailDisplay}>
+                  <Mail size={14} className={styles.emailIcon} />
+                  <span className={styles.profileEmail}>{user.email}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Avatar Selection Expandable */}
+          <div className={`${styles.avatarSelectionWrapper} ${showAvatarSelection ? styles.expanded : ''}`}>
+            <div className={styles.avatarSelectionCard}>
+              <div className={styles.avatarSelectionHeader}>
+                <h4 className={styles.avatarSelectionTitle}>Choose Your Avatar</h4>
+                <p className={styles.avatarSelectionSubtitle}>Select a profile picture that represents you</p>
+              </div>
+              
+              <div className={styles.avatarOptionsGrid}>
+                {[
+                  { name: 'Robot', path: '/avatars/robot.svg' },
+                  { name: 'Fox', path: '/avatars/fox.svg' },
+                  { name: 'Owl', path: '/avatars/owl.svg' }
+                ].map(avatar => (
+                  <button
+                    key={avatar.name}
+                    type="button"
+                    onClick={async () => {
+                      setAvatarUrl(avatar.path)
+                      setShowAvatarSelection(false)
+                      // Create a synthetic event for the profile submit
+                      const syntheticEvent = { preventDefault: () => {} } as FormEvent
+                      await handleProfileSubmit(syntheticEvent)
+                    }}
+                    className={`${styles.avatarOptionCard} ${avatarUrl === avatar.path ? styles.selected : ''}`}
+                  >
+                    <div className={styles.avatarOptionImage}>
+                      <img src={avatar.path} alt={avatar.name} />
+                    </div>
+                    <span className={styles.avatarOptionName}>{avatar.name}</span>
+                    {avatarUrl === avatar.path && (
+                      <div className={styles.selectedIndicator}>
+                        <div className={styles.checkmark}>✓</div>
+                      </div>
+                    )}
+                  </button>
+                ))}
+              </div>
+
+              <div className={styles.avatarUploadSection}>
+                <div className={styles.uploadDivider}>
+                  <span className={styles.dividerText}>or</span>
+                </div>
+                <label className={styles.customUploadButton}>
+                  <Plus size={16} />
+                  <span>Upload Custom Image</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={async e => {
+                      const file = e.target.files?.[0]
+                      if (!file) return
+                      const form = new FormData()
+                      form.append('file', file)
+                      try {
+                        const res = await fetch('/api/uploads', { method: 'POST', body: form })
+                        const { url } = await res.json()
+                        setAvatarUrl(url)
+                        setShowAvatarSelection(false)
+                        // Create a synthetic event for the profile submit
+                        const syntheticEvent = { preventDefault: () => {} } as FormEvent
+                        await handleProfileSubmit(syntheticEvent)
+                      } catch (error) {
+                        setError('Failed to upload image')
+                      }
+                    }}
+                    className={styles.hiddenFileInput}
+                  />
+                </label>
               </div>
             </div>
           </div>
