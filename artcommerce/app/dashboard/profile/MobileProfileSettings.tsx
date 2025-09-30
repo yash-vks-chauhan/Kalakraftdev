@@ -43,10 +43,11 @@ export default function MobileProfileSettings() {
   const [fullName, setFullName] = useState<string>('')
   const [avatarUrl, setAvatarUrl] = useState<string>('')
 
-  // Email change state
+    // Email and Password form state
   const [newEmail, setNewEmail] = useState<string>('')
   const [emailOtp, setEmailOtp] = useState<string>('')
   const [otpSent, setOtpSent] = useState<boolean>(false)
+  const [emailStep, setEmailStep] = useState<'send' | 'verify'>('send')
   const [confirming, setConfirming] = useState<boolean>(false)
 
   // Password change state
@@ -62,6 +63,18 @@ export default function MobileProfileSettings() {
   const [showEmailChange, setShowEmailChange] = useState(false)
   const [showPasswordChange, setShowPasswordChange] = useState(false)
   const [isPasswordModalClosing, setIsPasswordModalClosing] = useState(false)
+  const [isEmailModalClosing, setIsEmailModalClosing] = useState(false)
+  
+  // Modal-specific message states
+  const [modalMessage, setModalMessage] = useState<string | null>(null)
+  const [modalError, setModalError] = useState<string | null>(null)
+  const [emailModalMessage, setEmailModalMessage] = useState<string | null>(null)
+  const [emailModalError, setEmailModalError] = useState<string | null>(null)
+  
+  // Step transition states
+  const [isStepTransitioning, setIsStepTransitioning] = useState(false)
+  const [isEmailStepTransitioning, setIsEmailStepTransitioning] = useState(false)
+  
   const [showOrders, setShowOrders] = useState(false)
   const [showAddresses, setShowAddresses] = useState(false)
   const [showAddAddress, setShowAddAddress] = useState(false)
@@ -231,7 +244,32 @@ export default function MobileProfileSettings() {
       setOtp('')
       setNewPassword('')
       setConfirmPassword('')
-    }, 300) // Match the CSS animation duration
+      // Reset modal-specific messages
+      setModalMessage(null)
+      setModalError(null)
+      // Reset transition state
+      setIsStepTransitioning(false)
+    }, 400) // Match the CSS animation duration
+  }
+
+  // Handle email modal close with animation
+  const handleEmailModalClose = () => {
+    setIsEmailModalClosing(true)
+    setTimeout(() => {
+      setShowEmailChange(false)
+      setIsEmailModalClosing(false)
+      // Reset form state when modal closes
+      setEmailStep('send')
+      setEmailOtp('')
+      setNewEmail('')
+      setOtpSent(false)
+      setEmailOtpExpiresAt(null)
+      // Reset modal-specific messages
+      setEmailModalMessage(null)
+      setEmailModalError(null)
+      // Reset transition state
+      setIsEmailStepTransitioning(false)
+    }, 400) // Match the CSS animation duration
   }
 
   const getStatusClass = (status: string) => {
@@ -277,8 +315,9 @@ export default function MobileProfileSettings() {
   }, [token, fullName, avatarUrl, fetchProfile])
 
   const handleRequestEmailOtp = useCallback(async () => {
-    setError(null)
-    setMessage(null)
+    setEmailModalError(null)
+    setEmailModalMessage(null)
+    setLoading(true)
     try {
       const res = await fetch('/api/auth/request-email-change', {
         method: 'POST',
@@ -290,19 +329,29 @@ export default function MobileProfileSettings() {
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
-      setOtpSent(true)
-      const expires = Date.now() + 5 * 60 * 1000
-      setEmailOtpExpiresAt(expires)
-      setEmailRemaining(300)
-      setMessage('OTP sent to your current email address')
+      
+      // Smooth transition to verify step
+      setIsEmailStepTransitioning(true)
+      setTimeout(() => {
+        setEmailStep('verify')
+        setOtpSent(true)
+        const expires = Date.now() + 5 * 60 * 1000
+        setEmailOtpExpiresAt(expires)
+        setEmailRemaining(300)
+        setEmailModalMessage('OTP sent to your current email address')
+        setIsEmailStepTransitioning(false)
+      }, 300) // Wait for exit animation
+      
     } catch (err: any) {
-      setError(err.message)
+      setEmailModalError(err.message)
+    } finally {
+      setLoading(false)
     }
   }, [token, newEmail])
 
   const handleConfirmEmailChange = useCallback(async () => {
-    setError(null)
-    setMessage(null)
+    setEmailModalError(null)
+    setEmailModalMessage(null)
     setConfirming(true)
     try {
       const res = await fetch('/api/auth/confirm-email-change', {
@@ -315,24 +364,28 @@ export default function MobileProfileSettings() {
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Failed to change email')
-      setMessage(`Email changed successfully to ${data.user.email}`)
+      setEmailModalMessage(`Email changed successfully to ${data.user.email}`)
       setNewEmail('')
       setEmailOtp('')
       setOtpSent(false)
       setEmailOtpExpiresAt(null)
       setEmailRemaining(0)
-      setShowEmailChange(false)
+      setEmailStep('send')
+      // Close modal after a brief delay to show success message
+      setTimeout(() => {
+        handleEmailModalClose()
+      }, 1500)
       await fetchProfile()
     } catch (err: any) {
-      setError(err.message)
+      setEmailModalError(err.message)
     } finally {
       setConfirming(false)
     }
   }, [token, newEmail, emailOtp, fetchProfile])
 
   const sendPasswordOtp = async () => {
-    setError(null)
-    setMessage(null)
+    setModalError(null)
+    setModalMessage(null)
     setLoading(true)
     try {
       const res = await fetch('/api/auth/request-password-change', {
@@ -344,13 +397,20 @@ export default function MobileProfileSettings() {
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
-      setStep('verify')
-      const expires = Date.now() + 5 * 60 * 1000
-      setPasswordOtpExpiresAt(expires)
-      setPasswordRemaining(300)
-      setMessage('OTP sent to your email')
+      
+      // Smooth transition to verify step
+      setIsStepTransitioning(true)
+      setTimeout(() => {
+        setStep('verify')
+        const expires = Date.now() + 5 * 60 * 1000
+        setPasswordOtpExpiresAt(expires)
+        setPasswordRemaining(300)
+        setModalMessage('OTP sent to your email')
+        setIsStepTransitioning(false)
+      }, 300) // Wait for exit animation
+      
     } catch (err: any) {
-      setError(err.message)
+      setModalError(err.message)
     } finally {
       setLoading(false)
     }
@@ -358,8 +418,8 @@ export default function MobileProfileSettings() {
 
   const handleVerifyPassword = async (e: FormEvent) => {
     e.preventDefault()
-    setError(null)
-    setMessage(null)
+    setModalError(null)
+    setModalMessage(null)
     setLoading(true)
     try {
       const res = await fetch('/api/auth/confirm-password-change', {
@@ -372,15 +432,18 @@ export default function MobileProfileSettings() {
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
-      setMessage('Password updated successfully')
+      setModalMessage('Password updated successfully')
       setNewPassword('')
       setConfirmPassword('')
       setOtp('')
       setStep('send')
-      setShowPasswordChange(false)
+      // Close modal after a brief delay to show success message
+      setTimeout(() => {
+        handlePasswordModalClose()
+      }, 1500)
       await fetchProfile()
     } catch (err: any) {
-      setError(err.message)
+      setModalError(err.message)
     } finally {
       setLoading(false)
     }
@@ -523,62 +586,20 @@ export default function MobileProfileSettings() {
               </div>
             </div>
 
-            {/* Change Email Accordion */}
-            <div 
-              className={`${styles.adminAccordionHeader} ${showEmailChange ? styles.expanded : ''}`}
-              onClick={() => setShowEmailChange(prev => !prev)}
+            {/* Change Email Button */}
+            <button 
+              className={styles.iosMenuItem}
+              onClick={() => setShowEmailChange(true)}
             >
-              <div className={styles.adminAccordionIcon}>
-                <Edit size={18} />
+              <div className={styles.iosMenuIcon}>
+                <Edit size={22} />
               </div>
-              <div className={styles.adminAccordionContent}>
-                <span className={styles.adminAccordionTitle}>Change Email</span>
-                <span className={styles.adminAccordionSubtitle}>Update email address</span>
+              <div className={styles.iosMenuContent}>
+                <span className={styles.iosMenuTitle}>Change Email</span>
+                <span className={styles.iosMenuSubtitle}>Update email address</span>
               </div>
-              <ChevronRight size={14} className={`${styles.iosChevron} ${showEmailChange ? styles.chevronRotated : ''}`} />
-            </div>
-
-            <div className={`${styles.adminExpandableContent} ${showEmailChange ? styles.expanded : ''}`}>
-              <div className={styles.changeEmailForm}>
-                <input 
-                  type="email" 
-                  placeholder="New email address" 
-                  value={newEmail} 
-                  onChange={e => setNewEmail(e.target.value)} 
-                  className={styles.formInput}
-                />
-                <button 
-                  onClick={handleRequestEmailOtp} 
-                  disabled={otpSent} 
-                  className={styles.otpButton}
-                >
-                  {otpSent ? 'OTP Sent' : 'Send OTP'}
-                </button>
-                {otpSent && emailRemaining > 0 && (
-                  <span className={styles.timerText}>
-                    Expires in: {formatTime(emailRemaining)}
-                  </span>
-                )}
-                {otpSent && (
-                  <>
-                    <input 
-                      type="text" 
-                      placeholder="Enter OTP" 
-                      value={emailOtp} 
-                      onChange={e => setEmailOtp(e.target.value)} 
-                      className={styles.formInput}
-                    />
-                    <button 
-                      onClick={handleConfirmEmailChange} 
-                      disabled={confirming} 
-                      className={styles.confirmButton}
-                    >
-                      {confirming ? 'Verifying…' : 'Confirm Email Change'}
-                    </button>
-                  </>
-                )}
-              </div>
-            </div>
+              <ChevronRight size={14} className={styles.iosChevron} />
+            </button>
 
             {/* Change Password Button */}
             <div 
@@ -804,7 +825,7 @@ export default function MobileProfileSettings() {
         <>
           {/* Modal Backdrop */}
           <div 
-            className={styles.modalBackdrop}
+            className={`${styles.modalBackdrop} ${isPasswordModalClosing ? styles.closing : ''}`}
             onClick={handlePasswordModalClose}
           />
           
@@ -822,9 +843,13 @@ export default function MobileProfileSettings() {
             </div>
             
             <div className={styles.modalContent}>
+              {/* Modal Messages */}
+              {modalMessage && <div className={`${styles.message} ${styles.success}`}>{modalMessage}</div>}
+              {modalError && <div className={`${styles.message} ${styles.error}`}>{modalError}</div>}
+              
               <div className={styles.changePasswordForm}>
-                {step === 'send' ? (
-                  <div className={styles.otpStep}>
+                {!isStepTransitioning && step === 'send' && (
+                  <div className={`${styles.stepContent} ${styles.otpStep}`}>
                     <p className={styles.stepDescription}>
                       We'll send an OTP to your email address to verify your identity before changing your password.
                     </p>
@@ -836,8 +861,11 @@ export default function MobileProfileSettings() {
                       {loading ? 'Sending OTP…' : 'Send OTP to Email'}
                     </button>
                   </div>
-                ) : (
-                  <form onSubmit={handleVerifyPassword}>
+                )}
+                
+                {!isStepTransitioning && step === 'verify' && (
+                  <div className={styles.stepContent}>
+                    <form onSubmit={handleVerifyPassword}>
                     <div className={styles.inputGroup}>
                       <label className={styles.inputLabel}>Enter OTP</label>
                       <input
@@ -885,7 +913,7 @@ export default function MobileProfileSettings() {
                     <div className={styles.modalButtons}>
                       <button
                         type="button"
-                        onClick={() => setShowPasswordChange(false)}
+                        onClick={handlePasswordModalClose}
                         className={styles.cancelButton}
                       >
                         Cancel
@@ -898,7 +926,119 @@ export default function MobileProfileSettings() {
                         {loading ? 'Updating…' : 'Update Password'}
                       </button>
                     </div>
-                  </form>
+                    </form>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Email Change Modal */}
+      {showEmailChange && (
+        <>
+          {/* Modal Backdrop */}
+          <div 
+            className={`${styles.modalBackdrop} ${isEmailModalClosing ? styles.closing : ''}`}
+            onClick={handleEmailModalClose}
+          />
+          
+          {/* Modal Content */}
+          <div className={`${styles.passwordModal} ${isEmailModalClosing ? styles.closing : ''}`}>
+            <div className={styles.modalHeader}>
+              <div className={styles.modalHandle}></div>
+              <h3 className={styles.modalTitle}>Change Email</h3>
+              <button 
+                className={styles.modalCloseButton}
+                onClick={handleEmailModalClose}
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className={styles.modalContent}>
+              {/* Modal Messages */}
+              {emailModalMessage && <div className={`${styles.message} ${styles.success}`}>{emailModalMessage}</div>}
+              {emailModalError && <div className={`${styles.message} ${styles.error}`}>{emailModalError}</div>}
+              
+              <div className={styles.changePasswordForm}>
+                {!isEmailStepTransitioning && emailStep === 'send' && (
+                  <div className={`${styles.stepContent} ${styles.otpStep}`}>
+                    <p className={styles.stepDescription}>
+                      Enter your new email address. We'll send an OTP to your current email to verify the change.
+                    </p>
+                    <div className={styles.inputGroup}>
+                      <label className={styles.inputLabel}>New Email Address</label>
+                      <input
+                        type="email"
+                        placeholder="Enter new email address"
+                        value={newEmail}
+                        onChange={(e) => setNewEmail(e.target.value)}
+                        required
+                        className={styles.formInput}
+                      />
+                    </div>
+                    <button
+                      onClick={handleRequestEmailOtp}
+                      disabled={loading || !newEmail}
+                      className={styles.otpButton}
+                    >
+                      {loading ? 'Sending OTP…' : 'Send OTP to Current Email'}
+                    </button>
+                  </div>
+                )}
+                
+                {!isEmailStepTransitioning && emailStep === 'verify' && (
+                  <div className={styles.stepContent}>
+                    <form onSubmit={(e) => { e.preventDefault(); handleConfirmEmailChange(); }}>
+                      <div className={styles.inputGroup}>
+                        <label className={styles.inputLabel}>Enter OTP</label>
+                        <input
+                          type="text"
+                          placeholder="Enter the 6-digit OTP"
+                          value={emailOtp}
+                          onChange={(e) => setEmailOtp(e.target.value.toUpperCase())}
+                          required
+                          className={styles.formInput}
+                          maxLength={6}
+                        />
+                        {emailRemaining > 0 && (
+                          <span className={styles.timerText}>
+                            Expires in: {formatTime(emailRemaining)}
+                          </span>
+                        )}
+                      </div>
+                      
+                      <div className={styles.inputGroup}>
+                        <label className={styles.inputLabel}>Confirm New Email</label>
+                        <input
+                          type="email"
+                          placeholder="Confirm new email address"
+                          value={newEmail}
+                          disabled
+                          className={styles.formInput}
+                        />
+                      </div>
+                      
+                      <div className={styles.modalButtons}>
+                        <button
+                          type="button"
+                          onClick={handleEmailModalClose}
+                          className={styles.cancelButton}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          disabled={confirming}
+                          className={styles.confirmButton}
+                        >
+                          {confirming ? 'Updating…' : 'Update Email'}
+                        </button>
+                      </div>
+                    </form>
+                  </div>
                 )}
               </div>
             </div>

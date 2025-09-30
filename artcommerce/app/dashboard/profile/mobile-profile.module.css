@@ -1036,15 +1036,33 @@
   bottom: 0;
   background: rgba(0, 0, 0, 0.5);
   z-index: 2000;
-  animation: backdropFadeIn 0.3s ease-out;
+  animation: backdropFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  backdrop-filter: blur(10px);
+}
+
+.modalBackdrop.closing {
+  animation: backdropFadeOut 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @keyframes backdropFadeIn {
   from {
     opacity: 0;
+    backdrop-filter: blur(0px);
   }
   to {
     opacity: 1;
+    backdrop-filter: blur(10px);
+  }
+}
+
+@keyframes backdropFadeOut {
+  from {
+    opacity: 1;
+    backdrop-filter: blur(10px);
+  }
+  to {
+    opacity: 0;
+    backdrop-filter: blur(0px);
   }
 }
 
@@ -1058,35 +1076,43 @@
   border-top-right-radius: 20px;
   z-index: 2001;
   max-height: 85vh;
-  animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
   box-shadow: 0 -8px 25px rgba(0, 0, 0, 0.15);
   transform: translateY(0);
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
+              opacity 0.3s ease,
+              box-shadow 0.3s ease;
+  will-change: transform, opacity;
 }
 
 .passwordModal.closing {
-  animation: slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: slideDown 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   transform: translateY(100%);
+  opacity: 0;
 }
 
 @keyframes slideUp {
   from {
-    transform: translateY(100%);
+    transform: translateY(100%) scale(0.95);
     opacity: 0;
   }
+  50% {
+    transform: translateY(20%) scale(0.98);
+    opacity: 0.7;
+  }
   to {
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
     opacity: 1;
   }
 }
 
 @keyframes slideDown {
   from {
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
     opacity: 1;
   }
   to {
-    transform: translateY(100%);
+    transform: translateY(100%) scale(0.95);
     opacity: 0;
   }
 }
@@ -1145,10 +1171,48 @@
   padding: 20px;
   max-height: calc(85vh - 70px);
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .changePasswordForm {
   width: 100%;
+  position: relative;
+}
+
+/* Content transition animations */
+.stepContent {
+  animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translateY(0);
+  opacity: 1;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.stepContent.exiting {
+  animation: fadeOutDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateY(-20px);
+  opacity: 0;
+}
+
+@keyframes fadeInUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOutDown {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
 }
 
 .otpStep {
@@ -1181,15 +1245,24 @@
   border-radius: 10px;
   font-size: 1rem;
   background: #F2F2F7;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   box-sizing: border-box;
+  transform: translateY(0);
 }
 
 .formInput:focus {
   outline: none;
   border-color: #000;
   background: #FFFFFF;
-  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1),
+              0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.formInput:hover:not(:focus) {
+  border-color: #A8A8AA;
+  background: #FFFFFF;
+  transform: translateY(-1px);
 }
 
 .timerText {
@@ -1216,11 +1289,21 @@
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .cancelButton:hover {
   background: #E5E5EA;
+  border-color: #A8A8AA;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.cancelButton:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .confirmButton,
@@ -1234,7 +1317,11 @@
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  position: relative;
+  overflow: hidden;
 }
 
 .otpButton {
@@ -1245,6 +1332,14 @@
 .confirmButton:hover,
 .otpButton:hover {
   background: #333;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+.confirmButton:active,
+.otpButton:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .confirmButton:disabled,
@@ -1252,6 +1347,8 @@
   background: #D1D1D6;
   color: #8E8E93;
   cursor: not-allowed;
+  transform: translateY(0);
+  box-shadow: none;
 }
 
 /* Responsive adjustments for modal */
