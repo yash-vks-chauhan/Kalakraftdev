@@ -665,6 +665,7 @@
   align-items: center;
   padding: 16px 20px;
   background: #FFFFFF;
+  border: none;
   border-bottom: 0.5px solid rgba(0, 0, 0, 0.15);
   text-decoration: none;
   color: inherit;
@@ -675,6 +676,10 @@
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
   will-change: background-color, transform;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  font-size: inherit;
 }
 
 /* Remove complex gradient overlay */
@@ -1458,7 +1463,7 @@
 }
 
 .bottomSheetContent {
-  padding: 0 24px 32px;
+  padding: 24px 24px 32px;
   max-height: calc(80vh - 120px);
   overflow-y: auto;
   overflow-x: hidden;
@@ -1662,7 +1667,7 @@
   }
   
   .bottomSheetContent {
-    padding: 0 20px 28px;
+    padding: 20px 20px 28px;
   }
   
   .bottomSheetForm {
@@ -1715,7 +1720,7 @@
   }
   
   .bottomSheetContent {
-    padding: 0 16px 24px;
+    padding: 16px 16px 24px;
   }
   
   .bottomSheetInputRow {
