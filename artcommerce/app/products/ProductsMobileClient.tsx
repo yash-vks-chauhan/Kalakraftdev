@@ -287,6 +287,24 @@ const ProductCard = ({ product, formatPrice }) => {
   );
 };
 
+// Pagination Skeleton Loading Component
+const PaginationSkeleton = () => {
+  return (
+    <div className={styles.paginationSkeleton}>
+      {[...Array(5)].map((_, index) => (
+        <div key={index} className="skeleton-button" style={{
+          width: '38px',
+          height: '38px',
+          background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+          backgroundSize: '200% 100%',
+          animation: 'shimmer 1.5s infinite',
+          borderRadius: '10px'
+        }}></div>
+      ))}
+    </div>
+  )
+}
+
 export default function ProductsMobileClient() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -428,8 +446,8 @@ export default function ProductsMobileClient() {
       setCurrentPage(newPage)
       updatePageInURL(newPage)
       scrollToProductsTop()
-      // Reset loading state after scroll completes
-      setTimeout(() => setIsPageChanging(false), 200)
+      // Reset loading state after scroll completes with better timing
+      setTimeout(() => setIsPageChanging(false), 300)
     }
   }
 
@@ -440,8 +458,8 @@ export default function ProductsMobileClient() {
       setCurrentPage(newPage)
       updatePageInURL(newPage)
       scrollToProductsTop()
-      // Reset loading state after scroll completes
-      setTimeout(() => setIsPageChanging(false), 200)
+      // Reset loading state after scroll completes with better timing
+      setTimeout(() => setIsPageChanging(false), 300)
     }
   }
 
@@ -451,8 +469,8 @@ export default function ProductsMobileClient() {
       setCurrentPage(page)
       updatePageInURL(page)
       scrollToProductsTop()
-      // Reset loading state after scroll completes
-      setTimeout(() => setIsPageChanging(false), 200)
+      // Reset loading state after scroll completes with better timing
+      setTimeout(() => setIsPageChanging(false), 300)
     }
   }
 
@@ -814,76 +832,37 @@ export default function ProductsMobileClient() {
             ))}
           </div>
 
-          {/* Pagination Controls */}
+          {/* Enhanced Pagination Controls */}
           {totalPages > 1 && (
-            <div className={styles.paginationContainer}>
+            <div className={`${styles.paginationContainer} ${isPageChanging ? styles.loading : ''}`}>
               <div className={styles.paginationInfo}>
                 <span className={styles.paginationInfoText}>
-                  {startIndex + 1}-{Math.min(endIndex, totalProducts)} of {totalProducts}
+                  Showing {startIndex + 1}-{Math.min(endIndex, totalProducts)} of {totalProducts} products
                 </span>
               </div>
               
-              <div className={styles.paginationControls}>
-                {/* Previous Button */}
-                <button
-                  onClick={handlePreviousPage}
-                  disabled={currentPage === 1 || isPageChanging}
-                  className={styles.paginationPrevNext}
-                  aria-label="Previous page"
-                >
-                  <FiChevronLeft size={14} />
-                </button>
-                
-                {/* Page Numbers - Smart display logic */}
-                <div className={styles.paginationNumbers}>
-                  {(() => {
-                    const pages = []
-                    
-                    // For 5 or fewer pages, show all
-                    if (totalPages <= 5) {
-                      for (let i = 1; i <= totalPages; i++) {
-                        pages.push(
-                          <button
-                            key={i}
-                            onClick={() => handlePageSelect(i)}
-                            disabled={isPageChanging}
-                            className={`${styles.pageNumber} ${i === currentPage ? styles.pageNumberActive : ''}`}
-                            aria-label={`Page ${i}`}
-                            aria-current={i === currentPage ? 'page' : undefined}
-                          >
-                            {i}
-                          </button>
-                        )
-                      }
-                    } else {
-                      // For more than 5 pages, show smart pagination
+              {isPageChanging ? (
+                <PaginationSkeleton />
+              ) : (
+                <div className={styles.paginationControls}>
+                  {/* Previous Button */}
+                  <button
+                    onClick={handlePreviousPage}
+                    disabled={currentPage === 1 || isPageChanging}
+                    className={styles.paginationPrevNext}
+                    aria-label="Previous page"
+                  >
+                    <FiChevronLeft size={16} />
+                  </button>
+                  
+                  {/* Page Numbers - Enhanced smart display logic */}
+                  <div className={styles.paginationNumbers}>
+                    {(() => {
+                      const pages = []
                       
-                      // Always show first page
-                      pages.push(
-                        <button
-                          key={1}
-                          onClick={() => handlePageSelect(1)}
-                          disabled={isPageChanging}
-                          className={`${styles.pageNumber} ${1 === currentPage ? styles.pageNumberActive : ''}`}
-                          aria-label="Page 1"
-                          aria-current={1 === currentPage ? 'page' : undefined}
-                        >
-                          1
-                        </button>
-                      )
-                      
-                      // Show dots if there's a gap between 1 and the current range
-                      if (currentPage > 3) {
-                        pages.push(<span key="dots1" className={styles.paginationDots}>…</span>)
-                      }
-                      
-                      // Show current page and neighbors (excluding first and last which are handled separately)
-                      const start = Math.max(2, currentPage - 1)
-                      const end = Math.min(totalPages - 1, currentPage + 1)
-                      
-                      for (let i = start; i <= end; i++) {
-                        // Skip first and last page as they're handled separately
-                        if (i !== 1 && i !== totalPages) {
+                      // For 5 or fewer pages, show all
+                      if (totalPages <= 5) {
+                        for (let i = 1; i <= totalPages; i++) {
                           pages.push(
                             <button
                               key={i}
@@ -897,44 +876,87 @@ export default function ProductsMobileClient() {
                             </button>
                           )
                         }
-                      }
-                      
-                      // Show dots if there's a gap between current range and last page
-                      if (currentPage < totalPages - 2) {
-                        pages.push(<span key="dots2" className={styles.paginationDots}>…</span>)
-                      }
-                      
-                      // Always show last page (if it's different from first page)
-                      if (totalPages > 1) {
+                      } else {
+                        // For more than 5 pages, show smart pagination
+                        
+                        // Always show first page
                         pages.push(
                           <button
-                            key={totalPages}
-                            onClick={() => handlePageSelect(totalPages)}
+                            key={1}
+                            onClick={() => handlePageSelect(1)}
                             disabled={isPageChanging}
-                            className={`${styles.pageNumber} ${totalPages === currentPage ? styles.pageNumberActive : ''}`}
-                            aria-label={`Page ${totalPages}`}
-                            aria-current={totalPages === currentPage ? 'page' : undefined}
+                            className={`${styles.pageNumber} ${1 === currentPage ? styles.pageNumberActive : ''}`}
+                            aria-label="Page 1"
+                            aria-current={1 === currentPage ? 'page' : undefined}
                           >
-                            {totalPages}
+                            1
                           </button>
                         )
+                        
+                        // Show dots if there's a gap between 1 and the current range
+                        if (currentPage > 3) {
+                          pages.push(<span key="dots1" className={styles.paginationDots}>…</span>)
+                        }
+                        
+                        // Show current page and neighbors (excluding first and last which are handled separately)
+                        const start = Math.max(2, currentPage - 1)
+                        const end = Math.min(totalPages - 1, currentPage + 1)
+                        
+                        for (let i = start; i <= end; i++) {
+                          // Skip first and last page as they're handled separately
+                          if (i !== 1 && i !== totalPages) {
+                            pages.push(
+                              <button
+                                key={i}
+                                onClick={() => handlePageSelect(i)}
+                                disabled={isPageChanging}
+                                className={`${styles.pageNumber} ${i === currentPage ? styles.pageNumberActive : ''}`}
+                                aria-label={`Page ${i}`}
+                                aria-current={i === currentPage ? 'page' : undefined}
+                              >
+                                {i}
+                              </button>
+                            )
+                          }
+                        }
+                        
+                        // Show dots if there's a gap between current range and last page
+                        if (currentPage < totalPages - 2) {
+                          pages.push(<span key="dots2" className={styles.paginationDots}>…</span>)
+                        }
+                        
+                        // Always show last page (if it's different from first page)
+                        if (totalPages > 1) {
+                          pages.push(
+                            <button
+                              key={totalPages}
+                              onClick={() => handlePageSelect(totalPages)}
+                              disabled={isPageChanging}
+                              className={`${styles.pageNumber} ${totalPages === currentPage ? styles.pageNumberActive : ''}`}
+                              aria-label={`Page ${totalPages}`}
+                              aria-current={totalPages === currentPage ? 'page' : undefined}
+                            >
+                              {totalPages}
+                            </button>
+                          )
+                        }
                       }
-                    }
-                    
-                    return pages
-                  })()}
+                      
+                      return pages
+                    })()}
+                  </div>
+                  
+                  {/* Next Button */}
+                  <button
+                    onClick={handleNextPage}
+                    disabled={currentPage === totalPages || isPageChanging}
+                    className={styles.paginationPrevNext}
+                    aria-label="Next page"
+                  >
+                    <FiChevronRight size={16} />
+                  </button>
                 </div>
-                
-                {/* Next Button */}
-                <button
-                  onClick={handleNextPage}
-                  disabled={currentPage === totalPages || isPageChanging}
-                  className={styles.paginationPrevNext}
-                  aria-label="Next page"
-                >
-                  <FiChevronRight size={14} />
-                </button>
-              </div>
+              )}
             </div>
           )}
         </div>
