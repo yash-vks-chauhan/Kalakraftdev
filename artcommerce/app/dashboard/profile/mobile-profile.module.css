@@ -75,6 +75,21 @@
     inset 0 1px 0 rgba(255, 255, 255, 1);
 }
 
+.headerTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  position: relative;
+  z-index: 1;
+}
+
+.headerSpacer {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+}
+
 .headerSpacer {
   flex: 1;
 }

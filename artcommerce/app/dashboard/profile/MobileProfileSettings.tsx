@@ -547,11 +547,13 @@ export default function MobileProfileSettings() {
     return (
       <div className={styles.mobileProfileContainer}>
         <div className={styles.pageHeader}>
-          <button onClick={() => router.push('/dashboard')} className={styles.backButton}>
-            <ChevronLeft size={24} strokeWidth={2} />
-          </button>
-          <h1 className={styles.pageTitle}>Profile Settings</h1>
-          <div className={styles.headerSpacer}></div>
+          <div className={styles.headerTop}>
+            <Link href="/dashboard" className={styles.backButton}>
+              <ChevronLeft size={20} />
+            </Link>
+            <h1 className={styles.pageTitle}>Profile Settings</h1>
+            <div className={styles.headerSpacer}></div>
+          </div>
         </div>
         
         <div className={styles.loadingContainer}>
@@ -569,11 +571,13 @@ export default function MobileProfileSettings() {
     <div className={styles.mobileProfileContainer}>
       {/* Page Header */}
       <div className={styles.pageHeader}>
-        <button onClick={() => router.push('/dashboard')} className={styles.backButton}>
-          <ChevronLeft size={24} strokeWidth={2} />
-        </button>
-        <h1 className={styles.pageTitle}>Profile Settings</h1>
-        <div className={styles.headerSpacer}></div>
+        <div className={styles.headerTop}>
+          <Link href="/dashboard" className={styles.backButton}>
+            <ChevronLeft size={20} />
+          </Link>
+          <h1 className={styles.pageTitle}>Profile Settings</h1>
+          <div className={styles.headerSpacer}></div>
+        </div>
       </div>
 
       <div className={styles.contentWrapper}>
