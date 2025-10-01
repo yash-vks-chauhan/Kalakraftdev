@@ -1414,12 +1414,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #007AFF;
-  background: linear-gradient(135deg, rgba(0, 122, 255, 0.08) 0%, rgba(0, 122, 255, 0.15) 100%);
+  color: #000000;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.06) 0%, rgba(0, 0, 0, 0.12) 100%);
   backdrop-filter: blur(20px);
-  border: 1px solid rgba(0, 122, 255, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.08);
   box-shadow: 
-    0 4px 16px rgba(0, 122, 255, 0.08),
+    0 4px 16px rgba(0, 0, 0, 0.06),
     0 1px 4px rgba(0, 0, 0, 0.02),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
   position: relative;
@@ -1445,7 +1445,7 @@
 .overviewMetricCard:hover .metricCardIcon {
   transform: translateY(-2px) scale(1.05);
   box-shadow: 
-    0 8px 32px rgba(0, 122, 255, 0.16),
+    0 8px 32px rgba(0, 0, 0, 0.12),
     0 2px 8px rgba(0, 0, 0, 0.04),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
@@ -1646,7 +1646,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #007AFF;
+  color: #000000;
   overflow: hidden;
   transition: transform 0.2s ease;
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
@@ -1767,7 +1767,7 @@
 }
 
 .scrollIndicatorDot.active {
-  background: #007AFF;
+  background: #000000;
   transform: scale(1.2);
 }
 
@@ -1914,13 +1914,13 @@
 
 @keyframes statusPulse {
   0% {
-    background-color: rgba(0, 122, 255, 0.1);
+    background-color: rgba(0, 0, 0, 0.08);
   }
   50% {
-    background-color: rgba(0, 122, 255, 0.2);
+    background-color: rgba(0, 0, 0, 0.15);
   }
   100% {
-    background-color: rgba(0, 122, 255, 0.1);
+    background-color: rgba(0, 0, 0, 0.08);
   }
 }
 
@@ -2021,24 +2021,24 @@
 
 /* Enhanced expanded state styling */
 .adminAccordionHeader.expanded {
-  background: rgba(0, 123, 255, 0.03) !important;
-  border-bottom: 1px solid rgba(0, 123, 255, 0.1);
-  box-shadow: inset 0 1px 0 rgba(0, 123, 255, 0.1);
+  background: rgba(0, 0, 0, 0.03) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.05);
   position: relative;
 }
 
 /* Enhanced chevron rotation when expanded */
 .adminAccordionHeader.expanded .iosChevron {
   transform: rotate(90deg);
-  color: #007bff;
+  color: #333333;
 }
 
 /* Enhanced icon state when expanded */
 .adminAccordionHeader.expanded .adminAccordionIcon {
-  background: linear-gradient(135deg, rgba(0, 123, 255, 0.15), rgba(0, 123, 255, 0.1));
-  color: #007bff;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.12), rgba(0, 0, 0, 0.08));
+  color: #333333;
   box-shadow: 
-    0 4px 12px rgba(0, 123, 255, 0.2),
+    0 4px 12px rgba(0, 0, 0, 0.15),
     inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
@@ -2046,17 +2046,17 @@
   width: 40px;
   height: 40px;
   border-radius: 12px;
-  background: linear-gradient(135deg, rgba(0, 123, 255, 0.1), rgba(0, 123, 255, 0.05));
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.04));
   display: flex;
   align-items: center;
   justify-content: center;
   margin-right: 16px;
-  color: #007bff;
+  color: #000000;
   flex-shrink: 0;
   transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   box-shadow: 
-    0 4px 12px rgba(0, 123, 255, 0.15),
-    0 2px 6px rgba(0, 123, 255, 0.1),
+    0 4px 12px rgba(0, 0, 0, 0.08),
+    0 2px 6px rgba(0, 0, 0, 0.06),
     inset 0 1px 0 rgba(255, 255, 255, 0.4);
   position: relative;
   z-index: 1;
@@ -2079,8 +2079,8 @@
 .adminAccordionHeader:hover .adminAccordionIcon {
   transform: scale(1.05);
   box-shadow: 
-    0 6px 16px rgba(0, 123, 255, 0.2),
-    0 3px 8px rgba(0, 123, 255, 0.15),
+    0 6px 16px rgba(0, 0, 0, 0.1),
+    0 3px 8px rgba(0, 0, 0, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
@@ -2111,7 +2111,7 @@
 }
 
 .adminAccordionHeader:hover .adminAccordionTitle {
-  color: #007bff;
+  color: #000000;
 }
 
 .adminAccordionHeader:hover .adminAccordionSubtitle {
@@ -2161,7 +2161,7 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(0, 123, 255, 0.06), transparent);
+  background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.03), transparent);
   transition: left 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
@@ -2174,36 +2174,36 @@
 }
 
 .adminSubMenuItem:active {
-  background-color: rgba(0, 123, 255, 0.04);
+  background-color: rgba(0, 0, 0, 0.02);
   transform: scale(0.98);
 }
 
 .adminSubMenuItem:hover {
-  background-color: rgba(0, 123, 255, 0.02);
+  background-color: rgba(0, 0, 0, 0.01);
 }
 
 .adminSubMenuIcon {
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  background: linear-gradient(135deg, rgba(0, 123, 255, 0.08), rgba(0, 123, 255, 0.04));
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.02));
   display: flex;
   align-items: center;
   justify-content: center;
   margin-right: 16px;
-  color: #007bff;
+  color: #000000;
   flex-shrink: 0;
   transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   box-shadow: 
-    0 2px 8px rgba(0, 123, 255, 0.1),
+    0 2px 8px rgba(0, 0, 0, 0.06),
     inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 .adminSubMenuItem:hover .adminSubMenuIcon {
   transform: scale(1.05);
-  background: linear-gradient(135deg, rgba(0, 123, 255, 0.12), rgba(0, 123, 255, 0.06));
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.07), rgba(0, 0, 0, 0.03));
   box-shadow: 
-    0 4px 12px rgba(0, 123, 255, 0.15),
+    0 4px 12px rgba(0, 0, 0, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
@@ -2232,7 +2232,7 @@
 }
 
 .adminSubMenuItem:hover .adminSubMenuTitle {
-  color: #007bff;
+  color: #000000;
 }
 
 .adminSubMenuItem:hover .adminSubMenuSubtitle {
@@ -2390,7 +2390,7 @@
 }
 
 .checkmark {
-  color: #007AFF;
+  color: #000000;
   font-weight: 600;
   font-size: 1rem;
 }
