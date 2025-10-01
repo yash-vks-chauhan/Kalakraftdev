@@ -6,6 +6,8 @@
   min-height: 100vh; /* Ensure minimum height */
   display: flex;
   flex-direction: column;
+  /* Extend background to bottom */
+  padding-bottom: 0;
   /* Mobile scroll optimizations */
   -webkit-overflow-scrolling: touch;
   scroll-behavior: smooth;
@@ -1364,12 +1366,14 @@ details[open] .arrow {
 .paginationContainer {
   background: #ffffff;
   border-top: 1px solid #f0f0f0;
-  padding: 16px 16px 16px; /* Consistent padding */
+  padding: 16px 16px 64px; /* Bottom padding to reach mobile footer */
   margin: 0; /* Remove all margins */
   display: flex;
   flex-direction: column;
   gap: 12px; /* Reduced gap */
   align-items: center;
+  /* Fill remaining space to eliminate gaps */
+  flex-grow: 1;
   /* Optimize for performance */
   transform: translateZ(0);
   contain: layout style paint;
