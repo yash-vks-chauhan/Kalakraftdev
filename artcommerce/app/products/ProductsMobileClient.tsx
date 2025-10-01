@@ -322,7 +322,7 @@ export default function ProductsMobileClient() {
     const urlPage = searchParams.get('page')
     return urlPage ? Math.max(1, parseInt(urlPage, 10)) : 1
   })
-  const productsPerPage = 15
+  const productsPerPage = 14 // Changed from 15 to 14
   
   // Extract individual filter values for easier use
   const {
@@ -385,23 +385,26 @@ export default function ProductsMobileClient() {
       // Find the products list container and scroll to it
       const productsContainer = document.querySelector('.products-container')
       if (productsContainer) {
-        productsContainer.scrollIntoView({ 
-          behavior: 'smooth', 
-          block: 'start',
-          inline: 'nearest'
+        // Calculate position to scroll a bit above the products container
+        const containerRect = productsContainer.getBoundingClientRect()
+        const scrollY = window.pageYOffset + containerRect.top - 80 // 80px above the container
+        window.scrollTo({ 
+          top: scrollY, 
+          behavior: 'smooth' 
         })
       } else {
         // Fallback to page header if products container not found
         const pageHeader = document.querySelector('.page-header')
         if (pageHeader) {
-          pageHeader.scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'start',
-            inline: 'nearest'
+          const headerRect = pageHeader.getBoundingClientRect()
+          const scrollY = window.pageYOffset + headerRect.top - 40 // 40px above the header
+          window.scrollTo({ 
+            top: scrollY, 
+            behavior: 'smooth' 
           })
         } else {
-          // Final fallback to top of page
-          window.scrollTo({ top: 0, behavior: 'smooth' })
+          // Final fallback to top of page with some offset
+          window.scrollTo({ top: 60, behavior: 'smooth' }) // 60px from very top
         }
       }
     }, 100) // Small delay to ensure DOM updates
