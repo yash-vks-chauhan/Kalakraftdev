@@ -1254,15 +1254,29 @@ details[open] .arrow {
 }
 
 .filterHeaderSkeleton {
-  height: 16px;
-  width: 80%;
-  background: linear-gradient(90deg, #f8fafc 25%, #f1f5f9 50%, #f8fafc 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  border-radius: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
   margin-bottom: 16px;
-  position: relative;
-  overflow: hidden;
+}
+
+.filterTitleSkeleton {
+  height: 16px;
+  width: 80px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+  border-radius: 4px;
+}
+
+.filterArrowSkeleton {
+  width: 16px;
+  height: 16px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+  border-radius: 4px;
 }
 
 .filterOptionsSkeleton {
@@ -1281,34 +1295,29 @@ details[open] .arrow {
 .filterCheckboxSkeleton {
   width: 16px;
   height: 16px;
-  background: linear-gradient(90deg, #f8fafc 25%, #f1f5f9 50%, #f8fafc 75%);
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
   background-size: 200% 100%;
-  animation: shimmer 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  animation: shimmer 2s infinite;
   border-radius: 3px;
   flex-shrink: 0;
-  position: relative;
-  overflow: hidden;
 }
 
 .filterLabelSkeleton {
   height: 14px;
   width: 60px;
-  background: linear-gradient(90deg, #f8fafc 25%, #f1f5f9 50%, #f8fafc 75%);
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
   background-size: 200% 100%;
-  animation: shimmer 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  animation: shimmer 2s infinite;
   border-radius: 4px;
-  position: relative;
-  overflow: hidden;
 }
 
 .filterButtonSkeleton {
   height: 44px;
-  background: linear-gradient(90deg, #f8fafc 25%, #f1f5f9 50%, #f8fafc 75%);
+  width: 100px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
   background-size: 200% 100%;
-  animation: shimmer 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  animation: shimmer 2s infinite;
   border-radius: 8px;
-  position: relative;
-  overflow: hidden;
 }
 
 /* ===============================================
@@ -1336,635 +1345,247 @@ details[open] .arrow {
 }
 
 /* ===========================================
-   ULTRA-MODERN MOBILE PAGINATION STYLES
+   MODERN MINIMAL PAGINATION STYLES
    =========================================== */
 
 .paginationContainer {
-  background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
-  border: 1px solid rgba(226, 232, 240, 0.6);
-  padding: 24px 20px;
-  margin: 32px 16px 24px;
+  background: #ffffff;
+  border-top: 1px solid #f0f0f0;
+  padding: 20px 16px 24px;
+  margin: 16px 0 0 0;
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  border-radius: 20px;
-  box-shadow: 
-    0 4px 16px rgba(0, 0, 0, 0.04),
-    0 2px 8px rgba(0, 0, 0, 0.02),
-    0 1px 2px rgba(0, 0, 0, 0.06);
-  position: relative;
-  overflow: hidden;
-  backdrop-filter: blur(10px);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.paginationContainer::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent 0%, rgba(99, 102, 241, 0.3) 50%, transparent 100%);
-}
-
-.paginationContainer:hover {
-  transform: translateY(-2px);
-  box-shadow: 
-    0 8px 25px rgba(0, 0, 0, 0.06),
-    0 4px 12px rgba(0, 0, 0, 0.04),
-    0 2px 4px rgba(0, 0, 0, 0.08);
-}
-
-/* Progress Bar Section */
-.paginationProgress {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 4px;
-}
-
-.progressBarContainer {
-  width: 100%;
-  height: 6px;
-  background: linear-gradient(90deg, #f1f5f9 0%, #e2e8f0 100%);
-  border-radius: 6px;
-  overflow: hidden;
-  position: relative;
-}
-
-.progressBar {
-  height: 100%;
-  background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 50%, #06b6d4 100%);
-  border-radius: 6px;
-  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
-}
-
-.progressBar::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.3) 50%, transparent 100%);
-  animation: shimmer 2s ease-in-out infinite;
-}
-
-@keyframes shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 20px;
+  /* Optimize for performance */
+  transform: translateZ(0);
+  contain: layout style paint;
 }
 
 .paginationInfo {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-  gap: 12px;
-}
-
-.paginationInfoLeft {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
 }
 
 .paginationInfoText {
-  font-size: 15px;
-  color: #0f172a;
-  font-weight: 700;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  letter-spacing: -0.02em;
-  line-height: 1.2;
-}
-
-.paginationProducts {
-  font-size: 12px;
-  color: #64748b;
-  font-weight: 500;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  letter-spacing: 0.02em;
-}
-
-.paginationInfoRight {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 12px;
-  background: rgba(99, 102, 241, 0.08);
-  border-radius: 12px;
-  border: 1px solid rgba(99, 102, 241, 0.15);
-}
-
-.paginationPercentage {
   font-size: 13px;
-  color: #6366f1;
-  font-weight: 600;
+  color: #6b7280;
+  text-align: center;
+  font-weight: 400;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
-/* Enhanced Controls */
 .paginationControls {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  position: relative;
-}
-
-.paginationArrow {
-  display: flex;
-  align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 48px;
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-  border: 1px solid #e2e8f0;
-  border-radius: 16px;
-  color: #374151;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-  flex-shrink: 0;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-}
-
-.paginationArrow::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.6) 50%, transparent 100%);
-  transition: left 0.5s ease;
-}
-
-.paginationArrow:hover:not(.disabled) {
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-  border-color: #cbd5e1;
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-  color: #1e293b;
-}
-
-.paginationArrow:hover:not(.disabled)::before {
-  left: 100%;
-}
-
-.paginationArrow:active:not(.disabled) {
-  transform: translateY(-1px) scale(1.01);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-.paginationArrow.disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-  background: #f9fafb;
-  border-color: #f1f5f9;
-  transform: none !important;
-  box-shadow: none;
-}
-
-/* Revolutionary Page Indicator */
-.pageIndicator {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  overflow: hidden;
-  padding: 8px 12px;
-  background: rgba(248, 250, 252, 0.8);
-  border-radius: 16px;
-  border: 1px solid rgba(226, 232, 240, 0.8);
-  backdrop-filter: blur(8px);
-  position: relative;
-}
-
-.pageNumbers {
-  display: flex;
-  align-items: center;
   gap: 8px;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  padding: 4px 8px;
-  max-width: 100%;
+  width: 100%;
+  max-width: 320px;
 }
 
-.pageNumbers::-webkit-scrollbar {
-  display: none;
-}
-
-.pageNumber {
-  min-width: 40px;
+/* Minimal Previous/Next buttons */
+.paginationPrevNext {
+  width: 40px;
   height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  color: #475569;
-  font-size: 15px;
-  font-weight: 600;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  color: #374151;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  -webkit-tap-highlight-color: transparent;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Remove default button styles */
+  font-size: 0;
+  padding: 0;
+  /* Optimize for touch */
   touch-action: manipulation;
-  flex-shrink: 0;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-  letter-spacing: -0.02em;
+  -webkit-tap-highlight-color: transparent;
+  transform: translateZ(0);
 }
 
-.pageNumber::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, transparent 0%, rgba(99, 102, 241, 0.1) 100%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
+.paginationPrevNext:hover:not(:disabled) {
+  background: #f9fafb;
+  border-color: #d1d5db;
+  transform: translateZ(0) translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.paginationPrevNext:active:not(:disabled) {
+  transform: translateZ(0) translateY(0);
+  background: #f3f4f6;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.paginationPrevNext:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: #f9fafb;
+  border-color: #f3f4f6;
+  color: #9ca3af;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.pageNumber:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: #f9fafb;
+  border-color: #f3f4f6;
+  color: #9ca3af;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.paginationNumbers {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  justify-content: center;
+  overflow: visible;
+  padding: 0;
+  max-width: none;
+  flex-wrap: wrap;
+}
+
+/* Modern minimal page numbers */
+.pageNumber {
+  min-width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  color: #374151;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  /* Optimize for touch */
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transform: translateZ(0);
 }
 
 .pageNumber:hover {
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-  border-color: #cbd5e1;
-  transform: translateY(-2px) scale(1.05);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-  color: #1e293b;
-}
-
-.pageNumber:hover::before {
-  opacity: 1;
+  background: #f9fafb;
+  border-color: #d1d5db;
+  transform: translateZ(0) translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .pageNumber:active {
-  transform: translateY(-1px) scale(1.02);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transform: translateZ(0) translateY(0);
+  background: #f3f4f6;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-.pageNumber.active {
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
-  border-color: #6366f1 !important;
+/* Active page - minimal black design */
+.pageNumberActive {
+  background: #000000 !important;
+  border-color: #000000 !important;
   color: #ffffff !important;
-  font-weight: 700;
-  box-shadow: 
-    0 4px 16px rgba(99, 102, 241, 0.4),
-    0 2px 8px rgba(139, 92, 246, 0.3) !important;
-  transform: translateY(-1px) scale(1.05);
+  font-weight: 600 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
 }
 
-.pageNumber.active::before {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%);
-  opacity: 1;
+.pageNumberActive:hover {
+  background: #1f2937 !important;
+  border-color: #1f2937 !important;
+  transform: translateZ(0) translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
 }
 
-.pageNumber.active:hover {
-  background: linear-gradient(135deg, #5855eb 0%, #7c3aed 100%) !important;
-  transform: translateY(-2px) scale(1.08) !important;
-  box-shadow: 
-    0 6px 20px rgba(99, 102, 241, 0.5),
-    0 4px 12px rgba(139, 92, 246, 0.4) !important;
+.pageNumberActive:active {
+  transform: translateZ(0) translateY(0) !important;
+  background: #000000 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
 }
 
-.dots {
-  color: #94a3b8;
-  font-weight: 700;
-  padding: 0 6px;
-  font-size: 16px;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+/* Minimal dots */
+.paginationDots {
+  color: #9ca3af;
+  font-weight: 400;
+  padding: 0 4px;
+  font-size: 14px;
   display: flex;
   align-items: center;
-  user-select: none;
-  opacity: 0.7;
-  letter-spacing: 2px;
-}
-
-/* Premium Quick Jump */
-.quickJump {
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-  padding-top: 16px;
-  border-top: 1px solid rgba(226, 232, 240, 0.8);
-  margin-top: 4px;
-}
-
-.jumpButton {
-  padding: 10px 20px;
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-  border: 1px solid #e2e8f0;
-  border-radius: 16px;
-  color: #475569;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  height: 36px;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  letter-spacing: -0.01em;
-}
-
-.jumpButton::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.8) 50%, transparent 100%);
-  transition: left 0.5s ease;
-}
-
-.jumpButton:hover:not(:disabled) {
-  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
-  border-color: #cbd5e1;
-  transform: translateY(-2px) scale(1.05);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-  color: #1e293b;
-}
-
-.jumpButton:hover:not(:disabled)::before {
-  left: 100%;
-}
-
-.jumpButton:active:not(:disabled) {
-  transform: translateY(-1px) scale(1.02);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-.jumpButton:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-  transform: none !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 /* Enhanced mobile-specific pagination styles */
 @media (max-width: 480px) {
   .paginationContainer {
-    padding: 20px 16px;
-    margin: 24px 12px 20px;
-    gap: 18px;
-    border-radius: 18px;
-  }
-  
-  .paginationProgress {
-    gap: 6px;
-  }
-  
-  .progressBarContainer {
-    height: 5px;
-  }
-  
-  .paginationInfo {
-    gap: 10px;
-  }
-  
-  .paginationInfoText {
-    font-size: 14px;
-  }
-  
-  .paginationProducts {
-    font-size: 11px;
-  }
-  
-  .paginationPercentage {
-    font-size: 12px;
-  }
-  
-  .paginationInfoRight {
-    padding: 5px 10px;
-    gap: 6px;
-  }
-  
-  .paginationControls {
+    padding: 16px 12px 20px;
     gap: 12px;
   }
   
-  .paginationArrow {
-    width: 44px;
-    height: 44px;
-    border-radius: 14px;
-  }
-  
-  .pageIndicator {
-    padding: 6px 8px;
-    border-radius: 14px;
-  }
-  
-  .pageNumbers {
+  .paginationControls {
     gap: 6px;
-    padding: 2px 4px;
+    max-width: 280px;
   }
   
-  .pageNumber {
-    min-width: 36px;
+  .paginationPrevNext {
+    width: 36px;
     height: 36px;
-    font-size: 14px;
-    border-radius: 10px;
+    border-radius: 6px;
   }
-  
-  .jumpButton {
-    padding: 8px 16px;
+
+  .paginationNumbers {
+    gap: 3px;
+  }
+
+  .pageNumber {
+    min-width: 32px;
+    height: 32px;
+    font-size: 13px;
+    border-radius: 5px;
+  }
+
+  .paginationInfoText {
     font-size: 12px;
-    border-radius: 14px;
   }
-  
-  .quickJump {
-    gap: 10px;
-    padding-top: 14px;
+
+  .paginationDots {
+    font-size: 13px;
+    height: 32px;
+    padding: 0 3px;
   }
 }
 
 @media (max-width: 360px) {
   .paginationContainer {
-    padding: 18px 14px;
-    margin: 20px 10px 18px;
-    gap: 16px;
-    border-radius: 16px;
+    padding: 14px 10px 18px;
   }
   
-  .paginationInfoText {
-    font-size: 13px;
+  .paginationControls {
+    gap: 4px;
+    max-width: 260px;
   }
   
-  .paginationProducts {
-    font-size: 10px;
-  }
-  
-  .paginationArrow {
-    width: 40px;
-    height: 40px;
-    border-radius: 12px;
-  }
-  
-  .pageNumber {
-    min-width: 32px;
+  .paginationPrevNext {
+    width: 32px;
     height: 32px;
-    font-size: 13px;
-    border-radius: 8px;
   }
-  
-  .dots {
-    font-size: 14px;
-    padding: 0 4px;
-  }
-  
-  .jumpButton {
-    padding: 7px 14px;
-    font-size: 11px;
-    border-radius: 12px;
-  }
-}
 
-/* Dark mode support for the new pagination */
-@media (prefers-color-scheme: dark) {
-  .paginationContainer {
-    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-    border-color: rgba(51, 65, 85, 0.6);
-    box-shadow: 
-      0 4px 16px rgba(0, 0, 0, 0.2),
-      0 2px 8px rgba(0, 0, 0, 0.1),
-      0 1px 2px rgba(0, 0, 0, 0.3);
-  }
-  
-  .paginationContainer::before {
-    background: linear-gradient(90deg, transparent 0%, rgba(139, 92, 246, 0.4) 50%, transparent 100%);
-  }
-  
-  .progressBarContainer {
-    background: linear-gradient(90deg, #334155 0%, #475569 100%);
-  }
-  
-  .paginationInfoText {
-    color: #f8fafc;
-  }
-  
-  .paginationProducts {
-    color: #94a3b8;
-  }
-  
-  .paginationInfoRight {
-    background: rgba(139, 92, 246, 0.15);
-    border-color: rgba(139, 92, 246, 0.25);
-  }
-  
-  .paginationPercentage {
-    color: #a78bfa;
-  }
-  
-  .paginationArrow {
-    background: linear-gradient(135deg, #334155 0%, #475569 100%);
-    border-color: #475569;
-    color: #cbd5e1;
-  }
-  
-  .paginationArrow:hover:not(.disabled) {
-    background: linear-gradient(135deg, #475569 0%, #64748b 100%);
-    border-color: #64748b;
-    color: #f1f5f9;
-  }
-  
-  .pageIndicator {
-    background: rgba(30, 41, 59, 0.8);
-    border-color: rgba(71, 85, 105, 0.8);
-  }
-  
   .pageNumber {
-    background: #334155;
-    border-color: #475569;
-    color: #cbd5e1;
+    min-width: 28px;
+    height: 28px;
+    font-size: 12px;
   }
-  
-  .pageNumber:hover {
-    background: linear-gradient(135deg, #475569 0%, #64748b 100%);
-    border-color: #64748b;
-    color: #f1f5f9;
-  }
-  
-  .pageNumber.active {
-    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%) !important;
-    border-color: #8b5cf6 !important;
-  }
-  
-  .dots {
-    color: #64748b;
-  }
-  
-  .jumpButton {
-    background: linear-gradient(135deg, #334155 0%, #475569 100%);
-    border-color: #475569;
-    color: #cbd5e1;
-  }
-  
-  .jumpButton:hover:not(:disabled) {
-    background: linear-gradient(135deg, #475569 0%, #64748b 100%);
-    border-color: #64748b;
-    color: #f1f5f9;
-  }
-}
 
-/* Loading state for pagination */
-.paginationContainer.loading {
-  pointer-events: none;
-  opacity: 0.7;
-}
-
-.paginationContainer.loading * {
-  cursor: wait !important;
-}
-
-/* Accessibility enhancements */
-@media (prefers-reduced-motion: reduce) {
-  .paginationContainer,
-  .paginationArrow,
-  .pageNumber,
-  .jumpButton,
-  .progressBar {
-    transition: none !important;
-    animation: none !important;
-  }
-  
-  .paginationContainer:hover {
-    transform: none !important;
-  }
-  
-  .paginationArrow:hover:not(.disabled),
-  .pageNumber:hover,
-  .jumpButton:hover:not(:disabled) {
-    transform: none !important;
-  }
-}
-
-/* Focus styles for keyboard navigation */
-.paginationArrow:focus-visible,
-.pageNumber:focus-visible,
-.jumpButton:focus-visible {
-  outline: 2px solid #6366f1;
-  outline-offset: 2px;
-  z-index: 1;
-}
-
-/* Print styles */
-@media print {
-  .paginationContainer {
-    display: none;
+  .paginationDots {
+    height: 28px;
+    font-size: 12px;
   }
 } 
