@@ -803,16 +803,16 @@ export default function ProductsMobileClient() {
           </button>
         </div>
       ) : (
-        <>
-        <div className={`${styles.list} products-container`}>
-          {products.map(product => (
-            <ProductCard 
-              key={product.id} 
-              product={product} 
-              formatPrice={formatPrice}
-            />
-          ))}
-        </div>
+        <div className={styles.mainContent}>
+          <div className={`${styles.list} products-container`}>
+            {products.map(product => (
+              <ProductCard 
+                key={product.id} 
+                product={product} 
+                formatPrice={formatPrice}
+              />
+            ))}
+          </div>
 
           {/* Pagination Controls */}
           {totalPages > 1 && (
@@ -937,7 +937,7 @@ export default function ProductsMobileClient() {
               </div>
             </div>
           )}
-        </>
+        </div>
       )}
 
       {/* Mobile Filter Drawer */}

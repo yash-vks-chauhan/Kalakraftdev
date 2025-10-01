@@ -1,8 +1,11 @@
 .container {
   width: 100%;
-  padding: 0 0 20px 0; /* Add bottom padding to avoid footer overlap */
+  padding: 0; /* Remove bottom padding */
   background-color: #fff;
   position: relative;
+  min-height: 100vh; /* Ensure minimum height */
+  display: flex;
+  flex-direction: column;
   /* Mobile scroll optimizations */
   -webkit-overflow-scrolling: touch;
   scroll-behavior: smooth;
@@ -10,6 +13,13 @@
   /* Improve scroll performance */
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
+}
+
+.mainContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0; /* Allow shrinking */
 }
 
 .pageHeader {
@@ -46,6 +56,7 @@
   max-width: 100%;
   background-color: #fff;
   box-sizing: border-box;
+  flex: 1; /* Take available space */
   /* Critical mobile scroll optimizations */
   -webkit-overflow-scrolling: touch;
   transform: translateZ(0);
@@ -1351,13 +1362,13 @@ details[open] .arrow {
 .paginationContainer {
   background: #ffffff;
   border-top: 1px solid #f0f0f0;
-  padding: 20px 16px 24px;
-  margin: 16px 0 0 0;
+  padding: 16px 16px 16px; /* Consistent padding */
+  margin: 8px 0 0 0; /* Only top margin */
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px; /* Reduced gap */
   align-items: center;
-  margin-bottom: 20px;
+  margin-top: auto; /* Push to bottom of flex container */
   /* Optimize for performance */
   transform: translateZ(0);
   contain: layout style paint;
