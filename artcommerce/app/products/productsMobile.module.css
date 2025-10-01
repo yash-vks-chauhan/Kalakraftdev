@@ -1408,6 +1408,9 @@ details[open] .arrow {
   display: flex;
   justify-content: center;
   align-items: center;
+  /* Subtle inward shadow for info container */
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.04);
 }
 
 .paginationInfoText {
@@ -1428,16 +1431,16 @@ details[open] .arrow {
   max-width: 320px;
 }
 
-/* Enhanced Previous/Next buttons */
+/* Enhanced Previous/Next buttons with outline and inward shadow */
 .paginationPrevNext {
   width: 40px;
   height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
-  border: 1px solid #f0f0f0;
-  border-radius: 10px;
+  background: #ffffff;
+  border: 2px solid #f0f0f0;
+  border-radius: 12px;
   color: #666;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -1450,7 +1453,8 @@ details[open] .arrow {
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
   transform: translateZ(0);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  /* Inward shadow instead of outward */
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .paginationPrevNext::before {
@@ -1460,7 +1464,7 @@ details[open] .arrow {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(0,0,0,0.04), transparent);
+  background: linear-gradient(90deg, transparent, rgba(0,0,0,0.02), transparent);
   transition: left 0.5s ease;
 }
 
@@ -1469,37 +1473,43 @@ details[open] .arrow {
 }
 
 .paginationPrevNext:hover:not(:disabled) {
-  background: linear-gradient(135deg, #f8f9fa 0%, #f1f3f4 100%);
+  background: #fafafa;
   border-color: #e0e0e0;
-  transform: translateZ(0) translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateZ(0) translateY(-1px);
+  /* Enhanced outline instead of shadow */
+  outline: 1px solid rgba(0, 0, 0, 0.1);
+  outline-offset: 2px;
+  /* Deeper inward shadow */
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.12);
   color: #333;
 }
 
 .paginationPrevNext:active:not(:disabled) {
   transform: translateZ(0) translateY(0);
-  background: linear-gradient(135deg, #f0f0f0 0%, #e8e8e8 100%);
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+  background: #f5f5f5;
+  /* Pressed inward shadow effect */
+  box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.15);
+  outline: none;
 }
 
 .paginationPrevNext:disabled {
-  opacity: 0.3;
   cursor: not-allowed;
-  background: #f8f8f8;
+  background: #fafafa;
   border-color: #f0f0f0;
   color: #ccc;
   transform: none !important;
-  box-shadow: none !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+  outline: none !important;
 }
 
 .pageNumber:disabled {
-  opacity: 0.3;
   cursor: not-allowed;
-  background: #f8f8f8;
+  background: #fafafa;
   border-color: #f0f0f0;
   color: #ccc;
   transform: none !important;
-  box-shadow: none !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+  outline: none !important;
 }
 
 .paginationNumbers {
@@ -1514,16 +1524,16 @@ details[open] .arrow {
   flex-wrap: wrap;
 }
 
-/* Modern enhanced page numbers */
+/* Modern unique page numbers with outline and inward shadow */
 .pageNumber {
   min-width: 38px;
   height: 38px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
-  border: 1px solid #f0f0f0;
-  border-radius: 10px;
+  background: #ffffff;
+  border: 2px solid #f0f0f0;
+  border-radius: 12px;
   color: #666;
   font-size: 14px;
   font-weight: 500;
@@ -1537,7 +1547,8 @@ details[open] .arrow {
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
   transform: translateZ(0);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  /* Subtle inward shadow */
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .pageNumber::before {
@@ -1547,7 +1558,7 @@ details[open] .arrow {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(0,0,0,0.04), transparent);
+  background: linear-gradient(90deg, transparent, rgba(0,0,0,0.02), transparent);
   transition: left 0.5s ease;
 }
 
@@ -1556,27 +1567,37 @@ details[open] .arrow {
 }
 
 .pageNumber:hover {
-  background: linear-gradient(135deg, #f8f9fa 0%, #f1f3f4 100%);
+  background: #fafafa;
   border-color: #e0e0e0;
-  transform: translateZ(0) translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateZ(0) translateY(-1px);
+  /* Distinctive outline instead of shadow */
+  outline: 1px solid rgba(0, 0, 0, 0.1);
+  outline-offset: 2px;
+  /* Enhanced inward shadow */
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.12);
   color: #333;
 }
 
 .pageNumber:active {
   transform: translateZ(0) translateY(0);
-  background: linear-gradient(135deg, #f0f0f0 0%, #e8e8e8 100%);
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+  background: #f5f5f5;
+  /* Deep pressed inward shadow */
+  box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.15);
+  outline: none;
 }
 
-/* Active page - refined black design */
+/* Active page - unique black design with inward shadow */
 .pageNumberActive {
-  background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%) !important;
+  background: #000000 !important;
   border-color: #000000 !important;
   color: #ffffff !important;
   font-weight: 600 !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), 
-              0 2px 4px rgba(0, 0, 0, 0.1) !important;
+  /* Unique double outline effect */
+  outline: 2px solid rgba(0, 0, 0, 0.2) !important;
+  outline-offset: 3px !important;
+  /* Deep inward shadow for active state */
+  box-shadow: inset 0 2px 8px rgba(255, 255, 255, 0.1), 
+              inset 0 4px 16px rgba(0, 0, 0, 0.3) !important;
   transform: translateY(-1px) !important;
 }
 
@@ -1585,45 +1606,60 @@ details[open] .arrow {
 }
 
 .pageNumberActive:hover {
-  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%) !important;
+  background: #1a1a1a !important;
   border-color: #1a1a1a !important;
   transform: translateZ(0) translateY(-2px) !important;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2), 
-              0 3px 6px rgba(0, 0, 0, 0.15) !important;
+  /* Enhanced outline on hover */
+  outline: 2px solid rgba(26, 26, 26, 0.3) !important;
+  outline-offset: 4px !important;
+  /* More pronounced inward shadow */
+  box-shadow: inset 0 3px 12px rgba(255, 255, 255, 0.15), 
+              inset 0 6px 20px rgba(0, 0, 0, 0.4) !important;
 }
 
 .pageNumberActive:active {
   transform: translateZ(0) translateY(-1px) !important;
-  background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%) !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), 
-              0 2px 4px rgba(0, 0, 0, 0.1) !important;
+  background: #000000 !important;
+  /* Pressed state with deeper inward shadow */
+  box-shadow: inset 0 4px 16px rgba(255, 255, 255, 0.08), 
+              inset 0 8px 24px rgba(0, 0, 0, 0.5) !important;
+  outline: 1px solid rgba(0, 0, 0, 0.1) !important;
+  outline-offset: 2px !important;
 }
 
-/* Enhanced dots with animation */
+/* Enhanced dots with unique styling */
 .paginationDots {
-  color: #ccc;
+  color: #999;
   font-weight: 300;
-  padding: 0 6px;
+  padding: 0 8px;
   font-size: 14px;
   display: flex;
   align-items: center;
   height: 38px;
   position: relative;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  /* Subtle outline effect for dots */
+  text-shadow: 0 0 2px rgba(0, 0, 0, 0.1);
   animation: dotPulse 2s infinite ease-in-out;
 }
 
 @keyframes dotPulse {
-  0%, 100% { opacity: 0.6; }
-  50% { opacity: 1; }
+  0%, 100% { 
+    opacity: 0.6; 
+    transform: scale(1);
+  }
+  50% { 
+    opacity: 1; 
+    transform: scale(1.05);
+  }
 }
 
-/* Focus states for accessibility */
+/* Enhanced focus states for accessibility with outline */
 .pageNumber:focus-visible,
 .paginationPrevNext:focus-visible {
-  outline: 2px solid #000000;
-  outline-offset: 2px;
-  box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.1);
+  outline: 3px solid #4A90E2;
+  outline-offset: 3px;
+  box-shadow: inset 0 2px 8px rgba(74, 144, 226, 0.1);
 }
 
 /* Skeleton loading states */
@@ -1660,7 +1696,7 @@ details[open] .arrow {
   }
 }
 
-/* Enhanced mobile-specific pagination styles */
+/* Enhanced mobile-specific pagination styles with outline design */
 @media (max-width: 480px) {
   .paginationContainer {
     padding: 18px 12px 68px; /* Adjusted for mobile footer */
@@ -1672,6 +1708,9 @@ details[open] .arrow {
     background: rgba(0, 0, 0, 0.015);
     padding: 6px 14px;
     border-radius: 18px;
+    /* Enhanced inward shadow for mobile */
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.03);
   }
   
   .paginationControls {
@@ -1682,7 +1721,8 @@ details[open] .arrow {
   .paginationPrevNext {
     width: 36px;
     height: 36px;
-    border-radius: 8px;
+    border-radius: 10px;
+    border-width: 1.5px;
   }
 
   .paginationNumbers {
@@ -1693,7 +1733,8 @@ details[open] .arrow {
     min-width: 34px;
     height: 34px;
     font-size: 13px;
-    border-radius: 8px;
+    border-radius: 10px;
+    border-width: 1.5px;
   }
 
   .paginationInfoText {
@@ -1703,7 +1744,20 @@ details[open] .arrow {
   .paginationDots {
     font-size: 13px;
     height: 34px;
-    padding: 0 4px;
+    padding: 0 5px;
+  }
+  
+  /* Adjust outline offsets for mobile */
+  .pageNumber:hover {
+    outline-offset: 1px;
+  }
+  
+  .pageNumberActive {
+    outline-offset: 2px !important;
+  }
+  
+  .pageNumberActive:hover {
+    outline-offset: 3px !important;
   }
 }
 
@@ -1716,6 +1770,7 @@ details[open] .arrow {
   .paginationInfo {
     padding: 5px 12px;
     border-radius: 16px;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
   }
   
   .paginationControls {
@@ -1726,14 +1781,16 @@ details[open] .arrow {
   .paginationPrevNext {
     width: 32px;
     height: 32px;
-    border-radius: 6px;
+    border-radius: 8px;
+    border-width: 1px;
   }
 
   .pageNumber {
     min-width: 30px;
     height: 30px;
     font-size: 12px;
-    border-radius: 6px;
+    border-radius: 8px;
+    border-width: 1px;
   }
 
   .paginationInfoText {
@@ -1743,6 +1800,19 @@ details[open] .arrow {
   .paginationDots {
     height: 30px;
     font-size: 12px;
-    padding: 0 3px;
+    padding: 0 4px;
+  }
+  
+  /* More subtle outline effects on smallest screens */
+  .pageNumber:hover {
+    outline-offset: 1px;
+  }
+  
+  .pageNumberActive {
+    outline-offset: 1px !important;
+  }
+  
+  .pageNumberActive:hover {
+    outline-offset: 2px !important;
   }
 } 
