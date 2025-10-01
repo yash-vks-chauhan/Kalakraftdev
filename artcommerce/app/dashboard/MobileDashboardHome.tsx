@@ -318,71 +318,117 @@ export default function MobileDashboardHome() {
               </div>
               <div className={`${styles.expandableContent} ${showOverview ? styles.expanded : ''}`}>
                 {metrics ? (
-                  <div className={styles.overviewMetricsList}>
-                    {/* Revenue Card */}
-                    <div className={styles.overviewMetricCard}>
-                      <div className={styles.metricCardIcon}>
-                        <DollarSign size={20} />
+                  <div className={styles.modernAnalyticsDashboard}>
+                    {/* Primary Metrics Grid */}
+                    <div className={styles.primaryMetricsGrid}>
+                      {/* Revenue Card */}
+                      <div className={`${styles.modernMetricCard} ${styles.revenueCard}`}>
+                        <div className={styles.modernCardHeader}>
+                          <div className={styles.modernCardIcon}>
+                            <DollarSign size={18} />
+                          </div>
+                          <div className={styles.modernCardBadge}>Revenue</div>
+                        </div>
+                        <div className={styles.modernCardContent}>
+                          <div className={styles.modernMetricValue}>₹{metrics?.revenue ? metrics.revenue.toFixed(0) : '0'}</div>
+                          <div className={styles.modernMetricLabel}>This {period === 'today' ? 'day' : period}</div>
+                        </div>
+                        <div className={styles.modernCardGlow}></div>
                       </div>
-                      <div className={styles.metricCardContent}>
-                        <h4 className={styles.metricCardTitle}>Total Revenue</h4>
-                        <p className={styles.metricCardValue}>₹{metrics?.revenue ? metrics.revenue.toFixed(0) : '0'}</p>
-                        <p className={styles.metricCardSubtitle}>This {period === 'today' ? 'day' : period}</p>
+
+                      {/* Orders Card */}
+                      <div className={`${styles.modernMetricCard} ${styles.ordersCard}`}>
+                        <div className={styles.modernCardHeader}>
+                          <div className={styles.modernCardIcon}>
+                            <Package size={18} />
+                          </div>
+                          <div className={styles.modernCardBadge}>Orders</div>
+                        </div>
+                        <div className={styles.modernCardContent}>
+                          <div className={styles.modernMetricValue}>{metrics?.totalOrders || '0'}</div>
+                          <div className={styles.modernMetricLabel}>Total processed</div>
+                        </div>
+                        <div className={styles.modernCardGlow}></div>
                       </div>
                     </div>
 
-                    {/* Orders Card */}
-                    <div className={styles.overviewMetricCard}>
-                      <div className={styles.metricCardIcon}>
-                        <Package size={20} />
+                    {/* Status Distribution */}
+                    <div className={styles.statusDistribution}>
+                      <div className={styles.statusHeader}>
+                        <h4 className={styles.statusTitle}>Order Status Distribution</h4>
+                        <div className={styles.statusSummary}>
+                          {metrics?.statusCounts?.length || 0} statuses
+                        </div>
                       </div>
-                      <div className={styles.metricCardContent}>
-                        <h4 className={styles.metricCardTitle}>Total Orders</h4>
-                        <p className={styles.metricCardValue}>{metrics?.totalOrders || '0'}</p>
-                        <p className={styles.metricCardSubtitle}>Orders processed</p>
+                      <div className={styles.statusGrid}>
+                        {metrics?.statusCounts?.slice(0, 4).map((sc: any, index: number) => (
+                          <div key={sc.status} className={`${styles.statusCard} ${styles[`status${index + 1}`]}`}>
+                            <div className={styles.statusCardIcon}>
+                              {sc.status === 'completed' && <PackageOpen size={16} />}
+                              {sc.status === 'processing' && <Clock size={16} />}
+                              {sc.status === 'shipped' && <Package size={16} />}
+                              {sc.status === 'pending' && <Calendar size={16} />}
+                              {!['completed', 'processing', 'shipped', 'pending'].includes(sc.status) && <BarChart3 size={16} />}
+                            </div>
+                            <div className={styles.statusCardContent}>
+                              <div className={styles.statusCount}>{sc._count.status}</div>
+                              <div className={styles.statusLabel}>
+                                {sc.status.charAt(0).toUpperCase() + sc.status.slice(1)}
+                              </div>
+                            </div>
+                            <div className={styles.statusProgress}>
+                              <div 
+                                className={styles.statusProgressBar}
+                                style={{ 
+                                  width: `${Math.min(100, (sc._count.status / (metrics?.totalOrders || 1)) * 100)}%` 
+                                }}
+                              ></div>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </div>
 
-                    {/* Status Breakdown */}
-                    {metrics?.statusCounts?.slice(0, 3).map((sc: any) => (
-                      <div key={sc.status} className={styles.overviewMetricCard}>
-                        <div className={styles.metricCardIcon}>
-                          {sc.status === 'completed' && <PackageOpen size={20} />}
-                          {sc.status === 'processing' && <Clock size={20} />}
-                          {sc.status === 'shipped' && <Package size={20} />}
-                          {sc.status === 'pending' && <Calendar size={20} />}
-                          {!['completed', 'processing', 'shipped', 'pending'].includes(sc.status) && <BarChart3 size={20} />}
+                    {/* Analytics Summary */}
+                    <div className={styles.analyticsSummary}>
+                      <div className={styles.summaryMetrics}>
+                        <div className={styles.summaryItem}>
+                          <div className={styles.summaryIcon}>
+                            <BarChart3 size={14} />
+                          </div>
+                          <div className={styles.summaryContent}>
+                            <span className={styles.summaryLabel}>Period</span>
+                            <span className={styles.summaryValue}>
+                              {period === 'today' ? 'Today' : 
+                               period === 'week' ? 'Last 7 days' : 
+                               period === 'month' ? 'This month' : 
+                               period === 'year' ? 'This year' : 'All time'}
+                            </span>
+                          </div>
                         </div>
-                        <div className={styles.metricCardContent}>
-                          <h4 className={styles.metricCardTitle}>
-                            {sc.status.charAt(0).toUpperCase() + sc.status.slice(1)} Orders
-                          </h4>
-                          <p className={styles.metricCardValue}>{sc._count.status}</p>
-                          <p className={styles.metricCardSubtitle}>Current status</p>
+                        <div className={styles.summaryItem}>
+                          <div className={styles.summaryIcon}>
+                            <RefreshCw size={14} />
+                          </div>
+                          <div className={styles.summaryContent}>
+                            <span className={styles.summaryLabel}>Updated</span>
+                            <span className={styles.summaryValue}>Just now</span>
+                          </div>
                         </div>
                       </div>
-                    ))}
-
-                    {/* Quick Stats */}
-                    <div className={styles.overviewQuickStats}>
-                      <div className={styles.quickStatItem}>
-                        <span className={styles.quickStatLabel}>Period</span>
-                        <span className={styles.quickStatValue}>
-                          {period === 'today' ? 'Today' : 
-                           period === 'week' ? 'Last 7 days' : 
-                           period === 'month' ? 'This month' : 
-                           period === 'year' ? 'This year' : 'All time'}
-                        </span>
-                      </div>
-                      <div className={styles.quickStatItem}>
-                        <span className={styles.quickStatLabel}>Last Updated</span>
-                        <span className={styles.quickStatValue}>Just now</span>
+                      <div className={styles.summaryStats}>
+                        <div className={styles.statsPill}>
+                          <span className={styles.statsLabel}>Avg Order Value</span>
+                          <span className={styles.statsValue}>
+                            ₹{metrics?.totalOrders > 0 ? Math.round(metrics.revenue / metrics.totalOrders) : '0'}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
                 ) : (
                   <div className={styles.loadingContainer}>
-                    <InlineLoader size="small" message="Loading metrics..." />
+                    <InlineLoader size="small" message="Loading analytics..." />
                   </div>
                 )}
               </div>

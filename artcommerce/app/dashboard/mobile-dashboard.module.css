@@ -1361,195 +1361,412 @@
   background: rgba(0, 0, 0, 0.08);
 }
 
-.overviewMetricsList {
+/* ============================================
+   MODERN ANALYTICS DASHBOARD - Professional Design
+   ============================================ */
+
+.modernAnalyticsDashboard {
+  padding: 20px 24px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%);
+  backdrop-filter: blur(20px) saturate(180%);
   display: flex;
   flex-direction: column;
-  gap: 0;
-  padding: 20px 24px;
-  background: transparent;
+  gap: 24px;
 }
 
-.overviewMetricCard {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  padding: 20px 0;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
-  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+/* Primary Metrics Grid */
+.primaryMetricsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.modernMetricCard {
   position: relative;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.8) 100%);
+  backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: 20px;
   overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.04),
+    0 2px 8px rgba(0, 0, 0, 0.02),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
-.overviewMetricCard::before {
+.modernMetricCard::before {
   content: '';
   position: absolute;
   top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.02), transparent);
-  transition: left 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #007AFF, #5856D6);
+  border-radius: 20px 20px 0 0;
+  transition: all 0.3s ease;
 }
 
-.overviewMetricCard:hover::before {
-  left: 100%;
+.revenueCard::before {
+  background: linear-gradient(90deg, #34C759, #30D158);
 }
 
-.overviewMetricCard:last-of-type {
-  border-bottom: none;
+.ordersCard::before {
+  background: linear-gradient(90deg, #007AFF, #5856D6);
 }
 
-.overviewMetricCard:hover {
-  background: rgba(0, 0, 0, 0.02);
-  margin: 0 -24px;
-  padding: 20px 24px;
-  border-radius: 12px;
-  transform: translateY(-1px);
+.modernMetricCard:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 
+    0 16px 48px rgba(0, 0, 0, 0.08),
+    0 4px 16px rgba(0, 0, 0, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 
-.metricCardIcon {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
+.modernCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.modernCardIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(0, 122, 255, 0.1) 0%, rgba(88, 86, 214, 0.1) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #000000;
-  background: linear-gradient(135deg, rgba(0, 0, 0, 0.06) 0%, rgba(0, 0, 0, 0.12) 100%);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  box-shadow: 
-    0 4px 16px rgba(0, 0, 0, 0.06),
-    0 1px 4px rgba(0, 0, 0, 0.02),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  position: relative;
-  overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  transform: translateZ(0);
-  flex-shrink: 0;
+  color: #007AFF;
+  border: 1px solid rgba(0, 122, 255, 0.2);
 }
 
-.metricCardIcon::before {
-  content: '';
+.revenueCard .modernCardIcon {
+  background: linear-gradient(135deg, rgba(52, 199, 89, 0.1) 0%, rgba(48, 209, 88, 0.1) 100%);
+  border-color: rgba(52, 199, 89, 0.2);
+  color: #34C759;
+}
+
+.modernCardBadge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #8E8E93;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.modernCardContent {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.modernMetricValue {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1D1D1F;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.modernMetricLabel {
+  font-size: 0.8125rem;
+  color: #8E8E93;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.modernCardGlow {
   position: absolute;
   top: -50%;
   left: -50%;
   width: 200%;
   height: 200%;
-  background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
-  transform: rotate(45deg);
-  transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
   opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
 }
 
-.overviewMetricCard:hover .metricCardIcon {
-  transform: translateY(-2px) scale(1.05);
-  box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.12),
-    0 2px 8px rgba(0, 0, 0, 0.04),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
-}
-
-.overviewMetricCard:hover .metricCardIcon::before {
-  transform: rotate(45deg) translate(100%, 100%);
+.modernMetricCard:hover .modernCardGlow {
   opacity: 1;
 }
 
-.metricCardContent {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+/* Status Distribution */
+.statusDistribution {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.8) 100%);
+  backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.04),
+    0 2px 8px rgba(0, 0, 0, 0.02),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
-.metricCardTitle {
-  font-size: 0.875rem;
+.statusHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.statusTitle {
+  font-size: 1rem;
   font-weight: 600;
   color: #1D1D1F;
   margin: 0;
-  line-height: 1.3;
   letter-spacing: -0.01em;
 }
 
-.metricCardValue {
+.statusSummary {
+  font-size: 0.75rem;
+  color: #8E8E93;
+  font-weight: 500;
+  background: rgba(0, 0, 0, 0.04);
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.statusGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.statusCard {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.7) 0%, rgba(248, 250, 252, 0.5) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 16px;
+  padding: 16px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.statusCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #8E8E93;
+  transition: all 0.3s ease;
+}
+
+.status1::before { background: linear-gradient(90deg, #34C759, #30D158); }
+.status2::before { background: linear-gradient(90deg, #FF9500, #FFAD0D); }
+.status3::before { background: linear-gradient(90deg, #007AFF, #5856D6); }
+.status4::before { background: linear-gradient(90deg, #FF3B30, #FF453A); }
+
+.statusCard:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+.statusCardIcon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666666;
+  margin-bottom: 12px;
+}
+
+.status1 .statusCardIcon { 
+  background: rgba(52, 199, 89, 0.1); 
+  color: #34C759; 
+}
+.status2 .statusCardIcon { 
+  background: rgba(255, 149, 0, 0.1); 
+  color: #FF9500; 
+}
+.status3 .statusCardIcon { 
+  background: rgba(0, 122, 255, 0.1); 
+  color: #007AFF; 
+}
+.status4 .statusCardIcon { 
+  background: rgba(255, 59, 48, 0.1); 
+  color: #FF3B30; 
+}
+
+.statusCardContent {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.statusCount {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #000000;
-  margin: 0;
-  line-height: 1.2;
+  color: #1D1D1F;
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
   letter-spacing: -0.02em;
 }
 
-.metricCardSubtitle {
-  font-size: 0.75rem;
-  color: #8E8E93;
-  margin: 0;
-  line-height: 1.2;
-  letter-spacing: -0.01em;
-}
-
-.overviewQuickStats {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 16px 0 4px 0;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
-  margin-top: 8px;
-}
-
-.quickStatItem {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.quickStatLabel {
+.statusLabel {
   font-size: 0.75rem;
   color: #8E8E93;
   font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  text-transform: capitalize;
 }
 
-.quickStatValue {
+.statusProgress {
+  height: 4px;
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.statusProgressBar {
+  height: 100%;
+  background: linear-gradient(90deg, #007AFF, #5856D6);
+  border-radius: 2px;
+  transition: width 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.status1 .statusProgressBar { background: linear-gradient(90deg, #34C759, #30D158); }
+.status2 .statusProgressBar { background: linear-gradient(90deg, #FF9500, #FFAD0D); }
+.status3 .statusProgressBar { background: linear-gradient(90deg, #007AFF, #5856D6); }
+.status4 .statusProgressBar { background: linear-gradient(90deg, #FF3B30, #FF453A); }
+
+/* Analytics Summary */
+.analyticsSummary {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.8) 100%);
+  backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.04),
+    0 2px 8px rgba(0, 0, 0, 0.02),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.summaryMetrics {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.summaryItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.summaryIcon {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666666;
+}
+
+.summaryContent {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.summaryLabel {
   font-size: 0.75rem;
-  color: #000000;
+  color: #8E8E93;
+  font-weight: 500;
+}
+
+.summaryValue {
+  font-size: 0.8125rem;
+  color: #1D1D1F;
   font-weight: 600;
 }
 
-/* Mobile adjustments for overview metrics */
+.summaryStats {
+  padding-top: 12px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.statsPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, rgba(0, 122, 255, 0.1) 0%, rgba(88, 86, 214, 0.1) 100%);
+  border: 1px solid rgba(0, 122, 255, 0.2);
+  border-radius: 12px;
+  padding: 8px 12px;
+}
+
+.statsLabel {
+  font-size: 0.75rem;
+  color: #007AFF;
+  font-weight: 500;
+}
+
+.statsValue {
+  font-size: 0.8125rem;
+  color: #007AFF;
+  font-weight: 700;
+}
+
+/* Mobile Responsive Adjustments */
 @media (max-width: 768px) {
-  .overviewMetricsList {
-    padding: 12px 16px 12px 16px;
+  .modernAnalyticsDashboard {
+    padding: 16px 20px;
+    gap: 20px;
   }
   
-  .overviewMetricCard {
+  .primaryMetricsGrid {
     gap: 12px;
-    padding: 12px 0;
   }
   
-  .overviewMetricCard:hover {
-    margin: 0 -16px;
-    padding: 12px 16px;
+  .modernMetricCard {
+    padding: 16px;
+    border-radius: 16px;
   }
   
-  .metricCardIcon {
-    width: 36px;
-    height: 36px;
-    border-radius: 8px;
+  .modernMetricValue {
+    font-size: 1.25rem;
   }
   
-  .metricCardTitle {
-    font-size: 0.8125rem;
+  .statusDistribution {
+    padding: 16px;
+    border-radius: 16px;
   }
   
-  .metricCardValue {
-    font-size: 1rem;
+  .statusGrid {
+    gap: 10px;
   }
   
-  .metricCardSubtitle {
-    font-size: 0.7rem;
+  .statusCard {
+    padding: 12px;
+    border-radius: 12px;
+  }
+  
+  .statusCount {
+    font-size: 1.125rem;
+  }
+  
+  .analyticsSummary {
+    padding: 16px;
+    border-radius: 16px;
   }
 }
 
@@ -1584,7 +1801,7 @@
 }
 
 .expandableContent.expanded {
-  max-height: 350px; /* Optimized for actual content height */
+  max-height: 800px; /* Increased for modern analytics dashboard */
 }
 
 .chevronIcon {
