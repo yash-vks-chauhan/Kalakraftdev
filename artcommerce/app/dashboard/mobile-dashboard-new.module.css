@@ -70,7 +70,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #007AFF;
+  color: #000000;
   transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
   cursor: pointer;
 }
@@ -178,7 +178,7 @@
   align-items: center;
   justify-content: center;
   margin-bottom: 16px;
-  color: #007AFF;
+  color: #000000;
 }
 
 .metricContent {
@@ -308,12 +308,12 @@
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  background: rgba(0, 122, 255, 0.1);
+  background: rgba(0, 0, 0, 0.08);
   display: flex;
   align-items: center;
   justify-content: center;
   margin-right: 16px;
-  color: #007AFF;
+  color: #000000;
   flex-shrink: 0;
 }
 
@@ -385,7 +385,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #007AFF;
+  color: #000000;
 }
 
 .iosAccordionTitle {
@@ -490,7 +490,7 @@
   align-items: center;
   justify-content: center;
   margin-right: 16px;
-  color: #007AFF;
+  color: #000000;
   flex-shrink: 0;
   overflow: hidden;
 }
@@ -545,7 +545,7 @@
 }
 
 .statusDot.statusProcessing {
-  background: #007AFF;
+  background: #000000;
 }
 
 .statusDot.statusPending {
