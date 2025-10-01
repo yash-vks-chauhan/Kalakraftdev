@@ -20,6 +20,7 @@
   display: flex;
   flex-direction: column;
   min-height: 0; /* Allow shrinking */
+  margin: 0; /* Remove any margins */
 }
 
 .pageHeader {
@@ -57,6 +58,7 @@
   background-color: #fff;
   box-sizing: border-box;
   flex: 1; /* Take available space */
+  margin-bottom: 0; /* Remove any bottom margin */
   /* Critical mobile scroll optimizations */
   -webkit-overflow-scrolling: touch;
   transform: translateZ(0);
@@ -1363,12 +1365,11 @@ details[open] .arrow {
   background: #ffffff;
   border-top: 1px solid #f0f0f0;
   padding: 16px 16px 16px; /* Consistent padding */
-  margin: 8px 0 0 0; /* Only top margin */
+  margin: 0; /* Remove all margins */
   display: flex;
   flex-direction: column;
   gap: 12px; /* Reduced gap */
   align-items: center;
-  margin-top: auto; /* Push to bottom of flex container */
   /* Optimize for performance */
   transform: translateZ(0);
   contain: layout style paint;
