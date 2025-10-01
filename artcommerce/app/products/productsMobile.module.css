@@ -1420,6 +1420,11 @@ details[open] .arrow {
   font-weight: 500;
   letter-spacing: 0.02em;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 
 .paginationControls {
@@ -1816,3 +1821,385 @@ details[open] .arrow {
     outline-offset: 2px !important;
   }
 } 
+
+/* ===========================================
+   ENHANCED PAGINATION FEATURES
+   =========================================== */
+
+/* Progress Bar Component */
+.progressContainer {
+  width: 100%;
+  max-width: 300px;
+  margin: 0 auto 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+}
+
+.progressBar {
+  width: 100%;
+  height: 4px;
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  /* Subtle inward shadow */
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #000000, #333333);
+  border-radius: 8px;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  /* Outward glow effect */
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
+}
+
+.progressFill.progressLoading {
+  animation: progressPulse 1.5s ease-in-out infinite;
+}
+
+.progressGlow {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 20px;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4));
+  animation: progressShimmer 2s ease-in-out infinite;
+}
+
+.progressText {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  color: #666;
+  font-weight: 500;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.progressCurrent {
+  color: #000;
+  font-weight: 600;
+}
+
+.progressSeparator {
+  color: #999;
+  font-size: 9px;
+}
+
+.progressTotal {
+  color: #666;
+}
+
+/* Enhanced Skeleton Loading */
+.paginationSkeleton {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.8;
+  animation: fadeInSkeleton 0.3s ease-in-out;
+}
+
+.paginationSkeleton.transitioning {
+  animation: skeletonPulse 0.8s ease-in-out infinite;
+}
+
+.skeletonPrevNext {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 12px;
+  position: relative;
+  /* Add subtle inward shadow to match real buttons */
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.skeletonButton {
+  width: 38px;
+  height: 38px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 12px;
+  position: relative;
+  /* Add subtle inward shadow to match real buttons */
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.skeletonActive {
+  background: linear-gradient(90deg, #d0d0d0 25%, #c0c0c0 50%, #d0d0d0 75%) !important;
+  animation: shimmerActive 1.2s infinite;
+  /* Deeper inward shadow for active state */
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.12) !important;
+}
+
+.skeletonShimmer {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+  animation: skeletonShine 2s ease-in-out infinite;
+}
+
+/* Pagination Icon and Keyboard Hints */
+.paginationIcon {
+  margin-right: 4px;
+  opacity: 0.7;
+  animation: iconPulse 2s ease-in-out infinite;
+}
+
+.keyboardHint {
+  margin-left: 8px;
+  padding: 2px 6px;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 6px;
+  font-size: 9px;
+  color: #777;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  /* Subtle inward shadow */
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.02);
+  animation: hintGlow 3s ease-in-out infinite;
+}
+
+/* Enhanced Micro-animations */
+.pageNumber,
+.paginationPrevNext {
+  position: relative;
+  overflow: hidden;
+}
+
+.pageNumber::after,
+.paginationPrevNext::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: radial-gradient(circle, rgba(0, 0, 0, 0.1), transparent);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.4s ease, height 0.4s ease;
+  pointer-events: none;
+}
+
+.pageNumber:active::after,
+.paginationPrevNext:active::after {
+  width: 100px;
+  height: 100px;
+  transition: width 0.2s ease, height 0.2s ease;
+}
+
+/* Keyboard Animation States */
+.pageNumber.keyboardSelected {
+  animation: keyboardSelect 0.3s ease-in-out;
+  transform: translateY(-1px) scale(1.05);
+  box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.15), 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Enhanced Loading States */
+.paginationContainer.loading {
+  pointer-events: none;
+}
+
+.paginationContainer.loading .paginationControls {
+  opacity: 0.5;
+  filter: blur(0.5px);
+  transition: opacity 0.3s ease, filter 0.3s ease;
+}
+
+/* Animation Keyframes */
+@keyframes progressPulse {
+  0%, 100% { 
+    opacity: 1; 
+  }
+  50% { 
+    opacity: 0.7; 
+  }
+}
+
+@keyframes progressShimmer {
+  0% { 
+    transform: translateX(-20px); 
+    opacity: 0;
+  }
+  50% { 
+    opacity: 1;
+  }
+  100% { 
+    transform: translateX(300px); 
+    opacity: 0;
+  }
+}
+
+@keyframes fadeInSkeleton {
+  from { 
+    opacity: 0; 
+    transform: translateY(5px);
+  }
+  to { 
+    opacity: 0.8; 
+    transform: translateY(0);
+  }
+}
+
+@keyframes skeletonPulse {
+  0%, 100% { 
+    opacity: 0.8; 
+    transform: scale(1);
+  }
+  50% { 
+    opacity: 0.6; 
+    transform: scale(1.02);
+  }
+}
+
+@keyframes shimmerActive {
+  0% { 
+    background-position: -200% 0; 
+  }
+  100% { 
+    background-position: 200% 0; 
+  }
+}
+
+@keyframes skeletonShine {
+  0% { 
+    left: -100%; 
+  }
+  100% { 
+    left: 100%; 
+  }
+}
+
+@keyframes iconPulse {
+  0%, 100% { 
+    opacity: 0.7; 
+    transform: scale(1);
+  }
+  50% { 
+    opacity: 1; 
+    transform: scale(1.1);
+  }
+}
+
+@keyframes hintGlow {
+  0%, 100% { 
+    background: rgba(0, 0, 0, 0.05); 
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
+  }
+  50% { 
+    background: rgba(0, 0, 0, 0.08); 
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.08);
+  }
+}
+
+@keyframes keyboardSelect {
+  0% { 
+    transform: translateY(0) scale(1); 
+  }
+  50% { 
+    transform: translateY(-2px) scale(1.08); 
+  }
+  100% { 
+    transform: translateY(-1px) scale(1.05); 
+  }
+}
+
+/* Mobile-specific enhancements */
+@media (max-width: 480px) {
+  .progressContainer {
+    max-width: 250px;
+    margin-bottom: 10px;
+  }
+  
+  .progressBar {
+    height: 3px;
+  }
+  
+  .progressText {
+    font-size: 9px;
+  }
+  
+  .keyboardHint {
+    font-size: 8px;
+    padding: 1px 4px;
+  }
+  
+  .skeletonPrevNext {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+  }
+
+  .skeletonButton {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+  }
+}
+
+@media (max-width: 360px) {
+  .progressContainer {
+    max-width: 220px;
+    margin-bottom: 8px;
+  }
+  
+  .progressBar {
+    height: 2px;
+  }
+  
+  .progressText {
+    font-size: 8px;
+  }
+  
+  .keyboardHint {
+    display: none; /* Hide on very small screens */
+  }
+  
+  .skeletonPrevNext {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+  }
+
+  .skeletonButton {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+  }
+}
+
+/* Accessibility and reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .progressFill,
+  .progressGlow,
+  .skeletonShimmer,
+  .paginationIcon,
+  .keyboardHint {
+    animation: none;
+  }
+  
+  .pageNumber,
+  .paginationPrevNext {
+    transition: none;
+  }
+  
+  .pageNumber::after,
+  .paginationPrevNext::after {
+    display: none;
+  }
+}

@@ -7,7 +7,7 @@ import WishlistButton from '../components/WishlistButton'
 import MobileFilterSortBar from '../components/MobileFilterSortBar'
 import { useRouter, useSearchParams } from 'next/navigation'
 import MobileProductsSkeleton from './MobileProductsSkeleton'
-import { FiFilter, FiX, FiChevronRight, FiStar, FiPackage, FiTrendingUp, FiGrid, FiHeart, FiChevronLeft } from 'react-icons/fi'
+import { FiFilter, FiX, FiChevronRight, FiStar, FiPackage, FiTrendingUp, FiGrid, FiHeart, FiChevronLeft, FiClock, FiZap } from 'react-icons/fi'
 import { useProductFilters } from '../hooks/useProductFilters'
 import { useImagePreload } from '../hooks/useImagePreload'
 
@@ -287,20 +287,40 @@ const ProductCard = ({ product, formatPrice }) => {
   );
 };
 
-// Pagination Skeleton Loading Component
-const PaginationSkeleton = () => {
+// Enhanced Pagination Skeleton Loading Component with smart loading states
+const PaginationSkeleton = ({ isTransitioning = false }) => {
   return (
-    <div className={styles.paginationSkeleton}>
+    <div className={`${styles.paginationSkeleton} ${isTransitioning ? styles.transitioning : ''}`}>
+      <div className={styles.skeletonPrevNext}></div>
       {[...Array(5)].map((_, index) => (
-        <div key={index} className="skeleton-button" style={{
-          width: '38px',
-          height: '38px',
-          background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
-          backgroundSize: '200% 100%',
-          animation: 'shimmer 1.5s infinite',
-          borderRadius: '10px'
-        }}></div>
+        <div key={index} className={`${styles.skeletonButton} ${index === 2 ? styles.skeletonActive : ''}`}>
+          <div className={styles.skeletonShimmer}></div>
+        </div>
       ))}
+      <div className={styles.skeletonPrevNext}></div>
+    </div>
+  )
+}
+
+// Progress Bar Component
+const PaginationProgress = ({ current, total, isLoading }) => {
+  const progressPercentage = total > 0 ? (current / total) * 100 : 0
+  
+  return (
+    <div className={styles.progressContainer}>
+      <div className={styles.progressBar}>
+        <div 
+          className={`${styles.progressFill} ${isLoading ? styles.progressLoading : ''}`}
+          style={{ width: `${progressPercentage}%` }}
+        >
+          <div className={styles.progressGlow}></div>
+        </div>
+      </div>
+      <div className={styles.progressText}>
+        <span className={styles.progressCurrent}>{current}</span>
+        <span className={styles.progressSeparator}>of</span>
+        <span className={styles.progressTotal}>{total}</span>
+      </div>
     </div>
   )
 }
@@ -327,6 +347,9 @@ export default function ProductsMobileClient() {
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false)
   const [isSortOpen, setIsSortOpen] = useState(false)
   const [isPageChanging, setIsPageChanging] = useState(false) // Add pagination loading state
+  const [keyboardShortcutsEnabled, setKeyboardShortcutsEnabled] = useState(true) // New: keyboard shortcuts state
+  const [lastPageChangeTime, setLastPageChangeTime] = useState(0) // New: for rate limiting
+  const [pageChangeDirection, setPageChangeDirection] = useState('') // New: track direction for animations
   const [openSections, setOpenSections] = useState({
     category: true,
     rating: true,
@@ -340,7 +363,7 @@ export default function ProductsMobileClient() {
     const urlPage = searchParams.get('page')
     return urlPage ? Math.max(1, parseInt(urlPage, 10)) : 1
   })
-  const productsPerPage = 14 // Changed from 15 to 14
+  const productsPerPage = 16 // Optimized for 2x8 mobile grid layout
   
   // Extract individual filter values for easier use
   const {
@@ -354,21 +377,24 @@ export default function ProductsMobileClient() {
     inStockOnly
   } = filters
   
-  // Get current category name for display
+  // Get current category name for display with context-aware labels
   const getCurrentCategoryName = () => {
     if (!currentCategory) return 'All Products';
     const category = KNOWN_CATEGORIES.find(cat => cat.slug === currentCategory);
-    return category ? category.name : 'Products';
+    const count = allProducts.length
+    const name = category ? category.name : 'Products'
+    return count > 0 ? `${name} (${count})` : name;
   };
 
-  // Get current sort display name
+  // Get current sort display name with context-aware labels
   const getCurrentSortName = () => {
+    const count = allProducts.length
     switch (sortOrder) {
-      case 'oldest': return 'Oldest';
-      case 'price_asc': return 'Price: Low to High';
-      case 'price_desc': return 'Price: High to Low';
-      case 'rating-desc': return 'Rating: High to Low';
-      default: return 'Recommended';
+      case 'oldest': return `Oldest First • ${count} items`;
+      case 'price_asc': return `Price: Low to High • ${count} items`;
+      case 'price_desc': return `Price: High to Low • ${count} items`;
+      case 'rating-desc': return `Top Rated • ${count} items`;
+      default: return `Recommended • ${count} items`;
     }
   };
 
@@ -395,6 +421,98 @@ export default function ProductsMobileClient() {
       updatePageInURL(lastValidPage)
     }
   }, [totalPages, currentPage])
+
+  // Keyboard shortcuts for pagination (1-9 for pages)
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      // Only handle if shortcuts are enabled and we're not in an input field
+      if (!keyboardShortcutsEnabled || 
+          ['INPUT', 'TEXTAREA', 'SELECT'].includes(event.target.tagName) ||
+          event.target.contentEditable === 'true') {
+        return
+      }
+
+      // Rate limiting - prevent rapid key presses
+      const now = Date.now()
+      if (now - lastPageChangeTime < 300) {
+        return
+      }
+
+      const key = event.key
+      
+      // Handle number keys 1-9 for direct page navigation
+      if (/^[1-9]$/.test(key)) {
+        event.preventDefault()
+        const targetPage = parseInt(key, 10)
+        if (targetPage <= totalPages) {
+          setLastPageChangeTime(now)
+          handlePageSelect(targetPage, 'direct')
+        }
+        return
+      }
+
+      // Handle arrow keys and other shortcuts
+      switch (key) {
+        case 'ArrowLeft':
+        case 'h': // Vim-style navigation
+          event.preventDefault()
+          if (currentPage > 1) {
+            setLastPageChangeTime(now)
+            handlePreviousPage()
+          }
+          break
+        case 'ArrowRight':
+        case 'l': // Vim-style navigation
+          event.preventDefault()
+          if (currentPage < totalPages) {
+            setLastPageChangeTime(now)
+            handleNextPage()
+          }
+          break
+        case 'Home':
+        case 'g': // Go to first page
+          event.preventDefault()
+          if (currentPage !== 1) {
+            setLastPageChangeTime(now)
+            handlePageSelect(1, 'first')
+          }
+          break
+        case 'End':
+        case 'G': // Go to last page (shift+g)
+          event.preventDefault()
+          if (currentPage !== totalPages) {
+            setLastPageChangeTime(now)
+            handlePageSelect(totalPages, 'last')
+          }
+          break
+        case 'Escape':
+          // Disable keyboard shortcuts temporarily
+          setKeyboardShortcutsEnabled(false)
+          setTimeout(() => setKeyboardShortcutsEnabled(true), 2000)
+          break
+      }
+    }
+
+    // Add event listener
+    document.addEventListener('keydown', handleKeyDown)
+    
+    // Cleanup
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [currentPage, totalPages, keyboardShortcutsEnabled, lastPageChangeTime])
+
+  // Show keyboard shortcuts hint on first visit
+  useEffect(() => {
+    const hasSeenHint = localStorage.getItem('pagination-keyboard-hint-seen')
+    if (!hasSeenHint && totalPages > 1) {
+      setTimeout(() => {
+        // Show toast or hint - you can implement this
+        console.log('Tip: Use number keys 1-9 to jump to pages, arrow keys to navigate!')
+        localStorage.setItem('pagination-keyboard-hint-seen', 'true')
+      }, 2000)
+    }
+  }, [totalPages])
 
   // Pagination handlers with better scroll positioning
   const scrollToProductsTop = () => {
@@ -463,14 +581,18 @@ export default function ProductsMobileClient() {
     }
   }
 
-  const handlePageSelect = (page: number) => {
+  const handlePageSelect = (page: number, direction?: string) => {
     if (page !== currentPage && page >= 1 && page <= totalPages && !isPageChanging) {
       setIsPageChanging(true)
+      setPageChangeDirection(direction || '')
       setCurrentPage(page)
       updatePageInURL(page)
       scrollToProductsTop()
       // Reset loading state after scroll completes with better timing
-      setTimeout(() => setIsPageChanging(false), 300)
+      setTimeout(() => {
+        setIsPageChanging(false)
+        setPageChangeDirection('')
+      }, 300)
     }
   }
 
@@ -835,14 +957,27 @@ export default function ProductsMobileClient() {
           {/* Enhanced Pagination Controls */}
           {totalPages > 1 && (
             <div className={`${styles.paginationContainer} ${isPageChanging ? styles.loading : ''}`}>
+              {/* Progress indicator */}
+              <PaginationProgress 
+                current={currentPage} 
+                total={totalPages} 
+                isLoading={isPageChanging} 
+              />
+              
               <div className={styles.paginationInfo}>
                 <span className={styles.paginationInfoText}>
-                  Showing {startIndex + 1}-{Math.min(endIndex, totalProducts)} of {totalProducts} products
+                  <FiZap className={styles.paginationIcon} />
+                  Page {currentPage} of {totalPages} • {startIndex + 1}-{Math.min(endIndex, totalProducts)} of {totalProducts} items
+                  {keyboardShortcutsEnabled && totalPages <= 9 && (
+                    <span className={styles.keyboardHint}>
+                      <FiClock size={10} /> Press {currentPage === totalPages ? '1' : (currentPage + 1)} for next
+                    </span>
+                  )}
                 </span>
               </div>
               
               {isPageChanging ? (
-                <PaginationSkeleton />
+                <PaginationSkeleton isTransitioning={true} />
               ) : (
                 <div className={styles.paginationControls}>
                   {/* Previous Button */}
