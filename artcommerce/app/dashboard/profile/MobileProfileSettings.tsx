@@ -625,78 +625,95 @@ export default function MobileProfileSettings() {
             </div>
           </div>
 
-          {/* Avatar Selection Expandable */}
-          <div className={`${styles.avatarSelectionWrapper} ${showAvatarSelection ? styles.expanded : ''}`}>
-            <div className={styles.avatarSelectionCard}>
-              <div className={styles.avatarSelectionHeader}>
-                <h4 className={styles.avatarSelectionTitle}>Choose Your Avatar</h4>
-                <p className={styles.avatarSelectionSubtitle}>Select a profile picture that represents you</p>
-              </div>
-              
-              <div className={styles.avatarOptionsGrid}>
-                {[
-                  { name: 'Robot', path: '/avatars/robot.svg' },
-                  { name: 'Fox', path: '/avatars/fox.svg' },
-                  { name: 'Owl', path: '/avatars/owl.svg' }
-                ].map(avatar => (
-                  <button
-                    key={avatar.name}
-                    type="button"
-                    onClick={async () => {
-                      setAvatarUrl(avatar.path)
-                      setShowAvatarSelection(false)
-                      // Create a synthetic event for the profile submit
-                      const syntheticEvent = { preventDefault: () => {} } as FormEvent
-                      await handleProfileSubmit(syntheticEvent)
-                    }}
-                    className={`${styles.avatarOptionCard} ${avatarUrl === avatar.path ? styles.selected : ''}`}
+          {/* Avatar Selection Modal */}
+          {showAvatarSelection && (
+            <div className={styles.avatarModalOverlay} onClick={() => setShowAvatarSelection(false)}>
+              <div className={styles.avatarModalContent} onClick={(e) => e.stopPropagation()}>
+                {/* Modal Handle */}
+                <div className={styles.modalHandle}></div>
+                
+                {/* Modal Header */}
+                <div className={styles.avatarModalHeader}>
+                  <h4 className={styles.avatarModalTitle}>Choose Your Avatar</h4>
+                  <p className={styles.avatarModalSubtitle}>Select a profile picture that represents you</p>
+                  <button 
+                    className={styles.modalCloseButton}
+                    onClick={() => setShowAvatarSelection(false)}
+                    aria-label="Close"
                   >
-                    <div className={styles.avatarOptionImage}>
-                      <img src={avatar.path} alt={avatar.name} />
-                    </div>
-                    <span className={styles.avatarOptionName}>{avatar.name}</span>
-                    {avatarUrl === avatar.path && (
-                      <div className={styles.selectedIndicator}>
-                        <div className={styles.checkmark}>✓</div>
-                      </div>
-                    )}
+                    <X size={18} />
                   </button>
-                ))}
-              </div>
-
-              <div className={styles.avatarUploadSection}>
-                <div className={styles.uploadDivider}>
-                  <span className={styles.dividerText}>or</span>
                 </div>
-                <label className={styles.customUploadButton}>
-                  <Plus size={16} />
-                  <span>Upload Custom Image</span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={async e => {
-                      const file = e.target.files?.[0]
-                      if (!file) return
-                      const form = new FormData()
-                      form.append('file', file)
-                      try {
-                        const res = await fetch('/api/uploads', { method: 'POST', body: form })
-                        const { url } = await res.json()
-                        setAvatarUrl(url)
-                        setShowAvatarSelection(false)
-                        // Create a synthetic event for the profile submit
-                        const syntheticEvent = { preventDefault: () => {} } as FormEvent
-                        await handleProfileSubmit(syntheticEvent)
-                      } catch (error) {
-                        setError('Failed to upload image')
-                      }
-                    }}
-                    className={styles.hiddenFileInput}
-                  />
-                </label>
+                
+                {/* Avatar Options Grid */}
+                <div className={styles.avatarModalBody}>
+                  <div className={styles.avatarModalGrid}>
+                    {[
+                      { name: 'Robot', path: '/avatars/robot.svg' },
+                      { name: 'Fox', path: '/avatars/fox.svg' },
+                      { name: 'Owl', path: '/avatars/owl.svg' }
+                    ].map(avatar => (
+                      <button
+                        key={avatar.name}
+                        type="button"
+                        onClick={async () => {
+                          setAvatarUrl(avatar.path)
+                          setShowAvatarSelection(false)
+                          // Create a synthetic event for the profile submit
+                          const syntheticEvent = { preventDefault: () => {} } as FormEvent
+                          await handleProfileSubmit(syntheticEvent)
+                        }}
+                        className={`${styles.avatarModalOption} ${avatarUrl === avatar.path ? styles.selected : ''}`}
+                      >
+                        <div className={styles.avatarModalOptionImage}>
+                          <img src={avatar.path} alt={avatar.name} />
+                        </div>
+                        <span className={styles.avatarModalOptionName}>{avatar.name}</span>
+                        {avatarUrl === avatar.path && (
+                          <div className={styles.modalSelectedIndicator}>
+                            <div className={styles.modalCheckmark}>✓</div>
+                          </div>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Upload Section */}
+                  <div className={styles.avatarModalUpload}>
+                    <div className={styles.modalUploadDivider}>
+                      <span className={styles.modalDividerText}>or</span>
+                    </div>
+                    <label className={styles.modalUploadButton}>
+                      <Plus size={16} />
+                      <span>Upload Custom Image</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={async e => {
+                          const file = e.target.files?.[0]
+                          if (!file) return
+                          const form = new FormData()
+                          form.append('file', file)
+                          try {
+                            const res = await fetch('/api/uploads', { method: 'POST', body: form })
+                            const { url } = await res.json()
+                            setAvatarUrl(url)
+                            setShowAvatarSelection(false)
+                            // Create a synthetic event for the profile submit
+                            const syntheticEvent = { preventDefault: () => {} } as FormEvent
+                            await handleProfileSubmit(syntheticEvent)
+                          } catch (error) {
+                            setError('Failed to upload image')
+                          }
+                        }}
+                        className={styles.hiddenFileInput}
+                      />
+                    </label>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Security Section */}
