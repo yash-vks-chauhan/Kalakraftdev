@@ -147,7 +147,13 @@
 /* Mobile Content */
 .mobileContent {
   flex: 1;
-  padding: 70px 0 90px 0; /* Increased bottom padding for pagination */
+  padding: 70px 0 90px 0; /* Default bottom padding for footer */
+}
+
+/* Products page specific content - no bottom padding as pagination handles it */
+.productsPageContent {
+  flex: 1;
+  padding: 70px 0 0 0; /* No bottom padding for products page */
 }
 
 /* Home page specific content styles */
