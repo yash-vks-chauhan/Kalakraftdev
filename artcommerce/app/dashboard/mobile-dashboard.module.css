@@ -485,7 +485,52 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
-/* Enhanced mobile avatar */
+/* Enhanced mobile avatar with profile settings design */
+.profileImageContainer {
+  display: flex;
+  justify-content: center;
+  position: relative;
+}
+
+.profileImageWrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.profileImageBorder {
+  width: 88px;
+  height: 88px;
+  border-radius: 22px;
+  padding: 4px;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.06) 0%, rgba(0, 0, 0, 0.12) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 
+    0 12px 32px rgba(0, 0, 0, 0.1),
+    0 6px 16px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.profileImageBorder:hover {
+  transform: scale(1.05);
+  box-shadow: 
+    0 16px 40px rgba(0, 0, 0, 0.15),
+    0 8px 20px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.profileImage {
+  width: 80px;
+  height: 80px;
+  border-radius: 18px;
+  object-fit: cover;
+  border: 3px solid #FFFFFF;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
 .avatar {
   width: 80px;
   height: 80px;
@@ -520,6 +565,20 @@
     padding: 24px 20px;
     border-radius: 20px;
     margin: 0 12px 24px 12px;
+  }
+  
+  .profileImageBorder {
+    width: 72px;
+    height: 72px;
+    border-radius: 18px;
+    padding: 3px;
+  }
+  
+  .profileImage {
+    width: 66px;
+    height: 66px;
+    border-radius: 15px;
+    border: 2.5px solid #FFFFFF;
   }
   
   .avatar {
@@ -2621,4 +2680,62 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* ============================================
+   IOS ACCORDION COMPONENTS - Unified Styling
+   ============================================ */
+
+.iosMenuItem.accordionItem {
+  cursor: pointer;
+  border-radius: 12px;
+  transition: all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.iosMenuItem.accordionItem:hover {
+  background: rgba(0, 0, 0, 0.02);
+  transform: translateY(-1px);
+}
+
+.iosMenuItem.accordionItem:active {
+  background: rgba(0, 0, 0, 0.04);
+  transform: translateY(0);
+}
+
+.iosMenuItem.subMenuItem {
+  background: rgba(0, 0, 0, 0.02);
+  margin: 0 8px 4px 8px;
+  border-radius: 10px;
+  border: none !important;
+  padding: 12px 16px;
+  min-height: 56px;
+}
+
+.iosMenuItem.subMenuItem:last-child {
+  margin-bottom: 8px;
+}
+
+.iosMenuItem.subMenuItem:hover {
+  background: rgba(0, 0, 0, 0.04);
+  transform: translateY(-1px);
+}
+
+.iosMenuItem.subMenuItem .iosMenuIcon {
+  width: 28px;
+  height: 28px;
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.iosMenuItem.subMenuItem .iosMenuTitle {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.iosMenuItem.subMenuItem .iosMenuSubtitle {
+  font-size: 0.875rem;
+  opacity: 0.8;
+}
+
+.chevronRotated {
+  transform: rotate(90deg) translateZ(0);
 }
