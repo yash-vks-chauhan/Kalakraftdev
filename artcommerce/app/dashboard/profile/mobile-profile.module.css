@@ -403,7 +403,9 @@
   z-index: 9999;
   display: flex;
   align-items: flex-end;
+  justify-content: center;
   animation: modalOverlayFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 0;
 }
 
 @keyframes modalOverlayFadeIn {
@@ -419,9 +421,10 @@
 
 .avatarModalContent {
   width: 100%;
+  max-width: 100%;
   background: #FFFFFF;
   border-radius: 20px 20px 0 0;
-  max-height: 80vh;
+  max-height: 85vh;
   min-height: 50vh;
   overflow: hidden;
   box-shadow: 
@@ -430,16 +433,34 @@
   animation: modalSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   display: flex;
   flex-direction: column;
+  margin: 0;
+  transform-origin: bottom center;
 }
 
 @keyframes modalSlideUp {
   from {
     transform: translateY(100%);
-    opacity: 0;
+    opacity: 0.8;
   }
   to {
     transform: translateY(0);
     opacity: 1;
+  }
+}
+
+/* Ensure proper iOS action sheet behavior */
+.avatarModalOverlay.closing .avatarModalContent {
+  animation: modalSlideDown 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+@keyframes modalSlideDown {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(100%);
+    opacity: 0.8;
   }
 }
 
@@ -450,6 +471,25 @@
   border-radius: 2px;
   margin: 8px auto 0;
   flex-shrink: 0;
+}
+
+/* Enhanced mobile responsiveness for action sheet */
+@media (max-width: 768px) {
+  .avatarModalContent {
+    max-height: 90vh;
+    border-radius: 16px 16px 0 0;
+  }
+  
+  .avatarModalOverlay {
+    padding: 0;
+  }
+  
+  .modalHandle {
+    margin: 12px auto 0;
+    width: 40px;
+    height: 5px;
+    background: #C7C7CC;
+  }
 }
 
 .avatarModalHeader {
@@ -742,6 +782,34 @@
   left: -9999px;
   opacity: 0;
   pointer-events: none;
+}
+
+/* Avatar update loading overlay */
+.avatarUpdateOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 50%;
+}
+
+.spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 /* Mobile Responsive Adjustments */

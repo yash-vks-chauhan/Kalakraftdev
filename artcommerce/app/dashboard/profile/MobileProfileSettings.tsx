@@ -80,6 +80,7 @@ export default function MobileProfileSettings() {
   const [showAddresses, setShowAddresses] = useState(false)
   const [showAddAddress, setShowAddAddress] = useState(false)
   const [showAvatarSelection, setShowAvatarSelection] = useState(false)
+  const [isUpdatingAvatar, setIsUpdatingAvatar] = useState(false)
   const [showAddressBottomSheet, setShowAddressBottomSheet] = useState(false)
   const [isAddressBottomSheetClosing, setIsAddressBottomSheetClosing] = useState(false)
   const [activeAddressMenu, setActiveAddressMenu] = useState<number | null>(null)
@@ -595,12 +596,19 @@ export default function MobileProfileSettings() {
                     src={avatarUrl || '/avatars/robot.svg'} 
                     alt="Profile" 
                     className={styles.profileImage}
+                    style={{ opacity: isUpdatingAvatar ? 0.6 : 1 }}
                   />
+                  {isUpdatingAvatar && (
+                    <div className={styles.avatarUpdateOverlay}>
+                      <div className={styles.spinner}></div>
+                    </div>
+                  )}
                 </div>
                 <button 
                   className={styles.editImageButton}
                   onClick={() => setShowAvatarSelection(prev => !prev)}
                   aria-label="Edit profile picture"
+                  disabled={isUpdatingAvatar}
                 >
                   <Edit size={14} />
                 </button>
@@ -657,11 +665,40 @@ export default function MobileProfileSettings() {
                         key={avatar.name}
                         type="button"
                         onClick={async () => {
-                          setAvatarUrl(avatar.path)
-                          setShowAvatarSelection(false)
-                          // Create a synthetic event for the profile submit
-                          const syntheticEvent = { preventDefault: () => {} } as FormEvent
-                          await handleProfileSubmit(syntheticEvent)
+                          try {
+                            // Set updating state for visual feedback
+                            setIsUpdatingAvatar(true)
+                            
+                            // Immediately update the local state for instant visual feedback
+                            setAvatarUrl(avatar.path)
+                            setShowAvatarSelection(false)
+                            
+                            // Show loading feedback
+                            setMessage('Updating profile picture...')
+                            setError(null)
+                            
+                            // Call the API to update the profile
+                            const res = await fetch('/api/auth/update-profile', {
+                              method: 'PATCH',
+                              headers: {
+                                'Content-Type': 'application/json',
+                                Authorization: `Bearer ${token}`,
+                              },
+                              body: JSON.stringify({ fullName, avatarUrl: avatar.path }),
+                            })
+                            const data = await res.json()
+                            if (!res.ok) throw new Error(data.error)
+                            
+                            // Refresh the user context to sync across the app
+                            await fetchProfile()
+                            setMessage('Profile picture updated successfully!')
+                          } catch (err: any) {
+                            setError(err.message)
+                            // Revert the avatar on error
+                            setAvatarUrl(user.avatarUrl || '')
+                          } finally {
+                            setIsUpdatingAvatar(false)
+                          }
                         }}
                         className={`${styles.avatarModalOption} ${avatarUrl === avatar.path ? styles.selected : ''}`}
                       >
@@ -692,18 +729,44 @@ export default function MobileProfileSettings() {
                         onChange={async e => {
                           const file = e.target.files?.[0]
                           if (!file) return
-                          const form = new FormData()
-                          form.append('file', file)
+                          
                           try {
+                            // Set updating state for visual feedback
+                            setIsUpdatingAvatar(true)
+                            
+                            // Show loading feedback
+                            setMessage('Uploading image...')
+                            setError(null)
+                            
+                            const form = new FormData()
+                            form.append('file', file)
                             const res = await fetch('/api/uploads', { method: 'POST', body: form })
                             const { url } = await res.json()
+                            
+                            // Update local state immediately
                             setAvatarUrl(url)
                             setShowAvatarSelection(false)
-                            // Create a synthetic event for the profile submit
-                            const syntheticEvent = { preventDefault: () => {} } as FormEvent
-                            await handleProfileSubmit(syntheticEvent)
+                            
+                            // Update profile in backend
+                            const profileRes = await fetch('/api/auth/update-profile', {
+                              method: 'PATCH',
+                              headers: {
+                                'Content-Type': 'application/json',
+                                Authorization: `Bearer ${token}`,
+                              },
+                              body: JSON.stringify({ fullName, avatarUrl: url }),
+                            })
+                            const profileData = await profileRes.json()
+                            if (!profileRes.ok) throw new Error(profileData.error)
+                            
+                            // Refresh the user context to sync across the app
+                            await fetchProfile()
+                            setMessage('Profile picture updated successfully!')
                           } catch (error) {
                             setError('Failed to upload image')
+                            console.error('Upload error:', error)
+                          } finally {
+                            setIsUpdatingAvatar(false)
                           }
                         }}
                         className={styles.hiddenFileInput}
