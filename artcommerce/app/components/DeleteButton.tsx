@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface DeleteButtonProps {
   onClick?: (e: React.MouseEvent) => void;
@@ -13,6 +13,35 @@ const DeleteButton = ({
   size = 'medium',
   ariaLabel = "Delete item"
 }: DeleteButtonProps) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  const handleClick = (e: React.MouseEvent) => {
+    if (isMobile && !isExpanded) {
+      // First click on mobile - expand the button
+      e.preventDefault();
+      e.stopPropagation();
+      setIsExpanded(true);
+      // Auto-collapse after 3 seconds
+      setTimeout(() => setIsExpanded(false), 3000);
+    } else {
+      // Second click on mobile or any click on desktop - delete
+      if (onClick) {
+        onClick(e);
+      }
+    }
+  };
+
   const getSize = () => {
     switch (size) {
       case 'small': return { width: '40px', height: '40px' };
@@ -42,8 +71,8 @@ const DeleteButton = ({
 
   return (
     <button 
-      className="delete-button"
-      onClick={onClick}
+      className={`delete-button ${isMobile && isExpanded ? 'mobile-expanded' : ''}`}
+      onClick={handleClick}
       disabled={disabled}
       aria-label={ariaLabel}
       style={getSize()}
@@ -82,20 +111,6 @@ const DeleteButton = ({
           fill: white;
         }
 
-        .delete-button:hover {
-          width: 140px;
-          border-radius: 50px;
-          transition-duration: .3s;
-          background-color: rgb(255, 69, 69);
-          align-items: center;
-        }
-
-        .delete-button:hover .svgIcon {
-          width: 50px;
-          transition-duration: .3s;
-          transform: translateY(60%);
-        }
-
         .delete-button::before {
           position: absolute;
           top: -20px;
@@ -103,41 +118,73 @@ const DeleteButton = ({
           color: white;
           transition-duration: .3s;
           font-size: 2px;
+          opacity: 0;
         }
 
-        .delete-button:hover::before {
-          font-size: ${getFontSize()};
-          opacity: 1;
-          transform: translateY(30px);
-          transition-duration: .3s;
+        /* Desktop hover states */
+        @media (min-width: 769px) {
+          .delete-button:hover {
+            width: 140px;
+            border-radius: 50px;
+            transition-duration: .3s;
+            background-color: rgb(255, 69, 69);
+            align-items: center;
+          }
+
+          .delete-button:hover .svgIcon {
+            width: 50px;
+            transition-duration: .3s;
+            transform: translateY(60%);
+          }
+
+          .delete-button:hover::before {
+            font-size: ${getFontSize()};
+            opacity: 1;
+            transform: translateY(30px);
+            transition-duration: .3s;
+          }
         }
 
         /* Mobile touch optimizations */
         @media (max-width: 768px) {
-          .delete-button:hover {
+          .delete-button.mobile-expanded {
             width: 120px;
+            border-radius: 50px;
+            background-color: rgb(255, 69, 69);
+            transition-duration: .3s;
           }
-          
-          .delete-button:hover .svgIcon {
+
+          .delete-button.mobile-expanded .svgIcon {
             width: 40px;
+            transition-duration: .3s;
+            transform: translateY(60%);
           }
-          
-          .delete-button:hover::before {
+
+          .delete-button.mobile-expanded::before {
             font-size: 11px;
+            opacity: 1;
+            transform: translateY(30px);
+            transition-duration: .3s;
+          }
+
+          /* Active state for immediate feedback */
+          .delete-button:active {
+            transform: scale(0.95);
+            transition-duration: .1s;
           }
         }
 
         /* Small screens */
         @media (max-width: 480px) {
-          .delete-button:hover {
+          .delete-button.mobile-expanded {
             width: 100px;
           }
-          
-          .delete-button:hover .svgIcon {
+
+          .delete-button.mobile-expanded .svgIcon {
             width: 35px;
           }
-          
-          .delete-button:hover::before {
+
+          .delete-button.mobile-expanded::before {
             font-size: 10px;
           }
         }

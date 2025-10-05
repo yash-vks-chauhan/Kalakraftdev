@@ -26,10 +26,12 @@ const WishlistSkeleton = () => (
         <div key={index} className={styles.card}>
           <div className={styles.imageWrapper}>
             <div className={`${styles.skeletonImage} ${styles.skeletonShimmer}`}></div>
-            <div className={`${styles.skeletonRemoveButton} ${styles.skeletonShimmer}`}></div>
           </div>
           <div className={styles.cardContent}>
-            <div className={`${styles.skeletonProductName} ${styles.skeletonShimmer}`}></div>
+            <div className={styles.productHeader}>
+              <div className={`${styles.skeletonProductName} ${styles.skeletonShimmer}`}></div>
+              <div className={`${styles.skeletonRemoveButton} ${styles.skeletonShimmer}`}></div>
+            </div>
             <div className={`${styles.skeletonProductPrice} ${styles.skeletonShimmer}`}></div>
             <div className={styles.actions}>
               <div className={`${styles.skeletonButton} ${styles.skeletonShimmer}`}></div>
@@ -186,17 +188,19 @@ export default function DashboardWishlistPage() {
                         fill
                         className={styles.image}
                         />
-                        <div className={styles.removeBtn}>
-                            <DeleteButton
-                                onClick={() => handleRemoveFromWishlist(item.id, item.productId)}
-                                disabled={!!animationType}
-                                size="small"
-                                ariaLabel="Remove from wishlist"
-                            />
-                        </div>
                     </div>
                     <div className={styles.cardContent}>
-                        <h3 className={styles.productName}>{item.product.name}</h3>
+                        <div className={styles.productHeader}>
+                            <h3 className={styles.productName}>{item.product.name}</h3>
+                            <div className={styles.removeBtn}>
+                                <DeleteButton
+                                    onClick={() => handleRemoveFromWishlist(item.id, item.productId)}
+                                    disabled={!!animationType}
+                                    size="small"
+                                    ariaLabel="Remove from wishlist"
+                                />
+                            </div>
+                        </div>
                         <p className={styles.productPrice}>₹{item.product.price.toFixed(2)}</p>
                         {getStockStatus(item.productId)}
                         <div className={styles.actions}>

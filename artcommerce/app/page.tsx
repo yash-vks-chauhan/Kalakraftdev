@@ -1793,8 +1793,8 @@ Handcrafted resin art for <FlippingText words={flippingWords} />
 
 </h1>
 
-{/* New Pearl Button for "Discover All Pieces" - Desktop only */}
-<div className={`${styles.buttonContainer} ${styles.desktopOnly}`} data-aos="fade-up" data-aos-delay="700">
+{/* New Pearl Button for "Discover All Pieces" - Mobile & Desktop */}
+<div className={styles.buttonContainer} data-aos="fade-up" data-aos-delay="700">
   <PearlButton href="/products">
     Discover All Pieces
   </PearlButton>

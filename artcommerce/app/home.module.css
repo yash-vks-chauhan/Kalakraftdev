@@ -2377,6 +2377,21 @@
   animation: fadeInUp 0.8s ease forwards 0.8s;
 }
 
+/* Mobile responsive adjustments for button container */
+@media (max-width: 768px) {
+  .buttonContainer {
+    margin: 2rem auto 3rem;
+    padding: 0 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .buttonContainer {
+    margin: 1.5rem auto 2.5rem;
+    padding: 0 0.5rem;
+  }
+}
+
 /* Button for Featured Discoveries section */
 .mobileFeaturedViewAllButton {
   display: inline-block;
