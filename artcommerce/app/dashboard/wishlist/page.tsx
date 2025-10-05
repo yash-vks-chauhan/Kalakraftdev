@@ -11,6 +11,7 @@ import Image from 'next/image'
 import styles from './wishlist.module.css'
 import { Heart, Trash2 } from 'lucide-react'
 import LoadingSpinner from '../../components/LoadingSpinner'
+import DeleteButton from '../../components/DeleteButton'
 
 // Wishlist Skeleton Component
 const WishlistSkeleton = () => (
@@ -22,16 +23,16 @@ const WishlistSkeleton = () => (
     
     <div className={styles.grid}>
       {[1, 2, 3, 4, 5, 6].map((index) => (
-        <div key={index} className={styles.productCard}>
-          <div className={styles.imageContainer}>
+        <div key={index} className={styles.card}>
+          <div className={styles.imageWrapper}>
             <div className={`${styles.skeletonImage} ${styles.skeletonShimmer}`}></div>
+            <div className={`${styles.skeletonRemoveButton} ${styles.skeletonShimmer}`}></div>
           </div>
           <div className={styles.cardContent}>
             <div className={`${styles.skeletonProductName} ${styles.skeletonShimmer}`}></div>
             <div className={`${styles.skeletonProductPrice} ${styles.skeletonShimmer}`}></div>
-            <div className={styles.cardActions}>
+            <div className={styles.actions}>
               <div className={`${styles.skeletonButton} ${styles.skeletonShimmer}`}></div>
-              <div className={`${styles.skeletonRemoveButton} ${styles.skeletonShimmer}`}></div>
             </div>
           </div>
         </div>
@@ -185,16 +186,14 @@ export default function DashboardWishlistPage() {
                         fill
                         className={styles.image}
                         />
-                        <button
-                            onClick={() => handleRemoveFromWishlist(item.id, item.productId)}
-                            className={styles.removeBtn}
-                            aria-label="Remove from wishlist"
-                            disabled={!!animationType}
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
+                        <div className={styles.removeBtn}>
+                            <DeleteButton
+                                onClick={() => handleRemoveFromWishlist(item.id, item.productId)}
+                                disabled={!!animationType}
+                                size="small"
+                                ariaLabel="Remove from wishlist"
+                            />
+                        </div>
                     </div>
                     <div className={styles.cardContent}>
                         <h3 className={styles.productName}>{item.product.name}</h3>

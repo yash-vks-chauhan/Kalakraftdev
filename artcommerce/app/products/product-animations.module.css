@@ -1,0 +1,238 @@
+/* Enhanced Mobile Product Animations */
+
+/* Product card opening animation */
+.productOpening {
+  animation: productOpen 0.3s ease-out forwards;
+}
+
+@keyframes productOpen {
+  0% {
+    transform: scale(1) translateY(0);
+    border-radius: 0px;
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05) translateY(-10px);
+    border-radius: 12px;
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(1.1) translateY(-20px);
+    border-radius: 20px;
+    opacity: 0.7;
+  }
+}
+
+/* Product card hover effects */
+.productCardHover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.productCardHover:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+/* Image swipe animation enhancements */
+.imageSwipeContainer {
+  perspective: 1000px;
+}
+
+.imageSlideEnhanced {
+  transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  will-change: transform;
+}
+
+/* Wishlist button pulse animation */
+.wishlistPulse {
+  animation: wishlistPulse 0.6s ease-out;
+}
+
+@keyframes wishlistPulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Floating action button animations */
+.floatingActionButton {
+  animation: floatIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes floatIn {
+  0% {
+    transform: translateY(100px) scale(0);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+/* Page transition animations */
+.pageTransition {
+  animation: pageSlideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes pageSlideIn {
+  0% {
+    transform: translateX(100vw);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Filter drawer enhanced animations */
+.filterDrawerSlide {
+  animation: filterSlideIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+@keyframes filterSlideIn {
+  0% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Sort modal enhanced animations */
+.sortModalSlide {
+  animation: sortSlideUp 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+@keyframes sortSlideUp {
+  0% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Staggered animation for product grid */
+.staggeredFadeIn {
+  animation: staggeredFadeIn 0.6s ease-out both;
+}
+
+.staggeredFadeIn:nth-child(1) { animation-delay: 0s; }
+.staggeredFadeIn:nth-child(2) { animation-delay: 0.1s; }
+.staggeredFadeIn:nth-child(3) { animation-delay: 0.2s; }
+.staggeredFadeIn:nth-child(4) { animation-delay: 0.3s; }
+.staggeredFadeIn:nth-child(5) { animation-delay: 0.4s; }
+.staggeredFadeIn:nth-child(6) { animation-delay: 0.5s; }
+.staggeredFadeIn:nth-child(7) { animation-delay: 0.6s; }
+.staggeredFadeIn:nth-child(8) { animation-delay: 0.7s; }
+
+@keyframes staggeredFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(30px) scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Loading skeleton enhancements */
+.skeletonShimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Micro-interactions for buttons */
+.buttonPress {
+  transition: all 0.1s ease;
+}
+
+.buttonPress:active {
+  transform: scale(0.95);
+}
+
+/* Scroll-triggered animations */
+.scrollFadeIn {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.scrollFadeIn.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Enhanced pagination animations */
+.paginationSlide {
+  animation: paginationSlide 0.3s ease-out;
+}
+
+@keyframes paginationSlide {
+  0% {
+    transform: translateX(-20px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Mobile-specific optimizations */
+@media (max-width: 768px) {
+  /* Reduce animation intensity on mobile for better performance */
+  .productCardHover:hover {
+    transform: translateY(-4px) scale(1.01);
+  }
+  
+  /* Faster animations on mobile */
+  .pageTransition {
+    animation-duration: 0.3s;
+  }
+  
+  .filterDrawerSlide {
+    animation-duration: 0.3s;
+  }
+  
+  .sortModalSlide {
+    animation-duration: 0.3s;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .productCardHover:hover,
+  .buttonPress:active {
+    transform: none;
+  }
+}

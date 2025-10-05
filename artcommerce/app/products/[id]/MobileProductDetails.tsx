@@ -3,10 +3,93 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { motion, AnimatePresence } from 'framer-motion';
 import ProductImagesMobile from '../../components/ProductImagesMobile';
 import { useCart } from '../../contexts/CartContext';
 import WishlistButton from '../../components/WishlistButton';
 import styles from './mobile_product_details.module.css';
+
+// Animation variants for page entrance
+const pageVariants = {
+  initial: {
+    opacity: 0,
+    scale: 0.95,
+    y: 20
+  },
+  animate: {
+    opacity: 1,
+    scale: 1,
+    y: 0,
+    transition: {
+      duration: 0.4,
+      ease: "easeOut" as const,
+      staggerChildren: 0.1
+    }
+  },
+  exit: {
+    opacity: 0,
+    scale: 0.95,
+    y: -20,
+    transition: {
+      duration: 0.3,
+      ease: "easeIn" as const
+    }
+  }
+}
+
+// Animation variants for content sections
+const sectionVariants = {
+  hidden: { 
+    opacity: 0, 
+    y: 20 
+  },
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    transition: {
+      duration: 0.5,
+      ease: "easeOut" as const
+    }
+  }
+}
+
+// Animation variants for accordion sections
+const accordionVariants = {
+  closed: {
+    height: 0,
+    opacity: 0,
+    transition: {
+      duration: 0.3,
+      ease: "easeInOut" as const
+    }
+  },
+  open: {
+    height: "auto",
+    opacity: 1,
+    transition: {
+      duration: 0.4,
+      ease: "easeOut" as const
+    }
+  }
+}
+
+// Animation variants for product cards in carousel
+const carouselCardVariants = {
+  hidden: { 
+    opacity: 0, 
+    scale: 0.9,
+    y: 30
+  },
+  visible: { 
+    opacity: 1, 
+    scale: 1,
+    y: 0,
+    transition: {
+      duration: 0.4,
+      ease: "easeOut" as const
+    }
+  }
+}
 
 interface Product {
   id: number;
@@ -501,57 +584,110 @@ export default function MobileProductDetails({
   };
 
   return (
-    <div className={styles.mobileProductContainer}>
+    <motion.div 
+      className={styles.mobileProductContainer}
+      variants={pageVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+    >
       {/* Product Images - Full width with transparent background */}
-      <div className={styles.productImageWrapper}>
+      <motion.div 
+        className={styles.productImageWrapper}
+        variants={sectionVariants}
+      >
         <ProductImagesMobile 
           imageUrls={product.imageUrls} 
           name={product.name} 
         />
         {/* Low Stock Banner - Only show for products with low stock (5 or less) */}
         {product.stockQuantity > 0 && product.stockQuantity <= 5 && (
-          <div className={styles.cardLowStock}>
+          <motion.div 
+            className={styles.cardLowStock}
+            initial={{ opacity: 0, scale: 0.8, y: -10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ delay: 0.5, type: "spring", stiffness: 500 }}
+          >
             Only {product.stockQuantity} left
-          </div>
+          </motion.div>
         )}
-      </div>
+      </motion.div>
       
       {/* Share feedback toast */}
-      <div className={`${styles.shareToast} ${shareSuccess !== null ? styles.shareToastVisible : ''}`}>
-        {shareSuccess 
-          ? (shareMethod === 'webshare' 
-            ? 'Product shared successfully!' 
-            : 'Product link copied to clipboard!')
-          : (shareMethod === 'webshare'
-            ? 'Failed to share product'
-            : 'Failed to copy product link')}
-      </div>
+      <AnimatePresence>
+        {shareSuccess !== null && (
+          <motion.div 
+            className={styles.shareToast}
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -50, scale: 0.9 }}
+            transition={{ type: "spring", stiffness: 400, damping: 25 }}
+          >
+            {shareSuccess 
+              ? (shareMethod === 'webshare' 
+                ? 'Product shared successfully!' 
+                : 'Product link copied to clipboard!')
+              : (shareMethod === 'webshare'
+                ? 'Failed to share product'
+                : 'Failed to copy product link')}
+          </motion.div>
+        )}
+      </AnimatePresence>
       
       {/* Product Info - Overlapping the image slightly with rounded corners */}
-      <div className={styles.productInfo}>
+      <motion.div 
+        className={styles.productInfo}
+        variants={sectionVariants}
+      >
         {/* Category */}
         {product.category && (
-          <Link href={`/products?category=${product.category.slug}`} className={styles.category}>
-            {product.category.name}
-          </Link>
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <Link href={`/products?category=${product.category.slug}`} className={styles.category}>
+              {product.category.name}
+            </Link>
+          </motion.div>
         )}
         
         {/* Product Name and Wishlist Button */}
-        <div className={styles.productHeader}>
+        <motion.div 
+          className={styles.productHeader}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+        >
           <h1 className={styles.productName}>{product.name}</h1>
           <div className={styles.headerWishlistContainer}>
-            <WishlistButton productId={product.id} className={styles.headerWishlistButton} />
+            <motion.div
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+            >
+              <WishlistButton productId={product.id} className={styles.headerWishlistButton} />
+            </motion.div>
           </div>
-        </div>
+        </motion.div>
         
         {/* Variation (if applicable) - Moved up like in Gucci design */}
-        <div className={styles.variation}>
+        <motion.div 
+          className={styles.variation}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+        >
           <span className={styles.variationLabel}>Variation</span>
           <span className={styles.variationValue}>{product.shortDesc || 'Standard'}</span>
-        </div>
+        </motion.div>
         
         {/* Price */}
-        <div className={styles.priceContainer}>
+        <motion.div 
+          className={styles.priceContainer}
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.5, type: "spring", stiffness: 500 }}
+        >
           <p className={styles.price}>
             <span className={styles.currency}>{product.currency}</span>
             {product.price.toFixed(2)}
@@ -573,7 +709,7 @@ export default function MobileProductDetails({
               <span className={styles.ratingCount}>({ratingCount})</span>
             </div>
           )}
-        </div>
+        </motion.div>
         
         {/* Stock Status - Only show for out of stock or when stock is not low */}
         <div className={styles.stockStatus}>
@@ -585,7 +721,13 @@ export default function MobileProductDetails({
         </div>
         
         {/* Add to Cart Form */}
-        <form onSubmit={handleAddToCart} className={styles.addToCartForm}>
+        <motion.form 
+          onSubmit={handleAddToCart} 
+          className={styles.addToCartForm}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.7 }}
+        >
           <div className={styles.quantityContainer}>
             <label htmlFor="quantity" className={styles.quantityLabel}>Quantity</label>
             <div className={styles.quantityControls}>
@@ -637,7 +779,7 @@ export default function MobileProductDetails({
           </div>
           
           {error && <p className={styles.error}>{error}</p>}
-        </form>
+        </motion.form>
         
         {/* Collapsible Sections */}
         <div className={styles.accordionSections}>
@@ -776,14 +918,26 @@ export default function MobileProductDetails({
             </div>
           )}
         </div>
-      </div>
+      </motion.div>
       
       {/* You might also like section - Horizontal carousel with swipeable product cards */}
       {similarProducts.length > 0 && (
-        <div className={styles.similarProductsSection}>
-          <h2 className={styles.similarProductsTitle}>You might also like</h2>
+        <motion.div 
+          className={styles.similarProductsSection}
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.8, duration: 0.6 }}
+        >
+          <motion.h2 
+            className={styles.similarProductsTitle}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.9 }}
+          >
+            You might also like
+          </motion.h2>
           
-          <div 
+          <motion.div 
             className={styles.similarProductsCarousel}
             ref={carouselRef}
             onMouseDown={handleMouseDown}
@@ -797,12 +951,20 @@ export default function MobileProductDetails({
               scrollSnapType: 'x mandatory',
               scrollPaddingLeft: '0'
             }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.0 }}
           >
-            {similarProducts.map(similarProduct => (
-              <div 
+            {similarProducts.map((similarProduct, index) => (
+              <motion.div 
                 key={similarProduct.id} 
                 className={styles.cardWrapper}
                 style={{ scrollSnapAlign: 'start' }}
+                variants={carouselCardVariants}
+                initial="hidden"
+                animate="visible"
+                whileHover={{ scale: 1.03, y: -5 }}
+                transition={{ delay: 1.1 + (index * 0.1) }}
               >
                 <Link href={`/products/${similarProduct.id}`} className={styles.card}>
                   <div 
@@ -880,9 +1042,9 @@ export default function MobileProductDetails({
                     preventNavigation={true}
                   />
                 </div>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
           
           {/* Single line carousel pagination indicator */}
           {similarProducts.length > carouselItemsPerView && (
@@ -905,8 +1067,8 @@ export default function MobileProductDetails({
               </Link>
             </div>
           )}
-        </div>
+        </motion.div>
       )}
-    </div>
+    </motion.div>
   );
 }

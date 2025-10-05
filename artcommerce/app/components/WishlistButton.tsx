@@ -7,6 +7,7 @@ import { useWishlist } from '../contexts/WishlistContext'
 import { useNotificationContext } from '../contexts/NotificationContext'
 import AuthModal from './AuthModal'
 import WishlistModal from './WishlistModal'
+import WishlistLoader from './WishlistLoader'
 
 interface Product {
   id: number
@@ -147,29 +148,8 @@ export default function WishlistButton({ productId, className = '', preventNavig
           disabled={loading}
         >
           {loading ? (
-            // Loading spinner
-            <svg 
-              viewBox="0 0 24 24" 
-              width="22" 
-              height="22" 
-              fill="none"
-              style={{
-                animation: 'spin 1s linear infinite'
-              }}
-            >
-              <circle 
-                cx="12" 
-                cy="12" 
-                r="10" 
-                stroke="currentColor" 
-                strokeWidth="4" 
-                strokeDasharray="31.416" 
-                strokeDashoffset="31.416"
-                style={{
-                  animation: 'dash 2s ease-in-out infinite'
-                }}
-              />
-            </svg>
+            // Beautiful animated loader
+            <WishlistLoader size="small" />
           ) : (
             // Heart icon
             <svg 
@@ -204,31 +184,6 @@ export default function WishlistButton({ productId, className = '', preventNavig
 
       {/* Inline Styles for Animations */}
       <style jsx>{`
-        @keyframes spin {
-          from {
-            transform: rotate(0deg);
-          }
-          to {
-            transform: rotate(360deg);
-          }
-        }
-        
-        @keyframes dash {
-          0% {
-            stroke-dasharray: 1, 200;
-            stroke-dashoffset: 0;
-          }
-          50% {
-            stroke-dasharray: 89, 200;
-            stroke-dashoffset: -35px;
-          }
-          100% {
-            stroke-dasharray: 89, 200;
-            stroke-dashoffset: -124px;
-          }
-        }
-        
-        
         @keyframes wishlistRotate {
           0% {
             transform: scale(1) rotate(0deg);

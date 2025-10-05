@@ -17,6 +17,8 @@ import MobileVideoSection from './components/MobileVideoSection'
 import { DataCache } from '../lib/dataCache'
 import WishlistButton from './components/WishlistButton'
 import BestSellersSection from './components/BestSellersSection'
+import PearlButton from './components/PearlButton'
+import FlippingText from './components/FlippingText'
 
 // Add this to detect mobile view
 const isMobileView = () => {
@@ -1300,16 +1302,8 @@ export default function Home() {
 const [message, setMessage] = useState<string|null>(null)
 const [featuredProducts, setFeaturedProducts] = useState([]);
 
-// Adjust the typing speed parameters to be slower
-const [rotatingText, setRotatingText] = useState('coasters')
-const [displayText, setDisplayText] = useState('')
-const [isTyping, setIsTyping] = useState(true)
-const [currentWordIndex, setCurrentWordIndex] = useState(0)
-const words = ['coasters', 'wall art', 'home decor', 'custom pieces']
-const typingSpeed = 180 // milliseconds per character (slower typing)
-const deletingSpeed = 100 // milliseconds per character (slower deletion)
-const pauseBeforeTyping = 800 // longer pause before typing a new word
-const pauseBeforeDeletion = 2500 // longer pause before deleting the word
+// Words for the flipping text animation
+const flippingWords = ['home decor', 'resin art', 'clocks', 'trays', 'wall art', 'custom pieces']
 
 const carouselTrackRef = useRef<HTMLDivElement>(null)
 
@@ -1522,52 +1516,6 @@ scrollIndicator?.removeEventListener('click', handleScrollClick)
 }
 
 }, [])
-
-
-
-useEffect(() => {
-  let timer: NodeJS.Timeout;
-  
-  // Handle the typewriter effect
-  if (isTyping) {
-    // If we're typing and haven't completed the word
-    if (displayText.length < words[currentWordIndex].length) {
-      timer = setTimeout(() => {
-        setDisplayText(words[currentWordIndex].substring(0, displayText.length + 1));
-      }, typingSpeed);
-    } 
-    // If we've completed typing the word
-    else {
-      setIsTyping(false);
-      timer = setTimeout(() => {
-        setIsTyping(false);
-      }, pauseBeforeDeletion);
-    }
-  } else {
-    // If we're deleting and there's still text left
-    if (displayText.length > 0) {
-      timer = setTimeout(() => {
-        setDisplayText(displayText.substring(0, displayText.length - 1));
-      }, deletingSpeed);
-    } 
-    // If we've deleted all text
-    else {
-      setIsTyping(true);
-      // Move to the next word
-      setCurrentWordIndex((currentWordIndex + 1) % words.length);
-      timer = setTimeout(() => {
-        // Small delay before typing next word
-      }, pauseBeforeTyping);
-    }
-  }
-  
-  // Update the main rotating text state for any components that use it
-  setRotatingText(displayText);
-  
-  return () => clearTimeout(timer);
-}, [displayText, isTyping, currentWordIndex])
-
-
 
 // Handle carousel navigation
 
@@ -1841,16 +1789,15 @@ data-aos-delay="400"
 
 <h1 className={styles.title} data-aos="fade-up" data-aos-delay="600">
 
-Handcrafted resin art for <span id="rotator">{displayText}</span>
+Handcrafted resin art for <FlippingText words={flippingWords} />
 
 </h1>
 
-{/* New button for "Discover All Pieces" - Desktop only */}
+{/* New Pearl Button for "Discover All Pieces" - Desktop only */}
 <div className={`${styles.buttonContainer} ${styles.desktopOnly}`} data-aos="fade-up" data-aos-delay="700">
-  <Link href="/products" className={styles.discoverAllButton} prefetch={false}>
-    <span className={styles.buttonText}>Discover All Pieces</span>
-    <ChevronRight size={18} className={styles.buttonIcon} />
-  </Link>
+  <PearlButton href="/products">
+    Discover All Pieces
+  </PearlButton>
 </div>
 
 </div>

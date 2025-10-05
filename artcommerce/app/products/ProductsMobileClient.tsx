@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
+import { motion, AnimatePresence } from 'framer-motion'
 import styles from './productsMobile.module.css'
 import WishlistButton from '../components/WishlistButton'
 import MobileFilterSortBar from '../components/MobileFilterSortBar'
@@ -10,6 +11,99 @@ import MobileProductsSkeleton from './MobileProductsSkeleton'
 import { FiFilter, FiX, FiChevronRight, FiStar, FiPackage, FiTrendingUp, FiGrid, FiHeart, FiChevronLeft, FiClock, FiZap } from 'react-icons/fi'
 import { useProductFilters } from '../hooks/useProductFilters'
 import { useImagePreload } from '../hooks/useImagePreload'
+
+// Animation variants for product cards
+const cardVariants = {
+  hidden: { 
+    opacity: 0, 
+    scale: 0.8, 
+    y: 20,
+    rotateX: -15
+  },
+  visible: { 
+    opacity: 1, 
+    scale: 1, 
+    y: 0,
+    rotateX: 0,
+    transition: {
+      type: "spring",
+      stiffness: 100,
+      damping: 15,
+      mass: 1
+    }
+  },
+  hover: {
+    scale: 1.02,
+    y: -5,
+    rotateX: 2,
+    transition: {
+      type: "spring",
+      stiffness: 400,
+      damping: 25
+    }
+  },
+  tap: {
+    scale: 0.95,
+    y: 2,
+    transition: {
+      type: "spring",
+      stiffness: 600,
+      damping: 30
+    }
+  },
+  exit: {
+    opacity: 0,
+    scale: 0.8,
+    y: -20,
+    rotateX: 15,
+    transition: {
+      type: "spring",
+      stiffness: 200,
+      damping: 20
+    }
+  }
+}
+
+// Animation variants for product opening transition
+const productOpenVariants = {
+  initial: {
+    scale: 1,
+    opacity: 1,
+    borderRadius: 0
+  },
+  animate: {
+    scale: 1.1,
+    opacity: 0.8,
+    borderRadius: 20,
+    transition: {
+      duration: 0.3,
+      ease: [0.4, 0, 0.2, 1]
+    }
+  },
+  exit: {
+    scale: 0.9,
+    opacity: 0,
+    borderRadius: 30,
+    transition: {
+      duration: 0.2,
+      ease: [0.4, 0, 0.2, 1]
+    }
+  }
+}
+
+// Animation variants for the product list container
+const listVariants = {
+  hidden: {
+    opacity: 0
+  },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.05,
+      delayChildren: 0.1
+    }
+  }
+}
 
 // Define known categories similar to desktop version
 const KNOWN_CATEGORIES = [
@@ -31,8 +125,11 @@ const ProductCard = ({ product, formatPrice }) => {
   const [isSwiping, setIsSwiping] = useState(false);
   const [swipeDistance, setSwipeDistance] = useState(0);
   const [showHints, setShowHints] = useState(true);
+  const [isPressed, setIsPressed] = useState(false);
+  const [isOpening, setIsOpening] = useState(false);
   const imageContainerRef = useRef(null);
   const containerWidth = useRef(0);
+  const router = useRouter();
   
   // Optimized image preloading
   const { isImageLoaded, preloadImage } = useImagePreload(product.imageUrls, {
@@ -62,6 +159,17 @@ const ProductCard = ({ product, formatPrice }) => {
       preloadImage(product.imageUrls[prevIndex]);
     }
   }, [currentImageIndex, product.imageUrls, preloadImage]);
+
+  // Handle product card click with animation
+  const handleProductClick = useCallback((e) => {
+    e.preventDefault();
+    setIsOpening(true);
+    
+    // Add a small delay to show the opening animation
+    setTimeout(() => {
+      router.push(`/products/${product.id}`);
+    }, 300);
+  }, [product.id, router]);
   
   // Direct touch event handlers for better reliability
   const handleTouchStart = (e) => {
@@ -185,105 +293,215 @@ const ProductCard = ({ product, formatPrice }) => {
   };
   
   return (
-    <div className={styles.cardWrapper}>
-      <Link href={`/products/${product.id}`} className={styles.card}>
-        <div 
+    <motion.div 
+      className={styles.cardWrapper}
+      variants={cardVariants}
+      initial="hidden"
+      animate="visible"
+      whileHover="hover"
+      whileTap="tap"
+      exit="exit"
+      layout
+      style={{ perspective: 1000 }}
+    >
+      <motion.div
+        className={styles.card}
+        onClick={handleProductClick}
+        variants={isOpening ? productOpenVariants : {}}
+        initial="initial"
+        animate={isOpening ? "animate" : "initial"}
+        exit="exit"
+        style={{ cursor: 'pointer' }}
+      >
+        <motion.div 
           className={styles.imageContainer}
           ref={imageContainerRef}
           onClick={handleImageTap}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          transition={{ type: "spring", stiffness: 300, damping: 30 }}
         >
-          <div 
+          <motion.div 
             className={styles.imageSlider} 
             style={getImageTransform()}
+            animate={{ opacity: isOpening ? 0.8 : 1 }}
+            transition={{ duration: 0.3 }}
           >
             {product.imageUrls.map((url, index) => (
               <div key={index} className={styles.imageSlide}>
-                <img 
+                <motion.img 
                   src={url}
                   alt={`${product.name} - Image ${index + 1}`}
                   className={styles.image}
                   loading={index === 0 || index === 1 ? "eager" : "lazy"}
                   draggable="false"
+                  initial={{ opacity: 0, scale: 1.1 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
                 />
               </div>
             ))}
-          </div>
+          </motion.div>
           
           {product.imageUrls.length === 0 && (
             <div className={styles.noImage}>No image</div>
           )}
           
-          {product.isNew && <span className={styles.badge}>New</span>}
-          {product.stockQuantity === 0 && <div className={styles.outOfStock}>Out of Stock</div>}
+          {product.isNew && (
+            <motion.span 
+              className={styles.badge}
+              initial={{ opacity: 0, scale: 0.8, y: -10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ delay: 0.3, type: "spring", stiffness: 500 }}
+            >
+              New
+            </motion.span>
+          )}
+          {product.stockQuantity === 0 && (
+            <motion.div 
+              className={styles.outOfStock}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4 }}
+            >
+              Out of Stock
+            </motion.div>
+          )}
           {product.stockQuantity > 0 && product.stockQuantity <= 5 && (
-            <div className={styles.lowStock}>Only {product.stockQuantity} left</div>
+            <motion.div 
+              className={styles.lowStock}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, type: "spring", stiffness: 400 }}
+            >
+              Only {product.stockQuantity} left
+            </motion.div>
           )}
           
           {/* Image indicators */}
           {product.imageUrls.length > 1 && (
-            <div className={styles.imageIndicators}>
+            <motion.div 
+              className={styles.imageIndicators}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+            >
               {product.imageUrls.map((_, index) => (
-                <div 
+                <motion.div 
                   key={index} 
                   className={`${styles.indicator} ${index === currentImageIndex ? styles.activeIndicator : ''}`}
+                  whileHover={{ scale: 1.2 }}
+                  animate={{ 
+                    width: index === currentImageIndex ? 20 : 16,
+                    backgroundColor: index === currentImageIndex ? '#000' : 'rgba(0, 0, 0, 0.3)'
+                  }}
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
                 />
               ))}
-            </div>
+            </motion.div>
           )}
           
           {/* Swipe hints - only show if multiple images and on first render */}
-          {showHints && product.imageUrls.length > 1 && (
-            <>
-              {currentImageIndex > 0 && (
-                <div className={styles.swipeRightHint}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <polyline points="15 18 9 12 15 6"></polyline>
-                  </svg>
-                </div>
-              )}
-              {currentImageIndex < product.imageUrls.length - 1 && (
-                <div className={styles.swipeLeftHint}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <polyline points="9 18 15 12 9 6"></polyline>
-                  </svg>
-                </div>
-              )}
-            </>
-          )}
-        </div>
+          <AnimatePresence>
+            {showHints && product.imageUrls.length > 1 && (
+              <>
+                {currentImageIndex > 0 && (
+                  <motion.div 
+                    className={styles.swipeRightHint}
+                    initial={{ opacity: 0, x: 10 }}
+                    animate={{ opacity: 0.7, x: 0 }}
+                    exit={{ opacity: 0, x: -10 }}
+                    transition={{ delay: 1, duration: 0.5 }}
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                  </motion.div>
+                )}
+                {currentImageIndex < product.imageUrls.length - 1 && (
+                  <motion.div 
+                    className={styles.swipeLeftHint}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 0.7, x: 0 }}
+                    exit={{ opacity: 0, x: 10 }}
+                    transition={{ delay: 1, duration: 0.5 }}
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                  </motion.div>
+                )}
+              </>
+            )}
+          </AnimatePresence>
+        </motion.div>
         
-        <div className={styles.info}>
+        <motion.div 
+          className={styles.info}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.4 }}
+        >
           {product.category && (
-            <div className={styles.categoryTag}>
+            <motion.div 
+              className={styles.categoryTag}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.3 }}
+            >
               {product.category.name}
-            </div>
+            </motion.div>
           )}
-          <h3 className={styles.name}>{product.name}</h3>
+          <motion.h3 
+            className={styles.name}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            {product.name}
+          </motion.h3>
           
-          
-          <div className={styles.priceRow}>
+          <motion.div 
+            className={styles.priceRow}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+          >
             <p className={styles.price}>{formatPrice(product.price)}</p>
             {product.avgRating > 0 && (
-              <p className={styles.productRating}>
+              <motion.p 
+                className={styles.productRating}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.6, type: "spring", stiffness: 400 }}
+              >
                 <span className={styles.starFilled}>★</span> 
                 <span className={styles.ratingValue}>{product.avgRating.toFixed(1)}</span>
-              </p>
+              </motion.p>
             )}
-          </div>
-        </div>
-      </Link>
+          </motion.div>
+        </motion.div>
+      </motion.div>
       
-      <div className={styles.wishlistContainer} onClick={handleWishlistClick}>
+      <motion.div 
+        className={styles.wishlistContainer} 
+        onClick={handleWishlistClick}
+        initial={{ opacity: 0, scale: 0.5 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.6, type: "spring", stiffness: 500 }}
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
+      >
         <WishlistButton 
           productId={product.id} 
           className={`${styles.wishlistButton} ${styles.blackWishlist}`}
           preventNavigation={true}
         />
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 
@@ -944,27 +1162,51 @@ export default function ProductsMobileClient() {
         </div>
       ) : (
         <div className={styles.mainContent}>
-          <div className={`${styles.list} products-container`}>
-            {products.map(product => (
-              <ProductCard 
-                key={product.id} 
-                product={product} 
-                formatPrice={formatPrice}
-              />
-            ))}
-          </div>
+          <motion.div 
+            className={`${styles.list} products-container`}
+            variants={listVariants}
+            initial="hidden"
+            animate="visible"
+            key={currentPage} // Re-animate when page changes
+          >
+            <AnimatePresence mode="wait">
+              {products.map(product => (
+                <ProductCard 
+                  key={product.id} 
+                  product={product} 
+                  formatPrice={formatPrice}
+                />
+              ))}
+            </AnimatePresence>
+          </motion.div>
 
           {/* Enhanced Pagination Controls */}
           {totalPages > 1 && (
-            <div className={`${styles.paginationContainer} ${isPageChanging ? styles.loading : ''}`}>
+            <motion.div 
+              className={`${styles.paginationContainer} ${isPageChanging ? styles.loading : ''}`}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.5 }}
+            >
               {/* Progress indicator */}
-              <PaginationProgress 
-                current={currentPage} 
-                total={totalPages} 
-                isLoading={isPageChanging} 
-              />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.4 }}
+              >
+                <PaginationProgress 
+                  current={currentPage} 
+                  total={totalPages} 
+                  isLoading={isPageChanging} 
+                />
+              </motion.div>
               
-              <div className={styles.paginationInfo}>
+              <motion.div 
+                className={styles.paginationInfo}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+              >
                 <span className={styles.paginationInfoText}>
                   <FiZap className={styles.paginationIcon} />
                   Page {currentPage} of {totalPages} • {startIndex + 1}-{Math.min(endIndex, totalProducts)} of {totalProducts} items
@@ -974,21 +1216,35 @@ export default function ProductsMobileClient() {
                     </span>
                   )}
                 </span>
-              </div>
+              </motion.div>
               
               {isPageChanging ? (
-                <PaginationSkeleton isTransitioning={true} />
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <PaginationSkeleton isTransitioning={true} />
+                </motion.div>
               ) : (
-                <div className={styles.paginationControls}>
+                <motion.div 
+                  className={styles.paginationControls}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.6 }}
+                >
                   {/* Previous Button */}
-                  <button
+                  <motion.button
                     onClick={handlePreviousPage}
                     disabled={currentPage === 1 || isPageChanging}
                     className={styles.paginationPrevNext}
                     aria-label="Previous page"
+                    whileHover={{ scale: 1.05, y: -1 }}
+                    whileTap={{ scale: 0.95 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 25 }}
                   >
                     <FiChevronLeft size={16} />
-                  </button>
+                  </motion.button>
                   
                   {/* Page Numbers - Enhanced smart display logic */}
                   <div className={styles.paginationNumbers}>
@@ -999,16 +1255,30 @@ export default function ProductsMobileClient() {
                       if (totalPages <= 5) {
                         for (let i = 1; i <= totalPages; i++) {
                           pages.push(
-                            <button
+                            <motion.button
                               key={i}
                               onClick={() => handlePageSelect(i)}
                               disabled={isPageChanging}
                               className={`${styles.pageNumber} ${i === currentPage ? styles.pageNumberActive : ''}`}
                               aria-label={`Page ${i}`}
                               aria-current={i === currentPage ? 'page' : undefined}
+                              whileHover={{ scale: 1.05, y: -2 }}
+                              whileTap={{ scale: 0.95 }}
+                              initial={{ opacity: 0, scale: 0.8 }}
+                              animate={{ 
+                                opacity: 1, 
+                                scale: i === currentPage ? 1.1 : 1,
+                                y: i === currentPage ? -2 : 0
+                              }}
+                              transition={{ 
+                                type: "spring", 
+                                stiffness: 400, 
+                                damping: 25,
+                                delay: i * 0.05
+                              }}
                             >
                               {i}
-                            </button>
+                            </motion.button>
                           )
                         }
                       } else {
@@ -1016,21 +1286,44 @@ export default function ProductsMobileClient() {
                         
                         // Always show first page
                         pages.push(
-                          <button
+                          <motion.button
                             key={1}
                             onClick={() => handlePageSelect(1)}
                             disabled={isPageChanging}
                             className={`${styles.pageNumber} ${1 === currentPage ? styles.pageNumberActive : ''}`}
                             aria-label="Page 1"
                             aria-current={1 === currentPage ? 'page' : undefined}
+                            whileHover={{ scale: 1.05, y: -2 }}
+                            whileTap={{ scale: 0.95 }}
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ 
+                              opacity: 1, 
+                              scale: 1 === currentPage ? 1.1 : 1,
+                              y: 1 === currentPage ? -2 : 0
+                            }}
+                            transition={{ 
+                              type: "spring", 
+                              stiffness: 400, 
+                              damping: 25
+                            }}
                           >
                             1
-                          </button>
+                          </motion.button>
                         )
                         
                         // Show dots if there's a gap between 1 and the current range
                         if (currentPage > 3) {
-                          pages.push(<span key="dots1" className={styles.paginationDots}>…</span>)
+                          pages.push(
+                            <motion.span 
+                              key="dots1" 
+                              className={styles.paginationDots}
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              transition={{ delay: 0.1 }}
+                            >
+                              …
+                            </motion.span>
+                          )
                         }
                         
                         // Show current page and neighbors (excluding first and last which are handled separately)
@@ -1041,38 +1334,76 @@ export default function ProductsMobileClient() {
                           // Skip first and last page as they're handled separately
                           if (i !== 1 && i !== totalPages) {
                             pages.push(
-                              <button
+                              <motion.button
                                 key={i}
                                 onClick={() => handlePageSelect(i)}
                                 disabled={isPageChanging}
                                 className={`${styles.pageNumber} ${i === currentPage ? styles.pageNumberActive : ''}`}
                                 aria-label={`Page ${i}`}
                                 aria-current={i === currentPage ? 'page' : undefined}
+                                whileHover={{ scale: 1.05, y: -2 }}
+                                whileTap={{ scale: 0.95 }}
+                                initial={{ opacity: 0, scale: 0.8 }}
+                                animate={{ 
+                                  opacity: 1, 
+                                  scale: i === currentPage ? 1.1 : 1,
+                                  y: i === currentPage ? -2 : 0
+                                }}
+                                transition={{ 
+                                  type: "spring", 
+                                  stiffness: 400, 
+                                  damping: 25,
+                                  delay: (i - start) * 0.05
+                                }}
                               >
                                 {i}
-                              </button>
+                              </motion.button>
                             )
                           }
                         }
                         
                         // Show dots if there's a gap between current range and last page
                         if (currentPage < totalPages - 2) {
-                          pages.push(<span key="dots2" className={styles.paginationDots}>…</span>)
+                          pages.push(
+                            <motion.span 
+                              key="dots2" 
+                              className={styles.paginationDots}
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              transition={{ delay: 0.2 }}
+                            >
+                              …
+                            </motion.span>
+                          )
                         }
                         
                         // Always show last page (if it's different from first page)
                         if (totalPages > 1) {
                           pages.push(
-                            <button
+                            <motion.button
                               key={totalPages}
                               onClick={() => handlePageSelect(totalPages)}
                               disabled={isPageChanging}
                               className={`${styles.pageNumber} ${totalPages === currentPage ? styles.pageNumberActive : ''}`}
                               aria-label={`Page ${totalPages}`}
                               aria-current={totalPages === currentPage ? 'page' : undefined}
+                              whileHover={{ scale: 1.05, y: -2 }}
+                              whileTap={{ scale: 0.95 }}
+                              initial={{ opacity: 0, scale: 0.8 }}
+                              animate={{ 
+                                opacity: 1, 
+                                scale: totalPages === currentPage ? 1.1 : 1,
+                                y: totalPages === currentPage ? -2 : 0
+                              }}
+                              transition={{ 
+                                type: "spring", 
+                                stiffness: 400, 
+                                damping: 25,
+                                delay: 0.3
+                              }}
                             >
                               {totalPages}
-                            </button>
+                            </motion.button>
                           )
                         }
                       }
@@ -1082,146 +1413,267 @@ export default function ProductsMobileClient() {
                   </div>
                   
                   {/* Next Button */}
-                  <button
+                  <motion.button
                     onClick={handleNextPage}
                     disabled={currentPage === totalPages || isPageChanging}
                     className={styles.paginationPrevNext}
                     aria-label="Next page"
+                    whileHover={{ scale: 1.05, y: -1 }}
+                    whileTap={{ scale: 0.95 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 25 }}
                   >
                     <FiChevronRight size={16} />
-                  </button>
-                </div>
+                  </motion.button>
+                </motion.div>
               )}
-            </div>
+            </motion.div>
           )}
         </div>
       )}
 
       {/* Mobile Filter Drawer */}
-      <div 
-        className={`${styles.mobileFilterOverlay} ${isMobileFilterOpen ? styles.mobileFilterOverlayVisible : ''}`}
-        onClick={() => setIsMobileFilterOpen(false)}
-      />
-      <div 
+      <AnimatePresence>
+        {isMobileFilterOpen && (
+          <motion.div 
+            className={styles.mobileFilterOverlay}
+            onClick={() => setIsMobileFilterOpen(false)}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          />
+        )}
+      </AnimatePresence>
+      
+      <motion.div 
         className={`${styles.mobileFilterDrawer} ${isMobileFilterOpen ? styles.mobileFilterDrawerOpen : ''}`}
         onClick={(e) => e.stopPropagation()}
+        initial={{ x: "100%" }}
+        animate={{ x: isMobileFilterOpen ? "0%" : "100%" }}
+        transition={{ 
+          type: "spring", 
+          stiffness: 300, 
+          damping: 30,
+          mass: 0.8
+        }}
       >
-        {isMobileFilterOpen && (
-          <>
-            <div className={styles.mobileFilterHeader}>
-              <h2>Filter Products</h2>
-              <button 
-                className={styles.mobileFilterCloseButton}
-                onClick={() => setIsMobileFilterOpen(false)}
+        <AnimatePresence>
+          {isMobileFilterOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ delay: 0.1, duration: 0.3 }}
+            >
+              <motion.div 
+                className={styles.mobileFilterHeader}
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
               >
-                <FiX size={20} />
-              </button>
-            </div>
-            <div className={styles.mobileFilterContent}>
-              {loading ? (
-                <div className={styles.filterSkeletonContainer}>
-                  {[...Array(3)].map((_, index) => (
-                    <div key={index} className={styles.filterSectionSkeleton}>
-                      <div className={styles.filterHeaderSkeleton}>
-                        <div className={styles.filterTitleSkeleton}></div>
-                        <div className={styles.filterArrowSkeleton}></div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                renderFilters()
-              )}
-            </div>
-            <div className={styles.mobileFilterActions}>
-              {loading ? (
-                <div style={{ display: 'flex', gap: '12px' }}>
-                  <div style={{
-                    height: '40px',
-                    width: '80px',
-                    background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
-                    backgroundSize: '200% 100%',
-                    animation: 'shimmer 2s infinite',
-                    borderRadius: '6px'
-                  }}></div>
-                  <div style={{
-                    height: '40px',
-                    width: '100px',
-                    background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
-                    backgroundSize: '200% 100%',
-                    animation: 'shimmer 2s infinite',
-                    borderRadius: '6px'
-                  }}></div>
-                </div>
-              ) : (
-                <>
-                  <button 
-                    className={styles.clearFilterButton}
-                    onClick={clearAllFilters}
+                <h2>Filter Products</h2>
+                <motion.button 
+                  className={styles.mobileFilterCloseButton}
+                  onClick={() => setIsMobileFilterOpen(false)}
+                  whileHover={{ scale: 1.1, rotate: 90 }}
+                  whileTap={{ scale: 0.9 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                >
+                  <FiX size={20} />
+                </motion.button>
+              </motion.div>
+              
+              <motion.div 
+                className={styles.mobileFilterContent}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3, duration: 0.4 }}
+              >
+                {loading ? (
+                  <div className={styles.filterSkeletonContainer}>
+                    {[...Array(3)].map((_, index) => (
+                      <motion.div 
+                        key={index} 
+                        className={styles.filterSectionSkeleton}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                      >
+                        <div className={styles.filterHeaderSkeleton}>
+                          <div className={styles.filterTitleSkeleton}></div>
+                          <div className={styles.filterArrowSkeleton}></div>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                ) : (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.4 }}
                   >
-                    Clear All
-                  </button>
-                  <button 
-                    className={styles.applyFilterButton}
-                    onClick={applyFilters}
-                  >
-                    Apply
-                  </button>
-                </>
-              )}
-            </div>
-          </>
-        )}
-      </div>
+                    {renderFilters()}
+                  </motion.div>
+                )}
+              </motion.div>
+              
+              <motion.div 
+                className={styles.mobileFilterActions}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+              >
+                {loading ? (
+                  <div style={{ display: 'flex', gap: '12px' }}>
+                    {[80, 100].map((width, index) => (
+                      <motion.div 
+                        key={index}
+                        style={{
+                          height: '40px',
+                          width: `${width}px`,
+                          background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+                          backgroundSize: '200% 100%',
+                          animation: 'shimmer 2s infinite',
+                          borderRadius: '6px'
+                        }}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: index * 0.1 }}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <>
+                    <motion.button 
+                      className={styles.clearFilterButton}
+                      onClick={clearAllFilters}
+                      whileHover={{ scale: 1.02, y: -1 }}
+                      whileTap={{ scale: 0.98 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                    >
+                      Clear All
+                    </motion.button>
+                    <motion.button 
+                      className={styles.applyFilterButton}
+                      onClick={applyFilters}
+                      whileHover={{ scale: 1.02, y: -1 }}
+                      whileTap={{ scale: 0.98 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                    >
+                      Apply
+                    </motion.button>
+                  </>
+                )}
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
       
       {/* Sort Bottom Sheet */}
-      <div 
-        className={`${styles.sortOverlay} ${isSortOpen ? styles.sortOverlayVisible : ''}`}
-        onClick={() => setIsSortOpen(false)}
-      />
-      <div className={`${styles.sortModal} ${isSortOpen ? styles.sortModalVisible : ''}`}>
-        <div className={styles.sortHeader}>
-          <h3>SORT BY</h3>
-        </div>
-        <div className={styles.sortOptions}>
-          <button 
-            className={`${styles.sortOption} ${(sortOrder === '' || sortOrder === 'newest') ? styles.active : ''}`}
-            onClick={() => handleSortSelect('')}
-          >
-            <div className={`${styles.sortRadio} ${(sortOrder === '' || sortOrder === 'newest') ? styles.active : ''}`}></div>
-            <span className={styles.sortOptionText}>Recommended</span>
-          </button>
-          <button 
-            className={`${styles.sortOption} ${sortOrder === 'oldest' ? styles.active : ''}`}
-            onClick={() => handleSortSelect('oldest')}
-          >
-            <div className={`${styles.sortRadio} ${sortOrder === 'oldest' ? styles.active : ''}`}></div>
-            <span className={styles.sortOptionText}>Oldest</span>
-          </button>
-          <button 
-            className={`${styles.sortOption} ${sortOrder === 'price_desc' ? styles.active : ''}`}
-            onClick={() => handleSortSelect('price_desc')}
-          >
-            <div className={`${styles.sortRadio} ${sortOrder === 'price_desc' ? styles.active : ''}`}></div>
-            <span className={styles.sortOptionText}>Price High to Low</span>
-          </button>
-          <button 
-            className={`${styles.sortOption} ${sortOrder === 'price_asc' ? styles.active : ''}`}
-            onClick={() => handleSortSelect('price_asc')}
-          >
-            <div className={`${styles.sortRadio} ${sortOrder === 'price_asc' ? styles.active : ''}`}></div>
-            <span className={styles.sortOptionText}>Price Low to High</span>
-          </button>
-        </div>
-      </div>
+      <AnimatePresence>
+        {isSortOpen && (
+          <motion.div 
+            className={styles.sortOverlay}
+            onClick={() => setIsSortOpen(false)}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          />
+        )}
+      </AnimatePresence>
+      
+      <motion.div 
+        className={`${styles.sortModal} ${isSortOpen ? styles.sortModalVisible : ''}`}
+        initial={{ y: "100%" }}
+        animate={{ y: isSortOpen ? "0%" : "100%" }}
+        transition={{ 
+          type: "spring", 
+          stiffness: 300, 
+          damping: 30,
+          mass: 0.8
+        }}
+      >
+        <AnimatePresence>
+          {isSortOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ delay: 0.1, duration: 0.3 }}
+            >
+              <motion.div 
+                className={styles.sortHeader}
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                <h3>SORT BY</h3>
+              </motion.div>
+              
+              <motion.div 
+                className={styles.sortOptions}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3 }}
+              >
+                {[
+                  { value: '', label: 'Recommended', active: sortOrder === '' || sortOrder === 'newest' },
+                  { value: 'oldest', label: 'Oldest', active: sortOrder === 'oldest' },
+                  { value: 'price_desc', label: 'Price High to Low', active: sortOrder === 'price_desc' },
+                  { value: 'price_asc', label: 'Price Low to High', active: sortOrder === 'price_asc' }
+                ].map((option, index) => (
+                  <motion.button 
+                    key={option.value}
+                    className={`${styles.sortOption} ${option.active ? styles.active : ''}`}
+                    onClick={() => handleSortSelect(option.value)}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.3 + (index * 0.05) }}
+                    whileHover={{ backgroundColor: '#f8f8f8', x: 5 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <motion.div 
+                      className={`${styles.sortRadio} ${option.active ? styles.active : ''}`}
+                      whileHover={{ scale: 1.1 }}
+                      animate={{ 
+                        borderColor: option.active ? '#000' : '#ddd',
+                        scale: option.active ? 1.1 : 1
+                      }}
+                      transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                    />
+                    <span className={styles.sortOptionText}>{option.label}</span>
+                  </motion.button>
+                ))}
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
       
       {/* Floating Close Button for Sort Modal */}
-      <button 
-        onClick={() => setIsSortOpen(false)} 
-        className={`${styles.closeSortButton} ${isSortOpen ? styles.visible : ''}`}
-      >
-        <FiX size={24} />
-      </button>
+      <AnimatePresence>
+        {isSortOpen && (
+          <motion.button 
+            onClick={() => setIsSortOpen(false)} 
+            className={styles.closeSortButton}
+            initial={{ opacity: 0, scale: 0.5, y: 50 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.5, y: 50 }}
+            transition={{ 
+              type: "spring", 
+              stiffness: 400, 
+              damping: 25,
+              delay: 0.2
+            }}
+            whileHover={{ scale: 1.1, rotate: 90 }}
+            whileTap={{ scale: 0.9 }}
+          >
+            <FiX size={24} />
+          </motion.button>
+        )}
+      </AnimatePresence>
     </div>
   );
 } 

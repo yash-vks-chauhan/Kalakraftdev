@@ -169,27 +169,12 @@
 
 .removeBtn {
   position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  background-color: rgba(255, 255, 255, 0.9);
-  border-radius: 50%;
-  width: 1.75rem;
-  height: 1.75rem;
+  top: 0.75rem;
+  right: 0.75rem;
+  z-index: 10;
   display: flex;
   justify-content: center;
   align-items: center;
-  border: 1px solid #e5e7eb;
-  cursor: pointer;
-  color: #4b5563;
-  transition: all 0.2s ease;
-  backdrop-filter: blur(4px);
-  padding: 0;
-}
-
-.removeBtn:active {
-  background-color: white;
-  color: #111827;
-  transform: scale(0.95);
 }
 
 .emptyState {
@@ -345,8 +330,6 @@
   }
 
   .removeBtn {
-    width: 2.25rem;
-    height: 2.25rem;
     top: 1rem;
     right: 1rem;
   }
@@ -358,12 +341,6 @@
 
   .card:hover .image {
     transform: scale(1.05);
-  }
-
-  .removeBtn:hover {
-    background-color: white;
-    color: #111827;
-    transform: scale(1.1);
   }
 
   .addToCartBtn.primary:hover {
@@ -443,8 +420,8 @@
 }
 
 .skeletonRemoveButton {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   background: #f0f0f0;
   position: absolute;
