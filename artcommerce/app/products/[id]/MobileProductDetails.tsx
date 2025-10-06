@@ -9,84 +9,111 @@ import { useCart } from '../../contexts/CartContext';
 import WishlistButton from '../../components/WishlistButton';
 import styles from './mobile_product_details.module.css';
 
-// Animation variants for page entrance
+// Elegant animation variants for page entrance with luxurious timing
 const pageVariants = {
   initial: {
     opacity: 0,
-    scale: 0.95,
-    y: 20
+    scale: 0.92,
+    y: 50,
+    rotateX: 3
   },
   animate: {
     opacity: 1,
     scale: 1,
     y: 0,
+    rotateX: 0,
     transition: {
-      duration: 0.4,
-      ease: "easeOut" as const,
-      staggerChildren: 0.1
+      type: "spring" as const,
+      stiffness: 200,
+      damping: 25,
+      duration: 0.8,
+      ease: [0.25, 0.46, 0.45, 0.94] as const,
+      staggerChildren: 0.15
     }
   },
   exit: {
     opacity: 0,
     scale: 0.95,
-    y: -20,
+    y: -30,
+    rotateX: -2,
     transition: {
-      duration: 0.3,
-      ease: "easeIn" as const
+      type: "spring" as const,
+      stiffness: 300,
+      damping: 30,
+      duration: 0.5,
+      ease: [0.4, 0, 0.2, 1] as const
     }
   }
 }
 
-// Animation variants for content sections
+// Smooth animation variants for content sections with elegant flow
 const sectionVariants = {
   hidden: { 
     opacity: 0, 
-    y: 20 
+    y: 40,
+    scale: 0.97
   },
   visible: { 
     opacity: 1, 
     y: 0,
+    scale: 1,
     transition: {
-      duration: 0.5,
-      ease: "easeOut" as const
+      type: "spring" as const,
+      stiffness: 250,
+      damping: 25,
+      duration: 0.7,
+      ease: [0.25, 0.46, 0.45, 0.94] as const
     }
   }
 }
 
-// Animation variants for accordion sections
+// Elegant accordion animation with smooth height transitions
 const accordionVariants = {
   closed: {
     height: 0,
     opacity: 0,
+    scale: 0.98,
     transition: {
-      duration: 0.3,
-      ease: "easeInOut" as const
+      type: "spring" as const,
+      stiffness: 300,
+      damping: 30,
+      duration: 0.5,
+      ease: [0.4, 0, 0.2, 1] as const
     }
   },
   open: {
     height: "auto",
     opacity: 1,
+    scale: 1,
     transition: {
-      duration: 0.4,
-      ease: "easeOut" as const
+      type: "spring" as const,
+      stiffness: 250,
+      damping: 25,
+      duration: 0.6,
+      ease: [0.25, 0.46, 0.45, 0.94] as const
     }
   }
 }
 
-// Animation variants for product cards in carousel
+// Luxurious animation variants for product cards in carousel
 const carouselCardVariants = {
   hidden: { 
     opacity: 0, 
-    scale: 0.9,
-    y: 30
+    scale: 0.85,
+    y: 60,
+    rotateY: 5
   },
   visible: { 
     opacity: 1, 
     scale: 1,
     y: 0,
+    rotateY: 0,
     transition: {
-      duration: 0.4,
-      ease: "easeOut" as const
+      type: "spring" as const,
+      stiffness: 200,
+      damping: 20,
+      duration: 0.8,
+      ease: [0.25, 0.46, 0.45, 0.94] as const
     }
   }
 }
@@ -673,9 +700,15 @@ export default function MobileProductDetails({
         {/* Variation (if applicable) - Moved up like in Gucci design */}
         <motion.div 
           className={styles.variation}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
+          initial={{ opacity: 0, y: 30, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ 
+            delay: 0.6, 
+            type: "spring",
+            stiffness: 200,
+            damping: 25,
+            duration: 0.8
+          }}
         >
           <span className={styles.variationLabel}>Variation</span>
           <span className={styles.variationValue}>{product.shortDesc || 'Standard'}</span>
@@ -684,9 +717,15 @@ export default function MobileProductDetails({
         {/* Price */}
         <motion.div 
           className={styles.priceContainer}
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.5, type: "spring", stiffness: 500 }}
+          initial={{ opacity: 0, scale: 0.85, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ 
+            delay: 0.8, 
+            type: "spring", 
+            stiffness: 180,
+            damping: 20,
+            duration: 0.9
+          }}
         >
           <p className={styles.price}>
             <span className={styles.currency}>{product.currency}</span>
@@ -800,9 +839,10 @@ export default function MobileProductDetails({
             
             <div className={`${styles.accordionContent} ${expandedSections.description ? styles.expanded : ''}`}>
               <p className={styles.description} style={{ 
-                transform: expandedSections.description ? 'translateY(0)' : 'translateY(10px)',
-                transition: 'transform 0.6s cubic-bezier(0.25, 0.1, 0.25, 1)',
-                transitionDelay: expandedSections.description ? '0.1s' : '0s'
+                transform: expandedSections.description ? 'translateY(0)' : 'translateY(20px)',
+                opacity: expandedSections.description ? '1' : '0',
+                transition: 'all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                transitionDelay: expandedSections.description ? '0.2s' : '0s'
               }}>
                 {product.description}
               </p>

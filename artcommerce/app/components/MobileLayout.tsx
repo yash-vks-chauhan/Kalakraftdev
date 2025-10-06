@@ -13,6 +13,7 @@ import { getImageUrl } from '../../lib/cloudinaryImages'
 import styles from './MobileLayout.module.css'
 import MobileMenuPanel from './MobileMenuPanel'
 import MobileSearchModal from './MobileSearchModal'
+import PearlButton from './PearlButton'
 
 interface MobileLayoutProps {
   children: React.ReactNode
@@ -692,14 +693,11 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
                 Handcrafted resin art for {rotatingText}
               </h1>
               
-              {/* Discover All Pieces Button */}
+              {/* New Pearl Button for Mobile */}
               <div className={styles.mobileDiscoverButtonContainer}>
-                <button 
-                  onClick={() => router.push('/products')}
-                  className={styles.mobileDiscoverButton}
-                >
-                  <span className={styles.mobileDiscoverButtonText}>Discover All Pieces</span>
-                </button>
+                <PearlButton href="/products">
+                  Discover All Pieces
+                </PearlButton>
               </div>
               
               {/* Scroll indicator */}
