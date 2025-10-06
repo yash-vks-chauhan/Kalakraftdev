@@ -14,68 +14,54 @@ import { useImagePreload } from '../hooks/useImagePreload'
 import OptimizedProductTransition from '../components/OptimizedProductTransition'
 import { usePerformanceOptimization, createAnimationDebouncer } from '../../lib/performanceUtils'
 
-// Elegant and smooth animation variants for premium feel
+// Optimized animation variants for better performance
 const cardVariants = {
   hidden: { 
     opacity: 0, 
-    y: 40,
-    scale: 0.95
+    y: 20
   },
   visible: { 
     opacity: 1, 
     y: 0,
-    scale: 1,
     transition: {
-      type: "spring" as const,
-      duration: 0.8,
-      bounce: 0.1,
-      ease: [0.25, 0.46, 0.45, 0.94] as const
+      type: "tween" as const,
+      duration: 0.3,
+      ease: [0.4, 0, 0.2, 1] as const
     }
   },
   hover: {
-    y: -8,
-    scale: 1.02,
+    y: -2,
     transition: {
-      type: "spring" as const,
-      stiffness: 400,
-      damping: 25,
-      duration: 0.4
+      type: "tween" as const,
+      duration: 0.2
     }
   },
   tap: {
-    scale: 0.96,
-    y: 2,
+    scale: 0.98,
     transition: {
-      type: "spring" as const,
-      stiffness: 600,
-      damping: 30,
-      duration: 0.3
+      type: "tween" as const,
+      duration: 0.1
     }
   }
 }
 
-// Elegant product opening animation with smooth scaling
+// Simplified product opening animation
 const productOpenVariants = {
   initial: {
     scale: 1,
-    opacity: 1,
-    rotateY: 0
+    opacity: 1
   },
   animate: {
-    scale: 1.08,
-    opacity: 0.7,
-    rotateY: 2,
+    scale: 1.05,
+    opacity: 0.8,
     transition: {
-      type: "spring" as const,
-      stiffness: 300,
-      damping: 25,
-      duration: 0.6,
-      ease: [0.25, 0.46, 0.45, 0.94] as const
+      duration: 0.2,
+      ease: [0.4, 0, 0.2, 1] as const
     }
   }
 }
 
-// Elegant staggered animation for product list with slower, more luxurious timing
+// Optimized animation variants for the product list container
 const listVariants = {
   hidden: {
     opacity: 0
@@ -83,10 +69,8 @@ const listVariants = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.08, // Increased for more elegant staggering
-      delayChildren: 0.15,   // Increased delay for smoother start
-      duration: 0.6,
-      ease: [0.25, 0.46, 0.45, 0.94] as const
+      staggerChildren: 0.03, // Reduced from 0.05 for faster loading
+      delayChildren: 0.05    // Reduced from 0.1
     }
   }
 }
