@@ -72,13 +72,14 @@ const accordionVariants = {
   closed: {
     height: 0,
     opacity: 0,
-    scale: 0.98,
+    scale: 0.96,
     transition: {
       type: "spring" as const,
-      stiffness: 400,
-      damping: 30,
+      stiffness: 450,
+      damping: 35,
       duration: 0.4,
-      ease: [0.4, 0, 0.2, 1] as const
+      ease: [0.32, 0.72, 0, 1] as const,
+      opacity: { duration: 0.25, ease: [0.4, 0, 0.2, 1] as const }
     }
   },
   open: {
@@ -87,10 +88,12 @@ const accordionVariants = {
     scale: 1,
     transition: {
       type: "spring" as const,
-      stiffness: 300,
-      damping: 25,
-      duration: 0.6,
-      ease: [0.25, 0.46, 0.45, 0.94] as const
+      stiffness: 350,
+      damping: 28,
+      duration: 0.7,
+      ease: [0.16, 1, 0.3, 1] as const,
+      opacity: { duration: 0.4, delay: 0.1, ease: [0.25, 0.46, 0.45, 0.94] as const },
+      scale: { duration: 0.5, ease: [0.16, 1, 0.3, 1] as const }
     }
   }
 }
@@ -99,10 +102,11 @@ const accordionVariants = {
 const accordionContentVariants = {
   closed: {
     opacity: 0,
-    y: 20,
-    scale: 0.95,
+    y: 15,
+    scale: 0.97,
+    filter: "blur(1px)",
     transition: {
-      duration: 0.3,
+      duration: 0.25,
       ease: [0.4, 0, 0.2, 1] as const
     }
   },
@@ -110,10 +114,12 @@ const accordionContentVariants = {
     opacity: 1,
     y: 0,
     scale: 1,
+    filter: "blur(0px)",
     transition: {
-      duration: 0.5,
-      delay: 0.1,
-      ease: [0.25, 0.46, 0.45, 0.94] as const
+      duration: 0.6,
+      delay: 0.15,
+      ease: [0.16, 1, 0.3, 1] as const,
+      filter: { duration: 0.4, delay: 0.2 }
     }
   }
 }
@@ -122,13 +128,13 @@ const accordionContentVariants = {
 const accordionListVariants = {
   open: {
     transition: {
-      staggerChildren: 0.05,
-      delayChildren: 0.1
+      staggerChildren: 0.08,
+      delayChildren: 0.2
     }
   },
   closed: {
     transition: {
-      staggerChildren: 0.02,
+      staggerChildren: 0.03,
       staggerDirection: -1
     }
   }
@@ -138,35 +144,46 @@ const accordionListVariants = {
 const accordionItemVariants = {
   closed: {
     opacity: 0,
-    x: -10,
+    x: -8,
+    scale: 0.98,
     transition: {
-      duration: 0.2
+      duration: 0.2,
+      ease: [0.4, 0, 0.2, 1] as const
     }
   },
   open: {
     opacity: 1,
     x: 0,
+    scale: 1,
     transition: {
-      duration: 0.4,
-      ease: [0.25, 0.46, 0.45, 0.94] as const
+      duration: 0.5,
+      ease: [0.16, 1, 0.3, 1] as const
     }
   }
 }
 
-// Icon rotation animation
+// Enhanced icon rotation animation with bounce effect
 const iconVariants = {
   closed: {
     rotate: 0,
+    scale: 1,
     transition: {
+      type: "spring" as const,
+      stiffness: 400,
+      damping: 25,
       duration: 0.4,
       ease: [0.4, 0, 0.2, 1] as const
     }
   },
   open: {
     rotate: 180,
+    scale: 1.1,
     transition: {
-      duration: 0.4,
-      ease: [0.25, 0.46, 0.45, 0.94] as const
+      type: "spring" as const,
+      stiffness: 350,
+      damping: 20,
+      duration: 0.5,
+      ease: [0.16, 1, 0.3, 1] as const
     }
   }
 }
@@ -976,9 +993,23 @@ export default function MobileProductDetails({
               className={styles.accordionHeader} 
               onClick={() => toggleSection('description')}
               aria-expanded={expandedSections.description}
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.99 }}
-              transition={{ duration: 0.2 }}
+              whileHover={{ 
+                scale: 1.008,
+                backgroundColor: "rgba(0, 0, 0, 0.02)",
+                transition: { duration: 0.2 }
+              }}
+              whileTap={{ 
+                scale: 0.995,
+                backgroundColor: "rgba(0, 0, 0, 0.04)",
+                transition: { duration: 0.1 }
+              }}
+              initial={{ backgroundColor: "transparent" }}
+              animate={{ 
+                backgroundColor: expandedSections.description 
+                  ? "rgba(0, 0, 0, 0.01)" 
+                  : "transparent" 
+              }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
             >
               <span className={styles.accordionTitle}>Description</span>
               <motion.span 
@@ -1019,9 +1050,23 @@ export default function MobileProductDetails({
                 className={styles.accordionHeader} 
                 onClick={() => toggleSection('specifications')}
                 aria-expanded={expandedSections.specifications}
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.99 }}
-                transition={{ duration: 0.2 }}
+                whileHover={{ 
+                  scale: 1.008,
+                  backgroundColor: "rgba(0, 0, 0, 0.02)",
+                  transition: { duration: 0.2 }
+                }}
+                whileTap={{ 
+                  scale: 0.995,
+                  backgroundColor: "rgba(0, 0, 0, 0.04)",
+                  transition: { duration: 0.1 }
+                }}
+                initial={{ backgroundColor: "transparent" }}
+                animate={{ 
+                  backgroundColor: expandedSections.specifications 
+                    ? "rgba(0, 0, 0, 0.01)" 
+                    : "transparent" 
+                }}
+                transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
               >
                 <span className={styles.accordionTitle}>Specifications</span>
                 <motion.span 
@@ -1072,9 +1117,23 @@ export default function MobileProductDetails({
                 className={styles.accordionHeader} 
                 onClick={() => toggleSection('care')}
                 aria-expanded={expandedSections.care}
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.99 }}
-                transition={{ duration: 0.2 }}
+                whileHover={{ 
+                  scale: 1.008,
+                  backgroundColor: "rgba(0, 0, 0, 0.02)",
+                  transition: { duration: 0.2 }
+                }}
+                whileTap={{ 
+                  scale: 0.995,
+                  backgroundColor: "rgba(0, 0, 0, 0.04)",
+                  transition: { duration: 0.1 }
+                }}
+                initial={{ backgroundColor: "transparent" }}
+                animate={{ 
+                  backgroundColor: expandedSections.care 
+                    ? "rgba(0, 0, 0, 0.01)" 
+                    : "transparent" 
+                }}
+                transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
               >
                 <span className={styles.accordionTitle}>Care Instructions</span>
                 <motion.span 
