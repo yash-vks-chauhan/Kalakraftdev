@@ -60,7 +60,7 @@ export default function ProductImagesMobile({
 
   // Reset motion value when index changes
   useEffect(() => {
-    animate(x, 0, { 
+    animate(x, -currentIndex * 100, { 
       duration: 0.4, 
       ease: [0.25, 0.46, 0.45, 0.94] 
     });
@@ -89,8 +89,12 @@ export default function ProductImagesMobile({
     const swipeDistance = Math.abs(offset.x);
     const swipeVelocity = Math.abs(velocity.x);
 
+    // Convert offset to percentage-based detection
+    const swipeThresholdPercent = 30; // 30% of container width
+    const velocityThreshold = 500;
+
     // Improved swipe detection with velocity consideration
-    if (swipeDistance > SWIPE_THRESHOLD || swipeVelocity > SWIPE_VELOCITY_THRESHOLD) {
+    if (swipeDistance > swipeThresholdPercent || swipeVelocity > velocityThreshold) {
       if (offset.x > 0 && currentIndex > 0) {
         setCurrentIndex(currentIndex - 1);
       } else if (offset.x < 0 && currentIndex < imageUrls.length - 1) {
@@ -179,7 +183,10 @@ export default function ProductImagesMobile({
         <motion.div 
           className={styles.imageSlider}
           drag="x"
-          dragConstraints={{ left: 0, right: 0 }}
+          dragConstraints={{ 
+            left: -(imageUrls.length - 1) * 100, 
+            right: 0 
+          }}
           dragElastic={0.15}
           dragTransition={{ 
             bounceStiffness: 600, 
@@ -188,16 +195,9 @@ export default function ProductImagesMobile({
           }}
           onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
-          animate={{ 
-            x: `${-currentIndex * 100}%`
-          }}
-          style={{ x }}
-          transition={{
-            type: "spring",
-            stiffness: 400,
-            damping: 30,
-            duration: 0.4,
-            ease: [0.25, 0.46, 0.45, 0.94]
+          style={{ 
+            x: useTransform(x, (value) => `${value}%`),
+            width: `${imageUrls.length * 100}%`
           }}
         >
           {imageUrls.map((url, index) => (
