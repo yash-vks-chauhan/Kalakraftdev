@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import styles from './productsMobile.module.css'
@@ -11,87 +11,57 @@ import MobileProductsSkeleton from './MobileProductsSkeleton'
 import { FiFilter, FiX, FiChevronRight, FiStar, FiPackage, FiTrendingUp, FiGrid, FiHeart, FiChevronLeft, FiClock, FiZap } from 'react-icons/fi'
 import { useProductFilters } from '../hooks/useProductFilters'
 import { useImagePreload } from '../hooks/useImagePreload'
+import OptimizedProductTransition from '../components/OptimizedProductTransition'
+import { usePerformanceOptimization, createAnimationDebouncer } from '../../lib/performanceUtils'
 
-// Animation variants for product cards
+// Optimized animation variants for better performance
 const cardVariants = {
   hidden: { 
     opacity: 0, 
-    scale: 0.8, 
-    y: 20,
-    rotateX: -15
+    y: 20
   },
   visible: { 
     opacity: 1, 
-    scale: 1, 
     y: 0,
-    rotateX: 0,
     transition: {
-      type: "spring",
-      stiffness: 100,
-      damping: 15,
-      mass: 1
+      type: "tween" as const,
+      duration: 0.3,
+      ease: [0.4, 0, 0.2, 1] as const
     }
   },
   hover: {
-    scale: 1.02,
-    y: -5,
-    rotateX: 2,
+    y: -2,
     transition: {
-      type: "spring",
-      stiffness: 400,
-      damping: 25
+      type: "tween" as const,
+      duration: 0.2
     }
   },
   tap: {
-    scale: 0.95,
-    y: 2,
+    scale: 0.98,
     transition: {
-      type: "spring",
-      stiffness: 600,
-      damping: 30
-    }
-  },
-  exit: {
-    opacity: 0,
-    scale: 0.8,
-    y: -20,
-    rotateX: 15,
-    transition: {
-      type: "spring",
-      stiffness: 200,
-      damping: 20
+      type: "tween" as const,
+      duration: 0.1
     }
   }
 }
 
-// Animation variants for product opening transition
+// Simplified product opening animation
 const productOpenVariants = {
   initial: {
     scale: 1,
-    opacity: 1,
-    borderRadius: 0
+    opacity: 1
   },
   animate: {
-    scale: 1.1,
+    scale: 1.05,
     opacity: 0.8,
-    borderRadius: 20,
-    transition: {
-      duration: 0.3,
-      ease: [0.4, 0, 0.2, 1]
-    }
-  },
-  exit: {
-    scale: 0.9,
-    opacity: 0,
-    borderRadius: 30,
     transition: {
       duration: 0.2,
-      ease: [0.4, 0, 0.2, 1]
+      ease: [0.4, 0, 0.2, 1] as const
     }
   }
 }
 
-// Animation variants for the product list container
+// Optimized animation variants for the product list container
 const listVariants = {
   hidden: {
     opacity: 0
@@ -99,8 +69,8 @@ const listVariants = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.05,
-      delayChildren: 0.1
+      staggerChildren: 0.03, // Reduced from 0.05 for faster loading
+      delayChildren: 0.05    // Reduced from 0.1
     }
   }
 }
@@ -118,7 +88,7 @@ const KNOWN_CATEGORIES = [
 ]
 
 // Product Card with Swipeable Images component
-const ProductCard = ({ product, formatPrice }) => {
+const ProductCard = ({ product, formatPrice, onParticleTransition }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
@@ -160,16 +130,23 @@ const ProductCard = ({ product, formatPrice }) => {
     }
   }, [currentImageIndex, product.imageUrls, preloadImage]);
 
-  // Handle product card click with animation
+  // Handle product card click with particle transition
   const handleProductClick = useCallback((e) => {
     e.preventDefault();
     setIsOpening(true);
     
-    // Add a small delay to show the opening animation
-    setTimeout(() => {
-      router.push(`/products/${product.id}`);
-    }, 300);
-  }, [product.id, router]);
+    // Trigger particle transition
+    if (onParticleTransition) {
+      onParticleTransition(() => {
+        router.push(`/products/${product.id}`);
+      });
+    } else {
+      // Fallback without particles
+      setTimeout(() => {
+        router.push(`/products/${product.id}`);
+      }, 200);
+    }
+  }, [product.id, router, onParticleTransition]);
   
   // Direct touch event handlers for better reliability
   const handleTouchStart = (e) => {
@@ -547,6 +524,12 @@ export default function ProductsMobileClient() {
   const router = useRouter()
   const searchParams = useSearchParams()
   
+  // Performance optimization hook
+  const { config: perfConfig, trackAnimation } = usePerformanceOptimization()
+  
+  // Create debounced animation trigger
+  const debouncedParticleTransition = useMemo(() => createAnimationDebouncer(200), [])
+  
   // Consolidated state management using optimized hooks
   const { 
     filters, 
@@ -564,6 +547,7 @@ export default function ProductsMobileClient() {
   const [error, setError] = useState(null)
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false)
   const [isSortOpen, setIsSortOpen] = useState(false)
+  const [isParticleTransitionActive, setIsParticleTransitionActive] = useState(false)
   const [isPageChanging, setIsPageChanging] = useState(false) // Add pagination loading state
   const [keyboardShortcutsEnabled, setKeyboardShortcutsEnabled] = useState(true) // New: keyboard shortcuts state
   const [lastPageChangeTime, setLastPageChangeTime] = useState(0) // New: for rate limiting
@@ -958,6 +942,25 @@ export default function ProductsMobileClient() {
     }).format(price);
   };
 
+  // Handle particle transition with performance optimization
+  const handleParticleTransition = useCallback((onComplete) => {
+    debouncedParticleTransition(() => {
+      const startTime = performance.now()
+      setIsParticleTransitionActive(true)
+      
+      // Track animation performance
+      const originalOnComplete = onComplete
+      const trackedOnComplete = () => {
+        const endTime = performance.now()
+        trackAnimation('particle-transition', startTime, endTime)
+        if (originalOnComplete) originalOnComplete()
+      }
+      
+      // Use performance-optimized duration
+      setTimeout(trackedOnComplete, perfConfig.animationDuration || 600)
+    })
+  }, [debouncedParticleTransition, trackAnimation, perfConfig.animationDuration]);
+
   // Render filters similar to desktop sidebar
   const renderFilters = () => {
     return (
@@ -1167,17 +1170,33 @@ export default function ProductsMobileClient() {
             variants={listVariants}
             initial="hidden"
             animate="visible"
-            key={currentPage} // Re-animate when page changes
+            // Removed key={currentPage} to prevent unmounting
           >
-            <AnimatePresence mode="wait">
-              {products.map(product => (
-                <ProductCard 
-                  key={product.id} 
-                  product={product} 
-                  formatPrice={formatPrice}
-                />
-              ))}
-            </AnimatePresence>
+            {isPageChanging ? (
+              // Show skeleton during page transitions
+              <div className={styles.skeletonContainer}>
+                {[...Array(16)].map((_, index) => (
+                  <div key={`skeleton-${index}`} className={styles.skeletonCard}>
+                    <div className={styles.skeletonImage}></div>
+                    <div className={styles.skeletonContent}>
+                      <div className={styles.skeletonTitle}></div>
+                      <div className={styles.skeletonPrice}></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <AnimatePresence mode="popLayout">
+                {products.map((product, index) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    formatPrice={formatPrice}
+                    onParticleTransition={handleParticleTransition}
+                  />
+                ))}
+              </AnimatePresence>
+            )}
           </motion.div>
 
           {/* Enhanced Pagination Controls */}
@@ -1674,6 +1693,12 @@ export default function ProductsMobileClient() {
           </motion.button>
         )}
       </AnimatePresence>
+      
+      {/* Optimized Particle Transition Overlay */}
+      <OptimizedProductTransition 
+        isActive={isParticleTransitionActive}
+        onComplete={() => setIsParticleTransitionActive(false)}
+      />
     </div>
   );
 } 

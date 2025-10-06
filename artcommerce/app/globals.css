@@ -1,6 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@import './styles/performance.css';
 
 :root {
   --foreground-rgb: 0, 0, 0;

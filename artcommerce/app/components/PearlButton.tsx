@@ -130,6 +130,13 @@ const PearlButton = ({ href = "/products", children = "Discover All Pieces" }: {
 
           /* Mobile responsive adjustments */
           @media (max-width: 768px) {
+            .pearl-button {
+              /* Ensure button is always visible on mobile */
+              position: relative;
+              z-index: 10;
+              min-width: 200px;
+            }
+            
             .pearl-button .wrap {
               font-size: 18px;
               padding: 20px 30px;
@@ -137,9 +144,40 @@ const PearlButton = ({ href = "/products", children = "Discover All Pieces" }: {
           }
 
           @media (max-width: 480px) {
+            .pearl-button {
+              /* Ensure button is always visible on small screens */
+              position: relative;
+              z-index: 10;
+              min-width: 180px;
+            }
+            
             .pearl-button .wrap {
               font-size: 16px;
               padding: 18px 24px;
+            }
+          }
+          
+          /* Ensure button works with touch devices */
+          @media (hover: none) and (pointer: coarse) {
+            .pearl-button:hover {
+              /* Reset hover effects for touch devices */
+              box-shadow:
+                inset 0 0.3rem 0.9rem rgba(255, 255, 255, 0.3),
+                inset 0 -0.1rem 0.3rem rgba(0, 0, 0, 0.7),
+                inset 0 -0.4rem 0.9rem rgba(255, 255, 255, 0.5),
+                0 3rem 3rem rgba(0, 0, 0, 0.3),
+                0 1rem 1rem -0.6rem rgba(0, 0, 0, 0.8);
+            }
+            
+            .pearl-button:active {
+              /* Enhanced active state for touch */
+              transform: translateY(2px);
+              box-shadow:
+                inset 0 0.3rem 0.5rem rgba(255, 255, 255, 0.6),
+                inset 0 -0.1rem 0.3rem rgba(0, 0, 0, 0.9),
+                inset 0 -0.4rem 0.9rem rgba(255, 255, 255, 0.4),
+                0 2rem 2rem rgba(0, 0, 0, 0.4),
+                0 0.5rem 0.5rem -0.3rem rgba(0, 0, 0, 0.9);
             }
           }
         `}</style>

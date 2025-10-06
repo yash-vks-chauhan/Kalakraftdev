@@ -1,4 +1,10 @@
 import React from 'react';
+import { type ClassValue, clsx } from "clsx"
+import { twMerge } from "tailwind-merge"
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
+}
 
 /**
  * Checks if the current device is a mobile device based on user agent and screen size

@@ -1,0 +1,104 @@
+/* Performance-optimized animations for smoother experience */
+
+/* Hardware acceleration for all animated elements */
+.optimized-animation {
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+  will-change: transform, opacity;
+}
+
+/* Smooth scrolling improvements */
+.smooth-scroll {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Optimized transitions */
+.smooth-transition {
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 0.3s;
+}
+
+.fast-transition {
+  transition-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition-duration: 0.2s;
+}
+
+/* Prevent layout thrashing */
+.layout-stable {
+  contain: layout style paint;
+}
+
+/* Optimized particle container */
+.particle-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 50;
+  contain: strict;
+  will-change: opacity;
+}
+
+/* GPU-optimized blur effects */
+.gpu-blur {
+  filter: blur(8px);
+  transform: translate3d(0, 0, 0);
+}
+
+/* Optimized gradients */
+.radial-gradient-optimized {
+  background: radial-gradient(circle at center, rgba(0,0,0,0.3) 0%, rgba(128,128,128,0.2) 50%, rgba(255,255,255,0.3) 100%);
+  will-change: opacity, transform;
+}
+
+/* Touch optimization */
+.touch-optimized {
+  touch-action: manipulation;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .particle-container {
+    display: none;
+  }
+  
+  .optimized-animation {
+    animation: none !important;
+    transition: none !important;
+  }
+  
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Low-end device optimizations */
+@media (max-width: 480px) and (max-height: 800px) {
+  .particle-container {
+    opacity: 0.7; /* Reduce particle visibility on small screens */
+  }
+  
+  .gpu-blur {
+    filter: none; /* Remove blur on low-end devices */
+  }
+}
+
+/* Battery-saving mode */
+@media (prefers-reduced-motion: reduce), (update: slow) {
+  .optimized-animation {
+    animation-play-state: paused;
+  }
+  
+  .particle-container {
+    opacity: 0.3;
+  }
+}
