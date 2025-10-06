@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef, TouchEvent, useCallback } from "react";
+import { useState, useEffect, useRef, TouchEvent } from "react";
 import Image from "next/image";
-import { motion, AnimatePresence, useMotionValue, useTransform, animate } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import styles from "./ProductImagesMobile.module.css";
 
 type MixBlendMode = 'normal' | 'multiply' | 'screen' | 'overlay' | 'darken' | 'lighten' | 
@@ -15,20 +15,16 @@ export default function ProductImagesMobile({
   name: string 
 }) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [touchStart, setTouchStart] = useState(0);
+  const [touchEnd, setTouchEnd] = useState(0);
+  const [isSwiping, setIsSwiping] = useState(false);
+  const [swipeDistance, setSwipeDistance] = useState(0);
   const [imageLoaded, setImageLoaded] = useState<boolean[]>([]);
-  const [isDragging, setIsDragging] = useState(false);
-  
-  // Motion values for smooth dragging
-  const x = useMotionValue(0);
-  const dragX = useMotionValue(0);
   
   const containerRef = useRef<HTMLDivElement>(null);
+  const sliderRef = useRef<HTMLDivElement>(null);
   const progressRef = useRef<HTMLDivElement>(null);
-  
-  // Touch tracking
-  const touchStartRef = useRef<number>(0);
-  const startTimeRef = useRef<number>(0);
-  const isDraggingRef = useRef<boolean>(false);
+  const containerWidthRef = useRef<number>(0);
 
   // Preload images and initialize loaded state array
   useEffect(() => {
@@ -44,115 +40,178 @@ export default function ProductImagesMobile({
     setImageLoaded(new Array(imageUrls.length).fill(false));
   }, [imageUrls]);
 
-  // Update progress bar based on current index
-  const updateProgressBar = useCallback(() => {
-    if (!progressRef.current || imageUrls.length <= 1) return;
-    
-    const progress = currentIndex / (imageUrls.length - 1);
-    progressRef.current.style.transform = `scaleX(${progress})`;
-  }, [currentIndex, imageUrls.length]);
+  // Update container width on resize
+  useEffect(() => {
+    const handleResize = () => {
+      if (containerRef.current) {
+        containerWidthRef.current = containerRef.current.offsetWidth;
+        
+        // Update slider position when resizing
+        updateSliderPosition(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    // Initial call to set width
+    handleResize();
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [currentIndex]);
 
   // Update slider position when current index changes
   useEffect(() => {
-    const targetX = -currentIndex * 100;
-    animate(x, targetX, {
-      type: "spring",
-      stiffness: 300,
-      damping: 30,
-      duration: 0.4
-    });
+    updateSliderPosition(true);
     updateProgressBar();
-  }, [currentIndex, x, updateProgressBar]);
+  }, [currentIndex]);
 
-  // Handle navigation
-  const handlePrev = useCallback(() => {
-    if (currentIndex > 0 && !isDragging) {
+  const updateSliderPosition = (animate: boolean) => {
+    if (!sliderRef.current) return;
+    
+    if (animate) {
+      sliderRef.current.style.transition = 'transform 0.3s ease';
+    } else {
+      sliderRef.current.style.transition = 'none';
+    }
+    
+    sliderRef.current.style.transform = `translateX(-${currentIndex * 100}%)`;
+    
+    // Reset swipe distance
+    setSwipeDistance(0);
+  };
+
+  // Update the progress bar based on current index
+  const updateProgressBar = () => {
+    if (!progressRef.current || imageUrls.length <= 1) return;
+    
+    const progress = (currentIndex / (imageUrls.length - 1)) * 100;
+    const scaleX = currentIndex / (imageUrls.length - 1);
+    
+    progressRef.current.style.transform = `scaleX(${scaleX})`;
+  };
+
+  const handlePrev = () => {
+    if (currentIndex > 0) {
       setCurrentIndex(currentIndex - 1);
     }
-  }, [currentIndex, isDragging]);
+  };
 
-  const handleNext = useCallback(() => {
-    if (currentIndex < imageUrls.length - 1 && !isDragging) {
+  const handleNext = () => {
+    if (currentIndex < imageUrls.length - 1) {
       setCurrentIndex(currentIndex + 1);
     }
-  }, [currentIndex, imageUrls.length, isDragging]);
+  };
 
-  // Improved touch handling
-  const handleTouchStart = useCallback((e: TouchEvent) => {
+  const handleTouchStart = (e: TouchEvent) => {
     if (!imageUrls || imageUrls.length <= 1) return;
     
-    const touch = e.touches[0];
-    touchStartRef.current = touch.clientX;
-    startTimeRef.current = Date.now();
-    isDraggingRef.current = true;
-    setIsDragging(true);
-    
-    // Reset drag value
-    dragX.set(0);
-  }, [imageUrls, dragX]);
-
-  const handleTouchMove = useCallback((e: TouchEvent) => {
-    if (!isDraggingRef.current || !imageUrls || imageUrls.length <= 1) return;
-    
-    e.preventDefault(); // Prevent scrolling
-    
-    const touch = e.touches[0];
-    const deltaX = touch.clientX - touchStartRef.current;
-    const containerWidth = containerRef.current?.offsetWidth || window.innerWidth;
-    
-    // Apply resistance at edges
-    let adjustedDelta = deltaX;
-    if ((currentIndex === 0 && deltaX > 0) || 
-        (currentIndex === imageUrls.length - 1 && deltaX < 0)) {
-      // Softer resistance - only 50% reduction instead of 66%
-      adjustedDelta = deltaX * 0.5;
+    if (containerRef.current) {
+      containerWidthRef.current = containerRef.current.offsetWidth;
     }
     
-    // Convert to percentage
-    const dragPercentage = (adjustedDelta / containerWidth) * 100;
-    dragX.set(dragPercentage);
+    if (sliderRef.current) {
+      // Remove transition during active swiping for immediate response
+      sliderRef.current.style.transition = 'none';
+    }
     
-    // Update progress bar smoothly during drag
+    setTouchStart(e.targetTouches[0].clientX);
+    setTouchEnd(e.targetTouches[0].clientX);
+    setIsSwiping(true);
+    setSwipeDistance(0);
+  };
+
+  const handleTouchMove = (e: TouchEvent) => {
+    if (!isSwiping || !imageUrls || imageUrls.length <= 1) return;
+    
+    // Prevent default to avoid page scrolling while swiping
+    e.preventDefault();
+    
+    const currentTouch = e.targetTouches[0].clientX;
+    setTouchEnd(currentTouch);
+    
+    // Calculate how far the user has swiped
+    const distance = currentTouch - touchStart;
+    
+    // Apply resistance at the edges
+    let finalDistance = distance;
+    if ((currentIndex === 0 && distance > 0) || 
+        (currentIndex === imageUrls.length - 1 && distance < 0)) {
+      // Apply resistance at edges - finger moves 3x more than image
+      finalDistance = distance / 3;
+    }
+    
+    setSwipeDistance(finalDistance);
+    
+    // Apply real-time dragging effect to the slider
+    if (sliderRef.current) {
+      const offset = -currentIndex * 100;
+      const percentageOffset = containerWidthRef.current ? (finalDistance / containerWidthRef.current) * 100 : 0;
+      sliderRef.current.style.transform = `translateX(calc(${offset}% + ${percentageOffset}%))`;
+    }
+    
+    // Update progress bar during swipe for smooth transition
     if (progressRef.current && imageUrls.length > 1) {
-      const currentProgress = currentIndex / (imageUrls.length - 1);
-      const dragProgress = -adjustedDelta / containerWidth / (imageUrls.length - 1);
-      const newProgress = Math.max(0, Math.min(1, currentProgress + dragProgress));
+      const totalProgress = imageUrls.length - 1;
+      const currentProgress = currentIndex;
+      const swipeProgress = containerWidthRef.current ? -finalDistance / containerWidthRef.current : 0;
+      const newProgress = Math.max(0, Math.min(1, (currentProgress + swipeProgress) / totalProgress));
+      
       progressRef.current.style.transform = `scaleX(${newProgress})`;
     }
-  }, [currentIndex, imageUrls, dragX]);
+  };
 
-  const handleTouchEnd = useCallback(() => {
-    if (!isDraggingRef.current) return;
+  const handleTouchEnd = () => {
+    setIsSwiping(false);
     
-    isDraggingRef.current = false;
-    setIsDragging(false);
+    if (!sliderRef.current || !touchStart || !touchEnd || containerWidthRef.current === 0) {
+      updateSliderPosition(true);
+      updateProgressBar();
+      return;
+    }
     
-    const deltaX = dragX.get();
-    const containerWidth = containerRef.current?.offsetWidth || window.innerWidth;
-    const threshold = (containerWidth * 0.15) / containerWidth * 100; // 15% threshold as percentage
-    const velocity = Math.abs(deltaX) / (Date.now() - startTimeRef.current);
+    // Add transition back for smooth movement
+    sliderRef.current.style.transition = 'transform 0.3s ease';
     
-    // Reset drag
-    dragX.set(0);
+    // Calculate swipe distance and direction
+    const distance = touchStart - touchEnd;
+    const swipeThreshold = containerWidthRef.current * 0.2; // 20% of container width
     
-    // Determine if we should change slides
-    if (Math.abs(deltaX) > threshold || velocity > 0.5) {
-      if (deltaX > 0 && currentIndex > 0) {
-        // Swipe right - go to previous
-        setCurrentIndex(currentIndex - 1);
-      } else if (deltaX < 0 && currentIndex < imageUrls.length - 1) {
-        // Swipe left - go to next
+    if (Math.abs(distance) < swipeThreshold) {
+      // Not swiped far enough, snap back to current slide
+      updateSliderPosition(true);
+    } else {
+      // Determine direction and update index
+      if (distance > 0 && currentIndex < imageUrls.length - 1) {
+        // Swiped left, go to next
         setCurrentIndex(currentIndex + 1);
+      } else if (distance < 0 && currentIndex > 0) {
+        // Swiped right, go to previous
+        setCurrentIndex(currentIndex - 1);
+      } else {
+        // At the edge, snap back
+        updateSliderPosition(true);
       }
     }
     
+    // Reset touch values
+    setTouchStart(0);
+    setTouchEnd(0);
+    setSwipeDistance(0);
+    
     // Update progress bar
     updateProgressBar();
-  }, [currentIndex, imageUrls.length, dragX, updateProgressBar]);
+  };
+
+  const handleTouchCancel = () => {
+    setIsSwiping(false);
+    updateSliderPosition(true);
+    updateProgressBar();
+  };
 
   // Handle manual image navigation with tap
-  const handleImageTap = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    if (!imageUrls || imageUrls.length <= 1 || isDragging) return;
+  const handleImageTap = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!imageUrls || imageUrls.length <= 1) return;
     
     const containerWidth = containerRef.current?.offsetWidth || 0;
     const tapX = e.nativeEvent.offsetX;
@@ -165,15 +224,15 @@ export default function ProductImagesMobile({
     else if (tapX < containerWidth * 0.3 && currentIndex > 0) {
       setCurrentIndex(currentIndex - 1);
     }
-  }, [imageUrls, currentIndex, isDragging]);
+  };
 
-  const handleImageLoad = useCallback((index: number) => {
+  const handleImageLoad = (index: number) => {
     setImageLoaded(prev => {
       const newState = [...prev];
       newState[index] = true;
       return newState;
     });
-  }, []);
+  };
 
   // Determine if the image is a product that needs special handling
   const isProductWithBackground = (url: string) => {
@@ -200,9 +259,6 @@ export default function ProductImagesMobile({
     return 'multiply';
   };
 
-  // Calculate the transform combining base position and drag
-  const combinedX = useTransform([x, dragX], ([baseX, drag]) => `${(baseX as number) + (drag as number)}%`);
-
   if (!imageUrls || imageUrls.length === 0) {
     return (
       <div className={styles.productImagesContainer}>
@@ -214,6 +270,11 @@ export default function ProductImagesMobile({
       </div>
     );
   }
+
+  // Calculate progress percentage for the progress bar
+  const progressPercentage = imageUrls.length > 1 
+    ? (currentIndex / (imageUrls.length - 1)) * 100 
+    : 100;
 
   return (
     <motion.div 
@@ -242,20 +303,21 @@ export default function ProductImagesMobile({
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
+        onTouchCancel={handleTouchCancel}
         onClick={handleImageTap}
       >
         <motion.div 
+          ref={sliderRef}
           className={styles.imageSlider}
-          style={{ 
-            x: combinedX,
-            scale: isDragging ? 0.985 : 1
+          animate={{ 
+            x: currentIndex * -100 + '%',
+            scale: isSwiping ? 0.98 : 1
           }}
           transition={{
-            scale: {
-              type: "spring",
-              stiffness: 400,
-              damping: 30
-            }
+            type: "spring",
+            stiffness: 300,
+            damping: 30,
+            duration: 0.6
           }}
         >
           {imageUrls.map((url, index) => (

@@ -14,7 +14,7 @@
   height: 55vh; /* Reduced from 70vh to 55vh to match Gucci style */
   overflow: hidden;
   background-color: #f0f0f0;
-  touch-action: pan-x pinch-zoom; /* Optimized for horizontal swiping */
+  touch-action: pan-x; /* Allow horizontal panning */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -25,7 +25,6 @@
   -ms-user-select: none;
   user-select: none;
   -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
-  cursor: grab;
 }
 
 /* Image slider that will slide horizontally */
@@ -37,12 +36,12 @@
   position: absolute;
   top: 0;
   left: 0;
+  transition: transform 0.3s ease;
   will-change: transform;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
-  perspective: 1000px;
-  -webkit-perspective: 1000px;
-  transform-style: preserve-3d;
+  perspective: 1000;
+  -webkit-perspective: 1000;
 }
 
 /* Individual slide (one per image) */
@@ -55,8 +54,6 @@
   justify-content: center;
   position: relative;
   overflow: hidden;
-  transform: translate3d(0, 0, 0); /* Hardware acceleration */
-  will-change: transform;
 }
 
 /* Wrapper for image positioning */
@@ -99,7 +96,6 @@
   opacity: 1;
   mix-blend-mode: multiply; /* Help blend with background */
   z-index: 1;
-  pointer-events: none; /* Prevent interference with touch events */
 }
 
 /* Add loaded class for images that have finished loading */
@@ -217,8 +213,7 @@
   background-color: #000;
   transform-origin: left center;
   transform: scaleX(0);
-  transition: transform 0.2s ease;
-  will-change: transform;
+  transition: transform 0.3s ease;
 }
 
 /* Hide the individual dots as we're using a progress bar instead */
