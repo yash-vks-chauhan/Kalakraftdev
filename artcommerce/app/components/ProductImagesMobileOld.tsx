@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, TouchEvent, useCallback } from "react";
 import Image from "next/image";
-import { motion, useMotionValue, useTransform, animate } from "framer-motion";
+import { motion, AnimatePresence, useMotionValue, useTransform, animate } from "framer-motion";
 import styles from "./ProductImagesMobile.module.css";
 
 type MixBlendMode = 'normal' | 'multiply' | 'screen' | 'overlay' | 'darken' | 'lighten' | 
@@ -18,27 +18,28 @@ export default function ProductImagesMobile({
   const [isDragging, setIsDragging] = useState(false);
   const [imageLoaded, setImageLoaded] = useState<boolean[]>([]);
   
-  // Motion values for smooth drag interactions
+  // Motion values for smooth animations
   const x = useMotionValue(0);
   const dragProgress = useTransform(x, [-300, 0, 300], [-1, 0, 1]);
   
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(0);
   
-  // Optimized swipe thresholds for better UX
-  const SWIPE_THRESHOLD = 40;
-  const SWIPE_VELOCITY_THRESHOLD = 400;
+  // Smooth swipe threshold
+  const SWIPE_THRESHOLD = 50;
+  const SWIPE_VELOCITY_THRESHOLD = 500;
 
-  // Initialize image loading states
+  // Preload images and initialize loaded state array
   useEffect(() => {
     if (!imageUrls || imageUrls.length === 0) return;
     
-    // Preload images for smoother experience
+    // Preload all images
     imageUrls.forEach(url => {
       const img = new window.Image();
       img.src = url;
     });
     
+    // Initialize image loaded state array
     setImageLoaded(new Array(imageUrls.length).fill(false));
   }, [imageUrls]);
 
@@ -51,45 +52,38 @@ export default function ProductImagesMobile({
     };
 
     window.addEventListener('resize', handleResize);
-    handleResize(); // Initial call
-    
+    // Initial call to set width
+    handleResize();
+
     return () => {
       window.removeEventListener('resize', handleResize);
     };
   }, []);
 
-  // Reset motion value when index changes
+  // Reset x position when currentIndex changes
   useEffect(() => {
-    animate(x, 0, { 
-      duration: 0.4, 
-      ease: [0.25, 0.46, 0.45, 0.94] 
-    });
+    animate(x, 0, { duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] });
   }, [currentIndex, x]);
 
-  // Navigation functions
+  // Optimized navigation functions
   const handlePrev = useCallback(() => {
-    if (currentIndex > 0 && !isDragging) {
+    if (currentIndex > 0) {
       setCurrentIndex(currentIndex - 1);
     }
-  }, [currentIndex, isDragging]);
+  }, [currentIndex]);
 
   const handleNext = useCallback(() => {
-    if (currentIndex < imageUrls.length - 1 && !isDragging) {
+    if (currentIndex < imageUrls.length - 1) {
       setCurrentIndex(currentIndex + 1);
     }
-  }, [currentIndex, imageUrls.length, isDragging]);
+  }, [currentIndex, imageUrls.length]);
 
-  // Enhanced drag handling
-  const handleDragStart = useCallback(() => {
-    setIsDragging(true);
-  }, []);
-
+  // Handle drag end with smooth snapping
   const handleDragEnd = useCallback((_, info) => {
     const { offset, velocity } = info;
     const swipeDistance = Math.abs(offset.x);
     const swipeVelocity = Math.abs(velocity.x);
 
-    // Improved swipe detection with velocity consideration
     if (swipeDistance > SWIPE_THRESHOLD || swipeVelocity > SWIPE_VELOCITY_THRESHOLD) {
       if (offset.x > 0 && currentIndex > 0) {
         setCurrentIndex(currentIndex - 1);
@@ -98,11 +92,10 @@ export default function ProductImagesMobile({
       }
     }
     
-    // Smooth transition back to position
-    setTimeout(() => setIsDragging(false), 100);
+    setIsDragging(false);
   }, [currentIndex, imageUrls.length]);
 
-  // Image load handler
+  // Handle image load
   const handleImageLoad = useCallback((index: number) => {
     setImageLoaded(prev => {
       const newState = [...prev];
@@ -111,30 +104,45 @@ export default function ProductImagesMobile({
     });
   }, []);
 
-  // Tap navigation for better UX
+  // Handle tap navigation
   const handleImageTap = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (!imageUrls || imageUrls.length <= 1 || isDragging) return;
     
     const containerWidth = containerRef.current?.offsetWidth || 0;
     const tapX = e.nativeEvent.offsetX;
     
-    // Enhanced tap zones
-    if (tapX > containerWidth * 0.75 && currentIndex < imageUrls.length - 1) {
+    // Tap on right third of image - go next
+    if (tapX > containerWidth * 0.7 && currentIndex < imageUrls.length - 1) {
       setCurrentIndex(currentIndex + 1);
-    } else if (tapX < containerWidth * 0.25 && currentIndex > 0) {
+    }
+    // Tap on left third of image - go previous
+    else if (tapX < containerWidth * 0.3 && currentIndex > 0) {
       setCurrentIndex(currentIndex - 1);
     }
   }, [imageUrls, isDragging, currentIndex]);
 
-  // Determine optimal blend mode for images
+  // Determine if the image is a product that needs special handling
+  const isProductWithBackground = (url: string) => {
+    // Check if the image URL contains certain keywords that indicate it's a product
+    return url.toLowerCase().includes('clock') || 
+           url.toLowerCase().includes('tray') || 
+           url.toLowerCase().includes('pot') ||
+           url.toLowerCase().includes('decor') ||
+           url.toLowerCase().includes('rangoli') ||
+           url.toLowerCase().includes('resin');
+  };
+
+  // Get the appropriate blend mode based on image type
   const getBlendMode = (url: string): MixBlendMode => {
     const lowerUrl = url.toLowerCase();
-    if (lowerUrl.includes('clock') || 
+    // For pink/light colored items, isolation works better
+    if (lowerUrl.includes('pink') || 
         lowerUrl.includes('light') || 
         lowerUrl.includes('white') ||
         lowerUrl.includes('tray')) {
       return 'multiply';
     }
+    // For dark items
     return 'multiply';
   };
 
@@ -150,164 +158,138 @@ export default function ProductImagesMobile({
     );
   }
 
+  // Calculate progress percentage for the progress bar
+  const progressPercentage = imageUrls.length > 1 
+    ? (currentIndex / (imageUrls.length - 1)) * 100 
+    : 100;
+
   return (
     <motion.div 
       className={styles.productImagesContainer}
-      initial={{ opacity: 0, scale: 0.98 }}
+      initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{
         type: "spring",
-        stiffness: 300,
+        stiffness: 200,
         damping: 25,
-        duration: 0.6
+        duration: 0.8
       }}
     >
       <motion.div 
         ref={containerRef}
         className={styles.imageContainer}
-        initial={{ y: 20, opacity: 0 }}
+        initial={{ y: 30, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{
           type: "spring",
-          stiffness: 250,
+          stiffness: 180,
           damping: 20,
-          duration: 0.7,
-          delay: 0.1
+          duration: 0.9,
+          delay: 0.2
         }}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onTouchCancel={handleTouchCancel}
         onClick={handleImageTap}
       >
         <motion.div 
+          ref={sliderRef}
           className={styles.imageSlider}
-          drag="x"
-          dragConstraints={{ left: 0, right: 0 }}
-          dragElastic={0.15}
-          dragTransition={{ 
-            bounceStiffness: 600, 
-            bounceDamping: 25,
-            power: 0.2
-          }}
-          onDragStart={handleDragStart}
-          onDragEnd={handleDragEnd}
           animate={{ 
-            x: `${-currentIndex * 100}%`
+            x: currentIndex * -100 + '%',
+            scale: isSwiping ? 0.98 : 1
           }}
-          style={{ x }}
           transition={{
             type: "spring",
-            stiffness: 400,
+            stiffness: 300,
             damping: 30,
-            duration: 0.4,
-            ease: [0.25, 0.46, 0.45, 0.94]
+            duration: 0.6
           }}
         >
           {imageUrls.map((url, index) => (
             <motion.div 
               key={index} 
               className={styles.imageSlide}
-              initial={{ opacity: 0, scale: 0.95 }}
+              initial={{ opacity: 0, scale: 0.9 }}
               animate={{ 
                 opacity: 1, 
                 scale: 1,
-                y: index === currentIndex ? 0 : 3
+                y: index === currentIndex ? 0 : 10
               }}
               transition={{
                 type: "spring",
-                stiffness: 350,
+                stiffness: 200,
                 damping: 25,
-                duration: 0.5
+                duration: 0.6,
+                delay: index * 0.1
               }}
             >
-              <motion.div 
+              <div 
                 className={styles.imageWrapper}
-                whileHover={{ scale: 1.005 }}
-                whileTap={{ scale: 0.995 }}
-                transition={{
-                  type: "spring",
-                  stiffness: 600,
-                  damping: 30
-                }}
+                style={{ backgroundColor: '#f0f0f0' }}
               >
+                <div className={styles.imageBackground}></div>
                 <Image
                   src={url}
                   alt={`${name} - Image ${index + 1}`}
                   fill
-                  style={{ objectFit: 'cover' }}
-                  className={styles.productImage}
+                  sizes="100vw"
                   priority={index === 0}
+                  className={`${styles.mainImage} ${imageLoaded[index] ? styles.loaded : ''}`}
+                  quality={75}
+                  draggable={false}
                   onLoad={() => handleImageLoad(index)}
-                  sizes="(max-width: 768px) 100vw, 50vw"
+                  style={{ 
+                    objectFit: 'contain',
+                    mixBlendMode: getBlendMode(url)
+                  }}
                 />
-                
-                {/* Elegant loading state */}
-                {!imageLoaded[index] && (
-                  <motion.div 
-                    className={styles.imageLoader}
-                    initial={{ opacity: 1 }}
-                    animate={{ opacity: 0 }}
-                    transition={{ delay: 0.6, duration: 0.3 }}
-                  >
-                    <motion.div 
-                      className={styles.loaderSpinner}
-                      animate={{ rotate: 360 }}
-                      transition={{ 
-                        duration: 1, 
-                        repeat: Infinity, 
-                        ease: "linear" 
-                      }}
-                    />
-                  </motion.div>
-                )}
-              </motion.div>
+              </div>
             </motion.div>
           ))}
         </motion.div>
-      </motion.div>
+        
+        {/* Navigation buttons */}
+        {imageUrls.length > 1 && (
+          <>
+            <button
+              onClick={handlePrev}
+              className={`${styles.navigationButton} ${styles.prev}`}
+              aria-label="Previous image"
+              disabled={currentIndex === 0}
+            >
+              ←
+            </button>
+            <button
+              onClick={handleNext}
+              className={`${styles.navigationButton} ${styles.next}`}
+              aria-label="Next image"
+              disabled={currentIndex === imageUrls.length - 1}
+            >
+              →
+            </button>
+          </>
+        )}
 
-      {/* Smooth progress indicator */}
-      {imageUrls.length > 1 && (
-        <motion.div 
-          className={styles.progressContainer}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{
-            delay: 0.3,
-            duration: 0.4,
-            ease: [0.25, 0.46, 0.45, 0.94]
-          }}
-        >
-          <div className={styles.progressBar}>
-            <motion.div 
-              className={styles.progressFill}
-              animate={{ 
-                scaleX: (currentIndex + 1) / imageUrls.length 
-              }}
-              transition={{
-                type: "spring",
-                stiffness: 500,
-                damping: 30,
-                duration: 0.3
-              }}
-            />
+        {/* Current image counter */}
+        {imageUrls.length > 1 && (
+          <div className={styles.imageCounter}>
+            {currentIndex + 1} / {imageUrls.length}
           </div>
-          
-          {/* Animated counter */}
-          <motion.div 
-            className={styles.imageCounter}
-            key={currentIndex}
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{
-              type: "spring",
-              stiffness: 600,
-              damping: 25
-            }}
-          >
-            <span className={styles.currentNumber}>{currentIndex + 1}</span>
-            <span className={styles.separator}>/</span>
-            <span className={styles.totalNumber}>{imageUrls.length}</span>
-          </motion.div>
-        </motion.div>
+        )}
+      </motion.div>
+      
+      {/* Progress bar indicator */}
+      {imageUrls.length > 1 && (
+        <div className={styles.pageIndicator}>
+          <div 
+            ref={progressRef} 
+            className={styles.progressBar}
+            style={{ transform: `scaleX(${currentIndex / (imageUrls.length - 1)})` }}
+          ></div>
+        </div>
       )}
     </motion.div>
   );
-}
+} 

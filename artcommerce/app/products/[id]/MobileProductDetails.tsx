@@ -67,7 +67,7 @@ const sectionVariants = {
   }
 }
 
-// Elegant accordion animation with smooth height transitions
+// Professional accordion animation with smooth height transitions and elegant content reveal
 const accordionVariants = {
   closed: {
     height: 0,
@@ -75,9 +75,9 @@ const accordionVariants = {
     scale: 0.98,
     transition: {
       type: "spring" as const,
-      stiffness: 300,
+      stiffness: 400,
       damping: 30,
-      duration: 0.5,
+      duration: 0.4,
       ease: [0.4, 0, 0.2, 1] as const
     }
   },
@@ -87,9 +87,153 @@ const accordionVariants = {
     scale: 1,
     transition: {
       type: "spring" as const,
-      stiffness: 250,
+      stiffness: 300,
       damping: 25,
       duration: 0.6,
+      ease: [0.25, 0.46, 0.45, 0.94] as const
+    }
+  }
+}
+
+// Elegant content reveal animation for accordion items
+const accordionContentVariants = {
+  closed: {
+    opacity: 0,
+    y: 20,
+    scale: 0.95,
+    transition: {
+      duration: 0.3,
+      ease: [0.4, 0, 0.2, 1] as const
+    }
+  },
+  open: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      duration: 0.5,
+      delay: 0.1,
+      ease: [0.25, 0.46, 0.45, 0.94] as const
+    }
+  }
+}
+
+// Staggered animation for list items in accordion
+const accordionListVariants = {
+  open: {
+    transition: {
+      staggerChildren: 0.05,
+      delayChildren: 0.1
+    }
+  },
+  closed: {
+    transition: {
+      staggerChildren: 0.02,
+      staggerDirection: -1
+    }
+  }
+}
+
+// Individual list item animation
+const accordionItemVariants = {
+  closed: {
+    opacity: 0,
+    x: -10,
+    transition: {
+      duration: 0.2
+    }
+  },
+  open: {
+    opacity: 1,
+    x: 0,
+    transition: {
+      duration: 0.4,
+      ease: [0.25, 0.46, 0.45, 0.94] as const
+    }
+  }
+}
+
+// Icon rotation animation
+const iconVariants = {
+  closed: {
+    rotate: 0,
+    transition: {
+      duration: 0.4,
+      ease: [0.4, 0, 0.2, 1] as const
+    }
+  },
+  open: {
+    rotate: 180,
+    transition: {
+      duration: 0.4,
+      ease: [0.25, 0.46, 0.45, 0.94] as const
+    }
+  }
+}
+
+// Gallery container animation variants
+const galleryVariants = {
+  closed: {
+    opacity: 0,
+    scale: 0.95,
+    transition: {
+      duration: 0.3,
+      ease: [0.4, 0, 0.2, 1] as const
+    }
+  },
+  open: {
+    opacity: 1,
+    scale: 1,
+    transition: {
+      duration: 0.6,
+      delay: 0.1,
+      ease: [0.25, 0.46, 0.45, 0.94] as const,
+      staggerChildren: 0.1,
+      delayChildren: 0.2
+    }
+  }
+}
+
+// Individual gallery item animation
+const galleryItemVariants = {
+  closed: {
+    opacity: 0,
+    y: 30,
+    scale: 0.9,
+    transition: {
+      duration: 0.2
+    }
+  },
+  open: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      type: "spring" as const,
+      stiffness: 300,
+      damping: 25,
+      duration: 0.6
+    }
+  }
+}
+
+// Gallery image animation with elegant entrance
+const galleryImageVariants = {
+  closed: {
+    opacity: 0,
+    scale: 1.1,
+    filter: "blur(10px)",
+    transition: {
+      duration: 0.3
+    }
+  },
+  open: {
+    opacity: 1,
+    scale: 1,
+    filter: "blur(0px)",
+    transition: {
+      duration: 0.8,
+      delay: 0.1,
       ease: [0.25, 0.46, 0.45, 0.94] as const
     }
   }
@@ -823,109 +967,194 @@ export default function MobileProductDetails({
         {/* Collapsible Sections */}
         <div className={styles.accordionSections}>
           {/* Description Section */}
-          <div className={`${styles.accordionSection} ${expandedSections.description ? styles.expanded : ''}`}>
-            <button 
+          <motion.div 
+            className={`${styles.accordionSection} ${expandedSections.description ? styles.expanded : ''}`}
+            initial={false}
+            animate={expandedSections.description ? "open" : "closed"}
+          >
+            <motion.button 
               className={styles.accordionHeader} 
               onClick={() => toggleSection('description')}
               aria-expanded={expandedSections.description}
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
+              transition={{ duration: 0.2 }}
             >
               <span className={styles.accordionTitle}>Description</span>
-              <span className={styles.accordionIcon} style={{ transform: expandedSections.description ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+              <motion.span 
+                className={styles.accordionIcon}
+                variants={iconVariants}
+                animate={expandedSections.description ? "open" : "closed"}
+              >
                 <svg width="14" height="8" viewBox="0 0 14 8" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M1 1L7 7L13 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
-              </span>
-            </button>
+              </motion.span>
+            </motion.button>
             
-            <div className={`${styles.accordionContent} ${expandedSections.description ? styles.expanded : ''}`}>
-              <p className={styles.description} style={{ 
-                transform: expandedSections.description ? 'translateY(0)' : 'translateY(20px)',
-                opacity: expandedSections.description ? '1' : '0',
-                transition: 'all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-                transitionDelay: expandedSections.description ? '0.2s' : '0s'
-              }}>
+            <motion.div 
+              className={`${styles.accordionContent} ${expandedSections.description ? styles.expanded : ''}`}
+              variants={accordionVariants}
+              initial="closed"
+              animate={expandedSections.description ? "open" : "closed"}
+              style={{ overflow: "hidden" }}
+            >
+              <motion.p 
+                className={styles.description}
+                variants={accordionContentVariants}
+                initial="closed"
+                animate={expandedSections.description ? "open" : "closed"}
+              >
                 {product.description}
-              </p>
-            </div>
-          </div>
-          
-          {/* Specifications Section */}
+              </motion.p>
+            </motion.div>
+          </motion.div>          {/* Specifications Section */}
           {product.specifications && (
-            <div className={`${styles.accordionSection} ${expandedSections.specifications ? styles.expanded : ''}`}>
-              <button 
+            <motion.div 
+              className={`${styles.accordionSection} ${expandedSections.specifications ? styles.expanded : ''}`}
+              initial={false}
+              animate={expandedSections.specifications ? "open" : "closed"}
+            >
+              <motion.button 
                 className={styles.accordionHeader} 
                 onClick={() => toggleSection('specifications')}
                 aria-expanded={expandedSections.specifications}
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
+                transition={{ duration: 0.2 }}
               >
                 <span className={styles.accordionTitle}>Specifications</span>
-                <span className={styles.accordionIcon} style={{ transform: expandedSections.specifications ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+                <motion.span 
+                  className={styles.accordionIcon}
+                  variants={iconVariants}
+                  animate={expandedSections.specifications ? "open" : "closed"}
+                >
                   <svg width="14" height="8" viewBox="0 0 14 8" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M1 1L7 7L13 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
-                </span>
-              </button>
+                </motion.span>
+              </motion.button>
               
-              <div className={`${styles.accordionContent} ${expandedSections.specifications ? styles.expanded : ''}`}>
-                <div className={styles.specificationsList} style={{ 
-                  transform: expandedSections.specifications ? 'translateY(0)' : 'translateY(10px)',
-                  transition: 'transform 0.6s cubic-bezier(0.25, 0.1, 0.25, 1)',
-                  transitionDelay: expandedSections.specifications ? '0.1s' : '0s'
-                }}>
-                  {formatSpecifications(product.specifications)}
-                </div>
-              </div>
-            </div>
+              <motion.div 
+                className={`${styles.accordionContent} ${expandedSections.specifications ? styles.expanded : ''}`}
+                variants={accordionVariants}
+                initial="closed"
+                animate={expandedSections.specifications ? "open" : "closed"}
+                style={{ overflow: "hidden" }}
+              >
+                <motion.div 
+                  className={styles.specificationsList}
+                  variants={accordionListVariants}
+                  initial="closed"
+                  animate={expandedSections.specifications ? "open" : "closed"}
+                >
+                  {formatSpecifications(product.specifications).map((spec, index) => (
+                    <motion.div
+                      key={index}
+                      variants={accordionItemVariants}
+                    >
+                      {spec}
+                    </motion.div>
+                  ))}
+                </motion.div>
+              </motion.div>
+            </motion.div>
           )}
           
           {/* Care Instructions Section */}
           {product.careInstructions && (
-            <div className={`${styles.accordionSection} ${expandedSections.care ? styles.expanded : ''}`}>
-              <button 
+            <motion.div 
+              className={`${styles.accordionSection} ${expandedSections.care ? styles.expanded : ''}`}
+              initial={false}
+              animate={expandedSections.care ? "open" : "closed"}
+            >
+              <motion.button 
                 className={styles.accordionHeader} 
                 onClick={() => toggleSection('care')}
                 aria-expanded={expandedSections.care}
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
+                transition={{ duration: 0.2 }}
               >
                 <span className={styles.accordionTitle}>Care Instructions</span>
-                <span className={styles.accordionIcon} style={{ transform: expandedSections.care ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+                <motion.span 
+                  className={styles.accordionIcon}
+                  variants={iconVariants}
+                  animate={expandedSections.care ? "open" : "closed"}
+                >
                   <svg width="14" height="8" viewBox="0 0 14 8" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M1 1L7 7L13 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
-                </span>
-              </button>
+                </motion.span>
+              </motion.button>
               
-              <div className={`${styles.accordionContent} ${expandedSections.care ? styles.expanded : ''}`}>
-                <div className={styles.careInstructionsList} style={{ 
-                  transform: expandedSections.care ? 'translateY(0)' : 'translateY(10px)',
-                  transition: 'transform 0.6s cubic-bezier(0.25, 0.1, 0.25, 1)',
-                  transitionDelay: expandedSections.care ? '0.1s' : '0s'
-                }}>
-                  {formatCareInstructions(product.careInstructions)}
-                </div>
-              </div>
-            </div>
+              <motion.div 
+                className={`${styles.accordionContent} ${expandedSections.care ? styles.expanded : ''}`}
+                variants={accordionVariants}
+                initial="closed"
+                animate={expandedSections.care ? "open" : "closed"}
+                style={{ overflow: "hidden" }}
+              >
+                <motion.div 
+                  className={styles.careInstructionsList}
+                  variants={accordionListVariants}
+                  initial="closed"
+                  animate={expandedSections.care ? "open" : "closed"}
+                >
+                  {formatCareInstructions(product.careInstructions).map((instruction, index) => (
+                    <motion.div
+                      key={index}
+                      variants={accordionItemVariants}
+                    >
+                      {instruction}
+                    </motion.div>
+                  ))}
+                </motion.div>
+              </motion.div>
+            </motion.div>
           )}
 
           {/* Styling Inspiration Section */}
+          {/* Styling Inspiration Gallery Section */}
           {product.stylingIdeaImages && product.stylingIdeaImages.length > 0 && (
-            <div className={`${styles.accordionSection} ${expandedSections.styling ? styles.expanded : ''}`}>
-              <button
+            <motion.div 
+              className={`${styles.accordionSection} ${expandedSections.styling ? styles.expanded : ''}`}
+              initial={false}
+              animate={expandedSections.styling ? "open" : "closed"}
+            >
+              <motion.button
                 className={styles.accordionHeader}
                 onClick={() => toggleSection('styling')}
                 aria-expanded={expandedSections.styling}
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
+                transition={{ duration: 0.2 }}
               >
                 <span className={styles.accordionTitle}>Styling Inspiration Gallery</span>
-                <span className={styles.accordionIcon} style={{ transform: expandedSections.styling ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+                <motion.span 
+                  className={styles.accordionIcon}
+                  variants={iconVariants}
+                  animate={expandedSections.styling ? "open" : "closed"}
+                >
                   <svg width="14" height="8" viewBox="0 0 14 8" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M1 1L7 7L13 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
-                </span>
-              </button>
-              <div
+                </motion.span>
+              </motion.button>
+              <motion.div
                 className={`${styles.accordionContent} ${expandedSections.styling ? styles.expanded : ''}`}
-                style={{ padding: expandedSections.styling ? '0' : undefined }}
+                variants={accordionVariants}
+                initial="closed"
+                animate={expandedSections.styling ? "open" : "closed"}
+                style={{ overflow: "hidden", padding: expandedSections.styling ? '0' : undefined }}
               >
                 <div className={styles.fullWidthSection}>
-                  <div className={styles.stylingGallery}>
+                  <motion.div 
+                    className={styles.stylingGallery}
+                    variants={galleryVariants}
+                    initial="closed"
+                    animate={expandedSections.styling ? "open" : "closed"}
+                  >
                       {product.stylingIdeaImages.map((idea, index) => {
                         const image = typeof idea === 'string' ? { url: idea } : idea;
                         const defaultCaptions = [
@@ -935,27 +1164,61 @@ export default function MobileProductDetails({
                         ];
 
                         return (
-                          <div key={index} className={styles.galleryItem}>
-                            <div className={styles.galleryImageWrap}>
-                              <img src={image.url} alt={`Styling idea ${index + 1}`} className={styles.galleryImage} loading="lazy" />
-                              <div className={styles.galleryOverlay}>
-                                <span className={styles.galleryLabel}>
+                          <motion.div 
+                            key={index} 
+                            className={styles.galleryItem}
+                            variants={galleryItemVariants}
+                          >
+                            <motion.div 
+                              className={styles.galleryImageWrap}
+                              whileHover={{ scale: 1.05 }}
+                              transition={{ duration: 0.3 }}
+                            >
+                              <motion.img 
+                                src={image.url} 
+                                alt={`Styling idea ${index + 1}`} 
+                                className={styles.galleryImage} 
+                                loading="lazy"
+                                variants={galleryImageVariants}
+                              />
+                              <motion.div 
+                                className={styles.galleryOverlay}
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                transition={{ delay: 0.3 + (index * 0.1) }}
+                              >
+                                <motion.span 
+                                  className={styles.galleryLabel}
+                                  initial={{ y: 10, opacity: 0 }}
+                                  animate={{ y: 0, opacity: 1 }}
+                                  transition={{ delay: 0.5 + (index * 0.1) }}
+                                >
                                   Featured Styling
-                                </span>
-                              </div>
-                            </div>
-                            <div className={styles.galleryText}>
-                              <p className={styles.galleryCaption}>
+                                </motion.span>
+                              </motion.div>
+                            </motion.div>
+                            <motion.div 
+                              className={styles.galleryText}
+                              initial={{ opacity: 0, y: 20 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: 0.4 + (index * 0.1) }}
+                            >
+                              <motion.p 
+                                className={styles.galleryCaption}
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                transition={{ delay: 0.6 + (index * 0.1) }}
+                              >
                                 {image.text || defaultCaptions[index % defaultCaptions.length]}
-                              </p>
-                            </div>
-                          </div>
+                              </motion.p>
+                            </motion.div>
+                          </motion.div>
                         );
                       })}
-                  </div>
+                  </motion.div>
                 </div>
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
           )}
         </div>
       </motion.div>
