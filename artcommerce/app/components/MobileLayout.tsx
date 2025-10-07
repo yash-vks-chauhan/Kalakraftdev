@@ -797,8 +797,8 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
             </button>
           )}
           
-          {/* Search Icon - Hidden on create product page and homepage */}
-          {!isCreateProductPage && !isHomePage && (
+          {/* Search Icon - Hidden only on create product page */}
+          {!isCreateProductPage && (
             <button 
               onClick={toggleSearch}
               className={styles.headerIconButton}
@@ -808,8 +808,8 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
             </button>
           )}
           
-          {/* Cart Icon - Hidden on create product page and homepage */}
-          {!isCreateProductPage && !isHomePage && (
+          {/* Cart Icon - Hidden only on create product page */}
+          {!isCreateProductPage && (
             <button 
               onClick={handleCartClick}
               className={styles.headerIconButton}

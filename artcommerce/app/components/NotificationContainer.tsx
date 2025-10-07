@@ -37,7 +37,7 @@ export default function NotificationContainer() {
             width="100%"
             height="auto"
             borderRadius={50}
-            blur={11}
+            blur={24}
             backgroundOpacity={0.1}
             saturation={1}
             borderWidth={0.07}
@@ -127,7 +127,7 @@ export default function NotificationContainer() {
               width={32}
               height={32}
               borderRadius={50}
-              blur={11}
+              blur={24}
               backgroundOpacity={0.1}
               saturation={1}
               borderWidth={0.07}
