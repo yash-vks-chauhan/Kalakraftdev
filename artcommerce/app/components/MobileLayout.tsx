@@ -7,7 +7,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '../contexts/AuthContext'
 import { useCart } from '../contexts/CartContext'
 import { useWishlist } from '../contexts/WishlistContext'
-import { Search, Home, ShoppingBag, User, Menu, X, Heart, ShoppingCart, Monitor, ChevronDown, Grid, HelpCircle, LogOut, ArrowLeft, Share, Save } from 'lucide-react'
+import { Search, Home, ShoppingBag, User, Menu, X, Heart, ShoppingCart, Monitor, ChevronDown, Grid, HelpCircle, LogOut, ArrowLeft, Share, Save, Instagram, Twitter, Facebook } from 'lucide-react'
 import { useMobileMenu } from '../contexts/MobileMenuContext'
 import { getImageUrl } from '../../lib/cloudinaryImages'
 import styles from './MobileLayout.module.css'
@@ -57,9 +57,9 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
   ]
 
   const socialItems = [
-    { label: 'Instagram', link: 'https://instagram.com/artcommerce' },
-    { label: 'Twitter', link: 'https://twitter.com/artcommerce' },
-    { label: 'Facebook', link: 'https://facebook.com/artcommerce' },
+    { label: 'Instagram', link: 'https://instagram.com/artcommerce', icon: <Instagram size={18} /> },
+    { label: 'Twitter', link: 'https://twitter.com/artcommerce', icon: <Twitter size={18} /> },
+    { label: 'Facebook', link: 'https://facebook.com/artcommerce', icon: <Facebook size={18} /> },
   ]
 
   const productCategories = [
@@ -797,8 +797,8 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
             </button>
           )}
           
-          {/* Search Icon - Hidden on create product page */}
-          {!isCreateProductPage && (
+          {/* Search Icon - Hidden on create product page and homepage */}
+          {!isCreateProductPage && !isHomePage && (
             <button 
               onClick={toggleSearch}
               className={styles.headerIconButton}
@@ -808,8 +808,8 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
             </button>
           )}
           
-          {/* Cart Icon - Hidden on create product page */}
-          {!isCreateProductPage && (
+          {/* Cart Icon - Hidden on create product page and homepage */}
+          {!isCreateProductPage && !isHomePage && (
             <button 
               onClick={handleCartClick}
               className={styles.headerIconButton}
@@ -958,7 +958,7 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
           items={menuItems}
           socialItems={socialItems}
           displaySocials={true}
-          displayItemNumbering={true}
+          displayItemNumbering={false}
           menuButtonColor="#000"
           openMenuButtonColor="#000"
           accentColor="#000"

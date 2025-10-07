@@ -61,7 +61,7 @@
   .sm-toggle {
     position: fixed;
     top: 20px; /* Align with mobile header center */
-    right: 110px; /* Position to the right of search and cart buttons */
+    right: 15px; /* Position at the far right where cart button is */
     z-index: 2002;
     background: transparent;
     backdrop-filter: none;
@@ -278,7 +278,9 @@
   text-decoration: none;
   position: relative;
   padding: 2px 0;
-  display: inline-block;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   transition:
     color 0.3s ease,
     opacity 0.3s ease;
@@ -395,4 +397,20 @@
   .staggered-menu-wrapper[data-open] .sm-logo-img {
     filter: invert(100%);
   }
+}
+
+/* Social icon styles */
+.sm-socials-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+}
+
+.sm-socials-link:hover .sm-socials-icon {
+  transform: scale(1.1);
+}
+
+.sm-socials-label {
+  flex: 1;
 }

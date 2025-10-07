@@ -2,7 +2,7 @@
 
 import { useNotificationContext } from '../contexts/NotificationContext'
 import { X } from 'lucide-react'
-import GlassSurface from './GlassSurface'
+import GlassSurface from '../../components/GlassSurface'
 
 export default function NotificationContainer() {
   const { notifications, removeNotification } = useNotificationContext()
@@ -36,9 +36,18 @@ export default function NotificationContainer() {
           <GlassSurface
             width="100%"
             height="auto"
-            borderRadius={16}
-            backgroundOpacity={0.15}
-            saturation={1.2}
+            borderRadius={50}
+            blur={11}
+            backgroundOpacity={0.1}
+            saturation={1}
+            borderWidth={0.07}
+            brightness={50}
+            opacity={0.93}
+            displace={0.5}
+            distortionScale={-180}
+            redOffset={0}
+            greenOffset={10}
+            blueOffset={20}
             className="
               p-4 sm:p-5 md:p-6
               before:absolute
@@ -118,8 +127,17 @@ export default function NotificationContainer() {
               width={32}
               height={32}
               borderRadius={50}
-              backgroundOpacity={0.8}
-              saturation={1.1}
+              blur={11}
+              backgroundOpacity={0.1}
+              saturation={1}
+              borderWidth={0.07}
+              brightness={50}
+              opacity={0.93}
+              displace={0.5}
+              distortionScale={-180}
+              redOffset={0}
+              greenOffset={10}
+              blueOffset={20}
               className="absolute top-3 right-3"
             >
               <button
