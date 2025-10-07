@@ -19,6 +19,7 @@ import WishlistButton from './components/WishlistButton'
 import BestSellersSection from './components/BestSellersSection'
 import PearlButton from './components/PearlButton'
 import FlippingText from './components/FlippingText'
+import SplashCursor from './components/SplashCursor'
 
 // Add this to detect mobile view
 const isMobileView = () => {
@@ -1301,6 +1302,7 @@ const FeaturedCategoriesSection = () => {
 export default function Home() {
 const [message, setMessage] = useState<string|null>(null)
 const [featuredProducts, setFeaturedProducts] = useState([]);
+const [isHoveringVideo, setIsHoveringVideo] = useState(false);
 
 // Words for the flipping text animation
 const flippingWords = ['home decor', 'resin art', 'clocks', 'trays', 'wall art', 'custom pieces']
@@ -1724,7 +1726,29 @@ return (
 
 <main data-page="home" style={{background: '#f8f8f8'}}>
 
-<section className={`relative overflow-hidden ${styles.desktopOnly}`}>
+{/* SplashCursor - only on desktop and when hovering video */}
+{isHoveringVideo && (
+  <div className={styles.desktopOnly}>
+    <SplashCursor 
+      SIM_RESOLUTION={128}
+      DYE_RESOLUTION={1024}
+      DENSITY_DISSIPATION={1.5}
+      VELOCITY_DISSIPATION={0.8}
+      PRESSURE={0.8}
+      SPLAT_RADIUS={0.25}
+      SPLAT_FORCE={6000}
+      SHADING={true}
+      COLOR_UPDATE_SPEED={10}
+      TRANSPARENT={true}
+    />
+  </div>
+)}
+
+<section 
+  className={`relative overflow-hidden ${styles.desktopOnly}`}
+  onMouseEnter={() => setIsHoveringVideo(true)}
+  onMouseLeave={() => setIsHoveringVideo(false)}
+>
 
 <div className={styles.videoContainer}>
   {/* Video with fallback image */}

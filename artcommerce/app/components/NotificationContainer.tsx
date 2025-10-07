@@ -2,6 +2,7 @@
 
 import { useNotificationContext } from '../contexts/NotificationContext'
 import { X } from 'lucide-react'
+import GlassSurface from './GlassSurface'
 
 export default function NotificationContainer() {
   const { notifications, removeNotification } = useNotificationContext()
@@ -30,27 +31,30 @@ export default function NotificationContainer() {
             animation: 'slideIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards'
           }}
         >
-          {/* Glassmorphism notification card */}
-          <div className="
-            bg-white/10 
-            backdrop-filter backdrop-blur-[8px] backdrop-saturate-[180%]
-            -webkit-backdrop-filter -webkit-backdrop-blur-[8px] -webkit-backdrop-saturate-[180%]
-            border border-white/25
-            rounded-2xl
-            shadow-[0_8px_32px_rgba(0,0,0,0.12),0_4px_16px_rgba(0,0,0,0.08),inset_0_0_60px_rgba(255,255,255,0.2),inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-1px_0_rgba(0,0,0,0.1)]
-            p-3 sm:p-4
-            before:absolute
-            before:bottom-0
-            before:left-0
-            before:h-1
-            before:bg-gradient-to-r
-            before:from-black/60
-            before:to-black/40
-            before:rounded-b-2xl
-            before:animate-progressBar
-            relative
-            overflow-hidden
-          ">
+          {/* Glass Surface notification card */}
+          <GlassSurface
+            blur={8}
+            opacity={0.93}
+            backgroundOpacity={0.1}
+            borderWidth={0.25}
+            className="
+              p-3 sm:p-4
+              before:absolute
+              before:bottom-0
+              before:left-0
+              before:h-1
+              before:bg-gradient-to-r
+              before:from-black/60
+              before:to-black/40
+              before:rounded-b-2xl
+              before:animate-progressBar
+              relative
+              overflow-hidden
+            "
+            style={{
+              boxShadow: '0 8px 32px rgba(0,0,0,0.12), 0 4px 16px rgba(0,0,0,0.08)'
+            }}
+          >
             {/* Particle effects container for puff animation */}
             <div className="absolute inset-0 pointer-events-none opacity-0 transition-opacity duration-300" data-particles>
               {/* Sparkle particles */}
@@ -103,24 +107,30 @@ export default function NotificationContainer() {
             </div>
 
             {/* Close button */}
-            <button
-              onClick={() => removeNotification(note.id)}
-              className="
-                absolute top-3 right-3
-                text-black/70 hover:text-black/90
-                transition-all duration-200 ease-out
-                rounded-full p-1.5
-                hover:bg-white/90
-                bg-white/75
-                backdrop-filter backdrop-blur-[80px] backdrop-saturate-[180%]
-                -webkit-backdrop-filter -webkit-backdrop-blur-[80px] -webkit-backdrop-saturate-[180%]
-                w-7 h-7 flex items-center justify-center
-              "
-              aria-label="Close notification"
+            <GlassSurface
+              width={28}
+              height={28}
+              borderRadius={50}
+              blur={80}
+              opacity={0.95}
+              backgroundOpacity={0.75}
+              className="absolute top-3 right-3"
             >
-              <X size={14} className="sm:w-4 sm:h-4" />
-            </button>
-          </div>
+              <button
+                onClick={() => removeNotification(note.id)}
+                className="
+                  w-full h-full
+                  text-black/70 hover:text-black/90
+                  transition-all duration-200 ease-out
+                  rounded-full
+                  flex items-center justify-center
+                "
+                aria-label="Close notification"
+              >
+                <X size={14} className="sm:w-4 sm:h-4" />
+              </button>
+            </GlassSurface>
+          </GlassSurface>
         </div>
       ))}
     </div>

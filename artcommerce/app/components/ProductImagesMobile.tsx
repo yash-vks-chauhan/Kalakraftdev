@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, TouchEvent } from "react";
 import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
 import styles from "./ProductImagesMobile.module.css";
 
 type MixBlendMode = 'normal' | 'multiply' | 'screen' | 'overlay' | 'darken' | 'lighten' | 
@@ -277,67 +276,22 @@ export default function ProductImagesMobile({
     : 100;
 
   return (
-    <motion.div 
-      className={styles.productImagesContainer}
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{
-        type: "spring",
-        stiffness: 200,
-        damping: 25,
-        duration: 0.8
-      }}
-    >
-      <motion.div 
+    <div className={styles.productImagesContainer}>
+      <div 
         ref={containerRef}
         className={styles.imageContainer}
-        initial={{ y: 30, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{
-          type: "spring",
-          stiffness: 180,
-          damping: 20,
-          duration: 0.9,
-          delay: 0.2
-        }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
         onTouchCancel={handleTouchCancel}
         onClick={handleImageTap}
       >
-        <motion.div 
+        <div 
           ref={sliderRef}
           className={styles.imageSlider}
-          animate={{ 
-            x: currentIndex * -100 + '%',
-            scale: isSwiping ? 0.98 : 1
-          }}
-          transition={{
-            type: "spring",
-            stiffness: 300,
-            damping: 30,
-            duration: 0.6
-          }}
         >
           {imageUrls.map((url, index) => (
-            <motion.div 
-              key={index} 
-              className={styles.imageSlide}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ 
-                opacity: 1, 
-                scale: 1,
-                y: index === currentIndex ? 0 : 10
-              }}
-              transition={{
-                type: "spring",
-                stiffness: 200,
-                damping: 25,
-                duration: 0.6,
-                delay: index * 0.1
-              }}
-            >
+            <div key={index} className={styles.imageSlide}>
               <div 
                 className={styles.imageWrapper}
                 style={{ backgroundColor: '#f0f0f0' }}
@@ -359,9 +313,9 @@ export default function ProductImagesMobile({
                   }}
                 />
               </div>
-            </motion.div>
+            </div>
           ))}
-        </motion.div>
+        </div>
         
         {/* Navigation buttons */}
         {imageUrls.length > 1 && (
@@ -391,7 +345,7 @@ export default function ProductImagesMobile({
             {currentIndex + 1} / {imageUrls.length}
           </div>
         )}
-      </motion.div>
+      </div>
       
       {/* Progress bar indicator */}
       {imageUrls.length > 1 && (
@@ -403,6 +357,6 @@ export default function ProductImagesMobile({
           ></div>
         </div>
       )}
-    </motion.div>
+    </div>
   );
 } 

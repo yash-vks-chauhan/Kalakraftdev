@@ -14,6 +14,7 @@ import styles from './MobileLayout.module.css'
 import MobileMenuPanel from './MobileMenuPanel'
 import MobileSearchModal from './MobileSearchModal'
 import PearlButton from './PearlButton'
+import StaggeredMenu from './StaggeredMenu'
 
 interface MobileLayoutProps {
   children: React.ReactNode
@@ -44,6 +45,22 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
   const [isRouteLoading, setIsRouteLoading] = useState(false)
 
   const [viewMode, setViewMode] = useState<'mobile' | 'desktop'>('mobile')
+
+  // StaggeredMenu configuration
+  const menuItems = [
+    { label: 'Home', ariaLabel: 'Go to home page', link: '/' },
+    { label: 'Products', ariaLabel: 'Browse all products', link: '/products' },
+    { label: 'Account', ariaLabel: 'Manage your account', link: user ? '/dashboard/profile' : '/auth/login' },
+    { label: 'Cart', ariaLabel: 'View your cart', link: '/dashboard/cart' },
+    { label: 'Wishlist', ariaLabel: 'View your wishlist', link: '/dashboard/wishlist' },
+    { label: 'Support', ariaLabel: 'Get support', link: '/support' },
+  ]
+
+  const socialItems = [
+    { label: 'Instagram', link: 'https://instagram.com/artcommerce' },
+    { label: 'Twitter', link: 'https://twitter.com/artcommerce' },
+    { label: 'Facebook', link: 'https://facebook.com/artcommerce' },
+  ]
 
   const productCategories = [
     {
@@ -805,17 +822,6 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
             </button>
           )}
         </div>
-        
-        {/* Burger menu - Hidden on create product page */}
-        {!isCreateProductPage && (
-          <button 
-            onClick={toggleMobileMenu}
-            className={styles.menuButton}
-            aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
-          >
-            <Menu size={24} strokeWidth={2.5} />
-          </button>
-        )}
       </header>
       
       {/* Main Content Area */}
@@ -944,20 +950,25 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
         </div>
       </nav>
       
-      {/* Mobile side menu panel */}
-      <MobileMenuPanel 
-        isOpen={isMobileMenuOpen}
-        onClose={() => setIsMobileMenuOpen(false)}
-        toggleViewMode={toggleViewMode}
-        viewMode={viewMode}
-      />
-      
-      {/* Overlay for when side menu is open */}
-      {isMobileMenuOpen && (
-        <div 
-          className={styles.menuOverlay} 
-          onClick={() => setIsMobileMenuOpen(false)} 
-          aria-hidden="true"
+      {/* StaggeredMenu - Only show on homepage for mobile */}
+      {!isCreateProductPage && (
+        <StaggeredMenu
+          position="right"
+          colors={['rgba(255, 255, 255, 0.8)', 'rgba(0, 0, 0, 0.1)']}
+          items={menuItems}
+          socialItems={socialItems}
+          displaySocials={true}
+          displayItemNumbering={true}
+          logoUrl={getImageUrl('logo.png')}
+          menuButtonColor="#000"
+          openMenuButtonColor="#000"
+          accentColor="#000"
+          changeMenuColorOnOpen={false}
+          isFixed={true}
+          isOpen={isMobileMenuOpen}
+          onToggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          onMenuOpen={() => setIsMobileMenuOpen(true)}
+          onMenuClose={() => setIsMobileMenuOpen(false)}
         />
       )}
       
