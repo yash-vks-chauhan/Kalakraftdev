@@ -37,17 +37,17 @@ export default function NotificationContainer() {
             width="100%"
             height="auto"
             borderRadius={50}
-            blur={40}
-            backgroundOpacity={0.15}
-            saturation={1.5}
-            borderWidth={0.15}
-            brightness={70}
-            opacity={0.98}
-            displace={4.7}
-            distortionScale={-280}
-            redOffset={15}
-            greenOffset={30}
-            blueOffset={45}
+            blur={25}
+            backgroundOpacity={0.35}
+            saturation={2}
+            borderWidth={0.2}
+            brightness={85}
+            opacity={1}
+            displace={2}
+            distortionScale={-150}
+            redOffset={25}
+            greenOffset={50}
+            blueOffset={75}
             className="
               p-4 sm:p-5 md:p-6
               before:absolute
@@ -127,17 +127,17 @@ export default function NotificationContainer() {
               width={32}
               height={32}
               borderRadius={50}
-              blur={40}
-              backgroundOpacity={0.15}
-              saturation={1.5}
-              borderWidth={0.15}
-              brightness={70}
-              opacity={0.98}
-              displace={4.7}
-              distortionScale={-280}
-              redOffset={15}
-              greenOffset={30}
-              blueOffset={45}
+              blur={25}
+              backgroundOpacity={0.35}
+              saturation={2}
+              borderWidth={0.2}
+              brightness={85}
+              opacity={1}
+              displace={2}
+              distortionScale={-150}
+              redOffset={25}
+              greenOffset={50}
+              blueOffset={75}
               className="absolute top-3 right-3"
             >
               <button
