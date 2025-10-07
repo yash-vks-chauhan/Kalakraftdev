@@ -950,8 +950,8 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
         </div>
       </nav>
       
-      {/* StaggeredMenu - Only show on homepage for mobile */}
-      {!isCreateProductPage && (
+      {/* StaggeredMenu - Hidden on create product and product detail pages */}
+      {!isCreateProductPage && !isProductPage && (
         <StaggeredMenu
           position="right"
           colors={['rgba(255, 255, 255, 0.8)', 'rgba(0, 0, 0, 0.1)']}
