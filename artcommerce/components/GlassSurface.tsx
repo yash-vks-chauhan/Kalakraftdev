@@ -71,9 +71,9 @@ const GlassSurface: React.FC<GlassSurfaceProps> = ({
 
   const containerRef = useRef<HTMLDivElement>(null);
   const feImageRef = useRef<SVGFEImageElement>(null);
-  const redChannelRef = useRef<SVGFEDisplacementMapElement>(null);
-  const greenChannelRef = useRef<SVGFEDisplacementMapElement>(null);
-  const blueChannelRef = useRef<SVGFEDisplacementMapElement>(null);
+  const redOffsetRef = useRef<SVGFEOffsetElement>(null);
+  const greenOffsetRef = useRef<SVGFEOffsetElement>(null);
+  const blueOffsetRef = useRef<SVGFEOffsetElement>(null);
   const gaussianBlurRef = useRef<SVGFEGaussianBlurElement>(null);
 
   const generateDisplacementMap = () => {
@@ -106,22 +106,28 @@ const GlassSurface: React.FC<GlassSurfaceProps> = ({
 
   const updateDisplacementMap = () => {
     feImageRef.current?.setAttribute('href', generateDisplacementMap());
+    
+    // Update chromatic aberration offsets using refs
+    if (redOffsetRef.current) {
+      redOffsetRef.current.setAttribute('dx', (-redOffset / 10).toString());
+      redOffsetRef.current.setAttribute('dy', '0');
+    }
+    
+    if (greenOffsetRef.current) {
+      greenOffsetRef.current.setAttribute('dx', '0');
+      greenOffsetRef.current.setAttribute('dy', '0');
+    }
+    
+    if (blueOffsetRef.current) {
+      blueOffsetRef.current.setAttribute('dx', (blueOffset / 10).toString());
+      blueOffsetRef.current.setAttribute('dy', '0');
+    }
   };
 
   useEffect(() => {
     updateDisplacementMap();
-    [
-      { ref: redChannelRef, offset: redOffset },
-      { ref: greenChannelRef, offset: greenOffset },
-      { ref: blueChannelRef, offset: blueOffset }
-    ].forEach(({ ref, offset }) => {
-      if (ref.current) {
-        ref.current.setAttribute('scale', (distortionScale + offset).toString());
-        ref.current.setAttribute('xChannelSelector', xChannel);
-        ref.current.setAttribute('yChannelSelector', yChannel);
-      }
-    });
-
+    
+    // Apply displacement blur effect
     gaussianBlurRef.current?.setAttribute('stdDeviation', displace.toString());
   }, [
     width,
@@ -174,16 +180,20 @@ const GlassSurface: React.FC<GlassSurfaceProps> = ({
   }, [width, height]);
 
   const supportsSVGFilters = () => {
-    const isWebkit = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
-    const isFirefox = /Firefox/.test(navigator.userAgent);
-
-    if (isWebkit || isFirefox) {
-      return false;
-    }
-
-    const div = document.createElement('div');
-    div.style.backdropFilter = `url(#${filterId})`;
-    return div.style.backdropFilter !== '';
+    // Force enable SVG filters for all browsers to show chromatic aberration
+    return true;
+    
+    // Original detection logic commented out
+    // const isWebkit = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
+    // const isFirefox = /Firefox/.test(navigator.userAgent);
+    // 
+    // if (isWebkit || isFirefox) {
+    //   return false;
+    // }
+    // 
+    // const div = document.createElement('div');
+    // div.style.backdropFilter = `url(#${filterId})`;
+    // return div.style.backdropFilter !== '';
   };
 
   const containerStyle: React.CSSProperties = {
@@ -207,9 +217,10 @@ const GlassSurface: React.FC<GlassSurfaceProps> = ({
           <filter id={filterId} colorInterpolationFilters="sRGB" x="0%" y="0%" width="100%" height="100%">
             <feImage ref={feImageRef} x="0" y="0" width="100%" height="100%" preserveAspectRatio="none" result="map" />
 
-            <feDisplacementMap ref={redChannelRef} in="SourceGraphic" in2="map" id="redchannel" result="dispRed" />
+            <feDisplacementMap in="SourceGraphic" in2="map" scale="0" xChannelSelector="R" yChannelSelector="G" result="dispRed" />
+            <feOffset ref={redOffsetRef} in="dispRed" dx="-2" dy="0" result="redOffset" />
             <feColorMatrix
-              in="dispRed"
+              in="redOffset"
               type="matrix"
               values="1 0 0 0 0
                       0 0 0 0 0
@@ -219,14 +230,16 @@ const GlassSurface: React.FC<GlassSurfaceProps> = ({
             />
 
             <feDisplacementMap
-              ref={greenChannelRef}
               in="SourceGraphic"
               in2="map"
-              id="greenchannel"
+              scale="0"
+              xChannelSelector="G"
+              yChannelSelector="B"
               result="dispGreen"
             />
+            <feOffset ref={greenOffsetRef} in="dispGreen" dx="0" dy="0" result="greenOffset" />
             <feColorMatrix
-              in="dispGreen"
+              in="greenOffset"
               type="matrix"
               values="0 0 0 0 0
                       0 1 0 0 0
@@ -235,9 +248,10 @@ const GlassSurface: React.FC<GlassSurfaceProps> = ({
               result="green"
             />
 
-            <feDisplacementMap ref={blueChannelRef} in="SourceGraphic" in2="map" id="bluechannel" result="dispBlue" />
+            <feDisplacementMap in="SourceGraphic" in2="map" scale="0" xChannelSelector="B" yChannelSelector="R" result="dispBlue" />
+            <feOffset ref={blueOffsetRef} in="dispBlue" dx="2" dy="0" result="blueOffset" />
             <feColorMatrix
-              in="dispBlue"
+              in="blueOffset"
               type="matrix"
               values="0 0 0 0 0
                       0 0 0 0 0
