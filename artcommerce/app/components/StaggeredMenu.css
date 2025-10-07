@@ -13,6 +13,20 @@
   height: 100vh;
   z-index: 2001; /* Higher than mobile header */
   overflow: hidden;
+  pointer-events: none; /* Allow clicks to pass through when menu is closed */
+}
+
+.staggered-menu-wrapper.fixed-wrapper[data-open="true"] {
+  pointer-events: auto; /* Enable interactions when menu is open */
+}
+
+/* Ensure background layers don't block interactions when menu is closed */
+.staggered-menu-wrapper:not([data-open="true"]) .sm-prelayers {
+  pointer-events: none;
+}
+
+.staggered-menu-wrapper:not([data-open="true"]) .staggered-menu-panel {
+  pointer-events: none;
 }
 
 .staggered-menu-header {
@@ -29,26 +43,32 @@
   z-index: 20;
 }
 
+.staggered-menu-header > * {
+  pointer-events: auto; /* Always allow button interactions */
+}
+
 /* Hide header on smaller screens and let mobile header handle the button */
 @media (max-width: 768px) {
   .staggered-menu-header {
-    padding: 1em 1.5em;
+    padding: 0;
+    justify-content: flex-end; /* Align menu button to the right */
   }
   
   .sm-logo {
-    display: none; /* Hide logo as it's already in mobile header */
+    display: none !important; /* Hide logo as it's already in mobile header */
   }
   
   .sm-toggle {
     position: fixed;
-    top: 15px;
-    right: 15px;
+    top: 20px; /* Align with mobile header center */
+    right: 110px; /* Position to the right of search and cart buttons */
     z-index: 2002;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border-radius: 50%;
-    padding: 8px;
+    background: transparent;
+    backdrop-filter: none;
+    border-radius: 0;
+    padding: 6px;
     color: #000;
+    pointer-events: auto !important; /* Ensure button is always clickable */
   }
 }
 

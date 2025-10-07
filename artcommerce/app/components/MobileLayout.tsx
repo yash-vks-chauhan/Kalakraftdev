@@ -959,7 +959,6 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
           socialItems={socialItems}
           displaySocials={true}
           displayItemNumbering={true}
-          logoUrl={getImageUrl('logo.png')}
           menuButtonColor="#000"
           openMenuButtonColor="#000"
           accentColor="#000"
