@@ -43,7 +43,7 @@ export default function NotificationContainer() {
             borderWidth={0.15}
             brightness={70}
             opacity={0.98}
-            displace={1.2}
+            displace={4.7}
             distortionScale={-280}
             redOffset={15}
             greenOffset={30}
@@ -133,7 +133,7 @@ export default function NotificationContainer() {
               borderWidth={0.15}
               brightness={70}
               opacity={0.98}
-              displace={1.2}
+              displace={4.7}
               distortionScale={-280}
               redOffset={15}
               greenOffset={30}
