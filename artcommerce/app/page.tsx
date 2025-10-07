@@ -20,6 +20,7 @@ import BestSellersSection from './components/BestSellersSection'
 import PearlButton from './components/PearlButton'
 import FlippingText from './components/FlippingText'
 import SplashCursor from './components/SplashCursor'
+import BlurText from './components/BlurText'
 
 // Add this to detect mobile view
 const isMobileView = () => {
@@ -1793,7 +1794,13 @@ return (
 
 <div className={styles.headerText}>
 
-<div className={styles.topText} data-aos="fade-in" data-aos-delay="200">A HANDCRAFTED ART STUDIO</div>
+<BlurText 
+  text="A HANDCRAFTED ART STUDIO"
+  className={styles.topText}
+  delay={100}
+  animateBy="words"
+  direction="top"
+/>
 
 <img
 
@@ -1813,7 +1820,12 @@ data-aos-delay="400"
 
 <h1 className={styles.title} data-aos="fade-up" data-aos-delay="600">
 
-Handcrafted resin art for <FlippingText words={flippingWords} />
+<BlurText 
+  text="Handcrafted resin art for "
+  delay={150}
+  animateBy="words"
+  direction="top"
+/><FlippingText words={flippingWords} />
 
 </h1>
 

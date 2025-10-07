@@ -13,7 +13,7 @@ export default function NotificationContainer() {
   if (userNotifications.length === 0) return null
 
   return (
-    <div className="fixed top-[60px] sm:top-[72px] left-1/2 -translate-x-1/2 z-[999999] flex flex-col gap-2 sm:gap-3 pointer-events-none px-3 sm:px-4 w-full max-w-xs sm:max-w-sm md:max-w-md">
+    <div className="fixed top-[60px] sm:top-[72px] left-1/2 -translate-x-1/2 z-[999999] flex flex-col gap-2 sm:gap-3 pointer-events-none px-3 sm:px-4 w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl">
       {userNotifications.map((note) => (
         <div
           key={note.id}
@@ -23,9 +23,10 @@ export default function NotificationContainer() {
             relative
             animate-slideIn
             w-full
-            sm:min-w-[320px]
-            md:min-w-[350px]
-            md:max-w-[400px]
+            min-w-[350px]
+            sm:min-w-[400px]
+            md:min-w-[450px]
+            lg:min-w-[500px]
           "
           style={{
             animation: 'slideIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards'
@@ -33,12 +34,13 @@ export default function NotificationContainer() {
         >
           {/* Glass Surface notification card */}
           <GlassSurface
-            blur={8}
-            opacity={0.93}
-            backgroundOpacity={0.1}
-            borderWidth={0.25}
+            width="100%"
+            height="auto"
+            borderRadius={16}
+            backgroundOpacity={0.15}
+            saturation={1.2}
             className="
-              p-3 sm:p-4
+              p-4 sm:p-5 md:p-6
               before:absolute
               before:bottom-0
               before:left-0
@@ -50,10 +52,8 @@ export default function NotificationContainer() {
               before:animate-progressBar
               relative
               overflow-hidden
+              min-h-[80px]
             "
-            style={{
-              boxShadow: '0 8px 32px rgba(0,0,0,0.12), 0 4px 16px rgba(0,0,0,0.08)'
-            }}
           >
             {/* Particle effects container for puff animation */}
             <div className="absolute inset-0 pointer-events-none opacity-0 transition-opacity duration-300" data-particles>
@@ -72,10 +72,10 @@ export default function NotificationContainer() {
               ))}
             </div>
             {/* Content with optional product image */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-start gap-4">
               {/* Product image for wishlist notifications */}
               {note.productData?.imageUrl && (
-                <div className="flex-shrink-0 w-12 h-12 rounded-xl overflow-hidden bg-black/5 border border-white/20">
+                <div className="flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden bg-black/5 border border-white/20">
                   <img
                     src={note.productData.imageUrl}
                     alt={note.productData.name}
@@ -88,19 +88,26 @@ export default function NotificationContainer() {
               )}
               
               {/* Text content */}
-              <div className="flex-1 pr-7 sm:pr-8">
-                <div className="text-sm sm:text-[15px] md:text-[16px] font-semibold text-black/80 leading-tight">
+              <div className="flex-1 pr-10 sm:pr-12">
+                <div className="text-base sm:text-lg md:text-xl font-semibold text-black/90 leading-tight mb-2">
                   {note.title}
                 </div>
                 {note.body && (
-                  <div className="text-xs sm:text-[13px] md:text-[14px] text-black/70 mt-1 leading-relaxed">
+                  <div className="text-sm sm:text-base md:text-lg text-black/75 leading-relaxed mb-2">
                     {note.body}
                   </div>
                 )}
-                {/* Show product name if available */}
+                {/* Show product name and price if available */}
                 {note.productData?.name && (
-                  <div className="text-xs text-black/60 mt-1 font-medium truncate">
-                    {note.productData.name}
+                  <div className="space-y-1">
+                    <div className="text-sm sm:text-base text-black/70 font-medium">
+                      {note.productData.name}
+                    </div>
+                    {note.productData.price && (
+                      <div className="text-sm sm:text-base text-black/60 font-semibold">
+                        ₹{note.productData.price.toFixed(2)}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -108,12 +115,11 @@ export default function NotificationContainer() {
 
             {/* Close button */}
             <GlassSurface
-              width={28}
-              height={28}
+              width={32}
+              height={32}
               borderRadius={50}
-              blur={80}
-              opacity={0.95}
-              backgroundOpacity={0.75}
+              backgroundOpacity={0.8}
+              saturation={1.1}
               className="absolute top-3 right-3"
             >
               <button
@@ -124,10 +130,11 @@ export default function NotificationContainer() {
                   transition-all duration-200 ease-out
                   rounded-full
                   flex items-center justify-center
+                  hover:bg-white/20
                 "
                 aria-label="Close notification"
               >
-                <X size={14} className="sm:w-4 sm:h-4" />
+                <X size={16} className="sm:w-4 sm:h-4" />
               </button>
             </GlassSurface>
           </GlassSurface>

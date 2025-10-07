@@ -1,8 +1,8 @@
-import { useEffect, useRef, useId } from 'react';
+import React, { useEffect, useRef, useId } from 'react';
 import './GlassSurface.css';
 
-interface GlassSurfaceProps {
-  children: React.ReactNode;
+export interface GlassSurfaceProps {
+  children?: React.ReactNode;
   width?: number | string;
   height?: number | string;
   borderRadius?: number;
@@ -17,9 +17,27 @@ interface GlassSurfaceProps {
   redOffset?: number;
   greenOffset?: number;
   blueOffset?: number;
-  xChannel?: string;
-  yChannel?: string;
-  mixBlendMode?: string;
+  xChannel?: 'R' | 'G' | 'B';
+  yChannel?: 'R' | 'G' | 'B';
+  mixBlendMode?:
+    | 'normal'
+    | 'multiply'
+    | 'screen'
+    | 'overlay'
+    | 'darken'
+    | 'lighten'
+    | 'color-dodge'
+    | 'color-burn'
+    | 'hard-light'
+    | 'soft-light'
+    | 'difference'
+    | 'exclusion'
+    | 'hue'
+    | 'saturation'
+    | 'color'
+    | 'luminosity'
+    | 'plus-darker'
+    | 'plus-lighter';
   className?: string;
   style?: React.CSSProperties;
 }
@@ -46,10 +64,10 @@ const GlassSurface: React.FC<GlassSurfaceProps> = ({
   className = '',
   style = {}
 }) => {
-  const uniqueId = useId().replace(/:/g, '-');
-  const filterId = `glass-filter-${uniqueId}`;
-  const redGradId = `red-grad-${uniqueId}`;
-  const blueGradId = `blue-grad-${uniqueId}`;
+  const id = useId();
+  const filterId = `glass-filter-${id}`;
+  const redGradId = `red-grad-${id}`;
+  const blueGradId = `blue-grad-${id}`;
 
   const containerRef = useRef<HTMLDivElement>(null);
   const feImageRef = useRef<SVGFEImageElement>(null);
@@ -105,7 +123,6 @@ const GlassSurface: React.FC<GlassSurfaceProps> = ({
     });
 
     gaussianBlurRef.current?.setAttribute('stdDeviation', displace.toString());
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     width,
     height,
@@ -136,17 +153,27 @@ const GlassSurface: React.FC<GlassSurfaceProps> = ({
     return () => {
       resizeObserver.disconnect();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const resizeObserver = new ResizeObserver(() => {
+      setTimeout(updateDisplacementMap, 0);
+    });
+
+    resizeObserver.observe(containerRef.current);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
   }, []);
 
   useEffect(() => {
     setTimeout(updateDisplacementMap, 0);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [width, height]);
 
   const supportsSVGFilters = () => {
-    if (typeof window === 'undefined') return false;
-    
     const isWebkit = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
     const isFirefox = /Firefox/.test(navigator.userAgent);
 
@@ -164,11 +191,10 @@ const GlassSurface: React.FC<GlassSurfaceProps> = ({
     width: typeof width === 'number' ? `${width}px` : width,
     height: typeof height === 'number' ? `${height}px` : height,
     borderRadius: `${borderRadius}px`,
-    // @ts-ignore - CSS custom properties
     '--glass-frost': backgroundOpacity,
     '--glass-saturation': saturation,
     '--filter-id': `url(#${filterId})`
-  };
+  } as React.CSSProperties;
 
   return (
     <div

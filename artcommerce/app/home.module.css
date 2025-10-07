@@ -4913,3 +4913,22 @@
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }
 }
+
+/* Mobile Video Section BlurText Styles */
+.mobileVideoTitle {
+  font-family: 'Cormorant Garamond', serif !important;
+  font-size: 2rem !important;
+  font-weight: 400 !important;
+  color: #000 !important;
+  margin: 0 !important;
+  letter-spacing: 0.05em !important;
+  font-style: italic !important;
+  display: block !important;
+}
+
+.mobileVideoDescription {
+  font-size: 0.95rem !important;
+  line-height: 1.6 !important;
+  color: #666 !important;
+  margin: 0 !important;
+}

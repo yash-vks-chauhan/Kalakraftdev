@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import styles from '../home.module.css';
+import BlurText from './BlurText';
 
 const MobileVideoSection: React.FC = () => {
   return (
@@ -87,15 +88,13 @@ const MobileVideoSection: React.FC = () => {
           background: '#000',
           margin: '0.5rem auto'
         }} />
-        <h2 style={{
-          fontFamily: 'Cormorant Garamond, serif',
-          fontSize: '2rem',
-          fontWeight: 400,
-          color: '#000',
-          margin: 0,
-          letterSpacing: '0.05em',
-          fontStyle: 'italic'
-        }}>Behind The Scenes</h2>
+        <BlurText 
+          text="Behind The Scenes"
+          delay={100}
+          animateBy="words"
+          direction="top"
+          className={styles.mobileVideoTitle}
+        />
         <div style={{ 
           width: '40px',
           height: '2px',
@@ -116,7 +115,13 @@ const MobileVideoSection: React.FC = () => {
         position: 'relative',
         zIndex: 2
       }}>
-        <p>Watch the artistry and craftsmanship that goes into creating each unique piece</p>
+        <BlurText 
+          text="Watch the artistry and craftsmanship that goes into creating each unique piece"
+          delay={150}
+          animateBy="words"
+          direction="top"
+          className={styles.mobileVideoDescription}
+        />
       </div>
       
       {/* Video container - keeping the same video format and styling */}
