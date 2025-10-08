@@ -57,7 +57,7 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  margin-right: 8px;
+  margin-right: 54px; /* Increase margin to make space for burger menu */
 }
 
 /* Header icon button */

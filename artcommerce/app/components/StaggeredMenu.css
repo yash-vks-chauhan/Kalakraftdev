@@ -61,7 +61,7 @@
   .sm-toggle {
     position: fixed;
     top: 20px; /* Align with mobile header center */
-    right: 80px; /* Move left to avoid cart icon conflict */
+    right: 12px; /* Position as first from right (rightmost) */
     z-index: 2002;
     background: transparent;
     backdrop-filter: none;
