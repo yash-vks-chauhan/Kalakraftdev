@@ -39,14 +39,14 @@ export interface WishlistContextValue {
 export const WishlistContext = createContext<WishlistContextValue | undefined>(undefined)
 
 export function WishlistProvider({ children }: { children: ReactNode }) {
-  const { token } = useAuth()
+  const { user } = useAuth()
   const { addNotification } = useNotificationContext()
   const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([])
   const [loading, setLoading] = useState(true)
 
   // When token changes, fetch the wishlist (or clear it)
   useEffect(() => {
-    if (!token) {
+    if (!user) {
       setWishlistItems([])
       setLoading(false)
       return
@@ -54,9 +54,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     async function fetchWishlist() {
       setLoading(true)
       try {
-        const res = await fetch('/api/wishlist', {
-          headers: { Authorization: `Bearer ${token}` },
-        })
+        const res = await fetch('/api/wishlist', { credentials: 'include' })
         if (!res.ok) {
           let errMsg = `Failed to fetch wishlist: ${res.status}`
           try {
@@ -79,18 +77,18 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
       }
     }
     fetchWishlist()
-  }, [token])
+  }, [user])
 
   // Add a product to wishlist
   async function addToWishlist(productId: number) {
-    if (!token) throw new Error('Not authenticated')
+    if (!user) throw new Error('Not authenticated')
 
     const res = await fetch('/api/wishlist', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
       },
+      credentials: 'include',
       body: JSON.stringify({ productId }),
     })
 
@@ -112,14 +110,12 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
 
   // Remove from wishlist
   async function removeFromWishlist(productId: number) {
-    if (!token) throw new Error('Not authenticated')
+    if (!user) throw new Error('Not authenticated')
 
     const res = await fetch(`/api/wishlist/${productId}`, {
       method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
     })
 
     if (!res.ok) {

@@ -32,7 +32,7 @@ interface PaginationInfo {
 }
 
 export default function MobileAdminProductsPage() {
-  const { user, token } = useAuth()
+  const { user } = useAuth()
   const [products, setProducts] = useState<Product[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isTransitioning, setIsTransitioning] = useState(false)
@@ -59,11 +59,11 @@ export default function MobileAdminProductsPage() {
     }
 
     fetchProducts()
-  }, [token, user])
+  }, [user])
 
   // Handle search, filter, and pagination changes
   useEffect(() => {
-    if (user?.role === 'admin' && token) {
+    if (user?.role === 'admin') {
       fetchProducts()
     }
   }, [currentPage, searchQuery, statusFilter])
@@ -72,9 +72,7 @@ export default function MobileAdminProductsPage() {
     setIsLoading(true)
     try {
       // Use the same API as desktop version
-      const response = await fetch('/api/admin/products', {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      const response = await fetch('/api/admin/products', { credentials: 'include' })
 
       if (!response.ok) {
         throw new Error((await response.json()).error || response.statusText)
@@ -131,7 +129,7 @@ export default function MobileAdminProductsPage() {
     try {
       const res = await fetch(`/api/admin/products/${id}`, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` }
+        credentials: 'include'
       })
       if (!res.ok) throw new Error((await res.json()).error)
       
@@ -151,9 +149,9 @@ export default function MobileAdminProductsPage() {
       const res = await fetch(`/api/admin/products/${id}`, {
         method: 'PATCH',
         headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          'Content-Type': 'application/json'
         },
+        credentials: 'include',
         body: JSON.stringify({ isActive: newStatus })
       })
       if (!res.ok) throw new Error((await res.json()).error)

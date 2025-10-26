@@ -3,6 +3,7 @@
 import { NextResponse } from 'next/server'
 import prisma from '../../../../../lib/prisma'
 import jwt from 'jsonwebtoken'
+import { requireAdmin } from '../../../../../lib/auth'
 import nodemailer from 'nodemailer'
 import { orderEvents } from '../../../../../lib/orderEvents'
 
@@ -12,20 +13,9 @@ export async function PATCH(
   req: Request,
   context: { params: Promise<{ id: string }> }
 ) {
-  // 1️⃣ Authenticate & require admin
-  const authHeader = req.headers.get('Authorization') || ''
-  const token = authHeader.replace(/^Bearer\s+/, '')
-  if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  let payload: { userId: number; role: string }
-  try {
-    payload = jwt.verify(token, JWT_SECRET) as any
-  } catch {
-    return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
-  }
-  if (payload.role !== 'admin') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
-  }
+  // 1️⃣ Authenticate & require admin (cookie or header)
+  const payload = requireAdmin(req)
+  if (!payload) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   // 2️⃣ Validate incoming status
   const { status } = await req.json()

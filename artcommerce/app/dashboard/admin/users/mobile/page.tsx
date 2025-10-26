@@ -19,7 +19,7 @@ interface UserRow {
 }
 
 export default function MobileAdminUsersPage() {
-  const { user, token } = useAuth()
+  const { user } = useAuth()
   const router = useRouter()
   const [users, setUsers] = useState<UserRow[]>([])
   const [filteredUsers, setFilteredUsers] = useState<UserRow[]>([])
@@ -45,7 +45,7 @@ export default function MobileAdminUsersPage() {
     }
 
     fetchUsers()
-  }, [token, user, filterParam])
+  }, [user, filterParam])
 
   // Handle search and filter changes
   useEffect(() => {
@@ -57,9 +57,7 @@ export default function MobileAdminUsersPage() {
   const fetchUsers = async () => {
     setIsLoading(true)
     try {
-      const response = await fetch('/api/admin/users', {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      const response = await fetch('/api/admin/users', { credentials: 'include' })
 
       if (!response.ok) {
         throw new Error((await response.json()).error || response.statusText)
@@ -102,9 +100,9 @@ export default function MobileAdminUsersPage() {
       const res = await fetch('/api/admin/users', {
         method: 'PATCH',
         headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          'Content-Type': 'application/json'
         },
+        credentials: 'include',
         body: JSON.stringify({ userId: id, role: newRole })
       })
 
@@ -130,7 +128,7 @@ export default function MobileAdminUsersPage() {
     try {
       const res = await fetch(`/api/admin/users/${id}`, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` }
+        credentials: 'include'
       })
 
       if (!res.ok) {
@@ -152,7 +150,7 @@ export default function MobileAdminUsersPage() {
     try {
       const res = await fetch(`/api/admin/users/${userId}/remind-cart`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` }
+        credentials: 'include'
       })
 
       if (!res.ok) {

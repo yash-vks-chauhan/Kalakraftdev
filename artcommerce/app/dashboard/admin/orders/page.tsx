@@ -28,7 +28,7 @@ const ALL_STATUSES = ['all','pending','accepted','shipped','delivered','cancelle
 const ALL_PAYMENTS = ['all','unpaid','paypal','credit card','cod']
 
 export default function AdminOrdersPage() {
-  const { token, user } = useAuth()
+  const { user } = useAuth()
   const search = useSearchParams()
   const filterUid = search.get('userId')
   const [orders, setOrders] = useState<OrderSummary[]>([])
@@ -50,9 +50,7 @@ export default function AdminOrdersPage() {
 
     const url = `/api/orders${filterUid ? '?userId=' + filterUid : ''}`
 
-    fetch(url, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
+    fetch(url, { credentials: 'include' })
       .then(async r => {
         if (!r.ok) {
           const text = await r.text();
@@ -66,23 +64,19 @@ export default function AdminOrdersPage() {
         setOrders([]);
       })
       .finally(() => setLoading(false))
-  }, [token, user, filterUid])
+  }, [user, filterUid])
 
   useEffect(() => {
     if (user?.role !== 'admin') return
     
-    fetch(`/api/admin/metrics?period=${period}`, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    })
+    fetch(`/api/admin/metrics?period=${period}`, { credentials: 'include' })
       .then(res => {
         if (!res.ok) throw new Error('Unauthorized')
         return res.json()
       })
       .then(data => setMetrics(data))
       .catch(console.error)
-  }, [token, user, period])
+  }, [user, period])
 
   useEffect(() => {
     if (user?.role !== 'admin') return
@@ -203,9 +197,7 @@ export default function AdminOrdersPage() {
       <button
         onClick={async () => {
           try {
-            const res = await fetch('/api/orders/export', {
-              headers: { Authorization: `Bearer ${token}` },
-            })
+            const res = await fetch('/api/orders/export', { credentials: 'include' })
             if (!res.ok) throw new Error('Export failed')
 
             const blob = await res.blob()

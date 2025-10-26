@@ -1,18 +1,7 @@
 // @ts-nocheck
 import { NextResponse } from 'next/server'
 import prisma from '../../../../lib/prisma'
-import jwt from 'jsonwebtoken'
-
-const JWT_SECRET = process.env.JWT_SECRET!
-
-function requireAdmin(request: Request) {
-  const auth = request.headers.get('Authorization')?.replace('Bearer ', '') || ''
-  try {
-    return (jwt.verify(auth, JWT_SECRET) as any).role === 'admin'
-  } catch {
-    return false
-  }
-}
+import { requireAdmin } from '../../../../lib/auth'
 
 export async function GET(request: Request) {
   if (!requireAdmin(request)) {

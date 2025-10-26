@@ -48,7 +48,7 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined)
 export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter()
   const [user, setUser] = useState<User | null>(null)
-  const [token, setToken] = useState<string | null>(null)
+  const [token, setToken] = useState<string | null>(null) // maintained for backward-compat, not persisted
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -57,7 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // First clear all local state
       setToken(null);
       setUser(null);
-      localStorage.removeItem('token');
+      try { localStorage.removeItem('token'); } catch {}
       sessionStorage.clear(); // Clear any session storage
       
       // Then call logout API to clear the cookie
@@ -85,105 +85,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [router]);
 
   const refreshToken = useCallback(async (): Promise<string | null> => {
-    try {
-      const res = await fetch('/api/auth/refresh', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        }
-      });
-      
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to refresh token');
-      
-      const newToken = data.token;
-      setToken(newToken);
-      localStorage.setItem('token', newToken);
-      return newToken;
-    } catch (err) {
-      console.error('Failed to refresh token:', err);
-      logout();
-      return null;
-    }
-  }, [token, logout]);
+    // Deprecated: using httpOnly cookie now. Keep for compatibility.
+    return null;
+  }, []);
 
-  const fetchProfile = useCallback(async (currentToken?: string | null) => {
-    const activeToken = currentToken || token;
-    
-    if (!activeToken) {
-      setUser(null);
-      setToken(null);
-      localStorage.removeItem('token');
-      setLoading(false);
-      return;
-    }
-
+  const fetchProfile = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await fetch('/api/auth/me', {
-        headers: { Authorization: `Bearer ${activeToken}` },
-      });
-      
-      if (res.status === 401) {
-        const newToken = await refreshToken();
-        if (newToken) {
-          return fetchProfile(newToken);
-        }
-        throw new Error('Token refresh failed');
-      }
-      
-      const data = await res.json();
-      
+      const res = await fetch('/api/auth/me', { credentials: 'include' });
       if (!res.ok) {
-        throw new Error(data.error || 'Failed to fetch profile');
+        setUser(null);
+        setToken(null);
+        return;
       }
-      
-      if (!data.user) {
-        throw new Error('No user data in response');
+      const data = await res.json();
+      if (data.user) {
+        setUser(data.user);
+      } else {
+        setUser(null);
       }
-      
-      setToken(activeToken);
-      localStorage.setItem('token', activeToken);
-      setUser(data.user);
     } catch (err) {
       console.error("Fetch profile error:", err);
-      logout();
+      setUser(null);
+      setToken(null);
     } finally {
       setLoading(false);
     }
-  }, [token, refreshToken, logout]);
+  }, []);
 
   useEffect(() => {
-    const savedToken = localStorage.getItem('token');
-    
-    // Set a timeout to ensure loading doesn't persist indefinitely
-    const timeoutId = setTimeout(() => {
-      console.warn('Auth loading timeout - setting loading to false');
-      setLoading(false);
-    }, 10000); // 10 second timeout
-    
-    if (savedToken) {
-      fetchProfile(savedToken).catch((err) => {
-        console.error('Profile fetch error:', err);
-        // Clear everything if profile fetch fails
-        setToken(null);
-        setUser(null);
-        localStorage.removeItem('token');
-        sessionStorage.clear();
-        setLoading(false);
-      }).finally(() => {
-        clearTimeout(timeoutId);
-      });
-    } else {
-      setLoading(false);
-      clearTimeout(timeoutId);
+    let cancelled = false
+    const run = async () => {
+      try {
+        await fetchProfile()
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
     }
-    
-    return () => {
-      clearTimeout(timeoutId);
-    };
-  }, []); // Remove fetchProfile dependency to prevent re-runs
+    run()
+    return () => { cancelled = true }
+  }, [fetchProfile])
 
   const signup = useCallback(async (fullName: string, email: string, password: string) => {
     setLoading(true);
@@ -196,9 +137,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Signup failed');
 
-      setToken(data.token);
-      localStorage.setItem('token', data.token);
-      await fetchProfile(data.token);
+      // Cookie is set httpOnly; just fetch profile
+      await fetchProfile();
       router.replace('/');
     } finally {
       setLoading(false);
@@ -214,7 +154,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
-        credentials: 'include' // Important for cookie handling
+        credentials: 'include' // cookie handling
       });
       
       let data;
@@ -248,9 +188,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error(data.error || 'Login failed. Please try again');
       }
 
-      // Only set auth state if the response was successful
-      setToken(data.token);
-      localStorage.setItem('token', data.token);
+      // Cookie is set; update user from response/body
       setUser(data.user);
       setError(null);
       
@@ -277,10 +215,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Firebase login failed');
-
-      setToken(data.token);
+      // Cookie is set; set user
       setUser(data.user);
-      localStorage.setItem('token', data.token);
       
       router.replace('/');
     } finally {

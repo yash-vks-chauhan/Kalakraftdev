@@ -1,23 +1,11 @@
 // @ts-nocheck
 import { NextResponse } from 'next/server'
 import prisma from '../../../../../../lib/prisma'
-import jwt from 'jsonwebtoken'
-
-const JWT_SECRET = process.env.JWT_SECRET!
-
-function requireAdmin(request: Request) {
-  const auth = request.headers.get('Authorization')?.replace('Bearer ', '') || ''
-  try {
-    const decoded = jwt.verify(auth, JWT_SECRET) as any;
-    return { isAdmin: decoded.role === 'admin', userId: decoded.userId };
-  } catch {
-    return { isAdmin: false, userId: null };
-  }
-}
+import { requireAdmin } from '../../../../../../lib/auth'
 
 export async function PATCH(request: Request, { params }: { params: { id: string } }) {
-  const { isAdmin, userId } = requireAdmin(request);
-  if (!isAdmin) {
+  const auth = requireAdmin(request);
+  if (!auth) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   const reviewId = Number(params.id)

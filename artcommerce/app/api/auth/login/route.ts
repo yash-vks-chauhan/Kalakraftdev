@@ -81,8 +81,7 @@ export async function POST(request: Request) {
         email: user.email,
         avatarUrl: user.avatarUrl,
         role: user.role,
-      },
-      token,
+      }
     });
 
     // Set cookie

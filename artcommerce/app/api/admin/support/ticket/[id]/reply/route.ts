@@ -2,12 +2,16 @@
 import { NextResponse } from "next/server";
 import prisma from "../../../../../../../lib/prisma";
 import pusher from "../../../../../../../lib/pusher";
+import { requireAdmin } from "../../../../../../../lib/auth";
 import { randomUUID } from 'crypto';
 
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  if (!requireAdmin(request)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
   // 1) Get the ticketId
   const { id: ticketId } = await params;
 

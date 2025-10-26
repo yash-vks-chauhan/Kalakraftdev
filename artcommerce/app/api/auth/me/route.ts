@@ -10,14 +10,18 @@ const JWT_SECRET = process.env.JWT_SECRET!
 export async function GET(request: Request) {
   console.log('GET /api/auth/me: Request received')
   try {
-    // 1️⃣ Verify Authorization header
+    // 1️⃣ Extract token from Authorization header or cookie (httpOnly)
     const authHeader = request.headers.get('authorization') || ''
-    console.log('GET /api/auth/me: Auth header:', authHeader ? 'Present' : 'Missing')
-    if (!authHeader.startsWith('Bearer ')) {
-      console.log('GET /api/auth/me: Invalid auth header format')
+    let token = authHeader.startsWith('Bearer ') ? authHeader.substring(7) : ''
+    if (!token) {
+      const cookie = request.headers.get('cookie') || ''
+      const match = cookie.match(/(?:^|;\s*)token=([^;]+)/)
+      if (match) token = decodeURIComponent(match[1])
+    }
+    if (!token) {
+      console.log('GET /api/auth/me: No token in header or cookie')
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-    const token = authHeader.substring(7)
     console.log('GET /api/auth/me: Token extracted')
 
     // 2️⃣ Verify JWT

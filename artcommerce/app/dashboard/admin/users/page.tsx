@@ -14,7 +14,7 @@ interface UserRow {
 }
 
 export default function AdminUsersPage() {
-  const { token, user } = useAuth()
+  const { user } = useAuth()
   const [users, setUsers] = useState<UserRow[]>([])
   const [filteredUsers, setFilteredUsers] = useState<UserRow[]>([])
   const [loading, setLoading] = useState(true)
@@ -23,9 +23,7 @@ export default function AdminUsersPage() {
 
   useEffect(() => {
     if (user?.role !== 'admin') return
-    fetch('/api/admin/users', {
-      headers: { Authorization: `Bearer ${token}` }
-    })
+    fetch('/api/admin/users', { credentials: 'include' })
       .then(r => r.json())
       .then(json => {
         setUsers(json.users)
@@ -33,7 +31,7 @@ export default function AdminUsersPage() {
       })
       .catch(console.error)
       .finally(() => setLoading(false))
-  }, [token, user, filterParam])
+  }, [user, filterParam])
 
   const filterUsers = (userList: UserRow[], filter: string | null) => {
     if (!filter) {
@@ -56,9 +54,9 @@ export default function AdminUsersPage() {
     const res = await fetch('/api/admin/users', {
       method: 'PATCH',
       headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
+        'Content-Type': 'application/json'
       },
+      credentials: 'include',
       body: JSON.stringify({ userId: id, role: newRole })
     })
     if (!res.ok) {
@@ -107,7 +105,7 @@ export default function AdminUsersPage() {
                     if (!confirm(`Delete ${u.fullName}?`)) return;
                     const res = await fetch(`/api/admin/users/${u.id}`, {
                       method: 'DELETE',
-                      headers: { Authorization: `Bearer ${token}` },
+                      credentials: 'include',
                     });
                     if (res.ok) {
                       const updatedUsers = users.filter(x => x.id !== u.id);
@@ -141,7 +139,7 @@ export default function AdminUsersPage() {
                   onClick={() =>
                     fetch(`/api/admin/users/${u.id}/remind-cart`, {
                       method: 'POST',
-                      headers: { Authorization: `Bearer ${token}` }
+                      credentials: 'include'
                     }).then(() => alert('Reminder sent!'))
                   }
                   className={`px-2 py-1 rounded ${

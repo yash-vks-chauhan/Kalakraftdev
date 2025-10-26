@@ -20,7 +20,7 @@ interface Address {
 export default function CheckoutClient() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { user, token } = useAuth()
+  const { user } = useAuth()
   const { cartItems, clearCart } = useCart()
 
   // Address book state
@@ -67,9 +67,7 @@ export default function CheckoutClient() {
       setAddrLoading(true)
       setAddrError(null)
       try {
-        const res = await fetch('/api/addresses', {
-          headers: { Authorization: `Bearer ${token}` },
-        })
+        const res = await fetch('/api/addresses', { credentials: 'include' })
         const data = await res.json()
         if (!res.ok) throw new Error(data.error || 'Failed to load addresses')
         
@@ -87,7 +85,7 @@ export default function CheckoutClient() {
       }
     }
     loadAddresses()
-  }, [user, router, token])
+  }, [user, router])
 
   // Calculate order totals
   const subtotal = cartItems.reduce(
@@ -106,9 +104,9 @@ export default function CheckoutClient() {
       const res = await fetch('/api/coupons/validate', {
         method: 'POST',
         headers: { 
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          'Content-Type': 'application/json'
         },
+        credentials: 'include',
         body: JSON.stringify({ code: coupon.trim() }),
       })
       const data = await res.json()
@@ -159,8 +157,8 @@ export default function CheckoutClient() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
         },
+        credentials: 'include',
         body: JSON.stringify(payload),
       })
 
@@ -200,8 +198,8 @@ export default function CheckoutClient() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
         },
+        credentials: 'include',
         body: JSON.stringify(newAddr),
       })
       const data = await res.json()

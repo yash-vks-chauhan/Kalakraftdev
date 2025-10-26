@@ -38,7 +38,7 @@ interface Address {
 
 export default function MobileProfileSettings() {
   const router = useRouter()
-  const { user, token, logout, fetchProfile, loading: authLoading } = useAuth()
+  const { user, logout, fetchProfile, loading: authLoading } = useAuth()
 
   // Core form state
   const [fullName, setFullName] = useState<string>('')
@@ -111,11 +111,9 @@ export default function MobileProfileSettings() {
 
   // Load addresses
   const loadAddresses = useCallback(async () => {
-    if (!token) return
+    if (!user) return
     try {
-      const res = await fetch('/api/addresses', {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      const res = await fetch('/api/addresses', { credentials: 'include' })
       const json = await res.json()
       if (!res.ok) throw new Error(json.error || 'Failed to load addresses')
       setAddresses(json.addresses)
@@ -124,7 +122,7 @@ export default function MobileProfileSettings() {
     } finally {
       setAddrLoading(false)
     }
-  }, [token])
+  }, [user])
 
   // Handle mounting
   useEffect(() => {
@@ -256,10 +254,8 @@ export default function MobileProfileSettings() {
     try {
       const res = await fetch('/api/auth/set-default-address', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ addressId }),
       })
       if (res.ok) {
@@ -295,7 +291,7 @@ export default function MobileProfileSettings() {
     try {
       const res = await fetch(`/api/addresses/${addressId}`, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` },
+        credentials: 'include',
       })
       if (res.ok) {
         setAddresses(addresses.filter(x => x.id !== addressId))
@@ -387,8 +383,8 @@ export default function MobileProfileSettings() {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
         },
+        credentials: 'include',
         body: JSON.stringify({ fullName, avatarUrl }),
       })
       const data = await res.json()
@@ -409,8 +405,8 @@ export default function MobileProfileSettings() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
         },
+        credentials: 'include',
         body: JSON.stringify({ newEmail }),
       })
       const data = await res.json()
@@ -444,8 +440,8 @@ export default function MobileProfileSettings() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: token ? `Bearer ${token}` : '',
         },
+        credentials: 'include',
         body: JSON.stringify({ newEmail, otp: emailOtp }),
       })
       const data = await res.json()
@@ -478,8 +474,8 @@ export default function MobileProfileSettings() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
         },
+        credentials: 'include',
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
@@ -512,8 +508,8 @@ export default function MobileProfileSettings() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
         },
+        credentials: 'include',
         body: JSON.stringify({ otp, newPassword, confirmPassword }),
       })
       const data = await res.json()
@@ -682,8 +678,8 @@ export default function MobileProfileSettings() {
                               method: 'PATCH',
                               headers: {
                                 'Content-Type': 'application/json',
-                                Authorization: `Bearer ${token}`,
                               },
+                              credentials: 'include',
                               body: JSON.stringify({ fullName, avatarUrl: avatar.path }),
                             })
                             const data = await res.json()
@@ -738,9 +734,12 @@ export default function MobileProfileSettings() {
                             setMessage('Uploading image...')
                             setError(null)
                             
-                            const form = new FormData()
-                            form.append('file', file)
-                            const res = await fetch('/api/uploads', { method: 'POST', body: form })
+                            const res = await fetch(`/api/uploads/cloudinary?filename=${encodeURIComponent(file.name)}&folder=avatars`, {
+                              method: 'POST',
+                              headers: { 'Content-Type': file.type },
+                              credentials: 'include',
+                              body: file
+                            })
                             const { url } = await res.json()
                             
                             // Update local state immediately
@@ -752,8 +751,8 @@ export default function MobileProfileSettings() {
                               method: 'PATCH',
                               headers: {
                                 'Content-Type': 'application/json',
-                                Authorization: `Bearer ${token}`,
                               },
+                              credentials: 'include',
                               body: JSON.stringify({ fullName, avatarUrl: url }),
                             })
                             const profileData = await profileRes.json()
@@ -1325,20 +1324,16 @@ export default function MobileProfileSettings() {
                       // Update existing address
                       res = await fetch(`/api/addresses/${editingAddress.id}`, {
                         method: 'PUT',
-                        headers: {
-                          'Content-Type': 'application/json',
-                          Authorization: `Bearer ${token}`,
-                        },
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
                         body: JSON.stringify(newAddr),
                       })
                     } else {
                       // Create new address
                       res = await fetch('/api/addresses', {
                         method: 'POST',
-                        headers: {
-                          'Content-Type': 'application/json',
-                          Authorization: `Bearer ${token}`,
-                        },
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
                         body: JSON.stringify(newAddr),
                       })
                     }

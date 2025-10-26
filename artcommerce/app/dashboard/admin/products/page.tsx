@@ -23,7 +23,7 @@ interface Product {
 }
 
 export default function AdminProductsPage() {
-  const { user, token } = useAuth()
+  const { user } = useAuth()
   const [products, setProducts] = useState<Product[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isTransitioning, setIsTransitioning] = useState(false)
@@ -37,9 +37,7 @@ export default function AdminProductsPage() {
       return
     }
 
-    fetch('/api/admin/products', {
-      headers: { Authorization: `Bearer ${token}` }
-    })
+    fetch('/api/admin/products', { credentials: 'include' })
       .then(async r => {
         if (!r.ok) throw new Error((await r.json()).error || r.statusText)
         return r.json()
@@ -47,7 +45,7 @@ export default function AdminProductsPage() {
       .then(json => setProducts(json.products))
       .catch(err => setError(err.message))
       .finally(() => setIsLoading(false))
-  }, [token, user])
+  }, [user])
 
   async function handleDelete(id: number) {
     if (!confirm('Are you sure you want to delete this product? This action cannot be undone.')) return
@@ -55,7 +53,7 @@ export default function AdminProductsPage() {
     try {
       const res = await fetch(`/api/admin/products/${id}`, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` }
+        credentials: 'include'
       })
       if (!res.ok) throw new Error((await res.json()).error)
       setProducts(products.filter(p => p.id !== id))
@@ -71,9 +69,9 @@ export default function AdminProductsPage() {
       const res = await fetch(`/api/admin/products/${id}`, {
         method: 'PATCH',
         headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          'Content-Type': 'application/json'
         },
+        credentials: 'include',
         body: JSON.stringify({ isActive: newStatus })
       })
       if (!res.ok) throw new Error((await res.json()).error)

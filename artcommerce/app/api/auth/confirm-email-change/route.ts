@@ -2,24 +2,16 @@
 
 import { NextResponse } from 'next/server'
 import prisma from '../../../../lib/prisma'
-import jwt from 'jsonwebtoken'
+import { getAuthFromRequest } from '../../../../lib/auth'
 
 export const runtime = 'nodejs'
 const JWT_SECRET = process.env.JWT_SECRET!
 
 export async function POST(request: Request) {
-  // 1️⃣ Authenticate via Bearer token
-  const authHeader = request.headers.get('authorization') || ''
-  if (!authHeader.startsWith('Bearer ')) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-  const token = authHeader.substring(7)
-  let userId: number
-  try {
-    userId = (jwt.verify(token, JWT_SECRET) as any).userId
-  } catch {
-    return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
-  }
+  // 1️⃣ Authenticate via cookie or header
+  const auth = getAuthFromRequest(request)
+  if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const userId = auth.userId
 
   // 2️⃣ Parse newEmail & OTP
   const { newEmail, otp } = await request.json()

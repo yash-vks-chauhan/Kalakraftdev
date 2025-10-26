@@ -60,7 +60,7 @@ const OrdersSkeleton = () => (
 );
 
 export default function MobileDashboardHome() {
-  const { user, logout, token } = useAuth()
+  const { user, logout } = useAuth()
   const [showRecent, setShowRecent] = useState(true)
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
   const [metrics, setMetrics] = useState<any>(null)
@@ -84,7 +84,7 @@ export default function MobileDashboardHome() {
     if (user) {
       fetchRecentOrders()
     }
-  }, [user, token])
+  }, [user])
 
   // Add scroll event listener for metrics row
   useEffect(() => {
@@ -121,13 +121,11 @@ export default function MobileDashboardHome() {
   }, [])
 
   const fetchMetrics = async (p: string = period) => {
-    if (user?.role !== 'admin' || !token) return
+    if (user?.role !== 'admin') return
     
     setRefreshing(true)
     try {
-      const response = await fetch(`/api/admin/metrics?period=${p}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      const response = await fetch(`/api/admin/metrics?period=${p}`, { credentials: 'include' })
       const data = await response.json()
       setMetrics(data)
     } catch (error) {
@@ -144,7 +142,7 @@ export default function MobileDashboardHome() {
   }
 
   const fetchRecentOrders = async () => {
-    if (!token) return
+    if (!user) return
     
     setLoadingOrders(true)
     try {
@@ -153,9 +151,7 @@ export default function MobileDashboardHome() {
         ? '/api/admin/orders?limit=5'
         : '/api/orders?limit=5'
         
-      const response = await fetch(endpoint, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      const response = await fetch(endpoint, { credentials: 'include' })
       
       if (response.ok) {
         const data = await response.json()

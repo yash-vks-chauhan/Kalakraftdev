@@ -29,7 +29,7 @@ interface Ticket {
 export default function TicketThread() {
   const { id } = useParams() as { id: string };
   const router = useRouter();
-  const { token } = useAuth();
+  const { user } = useAuth();
 
   const [ticket, setTicket] = useState<Ticket | null>(null);
   const [reply, setReply] = useState("");
@@ -37,10 +37,7 @@ export default function TicketThread() {
   const [files, setFiles] = useState<File[]>([]);
 
   const load = async () => {
-    if (!token) return;
-    const res = await fetch(`/api/support/ticket/${id}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const res = await fetch(`/api/support/ticket/${id}`, { credentials: 'include' });
     if (res.ok) {
       const data = await res.json();
       setTicket(data);
@@ -50,12 +47,12 @@ export default function TicketThread() {
   useEffect(() => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id, token]);
+  }, [id, user]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!reply && files.length === 0) return;
-    if (!token) return;
+    if (!user) return;
     setLoading(true);
 
     // 1) upload attachments (if any)
@@ -63,7 +60,13 @@ export default function TicketThread() {
     for (const file of files) {
       const fd = new FormData();
       fd.append("file", file);
-      const uploadRes = await fetch("/api/uploads", { method: "POST", body: fd });
+      // Switch to Cloudinary upload endpoint with raw file for consistency
+      const uploadRes = await fetch(`/api/uploads/cloudinary?filename=${encodeURIComponent(file.name)}&folder=support`, { 
+        method: "POST",
+        headers: { 'Content-Type': file.type },
+        credentials: 'include',
+        body: file 
+      });
       if (uploadRes.ok) {
         const { url } = await uploadRes.json();
         attachments.push({ url, type: file.type.startsWith("video") ? "video" : "image" });
@@ -74,8 +77,8 @@ export default function TicketThread() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
       },
+      credentials: 'include',
       body: JSON.stringify({ content: reply, attachments }),
     });
     setLoading(false);

@@ -2,17 +2,14 @@ import { NextResponse } from 'next/server'
 import prisma from '../../../../lib/prisma'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
+import { getAuthFromRequest } from '../../../../lib/auth'
 
 const JWT_SECRET = process.env.JWT_SECRET!
 
 export async function POST(request: Request) {
   try {
-    const authHeader = request.headers.get('authorization')
-    if (!authHeader?.startsWith('Bearer ')) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-    const token = authHeader.split(' ')[1]
-    const payload = jwt.verify(token, JWT_SECRET) as { userId: number }
+    const auth = getAuthFromRequest(request)
+    if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const { oldPassword, newPassword } = await request.json()
     if (!oldPassword || !newPassword) {
@@ -20,7 +17,7 @@ export async function POST(request: Request) {
     }
 
     // Fetch user
-    const user = await prisma.user.findUnique({ where: { id: payload.userId } })
+    const user = await prisma.user.findUnique({ where: { id: auth.userId } })
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
@@ -34,7 +31,7 @@ export async function POST(request: Request) {
     // Hash new password and update
     const newHash = await bcrypt.hash(newPassword, 10)
     await prisma.user.update({
-      where: { id: payload.userId },
+      where: { id: auth.userId },
       data: { passwordHash: newHash },
     })
 

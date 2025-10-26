@@ -34,7 +34,7 @@ interface Order {
 }
 
 export default function OrdersPage() {
-  const { user, token } = useAuth()
+  const { user } = useAuth()
   const router = useRouter()
 
   const [orders, setOrders] = useState<Order[]>([])
@@ -52,9 +52,7 @@ export default function OrdersPage() {
 
   const fetchOrders = async () => {
     try {
-      const res = await fetch('/api/orders', {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      const res = await fetch('/api/orders', { credentials: 'include' })
       const data = await res.json()
       if (!res.ok) {
         throw new Error(data.error || 'Failed to fetch orders')

@@ -2,19 +2,11 @@
 
 import { NextResponse } from 'next/server'
 import prisma from '../../../../lib/prisma'
-import jwt from 'jsonwebtoken'
-
-const JWT_SECRET = process.env.JWT_SECRET!
+import { getAuthFromRequest } from '../../../../lib/auth'
 
 function getUserId(request: Request): number | null {
-  const auth = request.headers.get('Authorization') || ''
-  const token = auth.replace('Bearer ', '').trim()
-  if (!token) return null
-  try {
-    return (jwt.verify(token, JWT_SECRET) as any).userId
-  } catch {
-    return null
-  }
+  const auth = getAuthFromRequest(request)
+  return auth ? auth.userId : null
 }
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {

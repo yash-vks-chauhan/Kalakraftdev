@@ -31,14 +31,14 @@ interface CartContextValue {
 const CartContext = createContext<CartContextValue | undefined>(undefined)
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
-  const { token } = useAuth()
+  const { user } = useAuth()
   const [cartItems, setCartItems] = useState<CartItem[]>([])
   const { addNotification } = useNotificationContext()
   const [cartLoading, setCartLoading] = useState<boolean>(false)
 
   // Whenever token changes (login/logout), fetch or clear cart
   useEffect(() => {
-    if (!token) {
+    if (!user) {
       setCartItems([])
       setCartLoading(false)
       return
@@ -46,9 +46,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     async function fetchCart() {
       try {
         setCartLoading(true)
-        const res = await fetch('/api/cart', {
-          headers: { Authorization: `Bearer ${token}` },
-        })
+        const res = await fetch('/api/cart', { credentials: 'include' })
         if (!res.ok) throw new Error('Failed to fetch cart')
         const data = await res.json()
         setCartItems(Array.isArray(data.cartItems) ? data.cartItems : [])
@@ -60,19 +58,19 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       }
     }
     fetchCart()
-  }, [token])
+  }, [user])
 
   // Add a single item
   async function addToCart(productId: number, quantity: number): Promise<boolean> {
-    if (!token) throw new Error('Not authenticated')
+    if (!user) throw new Error('Not authenticated')
     
     try {
       const res = await fetch('/api/cart', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
         },
+        credentials: 'include',
         body: JSON.stringify({ productId, quantity }),
       })
       
@@ -131,15 +129,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   // Update an existing cart item
   async function updateCartItem(cartItemId: number, quantity: number): Promise<boolean> {
-    if (!token) throw new Error('Not authenticated')
+    if (!user) throw new Error('Not authenticated')
     
     try {
       const res = await fetch(`/api/cart/${cartItemId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
         },
+        credentials: 'include',
         body: JSON.stringify({ quantity }),
       })
       
@@ -176,8 +174,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
               method: 'PUT',
               headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
               },
+              credentials: 'include',
               body: JSON.stringify({ quantity: availableStock }),
             });
             
@@ -231,17 +229,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   // Remove a cart item
   async function removeFromCart(cartItemId: number) {
-    if (!token) throw new Error('Not authenticated')
+    if (!user) throw new Error('Not authenticated')
     
     // Get the item being removed for notification
     const removedItem = cartItems.find(ci => ci.id === cartItemId)
     
     const res = await fetch(`/api/cart/${cartItemId}`, {
       method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
     })
     
     let data;
