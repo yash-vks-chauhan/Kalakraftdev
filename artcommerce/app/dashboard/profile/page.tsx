@@ -324,7 +324,7 @@ export default function ProfilePage() {
     if (authLoading) return;
 
     // Once auth is resolved, redirect if unauthenticated.
-    if (!token) {
+    if (!user) {
       router.replace('/auth/login');
       return;
     }
@@ -341,7 +341,7 @@ export default function ProfilePage() {
       }
     })();
     // We intentionally exclude fetchProfile here to avoid an endless loop caused by toggling the auth loading state.
-  }, [authLoading, token, loadAddresses]);
+  }, [authLoading, user, loadAddresses]);
 
   // Timer effect for email OTP with cleanup
   useEffect(() => {

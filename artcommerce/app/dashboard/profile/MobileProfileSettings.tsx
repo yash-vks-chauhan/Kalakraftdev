@@ -133,7 +133,7 @@ export default function MobileProfileSettings() {
   useEffect(() => {
     if (!isMounted) return
     if (authLoading) return
-    if (!token) {
+    if (!user) {
       router.replace('/auth/login')
       return
     }
@@ -150,7 +150,7 @@ export default function MobileProfileSettings() {
     }
 
     initializeData()
-  }, [isMounted, authLoading, token, loadAddresses, router])
+  }, [isMounted, authLoading, user, loadAddresses, router])
 
   // Sync form data with user data
   useEffect(() => {
@@ -394,7 +394,7 @@ export default function MobileProfileSettings() {
     } catch (err: any) {
       setError(err.message)
     }
-  }, [token, fullName, avatarUrl, fetchProfile])
+  }, [fullName, avatarUrl, fetchProfile])
 
   const handleRequestEmailOtp = useCallback(async () => {
     setEmailModalError(null)
@@ -429,7 +429,7 @@ export default function MobileProfileSettings() {
     } finally {
       setLoading(false)
     }
-  }, [token, newEmail])
+  }, [newEmail])
 
   const handleConfirmEmailChange = useCallback(async () => {
     setEmailModalError(null)
@@ -463,7 +463,7 @@ export default function MobileProfileSettings() {
     } finally {
       setConfirming(false)
     }
-  }, [token, newEmail, emailOtp, fetchProfile])
+  }, [newEmail, emailOtp, fetchProfile])
 
   const sendPasswordOtp = async () => {
     setModalError(null)
