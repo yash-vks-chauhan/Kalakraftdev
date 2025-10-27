@@ -2,7 +2,7 @@
 
 import { NextResponse } from 'next/server'
 import prisma from '../../../../lib/prisma'
-import { getAuthFromRequest } from '../../../../lib/auth'
+import jwt from 'jsonwebtoken'
 
 // Ensure this API runs in Node.js runtime
 export const runtime = 'nodejs'
@@ -10,9 +10,20 @@ const JWT_SECRET = process.env.JWT_SECRET!
 
 export async function PATCH(request: Request) {
   try {
-    // 1️⃣ Verify from cookie or Authorization header
-    const auth = getAuthFromRequest(request)
-    if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    // 1️⃣ Verify Authorization header
+    const authHeader = request.headers.get('authorization') || ''
+    if (!authHeader.startsWith('Bearer ')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    const token = authHeader.substring(7)
+
+    // 2️⃣ Verify JWT
+    let payload: { userId: number }
+    try {
+      payload = jwt.verify(token, JWT_SECRET) as { userId: number }
+    } catch {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
+    }
 
     // 3️⃣ Parse and validate request body
     const { fullName, avatarUrl } = await request.json()
@@ -22,7 +33,7 @@ export async function PATCH(request: Request) {
 
     // 4️⃣ Update the user in the database
     const updatedUser = await prisma.user.update({
-      where: { id: auth.userId },
+      where: { id: payload.userId },
       data: {
         fullName: fullName.trim(),
         avatarUrl: typeof avatarUrl === 'string' ? avatarUrl.trim() : undefined,

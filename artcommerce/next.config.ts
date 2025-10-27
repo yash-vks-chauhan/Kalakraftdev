@@ -2,8 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
-  // Do not expose source maps in production
-  productionBrowserSourceMaps: false,
+  productionBrowserSourceMaps: true,
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -12,17 +11,16 @@ const nextConfig: NextConfig = {
   },
   distDir: '.next',
   images: {
-    domains: [
-      'localhost',
-      'firebasestorage.googleapis.com',
-      'lh3.googleusercontent.com',
-      'res.cloudinary.com',
-      'ik.imagekit.io',
-      'images.unsplash.com'
-    ],
+    domains: ['localhost', 'firebasestorage.googleapis.com', 'lh3.googleusercontent.com', 'res.cloudinary.com', 'ik.imagekit.io', 'images.unsplash.com'],
     formats: ['image/webp', 'image/avif'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
+    ],
   },
   // Ensure CSS is properly included
   webpack: (config) => {

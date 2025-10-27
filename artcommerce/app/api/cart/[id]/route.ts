@@ -2,14 +2,22 @@
 import { NextResponse } from 'next/server'
 import prisma from '../../../../lib/prisma'
 import jwt from 'jsonwebtoken'
-import { getAuthFromRequest } from '../../../../lib/auth'
 
 const JWT_SECRET = process.env.JWT_SECRET!
 
-// Helper supports cookie or Authorization header
+// Helper: extract userId from the JWT in the Authorization header
 function getUserIdFromRequest(request: Request): string | null {
-  const auth = getAuthFromRequest(request)
-  return auth ? String(auth.userId) : null
+  const header = request.headers.get('Authorization') || ''
+  const token = header.replace('Bearer ', '')
+  if (!token) return null
+
+  try {
+    // Assuming your token payload has { userId: string, ... }
+    const payload = jwt.verify(token, JWT_SECRET) as { userId: string }
+    return payload.userId
+  } catch {
+    return null
+  }
 }
 
 // PUT /api/cart/[id] (id is cartItemId)

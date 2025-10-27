@@ -65,7 +65,7 @@ interface OrderNote {
 
 export default function OrderDetailsPage() {
   const params = useParams()
-  const { user } = useAuth()
+  const { user, token } = useAuth()
   const router = useRouter()
   const [order, setOrder] = useState<Order | null>(null)
   const [newStatus, setNewStatus] = useState<string>('')
@@ -75,7 +75,9 @@ export default function OrderDetailsPage() {
 
   useEffect(() => {
     async function loadData() {
-      const res = await fetch(`/api/orders/${params.id}`, { credentials: 'include' })
+      const res = await fetch(`/api/orders/${params.id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
       if (res.status === 401) {
         router.replace('/auth/login')
         return
@@ -84,14 +86,16 @@ export default function OrderDetailsPage() {
       const { order } = await res.json()
       setOrder(order)
       setNewStatus(order.status)
-      const notesRes = await fetch(`/api/orders/${params.id}/notes`, { credentials: 'include' })
+      const notesRes = await fetch(`/api/orders/${params.id}/notes`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
       if (notesRes.ok) {
         const { notes } = await notesRes.json()
         setNotes(notes)
       }
     }
     loadData()
-  }, [params.id, router])
+  }, [params.id, token, router])
 
   async function handleStatusUpdate(e: React.FormEvent) {
     e.preventDefault()
@@ -102,8 +106,8 @@ export default function OrderDetailsPage() {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
         },
-        credentials: 'include',
         body: JSON.stringify({ status: newStatus }),
       })
       if (!res.ok) throw new Error((await res.json()).error)
@@ -124,8 +128,8 @@ export default function OrderDetailsPage() {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
       },
-      credentials: 'include',
       body: JSON.stringify({ text: noteText.trim() }),
     })
     if (!res.ok) {
@@ -284,8 +288,10 @@ export default function OrderDetailsPage() {
                               const comment = prompt('Any feedback? (optional)', '') || '';
                               await fetch(`/api/products/${item.product.id}/review`,{
                                 method:'POST',
-                                headers:{ 'Content-Type':'application/json' },
-                                credentials: 'include',
+                                headers:{
+                                  'Content-Type':'application/json',
+                                  Authorization:`Bearer ${token}`
+                                },
                                 body:JSON.stringify({ rating:n, comment, locale:navigator.language })
                               })
                               alert('Thanks for rating!')

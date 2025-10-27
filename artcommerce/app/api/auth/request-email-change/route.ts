@@ -2,7 +2,6 @@
 import { NextResponse } from 'next/server'
 import prisma from '../../../../lib/prisma'
 import jwt from 'jsonwebtoken'
-import { getAuthFromRequest } from '../../../../lib/auth'
 import { nanoid } from 'nanoid'
 
 export const runtime = 'nodejs'
@@ -10,9 +9,16 @@ const JWT_SECRET = process.env.JWT_SECRET!
 
 export async function POST(request: Request) {
   // 1️⃣ Authenticate
-  const auth = getAuthFromRequest(request)
-  if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  const userId = auth.userId
+  const auth = request.headers.get('authorization') || ''
+  if (!auth.startsWith('Bearer ')) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+  let userId: number
+  try {
+    userId = (jwt.verify(auth.replace('Bearer ', ''), JWT_SECRET) as any).userId
+  } catch {
+    return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
+  }
 
   // 2️⃣ Parse newEmail
   const { newEmail } = await request.json()

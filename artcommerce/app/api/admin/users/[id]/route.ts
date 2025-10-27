@@ -2,10 +2,19 @@
 
 import { NextResponse } from 'next/server'
 import prisma from '../../../../../lib/prisma'
-import { requireAdmin } from '../../../../../lib/auth'
+import jwt from 'jsonwebtoken'
 import nodemailer from 'nodemailer'
 
 const JWT_SECRET = process.env.JWT_SECRET!
+
+function requireAdmin(req: Request) {
+  const auth = req.headers.get('Authorization')?.replace('Bearer ', '') || ''
+  try {
+    return (jwt.verify(auth, JWT_SECRET) as any).role === 'admin'
+  } catch {
+    return false
+  }
+}
 
 export async function DELETE(
   request: Request,

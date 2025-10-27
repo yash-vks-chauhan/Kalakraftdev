@@ -18,7 +18,7 @@ const cardClasses = `
 `
 
 export default function DashboardHomePage() {
-  const { user, logout } = useAuth()
+  const { user, token, logout } = useAuth()
   const router = useRouter()
   
   const isMobile = useIsMobile()
@@ -44,11 +44,13 @@ export default function DashboardHomePage() {
   // Redirect to login if not authenticated
   useEffect(() => {
     if (user?.role !== 'admin') return
-    fetch(`/api/admin/metrics?period=${period}`, { credentials: 'include' })
+    fetch(`/api/admin/metrics?period=${period}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
       .then(r => r.json())
       .then(setMetrics)
       .catch(console.error)
-  }, [user, period])
+  }, [token, user, period])
 
   if (mobileView) {
     return <MobileDashboardHome />

@@ -2,7 +2,6 @@
 import { NextResponse } from 'next/server'
 import prisma from '../../../lib/prisma'
 import jwt from 'jsonwebtoken'
-import { getAuthFromRequest } from '../../../lib/auth'
 import nodemailer from 'nodemailer'
 import { orderEvents } from '../../../lib/orderEvents'
 import { PrismaClient, Order, OrderItem, Product, User } from '@prisma/client'
@@ -15,9 +14,17 @@ import { sendOutOfStockEmail } from '../../../lib/notifications/outOfStock'
 const JWT_SECRET = process.env.JWT_SECRET!
 
 function getUserPayload(request: Request): { userId: number; userEmail: string; role: string } | null {
-  const auth = getAuthFromRequest(request)
-  if (!auth) return null
-  return { userId: auth.userId, userEmail: auth.email || '', role: auth.role }
+  const authHeader = request.headers.get('Authorization') || ''
+  const token = authHeader.replace('Bearer ', '').trim()
+  if (!token) return null
+
+  try {
+    const payload = jwt.verify(token, JWT_SECRET) as { userId: number; email: string; role: string}
+    return { userId: payload.userId, userEmail: payload.email, role: payload.role }
+  } catch (err) {
+    console.error('🔍 [order route] JWT verify failed:', err)
+    return null
+  }
 }
 
 export async function GET(request: Request) {
@@ -191,7 +198,7 @@ export async function POST(request: Request) {
 
     // Emit Pusher event for real-time admin notification
     const products = createdOrder.orderItems.map(item => item.product.name)
-    pusher.trigger('private-admin', 'new-order', {
+    pusher.trigger('admin-channel', 'new-order', {
       id: createdOrder.id,
       total: createdOrder.totalAmount,
       customerName: createdOrder.user.fullName,
@@ -251,7 +258,7 @@ export async function POST(request: Request) {
           productName: updated.name,
         }).catch(console.error)
 
-        pusher.trigger('private-admin', 'out-of-stock', {
+        pusher.trigger('admin-channel', 'out-of-stock', {
           productId: updated.id,
           productName: updated.name,
         }).catch(console.error)
@@ -265,7 +272,7 @@ export async function POST(request: Request) {
           threshold: LOW_STOCK_THRESHOLD,
         }).catch(console.error)
 
-        pusher.trigger('private-admin', 'low-stock', {
+        pusher.trigger('admin-channel', 'low-stock', {
           productId: updated.id,
           productName: updated.name,
           remaining: updated.stockQuantity,

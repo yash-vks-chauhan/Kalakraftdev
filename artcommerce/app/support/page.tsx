@@ -9,7 +9,7 @@ import Image from "next/image";
 import ButtonLoader from '../components/ButtonLoader';
 
 export default function SupportPage() {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
   const [files, setFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
@@ -28,10 +28,12 @@ export default function SupportPage() {
 
   // Load last 5 ordered products to show as quick-select cards
   useEffect(() => {
-    if (!user) return;
+    if (!token) return;
     (async () => {
       try {
-        const res = await fetch("/api/orders", { credentials: 'include' });
+        const res = await fetch("/api/orders", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         if (!res.ok) return;
         const data = await res.json();
         // Flatten products from order items
@@ -53,7 +55,7 @@ export default function SupportPage() {
         console.error("Failed loading previous products", err);
       }
     })();
-  }, [user]);
+  }, [token]);
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {

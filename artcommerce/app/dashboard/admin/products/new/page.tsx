@@ -11,7 +11,7 @@ import LoadingSpinner from '../../../../components/LoadingSpinner'
 import { useDropzone } from 'react-dropzone'
 
 export default function NewProductPage() {
-  const { user } = useAuth()
+  const { token, user } = useAuth()
   const router = useRouter()
   const [showNotification, setShowNotification] = useState(false)
   const [notificationMessage, setNotificationMessage] = useState('')
@@ -344,9 +344,9 @@ export default function NewProductPage() {
       const res = await fetch('/api/admin/products', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
         },
-        credentials: 'include',
         body: JSON.stringify({
           name,
           slug,

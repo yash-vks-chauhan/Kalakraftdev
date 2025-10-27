@@ -70,7 +70,7 @@ export default function EditProductPage() {
   const [newTagInput, setNewTagInput] = useState('');
 
   // UI state
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -126,10 +126,12 @@ export default function EditProductPage() {
   };
 
   useEffect(() => {
-    if (!user) return;
+    if (!token) return;
 
     // Fetch categories
-    fetch('/api/categories', { credentials: 'include' })
+    fetch('/api/categories', { 
+      headers: { Authorization: `Bearer ${token}` } 
+    })
       .then(r => r.json())
       .then(data => {
         if (Array.isArray(data)) {
@@ -149,7 +151,9 @@ export default function EditProductPage() {
       .catch(console.error);
 
     // Fetch product data
-    fetch(`/api/admin/products/${id}`, { credentials: 'include' })
+    fetch(`/api/admin/products/${id}`, { 
+      headers: { Authorization: `Bearer ${token}` } 
+    })
       .then(async r => {
         if (!r.ok) throw new Error(await r.text());
         return r.json();
@@ -187,7 +191,7 @@ export default function EditProductPage() {
       })
       .catch(err => setError(err.message))
       .finally(() => setIsLoading(false));
-  }, [id, user]);
+  }, [id, token]);
 
   const handleRemoveImage = (indexToRemove: number) => {
     setImageUrls(prev => prev.filter((_, index) => index !== indexToRemove));
@@ -508,8 +512,10 @@ export default function EditProductPage() {
 
       const res = await fetch(`/api/admin/products/${id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+        headers: { 
+          'Content-Type': 'application/json', 
+          Authorization: `Bearer ${token}` 
+        },
         body: JSON.stringify(productData)
       });
 

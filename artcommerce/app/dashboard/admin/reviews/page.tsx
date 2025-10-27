@@ -22,7 +22,7 @@ interface Review {
 }
 
 export default function ReviewsDashboard() {
-  const { user } = useAuth()
+  const { token } = useAuth()
 
   const [topProducts, setTopProducts] = useState<RatedProduct[]>([])
   const [reviews, setReviews] = useState<Review[]>([])
@@ -33,8 +33,12 @@ export default function ReviewsDashboard() {
     async function load() {
       try {
         const [pRes, rRes] = await Promise.all([
-          fetch('/api/admin/products/highest-rated', { credentials: 'include' }),
-          fetch('/api/admin/reviews', { credentials: 'include' }),
+          fetch('/api/admin/products/highest-rated', {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          fetch('/api/admin/reviews', {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
         ])
         if (!pRes.ok) throw new Error('Failed to fetch top products')
         if (!rRes.ok) throw new Error('Failed to fetch reviews')
@@ -49,7 +53,7 @@ export default function ReviewsDashboard() {
       }
     }
     load()
-  }, [user])
+  }, [token])
 
   async function handleReply(id: number) {
     const reply = prompt('Admin reply:')
@@ -64,8 +68,8 @@ export default function ReviewsDashboard() {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
       },
-      credentials: 'include',
       body: JSON.stringify(body),
     })
     if (res.ok) {

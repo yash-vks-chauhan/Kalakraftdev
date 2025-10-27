@@ -97,7 +97,7 @@ import Image from 'next/image'
 
 export default function ProfilePage() {
   const router = useRouter()
-  const { user, logout, fetchProfile, loading: authLoading } = useAuth()
+  const { user, token, logout, fetchProfile, loading: authLoading } = useAuth()
   
   const isMobile = useIsMobile()
   const [forceDesktopView, setForceDesktopView] = useState(false)
@@ -153,9 +153,11 @@ export default function ProfilePage() {
 
   // Memoized function to load addresses - MUST be before conditional returns
   const loadAddresses = useCallback(async () => {
-    if (!user) return;
+    if (!token) return;
     try {
-      const res = await fetch('/api/addresses', { credentials: 'include' })
+      const res = await fetch('/api/addresses', {
+        headers: { Authorization: `Bearer ${token}` }
+      })
       const json = await res.json()
       if (!res.ok) throw new Error(json.error || 'Failed to load addresses')
       setAddresses(json.addresses)
@@ -164,7 +166,7 @@ export default function ProfilePage() {
     } finally {
       setAddrLoading(false)
     }
-  }, [user])
+  }, [token])
 
   // Format time helper function
   const formatTime = (seconds: number): string => {
@@ -183,8 +185,8 @@ export default function ProfilePage() {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
         },
-        credentials: 'include',
         body: JSON.stringify({ fullName, avatarUrl }),
       })
       const data = await res.json()
@@ -196,7 +198,7 @@ export default function ProfilePage() {
     } catch (err: any) {
       setError(err.message)
     }
-  }, [fullName, avatarUrl, fetchProfile])
+  }, [token, fullName, avatarUrl, fetchProfile])
 
   const handleRequestEmailOtp = useCallback(async () => {
     setError(null)
@@ -206,8 +208,8 @@ export default function ProfilePage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
         },
-        credentials: 'include',
         body: JSON.stringify({ newEmail }),
       })
       const data = await res.json()
@@ -220,7 +222,7 @@ export default function ProfilePage() {
     } catch (err: any) {
       setError(err.message)
     }
-  }, [newEmail])
+  }, [token, newEmail])
 
   const handleConfirmEmailChange = useCallback(async () => {
     setError(null)
@@ -231,8 +233,8 @@ export default function ProfilePage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: token ? `Bearer ${token}` : '',
         },
-        credentials: 'include',
         body: JSON.stringify({ newEmail, otp: emailOtp }),
       })
       const data = await res.json()
@@ -252,7 +254,7 @@ export default function ProfilePage() {
     } finally {
       setConfirming(false)
     }
-  }, [newEmail, emailOtp, fetchProfile])
+  }, [token, newEmail, emailOtp, fetchProfile])
 
   // Change password handlers - MUST be before conditional returns
   const sendOtp = useCallback(async () => {
@@ -264,8 +266,8 @@ export default function ProfilePage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
         },
-        credentials: 'include',
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
@@ -279,7 +281,7 @@ export default function ProfilePage() {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [token])
 
   const handleVerify = useCallback(async (e: FormEvent) => {
     e.preventDefault()
@@ -291,8 +293,8 @@ export default function ProfilePage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
         },
-        credentials: 'include',
         body: JSON.stringify({ otp, newPassword, confirmPassword }),
       })
       const data = await res.json()
@@ -308,7 +310,7 @@ export default function ProfilePage() {
     } finally {
       setLoading(false)
     }
-  }, [otp, newPassword, confirmPassword, fetchProfile])
+  }, [token, otp, newPassword, confirmPassword, fetchProfile])
 
   useEffect(() => {
     setIsMounted(true)
@@ -324,7 +326,7 @@ export default function ProfilePage() {
     if (authLoading) return;
 
     // Once auth is resolved, redirect if unauthenticated.
-    if (!user) {
+    if (!token) {
       router.replace('/auth/login');
       return;
     }
@@ -341,7 +343,7 @@ export default function ProfilePage() {
       }
     })();
     // We intentionally exclude fetchProfile here to avoid an endless loop caused by toggling the auth loading state.
-  }, [authLoading, user, loadAddresses]);
+  }, [authLoading, token, loadAddresses]);
 
   // Timer effect for email OTP with cleanup
   useEffect(() => {
@@ -491,16 +493,11 @@ export default function ProfilePage() {
                 onChange={async e => {
                   const file = e.target.files?.[0]
                   if (!file) return
-                  const res = await fetch(`/api/uploads/cloudinary?filename=${encodeURIComponent(file.name)}&folder=avatars`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': file.type },
-                    credentials: 'include',
-                    body: file
-                  })
-                  const data = await res.json()
-                  if (res.ok && data.url) {
-                    setAvatarUrl(data.url)
-                  }
+                  const form = new FormData()
+                  form.append('file', file)
+                  const res = await fetch('/api/uploads', { method: 'POST', body: form })
+                  const { url } = await res.json()
+                  setAvatarUrl(url)
                 }}
                 className={styles.input}
               />
@@ -701,8 +698,8 @@ export default function ProfilePage() {
                             method: 'POST',
                             headers: {
                               'Content-Type': 'application/json',
+                              Authorization: `Bearer ${token}`
                             },
-                            credentials: 'include',
                             body: JSON.stringify({ addressId: a.id }),
                           })
                           fetchProfile()
@@ -719,7 +716,7 @@ export default function ProfilePage() {
                         if (!confirm('Delete this address?')) return
                         await fetch(`/api/addresses/${a.id}`, {
                           method: 'DELETE',
-                          credentials: 'include',
+                          headers: { Authorization: `Bearer ${token}` },
                         })
                         setAddresses(addresses.filter(x => x.id !== a.id))
                       }}
@@ -741,8 +738,8 @@ export default function ProfilePage() {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
+                  Authorization: `Bearer ${token}`,
                 },
-                credentials: 'include',
                 body: JSON.stringify(newAddr),
               })
               const json = await res.json()

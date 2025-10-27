@@ -89,7 +89,7 @@ interface Order {
 }
 
 export default function DashboardOrdersPage() {
-  const { user } = useAuth()
+  const { user, token } = useAuth()
   const role = user?.role
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -105,7 +105,7 @@ export default function DashboardOrdersPage() {
       router.replace('/auth/login')
       return
     }
-    if (user) {
+    if (user && token) {
       fetchOrders()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -115,7 +115,12 @@ export default function DashboardOrdersPage() {
     setLoading(true)
     setError(null)
     try {
-      const res = await fetch('/api/orders', { credentials: 'include' })
+      const res = await fetch('/api/orders', {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      })
       const data = await res.json()
       if (!res.ok) {
         throw new Error(data.error || 'Failed to fetch orders')

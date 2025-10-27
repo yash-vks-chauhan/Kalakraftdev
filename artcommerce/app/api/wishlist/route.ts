@@ -6,15 +6,10 @@ import jwt from 'jsonwebtoken'
 
 const JWT_SECRET = process.env.JWT_SECRET!
 
-// Helper to extract userId from Authorization header or httpOnly cookie
+// Helper to extract userId from Bearer token
 function getUserId(request: Request): number | null {
-  const authHeader = request.headers.get('Authorization') || request.headers.get('authorization') || ''
-  let token = authHeader.replace('Bearer ', '').trim()
-  if (!token) {
-    const cookie = request.headers.get('cookie') || ''
-    const match = cookie.match(/(?:^|;\s*)token=([^;]+)/)
-    if (match) token = decodeURIComponent(match[1])
-  }
+  const authHeader = request.headers.get('Authorization') || ''
+  const token = authHeader.replace('Bearer ', '')
   if (!token) return null
   try {
     const payload: any = jwt.verify(token, JWT_SECRET)

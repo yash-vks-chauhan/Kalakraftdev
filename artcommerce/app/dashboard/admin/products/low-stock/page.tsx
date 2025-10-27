@@ -16,7 +16,7 @@ interface Product {
 }
 
 export default function LowStockPage() {
-  const { user } = useAuth()
+  const { token, user } = useAuth()
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string|null>(null)
@@ -28,7 +28,9 @@ export default function LowStockPage() {
       return
     }
 
-    fetch('/api/admin/products/low-stock', { credentials: 'include' })
+    fetch('/api/admin/products/low-stock', {
+      headers: { Authorization: `Bearer ${token}` }
+    })
       .then(async r => {
         if (!r.ok) throw new Error((await r.json()).error || r.statusText)
         return r.json()
@@ -36,7 +38,7 @@ export default function LowStockPage() {
       .then(json => setProducts(json.products))
       .catch(err => setError(err.message))
       .finally(() => setLoading(false))
-  }, [user])
+  }, [token, user])
 
   if (loading) return <p className="p-8">Loading low-stock products…</p>
   if (error)   return <p className="p-8 text-red-600">{error}</p>

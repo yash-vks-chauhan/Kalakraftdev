@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../../../contexts/AuthContext'
 
 export default function CouponManager() {
-  const { user } = useAuth()
+  const { token, user } = useAuth()
   const [coupons, setCoupons] = useState<any[]>([])
   const [form, setForm] = useState({ code:'', type:'percentage', amount:0, expiresAt:'', usageLimit:'' })
 
@@ -24,8 +24,7 @@ export default function CouponManager() {
     }
     const res = await fetch('/api/admin/coupons', {
       method:'POST',
-      headers:{'Content-Type':'application/json'},
-      credentials: 'include',
+      headers:{'Content-Type':'application/json', Authorization:`Bearer ${token}`},
       body: JSON.stringify(body)
     })
     const j = await res.json()
@@ -36,8 +35,7 @@ export default function CouponManager() {
   async function updateField(id:number, field:string, val:any){
     const res = await fetch('/api/admin/coupons', {
       method:'PATCH',
-      headers:{'Content-Type':'application/json'},
-      credentials: 'include',
+      headers:{'Content-Type':'application/json', Authorization:`Bearer ${token}`},
       body: JSON.stringify({ id, [field]: val })
     })
     if (res.ok) {
@@ -49,8 +47,7 @@ export default function CouponManager() {
     if (!confirm('Delete?')) return
     const res = await fetch('/api/admin/coupons', {
       method:'DELETE',
-      headers:{'Content-Type':'application/json'},
-      credentials: 'include',
+      headers:{'Content-Type':'application/json', Authorization:`Bearer ${token}`},
       body: JSON.stringify({ id })
     })
     if (res.ok) setCoupons(coupons.filter(c=>c.id!==id))

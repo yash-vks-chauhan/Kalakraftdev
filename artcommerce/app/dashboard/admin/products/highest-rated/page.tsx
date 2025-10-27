@@ -13,7 +13,7 @@ interface RatedProduct {
 }
 
 export default function HighestRatedPage() {
-  const { user } = useAuth()
+  const { token } = useAuth()
   const [items, setItems] = useState<RatedProduct[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -21,7 +21,9 @@ export default function HighestRatedPage() {
   useEffect(() => {
     async function fetchRated() {
       try {
-        const res = await fetch('/api/admin/products/highest-rated', { credentials: 'include' })
+        const res = await fetch('/api/admin/products/highest-rated', {
+          headers: { Authorization: `Bearer ${token}` },
+        })
         if (!res.ok) throw new Error((await res.json()).error || 'Failed')
         const data = await res.json()
         setItems(data.products || [])
@@ -32,7 +34,7 @@ export default function HighestRatedPage() {
       }
     }
     fetchRated()
-  }, [user])
+  }, [token])
 
   if (loading) return <p style={{ padding: '1rem' }}>Loading…</p>
   if (error) return <p style={{ padding: '1rem', color: 'red' }}>{error}</p>
