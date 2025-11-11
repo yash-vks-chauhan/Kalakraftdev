@@ -529,6 +529,12 @@ export default function ProductsClient() {
             <div className={styles.topBarInner}>
               {/* Left: Filter Chips */}
               <div className={styles.filterChipsContainer}>
+                {/* Filter Button - Always visible */}
+                <button className={styles.filterDrawerButton}>
+                  <FiFilter size={14} />
+                  Filters
+                </button>
+
                 {currentCategory && (
                   <div className={styles.filterChip}>
                     {KNOWN_CATEGORIES.find(cat => cat.slug === currentCategory)?.name || currentCategory}
@@ -609,7 +615,7 @@ export default function ProductsClient() {
 
               {/* Center: Results Count */}
               <div className={styles.resultsCount}>
-                {products.length} products
+                {products.length} {products.length === 1 ? 'product' : 'products'}
               </div>
 
               {/* Right: Controls */}
