@@ -665,8 +665,9 @@
   cursor: pointer;
   color: #000;
   transition: all 0.3s ease;
-  z-index: 101;
+  z-index: 1000;
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.04);
+  pointer-events: auto;
 }
 
 .sidebarToggleClosed {
