@@ -488,26 +488,7 @@ export default function ProductsClient() {
 
   return (
     <div style={{ display: 'flex', position: 'relative' }} className={isMobileView ? styles.mobilePageWrapper : ''}>
-      {/* Desktop Sidebar Toggle Button */}
-      {!isMobileView && (
-        <button 
-          className={`${animationStyles.sidebarToggle || styles.sidebarToggle} ${!isSidebarOpen ? animationStyles.sidebarToggleClosed || styles.sidebarToggleClosed : ''}`}
-          onClick={() => {
-            setIsSidebarOpen(!isSidebarOpen);
-          }}
-          aria-label={isSidebarOpen ? "Close filters" : "Open filters"}
-        >
-          {isSidebarOpen ? <FiChevronLeft size={18} /> : <FiChevronRight size={18} />}  
-        </button>
-      )}
-
-      {/* Desktop Sidebar */}
-      {!isMobileView && (
-        <aside className={`${animationStyles.sidebar || styles.sidebar} ${!isSidebarOpen ? animationStyles.sidebarClosed || styles.sidebarClosed : ''}`}>
-          {renderFilters()}
-        </aside>
-      )}
-
+      {/* Desktop Sidebar - REMOVED FOR REBUILD */}
 
       {/* Mobile Filter Drawer */}
       {isMobileView && (
@@ -538,7 +519,6 @@ export default function ProductsClient() {
 
       <main className={`
         ${styles.productsContainer} 
-        ${!isMobileView ? (isSidebarOpen ? styles.mainContent : styles.mainContentCollapsed) : ''}
         ${isMobileView ? styles.mobileProductsContainer : ''}
       `}>
         <h1 className={styles.title}>Discover Our Collection</h1>
