@@ -118,7 +118,7 @@ export default function ProductCard({
               ))} 
             </div>
             {prod.ratingCount && prod.ratingCount > 0 && (
-              <span className={styles.ratingCount}>({prod.ratingCount})</span>
+              <span className={styles.ratingText}>({prod.ratingCount})</span>
             )}
           </div>
         )}

@@ -1,0 +1,836 @@
+/* ============================================
+   DESKTOP PRODUCT LISTING PAGE
+   Phase 1: Foundation - IMPLEMENTED ✅
+   ============================================ */
+
+/* === MAIN CONTAINER === */
+.productsContainer {
+  min-height: 100vh;
+  background: #ffffff;
+  padding: 0;
+  margin: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  width: 100%;
+  overflow-x: hidden;
+  
+  /* Design System Variables (scoped to container) */
+  --color-primary: #000000;
+  --color-secondary: #ffffff;
+  --color-text-primary: #000000;
+  --color-text-secondary: #666666;
+  --color-border-light: #f0f0f0;
+  --color-border-medium: #e0e0e0;
+  --color-bg-subtle: #fafafa;
+  
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 0.75rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+  
+  --container-max-width: 1600px;
+  --grid-gap: 2rem;
+  
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* === PAGE TITLE === */
+.title {
+  font-size: 1.8rem;
+  font-weight: 400;
+  color: var(--color-text-primary);
+  letter-spacing: -0.03em;
+  margin: 0 auto;
+  padding: var(--spacing-2xl) var(--spacing-2xl) var(--spacing-xl);
+  max-width: var(--container-max-width);
+  text-align: left;
+  font-family: var(--font-family);
+}
+
+/* === UTILITY STATES === */
+.loadingText,
+.errorMessage {
+  text-align: center;
+  padding: var(--spacing-2xl);
+  margin: var(--spacing-xl) auto;
+  max-width: var(--container-max-width);
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+}
+
+.errorMessage {
+  color: #e53e3e;
+  border: 1px solid rgba(229, 62, 62, 0.2);
+  background: rgba(229, 62, 62, 0.05);
+  border-radius: 0;
+}
+
+.emptyProducts {
+  text-align: center;
+  padding: var(--spacing-2xl);
+  margin: var(--spacing-2xl) auto;
+  max-width: var(--container-max-width);
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+}
+
+/* ============================================
+   PHASE 2: PRODUCT GRID LAYOUT ✅
+   ============================================ */
+
+/* === PRODUCT GRID === */
+.productGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--grid-gap);
+  padding: 0 var(--spacing-2xl) var(--spacing-2xl);
+  max-width: var(--container-max-width);
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Responsive grid adjustments */
+@media (min-width: 1200px) {
+  .productGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (min-width: 900px) and (max-width: 1199px) {
+  .productGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 600px) and (max-width: 899px) {
+  .productGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-lg);
+    padding: 0 var(--spacing-xl) var(--spacing-xl);
+  }
+}
+
+/* ============================================
+   PHASE 3: PRODUCT CARDS ✅
+   ============================================ */
+
+/* === PRODUCT CARD CONTAINER === */
+.productCard {
+  background: var(--color-secondary);
+  border: 1px solid var(--color-border-light);
+  border-radius: 0;
+  overflow: hidden;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  position: relative;
+}
+
+.productCard:hover {
+  transform: translateY(-4px);
+  border-color: var(--color-border-medium);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+/* === IMAGE CONTAINER === */
+.imageContainer {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: var(--color-border-light);
+  overflow: hidden;
+}
+
+.productImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 0.3s ease;
+}
+
+.productImage:hover {
+  opacity: 0.95;
+}
+
+/* Wishlist button on image */
+.wishlistButton {
+  position: absolute;
+  top: var(--spacing-md);
+  right: var(--spacing-md);
+  width: 36px;
+  height: 36px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid var(--color-border-medium);
+  border-radius: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 2;
+}
+
+.wishlistButton:hover {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-secondary);
+}
+
+.wishlistButton.active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-secondary);
+}
+
+/* Stock indicator badge */
+.stockBadge {
+  position: absolute;
+  top: var(--spacing-md);
+  left: var(--spacing-md);
+  background: rgba(0, 0, 0, 0.85);
+  color: var(--color-secondary);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: 0.65rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  border-radius: 0;
+}
+
+.stockBadge.lowStock {
+  background: rgba(220, 38, 38, 0.9);
+}
+
+/* === CARD CONTENT === */
+.cardContent {
+  padding: var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+/* Category label */
+.categoryLabel {
+  font-size: 0.65rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-xs);
+  font-family: var(--font-family);
+}
+
+/* Product name */
+.productName {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  line-height: 1.3;
+  margin-bottom: var(--spacing-sm);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-family: var(--font-family);
+}
+
+/* Price */
+.productPrice {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-md);
+  font-family: var(--font-family);
+}
+
+/* Rating stars */
+.ratingContainer {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-md);
+  font-size: 0.85rem;
+}
+
+.stars {
+  color: #000;
+  display: flex;
+  gap: 2px;
+}
+
+.ratingCount {
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+}
+
+/* === ADD TO CART BUTTON === */
+.addToCartButton {
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--color-primary);
+  color: var(--color-secondary);
+  border: 1px solid var(--color-primary);
+  border-radius: 0;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-family);
+  margin-top: auto;
+}
+
+.addToCartButton:hover {
+  background: var(--color-secondary);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.addToCartButton:active {
+  transform: scale(0.98);
+}
+
+.addToCartButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* === LOADING SKELETON === */
+.skeletonCard {
+  background: var(--color-secondary);
+  border: 1px solid var(--color-border-light);
+  overflow: hidden;
+  height: 100%;
+}
+
+.skeletonImage {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: linear-gradient(
+    90deg,
+    var(--color-border-light) 0%,
+    var(--color-bg-subtle) 50%,
+    var(--color-border-light) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.skeletonContent {
+  padding: var(--spacing-lg);
+}
+
+.skeletonLine {
+  height: 12px;
+  background: linear-gradient(
+    90deg,
+    var(--color-border-light) 0%,
+    var(--color-bg-subtle) 50%,
+    var(--color-border-light) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  margin-bottom: var(--spacing-sm);
+  border-radius: 0;
+}
+
+.skeletonLine.short {
+  width: 60%;
+}
+
+.skeletonLine.medium {
+  width: 80%;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* ============================================
+   PHASE 4: TOP FILTER BAR ✅
+   ============================================ */
+
+/* === TOP BAR CONTAINER === */
+.topBar {
+  position: sticky;
+  top: 0;
+  background: var(--color-secondary);
+  border-bottom: 1px solid var(--color-border-light);
+  padding: var(--spacing-lg) var(--spacing-2xl);
+  z-index: 100;
+  transition: box-shadow 0.2s ease;
+}
+
+.topBar.scrolled {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.topBarInner {
+  max-width: var(--container-max-width);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-lg);
+  flex-wrap: wrap;
+}
+
+/* === FILTER CHIPS === */
+.filterChipsContainer {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.filterChip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  background: var(--color-primary);
+  color: var(--color-secondary);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filterChip:hover {
+  opacity: 0.8;
+}
+
+.filterChipRemove {
+  background: none;
+  border: none;
+  color: var(--color-secondary);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  margin-left: var(--spacing-xs);
+  transition: transform 0.2s ease;
+}
+
+.filterChipRemove:hover {
+  transform: scale(1.2);
+}
+
+.clearAllFilters {
+  background: transparent;
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border-medium);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: 20px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.clearAllFilters:hover {
+  background: var(--color-bg-subtle);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+/* === RESULTS COUNT === */
+.resultsCount {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  font-family: var(--font-family);
+}
+
+/* === RIGHT CONTROLS === */
+.topBarControls {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+/* Sort dropdown */
+.sortContainer {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.sortLabel {
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+}
+
+.sortSelect {
+  padding: var(--spacing-xs) var(--spacing-md);
+  background: var(--color-secondary);
+  border: 1px solid var(--color-border-medium);
+  border-radius: 0;
+  font-size: 0.85rem;
+  font-family: var(--font-family);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 150px;
+}
+
+.sortSelect:hover {
+  border-color: var(--color-primary);
+}
+
+.sortSelect:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+/* View toggle */
+.viewToggle {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--color-border-medium);
+  border-radius: 0;
+  overflow: hidden;
+}
+
+.viewToggleButton {
+  padding: var(--spacing-sm);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  color: var(--color-text-secondary);
+}
+
+.viewToggleButton:not(:last-child) {
+  border-right: 1px solid var(--color-border-medium);
+}
+
+.viewToggleButton:hover {
+  background: var(--color-bg-subtle);
+  color: var(--color-primary);
+}
+
+.viewToggleButton.active {
+  background: var(--color-primary);
+  color: var(--color-secondary);
+}
+
+/* Filter drawer button (desktop) */
+.filterDrawerButton {
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: transparent;
+  border: 1px solid var(--color-border-medium);
+  border-radius: 0;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  transition: all 0.2s ease;
+  color: var(--color-text-primary);
+}
+
+.filterDrawerButton:hover {
+  background: var(--color-primary);
+  color: var(--color-secondary);
+  border-color: var(--color-primary);
+}
+
+/* ============================================
+   PHASE 5: PAGINATION ✅
+   ============================================ */
+
+/* === PAGINATION CONTAINER === */
+.paginationContainer {
+  background: var(--color-secondary);
+  border-top: 1px solid var(--color-border-light);
+  padding: var(--spacing-xl) var(--spacing-2xl);
+  margin: var(--spacing-xl) auto 0;
+  max-width: var(--container-max-width);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  align-items: center;
+}
+
+/* === PAGINATION INFO === */
+.paginationInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.paginationInfoText {
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+  text-align: center;
+  font-family: var(--font-family);
+}
+
+/* === PAGINATION CONTROLS === */
+.paginationControls {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* Pagination buttons */
+.paginationButton {
+  min-width: 40px;
+  height: 40px;
+  padding: 0 var(--spacing-sm);
+  background: var(--color-secondary);
+  border: 1px solid var(--color-border-medium);
+  border-radius: 0;
+  font-size: 0.85rem;
+  font-weight: 500;
+  font-family: var(--font-family);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+}
+
+.paginationButton:hover:not(:disabled) {
+  background: var(--color-bg-subtle);
+  border-color: var(--color-primary);
+}
+
+.paginationButton:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.paginationButton.active {
+  background: var(--color-primary);
+  color: var(--color-secondary);
+  border-color: var(--color-primary);
+}
+
+/* Page numbers */
+.paginationNumbers {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.pageNumber {
+  min-width: 40px;
+  height: 40px;
+  background: var(--color-secondary);
+  border: 1px solid var(--color-border-medium);
+  border-radius: 0;
+  font-size: 0.85rem;
+  font-weight: 500;
+  font-family: var(--font-family);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pageNumber:hover {
+  background: var(--color-bg-subtle);
+  border-color: var(--color-primary);
+}
+
+.pageNumber.active {
+  background: var(--color-primary);
+  color: var(--color-secondary);
+  border-color: var(--color-primary);
+}
+
+.pageEllipsis {
+  min-width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary);
+  font-size: 0.85rem;
+}
+
+/* Keyboard shortcuts hint */
+.keyboardHint {
+  font-size: 0.7rem;
+  color: var(--color-text-secondary);
+  text-align: center;
+  margin-top: var(--spacing-sm);
+  font-style: italic;
+}
+
+/* ============================================
+   MOBILE STYLES (PRESERVED - DO NOT MODIFY)
+   ============================================ */
+
+.mobileProductsContainer {
+  width: 100%;
+  padding: 0;
+  margin: 0 -16px;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.mobilePageWrapper {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+.mobileProductGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 0;
+  margin: 0;
+}
+
+.mobileFilterButton {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #000000;
+  color: #ffffff;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 999;
+  transition: all 0.3s ease;
+}
+
+.mobileFilterButton:hover {
+  transform: scale(1.1);
+}
+
+.mobileFilterDrawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 85%;
+  max-width: 400px;
+  height: 100vh;
+  background: #ffffff;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+  z-index: 1001;
+  overflow-y: auto;
+}
+
+.mobileFilterDrawerOpen {
+  transform: translateX(0);
+}
+
+.mobileFilterOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  z-index: 1000;
+}
+
+.mobileFilterOverlayVisible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.mobileFilterHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.mobileFilterHeader h2 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.mobileFilterCloseButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+}
+
+.mobileFilterContent {
+  padding: 1rem;
+}
+
+.mobileResultsCount {
+  text-align: center;
+  color: #666;
+  font-size: 0.9rem;
+  margin: 1rem 0;
+  padding: 0 1rem;
+}
+
+.mobileActiveFilters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0 1rem 1rem;
+}
+
+.mobileFilterTag {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #000;
+  color: #fff;
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+}
+
+.mobileFilterTag button {
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+}
