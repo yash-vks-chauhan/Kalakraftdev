@@ -523,6 +523,116 @@ export default function ProductsClient() {
       `}>
         <h1 className={styles.title}>Discover Our Collection</h1>
 
+        {/* Desktop Top Filter Bar */}
+        {!isMobileView && (
+          <div className={styles.topBar}>
+            <div className={styles.topBarInner}>
+              {/* Left: Filter Chips */}
+              <div className={styles.filterChipsContainer}>
+                {currentCategory && (
+                  <div className={styles.filterChip}>
+                    {KNOWN_CATEGORIES.find(cat => cat.slug === currentCategory)?.name || currentCategory}
+                    <button 
+                      className={styles.filterChipRemove}
+                      onClick={() => {
+                        const qs = new URLSearchParams(searchParams.toString())
+                        qs.delete('category')
+                        router.replace(qs.toString() ? `/products?${qs}` : '/products')
+                      }}
+                    >
+                      ×
+                    </button>
+                  </div>
+                )}
+                {currentTag && (
+                  <div className={styles.filterChip}>
+                    {currentTag}
+                    <button 
+                      className={styles.filterChipRemove}
+                      onClick={() => {
+                        const qs = new URLSearchParams(searchParams.toString())
+                        qs.delete('usageTag')
+                        router.replace(qs.toString() ? `/products?${qs}` : '/products')
+                      }}
+                    >
+                      ×
+                    </button>
+                  </div>
+                )}
+                {ratingMin && (
+                  <div className={styles.filterChip}>
+                    {ratingMin}+ ★
+                    <button 
+                      className={styles.filterChipRemove}
+                      onClick={() => updateFilter('ratingMin', '')}
+                    >
+                      ×
+                    </button>
+                  </div>
+                )}
+                {lowStockOnly && (
+                  <div className={styles.filterChip}>
+                    Low Stock
+                    <button 
+                      className={styles.filterChipRemove}
+                      onClick={() => updateFilter('lowStockOnly', false)}
+                    >
+                      ×
+                    </button>
+                  </div>
+                )}
+                {inStockOnly && (
+                  <div className={styles.filterChip}>
+                    In Stock
+                    <button 
+                      className={styles.filterChipRemove}
+                      onClick={() => updateFilter('inStockOnly', false)}
+                    >
+                      ×
+                    </button>
+                  </div>
+                )}
+                
+                {/* Clear all filters */}
+                {(currentCategory || currentTag || ratingMin || lowStockOnly || inStockOnly) && (
+                  <button 
+                    className={styles.clearAllFilters}
+                    onClick={() => {
+                      clearAllFilters()
+                      router.replace('/products')
+                    }}
+                  >
+                    Clear All
+                  </button>
+                )}
+              </div>
+
+              {/* Center: Results Count */}
+              <div className={styles.resultsCount}>
+                {products.length} products
+              </div>
+
+              {/* Right: Controls */}
+              <div className={styles.topBarControls}>
+                {/* Sort Dropdown */}
+                <div className={styles.sortContainer}>
+                  <label className={styles.sortLabel}>Sort:</label>
+                  <select 
+                    className={styles.sortSelect}
+                    value={sortOrder}
+                    onChange={(e) => updateFilter('sortOrder', e.target.value)}
+                  >
+                    <option value="">Newest</option>
+                    <option value="oldest">Oldest</option>
+                    <option value="price_asc">Price: Low to High</option>
+                    <option value="price_desc">Price: High to Low</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Results count for mobile */}
         {isMobileView && (
           <p className={styles.mobileResultsCount}>
