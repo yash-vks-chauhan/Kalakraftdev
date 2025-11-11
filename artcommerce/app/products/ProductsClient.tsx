@@ -65,6 +65,7 @@ export default function ProductsClient() {
   const [error, setError] = useState<string | null>(null)
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false)
+  const [isDesktopFilterOpen, setIsDesktopFilterOpen] = useState(false)
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1)
@@ -530,7 +531,10 @@ export default function ProductsClient() {
               {/* Left: Filter Chips */}
               <div className={styles.filterChipsContainer}>
                 {/* Filter Button - Always visible */}
-                <button className={styles.filterDrawerButton}>
+                <button 
+                  className={styles.filterDrawerButton}
+                  onClick={() => setIsDesktopFilterOpen(!isDesktopFilterOpen)}
+                >
                   <FiFilter size={14} />
                   Filters
                 </button>
@@ -637,6 +641,35 @@ export default function ProductsClient() {
               </div>
             </div>
           </div>
+        )}
+
+        {/* Desktop Filter Drawer */}
+        {!isMobileView && isDesktopFilterOpen && (
+          <>
+            <div 
+              className={styles.mobileFilterOverlay}
+              style={{ opacity: 1, visibility: 'visible' }}
+              onClick={() => setIsDesktopFilterOpen(false)}
+            />
+            <div 
+              className={styles.mobileFilterDrawer}
+              style={{ transform: 'translateX(0)' }}
+            >
+              <div className={styles.mobileFilterHeader}>
+                <h2>Filters</h2>
+                <button 
+                  className={styles.mobileFilterCloseButton}
+                  onClick={() => setIsDesktopFilterOpen(false)}
+                  aria-label="Close filters"
+                >
+                  <FiX size={24} />
+                </button>
+              </div>
+              <div className={styles.mobileFilterContent}>
+                {renderFilters()}
+              </div>
+            </div>
+          </>
         )}
 
         {/* Results count for mobile */}
