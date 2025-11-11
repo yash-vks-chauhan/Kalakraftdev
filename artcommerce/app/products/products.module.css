@@ -365,6 +365,340 @@
 }
 
 /* ============================================
+   PHASE 4: TOP FILTER BAR ✅
+   ============================================ */
+
+/* === TOP BAR CONTAINER === */
+.topBar {
+  position: sticky;
+  top: 0;
+  background: var(--color-secondary);
+  border-bottom: 1px solid var(--color-border-light);
+  padding: var(--spacing-lg) var(--spacing-2xl);
+  z-index: 100;
+  transition: box-shadow 0.2s ease;
+}
+
+.topBar.scrolled {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.topBarInner {
+  max-width: var(--container-max-width);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-lg);
+  flex-wrap: wrap;
+}
+
+/* === FILTER CHIPS === */
+.filterChipsContainer {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.filterChip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  background: var(--color-primary);
+  color: var(--color-secondary);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filterChip:hover {
+  opacity: 0.8;
+}
+
+.filterChipRemove {
+  background: none;
+  border: none;
+  color: var(--color-secondary);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  margin-left: var(--spacing-xs);
+  transition: transform 0.2s ease;
+}
+
+.filterChipRemove:hover {
+  transform: scale(1.2);
+}
+
+.clearAllFilters {
+  background: transparent;
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border-medium);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: 20px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.clearAllFilters:hover {
+  background: var(--color-bg-subtle);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+/* === RESULTS COUNT === */
+.resultsCount {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  font-family: var(--font-family);
+}
+
+/* === RIGHT CONTROLS === */
+.topBarControls {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+/* Sort dropdown */
+.sortContainer {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.sortLabel {
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+}
+
+.sortSelect {
+  padding: var(--spacing-xs) var(--spacing-md);
+  background: var(--color-secondary);
+  border: 1px solid var(--color-border-medium);
+  border-radius: 0;
+  font-size: 0.85rem;
+  font-family: var(--font-family);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 150px;
+}
+
+.sortSelect:hover {
+  border-color: var(--color-primary);
+}
+
+.sortSelect:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+/* View toggle */
+.viewToggle {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--color-border-medium);
+  border-radius: 0;
+  overflow: hidden;
+}
+
+.viewToggleButton {
+  padding: var(--spacing-sm);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  color: var(--color-text-secondary);
+}
+
+.viewToggleButton:not(:last-child) {
+  border-right: 1px solid var(--color-border-medium);
+}
+
+.viewToggleButton:hover {
+  background: var(--color-bg-subtle);
+  color: var(--color-primary);
+}
+
+.viewToggleButton.active {
+  background: var(--color-primary);
+  color: var(--color-secondary);
+}
+
+/* Filter drawer button (desktop) */
+.filterDrawerButton {
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: transparent;
+  border: 1px solid var(--color-border-medium);
+  border-radius: 0;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  transition: all 0.2s ease;
+  color: var(--color-text-primary);
+}
+
+.filterDrawerButton:hover {
+  background: var(--color-primary);
+  color: var(--color-secondary);
+  border-color: var(--color-primary);
+}
+
+/* ============================================
+   PHASE 5: PAGINATION ✅
+   ============================================ */
+
+/* === PAGINATION CONTAINER === */
+.paginationContainer {
+  background: var(--color-secondary);
+  border-top: 1px solid var(--color-border-light);
+  padding: var(--spacing-xl) var(--spacing-2xl);
+  margin: var(--spacing-xl) auto 0;
+  max-width: var(--container-max-width);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  align-items: center;
+}
+
+/* === PAGINATION INFO === */
+.paginationInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.paginationInfoText {
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+  text-align: center;
+  font-family: var(--font-family);
+}
+
+/* === PAGINATION CONTROLS === */
+.paginationControls {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* Pagination buttons */
+.paginationButton {
+  min-width: 40px;
+  height: 40px;
+  padding: 0 var(--spacing-sm);
+  background: var(--color-secondary);
+  border: 1px solid var(--color-border-medium);
+  border-radius: 0;
+  font-size: 0.85rem;
+  font-weight: 500;
+  font-family: var(--font-family);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+}
+
+.paginationButton:hover:not(:disabled) {
+  background: var(--color-bg-subtle);
+  border-color: var(--color-primary);
+}
+
+.paginationButton:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.paginationButton.active {
+  background: var(--color-primary);
+  color: var(--color-secondary);
+  border-color: var(--color-primary);
+}
+
+/* Page numbers */
+.paginationNumbers {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.pageNumber {
+  min-width: 40px;
+  height: 40px;
+  background: var(--color-secondary);
+  border: 1px solid var(--color-border-medium);
+  border-radius: 0;
+  font-size: 0.85rem;
+  font-weight: 500;
+  font-family: var(--font-family);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pageNumber:hover {
+  background: var(--color-bg-subtle);
+  border-color: var(--color-primary);
+}
+
+.pageNumber.active {
+  background: var(--color-primary);
+  color: var(--color-secondary);
+  border-color: var(--color-primary);
+}
+
+.pageEllipsis {
+  min-width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary);
+  font-size: 0.85rem;
+}
+
+/* Keyboard shortcuts hint */
+.keyboardHint {
+  font-size: 0.7rem;
+  color: var(--color-text-secondary);
+  text-align: center;
+  margin-top: var(--spacing-sm);
+  font-style: italic;
+}
+
+/* ============================================
    MOBILE STYLES (PRESERVED - DO NOT MODIFY)
    ============================================ */
 
