@@ -249,11 +249,12 @@ export default function ProductsClient() {
   }, [currentCategory, currentTag, priceMin, priceMax, sortOrder, lowStockOnly, inStockOnly, ratingMin])
 
   // Apply scroll-based card animations (optimized)
+  // Pause animations while any filter drawer is open to avoid visual size shifts
   useEffect(() => {
-    if (!isMobileView) {
+    if (!isMobileView && !isDesktopFilterOpen && !isMobileFilterOpen) {
       applyCardAnimations(productGridRef)
     }
-  })
+  }, [isMobileView, isDesktopFilterOpen, isMobileFilterOpen, products.length, currentPage, applyCardAnimations])
 
   // Close mobile filter drawer when switching to desktop view
   useEffect(() => {
@@ -647,13 +648,11 @@ export default function ProductsClient() {
         {!isMobileView && isDesktopFilterOpen && (
           <>
             <div 
-              className={styles.mobileFilterOverlay}
-              style={{ opacity: 1, visibility: 'visible' }}
+              className={`${styles.mobileFilterOverlay} ${styles.mobileFilterOverlayVisible}`}
               onClick={() => setIsDesktopFilterOpen(false)}
             />
             <div 
-              className={styles.mobileFilterDrawer}
-              style={{ transform: 'translateX(0)' }}
+              className={`${styles.desktopFilterDrawer} ${styles.desktopFilterDrawerOpen}`}
             >
               <div className={styles.mobileFilterHeader}>
                 <h2>Filters</h2>

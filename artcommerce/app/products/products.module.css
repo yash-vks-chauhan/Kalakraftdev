@@ -773,11 +773,36 @@
   box-shadow: var(--shadow-lg);
   z-index: 999;
   transform: translateX(-100%);
-  transition: transform var(--transition-base);
+  transition: transform var(--transition);
   overflow-y: auto;
 }
 
 .mobileFilterDrawerOpen {
+  transform: translateX(0);
+}
+
+/* ========================================
+   DESKTOP FILTER SIDESHEET (RIGHT)
+   Minimal, professional sheet that overlays content (no grid reflow)
+   ======================================== */
+
+.desktopFilterDrawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 420px;
+  max-width: 40vw;
+  background: var(--color-bg);
+  box-shadow: -8px 0 24px rgba(0,0,0,0.08);
+  z-index: 1000;
+  transform: translateX(100%);
+  transition: transform var(--transition-base);
+  overflow-y: auto;
+  will-change: transform;
+}
+
+.desktopFilterDrawerOpen {
   transform: translateX(0);
 }
 
