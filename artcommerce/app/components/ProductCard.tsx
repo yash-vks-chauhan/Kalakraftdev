@@ -1,10 +1,13 @@
+
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import WishlistButton from './WishlistButton'
+import ShinyText from './ShinyText'
 import { useDeviceDetection } from '../hooks/useDeviceDetection'
+import { useImagePreload } from '../hooks/useImagePreload'
 import styles from '../products/products.module.css'
 import animationStyles from '../products/products-animations.module.css'
 
@@ -51,6 +54,17 @@ export default function ProductCard({
 
   const hasMultipleImages = prod.imageUrls.length > 1
 
+  // Preload neighbors for instant swaps
+  const { preloadImage } = useImagePreload(prod.imageUrls, { priorityCount: 1 })
+  useEffect(() => {
+    if (!hasMultipleImages) return
+    const total = prod.imageUrls.length
+    const next = (currentImageIndex + 1) % total
+    const prev = (currentImageIndex - 1 + total) % total
+    preloadImage(prod.imageUrls[next])
+    preloadImage(prod.imageUrls[prev])
+  }, [currentImageIndex, hasMultipleImages, prod.imageUrls, preloadImage])
+
   const handlePrevImage = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
@@ -65,11 +79,11 @@ export default function ProductCard({
     setCurrentImageIndex((prev) => (prev === prod.imageUrls.length - 1 ? 0 : prev + 1))
   }
 
-  // Image animation variants - pure crossfade (minimal, professional)
+  // Image animation variants - crossfade with micro-scale
   const imageVariants = {
-    enter: () => ({ opacity: 0 }),
-    center: { opacity: 1 },
-    exit: () => ({ opacity: 0 })
+    enter: () => ({ opacity: 0, scale: 0.995 }),
+    center: { opacity: 1, scale: 1 },
+    exit: () => ({ opacity: 0, scale: 0.995 })
   }
 
   // Arrow button animation
@@ -102,7 +116,7 @@ export default function ProductCard({
     >
       {/* Image Container */}
       <div className={styles.imageContainer}>
-        <AnimatePresence initial={false} custom={direction} mode="wait">
+        <AnimatePresence initial={false} custom={direction} mode="sync">
           <motion.div
             key={currentImageIndex}
             custom={direction}
@@ -111,7 +125,8 @@ export default function ProductCard({
             animate="center"
             exit="exit"
             transition={{
-              opacity: { duration: 0.24, ease: 'easeOut' }
+              opacity: { duration: 0.2, ease: 'easeOut' },
+              scale: { duration: 0.2, ease: 'easeOut' }
             }}
             style={{
               position: 'absolute',
@@ -122,7 +137,7 @@ export default function ProductCard({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              willChange: 'opacity'
+              willChange: 'opacity, transform'
             }}
           >
             <img 
@@ -152,7 +167,7 @@ export default function ProductCard({
         {/* Stock Badge */}
         {prod.stockQuantity <= LOW_STOCK_THRESHOLD && prod.stockQuantity > 0 && (
           <span className={`${styles.stockBadge} ${styles.lowStock}`}>
-            Only {prod.stockQuantity} left
+            <ShinyText text={`Only ${prod.stockQuantity} left`} speed={3} />
           </span>
         )}
         {prod.stockQuantity === 0 && (
@@ -199,11 +214,10 @@ export default function ProductCard({
                   className={`${styles.imageIndicatorDot} ${idx === currentImageIndex ? styles.active : ''}`}
                   variants={dotVariants}
                   animate={idx === currentImageIndex ? "active" : "inactive"}
-                  transition={{
-                    type: "spring",
-                    stiffness: 300,
-                    damping: 25
-                  }}
+                  transition={idx === currentImageIndex 
+                    ? { type: "spring", stiffness: 300, damping: 25, delay: 0.05 }
+                    : { type: "spring", stiffness: 300, damping: 25 }
+                  }
                 />
               ))}
             </div>
