@@ -78,6 +78,15 @@ export default function ProductsClient() {
   const [isDesktopFilterOpen, setIsDesktopFilterOpen] = useState(false)
   const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false)
 
+  // State for accordion open/close
+  const [openSections, setOpenSections] = useState<{[key: string]: boolean}>({
+    category: true,
+    mood: false,
+    rating: false,
+    stock: false,
+    sort: false
+  })
+
   // Infinite scroll state (desktop only)
   const [displayCount, setDisplayCount] = useState(15)
   const loadMoreTriggerRef = useRef<HTMLDivElement>(null)
@@ -361,15 +370,6 @@ export default function ProductsClient() {
     />
   )
   if (error) return <p className={styles.errorMessage}>Error: {error}</p>
-
-  // State for accordion open/close
-  const [openSections, setOpenSections] = useState<{[key: string]: boolean}>({
-    category: true,
-    mood: false,
-    rating: false,
-    stock: false,
-    sort: false
-  })
 
   const toggleSection = (section: string) => {
     setOpenSections(prev => ({ ...prev, [section]: !prev[section] }))
