@@ -60,14 +60,20 @@ export default function ProductsClient() {
   // Remaining component state (reduced from 15+ to 6 variables)
   const [allProducts, setAllProducts] = useState<Product[]>([])
   const [products, setProducts] = useState<Product[]>([])
+  const [displayedProducts, setDisplayedProducts] = useState<Product[]>([])
   const [usageTags, setUsageTags] = useState<string[]>([])
   const [loading, setLoading] = useState<boolean>(false)
+  const [loadingMore, setLoadingMore] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false)
   const [isDesktopFilterOpen, setIsDesktopFilterOpen] = useState(false)
 
-  // Pagination state
+  // Infinite scroll state (desktop only)
+  const [displayCount, setDisplayCount] = useState(15)
+  const loadMoreTriggerRef = useRef<HTMLDivElement>(null)
+
+  // Pagination state (mobile only)
   const [currentPage, setCurrentPage] = useState(1)
   const productsPerPage = 15
 
@@ -85,17 +91,63 @@ export default function ProductsClient() {
     inStockOnly
   } = filters
 
-  // Pagination calculations
+  // Pagination calculations (mobile only)
   const totalProducts = allProducts.length
   const totalPages = Math.ceil(totalProducts / productsPerPage)
   const startIndex = (currentPage - 1) * productsPerPage
   const endIndex = startIndex + productsPerPage
   const paginatedProducts = allProducts.slice(startIndex, endIndex)
 
-  // Update products when pagination changes
+  // Update products based on view type
   useEffect(() => {
-    setProducts(paginatedProducts)
-  }, [allProducts, currentPage, productsPerPage])
+    if (isMobileView) {
+      // Mobile: use pagination
+      setProducts(paginatedProducts)
+    } else {
+      // Desktop: use all products for infinite scroll
+      setProducts(allProducts)
+      setDisplayedProducts(allProducts.slice(0, displayCount))
+    }
+  }, [allProducts, currentPage, productsPerPage, isMobileView, displayCount])
+
+  // Infinite scroll observer for desktop
+  useEffect(() => {
+    if (isMobileView || !loadMoreTriggerRef.current) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries
+        if (entry.isIntersecting && displayedProducts.length < allProducts.length && !loadingMore) {
+          // Load more products
+          setLoadingMore(true)
+          setTimeout(() => {
+            const newCount = Math.min(displayCount + 15, allProducts.length)
+            setDisplayCount(newCount)
+            setDisplayedProducts(allProducts.slice(0, newCount))
+            setLoadingMore(false)
+          }, 300) // Small delay for smooth UX
+        }
+      },
+      {
+        root: null,
+        rootMargin: '200px', // Start loading 200px before reaching the trigger
+        threshold: 0.1
+      }
+    )
+
+    observer.observe(loadMoreTriggerRef.current)
+
+    return () => {
+      if (loadMoreTriggerRef.current) {
+        observer.unobserve(loadMoreTriggerRef.current)
+      }
+    }
+  }, [isMobileView, displayedProducts.length, allProducts.length, displayCount, loadingMore])
+
+  // Reset display count when filters change
+  useEffect(() => {
+    setDisplayCount(15)
+  }, [currentCategory, currentTag, priceMin, priceMax, sortOrder, lowStockOnly, inStockOnly, ratingMin])
 
   // Pagination handlers
   const handlePreviousPage = () => {
@@ -736,78 +788,40 @@ export default function ProductsClient() {
                 <p className={styles.emptyProducts}>No products found.</p>
               ) : products.length > 50 ? (
                 <VirtualProductGrid
-                  products={products}
+                  products={displayedProducts}
                   className={styles.productGrid}
                 />
               ) : (
-                <div className={styles.productGrid} ref={productGridRef}>
-                  {products.map((prod, index) => (
-                    <ProductCard 
-                      key={prod.id}
-                      product={prod}
-                      index={index}
-                      className={animationStyles.productCard}
-                    />
-                  ))}
-                </div>
-              )}
-
-              {totalPages > 1 && (
-                <div className={styles.paginationContainer}>
-                  <div className={styles.paginationInfo}>
-                    <span className={styles.paginationInfoText}>
-                      Showing {startIndex + 1} to {Math.min(endIndex, totalProducts)} of {totalProducts} products
-                    </span>
-                    <span className={styles.paginationInfoText}>
-                      Page {currentPage} of {totalPages}
-                    </span>
+                <>
+                  <div className={styles.productGrid} ref={productGridRef}>
+                    {displayedProducts.map((prod, index) => (
+                      <ProductCard 
+                        key={prod.id}
+                        product={prod}
+                        index={index}
+                        className={animationStyles.productCard}
+                      />
+                    ))}
                   </div>
                   
-                  <div className={styles.paginationControls}>
-                    <button
-                      onClick={handlePreviousPage}
-                      disabled={currentPage === 1}
-                      className={styles.paginationButton}
-                    >
-                      <FiChevronLeft size={16} />
-                      Previous
-                    </button>
-                    
-                    <div className={styles.paginationNumbers}>
-                      {currentPage > 3 && (
-                        <>
-                          <button onClick={() => handlePageSelect(1)} className={styles.pageNumber}>1</button>
-                          {currentPage > 4 && <span className={styles.paginationDots}>...</span>}
-                        </>
-                      )}
-                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                        const pageStart = Math.max(1, Math.min(currentPage - 2, totalPages - 4))
-                        const page = pageStart + i
-                        if (page > totalPages) return null
-                        return (
-                          <button key={page} onClick={() => handlePageSelect(page)} className={`${styles.pageNumber} ${page === currentPage ? styles.pageNumberActive : ''}`}>
-                            {page}
-                          </button>
-                        )
-                      })}
-                      {currentPage < totalPages - 2 && (
-                        <>
-                          {currentPage < totalPages - 3 && <span className={styles.paginationDots}>...</span>}
-                          <button onClick={() => handlePageSelect(totalPages)} className={styles.pageNumber}>{totalPages}</button>
-                        </>
+                  {/* Infinite Scroll Trigger for Desktop */}
+                  {displayedProducts.length < allProducts.length && (
+                    <div ref={loadMoreTriggerRef} className={styles.loadMoreTrigger}>
+                      {loadingMore && (
+                        <div className={styles.loadingMoreContainer}>
+                          <LoadingSpinner size="medium" message="Loading more products..." />
+                        </div>
                       )}
                     </div>
-                    
-                    <button
-                      onClick={handleNextPage}
-                      disabled={currentPage === totalPages}
-                      className={styles.paginationButton}
-                    >
-                      Next
-                      <FiChevronRight size={16} />
-                    </button>
-                  </div>
-                </div>
+                  )}
+
+                  {/* Show count indicator */}
+                  {displayedProducts.length >= allProducts.length && allProducts.length > 15 && (
+                    <div className={styles.allLoadedMessage}>
+                      <p>All {allProducts.length} products loaded</p>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>
