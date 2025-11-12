@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
+import { motion, AnimatePresence } from 'framer-motion'
 import WishlistButton from '../components/WishlistButton'
 import ProductCard from '../components/ProductCard'
 import VirtualProductGrid from '../components/VirtualProductGrid'
@@ -719,28 +720,58 @@ export default function ProductsClient() {
                       aria-expanded={isSortDropdownOpen}
                     >
                       <span>{getCurrentSortLabel()}</span>
-                      <FiChevronDown 
-                        className={`${styles.selectArrow} ${isSortDropdownOpen ? styles.selectArrowOpen : ''}`} 
-                        size={16} 
-                      />
+                      <motion.div
+                        animate={{ rotate: isSortDropdownOpen ? 180 : 0 }}
+                        transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+                      >
+                        <FiChevronDown size={16} style={{ opacity: 0.6 }} />
+                      </motion.div>
                     </button>
                     
-                    {isSortDropdownOpen && (
-                      <div className={styles.selectDropdown}>
-                        {SORT_OPTIONS.map((option) => (
-                          <button
-                            key={option.value}
-                            className={`${styles.selectOption} ${sortOrder === option.value ? styles.selectOptionActive : ''}`}
-                            onClick={() => handleSortSelect(option.value)}
-                          >
-                            {option.label}
-                            {sortOrder === option.value && (
-                              <span className={styles.checkmark}>✓</span>
-                            )}
-                          </button>
-                        ))}
-                      </div>
-                    )}
+                    <AnimatePresence>
+                      {isSortDropdownOpen && (
+                        <motion.div 
+                          className={styles.selectDropdown}
+                          initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                          transition={{ 
+                            duration: 0.25, 
+                            ease: [0.4, 0, 0.2, 1]
+                          }}
+                        >
+                          {SORT_OPTIONS.map((option, index) => (
+                            <motion.button
+                              key={option.value}
+                              className={`${styles.selectOption} ${sortOrder === option.value ? styles.selectOptionActive : ''}`}
+                              onClick={() => handleSortSelect(option.value)}
+                              initial={{ opacity: 0, x: -10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ 
+                                duration: 0.2, 
+                                delay: index * 0.05,
+                                ease: [0.4, 0, 0.2, 1]
+                              }}
+                            >
+                              {option.label}
+                              {sortOrder === option.value && (
+                                <motion.span 
+                                  className={styles.checkmark}
+                                  initial={{ scale: 0, opacity: 0 }}
+                                  animate={{ scale: 1, opacity: 1 }}
+                                  transition={{ 
+                                    duration: 0.2,
+                                    ease: [0.4, 0, 0.2, 1]
+                                  }}
+                                >
+                                  ✓
+                                </motion.span>
+                              )}
+                            </motion.button>
+                          ))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
                 </div>
               </div>
