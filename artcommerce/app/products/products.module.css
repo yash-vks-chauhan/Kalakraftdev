@@ -60,30 +60,33 @@
 }
 
 /* ========================================
-   PAGE TITLE - FROSTY GLASSMORPHISM HEADER
+   PAGE TITLE - CENTERED & BOLD
    ======================================== */
 
 .title {
   font-size: 32px;
-  font-weight: 500;
+  font-weight: 700;
   color: var(--color-text-primary);
   margin: 0;
   padding: 48px var(--spacing-3xl) 32px;
   line-height: 1.2;
   letter-spacing: -0.03em;
   position: relative;
+  text-align: center;
 }
 
 @media (min-width: 1024px) {
   .title {
     font-size: 38px;
     padding: 56px var(--spacing-3xl) 36px;
+    font-weight: 700;
   }
 }
 
 @media (min-width: 1440px) {
   .title {
     font-size: 42px;
+    font-weight: 700;
   }
 }
 
@@ -94,28 +97,22 @@
 
 /* ========================================
    TOP BAR - MINIMAL PROFESSIONAL DESIGN
-   Clean, simple, no shadows, centered layout
+   Clean, simple, no card container
    ======================================== */
 
 .topBar {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 18px var(--spacing-3xl);
+  padding: 0 var(--spacing-3xl);
   margin: 0 var(--spacing-3xl) 48px;
   position: relative;
   
-  /* Minimal clean background */
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  /* No background - transparent */
+  background: transparent;
   
-  /* Simple border, no shadows */
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 12px;
-  
-  /* Smooth transitions */
-  transition: all 0.25s ease;
+  /* No border or shadows */
+  border: none;
 }
 
 .topBar::before {
@@ -123,13 +120,12 @@
 }
 
 .topBar:hover {
-  background: rgba(255, 255, 255, 0.92);
-  border-color: rgba(0, 0, 0, 0.12);
+  background: transparent;
 }
 
 @media (min-width: 1024px) {
   .topBar {
-    padding: 18px 32px;
+    padding: 0 32px;
     margin-left: var(--spacing-3xl);
     margin-right: var(--spacing-3xl);
     margin-bottom: 56px;
@@ -138,7 +134,7 @@
 
 @media (min-width: 1440px) {
   .topBar {
-    padding: 18px 40px;
+    padding: 0 40px;
   }
 }
 
@@ -157,39 +153,42 @@
   flex: 0 0 auto;
 }
 
-/* Minimal Clean Button */
+/* Minimal Pill-Shaped Button */
 .filterButton,
 .filterDrawerButton {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 18px;
+  padding: 10px 20px;
   
   /* Clean minimal background */
-  background: rgba(250, 250, 250, 0.9);
+  background: rgba(245, 245, 245, 0.95);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   
   color: var(--color-text-primary);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 50px; /* Pill shape */
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   letter-spacing: -0.01em;
   
-  transition: all 0.2s ease;
+  /* No transitions or hover effects */
+  transition: none;
 }
 
 .filterButton:hover,
 .filterDrawerButton:hover {
-  background: rgba(255, 255, 255, 0.95);
-  border-color: rgba(0, 0, 0, 0.12);
+  /* No hover effect */
+  background: rgba(245, 245, 245, 0.95);
+  border-color: rgba(0, 0, 0, 0.06);
 }
 
 .filterButton:active,
 .filterDrawerButton:active {
-  transform: scale(0.98);
+  /* No active effect */
+  transform: none;
 }
 
 .filterButton svg,
@@ -207,30 +206,32 @@
   flex: 1;
 }
 
-/* Minimal Clean Filter Chip */
+/* Minimal Pill-Shaped Filter Chip */
 .filterChip {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 16px;
+  padding: 8px 18px;
   
   /* Clean minimal background */
-  background: rgba(250, 250, 250, 0.9);
+  background: rgba(245, 245, 245, 0.95);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 50px; /* Pill shape */
   font-size: 13px;
   font-weight: 500;
   color: var(--color-text-primary);
   
-  transition: all 0.2s ease;
+  /* No transitions */
+  transition: none;
 }
 
 .filterChip:hover {
-  background: rgba(255, 255, 255, 0.95);
-  border-color: rgba(0, 0, 0, 0.12);
+  /* No hover effect */
+  background: rgba(245, 245, 245, 0.95);
+  border-color: rgba(0, 0, 0, 0.06);
 }
 
 .filterChipRemove {
@@ -255,28 +256,30 @@
   opacity: 1;
 }
 
-/* Clear All Button - Minimal Clean */
+/* Clear All Button - Minimal Pill Shape */
 .clearAllFilters {
-  padding: 8px 16px;
+  padding: 8px 18px;
   
-  background: rgba(250, 250, 250, 0.9);
+  background: rgba(245, 245, 245, 0.95);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 50px; /* Pill shape */
   font-size: 13px;
   font-weight: 500;
   color: var(--color-text-secondary);
   cursor: pointer;
   
-  transition: all 0.2s ease;
+  /* No transitions */
+  transition: none;
 }
 
 .clearAllFilters:hover {
-  background: rgba(255, 255, 255, 0.95);
-  border-color: rgba(0, 0, 0, 0.12);
-  color: var(--color-text-primary);
+  /* No hover effect */
+  background: rgba(245, 245, 245, 0.95);
+  border-color: rgba(0, 0, 0, 0.06);
+  color: var(--color-text-secondary);
 }
 
 .topBarControls,
@@ -306,7 +309,7 @@
   white-space: nowrap;
 }
 
-/* Custom Sort Dropdown - Frosty Glassmorphism */
+/* Custom Sort Dropdown - Minimal Pill Shape */
 .customSelect {
   position: relative;
   min-width: 180px;
@@ -317,28 +320,30 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 10px 16px;
+  padding: 10px 20px;
   width: 100%;
   
-  /* Frosty glassmorphism */
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  /* Clean minimal background */
+  background: rgba(245, 245, 245, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 50px; /* Pill shape */
   color: var(--color-text-primary);
   font-size: 14px;
   font-weight: 500;
   font-family: var(--font-family);
   cursor: pointer;
   
-  transition: all 0.25s ease;
+  /* No transitions or hover effects */
+  transition: none;
 }
 
 .selectTrigger:hover {
-  background: rgba(255, 255, 255, 0.95);
-  border-color: rgba(0, 0, 0, 0.12);
+  /* No hover effect */
+  background: rgba(245, 245, 245, 0.95);
+  border-color: rgba(0, 0, 0, 0.06);
 }
 
 .selectArrow {
