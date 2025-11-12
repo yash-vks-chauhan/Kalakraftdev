@@ -58,29 +58,29 @@
 }
 
 /* ========================================
-   PAGE TITLE - MODERN MINIMAL HEADER
+   PAGE TITLE - ELEGANT MODERN HEADER
    ======================================== */
 
 .title {
-  font-size: 20px;
-  font-weight: 400;
+  font-size: 32px;
+  font-weight: 500;
   color: var(--color-text-primary);
   margin: 0;
-  padding: 32px var(--spacing-3xl) 20px;
-  line-height: 1.3;
-  letter-spacing: -0.01em;
+  padding: 48px var(--spacing-3xl) 32px;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
 }
 
 @media (min-width: 1024px) {
   .title {
-    font-size: 22px;
-    padding: 40px var(--spacing-3xl) 24px;
+    font-size: 38px;
+    padding: 56px var(--spacing-3xl) 36px;
   }
 }
 
 @media (min-width: 1440px) {
   .title {
-    font-size: 24px;
+    font-size: 42px;
   }
 }
 
@@ -90,22 +90,23 @@
 }
 
 /* ========================================
-   TOP BAR - ULTRA MINIMAL MODERN CONTROLS
+   TOP BAR - SOPHISTICATED MODERN CONTROLS
    ======================================== */
 
 .topBar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 var(--spacing-3xl) 32px;
+  padding: 0 var(--spacing-3xl) 48px;
   margin-bottom: 0;
+  border-bottom: 1px solid #f0f0f0;
 }
 
 @media (min-width: 1024px) {
   .topBar {
     padding-left: var(--spacing-3xl);
     padding-right: var(--spacing-3xl);
-    padding-bottom: 40px;
+    padding-bottom: 32px;
   }
 }
 
@@ -114,91 +115,74 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  gap: 24px;
+  gap: 32px;
 }
 
 .filterSection {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
   flex: 0 0 auto;
 }
 
-/* Ultra Minimal Modern Button */
+/* Modern Clean Button */
 .filterButton,
 .filterDrawerButton {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
-  background: transparent;
+  gap: 8px;
+  padding: 10px 20px;
+  background: #ffffff;
   color: var(--color-text-primary);
-  border: none;
-  border-radius: 0;
-  font-size: 13px;
-  font-weight: 400;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.15s ease;
-  letter-spacing: 0.02em;
-  text-transform: none;
-  position: relative;
-}
-
-.filterButton::after,
-.filterDrawerButton::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: var(--color-text-primary);
-  transform: scaleX(0);
-  transition: transform 0.2s ease;
-}
-
-.filterButton:hover::after,
-.filterDrawerButton:hover::after {
-  transform: scaleX(1);
+  transition: all 0.2s ease;
+  letter-spacing: -0.01em;
 }
 
 .filterButton:hover,
 .filterDrawerButton:hover {
-  opacity: 0.7;
+  background: #fafafa;
+  border-color: #d0d0d0;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .filterButton svg,
 .filterDrawerButton svg {
-  width: 14px;
-  height: 14px;
-  opacity: 0.7;
+  width: 16px;
+  height: 16px;
 }
 
 .filterChipsContainer {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   flex-wrap: wrap;
   align-items: center;
   flex: 1;
-  margin-left: 16px;
+  margin-left: 20px;
 }
 
 .filterChip {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 4px 12px;
-  background: #fafafa;
-  border: none;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 400;
+  padding: 6px 14px;
+  background: #f8f8f8;
+  border: 1px solid #e8e8e8;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
   color: var(--color-text-primary);
-  transition: all 0.15s ease;
+  transition: all 0.2s ease;
 }
 
 .filterChip:hover {
   background: #f0f0f0;
+  border-color: #d8d8d8;
 }
 
 .filterChipRemove {
@@ -206,15 +190,15 @@
   border: none;
   color: var(--color-text-secondary);
   cursor: pointer;
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1;
   padding: 0;
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: color 0.15s ease;
+  transition: color 0.2s ease;
 }
 
 .filterChipRemove:hover {
@@ -222,20 +206,20 @@
 }
 
 .clearAllFilters {
-  padding: 4px 12px;
+  padding: 6px 14px;
   background: transparent;
-  border: none;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 400;
+  border: 1px solid #e8e8e8;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
   color: var(--color-text-secondary);
   cursor: pointer;
-  transition: all 0.15s ease;
-  text-decoration: underline;
-  text-underline-offset: 2px;
+  transition: all 0.2s ease;
 }
 
 .clearAllFilters:hover {
+  background: #f8f8f8;
+  border-color: #d8d8d8;
   color: var(--color-text-primary);
 }
 
@@ -243,13 +227,13 @@
 .rightSection {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 24px;
 }
 
 .resultsCount {
   color: var(--color-text-secondary);
-  font-size: 13px;
-  font-weight: 400;
+  font-size: 14px;
+  font-weight: 500;
   white-space: nowrap;
 }
 
@@ -260,38 +244,39 @@
 }
 
 .sortLabel {
-  color: var(--color-text-secondary);
-  font-size: 13px;
-  font-weight: 400;
+  color: var(--color-text-primary);
+  font-size: 14px;
+  font-weight: 500;
   white-space: nowrap;
 }
 
 .sortSelect {
-  padding: 8px 32px 8px 12px;
-  border: none;
-  border-bottom: 1px solid #e5e5e5;
-  border-radius: 0;
-  background: transparent;
+  padding: 10px 36px 10px 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  background: #ffffff;
   color: var(--color-text-primary);
-  font-size: 13px;
-  font-weight: 400;
+  font-size: 14px;
+  font-weight: 500;
   font-family: var(--font-family);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.2s ease;
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 12 12'%3E%3Cpath fill='%23757575' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23111' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 8px center;
-  min-width: 120px;
+  background-position: right 12px center;
+  min-width: 160px;
 }
 
 .sortSelect:hover {
-  border-bottom-color: var(--color-text-primary);
+  background: #fafafa;
+  border-color: #d0d0d0;
 }
 
 .sortSelect:focus {
   outline: none;
-  border-bottom-color: var(--color-text-primary);
+  border-color: var(--color-text-primary);
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
 }
 
 /* ========================================
