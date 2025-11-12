@@ -356,14 +356,14 @@
 /* Larger images for desktop - full card width */
 @media (min-width: 1024px) {
   .imageContainer {
-    padding-top: 120%;
+    padding-top: 100%;
     margin-bottom: var(--spacing-md);
   }
 }
 
 @media (min-width: 1280px) {
   .imageContainer {
-    padding-top: 125%;
+    padding-top: 105%;
   }
 }
 
