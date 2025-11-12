@@ -818,7 +818,7 @@ export default function ProductsClient() {
                   {/* Show elegant footer when all products loaded */}
                   {displayedProducts.length >= allProducts.length && allProducts.length > 15 && (
                     <div className={styles.allLoadedMessage}>
-                      <p>More products coming soon to catalog</p>
+                      <p>Coming Soon</p>
                     </div>
                   )}
                 </>
