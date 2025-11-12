@@ -11,7 +11,7 @@ import LazyComponents from '../components/LazyComponents'
 import LoadingSpinner from '../components/LoadingSpinner'
 import styles from './products.module.css'
 import animationStyles from './products-animations.module.css'
-import { FiChevronLeft, FiChevronRight, FiFilter, FiGrid, FiStar, FiPackage, FiTrendingUp, FiX } from 'react-icons/fi'
+import { FiChevronLeft, FiChevronRight, FiFilter, FiGrid, FiStar, FiPackage, FiTrendingUp, FiX, FiChevronDown } from 'react-icons/fi'
 import { DataCache } from '../../lib/dataCache'
 import { useDeviceDetection } from '../hooks/useDeviceDetection'
 import { useProductFilters } from '../hooks/useProductFilters'
@@ -29,6 +29,13 @@ const KNOWN_CATEGORIES = [
   { slug: 'decor', name: 'Wall Decor' },
   { slug: 'matt rangoli', name: 'Matt Rangoli' },
   { slug: 'mirror work', name: 'Mirror Work' }
+]
+
+const SORT_OPTIONS = [
+  { value: '', label: 'Newest' },
+  { value: 'oldest', label: 'Oldest' },
+  { value: 'price_asc', label: 'Price: Low to High' },
+  { value: 'price_desc', label: 'Price: High to Low' }
 ]
 
 interface Product {
@@ -68,10 +75,12 @@ export default function ProductsClient() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false)
   const [isDesktopFilterOpen, setIsDesktopFilterOpen] = useState(false)
+  const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false)
 
   // Infinite scroll state (desktop only)
   const [displayCount, setDisplayCount] = useState(15)
   const loadMoreTriggerRef = useRef<HTMLDivElement>(null)
+  const sortDropdownRef = useRef<HTMLDivElement>(null)
 
   // Pagination state (mobile only)
   const [currentPage, setCurrentPage] = useState(1)
@@ -184,9 +193,37 @@ export default function ProductsClient() {
     // The state change triggers a re-render with the updated style
   }, [isSidebarOpen])
 
+  // Close sort dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (sortDropdownRef.current && !sortDropdownRef.current.contains(event.target as Node)) {
+        setIsSortDropdownOpen(false)
+      }
+    }
+
+    if (isSortDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isSortDropdownOpen])
+
   function handleCategoryClick(slug: string) {
     // Use exact slug from database, no transformations needed
     router.replace(slug === currentCategory ? '/products' : `/products?category=${encodeURIComponent(slug)}`)
+  }
+
+  // Handle sort option selection
+  const handleSortSelect = (value: string) => {
+    updateFilter('sortOrder', value)
+    setIsSortDropdownOpen(false)
+  }
+
+  // Get current sort label
+  const getCurrentSortLabel = () => {
+    return SORT_OPTIONS.find(opt => opt.value === sortOrder)?.label || 'Newest'
   }
 
   // Fetch list of available usage tags once
@@ -581,17 +618,8 @@ export default function ProductsClient() {
         {!isMobileView && (
           <div className={styles.topBar}>
             <div className={styles.topBarInner}>
-              {/* Left: Filter Chips */}
+              {/* Center: Filter Chips */}
               <div className={styles.filterChipsContainer}>
-                {/* Filter Button - Always visible */}
-                <button 
-                  className={styles.filterDrawerButton}
-                  onClick={() => setIsDesktopFilterOpen(!isDesktopFilterOpen)}
-                >
-                  <FiFilter size={14} />
-                  Filters
-                </button>
-
                 {currentCategory && (
                   <div className={styles.filterChip}>
                     {KNOWN_CATEGORIES.find(cat => cat.slug === currentCategory)?.name || currentCategory}
@@ -670,26 +698,50 @@ export default function ProductsClient() {
                 )}
               </div>
 
-              {/* Center: Results Count */}
-              <div className={styles.resultsCount}>
-                {products.length} {products.length === 1 ? 'product' : 'products'}
-              </div>
-
               {/* Right: Controls */}
               <div className={styles.topBarControls}>
+                {/* Filter Button */}
+                <button 
+                  className={styles.filterDrawerButton}
+                  onClick={() => setIsDesktopFilterOpen(!isDesktopFilterOpen)}
+                >
+                  <FiFilter size={14} />
+                  Filters
+                </button>
+
                 {/* Sort Dropdown */}
-                <div className={styles.sortContainer}>
+                <div className={styles.sortContainer} ref={sortDropdownRef}>
                   <label className={styles.sortLabel}>Sort:</label>
-                  <select 
-                    className={styles.sortSelect}
-                    value={sortOrder}
-                    onChange={(e) => updateFilter('sortOrder', e.target.value)}
-                  >
-                    <option value="">Newest</option>
-                    <option value="oldest">Oldest</option>
-                    <option value="price_asc">Price: Low to High</option>
-                    <option value="price_desc">Price: High to Low</option>
-                  </select>
+                  <div className={styles.customSelect}>
+                    <button 
+                      className={styles.selectTrigger}
+                      onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
+                      aria-expanded={isSortDropdownOpen}
+                    >
+                      <span>{getCurrentSortLabel()}</span>
+                      <FiChevronDown 
+                        className={`${styles.selectArrow} ${isSortDropdownOpen ? styles.selectArrowOpen : ''}`} 
+                        size={16} 
+                      />
+                    </button>
+                    
+                    {isSortDropdownOpen && (
+                      <div className={styles.selectDropdown}>
+                        {SORT_OPTIONS.map((option) => (
+                          <button
+                            key={option.value}
+                            className={`${styles.selectOption} ${sortOrder === option.value ? styles.selectOptionActive : ''}`}
+                            onClick={() => handleSortSelect(option.value)}
+                          >
+                            {option.label}
+                            {sortOrder === option.value && (
+                              <span className={styles.checkmark}>✓</span>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
