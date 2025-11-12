@@ -417,25 +417,38 @@
   transform: scale(1.05);
 }
 
-/* Stock Badges */
+/* Stock Badges - Glassmorphism Frost Pill */
 .stockBadge {
   position: absolute;
   bottom: 12px;
   left: 12px;
-  background: var(--color-bg);
-  color: var(--color-text-secondary);
-  padding: 6px 10px;
-  border-radius: 4px;
-  font-size: 11px;
-  font-weight: var(--font-weight-medium);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: #000000;
+  padding: 6px 14px;
+  border-radius: 50px;
+  font-size: 10px;
+  font-weight: var(--font-weight-bold);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.8px;
   z-index: 10;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+
+.stockBadge:hover {
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 
 .stockBadge.lowStock {
-  background: #fff4e6;
-  color: #d97706;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  color: #000000;
+  border: 1px solid rgba(255, 255, 255, 0.5);
 }
 
 /* ========================================
@@ -449,11 +462,11 @@
   gap: var(--spacing-xs);
 }
 
-/* Category Label - Small, subtle */
+/* Category Label - Small, subtle, minimal grey */
 .categoryLabel {
-  color: #d97706;
+  color: #9ca3af;
   font-size: 13px;
-  font-weight: var(--font-weight-bold);
+  font-weight: var(--font-weight-medium);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 4px;
@@ -782,28 +795,41 @@
 }
 
 /* ========================================
-   DESKTOP FILTER SIDESHEET (RIGHT)
-   Minimal, professional sheet that overlays content (no grid reflow)
+   DESKTOP FILTER SIDEBAR (LEFT)
+   Professional, minimal sheet that pushes content (grid shrinks)
    ======================================== */
 
-.desktopFilterDrawer {
-  position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: 420px;
-  max-width: 40vw;
-  background: var(--color-bg);
-  box-shadow: -8px 0 24px rgba(0,0,0,0.08);
-  z-index: 1000;
-  transform: translateX(100%);
-  transition: transform var(--transition-base);
-  overflow-y: auto;
-  will-change: transform;
-}
+@media (min-width: 1024px) {
+  .desktopWrap {
+    position: relative;
+    --sidebar-width: 340px;
+  }
 
-.desktopFilterDrawerOpen {
-  transform: translateX(0);
+  .desktopSidebar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: var(--sidebar-width);
+    background: var(--color-bg);
+    border-right: 1px solid var(--color-border);
+    box-shadow: 6px 0 20px rgba(0,0,0,0.04);
+    transform: translateX(-100%);
+    transition: transform var(--transition);
+    overflow-y: auto;
+  }
+
+  .desktopSidebarOpen {
+    transform: translateX(0);
+  }
+
+  .desktopMain {
+    transition: margin-left var(--transition);
+  }
+
+  .desktopMainWithSidebar {
+    margin-left: var(--sidebar-width);
+  }
 }
 
 .mobileFilterHeader {

@@ -644,32 +644,7 @@ export default function ProductsClient() {
           </div>
         )}
 
-        {/* Desktop Filter Drawer */}
-        {!isMobileView && isDesktopFilterOpen && (
-          <>
-            <div 
-              className={`${styles.mobileFilterOverlay} ${styles.mobileFilterOverlayVisible}`}
-              onClick={() => setIsDesktopFilterOpen(false)}
-            />
-            <div 
-              className={`${styles.desktopFilterDrawer} ${styles.desktopFilterDrawerOpen}`}
-            >
-              <div className={styles.mobileFilterHeader}>
-                <h2>Filters</h2>
-                <button 
-                  className={styles.mobileFilterCloseButton}
-                  onClick={() => setIsDesktopFilterOpen(false)}
-                  aria-label="Close filters"
-                >
-                  <FiX size={24} />
-                </button>
-              </div>
-              <div className={styles.mobileFilterContent}>
-                {renderFilters()}
-              </div>
-            </div>
-          </>
-        )}
+        {/* Desktop filter handled as left sidebar below; no overlay here */}
 
         {/* Results count for mobile */}
         {isMobileView && (
@@ -738,109 +713,173 @@ export default function ProductsClient() {
           </div>
         )}
 
-        {/* Results */}
-        {(products.length === 0) ? (
-          <p className={styles.emptyProducts}>No products found.</p>
-        ) : products.length > 50 ? (
-          // Use virtual scrolling for large product lists (>50 items)
-          <VirtualProductGrid
-            products={products}
-            className={`${styles.productGrid} ${isMobileView ? styles.mobileProductGrid : ''}`}
-          />
-        ) : (
-          // Regular grid for smaller lists
-          <div className={`${styles.productGrid} ${isMobileView ? styles.mobileProductGrid : ''}`} ref={productGridRef}>
-            {products.map((prod, index) => (
-              <ProductCard 
-                key={prod.id}
-                product={prod}
-                index={index}
-                className={animationStyles.productCard}
-              />
-            ))}
-          </div>
-        )}
-
-        {/* Pagination Controls */}
-        {totalPages > 1 && (
-          <div className={styles.paginationContainer}>
-            <div className={styles.paginationInfo}>
-              <span className={styles.paginationInfoText}>
-                Showing {startIndex + 1} to {Math.min(endIndex, totalProducts)} of {totalProducts} products
-              </span>
-              <span className={styles.paginationInfoText}>
-                Page {currentPage} of {totalPages}
-              </span>
-            </div>
-            
-            <div className={styles.paginationControls}>
-              {/* Previous Button */}
-              <button
-                onClick={handlePreviousPage}
-                disabled={currentPage === 1}
-                className={styles.paginationButton}
-              >
-                <FiChevronLeft size={16} />
-                Previous
-              </button>
-              
-              {/* Page Numbers */}
-              <div className={styles.paginationNumbers}>
-                {/* First page */}
-                {currentPage > 3 && (
-                  <>
-                    <button
-                      onClick={() => handlePageSelect(1)}
-                      className={styles.pageNumber}
-                    >
-                      1
-                    </button>
-                    {currentPage > 4 && <span className={styles.paginationDots}>...</span>}
-                  </>
-                )}
-                
-                {/* Current page and nearby pages */}
-                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                  const pageStart = Math.max(1, Math.min(currentPage - 2, totalPages - 4))
-                  const page = pageStart + i
-                  if (page > totalPages) return null
-                  
-                  return (
-                    <button
-                      key={page}
-                      onClick={() => handlePageSelect(page)}
-                      className={`${styles.pageNumber} ${page === currentPage ? styles.pageNumberActive : ''}`}
-                    >
-                      {page}
-                    </button>
-                  )
-                })}
-                
-                {/* Last page */}
-                {currentPage < totalPages - 2 && (
-                  <>
-                    {currentPage < totalPages - 3 && <span className={styles.paginationDots}>...</span>}
-                    <button
-                      onClick={() => handlePageSelect(totalPages)}
-                      className={styles.pageNumber}
-                    >
-                      {totalPages}
-                    </button>
-                  </>
-                )}
+        {/* Desktop: left sidebar that pushes content; Mobile: standard layout */}
+        {!isMobileView ? (
+          <div className={styles.desktopWrap}>
+            <aside className={`${styles.desktopSidebar} ${isDesktopFilterOpen ? styles.desktopSidebarOpen : ''}`}>
+              <div className={styles.mobileFilterHeader}>
+                <h2>Filters</h2>
+                <button 
+                  className={styles.mobileFilterCloseButton}
+                  onClick={() => setIsDesktopFilterOpen(false)}
+                  aria-label="Close filters"
+                >
+                  <FiX size={24} />
+                </button>
               </div>
-              
-              {/* Next Button */}
-              <button
-                onClick={handleNextPage}
-                disabled={currentPage === totalPages}
-                className={styles.paginationButton}
-              >
-                Next
-                <FiChevronRight size={16} />
-              </button>
+              <div className={styles.mobileFilterContent}>
+                {renderFilters()}
+              </div>
+            </aside>
+            <div className={`${styles.desktopMain} ${isDesktopFilterOpen ? styles.desktopMainWithSidebar : ''}`}>
+              {(products.length === 0) ? (
+                <p className={styles.emptyProducts}>No products found.</p>
+              ) : products.length > 50 ? (
+                <VirtualProductGrid
+                  products={products}
+                  className={styles.productGrid}
+                />
+              ) : (
+                <div className={styles.productGrid} ref={productGridRef}>
+                  {products.map((prod, index) => (
+                    <ProductCard 
+                      key={prod.id}
+                      product={prod}
+                      index={index}
+                      className={animationStyles.productCard}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {totalPages > 1 && (
+                <div className={styles.paginationContainer}>
+                  <div className={styles.paginationInfo}>
+                    <span className={styles.paginationInfoText}>
+                      Showing {startIndex + 1} to {Math.min(endIndex, totalProducts)} of {totalProducts} products
+                    </span>
+                    <span className={styles.paginationInfoText}>
+                      Page {currentPage} of {totalPages}
+                    </span>
+                  </div>
+                  
+                  <div className={styles.paginationControls}>
+                    <button
+                      onClick={handlePreviousPage}
+                      disabled={currentPage === 1}
+                      className={styles.paginationButton}
+                    >
+                      <FiChevronLeft size={16} />
+                      Previous
+                    </button>
+                    
+                    <div className={styles.paginationNumbers}>
+                      {currentPage > 3 && (
+                        <>
+                          <button onClick={() => handlePageSelect(1)} className={styles.pageNumber}>1</button>
+                          {currentPage > 4 && <span className={styles.paginationDots}>...</span>}
+                        </>
+                      )}
+                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                        const pageStart = Math.max(1, Math.min(currentPage - 2, totalPages - 4))
+                        const page = pageStart + i
+                        if (page > totalPages) return null
+                        return (
+                          <button key={page} onClick={() => handlePageSelect(page)} className={`${styles.pageNumber} ${page === currentPage ? styles.pageNumberActive : ''}`}>
+                            {page}
+                          </button>
+                        )
+                      })}
+                      {currentPage < totalPages - 2 && (
+                        <>
+                          {currentPage < totalPages - 3 && <span className={styles.paginationDots}>...</span>}
+                          <button onClick={() => handlePageSelect(totalPages)} className={styles.pageNumber}>{totalPages}</button>
+                        </>
+                      )}
+                    </div>
+                    
+                    <button
+                      onClick={handleNextPage}
+                      disabled={currentPage === totalPages}
+                      className={styles.paginationButton}
+                    >
+                      Next
+                      <FiChevronRight size={16} />
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
+        ) : (
+          <>
+            {(products.length === 0) ? (
+              <p className={styles.emptyProducts}>No products found.</p>
+            ) : products.length > 50 ? (
+              <VirtualProductGrid
+                products={products}
+                className={`${styles.productGrid} ${styles.mobileProductGrid}`}
+              />
+            ) : (
+              <div className={`${styles.productGrid} ${styles.mobileProductGrid}`} ref={productGridRef}>
+                {products.map((prod, index) => (
+                  <ProductCard 
+                    key={prod.id}
+                    product={prod}
+                    index={index}
+                    className={animationStyles.productCard}
+                  />
+                ))}
+              </div>
+            )}
+
+            {totalPages > 1 && (
+              <div className={styles.paginationContainer}>
+                <div className={styles.paginationInfo}>
+                  <span className={styles.paginationInfoText}>
+                    Showing {startIndex + 1} to {Math.min(endIndex, totalProducts)} of {totalProducts} products
+                  </span>
+                  <span className={styles.paginationInfoText}>
+                    Page {currentPage} of {totalPages}
+                  </span>
+                </div>
+                <div className={styles.paginationControls}>
+                  <button onClick={handlePreviousPage} disabled={currentPage === 1} className={styles.paginationButton}>
+                    <FiChevronLeft size={16} />
+                    Previous
+                  </button>
+                  <div className={styles.paginationNumbers}>
+                    {currentPage > 3 && (
+                      <>
+                        <button onClick={() => handlePageSelect(1)} className={styles.pageNumber}>1</button>
+                        {currentPage > 4 && <span className={styles.paginationDots}>...</span>}
+                      </>
+                    )}
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      const pageStart = Math.max(1, Math.min(currentPage - 2, totalPages - 4))
+                      const page = pageStart + i
+                      if (page > totalPages) return null
+                      return (
+                        <button key={page} onClick={() => handlePageSelect(page)} className={`${styles.pageNumber} ${page === currentPage ? styles.pageNumberActive : ''}`}>
+                          {page}
+                        </button>
+                      )
+                    })}
+                    {currentPage < totalPages - 2 && (
+                      <>
+                        {currentPage < totalPages - 3 && <span className={styles.paginationDots}>...</span>}
+                        <button onClick={() => handlePageSelect(totalPages)} className={styles.pageNumber}>{totalPages}</button>
+                      </>
+                    )}
+                  </div>
+                  <button onClick={handleNextPage} disabled={currentPage === totalPages} className={styles.paginationButton}>
+                    Next
+                    <FiChevronRight size={16} />
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </main>
     </div>
