@@ -343,22 +343,15 @@
 
 .productGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: var(--spacing-xl);
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-2xl);
   margin-bottom: var(--spacing-2xl);
 }
 
-@media (min-width: 1400px) {
-  .productGrid {
-    grid-template-columns: repeat(4, 1fr);
-    gap: var(--spacing-2xl);
-  }
-}
-
-@media (min-width: 1024px) and (max-width: 1399px) {
+@media (min-width: 1024px) {
   .productGrid {
     grid-template-columns: repeat(3, 1fr);
-    gap: var(--spacing-xl);
+    gap: var(--spacing-2xl);
   }
 }
 
