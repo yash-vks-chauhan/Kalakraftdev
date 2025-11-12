@@ -370,62 +370,46 @@
 }
 
 /* ========================================
-   PRODUCT CARD - PREMIUM GLASSMORPHISM
-   Ultra-minimal, modern card with micro-interactions
+   PRODUCT CARD - MINIMALIST GLASSMORPHISM
+   Clean, professional, and modern design
    ======================================== */
 
 .productCard {
-  background: var(--color-bg-secondary);
-  border: 1px solid rgba(0, 0, 0, 0.04);
-  border-radius: 20px;
-  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 24px;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
   display: flex;
   flex-direction: column;
   height: 100%;
   overflow: hidden;
   position: relative;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-}
-
-/* Premium shadow on hover */
-.productCard:hover {
-  transform: translateY(-12px) scale(1.02);
   box-shadow: 
-    0 20px 60px rgba(0, 0, 0, 0.08),
-    0 0 0 1px rgba(0, 0, 0, 0.06);
-  border-color: rgba(0, 0, 0, 0.08);
+    0 4px 20px rgba(0, 0, 0, 0.04),
+    0 1px 3px rgba(0, 0, 0, 0.02),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
-/* Subtle gradient overlay on hover */
-.productCard::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, 
-    rgba(255, 255, 255, 0.8) 0%, 
-    rgba(255, 255, 255, 0) 50%,
-    rgba(0, 0, 0, 0.02) 100%
-  );
-  opacity: 0;
-  transition: opacity 0.4s ease;
-  pointer-events: none;
-  z-index: 1;
-  border-radius: 20px;
+.productCard:hover {
+  transform: translateY(-8px);
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(255, 255, 255, 0.8);
+  box-shadow: 
+    0 24px 48px rgba(0, 0, 0, 0.08),
+    0 8px 16px rgba(0, 0, 0, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
 }
 
-.productCard:hover::before {
-  opacity: 1;
-}
-
-/* Image Container - Perfect 4:5 ratio */
+/* Clean Image Container - 3:4 Aspect Ratio */
 .imageContainer {
   position: relative;
   width: 100%;
-  padding-top: 125%; /* 4:5 aspect ratio */
+  padding-top: 133.33%; /* 3:4 aspect ratio for vertical elegance */
   overflow: hidden;
-  background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%);
-  border-radius: 16px 16px 0 0;
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
 }
 
 .imageContainer img {
@@ -436,86 +420,75 @@
   height: 100%;
   object-fit: cover;
   object-position: center;
-  transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .productCard:hover .imageContainer img {
-  transform: scale(1.08);
+  transform: scale(1.05);
 }
 
-/* Wishlist Button - Premium Glassmorphism */
+/* Minimalist Wishlist Button */
 .wishlistButton {
   position: absolute;
-  top: 16px;
-  right: 16px;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  top: 20px;
+  right: 20px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(0, 0, 0, 0.06);
   border-radius: 50%;
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  z-index: 2;
-  box-shadow: 
-    0 4px 16px rgba(0, 0, 0, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  transition: all 0.25s ease;
+  z-index: 10;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
 }
 
 .wishlistButton:hover {
   background: var(--color-accent);
   border-color: var(--color-accent);
-  color: var(--color-bg-secondary);
-  transform: scale(1.2) rotate(12deg);
-  box-shadow: 
-    0 8px 24px rgba(0, 0, 0, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  color: white;
+  transform: scale(1.15);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
-.wishlistButton:active {
-  transform: scale(1.1) rotate(8deg);
-}
-
-/* Stock Badge - Refined Glassmorphism */
+/* Clean Stock Badge */
 .stockBadge {
   position: absolute;
-  bottom: 16px;
-  left: 16px;
-  background: rgba(255, 255, 255, 0.98);
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  color: var(--color-accent);
-  padding: 8px 16px;
-  border-radius: 100px;
+  bottom: 20px;
+  left: 20px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  color: var(--color-text-primary);
+  padding: 6px 14px;
+  border-radius: 20px;
   font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  box-shadow: 
-    0 4px 12px rgba(0, 0, 0, 0.06),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
-  z-index: 2;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  z-index: 10;
 }
 
-/* Card Content - Breathing Space */
+/* Minimalist Card Content */
 .cardContent {
-  padding: 24px 20px 28px;
+  padding: 28px 24px 32px;
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  background: var(--color-bg-secondary);
+  gap: 8px;
+  background: transparent;
   position: relative;
-  z-index: 2;
 }
 
 .categoryLabel {
-  color: #999999;
+  color: var(--color-text-tertiary);
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 2px;
@@ -528,107 +501,80 @@
   color: var(--color-text-primary);
   font-size: 16px;
   font-weight: 600;
-  line-height: 1.5;
-  margin: 0 0 8px;
+  line-height: 1.4;
+  margin: 0 0 12px;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  min-height: 48px;
+  min-height: 44px;
   letter-spacing: -0.2px;
 }
 
 .productPrice {
   color: var(--color-text-primary);
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 700;
-  margin: 4px 0 12px;
-  letter-spacing: -0.8px;
+  margin: 0 0 16px;
+  letter-spacing: -0.5px;
   font-feature-settings: 'tnum' on, 'lnum' on;
 }
 
 .ratingContainer {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 16px;
+  gap: 6px;
+  margin-bottom: 20px;
+  opacity: 0.8;
 }
 
 .stars {
   display: flex;
-  gap: 2px;
+  gap: 1px;
   color: var(--color-accent);
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .ratingText {
-  color: #999999;
-  font-size: 12px;
+  color: var(--color-text-tertiary);
+  font-size: 11px;
   font-weight: 500;
 }
 
-/* Premium Add to Cart Button */
+/* Minimalist Add to Cart Button */
 .addToCartButton {
   width: 100%;
   background: var(--color-accent);
-  color: var(--color-bg-secondary);
+  color: white;
   border: none;
-  border-radius: 12px;
-  padding: 18px 24px;
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
+  border-radius: 16px;
+  padding: 16px 24px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   margin-top: auto;
-  box-shadow: 
-    0 4px 16px rgba(0, 0, 0, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
   position: relative;
   overflow: hidden;
 }
 
-/* Shimmer effect */
-.addToCartButton::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.3),
-    transparent
-  );
-  transition: left 0.5s ease;
-}
-
-.addToCartButton:hover:not(:disabled)::after {
-  left: 100%;
-}
-
 .addToCartButton:hover:not(:disabled) {
   background: #1a1a1a;
-  transform: translateY(-3px);
-  box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.18),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.16);
 }
 
 .addToCartButton:active:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 
-    0 4px 16px rgba(0, 0, 0, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
 }
 
 .addToCartButton:disabled {
-  background: linear-gradient(135deg, #f5f5f5 0%, #eeeeee 100%);
-  color: #999999;
+  background: #f5f5f5;
+  color: var(--color-text-tertiary);
   cursor: not-allowed;
   box-shadow: none;
   transform: none;
