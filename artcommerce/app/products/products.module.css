@@ -451,6 +451,89 @@
   border: 1px solid rgba(255, 255, 255, 0.5);
 }
 
+/* Image Navigation Arrows - Glassmorphism Style */
+.imageNavigation {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  display: flex;
+  gap: 6px;
+  z-index: 15;
+  align-items: center;
+}
+
+.imageNavButton {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #000000;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.imageNavButton:hover {
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  transform: scale(1.05);
+}
+
+.imageNavButton:active {
+  transform: scale(0.95);
+}
+
+.imageNavButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: scale(1);
+}
+
+.imageNavButton:disabled:hover {
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: scale(1);
+}
+
+/* Image Indicator Dots */
+.imageIndicators {
+  position: absolute;
+  bottom: 54px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+  z-index: 15;
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 50px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.imageIndicatorDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.imageIndicatorDot.active {
+  background: #000000;
+  width: 18px;
+  border-radius: 3px;
+}
+
 /* ========================================
    CARD CONTENT - NIKE-STYLE MINIMAL
    ======================================== */

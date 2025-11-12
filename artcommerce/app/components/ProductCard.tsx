@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import Link from 'next/link'
 import WishlistButton from './WishlistButton'
 import { useDeviceDetection } from '../hooks/useDeviceDetection'
@@ -39,12 +39,27 @@ export default function ProductCard({
   animationDelay 
 }: ProductCardProps) {
   const { isMobile: isMobileView } = useDeviceDetection()
+  const [currentImageIndex, setCurrentImageIndex] = useState(0)
   
   const cardStyle = animationDelay !== undefined ? {
     animationDelay: `${animationDelay}ms`
   } : index !== undefined ? {
     animationDelay: `${index * 0.1}s`
   } : {}
+
+  const hasMultipleImages = prod.imageUrls.length > 1
+
+  const handlePrevImage = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setCurrentImageIndex((prev) => (prev === 0 ? prod.imageUrls.length - 1 : prev - 1))
+  }
+
+  const handleNextImage = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setCurrentImageIndex((prev) => (prev === prod.imageUrls.length - 1 ? 0 : prev + 1))
+  }
 
   return (
     <Link 
@@ -55,9 +70,9 @@ export default function ProductCard({
     >
       {/* Image Container */}
       <div className={styles.imageContainer}>
-        {prod.imageUrls[0] ? (
+        {prod.imageUrls[currentImageIndex] ? (
           <img 
-            src={prod.imageUrls[0]} 
+            src={prod.imageUrls[currentImageIndex]} 
             alt={prod.name} 
             className={styles.productImage}
             loading="lazy"
@@ -89,6 +104,38 @@ export default function ProductCard({
           <span className={styles.stockBadge}>
             Out of Stock
           </span>
+        )}
+
+        {/* Image Navigation Arrows - Only show if multiple images exist */}
+        {!isMobileView && hasMultipleImages && (
+          <>
+            <div className={styles.imageNavigation}>
+              <button
+                className={styles.imageNavButton}
+                onClick={handlePrevImage}
+                aria-label="Previous image"
+              >
+                ‹
+              </button>
+              <button
+                className={styles.imageNavButton}
+                onClick={handleNextImage}
+                aria-label="Next image"
+              >
+                ›
+              </button>
+            </div>
+
+            {/* Image Indicator Dots */}
+            <div className={styles.imageIndicators}>
+              {prod.imageUrls.map((_, idx) => (
+                <span
+                  key={idx}
+                  className={`${styles.imageIndicatorDot} ${idx === currentImageIndex ? styles.active : ''}`}
+                />
+              ))}
+            </div>
+          </>
         )}
       </div>
       
