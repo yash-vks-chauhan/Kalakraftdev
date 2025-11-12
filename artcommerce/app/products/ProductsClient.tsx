@@ -815,10 +815,10 @@ export default function ProductsClient() {
                     </div>
                   )}
 
-                  {/* Show count indicator */}
+                  {/* Show elegant footer when all products loaded */}
                   {displayedProducts.length >= allProducts.length && allProducts.length > 15 && (
                     <div className={styles.allLoadedMessage}>
-                      <p>All {allProducts.length} products loaded</p>
+                      <p>More products coming soon to catalog</p>
                     </div>
                   )}
                 </>

@@ -845,23 +845,78 @@
 
 .allLoadedMessage {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: var(--spacing-3xl) 0;
-  margin-top: var(--spacing-2xl);
-  border-top: 1px solid var(--color-border);
+  padding: 80px 40px;
+  margin-top: 80px;
+  margin-left: calc(-1 * var(--spacing-3xl));
+  margin-right: calc(-1 * var(--spacing-3xl));
+  margin-bottom: -80px;
+  background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle pattern overlay for depth */
+.allLoadedMessage::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.03) 0%, transparent 50%),
+                    radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.02) 0%, transparent 50%);
+  pointer-events: none;
 }
 
 .allLoadedMessage p {
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-sm);
-  font-weight: 500;
+  color: #ffffff;
+  font-size: 36px;
+  font-weight: 300;
   text-align: center;
   margin: 0;
-  padding: var(--spacing-md) var(--spacing-xl);
-  background: var(--color-bg-secondary);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--color-border);
+  padding: 0;
+  letter-spacing: 0.02em;
+  line-height: 1.4;
+  font-family: 'Georgia', 'Garamond', 'Times New Roman', serif;
+  position: relative;
+  z-index: 1;
+  max-width: 600px;
+}
+
+@media (min-width: 1024px) {
+  .allLoadedMessage {
+    padding: 120px 60px;
+    margin-top: 120px;
+  }
+  
+  .allLoadedMessage p {
+    font-size: 42px;
+    max-width: 700px;
+  }
+}
+
+@media (min-width: 1440px) {
+  .allLoadedMessage p {
+    font-size: 48px;
+    max-width: 800px;
+  }
+}
+
+/* Mobile responsive */
+@media (max-width: 767px) {
+  .allLoadedMessage {
+    padding: 60px 24px;
+    margin-top: 60px;
+    margin-left: calc(-1 * var(--spacing-lg));
+    margin-right: calc(-1 * var(--spacing-lg));
+  }
+  
+  .allLoadedMessage p {
+    font-size: 28px;
+  }
 }
 
 /* ========================================
