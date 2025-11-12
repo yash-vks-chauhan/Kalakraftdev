@@ -973,30 +973,39 @@ export default function ProductsClient() {
                 <div className={styles.sortContainer} ref={sortDropdownRef}>
                   <label className={styles.sortLabel}>Sort:</label>
                   <div className={styles.customSelect}>
-                    <button 
+                    <motion.button 
                       className={styles.selectTrigger}
                       onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
                       aria-expanded={isSortDropdownOpen}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
                     >
-                      <span>{getCurrentSortLabel()}</span>
+                      <motion.span
+                        key={getCurrentSortLabel()}
+                        initial={{ opacity: 0, y: -5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.2, ease: 'easeOut' }}
+                      >
+                        {getCurrentSortLabel()}
+                      </motion.span>
                       <motion.div
                         animate={{ rotate: isSortDropdownOpen ? 180 : 0 }}
-                        transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
+                        transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
                       >
                         <FiChevronDown size={16} style={{ opacity: 0.6 }} />
                       </motion.div>
-                    </button>
+                    </motion.button>
                     
                     <AnimatePresence>
                       {isSortDropdownOpen && (
                         <motion.div 
                           className={styles.selectDropdown}
-                          initial={{ opacity: 0, y: -15, scale: 0.92 }}
+                          initial={{ opacity: 0, y: -10, scale: 0.95 }}
                           animate={{ opacity: 1, y: 0, scale: 1 }}
-                          exit={{ opacity: 0, y: -15, scale: 0.92 }}
+                          exit={{ opacity: 0, y: -10, scale: 0.95 }}
                           transition={{ 
-                            duration: 0.45, 
-                            ease: [0.25, 0.1, 0.25, 1]
+                            duration: 0.25, 
+                            ease: [0.4, 0, 0.2, 1]
                           }}
                         >
                           {SORT_OPTIONS.map((option, index) => (
@@ -1004,23 +1013,33 @@ export default function ProductsClient() {
                               key={option.value}
                               className={`${styles.selectOption} ${sortOrder === option.value ? styles.selectOptionActive : ''}`}
                               onClick={() => handleSortSelect(option.value)}
-                              initial={{ opacity: 0, x: -15 }}
+                              initial={{ opacity: 0, x: -8 }}
                               animate={{ opacity: 1, x: 0 }}
+                              exit={{ opacity: 0, x: -8 }}
                               transition={{ 
-                                duration: 0.4, 
-                                delay: index * 0.08,
-                                ease: [0.25, 0.1, 0.25, 1]
+                                duration: 0.2, 
+                                delay: index * 0.04,
+                                ease: [0.4, 0, 0.2, 1]
                               }}
+                              whileHover={{ x: 4, backgroundColor: 'rgba(255, 255, 255, 0.5)' }}
+                              whileTap={{ scale: 0.98 }}
                             >
-                              {option.label}
+                              <motion.span
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                transition={{ duration: 0.2, delay: index * 0.04 + 0.1 }}
+                              >
+                                {option.label}
+                              </motion.span>
                               {sortOrder === option.value && (
                                 <motion.span 
                                   className={styles.checkmark}
-                                  initial={{ scale: 0, opacity: 0 }}
-                                  animate={{ scale: 1, opacity: 1 }}
+                                  initial={{ scale: 0, rotate: -180 }}
+                                  animate={{ scale: 1, rotate: 0 }}
+                                  exit={{ scale: 0, rotate: 180 }}
                                   transition={{ 
-                                    duration: 0.35,
-                                    ease: [0.25, 0.1, 0.25, 1]
+                                    duration: 0.3,
+                                    ease: [0.4, 0, 0.2, 1]
                                   }}
                                 >
                                   ✓

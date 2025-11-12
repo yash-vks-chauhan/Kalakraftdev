@@ -357,38 +357,39 @@
   transform: rotate(180deg);
 }
 
-/* Dropdown Menu - Maximum Frosty Glassmorphism */
+/* Dropdown Menu - Clean Professional Glassmorphism */
 .selectDropdown {
   position: absolute;
-  top: calc(100% + 8px);
+  top: calc(100% + 12px);
   right: 0;
-  min-width: 200px;
+  min-width: 220px;
   z-index: 3000;
   
-  /* Ultra frosty glassmorphism with heavy blur and transparency */
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(60px) saturate(220%);
-  -webkit-backdrop-filter: blur(60px) saturate(220%);
+  /* Clean glassmorphism */
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
   
-  border: 2px solid rgba(255, 255, 255, 0.6);
-  border-radius: 18px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 14px;
   
-  /* Enhanced frosty shadows with more depth */
+  /* Professional shadow */
   box-shadow: 
-    0 20px 60px rgba(0, 0, 0, 0.15),
-    0 8px 20px rgba(0, 0, 0, 0.1),
-    inset 0 1px 3px rgba(255, 255, 255, 0.95);
+    0 12px 32px rgba(0, 0, 0, 0.12),
+    0 4px 12px rgba(0, 0, 0, 0.06),
+    0 1px 3px rgba(0, 0, 0, 0.04);
   
   overflow: hidden;
   transform-origin: top right;
+  padding: 8px;
 }
 
-/* Dropdown Options with frosted hover */
+/* Dropdown Options - Clean and Simple */
 .selectOption {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 18px;
+  padding: 12px 16px;
   width: 100%;
   background: transparent;
   border: none;
@@ -398,35 +399,35 @@
   font-family: var(--font-family);
   text-align: left;
   cursor: pointer;
-  transition: all 0.2s ease;
-  backdrop-filter: blur(0px);
-  -webkit-backdrop-filter: blur(0px);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 8px;
+  position: relative;
 }
 
 .selectOption:hover {
-  background: rgba(255, 255, 255, 0.4);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.selectOption:active {
+  background: rgba(0, 0, 0, 0.06);
+  transform: scale(0.98);
 }
 
 .selectOptionActive {
-  background: rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: rgba(0, 0, 0, 0.06);
   font-weight: 600;
 }
 
 .selectOptionActive:hover {
-  background: rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(25px);
-  -webkit-backdrop-filter: blur(25px);
+  background: rgba(0, 0, 0, 0.08);
 }
 
 .checkmark {
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 18px;
+  font-weight: 700;
   color: var(--color-text-primary);
-  opacity: 0.8;
+  line-height: 1;
+  opacity: 0.9;
 }
 
 /* Keep old sortSelect for backward compatibility */
