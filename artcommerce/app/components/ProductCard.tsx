@@ -115,7 +115,7 @@ export default function ProductCard({
       {/* Image Container */}
       <div className={styles.imageContainer}>
         <AnimatePresence initial={false} custom={direction} mode="wait">
-          <motion.div
+          <motion.img
             key={currentImageIndex}
             custom={direction}
             variants={imageVariants}
@@ -127,28 +127,11 @@ export default function ProductCard({
               opacity: { duration: 0.2 },
               scale: { duration: 0.2 }
             }}
-            style={{
-              position: 'absolute',
-              width: '100%',
-              height: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-          >
-            {prod.imageUrls[currentImageIndex] ? (
-              <img 
-                src={prod.imageUrls[currentImageIndex]} 
-                alt={prod.name} 
-                className={styles.productImage}
-                loading="lazy"
-              />
-            ) : (
-              <div className={styles.productImage} style={{ background: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>  
-                <span style={{ color: '#666', fontSize: '0.85rem' }}>No image</span>
-              </div>
-            )}
-          </motion.div>
+            src={prod.imageUrls[currentImageIndex]} 
+            alt={prod.name} 
+            className={styles.productImage}
+            loading="lazy"
+          />
         </AnimatePresence>
         
         {/* Wishlist Button */}
