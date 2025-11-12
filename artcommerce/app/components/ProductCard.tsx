@@ -115,7 +115,7 @@ export default function ProductCard({
       {/* Image Container */}
       <div className={styles.imageContainer}>
         <AnimatePresence initial={false} custom={direction} mode="wait">
-          <motion.img
+          <motion.div
             key={currentImageIndex}
             custom={direction}
             variants={imageVariants}
@@ -127,11 +127,19 @@ export default function ProductCard({
               opacity: { duration: 0.2 },
               scale: { duration: 0.2 }
             }}
-            src={prod.imageUrls[currentImageIndex]} 
-            alt={prod.name} 
             className={styles.productImage}
-            loading="lazy"
-          />
+          >
+            <img 
+              src={prod.imageUrls[currentImageIndex]} 
+              alt={prod.name}
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'contain'
+              }}
+              loading="lazy"
+            />
+          </motion.div>
         </AnimatePresence>
         
         {/* Wishlist Button */}
