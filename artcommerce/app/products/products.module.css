@@ -1397,147 +1397,209 @@
 
 /* Filter Content Container */
 .mobileFilterContent {
-  padding: 20px 20px 32px;
+  padding: 8px 16px 24px;
 }
 
 /* Filter Title (if used) */
 .filterTitle {
-  font-size: 16px;
+  font-size: 11px;
   font-weight: 600;
-  color: var(--color-text-primary);
-  margin: 0 0 20px;
+  color: rgba(0, 0, 0, 0.4);
+  margin: 0 0 16px;
   display: flex;
   align-items: center;
   gap: 8px;
-  letter-spacing: -0.01em;
-  opacity: 0.9;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 0 4px;
 }
 
-/* Filter Section - Clean Minimal Design */
+/* Filter Section - Ultra Clean Minimal Design */
 .filterSection {
-  margin-bottom: 16px;
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  border-radius: 12px;
+  margin-bottom: 8px;
+  border: none;
+  border-radius: 0;
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.4);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: transparent;
+  transition: all 0.2s ease;
 }
 
-.filterSection:hover {
-  border-color: rgba(0, 0, 0, 0.1);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-}
-
-/* Filter Header - Clickable Summary */
+/* Filter Header - Simple Line with Label */
 .filterHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 14px 16px;
+  padding: 16px 4px 12px;
   background: transparent;
   cursor: pointer;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 500;
   color: var(--color-text-primary);
   transition: all 0.2s ease;
   list-style: none;
   user-select: none;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 .filterHeader:hover {
-  background: rgba(0, 0, 0, 0.02);
+  border-bottom-color: rgba(0, 0, 0, 0.15);
 }
 
 .filterHeader span {
   display: flex;
   align-items: center;
   gap: 8px;
+  letter-spacing: 0.3px;
 }
 
 .filterHeader .arrow {
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  opacity: 0.5;
-  font-size: 14px;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0.4;
+  font-size: 12px;
 }
 
 .filterSection[open] .arrow {
-  transform: rotate(90deg);
-  opacity: 0.8;
+  transform: rotate(180deg);
+  opacity: 0.7;
 }
 
-/* Filter Content - Options Container */
+.filterSection[open] .filterHeader {
+  border-bottom-color: rgba(0, 0, 0, 0.12);
+  padding-bottom: 12px;
+}
+
+/* Filter Content - Clean Options Container */
 .filterContent {
-  padding: 12px 16px 16px;
-  background: rgba(255, 255, 255, 0.3);
-  border-top: 1px solid rgba(0, 0, 0, 0.04);
+  padding: 16px 4px 12px;
+  background: transparent;
+  border-top: none;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
 }
 
-/* Filter Option - Radio/Checkbox Items */
+/* Filter Option - Minimal Radio/Checkbox Items */
 .filterOption {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 0;
-  font-size: 14px;
+  gap: 12px;
+  padding: 10px 8px;
+  font-size: 13px;
   color: var(--color-text-primary);
   cursor: pointer;
   transition: all 0.2s ease;
-  border-radius: 6px;
+  border-radius: 8px;
   margin: 0;
   position: relative;
+  background: transparent;
 }
 
 .filterOption:hover {
-  padding-left: 4px;
-  color: var(--color-text-primary);
+  background: rgba(0, 0, 0, 0.02);
 }
 
 .filterOption input[type="radio"],
 .filterOption input[type="checkbox"] {
   cursor: pointer;
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   accent-color: var(--color-text-primary);
-  transition: transform 0.2s ease;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 
 .filterOption:hover input[type="radio"],
 .filterOption:hover input[type="checkbox"] {
-  transform: scale(1.1);
+  transform: scale(1.05);
 }
 
-/* Clear Button - Minimal Glass Style */
+.filterOption label {
+  cursor: pointer;
+  flex: 1;
+  line-height: 1.4;
+  font-weight: 400;
+  color: var(--color-text-primary);
+}
+
+/* Price Input Fields */
+.filterContent input[type="number"],
+.filterContent input[type="text"] {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--color-text-primary);
+  background: rgba(255, 255, 255, 0.5);
+  transition: all 0.2s ease;
+  font-family: var(--font-family);
+  outline: none;
+}
+
+.filterContent input[type="number"]:hover,
+.filterContent input[type="text"]:hover {
+  border-color: rgba(0, 0, 0, 0.15);
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.filterContent input[type="number"]:focus,
+.filterContent input[type="text"]:focus {
+  border-color: rgba(0, 0, 0, 0.25);
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.02);
+}
+
+/* Price Range Container */
+.priceRange {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.priceRange > div {
+  flex: 1;
+}
+
+.priceRange label {
+  display: block;
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.5);
+  margin-bottom: 6px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+/* Clear Button - Ultra Minimal Style */
 .clearButton {
-  margin-top: 8px;
-  padding: 8px 14px;
-  background: rgba(0, 0, 0, 0.04);
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  margin-top: 20px;
+  padding: 10px 16px;
+  background: transparent;
+  border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 8px;
   font-size: 12px;
-  font-weight: 600;
-  color: var(--color-text-secondary);
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.6);
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.8px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
 }
 
 .clearButton:hover {
-  background: rgba(0, 0, 0, 0.08);
-  border-color: rgba(0, 0, 0, 0.12);
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.2);
   color: var(--color-text-primary);
   transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
 }
 
 .clearButton:active {
   transform: translateY(0);
-  box-shadow: none;
 }
 
 /* ========================================
