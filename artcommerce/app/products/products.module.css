@@ -68,33 +68,24 @@
   --max-width: 1440px;
   --container-padding: var(--spacing-xl);
   
-  /* Apply Base Styles with Full-Page Glassmorphism */
+  /* Apply Base Styles */
   position: relative;
   min-height: 100vh;
   font-family: var(--font-family);
   padding: var(--spacing-2xl) var(--container-padding);
   max-width: var(--max-width);
   margin: 0 auto;
-  
-  /* Premium Glassmorphism Background */
-  background: linear-gradient(
-    135deg,
-    rgba(248, 249, 250, 0.95) 0%,
-    rgba(255, 255, 255, 0.9) 50%,
-    rgba(248, 249, 250, 0.95) 100%
-  );
-  backdrop-filter: blur(40px) saturate(180%);
-  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  z-index: 1;
 }
 
-/* Full-Page Backdrop Layer */
+/* Full-Width Animated Gradient Background */
 .productsContainer::before {
   content: '';
   position: fixed;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
+  width: 100vw;
+  height: 100vh;
   background: linear-gradient(
     135deg,
     #e8eaf6 0%,
@@ -109,7 +100,6 @@
   pointer-events: none;
 }
 
-/* Subtle animated gradient backdrop */
 @keyframes gradientShift {
   0%, 100% {
     background-position: 0% 50%;
@@ -119,18 +109,26 @@
   }
 }
 
-/* Noise texture overlay for premium feel */
+/* Full-Width Glassmorphism Overlay */
 .productsContainer::after {
   content: '';
   position: fixed;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(
+    135deg,
+    rgba(248, 249, 250, 0.95) 0%,
+    rgba(255, 255, 255, 0.9) 50%,
+    rgba(248, 249, 250, 0.95) 100%
+  );
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
   z-index: -1;
   pointer-events: none;
-  opacity: 0.6;
+  opacity: 0.98;
 }
 
 /* ========================================
