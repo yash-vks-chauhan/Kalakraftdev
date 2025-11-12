@@ -58,29 +58,29 @@
 }
 
 /* ========================================
-   PAGE TITLE - CLEAN MINIMAL HEADER
+   PAGE TITLE - MODERN MINIMAL HEADER
    ======================================== */
 
 .title {
-  font-size: 28px;
-  font-weight: var(--font-weight-medium);
+  font-size: 20px;
+  font-weight: 400;
   color: var(--color-text-primary);
   margin: 0;
-  padding: var(--spacing-3xl) var(--spacing-3xl) var(--spacing-xl);
-  line-height: 1.2;
-  letter-spacing: -0.02em;
+  padding: 32px var(--spacing-3xl) 20px;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
 }
 
 @media (min-width: 1024px) {
   .title {
-    font-size: 32px;
-    padding: 48px var(--spacing-3xl) var(--spacing-xl);
+    font-size: 22px;
+    padding: 40px var(--spacing-3xl) 24px;
   }
 }
 
 @media (min-width: 1440px) {
   .title {
-    font-size: 36px;
+    font-size: 24px;
   }
 }
 
@@ -90,21 +90,22 @@
 }
 
 /* ========================================
-   TOP BAR - CLEAN MINIMAL CONTROLS
+   TOP BAR - ULTRA MINIMAL MODERN CONTROLS
    ======================================== */
 
 .topBar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 var(--spacing-3xl) var(--spacing-2xl);
-  margin-bottom: var(--spacing-2xl);
+  padding: 0 var(--spacing-3xl) 32px;
+  margin-bottom: 0;
 }
 
 @media (min-width: 1024px) {
   .topBar {
     padding-left: var(--spacing-3xl);
     padding-right: var(--spacing-3xl);
+    padding-bottom: 40px;
   }
 }
 
@@ -113,44 +114,64 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  gap: var(--spacing-xl);
+  gap: 24px;
 }
 
 .filterSection {
   display: flex;
   align-items: center;
-  gap: var(--spacing-md);
+  gap: 12px;
   flex: 0 0 auto;
 }
 
-/* Clean Minimal Filter Button */
+/* Ultra Minimal Modern Button */
 .filterButton,
 .filterDrawerButton {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
+  gap: 6px;
+  padding: 8px 16px;
   background: transparent;
   color: var(--color-text-primary);
-  border: 1px solid #e5e5e5;
-  border-radius: 4px;
-  font-size: 14px;
-  font-weight: var(--font-weight-normal);
+  border: none;
+  border-radius: 0;
+  font-size: 13px;
+  font-weight: 400;
   cursor: pointer;
-  transition: all var(--transition);
-  letter-spacing: 0.01em;
+  transition: all 0.15s ease;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  position: relative;
+}
+
+.filterButton::after,
+.filterDrawerButton::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--color-text-primary);
+  transform: scaleX(0);
+  transition: transform 0.2s ease;
+}
+
+.filterButton:hover::after,
+.filterDrawerButton:hover::after {
+  transform: scaleX(1);
 }
 
 .filterButton:hover,
 .filterDrawerButton:hover {
-  background: #fafafa;
-  border-color: #d4d4d4;
+  opacity: 0.7;
 }
 
 .filterButton svg,
 .filterDrawerButton svg {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
+  opacity: 0.7;
 }
 
 .filterChipsContainer {
@@ -159,25 +180,25 @@
   flex-wrap: wrap;
   align-items: center;
   flex: 1;
-  margin-left: var(--spacing-md);
+  margin-left: 16px;
 }
 
 .filterChip {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 12px;
-  background: #f5f5f5;
-  border: 1px solid #e5e5e5;
-  border-radius: 4px;
-  font-size: 13px;
-  font-weight: var(--font-weight-normal);
+  padding: 4px 12px;
+  background: #fafafa;
+  border: none;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 400;
   color: var(--color-text-primary);
-  transition: all var(--transition);
+  transition: all 0.15s ease;
 }
 
 .filterChip:hover {
-  background: #ebebeb;
+  background: #f0f0f0;
 }
 
 .filterChipRemove {
@@ -185,15 +206,15 @@
   border: none;
   color: var(--color-text-secondary);
   cursor: pointer;
-  font-size: 16px;
+  font-size: 14px;
   line-height: 1;
   padding: 0;
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: color var(--transition);
+  transition: color 0.15s ease;
 }
 
 .filterChipRemove:hover {
@@ -201,33 +222,34 @@
 }
 
 .clearAllFilters {
-  padding: 6px 12px;
+  padding: 4px 12px;
   background: transparent;
-  border: 1px solid #e5e5e5;
-  border-radius: 4px;
-  font-size: 13px;
-  font-weight: var(--font-weight-normal);
-  color: var(--color-text-primary);
+  border: none;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--color-text-secondary);
   cursor: pointer;
-  transition: all var(--transition);
+  transition: all 0.15s ease;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 .clearAllFilters:hover {
-  background: #fafafa;
-  border-color: #d4d4d4;
+  color: var(--color-text-primary);
 }
 
 .topBarControls,
 .rightSection {
   display: flex;
   align-items: center;
-  gap: var(--spacing-xl);
+  gap: 20px;
 }
 
 .resultsCount {
   color: var(--color-text-secondary);
-  font-size: 14px;
-  font-weight: var(--font-weight-normal);
+  font-size: 13px;
+  font-weight: 400;
   white-space: nowrap;
 }
 
@@ -238,39 +260,38 @@
 }
 
 .sortLabel {
-  color: var(--color-text-primary);
-  font-size: 14px;
-  font-weight: var(--font-weight-normal);
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  font-weight: 400;
   white-space: nowrap;
 }
 
 .sortSelect {
-  padding: 10px 36px 10px 16px;
-  border: 1px solid #e5e5e5;
-  border-radius: 4px;
-  background: var(--color-bg);
+  padding: 8px 32px 8px 12px;
+  border: none;
+  border-bottom: 1px solid #e5e5e5;
+  border-radius: 0;
+  background: transparent;
   color: var(--color-text-primary);
-  font-size: 14px;
-  font-weight: var(--font-weight-normal);
+  font-size: 13px;
+  font-weight: 400;
   font-family: var(--font-family);
   cursor: pointer;
-  transition: all var(--transition);
+  transition: all 0.15s ease;
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23111' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 12 12'%3E%3Cpath fill='%23757575' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 12px center;
-  min-width: 140px;
+  background-position: right 8px center;
+  min-width: 120px;
 }
 
 .sortSelect:hover {
-  background: #fafafa;
-  border-color: #d4d4d4;
+  border-bottom-color: var(--color-text-primary);
 }
 
 .sortSelect:focus {
   outline: none;
-  border-color: var(--color-text-primary);
-  background: var(--color-bg);
+  border-bottom-color: var(--color-text-primary);
 }
 
 /* ========================================
