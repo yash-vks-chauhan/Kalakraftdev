@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import Link from 'next/link'
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import WishlistButton from './WishlistButton'
 import { useDeviceDetection } from '../hooks/useDeviceDetection'
 import styles from '../products/products.module.css'
@@ -42,7 +42,6 @@ export default function ProductCard({
   const { isMobile: isMobileView } = useDeviceDetection()
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [direction, setDirection] = useState(0) // -1 for prev, 1 for next
-  const prefersReducedMotion = useReducedMotion()
   
   const cardStyle = animationDelay !== undefined ? {
     animationDelay: `${animationDelay}ms`
@@ -66,36 +65,11 @@ export default function ProductCard({
     setCurrentImageIndex((prev) => (prev === prod.imageUrls.length - 1 ? 0 : prev + 1))
   }
 
-  // Image animation variants - refined, modern slide + fade
+  // Image animation variants - pure crossfade (minimal, professional)
   const imageVariants = {
-    enter: (direction: number) => (
-      prefersReducedMotion
-        ? { opacity: 0, scale: 0.98 }
-        : {
-            x: direction > 0 ? 18 : -18,
-            opacity: 0,
-            scale: 0.98,
-            filter: 'blur(6px)'
-          }
-    ),
-    center: prefersReducedMotion
-      ? { opacity: 1, scale: 1 }
-      : {
-          x: 0,
-          opacity: 1,
-          scale: 1,
-          filter: 'blur(0px)'
-        },
-    exit: (direction: number) => (
-      prefersReducedMotion
-        ? { opacity: 0, scale: 0.98 }
-        : {
-            x: direction > 0 ? -18 : 18,
-            opacity: 0,
-            scale: 0.98,
-            filter: 'blur(6px)'
-          }
-    )
+    enter: () => ({ opacity: 0 }),
+    center: { opacity: 1 },
+    exit: () => ({ opacity: 0 })
   }
 
   // Arrow button animation
@@ -137,10 +111,7 @@ export default function ProductCard({
             animate="center"
             exit="exit"
             transition={{
-              x: { type: 'spring', stiffness: 550, damping: 38, mass: 0.8 },
-              opacity: { duration: 0.22, ease: 'easeOut' },
-              scale: { duration: 0.22, ease: 'easeOut' },
-              filter: { duration: 0.22 }
+              opacity: { duration: 0.24, ease: 'easeOut' }
             }}
             style={{
               position: 'absolute',
@@ -151,7 +122,7 @@ export default function ProductCard({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              willChange: 'transform, opacity, filter'
+              willChange: 'opacity'
             }}
           >
             <img 
