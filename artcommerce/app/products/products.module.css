@@ -679,11 +679,11 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   color: #000000;
   font-size: 22px;
   font-weight: 700;
   line-height: 1;
+  will-change: transform;
 }
 
 .imageNavButton:hover {
@@ -694,12 +694,10 @@
     0 12px 32px rgba(0, 0, 0, 0.15),
     0 4px 12px rgba(0, 0, 0, 0.08),
     inset 0 1px 1px rgba(255, 255, 255, 0.9);
-  transform: scale(1.08);
   border: 1.5px solid rgba(255, 255, 255, 0.75);
 }
 
 .imageNavButton:active {
-  transform: scale(0.96);
   box-shadow: 
     0 4px 16px rgba(0, 0, 0, 0.12),
     0 1px 4px rgba(0, 0, 0, 0.06),
@@ -709,7 +707,6 @@
 .imageNavButton:disabled {
   opacity: 0.35;
   cursor: not-allowed;
-  transform: scale(1);
 }
 
 .imageNavButton:disabled:hover {
@@ -720,7 +717,6 @@
     0 8px 24px rgba(0, 0, 0, 0.12),
     0 2px 8px rgba(0, 0, 0, 0.06),
     inset 0 1px 1px rgba(255, 255, 255, 0.8);
-  transform: scale(1);
   border: 1.5px solid rgba(255, 255, 255, 0.6);
 }
 
@@ -750,13 +746,12 @@
   height: 7px;
   border-radius: 50%;
   background: rgba(0, 0, 0, 0.35);
-  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  will-change: width, background, box-shadow;
 }
 
 .imageIndicatorDot.active {
   background: #000000;
-  width: 20px;
   border-radius: 4px;
   box-shadow: 
     0 2px 6px rgba(0, 0, 0, 0.2),

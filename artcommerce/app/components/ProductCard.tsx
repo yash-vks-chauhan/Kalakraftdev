@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import Link from 'next/link'
+import { motion, AnimatePresence } from 'framer-motion'
 import WishlistButton from './WishlistButton'
 import { useDeviceDetection } from '../hooks/useDeviceDetection'
 import styles from '../products/products.module.css'
@@ -40,6 +41,7 @@ export default function ProductCard({
 }: ProductCardProps) {
   const { isMobile: isMobileView } = useDeviceDetection()
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
+  const [direction, setDirection] = useState(0) // -1 for prev, 1 for next
   
   const cardStyle = animationDelay !== undefined ? {
     animationDelay: `${animationDelay}ms`
@@ -52,13 +54,55 @@ export default function ProductCard({
   const handlePrevImage = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
+    setDirection(-1)
     setCurrentImageIndex((prev) => (prev === 0 ? prod.imageUrls.length - 1 : prev - 1))
   }
 
   const handleNextImage = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
+    setDirection(1)
     setCurrentImageIndex((prev) => (prev === prod.imageUrls.length - 1 ? 0 : prev + 1))
+  }
+
+  // Image animation variants
+  const imageVariants = {
+    enter: (direction: number) => ({
+      x: direction > 0 ? 30 : -30,
+      opacity: 0,
+      scale: 0.96
+    }),
+    center: {
+      x: 0,
+      opacity: 1,
+      scale: 1
+    },
+    exit: (direction: number) => ({
+      x: direction > 0 ? -30 : 30,
+      opacity: 0,
+      scale: 0.96
+    })
+  }
+
+  // Arrow button animation
+  const arrowVariants = {
+    rest: { scale: 1 },
+    hover: { scale: 1.08 },
+    tap: { scale: 0.92 }
+  }
+
+  // Dot indicator animation
+  const dotVariants = {
+    inactive: { 
+      scale: 1,
+      width: 7,
+      opacity: 0.4
+    },
+    active: { 
+      scale: 1,
+      width: 20,
+      opacity: 1
+    }
   }
 
   return (
@@ -70,18 +114,42 @@ export default function ProductCard({
     >
       {/* Image Container */}
       <div className={styles.imageContainer}>
-        {prod.imageUrls[currentImageIndex] ? (
-          <img 
-            src={prod.imageUrls[currentImageIndex]} 
-            alt={prod.name} 
-            className={styles.productImage}
-            loading="lazy"
-          />
-        ) : (
-          <div className={styles.productImage} style={{ background: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>  
-            <span style={{ color: '#666', fontSize: '0.85rem' }}>No image</span>
-          </div>
-        )}
+        <AnimatePresence initial={false} custom={direction} mode="wait">
+          <motion.div
+            key={currentImageIndex}
+            custom={direction}
+            variants={imageVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{
+              x: { type: "spring", stiffness: 300, damping: 30 },
+              opacity: { duration: 0.2 },
+              scale: { duration: 0.2 }
+            }}
+            style={{
+              position: 'absolute',
+              width: '100%',
+              height: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
+            {prod.imageUrls[currentImageIndex] ? (
+              <img 
+                src={prod.imageUrls[currentImageIndex]} 
+                alt={prod.name} 
+                className={styles.productImage}
+                loading="lazy"
+              />
+            ) : (
+              <div className={styles.productImage} style={{ background: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>  
+                <span style={{ color: '#666', fontSize: '0.85rem' }}>No image</span>
+              </div>
+            )}
+          </motion.div>
+        </AnimatePresence>
         
         {/* Wishlist Button */}
         {!isMobileView && (
@@ -110,28 +178,45 @@ export default function ProductCard({
         {!isMobileView && hasMultipleImages && (
           <>
             <div className={styles.imageNavigation}>
-              <button
+              <motion.button
                 className={styles.imageNavButton}
                 onClick={handlePrevImage}
                 aria-label="Previous image"
+                variants={arrowVariants}
+                initial="rest"
+                whileHover="hover"
+                whileTap="tap"
+                transition={{ type: "spring", stiffness: 400, damping: 20 }}
               >
                 ‹
-              </button>
-              <button
+              </motion.button>
+              <motion.button
                 className={styles.imageNavButton}
                 onClick={handleNextImage}
                 aria-label="Next image"
+                variants={arrowVariants}
+                initial="rest"
+                whileHover="hover"
+                whileTap="tap"
+                transition={{ type: "spring", stiffness: 400, damping: 20 }}
               >
                 ›
-              </button>
+              </motion.button>
             </div>
 
             {/* Image Indicator Dots */}
             <div className={styles.imageIndicators}>
               {prod.imageUrls.map((_, idx) => (
-                <span
+                <motion.span
                   key={idx}
                   className={`${styles.imageIndicatorDot} ${idx === currentImageIndex ? styles.active : ''}`}
+                  variants={dotVariants}
+                  animate={idx === currentImageIndex ? "active" : "inactive"}
+                  transition={{
+                    type: "spring",
+                    stiffness: 300,
+                    damping: 25
+                  }}
                 />
               ))}
             </div>
