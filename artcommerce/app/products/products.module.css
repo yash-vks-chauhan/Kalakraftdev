@@ -279,7 +279,7 @@
   column-gap: 12px;
   row-gap: 48px;
   margin-bottom: var(--spacing-3xl);
-  padding: 0 var(--spacing-2xl);
+  padding: 0;
   width: 100%;
   box-sizing: border-box;
 }
@@ -290,7 +290,7 @@
     grid-template-columns: repeat(3, 1fr);
     column-gap: 12px;
     row-gap: 64px;
-    padding: 0 var(--spacing-3xl);
+    padding: 0;
   }
 }
 
