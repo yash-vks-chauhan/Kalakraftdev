@@ -5,7 +5,6 @@ import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import WishlistButton from './WishlistButton'
-import ShinyText from './ShinyText'
 import { useDeviceDetection } from '../hooks/useDeviceDetection'
 import { useImagePreload } from '../hooks/useImagePreload'
 import styles from '../products/products.module.css'
@@ -167,7 +166,7 @@ export default function ProductCard({
         {/* Stock Badge */}
         {prod.stockQuantity <= LOW_STOCK_THRESHOLD && prod.stockQuantity > 0 && (
           <span className={`${styles.stockBadge} ${styles.lowStock}`}>
-            <ShinyText text={`Only ${prod.stockQuantity} left`} speed={3} />
+            Only {prod.stockQuantity} left
           </span>
         )}
         {prod.stockQuantity === 0 && (
