@@ -247,13 +247,46 @@ export default function ProductsClient() {
 
   // Framer variants for professional, minimal animation
   const sortMenuVariants = useMemo(() => ({
-    hidden: { opacity: 0, y: -6, scale: 0.98, transition: { duration: 0.18, ease: [0.4, 0, 0.2, 1] } },
-    visible:{ opacity: 1, y: 0, scale: 1, transition: { duration: 0.18, ease: [0.4, 0, 0.2, 1], when: 'beforeChildren', staggerChildren: 0.03 } }
+    hidden: { 
+      opacity: 0, 
+      y: -12, 
+      scale: 0.95,
+      filter: 'blur(4px)',
+      transition: { 
+        duration: 0.2, 
+        ease: [0.4, 0, 0.2, 1] as any
+      } 
+    },
+    visible:{ 
+      opacity: 1, 
+      y: 0, 
+      scale: 1,
+      filter: 'blur(0px)',
+      transition: { 
+        duration: 0.25, 
+        ease: [0.25, 0.1, 0.25, 1] as any,
+        when: 'beforeChildren', 
+        staggerChildren: 0.04,
+        delayChildren: 0.02
+      } 
+    }
   }), [])
 
   const sortItemVariants = useMemo(() => ({
-    hidden: { opacity: 0, x: -6 },
-    visible:{ opacity: 1, x: 0 }
+    hidden: { 
+      opacity: 0, 
+      x: -8,
+      filter: 'blur(2px)'
+    },
+    visible:{ 
+      opacity: 1, 
+      x: 0,
+      filter: 'blur(0px)',
+      transition: {
+        duration: 0.2,
+        ease: [0.25, 0.1, 0.25, 1] as any
+      }
+    }
   }), [])
 
   // Keyboard navigation for dropdown
@@ -1024,23 +1057,33 @@ export default function ProductsClient() {
                       aria-expanded={isSortDropdownOpen}
                       aria-haspopup="listbox"
                       onKeyDown={handleSortKeyDown}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
+                      whileHover={{ 
+                        scale: 1.015,
+                        backgroundColor: 'rgba(0, 0, 0, 0.02)'
+                      }}
+                      whileTap={{ scale: 0.985 }}
+                      transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
                     >
                       <AnimatePresence mode="wait" initial={false}>
                         <motion.span
                           key={getCurrentSortLabel()}
-                          initial={{ opacity: 0, y: 6 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -6 }}
-                          transition={{ duration: 0.18, ease: [0.4, 0, 0.2, 1] }}
+                          initial={{ opacity: 0, y: 8, filter: 'blur(2px)' }}
+                          animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                          exit={{ opacity: 0, y: -8, filter: 'blur(2px)' }}
+                          transition={{ duration: 0.22, ease: [0.25, 0.1, 0.25, 1] }}
                         >
                           {getCurrentSortLabel()}
                         </motion.span>
                       </AnimatePresence>
                       <motion.div
                         animate={{ rotate: isSortDropdownOpen ? 180 : 0 }}
-                        transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+                        transition={{ 
+                          duration: 0.35, 
+                          ease: [0.25, 0.1, 0.25, 1],
+                          type: "spring",
+                          stiffness: 200,
+                          damping: 20
+                        }}
                       >
                         <FiChevronDown size={16} style={{ opacity: 0.6 }} />
                       </motion.div>
@@ -1068,18 +1111,43 @@ export default function ProductsClient() {
                               onMouseEnter={() => setHighlightedSortIndex(index)}
                               onClick={() => handleSortSelect(option.value)}
                               variants={sortItemVariants}
-                              whileHover={{ x: 4, backgroundColor: 'rgba(255, 255, 255, 0.5)' }}
-                              whileTap={{ scale: 0.98 }}
+                              whileHover={{ 
+                                x: 6, 
+                                backgroundColor: 'rgba(255, 255, 255, 0.5)',
+                                transition: { 
+                                  duration: 0.2, 
+                                  ease: [0.25, 0.1, 0.25, 1] 
+                                }
+                              }}
+                              whileTap={{ 
+                                scale: 0.97,
+                                transition: { duration: 0.1 }
+                              }}
                               style={highlightedSortIndex === index ? { backgroundColor: 'rgba(0,0,0,0.04)' } : undefined}
                             >
-                              <motion.span>{option.label}</motion.span>
+                              <motion.span
+                                animate={sortOrder === option.value ? { 
+                                  fontWeight: 600,
+                                  transition: { duration: 0.2 }
+                                } : {
+                                  fontWeight: 400
+                                }}
+                              >
+                                {option.label}
+                              </motion.span>
                               {sortOrder === option.value && (
                                 <motion.span 
                                   className={styles.checkmark}
-                                  initial={{ scale: 0, rotate: -90 }}
-                                  animate={{ scale: 1, rotate: 0 }}
-                                  exit={{ scale: 0, rotate: 90 }}
-                                  transition={{ duration: 0.18, ease: [0.4, 0, 0.2, 1] }}
+                                  initial={{ scale: 0, rotate: -90, opacity: 0 }}
+                                  animate={{ scale: 1, rotate: 0, opacity: 1 }}
+                                  exit={{ scale: 0, rotate: 90, opacity: 0 }}
+                                  transition={{ 
+                                    duration: 0.25, 
+                                    ease: [0.34, 1.56, 0.64, 1],
+                                    type: "spring",
+                                    stiffness: 300,
+                                    damping: 18
+                                  }}
                                 >
                                   ✓
                                 </motion.span>
