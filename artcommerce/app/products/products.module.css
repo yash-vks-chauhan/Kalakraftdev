@@ -163,10 +163,10 @@
   gap: 8px;
   padding: 10px 20px;
   
-  /* Clean minimal background */
+  /* Subtle frosted background with tiny blur */
   background: rgba(245, 245, 245, 0.95);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(6px) saturate(120%);
+  -webkit-backdrop-filter: blur(6px) saturate(120%);
   
   color: var(--color-text-primary);
   border: 1px solid rgba(0, 0, 0, 0.06);
@@ -365,10 +365,10 @@
   min-width: 220px;
   z-index: 3000;
   
-  /* Clean glassmorphism */
+  /* Subtle glassmorphism (tiny blur for polish) */
   background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(8px) saturate(120%);
+  -webkit-backdrop-filter: blur(8px) saturate(120%);
   
   border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 14px;

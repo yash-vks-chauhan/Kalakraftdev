@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -77,6 +77,7 @@ export default function ProductsClient() {
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false)
   const [isDesktopFilterOpen, setIsDesktopFilterOpen] = useState(false)
   const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false)
+  const [highlightedSortIndex, setHighlightedSortIndex] = useState(0)
 
   // State for accordion open/close
   const [openSections, setOpenSections] = useState<{[key: string]: boolean}>({
@@ -234,6 +235,50 @@ export default function ProductsClient() {
   // Get current sort label
   const getCurrentSortLabel = () => {
     return SORT_OPTIONS.find(opt => opt.value === sortOrder)?.label || 'Newest'
+  }
+
+  // Keep highlighted option in sync with current value when opening
+  useEffect(() => {
+    if (isSortDropdownOpen) {
+      const idx = Math.max(0, SORT_OPTIONS.findIndex(o => o.value === sortOrder))
+      setHighlightedSortIndex(idx)
+    }
+  }, [isSortDropdownOpen, sortOrder])
+
+  // Framer variants for professional, minimal animation
+  const sortMenuVariants = useMemo(() => ({
+    hidden: { opacity: 0, y: -6, scale: 0.98, transition: { duration: 0.18, ease: [0.4, 0, 0.2, 1] } },
+    visible:{ opacity: 1, y: 0, scale: 1, transition: { duration: 0.18, ease: [0.4, 0, 0.2, 1], when: 'beforeChildren', staggerChildren: 0.03 } }
+  }), [])
+
+  const sortItemVariants = useMemo(() => ({
+    hidden: { opacity: 0, x: -6 },
+    visible:{ opacity: 1, x: 0 }
+  }), [])
+
+  // Keyboard navigation for dropdown
+  const handleSortKeyDown = (e: React.KeyboardEvent<HTMLButtonElement | HTMLDivElement>) => {
+    if (!isSortDropdownOpen && (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Enter' || e.key === ' ')) {
+      e.preventDefault()
+      setIsSortDropdownOpen(true)
+      return
+    }
+    if (!isSortDropdownOpen) return
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      setHighlightedSortIndex((i) => Math.min(SORT_OPTIONS.length - 1, i + 1))
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      setHighlightedSortIndex((i) => Math.max(0, i - 1))
+    } else if (e.key === 'Enter') {
+      e.preventDefault()
+      const opt = SORT_OPTIONS[highlightedSortIndex]
+      if (opt) handleSortSelect(opt.value)
+    } else if (e.key === 'Escape') {
+      e.preventDefault()
+      setIsSortDropdownOpen(false)
+    }
   }
 
   // Fetch list of available usage tags once
@@ -977,17 +1022,22 @@ export default function ProductsClient() {
                       className={styles.selectTrigger}
                       onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
                       aria-expanded={isSortDropdownOpen}
+                      aria-haspopup="listbox"
+                      onKeyDown={handleSortKeyDown}
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                     >
-                      <motion.span
-                        key={getCurrentSortLabel()}
-                        initial={{ opacity: 0, y: -5 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.2, ease: 'easeOut' }}
-                      >
-                        {getCurrentSortLabel()}
-                      </motion.span>
+                      <AnimatePresence mode="wait" initial={false}>
+                        <motion.span
+                          key={getCurrentSortLabel()}
+                          initial={{ opacity: 0, y: 6 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -6 }}
+                          transition={{ duration: 0.18, ease: [0.4, 0, 0.2, 1] }}
+                        >
+                          {getCurrentSortLabel()}
+                        </motion.span>
+                      </AnimatePresence>
                       <motion.div
                         animate={{ rotate: isSortDropdownOpen ? 180 : 0 }}
                         transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
@@ -1000,47 +1050,36 @@ export default function ProductsClient() {
                       {isSortDropdownOpen && (
                         <motion.div 
                           className={styles.selectDropdown}
-                          initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                          animate={{ opacity: 1, y: 0, scale: 1 }}
-                          exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                          transition={{ 
-                            duration: 0.25, 
-                            ease: [0.4, 0, 0.2, 1]
-                          }}
+                          role="listbox"
+                          aria-activedescendant={`sort-opt-${highlightedSortIndex}`}
+                          variants={sortMenuVariants}
+                          initial="hidden"
+                          animate="visible"
+                          exit="hidden"
+                          onKeyDown={handleSortKeyDown}
                         >
                           {SORT_OPTIONS.map((option, index) => (
                             <motion.button
+                              id={`sort-opt-${index}`}
                               key={option.value}
+                              role="option"
+                              aria-selected={sortOrder === option.value}
                               className={`${styles.selectOption} ${sortOrder === option.value ? styles.selectOptionActive : ''}`}
+                              onMouseEnter={() => setHighlightedSortIndex(index)}
                               onClick={() => handleSortSelect(option.value)}
-                              initial={{ opacity: 0, x: -8 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              exit={{ opacity: 0, x: -8 }}
-                              transition={{ 
-                                duration: 0.2, 
-                                delay: index * 0.04,
-                                ease: [0.4, 0, 0.2, 1]
-                              }}
+                              variants={sortItemVariants}
                               whileHover={{ x: 4, backgroundColor: 'rgba(255, 255, 255, 0.5)' }}
                               whileTap={{ scale: 0.98 }}
+                              style={highlightedSortIndex === index ? { backgroundColor: 'rgba(0,0,0,0.04)' } : undefined}
                             >
-                              <motion.span
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                transition={{ duration: 0.2, delay: index * 0.04 + 0.1 }}
-                              >
-                                {option.label}
-                              </motion.span>
+                              <motion.span>{option.label}</motion.span>
                               {sortOrder === option.value && (
                                 <motion.span 
                                   className={styles.checkmark}
-                                  initial={{ scale: 0, rotate: -180 }}
+                                  initial={{ scale: 0, rotate: -90 }}
                                   animate={{ scale: 1, rotate: 0 }}
-                                  exit={{ scale: 0, rotate: 180 }}
-                                  transition={{ 
-                                    duration: 0.3,
-                                    ease: [0.4, 0, 0.2, 1]
-                                  }}
+                                  exit={{ scale: 0, rotate: 90 }}
+                                  transition={{ duration: 0.18, ease: [0.4, 0, 0.2, 1] }}
                                 >
                                   ✓
                                 </motion.span>
