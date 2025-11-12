@@ -338,44 +338,41 @@
 }
 
 /* ========================================
-   PRODUCT GRID - GALLERY STYLE (2-3 COLUMNS)
-   Professional art showcase layout
+   PRODUCT GRID - BALANCED GALLERY LAYOUT
+   Smart responsive grid for optimal art showcase
+   ======================================== */
+
+/* ========================================
+   PRODUCT GRID - CREATIVE MASONRY LAYOUT
+   Innovative art gallery presentation
    ======================================== */
 
 .productGrid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 3rem;
+  gap: 2rem;
   margin-bottom: var(--spacing-2xl);
   align-items: start;
-  max-width: 1600px;
+  max-width: 1400px;
   margin-left: auto;
   margin-right: auto;
   padding: 0 1.5rem;
 }
 
-/* Extra Large Screens - 3 columns maximum for art gallery feel */
-@media (min-width: 1536px) {
+/* Large Desktop - Single column horizontal cards for premium feel */
+@media (min-width: 1280px) {
   .productGrid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 3.5rem;
-    padding: 0 2rem;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    max-width: 1200px;
   }
 }
 
-/* Large Desktop - 2 columns for optimal viewing */
-@media (min-width: 1280px) and (max-width: 1535px) {
-  .productGrid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 3rem;
-  }
-}
-
-/* Desktop - 2 columns */
+/* Desktop - 2 columns vertical cards */
 @media (min-width: 1024px) and (max-width: 1279px) {
   .productGrid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 2.5rem;
+    gap: 2rem;
   }
 }
 
@@ -383,7 +380,7 @@
 @media (min-width: 768px) and (max-width: 1023px) {
   .productGrid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 2rem;
+    gap: 1.5rem;
     padding: 0 1rem;
   }
 }
@@ -402,61 +399,64 @@
    Clean, professional, and modern design
    ======================================== */
 
-/* Product Card - Premium Art Gallery Style */
+/* Product Card - Innovative Horizontal/Vertical Layout */
 .productCard {
   position: relative;
-  border-radius: 20px;
+  border-radius: 24px;
   overflow: hidden;
   transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
   
   /* Premium Glassmorphism Effect */
   background: linear-gradient(
     135deg,
-    rgba(255, 255, 255, 0.08) 0%,
-    rgba(255, 255, 255, 0.04) 100%
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.05) 100%
   );
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
   
   /* Subtle Border with Gradient */
-  border: 1px solid transparent;
-  background-clip: padding-box;
-  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.1),
+    0 2px 8px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Horizontal Layout for Large Screens */
+@media (min-width: 1280px) {
+  .productCard {
+    flex-direction: row;
+    align-items: center;
+    min-height: 320px;
+  }
 }
 
 .productCard::before {
   content: '';
   position: absolute;
   inset: 0;
-  border-radius: 20px;
-  padding: 1px;
+  border-radius: 24px;
   background: linear-gradient(
     135deg,
-    rgba(255, 255, 255, 0.2) 0%,
-    rgba(255, 255, 255, 0.05) 50%,
-    rgba(255, 255, 255, 0.1) 100%
+    rgba(255, 255, 255, 0.15) 0%,
+    transparent 50%,
+    rgba(255, 255, 255, 0.05) 100%
   );
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
-  opacity: 0.6;
+  opacity: 0;
   transition: opacity 0.5s ease;
+  pointer-events: none;
 }
 
 .productCard:hover {
-  transform: translateY(-12px);
-  
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.12) 0%,
-    rgba(255, 255, 255, 0.06) 100%
-  );
-  
+  transform: translateY(-6px);
+  border-color: rgba(255, 255, 255, 0.3);
   box-shadow: 
-    0 24px 48px -12px rgba(0, 0, 0, 0.25),
-    0 12px 24px -8px rgba(0, 0, 0, 0.15),
-    0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+    0 20px 60px rgba(0, 0, 0, 0.18),
+    0 8px 20px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 .productCard:hover::before {
@@ -464,17 +464,33 @@
 }
 
 /* Optimized Image Container - Perfect Square for Art Display */
+/* Image Container - Adaptive Layout */
 .imageContainer {
   position: relative;
   width: 100%;
-  padding-top: 100%; /* 1:1 aspect ratio - perfect square for art */
   overflow: hidden;
   background: linear-gradient(
     135deg,
     rgba(0, 0, 0, 0.02) 0%,
     rgba(0, 0, 0, 0.01) 100%
   );
-  border-radius: 16px 16px 0 0;
+  flex-shrink: 0;
+}
+
+/* Vertical Layout - Square Image */
+.imageContainer {
+  padding-top: 100%;
+  border-radius: 20px 20px 0 0;
+}
+
+/* Horizontal Layout - Fixed Width Image */
+@media (min-width: 1280px) {
+  .imageContainer {
+    width: 380px;
+    height: 320px;
+    padding-top: 0;
+    border-radius: 20px 0 0 20px;
+  }
 }
 
 .imageContainer::after {
@@ -482,12 +498,12 @@
   position: absolute;
   inset: 0;
   background: linear-gradient(
-    to bottom,
+    135deg,
     transparent 0%,
-    transparent 70%,
     rgba(0, 0, 0, 0.03) 100%
   );
   pointer-events: none;
+  opacity: 0.5;
   transition: opacity 0.5s ease;
 }
 
@@ -495,21 +511,20 @@
   opacity: 0;
 }
 
-.imageContainer img {
+.productImage {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center;
-  transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1), filter 0.3s ease;
-  filter: brightness(1) contrast(1.02);
+  transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  filter: brightness(0.98) contrast(1.02) saturate(1.05);
 }
 
-.productCard:hover .imageContainer img {
-  transform: scale(1.05);
-  filter: brightness(1.05) contrast(1.05);
+.productCard:hover .productImage {
+  transform: scale(1.08);
+  filter: brightness(1.02) contrast(1.05) saturate(1.1);
 }
 
 /* Refined Wishlist Button */
@@ -572,45 +587,76 @@
 }
 
 /* Refined Card Content - Compact & Organized */
-/* Card Content - Refined Typography */
+/* Card Content - Adaptive Layout */
 .cardContent {
-  padding: 2rem 1.75rem;
-  background: linear-gradient(
-    to bottom,
-    rgba(255, 255, 255, 0.04) 0%,
-    rgba(255, 255, 255, 0.02) 100%
-  );
+  padding: 2rem;
+  background: transparent;
   position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+/* Horizontal Layout - More Padding */
+@media (min-width: 1280px) {
+  .cardContent {
+    padding: 2.5rem 3rem;
+    justify-content: center;
+  }
 }
 
 .cardContent::before {
   content: '';
   position: absolute;
   top: 0;
-  left: 1.75rem;
-  right: 1.75rem;
+  left: 2rem;
+  right: 2rem;
   height: 1px;
   background: linear-gradient(
     to right,
     transparent 0%,
-    rgba(255, 255, 255, 0.15) 50%,
+    rgba(0, 0, 0, 0.06) 50%,
     transparent 100%
   );
 }
 
+/* Hide divider on horizontal layout */
+@media (min-width: 1280px) {
+  .cardContent::before {
+    left: 0;
+    right: auto;
+    width: 1px;
+    height: 100%;
+    top: 0;
+    background: linear-gradient(
+      to bottom,
+      transparent 0%,
+      rgba(0, 0, 0, 0.06) 50%,
+      transparent 100%
+    );
+  }
+}
+
 .productTitle {
-  font-size: 1.25rem;
+  font-size: 1.375rem;
   font-weight: 600;
   color: #1a1a1a;
-  margin-bottom: 0.625rem;
-  line-height: 1.5;
+  margin-bottom: 0.5rem;
+  line-height: 1.4;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
   transition: color 0.3s ease;
+}
+
+@media (min-width: 1280px) {
+  .productTitle {
+    font-size: 1.75rem;
+    margin-bottom: 0.75rem;
+  }
 }
 
 .productCard:hover .productTitle {
@@ -618,16 +664,23 @@
 }
 
 .productArtist {
-  font-size: 0.9375rem;
+  font-size: 1rem;
   color: #666;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.5rem;
   font-weight: 500;
-  letter-spacing: 0.01em;
+  letter-spacing: 0.005em;
   transition: color 0.3s ease;
 }
 
+@media (min-width: 1280px) {
+  .productArtist {
+    font-size: 1.125rem;
+    margin-bottom: 2rem;
+  }
+}
+
 .productCard:hover .productArtist {
-  color: #555;
+  color: #444;
 }
 
 .categoryLabel {
