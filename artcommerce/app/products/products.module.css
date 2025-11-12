@@ -1350,19 +1350,19 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 24px 24px 20px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-  background: transparent;
+  padding: 28px 24px 24px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   position: sticky;
   top: 0;
   z-index: 10;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
 }
 
 .mobileFilterHeader h2 {
   margin: 0;
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 600;
   color: var(--color-text-primary);
   letter-spacing: -0.02em;
@@ -1373,109 +1373,123 @@
 
 /* Close Button - Minimal Glassmorphism */
 .mobileFilterCloseButton {
-  background: rgba(0, 0, 0, 0.04);
-  border: none;
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.08);
   cursor: pointer;
   color: var(--color-text-primary);
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .mobileFilterCloseButton:hover {
-  background: rgba(0, 0, 0, 0.08);
-  transform: rotate(90deg);
+  background: rgba(0, 0, 0, 0.1);
+  border-color: rgba(0, 0, 0, 0.15);
+  transform: scale(1.05);
 }
 
 .mobileFilterCloseButton:active {
-  transform: rotate(90deg) scale(0.95);
+  transform: scale(0.95);
 }
 
 /* Filter Content Container */
 .mobileFilterContent {
-  padding: 8px 16px 24px;
+  padding: 20px 16px 32px;
+  background: transparent;
 }
 
-/* Filter Title (if used) */
+/* Filter Title */
 .filterTitle {
   font-size: 11px;
   font-weight: 600;
   color: rgba(0, 0, 0, 0.4);
-  margin: 0 0 16px;
+  margin: 0 0 20px;
   display: flex;
   align-items: center;
   gap: 8px;
-  letter-spacing: 1px;
+  letter-spacing: 1.2px;
   text-transform: uppercase;
-  padding: 0 4px;
+  padding: 0 8px;
 }
 
-/* Filter Section - Ultra Clean Minimal Design */
+/* Filter Section - Modern Grey Container */
 .filterSection {
-  margin-bottom: 8px;
-  border: none;
-  border-radius: 0;
+  margin-bottom: 12px;
+  border-radius: 16px;
   overflow: hidden;
-  background: transparent;
-  transition: all 0.2s ease;
+  background: linear-gradient(135deg, rgba(245, 245, 245, 0.95), rgba(250, 250, 250, 0.9));
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.04),
+    0 1px 2px rgba(0, 0, 0, 0.02);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
-/* Filter Header - Simple Line with Label */
+.filterSection:hover {
+  border-color: rgba(0, 0, 0, 0.1);
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.06),
+    0 2px 4px rgba(0, 0, 0, 0.03);
+  transform: translateY(-1px);
+}
+
+/* Filter Header - Clickable with Icon */
 .filterHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 4px 12px;
+  padding: 18px 20px;
   background: transparent;
   cursor: pointer;
-  font-size: 13px;
-  font-weight: 500;
+  font-size: 14px;
+  font-weight: 600;
   color: var(--color-text-primary);
   transition: all 0.2s ease;
-  list-style: none;
   user-select: none;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  border-bottom: 1px solid transparent;
 }
 
 .filterHeader:hover {
-  border-bottom-color: rgba(0, 0, 0, 0.15);
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.filterHeader:active {
+  background: rgba(255, 255, 255, 0.7);
 }
 
 .filterHeader span {
   display: flex;
   align-items: center;
-  gap: 8px;
-  letter-spacing: 0.3px;
+  gap: 10px;
+  letter-spacing: 0.2px;
 }
 
-.filterHeader .arrow {
-  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  opacity: 0.4;
-  font-size: 12px;
-}
-
-.filterSection[open] .arrow {
-  transform: rotate(180deg);
+.filterHeader svg {
+  font-size: 16px;
   opacity: 0.7;
 }
 
-.filterSection[open] .filterHeader {
-  border-bottom-color: rgba(0, 0, 0, 0.12);
-  padding-bottom: 12px;
+.filterHeader .arrow {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0.5;
+  font-size: 16px;
 }
 
 /* Filter Content - Clean Options Container */
 .filterContent {
-  padding: 16px 4px 12px;
-  background: transparent;
-  border-top: none;
+  padding: 16px 20px 20px;
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 /* Filter Option - Minimal Radio/Checkbox Items */
@@ -1483,70 +1497,74 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 8px;
-  font-size: 13px;
+  padding: 12px 14px;
+  font-size: 14px;
   color: var(--color-text-primary);
   cursor: pointer;
-  transition: all 0.2s ease;
-  border-radius: 8px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 10px;
   margin: 0;
   position: relative;
   background: transparent;
 }
 
 .filterOption:hover {
-  background: rgba(0, 0, 0, 0.02);
+  background: rgba(255, 255, 255, 0.6);
+  transform: translateX(4px);
 }
 
 .filterOption input[type="radio"],
 .filterOption input[type="checkbox"] {
   cursor: pointer;
-  width: 18px;
-  height: 18px;
-  accent-color: var(--color-text-primary);
+  width: 20px;
+  height: 20px;
+  accent-color: #000000;
   transition: all 0.2s ease;
   flex-shrink: 0;
 }
 
 .filterOption:hover input[type="radio"],
 .filterOption:hover input[type="checkbox"] {
-  transform: scale(1.05);
+  transform: scale(1.1);
 }
 
-.filterOption label {
+.filterOption label,
+.filterOption span {
   cursor: pointer;
   flex: 1;
-  line-height: 1.4;
-  font-weight: 400;
+  line-height: 1.5;
+  font-weight: 500;
   color: var(--color-text-primary);
+  letter-spacing: 0.1px;
 }
 
 /* Price Input Fields */
 .filterContent input[type="number"],
 .filterContent input[type="text"] {
   width: 100%;
-  padding: 10px 12px;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 8px;
-  font-size: 13px;
+  padding: 12px 14px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  font-size: 14px;
   color: var(--color-text-primary);
-  background: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.7);
   transition: all 0.2s ease;
   font-family: var(--font-family);
   outline: none;
+  font-weight: 500;
 }
 
 .filterContent input[type="number"]:hover,
 .filterContent input[type="text"]:hover {
-  border-color: rgba(0, 0, 0, 0.15);
-  background: rgba(255, 255, 255, 0.7);
+  border-color: rgba(0, 0, 0, 0.2);
+  background: rgba(255, 255, 255, 0.9);
 }
 
 .filterContent input[type="number"]:focus,
 .filterContent input[type="text"]:focus {
-  border-color: rgba(0, 0, 0, 0.25);
-  background: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.3);
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.04);
 }
 
 /* Price Range Container */
@@ -1563,27 +1581,27 @@
 .priceRange label {
   display: block;
   font-size: 11px;
-  font-weight: 500;
+  font-weight: 600;
   color: rgba(0, 0, 0, 0.5);
-  margin-bottom: 6px;
-  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+  letter-spacing: 0.8px;
   text-transform: uppercase;
 }
 
-/* Clear Button - Ultra Minimal Style */
+/* Clear Button - Modern Grey Style */
 .clearButton {
-  margin-top: 20px;
-  padding: 10px 16px;
-  background: transparent;
+  margin-top: 16px;
+  padding: 12px 18px;
+  background: rgba(0, 0, 0, 0.05);
   border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
+  border-radius: 10px;
   font-size: 12px;
-  font-weight: 500;
-  color: rgba(0, 0, 0, 0.6);
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.7);
   cursor: pointer;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   text-transform: uppercase;
-  letter-spacing: 0.8px;
+  letter-spacing: 1px;
   width: 100%;
   display: flex;
   align-items: center;
@@ -1592,14 +1610,16 @@
 }
 
 .clearButton:hover {
-  background: rgba(0, 0, 0, 0.04);
+  background: rgba(0, 0, 0, 0.08);
   border-color: rgba(0, 0, 0, 0.2);
   color: var(--color-text-primary);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .clearButton:active {
   transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
 }
 
 /* ========================================

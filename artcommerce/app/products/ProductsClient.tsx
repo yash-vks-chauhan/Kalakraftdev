@@ -362,219 +362,455 @@ export default function ProductsClient() {
   )
   if (error) return <p className={styles.errorMessage}>Error: {error}</p>
 
+  // State for accordion open/close
+  const [openSections, setOpenSections] = useState<{[key: string]: boolean}>({
+    category: true,
+    mood: false,
+    rating: false,
+    stock: false,
+    sort: false
+  })
+
+  const toggleSection = (section: string) => {
+    setOpenSections(prev => ({ ...prev, [section]: !prev[section] }))
+  }
+
   // Render the filter sidebar/drawer
   const renderFilters = () => (
     <>
-      <h2 className={styles.filterTitle}>
+      <motion.h2 
+        className={styles.filterTitle}
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+      >
         <FiFilter style={{ marginRight: '8px', opacity: 0.8 }} />
         Filters
-      </h2>
+      </motion.h2>
       
       {/* Category filter */}
-      <details className={styles.filterSection}>
-        <summary className={styles.filterHeader}>
-          <span style={{ display: 'flex', alignItems: 'center' }}>
-            <FiGrid style={{ marginRight: '8px' }} />
+      <motion.div 
+        className={styles.filterSection}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.1 }}
+      >
+        <div 
+          className={styles.filterHeader}
+          onClick={() => toggleSection('category')}
+        >
+          <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <FiGrid />
             Category
           </span>
-          <FiChevronRight className={styles.arrow} />
-        </summary>
-        <div className={styles.filterContent}>
-          {KNOWN_CATEGORIES.map(cat => (
-            <label key={cat.slug} className={styles.filterOption}>
-              <input
-                type="radio"
-                name="categoryFilter"
-                checked={currentCategory === cat.slug}
-                onChange={() => {
-                  const qs = new URLSearchParams(searchParams.toString())
-                  if (cat.slug === currentCategory) qs.delete('category')
-                  else qs.set('category', cat.slug)
-                  router.replace(qs.toString() ? `/products?${qs}` : '/products')
-                  if (isMobileView) setIsMobileFilterOpen(false)
-                }}
-              />
-              {cat.name}
-            </label>
-          ))}
-          {currentCategory && (
-            <button className={styles.clearButton} onClick={() => {
-              const qs = new URLSearchParams(searchParams.toString())
-              qs.delete('category');
-              router.replace(qs.toString() ? `/products?${qs}` : '/products')
-            }}>Clear</button>
-          )}
+          <motion.div
+            animate={{ rotate: openSections.category ? 180 : 0 }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
+          >
+            <FiChevronDown className={styles.arrow} />
+          </motion.div>
         </div>
-      </details>
+        <AnimatePresence>
+          {openSections.category && (
+            <motion.div 
+              className={styles.filterContent}
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3, ease: 'easeInOut' }}
+              style={{ overflow: 'hidden' }}
+            >
+              {KNOWN_CATEGORIES.map((cat, idx) => (
+                <motion.label 
+                  key={cat.slug} 
+                  className={styles.filterOption}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.2, delay: idx * 0.05 }}
+                >
+                  <motion.input
+                    type="radio"
+                    name="categoryFilter"
+                    checked={currentCategory === cat.slug}
+                    onChange={() => {
+                      const qs = new URLSearchParams(searchParams.toString())
+                      if (cat.slug === currentCategory) qs.delete('category')
+                      else qs.set('category', cat.slug)
+                      router.replace(qs.toString() ? `/products?${qs}` : '/products')
+                      if (isMobileView) setIsMobileFilterOpen(false)
+                    }}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                  />
+                  <span>{cat.name}</span>
+                </motion.label>
+              ))}
+              {currentCategory && (
+                <motion.button 
+                  className={styles.clearButton} 
+                  onClick={() => {
+                    const qs = new URLSearchParams(searchParams.toString())
+                    qs.delete('category');
+                    router.replace(qs.toString() ? `/products?${qs}` : '/products')
+                  }}
+                  whileHover={{ scale: 1.02, y: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  Clear
+                </motion.button>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
 
       {/* Mood Tags */}
       {usageTags.length > 0 && (
-        <details className={styles.filterSection}>
-          <summary className={styles.filterHeader}>
-            <span style={{ display: 'flex', alignItems: 'center' }}>
-              <FiTrendingUp style={{ marginRight: '8px' }} />
+        <motion.div 
+          className={styles.filterSection}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.15 }}
+        >
+          <div 
+            className={styles.filterHeader}
+            onClick={() => toggleSection('mood')}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <FiTrendingUp />
               Purpose / Mood
             </span>
-            <FiChevronRight className={styles.arrow} />
-          </summary>
-          <div className={styles.filterContent}>
-            {usageTags.map(tag => (
-              <label key={tag} className={styles.filterOption}>
-                <input
-                  type="radio"
-                  name="tagFilter"
-                  checked={currentTag === tag}
-                  onChange={() => {
-                    const qs = new URLSearchParams(searchParams.toString())
-                    if (tag === currentTag) qs.delete('usageTag')
-                    else qs.set('usageTag', tag)
-                    router.replace(qs.toString() ? `/products?${qs}` : '/products')
-                    if (isMobileView) setIsMobileFilterOpen(false)
-                  }}
-                />
-                {tag}
-              </label>
-            ))}
-            {currentTag && (
-              <button className={styles.clearButton} onClick={() => {
-                const qs = new URLSearchParams(searchParams.toString());
-                qs.delete('usageTag');
-                router.replace(qs.toString() ? `/products?${qs}` : '/products')
-              }}>Clear</button>
-            )}
+            <motion.div
+              animate={{ rotate: openSections.mood ? 180 : 0 }}
+              transition={{ duration: 0.3, ease: 'easeInOut' }}
+            >
+              <FiChevronDown className={styles.arrow} />
+            </motion.div>
           </div>
-        </details>
+          <AnimatePresence>
+            {openSections.mood && (
+              <motion.div 
+                className={styles.filterContent}
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.3, ease: 'easeInOut' }}
+                style={{ overflow: 'hidden' }}
+              >
+                {usageTags.map((tag, idx) => (
+                  <motion.label 
+                    key={tag} 
+                    className={styles.filterOption}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.2, delay: idx * 0.05 }}
+                  >
+                    <motion.input
+                      type="radio"
+                      name="tagFilter"
+                      checked={currentTag === tag}
+                      onChange={() => {
+                        const qs = new URLSearchParams(searchParams.toString())
+                        if (tag === currentTag) qs.delete('usageTag')
+                        else qs.set('usageTag', tag)
+                        router.replace(qs.toString() ? `/products?${qs}` : '/products')
+                        if (isMobileView) setIsMobileFilterOpen(false)
+                      }}
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.95 }}
+                    />
+                    <span>{tag}</span>
+                  </motion.label>
+                ))}
+                {currentTag && (
+                  <motion.button 
+                    className={styles.clearButton} 
+                    onClick={() => {
+                      const qs = new URLSearchParams(searchParams.toString());
+                      qs.delete('usageTag');
+                      router.replace(qs.toString() ? `/products?${qs}` : '/products')
+                    }}
+                    whileHover={{ scale: 1.02, y: -2 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    Clear
+                  </motion.button>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
       )}
 
       {/* Rating */}
-      <details className={styles.filterSection}>
-        <summary className={styles.filterHeader}>
-          <span style={{ display: 'flex', alignItems: 'center' }}>
-            <FiStar style={{ marginRight: '8px' }} />
+      <motion.div 
+        className={styles.filterSection}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.2 }}
+      >
+        <div 
+          className={styles.filterHeader}
+          onClick={() => toggleSection('rating')}
+        >
+          <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <FiStar />
             Rating
           </span>
-          <FiChevronRight className={styles.arrow} />
-        </summary>
-        <div className={styles.filterContent}>
-          {[4,3,2,1].map(thr => (
-            <label key={thr} className={styles.filterOption}>
-              <input
-                type="radio"
-                name="ratingFilter"
-                checked={Number(ratingMin) === thr}
-                onChange={() => {
-                  const newValue = Number(ratingMin) === thr ? '' : String(thr)
-                  updateFilter('ratingMin', newValue)
-                  if (isMobileView) setIsMobileFilterOpen(false)
-                }}
-              />
-              {thr}+ stars
-            </label>
-          ))}
-          {ratingMin && (
-            <button className={styles.clearButton} onClick={() => {
-              updateFilter('ratingMin', '')
-            }}>Clear</button>
-          )}
+          <motion.div
+            animate={{ rotate: openSections.rating ? 180 : 0 }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
+          >
+            <FiChevronDown className={styles.arrow} />
+          </motion.div>
         </div>
-      </details>
+        <AnimatePresence>
+          {openSections.rating && (
+            <motion.div 
+              className={styles.filterContent}
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3, ease: 'easeInOut' }}
+              style={{ overflow: 'hidden' }}
+            >
+              {[4,3,2,1].map((thr, idx) => (
+                <motion.label 
+                  key={thr} 
+                  className={styles.filterOption}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.2, delay: idx * 0.05 }}
+                >
+                  <motion.input
+                    type="radio"
+                    name="ratingFilter"
+                    checked={Number(ratingMin) === thr}
+                    onChange={() => {
+                      const newValue = Number(ratingMin) === thr ? '' : String(thr)
+                      updateFilter('ratingMin', newValue)
+                      if (isMobileView) setIsMobileFilterOpen(false)
+                    }}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                  />
+                  <span>{thr}+ stars</span>
+                </motion.label>
+              ))}
+              {ratingMin && (
+                <motion.button 
+                  className={styles.clearButton} 
+                  onClick={() => {
+                    updateFilter('ratingMin', '')
+                  }}
+                  whileHover={{ scale: 1.02, y: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  Clear
+                </motion.button>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
 
       {/* Stock */}
-      <details className={styles.filterSection}>
-        <summary className={styles.filterHeader}>
-          <span style={{ display: 'flex', alignItems: 'center' }}>
-            <FiPackage style={{ marginRight: '8px' }} />
+      <motion.div 
+        className={styles.filterSection}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.25 }}
+      >
+        <div 
+          className={styles.filterHeader}
+          onClick={() => toggleSection('stock')}
+        >
+          <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <FiPackage />
             Stock
           </span>
-          <FiChevronRight className={styles.arrow} />
-        </summary>
-        <div className={styles.filterContent}>
-          <label className={styles.filterOption}>
-            <input
-              type="checkbox"
-              checked={lowStockOnly}
-              onChange={e => {
-                updateFilter('lowStockOnly', e.target.checked)
-                if (isMobileView) setIsMobileFilterOpen(false)
-              }}
-            />
-            Only low stock
-          </label>
-          <label className={styles.filterOption}>
-            <input
-              type="checkbox"
-              checked={inStockOnly}
-              onChange={e=>{
-                updateFilter('inStockOnly', e.target.checked)
-                if (isMobileView) setIsMobileFilterOpen(false)
-              }}
-            />
-            In stock only
-          </label>
+          <motion.div
+            animate={{ rotate: openSections.stock ? 180 : 0 }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
+          >
+            <FiChevronDown className={styles.arrow} />
+          </motion.div>
         </div>
-      </details>
+        <AnimatePresence>
+          {openSections.stock && (
+            <motion.div 
+              className={styles.filterContent}
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3, ease: 'easeInOut' }}
+              style={{ overflow: 'hidden' }}
+            >
+              <motion.label 
+                className={styles.filterOption}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <motion.input
+                  type="checkbox"
+                  checked={lowStockOnly}
+                  onChange={e => {
+                    updateFilter('lowStockOnly', e.target.checked)
+                    if (isMobileView) setIsMobileFilterOpen(false)
+                  }}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                />
+                <span>Only low stock</span>
+              </motion.label>
+              <motion.label 
+                className={styles.filterOption}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.2, delay: 0.05 }}
+              >
+                <motion.input
+                  type="checkbox"
+                  checked={inStockOnly}
+                  onChange={e=>{
+                    updateFilter('inStockOnly', e.target.checked)
+                    if (isMobileView) setIsMobileFilterOpen(false)
+                  }}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                />
+                <span>In stock only</span>
+              </motion.label>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
 
       {/* Sort */}
-      <details className={styles.filterSection}>
-        <summary className={styles.filterHeader}>
-          <span style={{ display: 'flex', alignItems: 'center' }}>
-            <FiTrendingUp style={{ marginRight: '8px' }} />
+      <motion.div 
+        className={styles.filterSection}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.3 }}
+      >
+        <div 
+          className={styles.filterHeader}
+          onClick={() => toggleSection('sort')}
+        >
+          <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <FiTrendingUp />
             Sort
           </span>
-          <FiChevronRight className={styles.arrow} />
-        </summary>
-        <div className={styles.filterContent}>
-                      <label className={styles.filterOption}>
-            <input
-              type="radio"
-              name="sortoption"
-              checked={sortOrder === '' || sortOrder === 'newest'}
-              onChange={() => {
-                updateFilter('sortOrder', '')
-                if (isMobileView) setIsMobileFilterOpen(false)
-              }}
-            /> Newest
-          </label>
-          <label className={styles.filterOption}>
-            <input
-              type="radio"
-              name="sortoption"
-              checked={sortOrder === 'oldest'}
-              onChange={() => {
-                updateFilter('sortOrder', 'oldest')
-                if (isMobileView) setIsMobileFilterOpen(false)
-              }}
-            /> Oldest
-          </label>
-          <label className={styles.filterOption}>
-            <input
-              type="radio"
-              name="sortoption"
-              checked={sortOrder === 'price_asc'}
-              onChange={() => {
-                updateFilter('sortOrder', 'price_asc')
-                if (isMobileView) setIsMobileFilterOpen(false)
-              }}
-            /> Low to High
-          </label>
-          <label className={styles.filterOption}>
-            <input
-              type="radio"
-              name="sortoption"
-              checked={sortOrder === 'price_desc'}
-              onChange={() => {
-                updateFilter('sortOrder', 'price_desc')
-                if (isMobileView) setIsMobileFilterOpen(false)
-              }}
-            /> High to Low
-          </label>
-          {sortOrder && sortOrder !== '' && (
-            <button className={styles.clearButton} onClick={() => {
-              updateFilter('sortOrder', '')
-            }}>Clear</button>
-          )}
+          <motion.div
+            animate={{ rotate: openSections.sort ? 180 : 0 }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
+          >
+            <FiChevronDown className={styles.arrow} />
+          </motion.div>
         </div>
-      </details>
+        <AnimatePresence>
+          {openSections.sort && (
+            <motion.div 
+              className={styles.filterContent}
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3, ease: 'easeInOut' }}
+              style={{ overflow: 'hidden' }}
+            >
+              <motion.label 
+                className={styles.filterOption}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <motion.input
+                  type="radio"
+                  name="sortoption"
+                  checked={sortOrder === '' || sortOrder === 'newest'}
+                  onChange={() => {
+                    updateFilter('sortOrder', '')
+                    if (isMobileView) setIsMobileFilterOpen(false)
+                  }}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                />
+                <span>Newest</span>
+              </motion.label>
+              <motion.label 
+                className={styles.filterOption}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.2, delay: 0.05 }}
+              >
+                <motion.input
+                  type="radio"
+                  name="sortoption"
+                  checked={sortOrder === 'oldest'}
+                  onChange={() => {
+                    updateFilter('sortOrder', 'oldest')
+                    if (isMobileView) setIsMobileFilterOpen(false)
+                  }}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                />
+                <span>Oldest</span>
+              </motion.label>
+              <motion.label 
+                className={styles.filterOption}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.2, delay: 0.1 }}
+              >
+                <motion.input
+                  type="radio"
+                  name="sortoption"
+                  checked={sortOrder === 'price_asc'}
+                  onChange={() => {
+                    updateFilter('sortOrder', 'price_asc')
+                    if (isMobileView) setIsMobileFilterOpen(false)
+                  }}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                />
+                <span>Low to High</span>
+              </motion.label>
+              <motion.label 
+                className={styles.filterOption}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.2, delay: 0.15 }}
+              >
+                <motion.input
+                  type="radio"
+                  name="sortoption"
+                  checked={sortOrder === 'price_desc'}
+                  onChange={() => {
+                    updateFilter('sortOrder', 'price_desc')
+                    if (isMobileView) setIsMobileFilterOpen(false)
+                  }}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                />
+                <span>High to Low</span>
+              </motion.label>
+              {sortOrder && sortOrder !== '' && (
+                <motion.button 
+                  className={styles.clearButton} 
+                  onClick={() => {
+                    updateFilter('sortOrder', '')
+                  }}
+                  whileHover={{ scale: 1.02, y: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  Clear
+                </motion.button>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
     </>
   )
 
@@ -583,31 +819,54 @@ export default function ProductsClient() {
       {/* Desktop Sidebar - REMOVED FOR REBUILD */}
 
       {/* Mobile Filter Drawer */}
-      {isMobileView && (
-        <div className={`${animationStyles.mobileFilterDrawer || styles.mobileFilterDrawer} ${isMobileFilterOpen ? animationStyles.mobileFilterDrawerOpen || styles.mobileFilterDrawerOpen : ''}`}>
-          <div className={styles.mobileFilterHeader}>
-            <h2>Filters</h2>
-            <button 
-              className={styles.mobileFilterCloseButton}
-              onClick={() => setIsMobileFilterOpen(false)}
-              aria-label="Close filters"
+      <AnimatePresence>
+        {isMobileView && isMobileFilterOpen && (
+          <>
+            <motion.div 
+              className={styles.mobileFilterDrawer}
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ 
+                duration: 0.4, 
+                ease: [0.4, 0, 0.2, 1]
+              }}
             >
-              <FiX size={24} />
-            </button>
-          </div>
-          <div className={styles.mobileFilterContent}>
-            {renderFilters()}
-          </div>
-        </div>
-      )}
+              <div className={styles.mobileFilterHeader}>
+                <motion.h2
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: 0.2 }}
+                >
+                  Filters
+                </motion.h2>
+                <motion.button 
+                  className={styles.mobileFilterCloseButton}
+                  onClick={() => setIsMobileFilterOpen(false)}
+                  aria-label="Close filters"
+                  whileHover={{ rotate: 90, scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <FiX size={24} />
+                </motion.button>
+              </div>
+              <div className={styles.mobileFilterContent}>
+                {renderFilters()}
+              </div>
+            </motion.div>
 
-      {/* Mobile Filter Overlay */}
-      {isMobileView && (
-        <div 
-          className={`${animationStyles.mobileFilterOverlay || styles.mobileFilterOverlay} ${isMobileFilterOpen ? animationStyles.mobileFilterOverlayVisible : ''}`}
-          onClick={() => setIsMobileFilterOpen(false)}
-        />
-      )}
+            {/* Mobile Filter Overlay */}
+            <motion.div 
+              className={styles.mobileFilterOverlay}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              onClick={() => setIsMobileFilterOpen(false)}
+            />
+          </>
+        )}
+      </AnimatePresence>
 
       <main className={`
         ${styles.productsContainer} 
@@ -851,22 +1110,52 @@ export default function ProductsClient() {
         {/* Desktop: left sidebar that pushes content; Mobile: standard layout */}
         {!isMobileView ? (
           <div className={styles.desktopWrap}>
-            <aside className={`${styles.desktopSidebar} ${isDesktopFilterOpen ? styles.desktopSidebarOpen : ''}`}>
-              <div className={styles.mobileFilterHeader}>
-                <h2>Filters</h2>
-                <button 
-                  className={styles.mobileFilterCloseButton}
-                  onClick={() => setIsDesktopFilterOpen(false)}
-                  aria-label="Close filters"
+            <AnimatePresence>
+              {isDesktopFilterOpen && (
+                <motion.aside 
+                  className={styles.desktopSidebar}
+                  initial={{ x: '-100%', opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  exit={{ x: '-100%', opacity: 0 }}
+                  transition={{ 
+                    duration: 0.4, 
+                    ease: [0.4, 0, 0.2, 1]
+                  }}
                 >
-                  <FiX size={24} />
-                </button>
-              </div>
-              <div className={styles.mobileFilterContent}>
-                {renderFilters()}
-              </div>
-            </aside>
-            <div className={`${styles.desktopMain} ${isDesktopFilterOpen ? styles.desktopMainWithSidebar : ''}`}>
+                  <div className={styles.mobileFilterHeader}>
+                    <motion.h2
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: 0.2 }}
+                    >
+                      Filters
+                    </motion.h2>
+                    <motion.button 
+                      className={styles.mobileFilterCloseButton}
+                      onClick={() => setIsDesktopFilterOpen(false)}
+                      aria-label="Close filters"
+                      whileHover={{ rotate: 90, scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                    >
+                      <FiX size={24} />
+                    </motion.button>
+                  </div>
+                  <div className={styles.mobileFilterContent}>
+                    {renderFilters()}
+                  </div>
+                </motion.aside>
+              )}
+            </AnimatePresence>
+            <motion.div 
+              className={styles.desktopMain}
+              animate={{ 
+                marginLeft: isDesktopFilterOpen ? 'var(--sidebar-width)' : 0
+              }}
+              transition={{ 
+                duration: 0.4, 
+                ease: [0.4, 0, 0.2, 1]
+              }}
+            >
               {(products.length === 0) ? (
                 <p className={styles.emptyProducts}>No products found.</p>
               ) : products.length > 50 ? (
@@ -906,7 +1195,7 @@ export default function ProductsClient() {
                   )}
                 </>
               )}
-            </div>
+            </motion.div>
           </div>
         ) : (
           <>
