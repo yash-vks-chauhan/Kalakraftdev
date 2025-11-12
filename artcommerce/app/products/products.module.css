@@ -263,17 +263,19 @@
 .productGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  column-gap: 16px;
+  row-gap: 48px;
   margin-bottom: var(--spacing-3xl);
   padding: 0;
   width: 100%;
 }
 
-/* Desktop - 3 columns with minimal gap */
+/* Desktop - 3 columns with professional spacing */
 @media (min-width: 1024px) {
   .productGrid {
     grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
+    column-gap: 16px;
+    row-gap: 64px;
   }
 }
 
@@ -281,7 +283,8 @@
 @media (min-width: 768px) and (max-width: 1023px) {
   .productGrid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
+    column-gap: 16px;
+    row-gap: 48px;
   }
 }
 
@@ -289,7 +292,7 @@
 @media (max-width: 767px) {
   .productGrid {
     grid-template-columns: 1fr;
-    gap: var(--spacing-lg);
+    gap: var(--spacing-2xl);
   }
 }
 
