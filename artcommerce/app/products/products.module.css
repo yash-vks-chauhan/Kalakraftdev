@@ -107,6 +107,7 @@
   padding: 0 var(--spacing-3xl);
   margin: 0 var(--spacing-3xl) 48px;
   position: relative;
+  z-index: 2000; /* Ensure dropdown sits above product grid */
   
   /* No background - transparent */
   background: transparent;
@@ -129,6 +130,7 @@
     margin-left: var(--spacing-3xl);
     margin-right: var(--spacing-3xl);
     margin-bottom: 56px;
+    z-index: 2000;
   }
 }
 
@@ -361,7 +363,7 @@
   top: calc(100% + 8px);
   right: 0;
   min-width: 200px;
-  z-index: 1000;
+  z-index: 3000; /* Appear above product cards and badges */
   
   /* Ultra frosty glassmorphism */
   background: rgba(255, 255, 255, 0.92);
