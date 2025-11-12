@@ -65,7 +65,7 @@ export default function ProductCard({
     setCurrentImageIndex((prev) => (prev === prod.imageUrls.length - 1 ? 0 : prev + 1))
   }
 
-  // Image animation variants
+  // Image animation variants - using position absolute wrapper
   const imageVariants = {
     enter: (direction: number) => ({
       x: direction > 0 ? 30 : -30,
@@ -127,7 +127,17 @@ export default function ProductCard({
               opacity: { duration: 0.2 },
               scale: { duration: 0.2 }
             }}
-            className={styles.productImage}
+            style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: '85%',
+              height: '85%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
           >
             <img 
               src={prod.imageUrls[currentImageIndex]} 
