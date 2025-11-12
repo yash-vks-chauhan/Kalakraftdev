@@ -357,7 +357,7 @@
   transform: rotate(180deg);
 }
 
-/* Dropdown Menu - Enhanced Ultra Frosty Glassmorphism */
+/* Dropdown Menu - Maximum Frosty Glassmorphism */
 .selectDropdown {
   position: absolute;
   top: calc(100% + 8px);
@@ -365,25 +365,25 @@
   min-width: 200px;
   z-index: 3000;
   
-  /* Ultra frosty glassmorphism with maximum blur */
-  background: rgba(255, 255, 255, 0.96);
-  backdrop-filter: blur(40px) saturate(200%);
-  -webkit-backdrop-filter: blur(40px) saturate(200%);
+  /* Ultra frosty glassmorphism with heavy blur and transparency */
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(60px) saturate(220%);
+  -webkit-backdrop-filter: blur(60px) saturate(220%);
   
-  border: 1.5px solid rgba(255, 255, 255, 0.8);
-  border-radius: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  border-radius: 18px;
   
-  /* Professional frosty shadows with depth */
+  /* Enhanced frosty shadows with more depth */
   box-shadow: 
-    0 16px 48px rgba(0, 0, 0, 0.12),
-    0 6px 16px rgba(0, 0, 0, 0.08),
-    inset 0 1px 2px rgba(255, 255, 255, 0.9);
+    0 20px 60px rgba(0, 0, 0, 0.15),
+    0 8px 20px rgba(0, 0, 0, 0.1),
+    inset 0 1px 3px rgba(255, 255, 255, 0.95);
   
   overflow: hidden;
   transform-origin: top right;
 }
 
-/* Dropdown Options */
+/* Dropdown Options with frosted hover */
 .selectOption {
   display: flex;
   align-items: center;
@@ -398,20 +398,28 @@
   font-family: var(--font-family);
   text-align: left;
   cursor: pointer;
-  transition: background 0.15s ease;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(0px);
 }
 
 .selectOption:hover {
-  background: rgba(0, 0, 0, 0.05);
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
 .selectOptionActive {
-  background: rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   font-weight: 600;
 }
 
 .selectOptionActive:hover {
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
 }
 
 .checkmark {
