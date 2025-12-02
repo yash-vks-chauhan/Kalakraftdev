@@ -27,15 +27,23 @@ export default function TicketThread() {
   const [ticket, setTicket] = useState<Ticket | null>(null);
   const [reply, setReply] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const load = async () => {
-    if (!token) return;
+    if (!token) {
+      setError("Unauthorized");
+      return;
+    }
     const res = await fetch(`/api/support/ticket/${id}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     if (res.ok) {
       const data = await res.json();
       setTicket(data);
+      setError(null);
+    } else {
+      const body = await res.json().catch(() => ({}));
+      setError(body.error || "Failed to load ticket");
     }
   };
 
@@ -60,9 +68,13 @@ export default function TicketThread() {
     if (res.ok) {
       setReply("");
       load();
+    } else {
+      const body = await res.json().catch(() => ({}));
+      setError(body.error || "Failed to send reply");
     }
   };
 
+  if (error && !ticket) return <p className="p-4 text-red-600">{error}</p>;
   if (!ticket) return <p className="p-4">Loading…</p>;
 
   return (

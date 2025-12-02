@@ -1,10 +1,28 @@
 // File: app/dashboard/admin/support/page.tsx
 import Link from 'next/link';
 import prisma from '../../../../lib/prisma';
+import jwt from 'jsonwebtoken';
+import { cookies } from 'next/headers';
+
+const JWT_SECRET = process.env.JWT_SECRET;
 
 export const revalidate = 0;
 
 export default async function SupportListPage() {
+  const token = cookies().get('token')?.value;
+  let isAdmin = false;
+  if (token && JWT_SECRET) {
+    try {
+      isAdmin = (jwt.verify(token, JWT_SECRET) as any).role === 'admin';
+    } catch {
+      isAdmin = false;
+    }
+  }
+
+  if (!isAdmin) {
+    return <p className="text-red-600">Unauthorized</p>;
+  }
+
   const tickets = await prisma.supportTicket.findMany({
     orderBy: { createdAt: 'desc' },
     take: 50,

@@ -1,9 +1,14 @@
 import { NextResponse } from 'next/server'
-import { orderEvents } from '../../../../lib/orderEvents'
+import { orderEvents } from '@/lib/orderEvents'
+import { requireAdminFromRequest } from '@/lib/auth-helpers'
 
 export const runtime = 'nodejs'
 
-export async function GET() {
+export async function GET(request: Request) {
+  if (!requireAdminFromRequest(request)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   const stream = new ReadableStream({
     start(controller) {
       // when a new order event fires, enqueue it as SSE

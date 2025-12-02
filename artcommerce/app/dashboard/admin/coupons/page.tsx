@@ -9,9 +9,14 @@ export default function CouponManager() {
 
   // 1️⃣ Load
   useEffect(() => {
-    if (user?.role !== 'admin') return
-    fetch('/api/admin/coupons').then(r=>r.json()).then(j=>setCoupons(j.coupons))
-  }, [user])
+    if (user?.role !== 'admin' || !token) return
+    fetch('/api/admin/coupons', {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(r=>r.json())
+      .then(j=>setCoupons(j.coupons))
+      .catch(() => setCoupons([]))
+  }, [user, token])
 
   // 2️⃣ Create
   async function handleCreate(e: React.FormEvent) {

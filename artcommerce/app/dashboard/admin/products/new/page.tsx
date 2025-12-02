@@ -56,6 +56,10 @@ export default function NewProductPage() {
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     for (const file of acceptedFiles) {
+      if (!token || user?.role !== 'admin') {
+        setError('Missing authentication for upload')
+        break
+      }
       const uploadId = file.name + Date.now()
       setUploadingFiles(prev => ({ ...prev, [uploadId]: true }))
       setUploadProgress(prev => ({ ...prev, [uploadId]: 0 }))
@@ -87,6 +91,7 @@ export default function NewProductPage() {
         })
 
         xhr.open('POST', '/api/uploads')
+        xhr.setRequestHeader('Authorization', `Bearer ${token}`)
         xhr.send(form)
 
         const url = await uploadPromise
@@ -115,7 +120,7 @@ export default function NewProductPage() {
         })
       }
     }
-  }, [])
+  }, [token, user?.role])
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,

@@ -397,23 +397,33 @@ export default function ProfilePage() {
               </div>
 
               {/* Custom Upload Option */}
-              <div>
-                <p className={styles.label}>Or upload custom:</p>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={async e => {
-                    const file = e.target.files?.[0]
-                    if (!file) return
-                    const form = new FormData()
-                    form.append('file', file)
-                    const res = await fetch('/api/uploads', { method: 'POST', body: form })
-                    const { url } = await res.json()
-                    setAvatarUrl(url)
-                  }}
-                  className={styles.input}
-                />
-              </div>
+              {user?.role === 'admin' && (
+                <div>
+                  <p className={styles.label}>Or upload custom:</p>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={async e => {
+                      const file = e.target.files?.[0]
+                      if (!file) return
+                      const form = new FormData()
+                      form.append('file', file)
+                      const res = await fetch('/api/uploads', { 
+                        method: 'POST', 
+                        body: form,
+                        headers: token ? { Authorization: `Bearer ${token}` } : undefined
+                      })
+                      if (!res.ok) {
+                        setError('Upload failed or unauthorized')
+                        return
+                      }
+                      const { url } = await res.json()
+                      setAvatarUrl(url)
+                    }}
+                    className={styles.input}
+                  />
+                </div>
+              )}
             </div>
 
             {/* ===== Email display & change ===== */}

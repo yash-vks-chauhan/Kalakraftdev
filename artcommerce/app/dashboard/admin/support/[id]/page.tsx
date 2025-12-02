@@ -3,6 +3,7 @@
 
 import { useState, useEffect, FormEvent } from "react";
 import { useParams } from "next/navigation";
+import { useAuth } from "../../../../contexts/AuthContext";
 
 interface Message {
   id: string;
@@ -24,6 +25,7 @@ interface Ticket {
 
 export default function TicketDetailPage() {
   const { id } = useParams();
+  const { token, user } = useAuth();
   const [ticket, setTicket] = useState<Ticket | null>(null);
   const [loading, setLoading] = useState(false);
   const [reply, setReply] = useState("");
@@ -33,7 +35,13 @@ export default function TicketDetailPage() {
   // Load ticket + messages
   const loadTicket = async () => {
     try {
-      const res = await fetch(`/api/support/ticket/${id}`);
+      if (!token || user?.role !== "admin") {
+        setError("Unauthorized");
+        return;
+      }
+      const res = await fetch(`/api/support/ticket/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       if (!res.ok) throw new Error(`Unable to fetch ticket (${res.status})`);
       const data: Ticket = await res.json();
       setTicket(data);
@@ -46,7 +54,7 @@ export default function TicketDetailPage() {
 
   useEffect(() => {
     loadTicket();
-  }, [id]);
+  }, [id, token, user?.role]);
 
   // Handle admin reply
   const handleReply = async (e: FormEvent) => {
@@ -57,12 +65,16 @@ export default function TicketDetailPage() {
     setError(null);
 
     try {
+      if (!token || user?.role !== "admin") {
+        throw new Error("Unauthorized");
+      }
       const res = await fetch(
         `/api/admin/support/ticket/${ticket.id}/reply`,
         {
           method: "POST",
           headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({ reply, status })
         }
@@ -89,6 +101,9 @@ export default function TicketDetailPage() {
     }
   };
 
+  if (error && !ticket) {
+    return <p className="text-red-600">{error}</p>;
+  }
   if (!ticket) {
     return <p>Loading ticket…</p>;
   }

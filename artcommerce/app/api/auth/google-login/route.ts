@@ -50,15 +50,26 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // 3. Create your custom JWT
-    // This JWT will be used for subsequent authentication with your backend
+    // 3. Create your custom JWT (align expiry with email/password login)
     const customToken = jwt.sign(
       { userId: userFromDb.id, email: userFromDb.email, role: userFromDb.role },
       JWT_SECRET,
-      { expiresIn: '1h' } // Token expires in 1 hour
+      { expiresIn: '7d' }
     );
 
-    return NextResponse.json({ user: userFromDb, token: customToken }, { status: 200 });
+    // 4. Return JSON and set HttpOnly cookie for downstream auth (admin flows)
+    const response = NextResponse.json({ user: userFromDb, token: customToken }, { status: 200 });
+    response.cookies.set({
+      name: 'token',
+      value: customToken,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 60 * 60 * 24 * 7,
+    });
+
+    return response;
 
   } catch (error: any) {
     console.error('Error in /api/auth/google-login:', error);

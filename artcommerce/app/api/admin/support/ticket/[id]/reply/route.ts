@@ -1,19 +1,32 @@
 // File: app/api/admin/support/tickets/[id]/reply/route.ts
 import { NextResponse } from "next/server";
-import prisma from "../../../../../../../lib/prisma";
+import prisma from "@/lib/prisma";
+import { requireAdminFromRequest } from "@/lib/auth-helpers";
 
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
+  if (!requireAdminFromRequest(request)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   // 1) Get the ticketId
-  const { id: ticketId } = await params;
+  const { id: ticketId } = params;
 
   // 2) Parse JSON body instead of formData()
   const { reply, status } = await request.json() as {
     reply: string;
     status: string;
   };
+
+  if (!reply) {
+    return NextResponse.json({ error: 'Reply is required' }, { status: 400 });
+  }
+  const allowedStatuses = ['open', 'pending', 'closed'];
+  if (!allowedStatuses.includes(status)) {
+    return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
+  }
 
   // 3) Record the agent’s message
   await prisma.supportMessage.create({

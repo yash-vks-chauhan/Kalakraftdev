@@ -5,9 +5,10 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "../contexts/AuthContext";
 
 export default function SupportPage() {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   // Prefill and lock name/email if logged in
@@ -19,18 +20,34 @@ export default function SupportPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setError(null);
+
+    if (!user || !token) {
+      setError("Please log in to submit a support ticket.");
+      return;
+    }
+
     setLoading(true);
-    const res = await fetch("/api/support/ticket", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    });
-    if (res.ok) {
-      const { id } = await res.json();
-      const dest = user ? `/dashboard/support/ticket/${id}` : `/support/ticket/${id}`;
-      router.push(dest);
-    } else {
-      // handle error…
+    try {
+      const res = await fetch("/api/support/ticket", {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ subject: form.subject, message: form.message }),
+      });
+      if (res.ok) {
+        const { id } = await res.json();
+        const dest = `/dashboard/support/ticket/${id}`;
+        router.push(dest);
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setError(data.error || "Failed to submit ticket.");
+      }
+    } catch (err: any) {
+      setError(err.message || "Failed to submit ticket.");
+    } finally {
       setLoading(false);
     }
   }
@@ -38,6 +55,7 @@ export default function SupportPage() {
   return (
     <div className="max-w-md mx-auto p-4">
       <h1 className="text-xl font-semibold mb-4">Contact Customer Care</h1>
+      {error && <p className="text-red-600 mb-2">{error}</p>}
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
           type="text" name="name" placeholder="Your name"

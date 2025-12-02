@@ -1,17 +1,43 @@
 // File: app/api/support/ticket/route.ts
-import { NextResponse } from 'next/server';
-import prisma from '../../../../lib/prisma';
+import { NextResponse } from 'next/server'
+import prisma from '@/lib/prisma'
+import { getSupportAuth } from '@/lib/support-auth'
 
 export async function POST(request: Request) {
-  // 1) Parse the incoming ticket data
-  const { name, email, subject, message } = await request.json();
+  const auth = await getSupportAuth(request)
+  if (!auth?.email) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
 
-  // 2) Create the support ticket in the database
+  const { subject, message } = await request.json()
+  if (!subject || !message) {
+    return NextResponse.json({ error: 'Subject and message are required' }, { status: 400 })
+  }
+
+  const user =
+    (auth.userId
+      ? await prisma.user.findUnique({
+          where: { id: auth.userId },
+          select: { fullName: true, email: true },
+        })
+      : null) ||
+    (await prisma.user.findUnique({
+      where: { email: auth.email },
+      select: { fullName: true, email: true },
+    }))
+  const email = user?.email || auth.email
+  const fullName = user?.fullName || 'Customer'
+
   const ticket = await prisma.supportTicket.create({
-    data: { name, email, subject, message },
-  });
+    data: {
+      name: fullName,
+      email,
+      subject,
+      message,
+      status: 'open',
+    },
+  })
 
-  // 3) Send confirmation email via Sendinblue REST API (inline, no helper)
   const resp = await fetch('https://api.sendinblue.com/v3/smtp/email', {
     method: 'POST',
     headers: {
@@ -25,17 +51,14 @@ export async function POST(request: Request) {
       },
       to: [{ email }],
       subject: `We received your request: ${subject}`,
-      htmlContent: `<p>Hi ${name},</p>
+      htmlContent: `<p>Hi ${fullName || 'there'},</p>
         <p>Thanks for contacting our support team! Your ticket ID is <strong>${ticket.id}</strong>. We will get back to you shortly.</p>`,
     }),
-  });
+  }).catch(() => null)
 
-  if (!resp.ok) {
-    const errorText = await resp.text();
-    console.error('Sendinblue API error:', resp.status, errorText);
-    // Note: we still return the ticket; you might surface an error status if desired
+  if (resp && !resp.ok) {
+    console.error('Sendinblue API error:', resp.status)
   }
 
-  // 4) Return the created ticket JSON to the client
-  return NextResponse.json(ticket);
+  return NextResponse.json({ id: ticket.id })
 }

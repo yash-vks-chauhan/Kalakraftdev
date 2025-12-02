@@ -3,31 +3,46 @@
 
 import { useState, useEffect, FormEvent } from "react"
 import { useParams } from "next/navigation"
+import { useAuth } from "../../contexts/AuthContext"
 
 type Message = { id:string; sender:"agent"|"customer"; content:string; createdAt:string }
 type Ticket = { id:string; subject:string; message:string; status:string; email:string; messages:Message[] }
 
 export default function TicketThread() {
   const { id } = useParams()
+  const { token } = useAuth()
   const [ticket, setTicket] = useState<Ticket|null>(null)
   const [reply, setReply] = useState("")
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   // fetch thread
   const load = async () => {
-    const res = await fetch(`/api/support/ticket/${id}`)
-    if (res.ok) setTicket(await res.json())
+    if (!token) {
+      setError("Please sign in to view this ticket.")
+      return
+    }
+    const res = await fetch(`/api/support/ticket/${id}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    if (res.ok) {
+      setTicket(await res.json())
+      setError(null)
+    } else {
+      const body = await res.json().catch(() => ({}))
+      setError(body.error || "Unable to load ticket.")
+    }
   }
 
-  useEffect(() => { load() }, [id])
+  useEffect(() => { load() }, [id, token])
 
   const handleSubmit = async (e:FormEvent) => {
     e.preventDefault()
-    if (!reply) return
+    if (!reply || !token) return
     setLoading(true)
     const res = await fetch(`/api/support/ticket/${id}`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify({ content: reply }),
     })
     setLoading(false)
@@ -35,10 +50,12 @@ export default function TicketThread() {
       setReply("")
       load()
     } else {
-      console.error("Failed to send reply", await res.text())
+      const body = await res.json().catch(() => ({}))
+      setError(body.error || "Failed to send reply")
     }
   }
 
+  if (error && !ticket) return <p className="p-4 text-red-600">{error}</p>
   if (!ticket) return <p>Loading…</p>
 
   return (

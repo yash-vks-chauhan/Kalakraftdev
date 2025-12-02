@@ -135,6 +135,10 @@ export default function EditProductPage() {
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     for (const file of acceptedFiles) {
+      if (!token) {
+        setError('Missing authentication token for upload')
+        break
+      }
       const uploadId = file.name + Date.now()
       
       // Create preview URL for the file
@@ -184,6 +188,7 @@ export default function EditProductPage() {
         })
 
         xhr.open('POST', '/api/uploads')
+        xhr.setRequestHeader('Authorization', `Bearer ${token}`)
         xhr.send(form)
 
         const url = await uploadPromise as string
@@ -215,7 +220,7 @@ export default function EditProductPage() {
         URL.revokeObjectURL(preview)
       }
     }
-  }, [])
+  }, [token])
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
