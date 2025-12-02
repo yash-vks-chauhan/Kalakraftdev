@@ -1,72 +1,56 @@
 // File: app/api/uploads/route.ts
 import { NextResponse } from 'next/server'
 import { put } from '@vercel/blob'
+import {
+  guardUploadRequest,
+  MAX_UPLOAD_SIZE_BYTES,
+  sanitizeFilename,
+  shouldUsePrivateAccess,
+} from '@/lib/uploadGuard'
 
 export const runtime = 'nodejs'
 
-// 5MB in bytes
-const MAX_FILE_SIZE = 5 * 1024 * 1024;
-
 export async function POST(request: Request): Promise<NextResponse> {
-  const { searchParams } = new URL(request.url)
-  const filename = searchParams.get('filename')
+  const guarded = await guardUploadRequest(request, {
+    routeKey: 'uploads:blob',
+    maxSizeBytes: MAX_UPLOAD_SIZE_BYTES,
+  })
 
-  if (!filename) {
-    return NextResponse.json(
-      { error: 'No filename provided in the request parameters.' },
-      { status: 400 },
-    )
-  }
+  if (!guarded.ok) return guarded.response
 
-  if (!request.body) {
-    return NextResponse.json(
-      { error: 'Request body is empty. No file content received.' },
-      { status: 400 },
-    )
-  }
+  const { auth, upload } = guarded
 
   try {
-    // Check content length if available
-    const contentLength = request.headers.get('content-length');
-    if (contentLength && parseInt(contentLength) > MAX_FILE_SIZE) {
-      const sizeMB = (parseInt(contentLength) / (1024 * 1024)).toFixed(2);
-      return NextResponse.json(
-        { 
-          error: `File size exceeds the 5MB limit. Received: ${sizeMB}MB`,
-          details: {
-            receivedSize: parseInt(contentLength),
-            maxSize: MAX_FILE_SIZE,
-            receivedSizeMB: sizeMB,
-            maxSizeMB: '5MB'
-          }
-        },
-        { status: 413 }, // Payload Too Large
-      )
-    }
+    const access = shouldUsePrivateAccess() ? 'private' : 'public'
+    const ownerSegment = sanitizeFilename(auth.userId)
+    const uniqueFilename = `${ownerSegment}/${Date.now()}-${upload.filename}`
 
-    // Create a unique filename to prevent overwriting
-    const uniqueFilename = `${Date.now()}-${filename}`;
-
-    const blob = await put(uniqueFilename, request.body, {
-      access: 'public',
-      contentType: request.headers.get('content-type') || undefined,
+    const blob = await put(uniqueFilename, upload.buffer, {
+      access,
+      contentType: upload.mimeType,
     })
 
-    console.log('Successfully uploaded file to Vercel Blob:', blob.url);
-
-    // Return the blob object which includes the URL
-    return NextResponse.json(blob)
+    return NextResponse.json({
+      url: blob.url,
+      pathname: blob.pathname,
+      size: upload.size,
+      mimeType: upload.mimeType,
+      access,
+    })
   } catch (error) {
     console.error('Error uploading to Vercel Blob:', error)
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     return NextResponse.json(
-      { 
+      {
         message: 'Error uploading file.',
         error: errorMessage,
-        details: error instanceof Error ? {
-          name: error.name,
-          stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
-        } : undefined
+        details:
+          error instanceof Error
+            ? {
+                name: error.name,
+                stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
+              }
+            : undefined,
       },
       { status: 500 },
     )

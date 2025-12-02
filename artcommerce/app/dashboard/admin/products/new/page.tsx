@@ -145,6 +145,9 @@ export default function NewProductPage() {
         }
         const uploadPromise = new Promise<{ url: string }>((resolve, reject) => {
           xhr.open('POST', `/api/uploads/imagekit?filename=${encodeURIComponent(file.name)}&folder=products`, true)
+          if (token) {
+            xhr.setRequestHeader('Authorization', `Bearer ${token}`)
+          }
 
           xhr.onload = () => {
             if (xhr.status >= 200 && xhr.status < 300) {
@@ -207,7 +210,7 @@ export default function NewProductPage() {
         }, 5000);
       }
     }
-  }, [imageUrls.length, setNotificationMessage, setNotificationType, setShowNotification]);
+  }, [imageUrls.length, setNotificationMessage, setNotificationType, setShowNotification, token]);
 
   const onDropStyling = useCallback(async (acceptedFiles: File[]) => {
     for (const file of acceptedFiles) {
@@ -243,6 +246,9 @@ export default function NewProductPage() {
         }
         const uploadPromise = new Promise<{ url: string }>((resolve, reject) => {
           xhr.open('POST', `/api/uploads/imagekit?filename=${encodeURIComponent(file.name)}&folder=styling`, true)
+          if (token) {
+            xhr.setRequestHeader('Authorization', `Bearer ${token}`)
+          }
 
           xhr.onload = () => {
             if (xhr.status >= 200 && xhr.status < 300) {
@@ -285,7 +291,7 @@ export default function NewProductPage() {
         }, 5000);
       }
     }
-  }, [setNotificationMessage, setNotificationType, setShowNotification]);
+  }, [setNotificationMessage, setNotificationType, setShowNotification, token]);
 
   const { getRootProps, getInputProps, isDragActive, fileRejections } = useDropzone({
     onDrop,

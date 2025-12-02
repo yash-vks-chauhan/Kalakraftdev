@@ -3,13 +3,18 @@ import { NextResponse } from "next/server";
 import prisma from "../../../../../../../lib/prisma";
 import pusher from "../../../../../../../lib/pusher";
 import { randomUUID } from 'crypto';
+import { requireAdmin } from "../../../../../../../lib/auth";
 
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
+  if (!requireAdmin(request)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   // 1) Get the ticketId
-  const { id: ticketId } = await params;
+  const { id: ticketId } = params;
 
   // 2) Parse JSON body instead of formData()
   const { reply, status, attachments = [] } = (await request.json()) as {
@@ -34,12 +39,21 @@ export async function POST(
   const ticket = await prisma.supportTicket.update({
     where: { id: ticketId },
     data: { status },
+  }).catch((err: any) => {
+    if (err?.code === 'P2025') {
+      return null;
+    }
+    throw err;
   });
+
+  if (!ticket) {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  }
 
   // Broadcast via Pusher to both admin & customer listeners
   try {
-    await pusher.trigger(`support-ticket-${ticketId}`, "new-message", { message });
-    await pusher.trigger(`support-ticket-${ticketId}`, "status-changed", { status });
+    await pusher.trigger(`private-support-ticket-${ticketId}`, "new-message", { message });
+    await pusher.trigger(`private-support-ticket-${ticketId}`, "status-changed", { status });
   } catch (err) {
     console.error("Pusher trigger failed: ", err);
   }

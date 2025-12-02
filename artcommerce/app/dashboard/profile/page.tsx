@@ -493,11 +493,23 @@ export default function ProfilePage() {
                 onChange={async e => {
                   const file = e.target.files?.[0]
                   if (!file) return
+                  if (!token) {
+                    setError('You need to be logged in to upload an avatar.')
+                    return
+                  }
                   const form = new FormData()
                   form.append('file', file)
-                  const res = await fetch('/api/uploads', { method: 'POST', body: form })
-                  const { url } = await res.json()
-                  setAvatarUrl(url)
+                  const res = await fetch('/api/uploads', {
+                    method: 'POST',
+                    body: form,
+                    headers: { Authorization: `Bearer ${token}` },
+                  })
+                  const json = await res.json()
+                  if (!res.ok) {
+                    setError(json.error || 'Failed to upload avatar')
+                    return
+                  }
+                  setAvatarUrl(json.url)
                 }}
                 className={styles.input}
               />

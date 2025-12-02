@@ -8,10 +8,20 @@ import { FiUpload, FiX, FiSend, FiHelpCircle, FiTruck, FiPackage, FiAlertTriangl
 import Image from "next/image";
 import ButtonLoader from '../components/ButtonLoader';
 
+type ValidatedFile = {
+  file: File;
+  width: number;
+  height: number;
+};
+
+const MAX_ATTACHMENTS = 4;
+const MAX_FILE_SIZE_BYTES = 3 * 1024 * 1024; // 3MB
+const MAX_DIMENSION = 1080;
+
 export default function SupportPage() {
   const { user, token } = useAuth();
   const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
-  const [files, setFiles] = useState<File[]>([]);
+  const [files, setFiles] = useState<ValidatedFile[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
@@ -57,16 +67,64 @@ export default function SupportPage() {
     })();
   }, [token]);
 
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setFiles(Array.from(e.target.files));
+  const getImageDimensions = (file: File): Promise<{ width: number; height: number }> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve({ width: img.width, height: img.height });
+      img.onerror = reject;
+      img.src = URL.createObjectURL(file);
+    });
+  };
+
+  const validateImageFile = async (file: File): Promise<ValidatedFile> => {
+    if (!file.type.startsWith("image/")) {
+      throw new Error("Only image attachments are allowed.");
     }
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      throw new Error("Each image must be 3MB or smaller.");
+    }
+    const { width, height } = await getImageDimensions(file);
+    if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
+      throw new Error("Images must be at most 1080p.");
+    }
+    return { file, width, height };
+  };
+
+  const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files) return;
+    setError(null);
+    const remaining = MAX_ATTACHMENTS - files.length;
+    if (remaining <= 0) {
+      setError(`You can attach up to ${MAX_ATTACHMENTS} images.`);
+      return;
+    }
+
+    const toProcess = Array.from(e.target.files).slice(0, remaining);
+    const validated: ValidatedFile[] = [];
+
+    for (const file of toProcess) {
+      try {
+        const vf = await validateImageFile(file);
+        validated.push(vf);
+      } catch (err: any) {
+        setError(err.message || "Invalid image selected.");
+      }
+    }
+
+    setFiles((prev) => [...prev, ...validated]);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+
+    if (!token) {
+      setError("Please sign in to contact support.");
+      router.push("/auth/login");
+      setLoading(false);
+      return;
+    }
 
     if (products.length > 0 && !selectedProductId) {
       setError("Please select the product related to your issue.");
@@ -92,10 +150,11 @@ export default function SupportPage() {
       formData.append("message", form.message);
       if (issueCategory) formData.append("issueCategory", issueCategory);
       if (selectedProductId) formData.append("productId", String(selectedProductId));
-      files.forEach((file) => formData.append("files", file));
+      files.forEach(({ file }) => formData.append("files", file));
 
       const response = await fetch("/api/support/ticket", {
         method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
         body: formData,
       });
 
@@ -244,7 +303,7 @@ export default function SupportPage() {
             </div>
             {files.length > 0 && (
               <div className={styles.fileList}>
-                {files.map((file, index) => (
+                {files.map(({ file }, index) => (
                   <div key={index} className={styles.fileItem}>
                     <span>{file.name}</span>
                     <button

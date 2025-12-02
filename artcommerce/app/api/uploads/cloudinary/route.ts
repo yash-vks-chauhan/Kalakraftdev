@@ -1,171 +1,132 @@
 import { NextResponse } from 'next/server'
-import cloudinary from '../../../../lib/cloudinary'
 import { Readable } from 'stream'
-import { optimizeImageIfNeeded, MAX_FILE_SIZE } from '../../../../lib/imageOptimizer'
+import cloudinary from '@/lib/cloudinary'
+import { optimizeImageIfNeeded, MAX_FILE_SIZE } from '@/lib/imageOptimizer'
+import {
+  guardUploadRequest,
+  sanitizeFilename,
+  shouldUsePrivateAccess,
+  SIGNED_URL_TTL_SECONDS,
+} from '@/lib/uploadGuard'
 
 export const runtime = 'nodejs'
-export const maxDuration = 60; // Extend timeout to 60 seconds for large image processing
+export const maxDuration = 60 // Extend timeout to 60 seconds for large image processing
 
 export async function POST(request: Request): Promise<NextResponse> {
   const { searchParams } = new URL(request.url)
-  const filename = searchParams.get('filename')
-  const folder = searchParams.get('folder') || 'products'
+  const folder = sanitizeFolder(searchParams.get('folder') || 'products')
 
-  if (!filename) {
-    return NextResponse.json(
-      { error: 'No filename provided in the request parameters.' },
-      { status: 400 },
-    )
-  }
+  const guarded = await guardUploadRequest(request, {
+    routeKey: 'uploads:cloudinary',
+    maxSizeBytes: MAX_FILE_SIZE,
+    requireAdmin: true,
+  })
 
-  if (!request.body) {
-    return NextResponse.json(
-      { error: 'Request body is empty. No file content received.' },
-      { status: 400 },
-    )
-  }
+  if (!guarded.ok) return guarded.response
+
+  const { upload, auth } = guarded
+  const ownerSegment = sanitizeFilename(auth.userId)
 
   try {
-    // Convert request body to buffer
-    const buffer = await request.arrayBuffer();
-    const originalSize = buffer.byteLength;
-    
-    // Check if the file is an image by checking the first few bytes (magic numbers)
-    const isImage = isImageBuffer(Buffer.from(buffer.slice(0, 4)));
-    if (!isImage) {
-      return NextResponse.json(
-        { error: 'The uploaded file is not a valid image.' },
-        { status: 400 },
-      )
-    }
-    
-    // Optimize the image if needed
-    const { 
-      buffer: processedBuffer, 
-      optimized,
-      originalSize: origSize,
-      optimizedSize
-    } = await optimizeImageIfNeeded(buffer, filename);
-    
-    // If the image is still too large after optimization
+    const { buffer: processedBuffer, optimized, originalSize, optimizedSize } = await optimizeImageIfNeeded(
+      upload.buffer,
+      upload.filename,
+    )
+
     if (processedBuffer.byteLength > MAX_FILE_SIZE) {
       return NextResponse.json(
-        { 
-          error: `Image is still too large after optimization. Maximum size is 10MB, got ${(processedBuffer.byteLength / (1024 * 1024)).toFixed(2)}MB.`,
+        {
+          error: `Image is still too large after optimization. Maximum size is ${(MAX_FILE_SIZE / (1024 * 1024)).toFixed(0)}MB.`,
           details: {
-            originalSize: origSize,
-            optimizedSize: optimizedSize,
+            originalSize,
+            optimizedSize,
             maxSize: MAX_FILE_SIZE,
-            originalSizeMB: (origSize / (1024 * 1024)).toFixed(2) + 'MB',
-            optimizedSizeMB: (optimizedSize / (1024 * 1024)).toFixed(2) + 'MB',
-            maxSizeMB: '10MB'
-          }
+          },
         },
-        { status: 413 }, // Payload Too Large
+        { status: 413 },
       )
     }
-    
-    // Create a readable stream from the buffer
+
     const readable = new Readable({
       read() {
-        this.push(processedBuffer);
-        this.push(null);
-      }
-    });
+        this.push(processedBuffer)
+        this.push(null)
+      },
+    })
 
-    // Generate a unique public ID for the file
-    const uniquePublicId = `${folder}/${Date.now()}-${filename.replace(/\.[^/.]+$/, "")}`
+    const usePrivate = shouldUsePrivateAccess()
+    const uniquePublicId = `${folder}/${ownerSegment}-${Date.now()}-${upload.filename.replace(/\.[^/.]+$/, '')}`
 
-    // Upload to Cloudinary using stream
-    const uploadPromise = new Promise((resolve, reject) => {
+    const uploadResult = await new Promise<any>((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         {
-          folder: folder,
+          folder,
           public_id: uniquePublicId,
-          resource_type: 'auto',
+          resource_type: 'image',
           quality: 'auto',
           fetch_format: 'auto',
+          access_mode: usePrivate ? 'authenticated' : 'public',
+          type: usePrivate ? 'authenticated' : 'upload',
         },
         (error, result) => {
           if (error) {
-            console.error('Cloudinary upload error:', error);
-            reject(error);
+            console.error('Cloudinary upload error:', error)
+            reject(error)
           } else {
-            resolve(result);
+            resolve(result)
           }
-        }
-      );
-      
-      readable.pipe(uploadStream);
-    });
+        },
+      )
 
-    const result = await uploadPromise as any;
-    
-    // Log upload details
-    const optimizationInfo = optimized 
-      ? `Image was optimized: ${(originalSize / (1024 * 1024)).toFixed(2)}MB → ${(processedBuffer.byteLength / (1024 * 1024)).toFixed(2)}MB (${Math.round((1 - processedBuffer.byteLength / originalSize) * 100)}% reduction)`
-      : 'Image was under size limit, no optimization needed';
-      
-    console.log(`Successfully uploaded to Cloudinary: ${result.secure_url} - ${optimizationInfo}`);
+      readable.pipe(uploadStream)
+    })
 
-    // Return the result which includes the URL
+    const expiresAt = usePrivate ? Math.floor(Date.now() / 1000) + SIGNED_URL_TTL_SECONDS : undefined
+    const deliveryUrl = usePrivate
+      ? cloudinary.url(uploadResult.public_id, {
+          secure: true,
+          type: 'authenticated',
+          sign_url: true,
+          expires_at: expiresAt,
+          resource_type: 'image',
+        })
+      : uploadResult.secure_url
+
     return NextResponse.json({
-      url: result.secure_url,
-      public_id: result.public_id,
-      width: result.width,
-      height: result.height,
-      format: result.format,
-      resource_type: result.resource_type,
-      originalSize: originalSize,
+      url: deliveryUrl,
+      access: usePrivate ? 'authenticated' : 'public',
+      public_id: uploadResult.public_id,
+      width: uploadResult.width,
+      height: uploadResult.height,
+      format: uploadResult.format,
+      resource_type: uploadResult.resource_type,
+      originalSize,
       uploadedSize: processedBuffer.byteLength,
-      wasOptimized: optimized
+      wasOptimized: optimized,
+      expiresAt,
     })
   } catch (error) {
     console.error('Error uploading to Cloudinary:', error)
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     return NextResponse.json(
-      { 
+      {
         message: 'Error uploading file to Cloudinary.',
         error: errorMessage,
-        details: error instanceof Error ? {
-          name: error.name,
-          stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
-        } : undefined
+        details:
+          error instanceof Error
+            ? {
+                name: error.name,
+                stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
+              }
+            : undefined,
       },
       { status: 500 },
     )
   }
 }
 
-/**
- * Check if a buffer is an image by examining the magic numbers
- * @param buffer The buffer to check (just the first few bytes)
- * @returns Whether the buffer appears to be an image
- */
-function isImageBuffer(buffer: Buffer): boolean {
-  // Check for common image formats by their magic numbers
-  if (buffer.length < 4) return false;
-  
-  // JPEG: starts with FF D8 FF
-  if (buffer[0] === 0xFF && buffer[1] === 0xD8 && buffer[2] === 0xFF) {
-    return true;
-  }
-  
-  // PNG: starts with 89 50 4E 47 (89 P N G)
-  if (buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4E && buffer[3] === 0x47) {
-    return true;
-  }
-  
-  // GIF: starts with 47 49 46 38 (G I F 8)
-  if (buffer[0] === 0x47 && buffer[1] === 0x49 && buffer[2] === 0x46 && buffer[3] === 0x38) {
-    return true;
-  }
-  
-  // WebP: starts with 52 49 46 46 (R I F F) and has "WEBP" at offset 8
-  if (buffer[0] === 0x52 && buffer[1] === 0x49 && buffer[2] === 0x46 && buffer[3] === 0x46) {
-    // We'd need more bytes to check for WEBP at offset 8, but this is a good start
-    return true;
-  }
-  
-  return false;
-} 
+function sanitizeFolder(folder: string): string {
+  const safe = folder.replace(/[^A-Za-z0-9/_-]/g, '')
+  const parts = safe.split('/').filter(Boolean)
+  return parts.slice(0, 3).join('/') || 'uploads'
+}

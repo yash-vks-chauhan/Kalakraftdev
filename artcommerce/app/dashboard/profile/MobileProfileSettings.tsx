@@ -738,10 +738,21 @@ export default function MobileProfileSettings() {
                             setMessage('Uploading image...')
                             setError(null)
                             
+                            if (!token) {
+                              setError('You need to be logged in to upload an avatar.')
+                              setIsUpdatingAvatar(false)
+                              return
+                            }
                             const form = new FormData()
                             form.append('file', file)
-                            const res = await fetch('/api/uploads', { method: 'POST', body: form })
-                            const { url } = await res.json()
+                            const res = await fetch('/api/uploads', { method: 'POST', body: form, headers: { Authorization: `Bearer ${token}` } })
+                            const json = await res.json()
+                            if (!res.ok) {
+                              setError(json.error || 'Failed to upload image')
+                              setIsUpdatingAvatar(false)
+                              return
+                            }
+                            const { url } = json
                             
                             // Update local state immediately
                             setAvatarUrl(url)

@@ -1,70 +1,83 @@
-import { NextResponse } from 'next/server';
-import imagekit from '../../../../lib/imagekit';
-import { optimizeImageIfNeeded, MAX_FILE_SIZE } from '../../../../lib/imageOptimizer';
+import { NextResponse } from 'next/server'
+import imagekit from '@/lib/imagekit'
+import { optimizeImageIfNeeded, MAX_FILE_SIZE } from '@/lib/imageOptimizer'
+import {
+  guardUploadRequest,
+  sanitizeFilename,
+  shouldUsePrivateAccess,
+  SIGNED_URL_TTL_SECONDS,
+} from '@/lib/uploadGuard'
 
-export const runtime = 'nodejs';
-export const maxDuration = 60;
+export const runtime = 'nodejs'
+export const maxDuration = 60
 
 export async function POST(request: Request): Promise<NextResponse> {
-  const { searchParams } = new URL(request.url);
-  const filename = searchParams.get('filename');
-  const folder = searchParams.get('folder') || 'products';
+  const { searchParams } = new URL(request.url)
+  const folder = sanitizeFolder(searchParams.get('folder') || 'products')
 
-  if (!filename) {
-    return NextResponse.json({ error: 'No filename provided in the request parameters.' }, { status: 400 });
-  }
-  if (!request.body) {
-    return NextResponse.json({ error: 'Request body is empty. No file content received.' }, { status: 400 });
-  }
+  const guarded = await guardUploadRequest(request, {
+    routeKey: 'uploads:imagekit',
+    maxSizeBytes: MAX_FILE_SIZE,
+    requireAdmin: true,
+  })
+
+  if (!guarded.ok) return guarded.response
+
+  const { upload, auth } = guarded
+  const ownerSegment = sanitizeFilename(auth.userId)
 
   try {
-    const buffer = await request.arrayBuffer();
-    const originalSize = buffer.byteLength;
-
-    // Quick validation – ensure this looks like an image
-    const isImage = isImageBuffer(Buffer.from(buffer.slice(0, 4)));
-    if (!isImage) {
-      return NextResponse.json({ error: 'The uploaded file is not a valid image.' }, { status: 400 });
-    }
-
-    const { buffer: processedBuffer, optimized } = await optimizeImageIfNeeded(buffer, filename);
+    const { buffer: processedBuffer, optimized } = await optimizeImageIfNeeded(upload.buffer, upload.filename)
 
     if (processedBuffer.byteLength > MAX_FILE_SIZE) {
-      return NextResponse.json({ error: `Image is still too large after optimization. Maximum size is 10MB, got ${(processedBuffer.byteLength / (1024 * 1024)).toFixed(2)}MB.` }, { status: 413 });
+      return NextResponse.json(
+        {
+          error: `Image is still too large after optimization. Maximum size is ${(MAX_FILE_SIZE / (1024 * 1024)).toFixed(0)}MB.`,
+        },
+        { status: 413 },
+      )
     }
 
-    // Upload to ImageKit
+    const usePrivate = shouldUsePrivateAccess()
     const uploadResponse = await imagekit.upload({
-      file: processedBuffer,          // Pass binary buffer directly
-      fileName: `${Date.now()}-${filename.replace(/\.[^/.]+$/, '')}`,
+      file: processedBuffer,
+      fileName: `${ownerSegment}-${Date.now()}-${upload.filename.replace(/\.[^/.]+$/, '')}`,
       folder: folder.startsWith('/') ? folder : `/${folder}`,
       useUniqueFileName: false,
-    });
+      isPrivateFile: usePrivate,
+    })
+
+    const expiresIn = usePrivate ? SIGNED_URL_TTL_SECONDS : undefined
+    const deliveryUrl = usePrivate
+      ? imagekit.url({
+          path: uploadResponse.filePath,
+          signed: true,
+          expireSeconds: expiresIn,
+        })
+      : uploadResponse.url
 
     return NextResponse.json({
-      url: uploadResponse.url,
+      url: deliveryUrl,
       fileId: uploadResponse.fileId,
       width: uploadResponse.width,
       height: uploadResponse.height,
-      originalSize,
+      originalSize: upload.size,
       uploadedSize: processedBuffer.byteLength,
       wasOptimized: optimized,
-    });
+      access: usePrivate ? 'private' : 'public',
+      expiresIn,
+    })
   } catch (error: any) {
-    console.error('Error uploading to ImageKit:', error);
-    return NextResponse.json({ message: 'Error uploading file to ImageKit.', error: error?.message || 'Unknown error' }, { status: 500 });
+    console.error('Error uploading to ImageKit:', error)
+    return NextResponse.json(
+      { message: 'Error uploading file to ImageKit.', error: error?.message || 'Unknown error' },
+      { status: 500 },
+    )
   }
 }
 
-function isImageBuffer(buffer: Buffer): boolean {
-  if (buffer.length < 4) return false;
-  // JPEG
-  if (buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff) return true;
-  // PNG
-  if (buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4e && buffer[3] === 0x47) return true;
-  // GIF
-  if (buffer[0] === 0x47 && buffer[1] === 0x49 && buffer[2] === 0x46 && buffer[3] === 0x38) return true;
-  // WebP (RIFF)
-  if (buffer[0] === 0x52 && buffer[1] === 0x49 && buffer[2] === 0x46 && buffer[3] === 0x46) return true;
-  return false;
-} 
+function sanitizeFolder(folder: string): string {
+  const safe = folder.replace(/[^A-Za-z0-9/_-]/g, '')
+  const parts = safe.split('/').filter(Boolean)
+  return parts.slice(0, 3).join('/') || 'uploads'
+}

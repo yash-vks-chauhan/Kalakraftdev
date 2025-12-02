@@ -21,11 +21,17 @@ export default function MySupportTickets() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || !token) {
+      setLoading(false);
+      setError("Please sign in to view your support tickets.");
+      return;
+    }
     const load = async () => {
       try {
-        const url = `/api/support/my-tickets?email=${encodeURIComponent(user.email)}`;
-        const res = await fetch(url);
+        setError(null);
+        const res = await fetch('/api/support/my-tickets', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         if (!res.ok) throw new Error((await res.json()).error || "Failed to load");
         const data = await res.json();
         setTickets(data.tickets || []);
@@ -36,7 +42,7 @@ export default function MySupportTickets() {
       }
     };
     load();
-  }, [user]);
+  }, [user, token]);
 
   if (loading) {
     return (

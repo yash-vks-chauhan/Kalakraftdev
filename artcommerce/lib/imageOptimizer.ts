@@ -1,7 +1,7 @@
 import sharp from 'sharp';
 
 /**
- * Maximum file size in bytes (10MB)
+ * Maximum file size in bytes (20MB)
  */
 export const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
 
@@ -16,21 +16,22 @@ export const TARGET_SIZE = 18 * 1024 * 1024;
  * @param filename The original filename
  * @returns An object containing the optimized buffer and metadata
  */
-export async function optimizeImageIfNeeded(buffer: ArrayBuffer, filename: string): Promise<{
+export async function optimizeImageIfNeeded(buffer: ArrayBuffer | Buffer, filename: string): Promise<{
   buffer: Buffer,
   optimized: boolean,
   originalSize: number,
   optimizedSize: number,
   width?: number,
-  height?: number,
+ height?: number,
   format?: string
 }> {
-  const originalSize = buffer.byteLength;
+  const inputBuffer = buffer instanceof Buffer ? buffer : Buffer.from(buffer);
+  const originalSize = inputBuffer.byteLength;
   
   // If the image is already under the limit, return it as is
   if (originalSize <= MAX_FILE_SIZE) {
     return {
-      buffer: Buffer.from(buffer),
+      buffer: Buffer.from(inputBuffer),
       optimized: false,
       originalSize,
       optimizedSize: originalSize
@@ -39,7 +40,7 @@ export async function optimizeImageIfNeeded(buffer: ArrayBuffer, filename: strin
   
   try {
     // Create a sharp instance from the buffer
-    const image = sharp(Buffer.from(buffer));
+    const image = sharp(Buffer.from(inputBuffer));
     const metadata = await image.metadata();
     
     // Calculate the quality reduction needed based on file size
@@ -106,7 +107,7 @@ export async function optimizeImageIfNeeded(buffer: ArrayBuffer, filename: strin
     
     // If optimization fails, return the original buffer
     return {
-      buffer: Buffer.from(buffer),
+      buffer: Buffer.from(inputBuffer),
       optimized: false,
       originalSize,
       optimizedSize: originalSize
