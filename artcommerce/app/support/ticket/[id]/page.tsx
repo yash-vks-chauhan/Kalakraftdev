@@ -142,11 +142,12 @@ export default function TicketThread() {
   }
 
   const renderAttachments = (attachments?: { url: string; type: "image" | "video" }[]) => {
-    if (!attachments?.length) return null;
-    
+    const valid = (attachments || []).filter((att) => att?.url);
+    if (!valid.length) return null;
+
     return (
       <div className={styles.attachmentGrid}>
-        {attachments.map((att, idx) => (
+        {valid.map((att, idx) => (
           <div key={idx} className={styles.attachment}>
             {att.type === 'image' ? (
               <img src={att.url} alt="attachment" loading="lazy" />

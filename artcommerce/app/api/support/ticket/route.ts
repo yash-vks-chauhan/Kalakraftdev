@@ -3,6 +3,8 @@ import { NextResponse } from 'next/server';
 import prisma from '../../../../lib/prisma';
 import { randomUUID } from 'crypto';
 import { getAuthContext } from '../../../../lib/auth';
+import { put } from '@vercel/blob';
+import { sanitizeFilename, shouldUsePrivateAccess } from '@/lib/uploadGuard';
 
 const MAX_ATTACHMENTS = 4;
 const MAX_ATTACHMENT_SIZE_BYTES = 3 * 1024 * 1024; // 3MB
@@ -13,6 +15,7 @@ function validateAttachments(attachments: any[]) {
   if (attachments.length > MAX_ATTACHMENTS) return `Maximum ${MAX_ATTACHMENTS} images allowed`;
   for (const att of attachments) {
     if (!att || typeof att !== 'object') return 'Invalid attachment payload';
+    if (!att.url || typeof att.url !== 'string') return 'Each attachment must include a URL';
     if (att.type && typeof att.type === 'string' && !att.type.startsWith('image')) {
       return 'Only image attachments are allowed';
     }
@@ -61,9 +64,38 @@ export async function POST(request: Request) {
     issueCategory = (form.get('issueCategory') as string) || null;
     productId = form.get('productId') ? Number(form.get('productId')) : null;
 
-    // Collect attachments meta only (this demo doesn't persist files)
     const fileBlobs = form.getAll('files') as File[];
-    attachments = fileBlobs.map((file) => ({ name: file.name, size: file.size, type: file.type }));
+    const access = shouldUsePrivateAccess() ? 'private' : 'public';
+    const ownerSegment = sanitizeFilename(auth.userId);
+    for (const file of fileBlobs.slice(0, MAX_ATTACHMENTS)) {
+      if (!file.type?.startsWith('image/')) {
+        return NextResponse.json({ error: 'Only image attachments are allowed' }, { status: 400 });
+      }
+      if (file.size > MAX_ATTACHMENT_SIZE_BYTES) {
+        return NextResponse.json({ error: 'Each image must be 3MB or smaller' }, { status: 400 });
+      }
+
+      const buffer = Buffer.from(await file.arrayBuffer());
+      const safeName = sanitizeFilename(file.name || 'attachment');
+      const uniqueFilename = `${ownerSegment}/${Date.now()}-${safeName}`;
+      let blob;
+      try {
+        blob = await put(uniqueFilename, buffer, {
+          access,
+          contentType: file.type || 'image/*',
+        });
+      } catch (err) {
+        console.error('Support ticket attachment upload failed', err);
+        return NextResponse.json({ error: 'Failed to upload attachment' }, { status: 500 });
+      }
+      attachments.push({
+        url: blob.url,
+        type: 'image',
+        size: buffer.byteLength,
+        name: safeName,
+        mimeType: file.type || 'image/*',
+      });
+    }
   } else {
     // Fallback to raw JSON body
     const body = await request.json();

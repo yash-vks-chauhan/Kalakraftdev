@@ -212,10 +212,11 @@ export default function TicketThread() {
   };
 
   const renderAttachments = (atts?: Attachment[]) => {
-    if (!atts || atts.length === 0) return null;
+    const valid = (atts || []).filter((att) => att?.url);
+    if (valid.length === 0) return null;
     return (
       <div className="mt-2 space-x-2 flex flex-wrap">
-        {atts.map((att, idx) => (
+        {valid.map((att, idx) => (
           att.type === "image" ? (
             <img key={idx} src={att.url} alt="attach" className="w-24 h-24 object-cover rounded" loading="lazy" />
           ) : (

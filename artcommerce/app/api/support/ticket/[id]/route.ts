@@ -14,6 +14,7 @@ function validateAttachments(attachments: any[]) {
   if (attachments.length > MAX_ATTACHMENTS) return `Maximum ${MAX_ATTACHMENTS} images allowed`;
   for (const att of attachments) {
     if (!att || typeof att !== 'object') return 'Invalid attachment payload';
+    if (!att.url || typeof att.url !== 'string') return 'Each attachment must include a URL';
     if (att.type && typeof att.type === 'string' && !att.type.startsWith('image')) {
       return 'Only image attachments are allowed';
     }

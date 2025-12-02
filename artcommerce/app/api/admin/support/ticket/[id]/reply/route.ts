@@ -5,6 +5,25 @@ import pusher from "../../../../../../../lib/pusher";
 import { randomUUID } from 'crypto';
 import { requireAdmin } from "../../../../../../../lib/auth";
 
+const MAX_ATTACHMENTS = 4;
+const MAX_ATTACHMENT_SIZE_BYTES = 3 * 1024 * 1024; // 3MB
+
+function validateAttachments(attachments: any[]) {
+  if (!Array.isArray(attachments)) return 'Attachments must be an array';
+  if (attachments.length > MAX_ATTACHMENTS) return `Maximum ${MAX_ATTACHMENTS} images allowed`;
+  for (const att of attachments) {
+    if (!att || typeof att !== 'object') return 'Invalid attachment payload';
+    if (!att.url || typeof att.url !== 'string') return 'Each attachment must include a URL';
+    if (att.type && typeof att.type === 'string' && !att.type.startsWith('image')) {
+      return 'Only image attachments are allowed';
+    }
+    if (typeof att.size === 'number' && att.size > MAX_ATTACHMENT_SIZE_BYTES) {
+      return 'Each image must be 3MB or smaller';
+    }
+  }
+  return null;
+}
+
 export async function POST(
   request: Request,
   { params }: { params: { id: string } }
@@ -22,6 +41,11 @@ export async function POST(
     status: string;
     attachments?: any[];
   };
+
+  const attachmentError = validateAttachments(attachments);
+  if (attachmentError) {
+    return NextResponse.json({ error: attachmentError }, { status: 400 });
+  }
 
   // 3) Record the agent's message
   const message = await prisma.supportMessage.create({
