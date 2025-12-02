@@ -3,9 +3,9 @@
 
 import { useState, useEffect, FormEvent, useRef } from "react"
 import { useParams } from "next/navigation"
-import styles from "../../support.module.css"
 import Pusher from "pusher-js"
-import { useAuth } from "../../contexts/AuthContext"
+import styles from "../../support.module.css"
+import { useAuth } from "../../../contexts/AuthContext"
 
 type Message = { 
   id: string; 
