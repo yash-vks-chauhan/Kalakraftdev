@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "../contexts/AuthContext";
 import {
   Upload, X, Send, HelpCircle, Truck, Package, AlertTriangle,
-  CheckCircle2, Image as ImageIcon, Loader2, ArrowLeft, ChevronRight
+  CheckCircle2, Image as ImageIcon, Loader2, ArrowLeft, ArrowRight, ChevronRight
 } from 'lucide-react';
 import Image from "next/image";
 import ButtonLoader from '../components/ButtonLoader';
