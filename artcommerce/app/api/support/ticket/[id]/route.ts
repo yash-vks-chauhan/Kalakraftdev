@@ -4,6 +4,8 @@ import prisma from "../../../../../lib/prisma";
 import pusher from "../../../../../lib/pusher";
 import { randomUUID } from 'crypto';
 import { getAuthContext } from "../../../../../lib/auth";
+import { isAllowedOrigin } from "@/lib/security";
+import { sanitizeSupportAttachments } from "@/lib/supportAttachments";
 
 const MAX_ATTACHMENTS = 4;
 const MAX_ATTACHMENT_SIZE_BYTES = 3 * 1024 * 1024; // 3MB
@@ -54,7 +56,7 @@ export async function GET(
   const { id } = params;
   const ticket = await prisma.supportTicket.findUnique({
     where: { id },
-    include: { messages: true },
+    include: { messages: { orderBy: { createdAt: 'asc' } } },
   });
   if (!ticket) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -62,7 +64,11 @@ export async function GET(
   if (auth.role !== 'admin' && ticket.email !== userEmail) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
-  return NextResponse.json(ticket);
+  const safeMessages = ticket.messages.map((msg: any) => ({
+    ...msg,
+    attachments: sanitizeSupportAttachments(msg.attachments),
+  }));
+  return NextResponse.json({ ...ticket, messages: safeMessages });
 }
 
 export async function POST(
@@ -72,6 +78,9 @@ export async function POST(
   const auth = getAuthContext(request);
   if (!auth) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  if (!isAllowedOrigin(request)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const userEmail =
@@ -108,6 +117,7 @@ export async function POST(
   if (attachmentError) {
     return NextResponse.json({ error: attachmentError }, { status: 400 });
   }
+  const safeAttachments = sanitizeSupportAttachments(attachments);
 
   // Create the message
   // @ts-ignore – attachments field added after latest Prisma migration
@@ -117,18 +127,19 @@ export async function POST(
       ticketId, 
       sender: "customer", 
       content, 
-      attachments 
+      attachments: safeAttachments,
     } as any,
   });
+  const safeMessage = { ...message, attachments: sanitizeSupportAttachments((message as any).attachments) };
 
   // Broadcast via Pusher
   try {
     await pusher.trigger(`private-support-ticket-${ticketId}`, "new-message", {
-      message,
+      message: safeMessage,
     });
   } catch (err) {
     console.error("Pusher trigger failed:", err);
   }
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, message: safeMessage });
 }

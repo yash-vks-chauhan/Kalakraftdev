@@ -4,9 +4,12 @@ import prisma from "../../../../../../../lib/prisma";
 import pusher from "../../../../../../../lib/pusher";
 import { randomUUID } from 'crypto';
 import { requireAdmin } from "../../../../../../../lib/auth";
+import { isAllowedOrigin } from "@/lib/security";
+import { sanitizeSupportAttachments } from "@/lib/supportAttachments";
 
 const MAX_ATTACHMENTS = 4;
 const MAX_ATTACHMENT_SIZE_BYTES = 3 * 1024 * 1024; // 3MB
+const ALLOWED_STATUSES = ['open', 'pending', 'resolved', 'closed'];
 
 function validateAttachments(attachments: any[]) {
   if (!Array.isArray(attachments)) return 'Attachments must be an array';
@@ -31,6 +34,9 @@ export async function POST(
   if (!requireAdmin(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
+  if (!isAllowedOrigin(request)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
 
   // 1) Get the ticketId
   const { id: ticketId } = params;
@@ -42,10 +48,16 @@ export async function POST(
     attachments?: any[];
   };
 
+  const normalizedStatus = status?.toLowerCase?.();
+  if (!ALLOWED_STATUSES.includes(normalizedStatus)) {
+    return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
+  }
+
   const attachmentError = validateAttachments(attachments);
   if (attachmentError) {
     return NextResponse.json({ error: attachmentError }, { status: 400 });
   }
+  const safeAttachments = sanitizeSupportAttachments(attachments);
 
   // 3) Record the agent's message
   const message = await prisma.supportMessage.create({
@@ -55,14 +67,15 @@ export async function POST(
       ticketId, 
       sender: "agent", 
       content: reply, 
-      attachments 
+      attachments: safeAttachments,
     } as any,
   });
+  const safeMessage = { ...message, attachments: sanitizeSupportAttachments((message as any).attachments) };
 
   // 4) Update the ticket's status
   const ticket = await prisma.supportTicket.update({
     where: { id: ticketId },
-    data: { status },
+    data: { status: normalizedStatus },
   }).catch((err: any) => {
     if (err?.code === 'P2025') {
       return null;
@@ -76,8 +89,8 @@ export async function POST(
 
   // Broadcast via Pusher to both admin & customer listeners
   try {
-    await pusher.trigger(`private-support-ticket-${ticketId}`, "new-message", { message });
-    await pusher.trigger(`private-support-ticket-${ticketId}`, "status-changed", { status });
+    await pusher.trigger(`private-support-ticket-${ticketId}`, "new-message", { message: safeMessage });
+    await pusher.trigger(`private-support-ticket-${ticketId}`, "status-changed", { status: normalizedStatus });
   } catch (err) {
     console.error("Pusher trigger failed: ", err);
   }
@@ -97,7 +110,7 @@ export async function POST(
         },
         to: [{ email: ticket.email }],
         subject: `Re: ${ticket.subject}`,
-        htmlContent: `<p>${reply}</p><p>Your ticket status is now <strong>${status}</strong>.</p>`,
+        htmlContent: `<p>${reply}</p><p>Your ticket status is now <strong>${normalizedStatus}</strong>.</p>`,
       }),
     });
     if (!resp.ok) {
@@ -108,5 +121,5 @@ export async function POST(
   }
 
   // 6) Return JSON so the client fetch sees res.ok === true
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, message: safeMessage });
 }

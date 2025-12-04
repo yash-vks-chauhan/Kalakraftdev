@@ -8,10 +8,11 @@ import styles from "../../../../support/support.module.css";
 
 interface Attachment {
   url: string;
-  type: "image" | "video";
+  type?: "image" | "video" | string;
   size?: number;
   width?: number;
   height?: number;
+  mimeType?: string;
 }
 
 interface Message {
@@ -166,6 +167,7 @@ export default function TicketThread() {
         size: file.size,
         width,
         height,
+        mimeType: uploadJson.mimeType || file.type,
       });
     }
 
@@ -217,7 +219,7 @@ export default function TicketThread() {
     return (
       <div className="mt-2 space-x-2 flex flex-wrap">
         {valid.map((att, idx) => (
-          att.type === "image" ? (
+          (att.type || att.mimeType || '').startsWith("image") ? (
             <img key={idx} src={att.url} alt="attach" className="w-24 h-24 object-cover rounded" loading="lazy" />
           ) : (
             <video key={idx} src={att.url} controls className="w-32 h-24 rounded" />

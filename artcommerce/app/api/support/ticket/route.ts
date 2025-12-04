@@ -5,6 +5,8 @@ import { randomUUID } from 'crypto';
 import { getAuthContext } from '../../../../lib/auth';
 import { put } from '@vercel/blob';
 import { sanitizeFilename, shouldUsePrivateAccess } from '@/lib/uploadGuard';
+import { isAllowedOrigin } from '@/lib/security';
+import { sanitizeSupportAttachments } from '@/lib/supportAttachments';
 
 const MAX_ATTACHMENTS = 4;
 const MAX_ATTACHMENT_SIZE_BYTES = 3 * 1024 * 1024; // 3MB
@@ -36,6 +38,9 @@ export async function POST(request: Request) {
   const auth = getAuthContext(request);
   if (!auth) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  if (!isAllowedOrigin(request)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
   const user = await prisma.user.findUnique({
@@ -106,6 +111,7 @@ export async function POST(request: Request) {
   if (attachmentError) {
     return NextResponse.json({ error: attachmentError }, { status: 400 });
   }
+  const safeAttachments = sanitizeSupportAttachments(attachments);
 
   // 2) Create the support ticket in the database (store category/product info as part of subject for now)
   const fullSubject = issueCategory ? `[${issueCategory}] ${subject}` : subject;
@@ -120,7 +126,7 @@ export async function POST(request: Request) {
   });
 
   // If attachments provided, create a first SupportMessage storing them
-  if (attachments.length > 0) {
+  if (safeAttachments.length > 0) {
     // @ts-ignore until prisma types regenerated
     await prisma.supportMessage.create({
       data: {
@@ -128,7 +134,7 @@ export async function POST(request: Request) {
         ticketId: ticket.id,
         sender: 'customer',
         content: '',
-        attachments,
+        attachments: safeAttachments,
       } as any,
     });
   }
