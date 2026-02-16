@@ -1,0 +1,292 @@
+/**
+ * Optimized CSS animations for product listings
+ * Hardware accelerated animations with will-change and transform3d
+ */
+
+/* Enhanced sidebar animations with hardware acceleration */
+.sidebar {
+  width: 280px;
+  min-width: 280px;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  overflow-y: auto;
+  color: #1a202c;
+  border-right: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  z-index: 100;
+  
+  /* Hardware acceleration optimizations */
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backface-visibility: hidden;
+  -webkit-transform: translate3d(0, 0, 0);
+}
+
+.sidebarClosed {
+  transform: translate3d(-280px, 0, 0);
+  -webkit-transform: translate3d(-280px, 0, 0);
+}
+
+.sidebar:hover {
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+}
+
+/* Optimized sidebar toggle */
+.sidebarToggle {
+  position: fixed;
+  left: 280px;
+  top: 50%;
+  transform: translate3d(0, -50%, 0);
+  background: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 0 4px 4px 0;
+  width: 32px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #1a202c;
+  z-index: 101;
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.05);
+  
+  /* Hardware acceleration */
+  will-change: left, transform;
+  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backface-visibility: hidden;
+}
+
+.sidebarToggleClosed {
+  left: 0;
+}
+
+.sidebarToggle:hover {
+  background: #ffffff;
+  color: #000000;
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.08);
+}
+
+/* Optimized mobile filter drawer */
+.mobileFilterDrawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 85%;
+  max-width: 360px;
+  height: 100vh;
+  background: #ffffff;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  border-radius: 0;
+  box-shadow: -5px 0 25px rgba(0, 0, 0, 0.15);
+  
+  /* Hardware acceleration for smooth drawer animation */
+  will-change: transform;
+  transform: translate3d(100%, 0, 0);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  backface-visibility: hidden;
+  -webkit-transform: translate3d(100%, 0, 0);
+}
+
+.mobileFilterDrawerOpen {
+  transform: translate3d(0, 0, 0);
+  -webkit-transform: translate3d(0, 0, 0);
+}
+
+/* Optimized overlay with GPU acceleration */
+.mobileFilterOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0);
+  z-index: 999;
+  backdrop-filter: blur(0px);
+  opacity: 0;
+  visibility: hidden;
+  
+  /* Hardware acceleration */
+  will-change: opacity, backdrop-filter;
+  transition: opacity 0.25s ease, backdrop-filter 0.25s ease, visibility 0.25s ease;
+}
+
+.mobileFilterOverlayVisible {
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(2px);
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Optimized product card animations */
+.productCard {
+  will-change: transform, opacity;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), 
+              box-shadow 0.2s ease,
+              opacity 0.2s ease;
+  backface-visibility: hidden;
+  transform: translate3d(0, 0, 0);
+}
+
+.productCard:hover {
+  transform: translate3d(0, -4px, 0);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Optimized filter section animations */
+.filterSection {
+  border: none;
+  padding: 0;
+  margin-bottom: 1.5rem;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 12px;
+  overflow: hidden;
+  
+  /* Smooth expand/collapse */
+  transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              padding-bottom 0.3s ease;
+}
+
+.filterSection[open] {
+  padding-bottom: 1rem;
+}
+
+/* Optimized filter header with micro-interactions */
+.filterHeader {
+  cursor: pointer;
+  padding: 1rem;
+  font-weight: 500;
+  color: #1a202c;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  user-select: none;
+  font-size: 0.95rem;
+  border-radius: 8px;
+  
+  /* Micro-animation for better UX */
+  transition: background-color 0.15s ease, transform 0.1s ease;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+}
+
+.filterHeader:hover {
+  background-color: rgba(226, 232, 240, 0.3);
+}
+
+.filterHeader:active {
+  transform: translate3d(0, 1px, 0);
+}
+
+/* Optimized arrow rotation */
+.arrow {
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: center;
+  will-change: transform;
+}
+
+.filterSection[open] .arrow {
+  transform: rotate(90deg);
+}
+
+/* Smooth filter content reveal */
+.filterContent {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.filterSection[open] .filterContent {
+  max-height: 500px;
+}
+
+/* Optimized mobile button animations */
+.mobileFilterButton {
+  position: fixed;
+  bottom: 70px;
+  left: 50%;
+  background: #333;
+  color: white;
+  border: none;
+  border-radius: 50px;
+  padding: 10px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 500;
+  font-size: 0.9rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  z-index: 9999;
+  cursor: pointer;
+  width: 120px;
+  touch-action: manipulation;
+  
+  /* Optimized mobile button transform */
+  will-change: transform;
+  transform: translate3d(-50%, 0, 0);
+  transition: transform 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94), 
+              background-color 0.15s ease,
+              box-shadow 0.15s ease;
+  backface-visibility: hidden;
+}
+
+.mobileFilterButton:active {
+  transform: translate3d(-50%, 0, 0) scale3d(0.96, 0.96, 1);
+  background-color: #000;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Optimized stagger animations for product grid */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 20px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.productCard {
+  animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+/* Stagger delay for grid items */
+.productCard:nth-child(1) { animation-delay: 0ms; }
+.productCard:nth-child(2) { animation-delay: 50ms; }
+.productCard:nth-child(3) { animation-delay: 100ms; }
+.productCard:nth-child(4) { animation-delay: 150ms; }
+.productCard:nth-child(5) { animation-delay: 200ms; }
+.productCard:nth-child(6) { animation-delay: 250ms; }
+.productCard:nth-child(7) { animation-delay: 300ms; }
+.productCard:nth-child(8) { animation-delay: 350ms; }
+.productCard:nth-child(n+9) { animation-delay: 400ms; }
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .sidebar,
+  .sidebarToggle,
+  .mobileFilterDrawer,
+  .mobileFilterOverlay,
+  .productCard,
+  .filterSection,
+  .filterHeader,
+  .arrow {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+  
+  .productCard {
+    animation: none !important;
+  }
+}

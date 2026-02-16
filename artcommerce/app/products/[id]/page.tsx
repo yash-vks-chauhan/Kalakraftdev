@@ -8,6 +8,8 @@ import { useCart } from '../../contexts/CartContext'
 import WishlistButton from '../../components/WishlistButton'
 import Link from 'next/link'
 import styles from './product_details.module.css'
+import MobileProductDetails from './MobileProductDetails'
+import { useDeviceDetection } from '../../hooks/useDeviceDetection'
 
 // SVG icons for navigation
 const ChevronLeft = () => (
@@ -22,6 +24,25 @@ const ChevronRight = () => (
   </svg>
 )
 
+// New icon components for the sections
+const SpecificationIcon = () => (
+  <svg className={styles.sectionIcon} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+)
+
+const CareIcon = () => (
+  <svg className={styles.sectionIcon} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M20.84 4.61C19.32 3.09 17.16 3.09 15.64 4.61L12 8.25L8.36 4.61C6.84 3.09 4.68 3.09 3.16 4.61C1.64 6.13 1.64 8.29 3.16 9.81L12 18.65L20.84 9.81C22.36 8.29 22.36 6.13 20.84 4.61Z" stroke="currentColor" strokeWidth="1.5" fill="currentColor"/>
+  </svg>
+)
+
+const StylingIcon = () => (
+  <svg className={styles.sectionIcon} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z" stroke="currentColor" strokeWidth="1.5" fill="currentColor"/>
+  </svg>
+)
+
 interface Product {
   id: number
   name: string
@@ -33,6 +54,9 @@ interface Product {
   imageUrls: string[]
   stockQuantity: number
   category: { id: number; name: string; slug: string } | null
+  specifications?: string | null
+  careInstructions?: string | null
+  stylingIdeaImages?: ({ url: string; text?: string } | string)[] | null
 }
 
 export default function ProductDetailsPage() {
@@ -49,8 +73,28 @@ export default function ProductDetailsPage() {
   const [fetchError, setFetchError] = useState<string | null>(null)
   const [added, setAdded] = useState(false)
   const [selectedImage, setSelectedImage] = useState(0)
+  const [similarProducts, setSimilarProducts] = useState<Product[]>([] as any)
+  const [avgRating, setAvgRating] = useState<number>(0)
+  const [ratingCount, setRatingCount] = useState<number>(0)
+  const [reviews, setReviews] = useState<any[]>([])
 
-  // Fetch product details on mount
+  // Use optimized device detection hook
+  const { isSmallScreen } = useDeviceDetection()
+  const isMobile = isSmallScreen
+  
+  // New state for section toggles
+  const [expandedSections, setExpandedSections] = useState({
+    specifications: false,
+    care: false,
+    styling: true // Keep styling expanded by default
+  })
+
+  // Section toggle state for mobile
+  const [sections, setSections] = useState({
+    details: true,
+    reviews: false,
+    styling: true // Keep styling expanded by default
+  })  // Fetch product details on mount
   useEffect(() => {
     if (!id) {
       router.replace('/products')
@@ -72,7 +116,35 @@ export default function ProductDetailsPage() {
           return
         }
         const data = await res.json()
-        setProduct(data.product)
+        
+        // Normalize imageUrls and filter out any null/invalid entries
+        let rawImgs: (string | null)[] = [];
+        if (Array.isArray(data.product.imageUrls)) {
+          rawImgs = data.product.imageUrls;
+        } else {
+          try {
+            const parsed = JSON.parse(data.product.imageUrls || '[]');
+            if (Array.isArray(parsed)) {
+              rawImgs = parsed;
+            }
+          } catch {
+            // Fails silently, rawImgs remains []
+          }
+        }
+        
+        const cleanImageUrls = rawImgs.filter((url): url is string => typeof url === 'string' && url.length > 0);
+        
+        setProduct({ ...data.product, imageUrls: cleanImageUrls })
+        // fetch similar products
+        if (data.product?.category?.slug) {
+          fetch(`/api/products?category=${data.product.category.slug}`)
+            .then(r => r.json())
+            .then(j => {
+              const others = (j.products || []).filter((p: any) => p.id !== data.product.id).slice(0, 6)
+              setSimilarProducts(others)
+            })
+            .catch(console.error)
+        }
         setSelectedImage(0) // Reset selected image when product changes
       } catch (err: any) {
         console.error('Network error:', err)
@@ -84,6 +156,56 @@ export default function ProductDetailsPage() {
 
     fetchProduct()
   }, [id, router])
+
+  // Fetch rating stats
+  useEffect(() => {
+    if (!id) return
+    fetch(`/api/products/${id}/review`).then(r=>r.json()).then(({avg,count,reviews})=>{
+      setAvgRating(avg)
+      setRatingCount(count)
+      setReviews(reviews||[])
+    }).catch(()=>{})
+  }, [id])
+
+  // Toggle section expansion
+  const toggleSection = (section: keyof typeof expandedSections) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }))
+  }
+
+  // Format specifications text
+  const formatSpecifications = (text: string) => {
+    return text.split('\n').map((line, index) => {
+      const trimmed = line.trim()
+      if (!trimmed) return null
+      
+      // Check if it's a key-value pair (contains : or -)
+      if (trimmed.includes(':')) {
+        const [key, ...valueParts] = trimmed.split(':')
+        const value = valueParts.join(':').trim()
+        return (
+          <div key={index} className={styles.specRow}>
+            <span className={styles.specKey}>{key.trim()}</span>
+            <span className={styles.specValue}>{value}</span>
+          </div>
+        )
+      } else if (trimmed.startsWith('-')) {
+        return (
+          <div key={index} className={styles.specBullet}>
+            {trimmed.substring(1).trim()}
+          </div>
+        )
+      } else {
+        return (
+          <div key={index} className={styles.specText}>
+            {trimmed}
+          </div>
+        )
+      }
+    }).filter(Boolean)
+  }
 
   // Loading state
   if (loading) {
@@ -183,6 +305,19 @@ export default function ProductDetailsPage() {
     )
   }
 
+  // Render mobile view if on mobile device
+  if (isMobile) {
+    return (
+      <MobileProductDetails 
+        product={product} 
+        avgRating={avgRating} 
+        ratingCount={ratingCount} 
+        similarProducts={similarProducts}
+      />
+    );
+  }
+
+  // Desktop view (existing code)
   return (
     <main className={styles.container}>
       <Link href="/products" className={styles.backLink}>
@@ -270,7 +405,13 @@ export default function ProductDetailsPage() {
             <span className={styles.category}>{product.category.name}</span>
           )}
           
-          <h1 className={styles.title}>{product.name}</h1>
+          <h1 className={styles.productTitle}>{product.name}</h1>
+          <div style={{display:'flex',alignItems:'center',gap:'0.25rem',margin:'4px 0'}}>
+            <span>
+              {[1,2,3,4,5].map(i => (i <= Math.round(avgRating) ? '★' : '☆')).join('')}
+            </span>
+            <small>({ratingCount})</small>
+          </div>
           
           <div className={styles.price}>
             <span className={styles.currency}>{product.currency}</span>
@@ -314,9 +455,214 @@ export default function ProductDetailsPage() {
 
           {error && <p className={styles.error}>{error}</p>}
 
-          <p className={styles.description}>{product.description}</p>
+          <div className={styles.descriptionSection}>
+            <p className={styles.description}>{product.description}</p>
+          </div>
         </div>
       </div>
+
+      {/* Enhanced Product Details Sections */}
+      <div className={styles.productDetails}>
+        {/* Specifications Section */}
+        {product.specifications && (
+          <div className={styles.detailSection}>
+            <button 
+              className={`${styles.sectionHeader} ${styles.specHeader}`}
+              onClick={() => toggleSection('specifications')}
+              aria-expanded={expandedSections.specifications}
+            >
+              <div className={styles.sectionHeaderContent}>
+                <SpecificationIcon />
+                <h3 className={styles.sectionTitle}>Technical Specifications</h3>
+              </div>
+              <ChevronRight />
+            </button>
+            
+            <div className={`${styles.sectionContent} ${expandedSections.specifications ? styles.expanded : ''}`}>
+              <div className={`${styles.sectionInner} ${styles.specInner}`}>
+                <div className={styles.specIntroContainer}>
+                  <h4 className={styles.specIntroTitle}>Product Details</h4>
+                  <p className={styles.specIntro}>
+                    Precise specifications and measurements to help you understand the details of this piece.
+                  </p>
+                </div>
+                <div className={styles.specGrid}>
+                  {formatSpecifications(product.specifications)}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Care & Maintenance Section */}
+        {product.careInstructions && (
+          <div className={styles.detailSection}>
+            <button 
+              className={`${styles.sectionHeader} ${styles.careHeader}`}
+              onClick={() => toggleSection('care')}
+              aria-expanded={expandedSections.care}
+            >
+              <div className={styles.sectionHeaderContent}>
+                <CareIcon />
+                <h3 className={styles.sectionTitle}>Care & Maintenance</h3>
+              </div>
+              <ChevronRight />
+            </button>
+            
+            <div className={`${styles.sectionContent} ${expandedSections.care ? styles.expanded : ''}`}>
+              <div className={`${styles.sectionInner} ${styles.careInner}`}>
+                <div className={styles.careIntroContainer}>
+                  <h4 className={styles.careIntroTitle}>Preserve Your Art</h4>
+                  <p className={styles.careIntro}>
+                    Follow these guidelines to maintain the beauty and quality of your piece for years to come.
+                  </p>
+                </div>
+                <div className={styles.careContent}>
+                  {product.careInstructions.split('\n').map((line, index) => {
+                    const trimmed = line.trim()
+                    if (!trimmed) return null
+                    
+                    return (
+                      <div key={index} className={styles.careItem}>
+                        <div className={styles.careBullet}></div>
+                        <span>{trimmed.replace(/^[-•]?\s*/, '')}</span>
+                      </div>
+                    )
+                  }).filter(Boolean)}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Styling Ideas Section */}
+        {product.stylingIdeaImages && product.stylingIdeaImages.length > 0 && (
+          <div className={styles.detailSection}>
+            <button 
+              className={`${styles.sectionHeader} ${styles.stylingHeader}`}
+              onClick={() => toggleSection('styling')}
+              aria-expanded={expandedSections.styling}
+            >
+              <div className={styles.sectionHeaderContent}>
+                <StylingIcon />
+                <h3 className={styles.sectionTitle}>Styling Inspiration Gallery</h3>
+              </div>
+              <ChevronRight />
+            </button>
+            
+            <div className={`${styles.sectionContent} ${expandedSections.styling ? styles.expanded : ''}`}>
+              <div className={`${styles.sectionInner} ${styles.stylingInner}`}>
+                <div className={styles.stylingIntroContainer}>
+                  <h4 className={styles.stylingIntroTitle}>Visualize in Your Space</h4>
+                  <p className={styles.stylingIntro}>
+                    See how this piece transforms environments and creates stunning focal points in various settings.
+                    Each image showcases the versatility of this artwork in different spaces.
+                  </p>
+                </div>
+                
+                <div className={`${styles.stylingGallery} ${
+                    product.stylingIdeaImages?.length === 1 
+                      ? styles.singleImage 
+                      : product.stylingIdeaImages?.length === 2 
+                        ? styles.twoImages 
+                        : ''
+                  }`}>
+                  {product.stylingIdeaImages?.map((it, idx) => {
+                    const obj = typeof it === 'string' ? { url: it, text: '' } : it
+                    const defaultCaptions = [
+                      "Living Room: Creates a calming focal point that ties the space together",
+                      "Office Setting: Adds artistic flair to professional environments",
+                      "Dining Area: Complements mealtime with artistic elegance"
+                    ];
+                    
+                    // Determine the label based on image count
+                    let spaceLabel = "Living Space";
+                    const imageCount = product.stylingIdeaImages?.length || 0;
+                    if (imageCount === 1) {
+                      spaceLabel = "Featured Styling";
+                    } else if (imageCount === 2) {
+                      spaceLabel = idx === 0 ? "Living Space" : "Workspace";
+                    } else {
+                      spaceLabel = idx === 0 ? "Living Space" : idx === 1 ? "Workspace" : "Dining Area";
+                    }
+                    
+                    return (
+                      <div key={idx} className={styles.galleryItem}>
+                        <div className={styles.galleryImageWrap}>
+                          <img 
+                            src={obj.url} 
+                            alt={`Styling inspiration ${idx + 1}`} 
+                            className={styles.galleryImage} 
+                            loading="lazy" 
+                          />
+                          <div className={styles.galleryOverlay}>
+                            <span className={styles.galleryLabel}>
+                              {spaceLabel}
+                            </span>
+                          </div>
+                        </div>
+                        <div className={styles.galleryCaption}>
+                          <p>{obj.text || defaultCaptions[idx % defaultCaptions.length]}</p>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+                
+                <div className={styles.stylingFooter}>
+                  <p>Bring art into your everyday life with thoughtful placement and styling</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Similar products */}
+      {similarProducts.length > 0 && (
+        <section className={styles.similarSection}>
+          <h2 className={styles.similarTitle}>You might also like</h2>
+          <div className={styles.similarGrid}>
+            {similarProducts.map(p => (
+              <Link key={p.id} href={`/products/${p.id}`} className={styles.similarItem}>
+                <div className={styles.similarImageContainer}>
+                  <img src={p.imageUrls[0] || '/images/logo-mask.png'} alt={p.name} className={styles.similarImg} loading="lazy" />
+                </div>
+                <div className={styles.similarInfo}>
+                  <p className={styles.similarName}>{p.name}</p>
+                  <p className={styles.similarPrice}>{p.currency}{p.price.toFixed(2)}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+
+          {/* Link to view more similar products in this category */}
+          {product.category && (
+            <div className={styles.viewAllSimilarWrapper}>
+              <Link href={`/products?category=${product.category.slug}`} className={styles.viewAllSimilarLink}>
+                View all {product.category.name} products →
+              </Link>
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* Reviews section */}
+      {reviews.length>0 && (
+        <section style={{marginTop:'2rem'}}>
+          <h2 style={{fontSize:'1.25rem',fontWeight:'bold',marginBottom:'0.5rem'}}>Customer Reviews</h2>
+          <ul style={{listStyle:'none',padding:0}}>
+            {reviews.map((rev:any)=>(
+              <li key={rev.id} style={{borderBottom:'1px solid #eee',padding:'0.75rem 0'}}>
+                <p style={{margin:'0 0 4px'}}><strong>{rev.user?.fullName||'Anonymous'}</strong> – {[1,2,3,4,5].map(i=>i<=rev.rating?'★':'☆').join('')}</p>
+                {rev.comment && <p style={{margin:0}}>{rev.comment}</p>}
+                {rev.adminReaction && <p style={{margin:'2px 0'}}><span role="img" aria-label="reaction">{rev.adminReaction}</span></p>}
+                {rev.adminReply && <p style={{margin:'2px 0', fontStyle:'italic',color:'#555'}}>Admin: {rev.adminReply}</p>}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </main>
   )
 }

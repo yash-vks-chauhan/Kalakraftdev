@@ -1,0 +1,813 @@
+/* ============================================
+   MOBILE USERS PAGE - iOS STYLE
+   Clean, minimal design following mobile dashboard patterns
+   ============================================ */
+
+.container {
+  min-height: 100vh;
+  background: #E5E5EA;
+  padding: 0 0 20px 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* ============================================
+   PAGE HEADER SECTION - Dedicated Navigation
+   ============================================ */
+
+.pageHeader {
+  background: #FFFFFF;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px 20px 24px 20px;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+}
+
+.headerTop {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.backButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: none;
+  background: rgba(0, 0, 0, 0.05);
+  color: #333;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.backButton:hover {
+  background: rgba(0, 0, 0, 0.1);
+  transform: translateX(-1px);
+}
+
+.backButton:active {
+  transform: translateX(-1px) scale(0.95);
+}
+
+.pageTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #000000;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.sectionTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #000000;
+  margin: 0 0 16px 0;
+  line-height: 1.2;
+}
+
+.userStats {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.statItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.statNumber {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #000000;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Mono', monospace;
+  line-height: 1;
+}
+
+.statLabel {
+  font-size: 0.75rem;
+  color: #8E8E93;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 2px;
+}
+
+/* ============================================
+   LEGACY HEADER SECTION (HIDDEN)
+   ============================================ */
+
+.header {
+  display: none; /* Hide the old header section */
+}
+
+.headerTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #000000;
+  margin: 0;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.userStats {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.statItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.statNumber {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #000000;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Mono', monospace;
+  line-height: 1;
+}
+
+.statLabel {
+  font-size: 0.75rem;
+  color: #8E8E93;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 2px;
+}
+
+.subtitle {
+  font-size: 0.875rem;
+  color: #8E8E93;
+  margin: 0;
+  font-weight: 500;
+}
+
+/* ============================================
+   SEARCH AND FILTER SECTION
+   ============================================ */
+
+.filterSection {
+  display: flex;
+  gap: 12px;
+  margin: 20px 20px 24px 20px;
+}
+
+.searchContainer {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 16px;
+  color: #8E8E93;
+  font-size: 1rem;
+  z-index: 1;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 14px 16px 14px 44px;
+  background: #FFFFFF;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  border-radius: 12px;
+  font-size: 1rem;
+  color: #000000;
+  outline: none;
+  transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.searchInput:focus {
+  border-color: #000000;
+  background: #FFFFFF;
+}
+
+.searchInput::placeholder {
+  color: #8E8E93;
+}
+
+.filterContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.filterIcon {
+  position: absolute;
+  left: 16px;
+  color: #8E8E93;
+  font-size: 1rem;
+  z-index: 1;
+}
+
+.filterSelect {
+  padding: 14px 16px 14px 44px;
+  background: #FFFFFF;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  border-radius: 12px;
+  font-size: 1rem;
+  color: #000000;
+  outline: none;
+  cursor: pointer;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  background-size: 16px;
+  padding-right: 44px;
+  min-width: 120px;
+}
+
+.filterSelect:focus {
+  border-color: #000000;
+}
+
+.filterSelect:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: #F5F5F5;
+}
+
+/* ============================================
+   USERS LIST
+   ============================================ */
+
+.usersList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0 20px 24px 20px;
+}
+
+.userCard {
+  background: #FFFFFF;
+  border-radius: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+  transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+.userCard:active {
+  transform: scale(0.98);
+}
+
+/* ============================================
+   USER CARD HEADER
+   ============================================ */
+
+.userCardHeader {
+  display: flex;
+  align-items: center;
+  padding: 16px 20px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.userCardHeader:hover {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.userAvatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 24px;
+  background: linear-gradient(135deg, #007AFF 0%, #5856D6 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FFFFFF;
+  font-size: 1.25rem;
+  margin-right: 16px;
+  flex-shrink: 0;
+}
+
+.userBasicInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.userName {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #000000;
+  margin: 0 0 4px 0;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.userEmail {
+  font-size: 0.875rem;
+  color: #8E8E93;
+  margin: 0;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.userRoleBadge {
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.roleBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.roleUser {
+  background: rgba(52, 199, 89, 0.1);
+  color: #34C759;
+}
+
+.roleAdmin {
+  background: rgba(255, 149, 0, 0.1);
+  color: #FF9500;
+}
+
+.expandIcon {
+  color: #8E8E93;
+  font-size: 1.125rem;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.userCard .expandIcon {
+  transform: rotate(0deg);
+}
+
+/* ============================================
+   USER CARD CONTENT (EXPANDED)
+   ============================================ */
+
+.userCardContent {
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.01);
+  border-bottom-left-radius: 16px;
+  border-bottom-right-radius: 16px;
+}
+
+.userDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.detailItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.detailIcon {
+  width: 20px;
+  height: 20px;
+  color: #8E8E93;
+  flex-shrink: 0;
+}
+
+.detailInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.detailLabel {
+  font-size: 0.75rem;
+  color: #8E8E93;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detailValue {
+  font-size: 0.875rem;
+  color: #000000;
+  font-weight: 500;
+}
+
+.detailValue.hasItems {
+  color: #FF9500;
+  font-weight: 600;
+}
+
+/* ============================================
+   QUICK ACTIONS
+   ============================================ */
+
+.quickActions {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.actionButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  background: rgba(0, 122, 255, 0.1);
+  color: #007AFF;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  white-space: nowrap;
+}
+
+.actionButton:hover {
+  background: rgba(0, 122, 255, 0.15);
+}
+
+.actionButton:active {
+  transform: scale(0.95);
+}
+
+.remindButton {
+  background: rgba(52, 199, 89, 0.1);
+  color: #34C759;
+}
+
+.remindButton:hover {
+  background: rgba(52, 199, 89, 0.15);
+}
+
+/* ============================================
+   ADMIN CONTROLS
+   ============================================ */
+
+.adminControls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.roleControl {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.controlLabel {
+  font-size: 0.875rem;
+  color: #000000;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.roleSelect {
+  padding: 8px 12px;
+  background: #FFFFFF;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: #000000;
+  outline: none;
+  cursor: pointer;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  min-width: 80px;
+}
+
+.roleSelect:focus {
+  border-color: #007AFF;
+}
+
+.deleteButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: rgba(255, 59, 48, 0.1);
+  color: #FF3B30;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  white-space: nowrap;
+}
+
+.deleteButton:hover {
+  background: rgba(255, 59, 48, 0.15);
+}
+
+.deleteButton:active {
+  transform: scale(0.95);
+}
+
+/* ============================================
+   EMPTY STATE
+   ============================================ */
+
+.emptyState {
+  background: #FFFFFF;
+  border-radius: 16px;
+  padding: 48px 20px;
+  margin: 0 20px;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.emptyIcon {
+  font-size: 3rem;
+  margin-bottom: 8px;
+}
+
+.emptyState h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #000000;
+  margin: 0;
+}
+
+.emptyState p {
+  font-size: 0.875rem;
+  color: #8E8E93;
+  margin: 0;
+  line-height: 1.4;
+  max-width: 280px;
+}
+
+/* ============================================
+   ERROR STATE
+   ============================================ */
+
+.errorCard {
+  background: #FFFFFF;
+  border-radius: 16px;
+  padding: 32px 20px;
+  margin: 20px;
+  border: 1px solid rgba(255, 59, 48, 0.2);
+  text-align: center;
+}
+
+.errorCard h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #FF3B30;
+  margin: 0 0 8px 0;
+}
+
+.errorCard p {
+  font-size: 0.875rem;
+  color: #8E8E93;
+  margin: 0;
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+@media (max-width: 375px) {
+  .filterSection {
+    margin: 16px 16px 20px 16px;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .filterContainer {
+    width: 100%;
+  }
+  
+  .filterSelect {
+    width: 100%;
+    min-width: auto;
+  }
+  
+  .usersList {
+    margin: 0 16px 20px 16px;
+    gap: 10px;
+  }
+  
+  .userCard {
+    border-radius: 12px;
+  }
+  
+  .userCardHeader {
+    padding: 14px 16px;
+  }
+  
+  .userCardContent {
+    padding: 16px;
+  }
+  
+  .userAvatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 22px;
+    font-size: 1.125rem;
+    margin-right: 14px;
+  }
+  
+  .quickActions {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .actionButton {
+    justify-content: center;
+    padding: 12px 16px;
+  }
+  
+  .adminControls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  
+  .roleControl {
+    justify-content: space-between;
+  }
+  
+  .deleteButton {
+    justify-content: center;
+    padding: 12px 16px;
+  }
+  
+  .emptyState {
+    margin: 0 16px;
+    padding: 40px 16px;
+  }
+}
+
+/* Very small screens */
+@media (max-width: 320px) {
+  .userCardHeader {
+    padding: 12px 14px;
+  }
+  
+  .userAvatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 20px;
+    font-size: 1rem;
+    margin-right: 12px;
+  }
+  
+  .userName {
+    font-size: 0.9375rem;
+  }
+  
+  .userEmail {
+    font-size: 0.8125rem;
+  }
+  
+  .roleBadge {
+    font-size: 0.6875rem;
+    padding: 4px 8px;
+  }
+}
+
+/* ============================================
+   LOADING STATES
+   ============================================ */
+
+.loadingCard {
+  background: #FFFFFF;
+  border-radius: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+  animation: pulse 1.5s ease-in-out infinite;
+  margin-bottom: 12px;
+}
+
+.loadingHeader {
+  display: flex;
+  align-items: center;
+  padding: 16px 20px;
+  gap: 16px;
+}
+
+.loadingAvatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 24px;
+  background: #F5F5F5;
+}
+
+.loadingInfo {
+  flex: 1;
+}
+
+.loadingName {
+  width: 60%;
+  height: 16px;
+  background: #F5F5F5;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.loadingEmail {
+  width: 80%;
+  height: 12px;
+  background: #F5F5F5;
+  border-radius: 4px;
+}
+
+.loadingBadge {
+  width: 60px;
+  height: 24px;
+  background: #F5F5F5;
+  border-radius: 12px;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .userCard,
+  .actionButton,
+  .deleteButton,
+  .expandIcon {
+    transition: none;
+  }
+  
+  .loadingCard {
+    animation: none;
+  }
+}
+
+/* Focus styles for keyboard navigation */
+.userCardHeader:focus,
+.actionButton:focus,
+.deleteButton:focus,
+.roleSelect:focus,
+.searchInput:focus,
+.filterSelect:focus {
+  outline: 2px solid #007AFF;
+  outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .userCard {
+    border-color: #000000;
+  }
+  
+  .roleBadge {
+    border: 1px solid currentColor;
+  }
+  
+  .actionButton,
+  .deleteButton {
+    border: 1px solid currentColor;
+  }
+}

@@ -1,88 +1,100 @@
 'use client'
 
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import Navbar from './Navbar'
 import AdminNotifications from './AdminNotifications'
+import UserNotifications from './UserNotifications'
 import Providers from '../Providers'
 import { useMobileMenu } from '../contexts/MobileMenuContext'
 
-export default function LayoutClientContent({ children }: { children: React.ReactNode }) {
-  const { isMobileMenuOpen } = useMobileMenu();
+// Optimized background effects component
+const ProductGridEffects = ({ mousePosition }: { mousePosition: { x: number; y: number } }) => {
+  return (
+    <>
+      <div 
+        className="lightEffect"
+        style={{
+          '--x-position': `${mousePosition.x}px`,
+          '--y-position': `${mousePosition.y}px`,
+        } as React.CSSProperties}
+      />
+      <div className="watercolorSplash" />
+      <div className="watercolorSplash2" />
+      <div className="inkSplash" />
+      <div className="scrollDownIndicator">
+        <div className="scrollArrow" />
+        <div className="scrollArrow" />
+      </div>
+      <div className="brushAccent" />
+    </>
+  )
+}
 
+export default function LayoutClientContent({ children }: { children: React.ReactNode }) {
+  const { isMobileMenuOpen } = useMobileMenu()
+  const productGridRef = useRef<HTMLElement>(null)
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
+  const [showEffects, setShowEffects] = useState(false)
+
+  // Optimized mouse tracking with throttling
   useEffect(() => {
-    // Interactive light effect for product grid section
-    const productGridSection = document.querySelector('.productGridSection') as HTMLElement | null;
-    const lightEffect = document.querySelector('.lightEffect');
-    
-    if (productGridSection && !lightEffect) {
-      // Create light effect element if it doesn't exist
-      const newLightEffect = document.createElement('div');
-      newLightEffect.className = 'lightEffect';
-      productGridSection.appendChild(newLightEffect);
-      
-      // Add mouse move event listener
-      productGridSection.addEventListener('mousemove', (e: MouseEvent) => {
-        const rect = productGridSection.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        
-        // Update CSS variables for the light position
-        productGridSection.style.setProperty('--x-position', `${x}px`);
-        productGridSection.style.setProperty('--y-position', `${y}px`);
-      });
-      
-      // Add watercolor splash elements
-      const splash1 = document.createElement('div');
-      splash1.className = 'watercolorSplash';
-      productGridSection.appendChild(splash1);
-      
-      const splash2 = document.createElement('div');
-      splash2.className = 'watercolorSplash2';
-      productGridSection.appendChild(splash2);
-      
-      // Add black ink splash
-      const inkSplash = document.createElement('div');
-      inkSplash.className = 'inkSplash';
-      productGridSection.appendChild(inkSplash);
-      
-      // Add scroll indicator
-      const scrollIndicator = document.createElement('div');
-      scrollIndicator.className = 'scrollDownIndicator';
-      
-      const arrow1 = document.createElement('div');
-      arrow1.className = 'scrollArrow';
-      
-      const arrow2 = document.createElement('div');
-      arrow2.className = 'scrollArrow';
-      
-      scrollIndicator.appendChild(arrow1);
-      scrollIndicator.appendChild(arrow2);
-      
-      productGridSection.appendChild(scrollIndicator);
-      
-      // Add brush accent
-      const brushAccent = document.createElement('div');
-      brushAccent.className = 'brushAccent';
-      productGridSection.appendChild(brushAccent);
-      
-      // Add section separator
-      const sectionSeparator = document.createElement('div');
-      sectionSeparator.className = 'sectionSeparator';
-      
-      // Append after the product grid section
-      if (productGridSection.parentNode) {
-        productGridSection.parentNode.insertBefore(sectionSeparator, productGridSection.nextSibling);
+    let animationFrame: number
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (animationFrame) {
+        cancelAnimationFrame(animationFrame)
+      }
+
+      animationFrame = requestAnimationFrame(() => {
+        if (productGridRef.current) {
+          const rect = productGridRef.current.getBoundingClientRect()
+          setMousePosition({
+            x: e.clientX - rect.left,
+            y: e.clientY - rect.top,
+          })
+        }
+      })
+    }
+
+    // Find product grid section and add event listener
+    const productGridSection = document.querySelector('.productGridSection') as HTMLElement | null
+    if (productGridSection) {
+      productGridRef.current = productGridSection
+      setShowEffects(true)
+      productGridSection.addEventListener('mousemove', handleMouseMove, { passive: true })
+
+      return () => {
+        productGridSection.removeEventListener('mousemove', handleMouseMove)
+        if (animationFrame) {
+          cancelAnimationFrame(animationFrame)
+        }
       }
     }
-  }, []);
+  }, [])
 
   return (
     <body className={isMobileMenuOpen ? 'bodyBlurred' : ''} suppressHydrationWarning>
       <Providers>
         <Navbar />
         <AdminNotifications />
+        <UserNotifications />
         {children}
+        {showEffects && productGridRef.current && (
+          <div 
+            style={{
+              position: 'absolute',
+              pointerEvents: 'none',
+              top: productGridRef.current.offsetTop,
+              left: productGridRef.current.offsetLeft,
+              width: productGridRef.current.offsetWidth,
+              height: productGridRef.current.offsetHeight,
+            }}
+          >
+            <ProductGridEffects mousePosition={mousePosition} />
+          </div>
+        )}
+        <div className="sectionSeparator" />
       </Providers>
     </body>
-  );
-} 
+  )
+}

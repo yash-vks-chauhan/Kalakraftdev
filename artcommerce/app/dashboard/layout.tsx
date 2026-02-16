@@ -5,6 +5,9 @@ import { useAuth } from '../contexts/AuthContext'
 import { redirect } from 'next/navigation'
 import styles from './layout.module.css'
 import navStyles from '../components/Navbar.module.css'
+import LoadingSpinner from '../components/LoadingSpinner'
+import { useEffect, useState } from 'react'
+import { isMobileDevice } from '../../lib/utils'
 
 export default function DashboardLayout({
   children,
@@ -12,15 +15,49 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   const { user, loading } = useAuth()
+  const [isMobile, setIsMobile] = useState(false)
+  const [forceDesktopView, setForceDesktopView] = useState(false)
+
+  // Detect mobile and read view preference
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setIsMobile(isMobileDevice())
+      const pref = localStorage.getItem('viewPreference')
+      if (pref === 'desktop') setForceDesktopView(true)
+    }
+  }, [])
 
   if (loading) {
-    return <div>Loading...</div>
+    return (
+      <div className={`${styles.dashboardContainer} ${navStyles.mainContent}`}>
+        <div className={styles.dashboardContent}>
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'center', 
+            alignItems: 'center', 
+            minHeight: '50vh'
+          }}>
+            <LoadingSpinner message="Loading dashboard..." />
+          </div>
+        </div>
+      </div>
+    )
   }
 
   if (!user) {
     redirect('/auth/login')
   }
 
+  // Mobile view without extra desktop wrappers - no navbar interference
+  if (isMobile && !forceDesktopView) {
+    return (
+      <div style={{ position: 'relative', zIndex: 1 }}>
+        {children}
+      </div>
+    )
+  }
+
+  // Default desktop view wrappers
   return (
     <div className={`${styles.dashboardContainer} ${navStyles.mainContent}`}>
       <div className={styles.dashboardContent}>

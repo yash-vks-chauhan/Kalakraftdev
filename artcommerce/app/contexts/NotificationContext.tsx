@@ -13,12 +13,18 @@ export interface Notification {
   body: string;
   category: 'user' | 'system';
   severity: 'info' | 'success' | 'warning' | 'error';
+  productData?: {
+    id: number;
+    name: string;
+    price?: number;
+    imageUrl?: string;
+  };
 }
 
 export interface NotificationContextValue {
   notifications: Notification[];
   addNotification: (notification: Omit<Notification, 'id'>) => void;
-  removeNotification: (id: string) => void;
+  removeNotification: (id: string, isPuffEffect?: boolean) => void;
 }
 
 export const NotificationContext = createContext<NotificationContextValue | undefined>(undefined);
@@ -31,20 +37,27 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     const newNotification = { ...notification, id };
     setNotifications(prev => [...prev, newNotification]);
 
-    // Auto remove after 5 seconds
+    // Auto remove after 5 seconds with dramatic puff animation
     setTimeout(() => {
-      removeNotification(id);
+      removeNotification(id, true); // Pass true for auto-removal puff effect
     }, 5000);
   };
 
-  const removeNotification = (id: string) => {
-    // Add poof class
+  const removeNotification = (id: string, isPuffEffect: boolean = false) => {
+    // Add different animation classes based on removal type
     const element = document.querySelector(`[data-notification-id="${id}"]`);
     if (element) {
-      element.classList.add('animate-poofOut');
-      setTimeout(() => {
-        setNotifications(prev => prev.filter(n => n.id !== id));
-      }, 400); // Match animation duration
+      if (isPuffEffect) {
+        element.classList.add('animate-puffExplosion');
+        setTimeout(() => {
+          setNotifications(prev => prev.filter(n => n.id !== id));
+        }, 800); // Longer duration for dramatic puff effect
+      } else {
+        element.classList.add('animate-poofOut');
+        setTimeout(() => {
+          setNotifications(prev => prev.filter(n => n.id !== id));
+        }, 500); // Standard poof animation duration
+      }
     } else {
       setNotifications(prev => prev.filter(n => n.id !== id));
     }

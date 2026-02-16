@@ -25,6 +25,7 @@ interface CartContextValue {
   updateCartItem: (cartItemId: number, quantity: number) => Promise<boolean>
   removeFromCart: (cartItemId: number) => Promise<void>
   clearCart: () => void
+  cartLoading: boolean
 }
 
 const CartContext = createContext<CartContextValue | undefined>(undefined)
@@ -33,15 +34,18 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const { token } = useAuth()
   const [cartItems, setCartItems] = useState<CartItem[]>([])
   const { addNotification } = useNotificationContext()
+  const [cartLoading, setCartLoading] = useState<boolean>(false)
 
   // Whenever token changes (login/logout), fetch or clear cart
   useEffect(() => {
     if (!token) {
       setCartItems([])
+      setCartLoading(false)
       return
     }
     async function fetchCart() {
       try {
+        setCartLoading(true)
         const res = await fetch('/api/cart', {
           headers: { Authorization: `Bearer ${token}` },
         })
@@ -51,6 +55,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       } catch (err) {
         console.error(err)
         setCartItems([])
+      } finally {
+        setCartLoading(false)
       }
     }
     fetchCart()
@@ -226,6 +232,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   // Remove a cart item
   async function removeFromCart(cartItemId: number) {
     if (!token) throw new Error('Not authenticated')
+    
+    // Get the item being removed for notification
+    const removedItem = cartItems.find(ci => ci.id === cartItemId)
+    
     const res = await fetch(`/api/cart/${cartItemId}`, {
       method: 'DELETE',
       headers: {
@@ -241,14 +251,78 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       console.error('Error parsing JSON response:', error);
       // Remove the item from local state anyway
       setCartItems((prev) => prev.filter((ci) => ci.id !== cartItemId));
+      
+      // Show notification for successful removal
+      if (removedItem) {
+        // Get product image from the removed item
+        let productImageUrl = ''
+        if (removedItem.product?.imageUrls) {
+          try {
+            const imageUrls = Array.isArray(removedItem.product.imageUrls) 
+              ? removedItem.product.imageUrls 
+              : JSON.parse(removedItem.product.imageUrls || '[]')
+            productImageUrl = imageUrls.find((url: string) => url && url.length > 0) || ''
+          } catch {
+            productImageUrl = ''
+          }
+        }
+        
+        addNotification({
+          title: 'Removed from Cart',
+          body: 'Item has been removed from your cart',
+          category: 'user',
+          severity: 'info',
+          productData: removedItem.product ? {
+            id: removedItem.product.id,
+            name: removedItem.product.name,
+            price: removedItem.product.price,
+            imageUrl: productImageUrl
+          } : undefined
+        })
+      }
       return;
     }
     
     if (!res.ok) {
+      addNotification({
+        title: 'Error',
+        body: 'Failed to remove from cart',
+        category: 'user',
+        severity: 'error'
+      })
       throw new Error(data?.error || 'Could not remove from cart')
     }
     
     setCartItems((prev) => prev.filter((ci) => ci.id !== cartItemId))
+    
+    // Show notification for successful removal
+    if (removedItem) {
+      // Get product image from the removed item
+      let productImageUrl = ''
+      if (removedItem.product?.imageUrls) {
+        try {
+          const imageUrls = Array.isArray(removedItem.product.imageUrls) 
+            ? removedItem.product.imageUrls 
+            : JSON.parse(removedItem.product.imageUrls || '[]')
+          productImageUrl = imageUrls.find((url: string) => url && url.length > 0) || ''
+        } catch {
+          productImageUrl = ''
+        }
+      }
+      
+      addNotification({
+        title: 'Removed from Cart',
+        body: 'Item has been removed from your cart',
+        category: 'user',
+        severity: 'info',
+        productData: removedItem.product ? {
+          id: removedItem.product.id,
+          name: removedItem.product.name,
+          price: removedItem.product.price,
+          imageUrl: productImageUrl
+        } : undefined
+      })
+    }
   }
 
   function clearCart() {
@@ -263,6 +337,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         updateCartItem,
         removeFromCart,
         clearCart,
+        cartLoading,
       }}
     >
       {children}

@@ -1,0 +1,2269 @@
+.container {
+  width: 100%;
+  padding: 0; /* Remove bottom padding */
+  background-color: #fff;
+  position: relative;
+  min-height: 100vh; /* Ensure minimum height */
+  display: flex;
+  flex-direction: column;
+  /* Extend background to bottom */
+  padding-bottom: 0;
+  /* Mobile scroll optimizations */
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  will-change: scroll-position;
+  /* Improve scroll performance */
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.mainContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0; /* Allow shrinking */
+  margin: 0; /* Remove any margins */
+}
+
+.pageHeader {
+  padding: 16px 16px 12px;
+  background-color: #fff;
+  border-bottom: none;
+  margin-bottom: 1px;
+  /* Optimize for scroll performance */
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+.pageTitle {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin: 0 0 4px 0;
+  color: #000;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.resultCount {
+  font-size: 0.8rem;
+  color: #666;
+  margin: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.list {
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0;
+  width: 100%;
+  max-width: 100%;
+  background-color: #fff;
+  box-sizing: border-box;
+  flex: 1; /* Take available space */
+  margin-bottom: 0; /* Remove any bottom margin */
+  /* Critical mobile scroll optimizations */
+  -webkit-overflow-scrolling: touch;
+  transform: translateZ(0);
+  will-change: scroll-position;
+  /* Improve rendering performance */
+  contain: layout style paint;
+  /* Reduce layout thrashing */
+  overflow-anchor: none;
+}
+
+@media (max-width: 360px) {
+  .list {
+    grid-template-columns: 1fr;
+    padding: 0;
+  }
+}
+
+/* Optimized cardWrapper for smooth scrolling */
+.cardWrapper {
+  position: relative;
+  /* Remove will-change and heavy transitions during scroll */
+  transform: translateZ(0);
+  background-color: #fff;
+  aspect-ratio: auto;
+  display: flex;
+  flex-direction: column;
+  border-radius: 0;
+  overflow: hidden;
+  box-shadow: none;
+  border: none;
+  /* Optimize for scroll performance */
+  contain: layout style paint;
+  /* Lighter touch feedback - reduced transition */
+  transition: opacity 0.15s ease;
+}
+
+/* Lighter card interactions for better scroll performance */
+.card {
+  background: #fff;
+  border-radius: 0;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  box-shadow: none;
+  /* Reduced transition for smoother scrolling */
+  transition: transform 0.15s ease;
+  margin-bottom: 0;
+  height: 100%;
+  width: 100%;
+  /* Hardware acceleration */
+  transform: translateZ(0);
+  will-change: transform;
+  /* Optimize touch interactions */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.card:active {
+  /* Lighter touch feedback */
+  transform: translateZ(0) scale(0.98);
+}
+
+/* Optimized imageContainer for smooth scrolling */
+.imageContainer {
+  width: 100%;
+  aspect-ratio: 1/1.05;
+  background: #fff;
+  position: relative;
+  overflow: hidden;
+  /* Critical touch optimizations */
+  touch-action: pan-y pinch-zoom;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  border-radius: 0;
+  /* Hardware acceleration for images */
+  transform: translateZ(0);
+  will-change: transform;
+  /* Improve rendering */
+  contain: layout style paint;
+}
+
+.imageSlider {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  /* Smoother image transitions */
+  transition: transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  /* Hardware acceleration */
+  transform: translateZ(0);
+  will-change: transform;
+  /* Optimize for sliding */
+  backface-visibility: hidden;
+}
+
+.imageSlide {
+  min-width: 100%;
+  width: 100%;
+  height: 100%;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+  /* Optimize individual slides */
+  transform: translateZ(0);
+  contain: layout style paint;
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  pointer-events: none;
+  -webkit-user-drag: none;
+  /* Image rendering optimizations */
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: optimize-contrast;
+  transform: translateZ(0);
+  /* Improve loading performance */
+  will-change: auto;
+}
+
+.noImage {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+  font-size: 0.9rem;
+  background-color: #f9f9f9;
+  transform: translateZ(0);
+}
+
+.wishlistContainer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 5; /* Reduced from 10 to avoid stacking context conflicts */
+  /* Optimize for touch */
+  transform: translateZ(0);
+}
+
+/* Lighter wishlist button interactions */
+.wishlistButton {
+  background: transparent;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: none;
+  color: #000;
+  /* Reduced transition for better scroll performance */
+  transition: transform 0.1s ease;
+  backdrop-filter: none;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 5; /* Reduced to avoid stacking context conflicts with filter button */
+  /* Touch optimizations */
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transform: translateZ(0);
+}
+
+.wishlistButton:hover {
+  transform: translateZ(0) scale(1.05);
+}
+
+/* Simplified SVG animations for better performance */
+.wishlistButton svg {
+  transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transform: translateZ(0);
+}
+
+.wishlistButton:active svg {
+  transform: translateZ(0) scale(1.1);
+}
+
+/* Remove heavy keyframe animation - replaced with simpler transition */
+@keyframes wishlistRotate {
+  0% { transform: translateZ(0) scale(1); }
+  50% { transform: translateZ(0) scale(1.1); }
+  100% { transform: translateZ(0) scale(1); }
+}
+
+/* Update the active wishlist button to be solid black */
+.blackWishlist[data-active="true"] {
+  color: #000 !important;
+  background: transparent;
+  box-shadow: none;
+  fill: #000;
+}
+
+/* Default state is outline only */
+.blackWishlist {
+  color: #000 !important;
+  background: transparent;
+  box-shadow: none;
+  fill: none;
+  stroke: #000;
+  stroke-width: 1px;
+}
+
+.outOfStock {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.7);
+  color: #000;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+  z-index: 2;
+  backdrop-filter: blur(2px);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  /* Optimize overlay */
+  transform: translateZ(0);
+  contain: layout style paint;
+}
+
+.lowStock {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  font-size: 0.65rem;
+  padding: 4px 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  z-index: 2;
+  font-weight: 500;
+  border-radius: 0;
+  backdrop-filter: blur(2px);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  /* Optimize badge */
+  transform: translateZ(0);
+}
+
+.info {
+  padding: 12px 10px 16px;
+  display: flex;
+  flex-direction: column;
+  background-color: #fff;
+  flex-grow: 1;
+  height: auto;
+  min-height: 80px;
+  box-sizing: border-box;
+  justify-content: space-between;
+  /* Optimize text rendering */
+  transform: translateZ(0);
+  contain: layout style paint;
+}
+
+.categoryTag {
+  display: inline-block;
+  font-size: 0.7rem;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  opacity: 0.9;
+  max-width: 100%;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.name {
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin: 0 0 6px 0;
+  line-height: 1.3;
+  color: #000;
+  text-transform: none;
+  letter-spacing: 0.02em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  white-space: normal;
+  height: auto;
+  max-height: 2.6em;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  max-width: 100%;
+}
+
+.priceRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+  margin-bottom: 0;
+}
+
+.price {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #000;
+  margin: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.productRating {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  font-size: 0.7rem;
+  background-color: rgba(255, 215, 0, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.starFilled {
+  color: #FFD700;
+  margin-right: 2px;
+}
+
+.ratingValue {
+  font-weight: 600;
+  color: #333;
+}
+
+.shortDesc {
+  font-size: 0.75rem;
+  color: #666;
+  margin: 0 0 6px 0;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 400;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background-color: #000;
+  color: #fff;
+  font-size: 0.65rem;
+  padding: 4px 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  z-index: 2;
+  font-weight: 500;
+  border-radius: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  /* Optimize badge */
+  transform: translateZ(0);
+}
+
+/* Optimized image indicators */
+.imageIndicators {
+  position: absolute;
+  bottom: 10px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  z-index: 3;
+  /* Optimize indicators */
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+.indicator {
+  width: 16px;
+  height: 2px;
+  background-color: rgba(0, 0, 0, 0.3);
+  margin: 0 1px;
+  border-radius: 0;
+  /* Smoother indicator transitions */
+  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transform: translateZ(0);
+}
+
+.activeIndicator {
+  background-color: #000;
+  width: 20px;
+  height: 2px;
+  border-radius: 0;
+}
+
+/* Remove overlay for swipeable images */
+.overlay {
+  display: none;
+}
+
+/* Optimized loading and error states */
+.loading,
+.error {
+  padding: 16px;
+  text-align: center;
+  color: #555;
+  width: 100%;
+  height: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  gap: 12px;
+  /* Optimize for rendering */
+  transform: translateZ(0);
+  contain: layout style paint;
+}
+
+.loadingSpinner {
+  width: 30px;
+  height: 30px;
+  border: 3px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  border-top-color: #000;
+  animation: spin 0.8s linear infinite;
+  /* Hardware accelerate spinner */
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+@keyframes spin {
+  to {
+    transform: translateZ(0) rotate(360deg);
+  }
+}
+
+/* Optimized mobile filter button */
+.mobileFilterButton {
+  position: fixed;
+  bottom: 70px;
+  left: 50%;
+  transform: translateX(-50%) translateZ(0);
+  background: #333;
+  color: white;
+  border: none;
+  border-radius: 50px;
+  padding: 10px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 500;
+  font-size: 0.9rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  z-index: 9999; /* Significantly increased z-index to stay above all content */
+  cursor: pointer;
+  width: 120px;
+  /* Lighter transitions for better performance */
+  transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94), 
+              background-color 0.2s ease,
+              box-shadow 0.2s ease;
+  /* Optimize for interaction */
+  touch-action: manipulation;
+  will-change: transform;
+  /* Ensure proper stacking context */
+  isolation: isolate;
+}
+
+.mobileFilterButton:active {
+  transform: translateX(-50%) translateZ(0) scale(0.96);
+  background-color: #000;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Optimized mobile filter drawer */
+.mobileFilterDrawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 85%;
+  max-width: 350px;
+  height: 100vh;
+  background: white;
+  z-index: 10001;
+  transform: translateX(100%) translateZ(0);
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.1);
+  will-change: transform;
+  contain: layout style paint;
+}
+
+.mobileFilterDrawerOpen {
+  transform: translateX(0) translateZ(0);
+}
+
+.mobileFilterHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 10;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  /* Optimize header */
+  transform: translateZ(0);
+  contain: layout style paint;
+}
+
+.mobileFilterHeader h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.mobileFilterCloseButton {
+  background: none;
+  border: none;
+  color: #1a202c;
+  cursor: pointer;
+  padding: 0.5rem;
+  margin: -0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  /* Lighter button transitions */
+  transition: background-color 0.15s ease, transform 0.15s ease;
+  touch-action: manipulation;
+  transform: translateZ(0);
+}
+
+.mobileFilterCloseButton:active {
+  background-color: rgba(226, 232, 240, 0.5);
+  transform: translateZ(0) scale(0.95);
+}
+
+.mobileFilterContent {
+  padding: 1.5rem 1.5rem 0;
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  /* Optimize content scrolling */
+  transform: translateZ(0);
+  contain: layout style paint;
+}
+
+.mobileFilterActions {
+  padding: 1.5rem;
+  background: white;
+  border-top: 1px solid #f0f0f0;
+  display: flex;
+  gap: 12px;
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+}
+
+.applyFilterButton,
+.clearFilterButton {
+  flex: 1;
+  padding: 14px 20px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  touch-action: manipulation;
+}
+
+.applyFilterButton {
+  background: #000;
+  color: white;
+}
+
+.applyFilterButton:hover {
+  background: #333;
+}
+
+.applyFilterButton:active {
+  background: #000;
+  transform: scale(0.98);
+}
+
+.clearFilterButton {
+  background: #f5f5f5;
+  color: #333;
+}
+
+.clearFilterButton:hover {
+  background: #e5e5e5;
+}
+
+.clearFilterButton:active {
+  background: #d5d5d5;
+  transform: scale(0.98);
+}
+
+/* Optimized overlay */
+.mobileFilterOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 10000;
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  transition: opacity 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  will-change: opacity;
+  transform: translateZ(0);
+  pointer-events: none;
+}
+
+.mobileFilterOverlayVisible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.sortOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  z-index: 10002;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.sortOverlayVisible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.sortModal {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: white;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  padding: 0;
+  z-index: 10003;
+  transform: translateY(100%);
+  transition: transform 0.3s ease;
+  box-shadow: 0 -2px 20px rgba(0,0,0,0.15);
+}
+
+.sortModalVisible {
+  transform: translateY(0);
+}
+
+.sortHeader {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px 16px 16px;
+  position: relative;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.sortHeader h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.closeSortButton {
+  position: fixed;
+  bottom: calc(100vh - 120px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background-color: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10004;
+  transition: all 0.3s ease;
+  color: white;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.sortModalVisible + .closeSortButton,
+.closeSortButton.visible {
+  opacity: 1;
+  pointer-events: auto;
+  bottom: calc(100vh - 180px);
+}
+
+.closeSortButton:hover {
+  background-color: rgba(0, 0, 0, 0.9);
+  transform: translateX(-50%) scale(1.1);
+}
+
+.closeSortButton:active {
+  background-color: rgba(0, 0, 0, 1);
+  transform: translateX(-50%) scale(0.95);
+}
+
+.sortOptions {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 0 20px;
+}
+
+.sortOption {
+  padding: 16px 20px;
+  border: none;
+  background: none;
+  text-align: left;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: background-color 0.2s ease;
+}
+
+.sortOption:hover {
+  background-color: #f8f8f8;
+}
+
+.sortOption:active {
+  background-color: #f0f0f0;
+}
+
+.sortRadio {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ddd;
+  border-radius: 50%;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.sortRadio.active {
+  border-color: #000;
+}
+
+.sortRadio.active::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  background-color: #000;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.sortOptionText {
+  color: #333;
+  font-weight: 400;
+}
+
+.sortOption.active .sortOptionText {
+  font-weight: 500;
+  color: #000;
+}
+
+.mobileActiveFilters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 1rem 0;
+  padding: 12px;
+  background-color: #fff;
+  /* Optimize filter tags container */
+  transform: translateZ(0);
+  contain: layout style paint;
+}
+
+.mobileFilterTag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #f7fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 50px;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.75rem;
+  color: #1a202c;
+  font-weight: 500;
+  /* Lighter tag transitions */
+  transition: transform 0.15s ease, background-color 0.15s ease;
+  touch-action: manipulation;
+  transform: translateZ(0);
+}
+
+.mobileFilterTag:active {
+  transform: translateZ(0) scale(0.97);
+  background-color: #f0f4f8;
+}
+
+.mobileFilterTag button {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1;
+  color: #718096;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s ease;
+  touch-action: manipulation;
+}
+
+.mobileFilterTag button:active {
+  color: #000;
+}
+
+/* Optimized filter sections */
+.filterSection {
+  border: none;
+  padding: 0;
+  margin-bottom: 1.5rem;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 12px;
+  /* Lighter section transitions */
+  transition: all 0.2s ease;
+  overflow: hidden;
+  transform: translateZ(0);
+  contain: layout style paint;
+}
+
+.filterSection[open] {
+  padding-bottom: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.filterHeader {
+  cursor: pointer;
+  padding: 1rem;
+  font-weight: 500;
+  color: #1a202c;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  user-select: none;
+  font-size: 0.95rem;
+  border-radius: 8px;
+  /* Lighter header transitions */
+  transition: all 0.15s ease;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  background: rgba(255, 255, 255, 0.8);
+  touch-action: manipulation;
+  transform: translateZ(0);
+}
+
+.filterHeader:hover {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(26, 32, 44, 0.1);
+}
+
+.filterHeader:active {
+  transform: translateZ(0) scale(0.99);
+}
+
+.filterHeader::-webkit-details-marker {
+  display: none;
+}
+
+.filterContent {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0 1rem;
+  /* Smoother content animation */
+  animation: slideDown 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transform: translateZ(0);
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateZ(0) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateZ(0) translateY(0);
+  }
+}
+
+.filterOption {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem;
+  color: #4a5568;
+  /* Lighter option transitions */
+  transition: all 0.15s ease;
+  font-size: 0.9rem;
+  border-radius: 6px;
+  touch-action: manipulation;
+  transform: translateZ(0);
+}
+
+.filterOption:hover {
+  color: #1a202c;
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.filterOption:active {
+  background: rgba(240, 240, 240, 0.8);
+}
+
+.filterOption input[type="radio"],
+.filterOption input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(26, 32, 44, 0.3);
+  border-radius: 4px;
+  cursor: pointer;
+  accent-color: #1a202c;
+  /* Lighter input transitions */
+  transition: all 0.15s ease;
+  transform: translateZ(0);
+}
+
+.filterOption input[type="radio"]:checked,
+.filterOption input[type="checkbox"]:checked {
+  background-color: #1a202c;
+  border-color: #1a202c;
+}
+
+.clearButton {
+  margin-top: 0.75rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #1a202c;
+  background-color: transparent;
+  border: 1px solid #1a202c;
+  border-radius: 6px;
+  cursor: pointer;
+  /* Lighter button transitions */
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  width: 100%;
+  touch-action: manipulation;
+  transform: translateZ(0);
+}
+
+.clearButton:hover {
+  background-color: #1a202c;
+  color: #ffffff;
+}
+
+.clearButton:active {
+  transform: translateZ(0) scale(0.98);
+}
+
+.arrow {
+  /* Smoother arrow transition */
+  transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  opacity: 0.7;
+  transform: translateZ(0);
+}
+
+details[open] .arrow {
+  transform: translateZ(0) rotate(90deg);
+}
+
+.filterHeader:hover .arrow {
+  opacity: 1;
+}
+
+/* Optimized image container effect */
+.imageContainer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.03) 0%,
+    rgba(255, 255, 255, 0) 20%,
+    rgba(255, 255, 255, 0) 80%,
+    rgba(255, 255, 255, 0.03) 100%
+  );
+  pointer-events: none;
+  opacity: 0;
+  /* Lighter after effect transition */
+  transition: opacity 0.1s ease;
+  z-index: 2;
+  transform: translateZ(0);
+}
+
+.imageContainer:active::after {
+  opacity: 1;
+}
+
+/* Optimized swipe hint animations */
+@keyframes swipeHint {
+  0%, 100% { opacity: 0; transform: translateZ(0) translateX(0); }
+  20%, 80% { opacity: 0.7; }
+  50% { transform: translateZ(0) translateX(10px); }
+}
+
+.swipeLeftHint,
+.swipeRightHint {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%) translateZ(0);
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 4;
+  pointer-events: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+.swipeLeftHint {
+  left: 10px;
+  animation: swipeHint 2s ease-in-out 1s forwards;
+}
+
+.swipeRightHint {
+  right: 10px;
+  animation: swipeHint 2s ease-in-out 1s forwards;
+  transform: translateY(-50%) translateZ(0) scaleX(-1);
+} 
+
+/* ===============================================
+   PRODUCT CARD SKELETON LOADING STATES
+   =============================================== */
+
+/* Product Card Skeleton */
+.productCardSkeleton {
+  background: #fff;
+  border-radius: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  height: 100%;
+  width: 100%;
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.skeletonImageContainer {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.skeletonImage {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+.skeletonIndicators {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 4px;
+}
+
+.skeletonIndicator {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+.skeletonInfo {
+  padding: 12px 10px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.skeletonCategory {
+  height: 10px;
+  width: 50%;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+  border-radius: 4px;
+}
+
+.skeletonName {
+  height: 16px;
+  width: 80%;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+  border-radius: 4px;
+  margin: 4px 0;
+}
+
+.skeletonPriceRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+}
+
+.skeletonPrice {
+  height: 18px;
+  width: 60%;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+  border-radius: 4px;
+}
+
+.skeletonRating {
+  height: 14px;
+  width: 30%;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+  border-radius: 4px;
+}
+
+.skeletonWishlistContainer {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+}
+
+.skeletonWishlistButton {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+/* ===============================================
+   FILTER DRAWER SKELETON LOADING STATES
+   =============================================== */
+
+.filterSkeletonContainer {
+  padding: 0;
+}
+
+.filterSectionSkeleton {
+  margin-bottom: 24px;
+  padding: 0;
+}
+
+.filterHeaderSkeleton {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  margin-bottom: 16px;
+}
+
+.filterTitleSkeleton {
+  height: 16px;
+  width: 80px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+  border-radius: 4px;
+}
+
+.filterArrowSkeleton {
+  width: 16px;
+  height: 16px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+  border-radius: 4px;
+}
+
+.filterOptionsSkeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-left: 8px;
+}
+
+.filterOptionSkeleton {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.filterCheckboxSkeleton {
+  width: 16px;
+  height: 16px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.filterLabelSkeleton {
+  height: 14px;
+  width: 60px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+  border-radius: 4px;
+}
+
+.filterButtonSkeleton {
+  height: 44px;
+  width: 100px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+  border-radius: 8px;
+}
+
+/* ===============================================
+   SKELETON ANIMATIONS
+   =============================================== */
+
+/* Shimmer Animation */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Pulse Animation */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* ===========================================
+   MODERN ENHANCED PAGINATION STYLES
+   =========================================== */
+
+.paginationContainer {
+  background: #ffffff;
+  border-top: 1px solid #f5f5f5;
+  padding: 20px 16px 24px;
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+  position: relative;
+  /* Fill remaining space to eliminate gaps */
+  flex-grow: 1;
+  /* Add subtle inner shadow */
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  /* Optimize for performance */
+  transform: translateZ(0);
+  contain: layout style paint;
+}
+
+/* Add subtle pattern background */
+.paginationContainer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0,0,0,0.1), transparent);
+}
+
+/* Loading state */
+.paginationContainer.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.paginationInfo {
+  background: rgba(0, 0, 0, 0.02);
+  padding: 8px 16px;
+  border-radius: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* Subtle inward shadow for info container */
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.paginationInfoText {
+  font-size: 12px;
+  color: #666;
+  text-align: center;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.paginationControls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 320px;
+}
+
+/* Enhanced Previous/Next buttons with outline and inward shadow */
+.paginationPrevNext {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  border: 2px solid #f0f0f0;
+  border-radius: 12px;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  /* Remove default button styles */
+  font-size: 0;
+  padding: 0;
+  /* Optimize for touch */
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transform: translateZ(0);
+  /* Inward shadow instead of outward */
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.paginationPrevNext::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(0,0,0,0.02), transparent);
+  transition: left 0.5s ease;
+}
+
+.paginationPrevNext:hover:not(:disabled)::before {
+  left: 100%;
+}
+
+.paginationPrevNext:hover:not(:disabled) {
+  background: #fafafa;
+  border-color: #e0e0e0;
+  transform: translateZ(0) translateY(-1px);
+  /* Enhanced outline instead of shadow */
+  outline: 1px solid rgba(0, 0, 0, 0.1);
+  outline-offset: 2px;
+  /* Deeper inward shadow */
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.12);
+  color: #333;
+}
+
+.paginationPrevNext:active:not(:disabled) {
+  transform: translateZ(0) translateY(0);
+  background: #f5f5f5;
+  /* Pressed inward shadow effect */
+  box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.15);
+  outline: none;
+}
+
+.paginationPrevNext:disabled {
+  cursor: not-allowed;
+  background: #fafafa;
+  border-color: #f0f0f0;
+  color: #ccc;
+  transform: none !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+  outline: none !important;
+}
+
+.pageNumber:disabled {
+  cursor: not-allowed;
+  background: #fafafa;
+  border-color: #f0f0f0;
+  color: #ccc;
+  transform: none !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+  outline: none !important;
+}
+
+.paginationNumbers {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  justify-content: center;
+  overflow: visible;
+  padding: 0;
+  max-width: none;
+  flex-wrap: wrap;
+}
+
+/* Modern unique page numbers with outline and inward shadow */
+.pageNumber {
+  min-width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  border: 2px solid #f0f0f0;
+  border-radius: 12px;
+  color: #666;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  /* Optimize for touch */
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transform: translateZ(0);
+  /* Subtle inward shadow */
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.pageNumber::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(0,0,0,0.02), transparent);
+  transition: left 0.5s ease;
+}
+
+.pageNumber:hover::before {
+  left: 100%;
+}
+
+.pageNumber:hover {
+  background: #fafafa;
+  border-color: #e0e0e0;
+  transform: translateZ(0) translateY(-1px);
+  /* Distinctive outline instead of shadow */
+  outline: 1px solid rgba(0, 0, 0, 0.1);
+  outline-offset: 2px;
+  /* Enhanced inward shadow */
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.12);
+  color: #333;
+}
+
+.pageNumber:active {
+  transform: translateZ(0) translateY(0);
+  background: #f5f5f5;
+  /* Deep pressed inward shadow */
+  box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.15);
+  outline: none;
+}
+
+/* Active page - unique black design with inward shadow */
+.pageNumberActive {
+  background: #000000 !important;
+  border-color: #000000 !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  /* Unique double outline effect */
+  outline: 2px solid rgba(0, 0, 0, 0.2) !important;
+  outline-offset: 3px !important;
+  /* Deep inward shadow for active state */
+  box-shadow: inset 0 2px 8px rgba(255, 255, 255, 0.1), 
+              inset 0 4px 16px rgba(0, 0, 0, 0.3) !important;
+  transform: translateY(-1px) !important;
+}
+
+.pageNumberActive::before {
+  display: none;
+}
+
+.pageNumberActive:hover {
+  background: #1a1a1a !important;
+  border-color: #1a1a1a !important;
+  transform: translateZ(0) translateY(-2px) !important;
+  /* Enhanced outline on hover */
+  outline: 2px solid rgba(26, 26, 26, 0.3) !important;
+  outline-offset: 4px !important;
+  /* More pronounced inward shadow */
+  box-shadow: inset 0 3px 12px rgba(255, 255, 255, 0.15), 
+              inset 0 6px 20px rgba(0, 0, 0, 0.4) !important;
+}
+
+.pageNumberActive:active {
+  transform: translateZ(0) translateY(-1px) !important;
+  background: #000000 !important;
+  /* Pressed state with deeper inward shadow */
+  box-shadow: inset 0 4px 16px rgba(255, 255, 255, 0.08), 
+              inset 0 8px 24px rgba(0, 0, 0, 0.5) !important;
+  outline: 1px solid rgba(0, 0, 0, 0.1) !important;
+  outline-offset: 2px !important;
+}
+
+/* Enhanced dots with unique styling */
+.paginationDots {
+  color: #999;
+  font-weight: 300;
+  padding: 0 8px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  height: 38px;
+  position: relative;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  /* Subtle outline effect for dots */
+  text-shadow: 0 0 2px rgba(0, 0, 0, 0.1);
+  animation: dotPulse 2s infinite ease-in-out;
+}
+
+@keyframes dotPulse {
+  0%, 100% { 
+    opacity: 0.6; 
+    transform: scale(1);
+  }
+  50% { 
+    opacity: 1; 
+    transform: scale(1.05);
+  }
+}
+
+/* Enhanced focus states for accessibility with outline */
+.pageNumber:focus-visible,
+.paginationPrevNext:focus-visible {
+  outline: 3px solid #4A90E2;
+  outline-offset: 3px;
+  box-shadow: inset 0 2px 8px rgba(74, 144, 226, 0.1);
+}
+
+/* Skeleton loading states */
+.paginationSkeleton {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+}
+
+.paginationSkeleton .skeleton-button {
+  width: 38px;
+  height: 38px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 10px;
+}
+
+/* Reduced motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .pageNumber,
+  .paginationPrevNext {
+    transition: none;
+  }
+  
+  .pageNumber::before,
+  .paginationPrevNext::before {
+    display: none;
+  }
+  
+  .paginationDots {
+    animation: none;
+  }
+}
+
+/* Enhanced mobile-specific pagination styles with outline design */
+@media (max-width: 480px) {
+  .paginationContainer {
+    padding: 18px 12px 68px; /* Adjusted for mobile footer */
+    gap: 14px;
+    margin-top: 12px;
+  }
+  
+  .paginationInfo {
+    background: rgba(0, 0, 0, 0.015);
+    padding: 6px 14px;
+    border-radius: 18px;
+    /* Enhanced inward shadow for mobile */
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.03);
+  }
+  
+  .paginationControls {
+    gap: 6px;
+    max-width: 300px;
+  }
+  
+  .paginationPrevNext {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    border-width: 1.5px;
+  }
+
+  .paginationNumbers {
+    gap: 4px;
+  }
+
+  .pageNumber {
+    min-width: 34px;
+    height: 34px;
+    font-size: 13px;
+    border-radius: 10px;
+    border-width: 1.5px;
+  }
+
+  .paginationInfoText {
+    font-size: 11px;
+  }
+
+  .paginationDots {
+    font-size: 13px;
+    height: 34px;
+    padding: 0 5px;
+  }
+  
+  /* Adjust outline offsets for mobile */
+  .pageNumber:hover {
+    outline-offset: 1px;
+  }
+  
+  .pageNumberActive {
+    outline-offset: 2px !important;
+  }
+  
+  .pageNumberActive:hover {
+    outline-offset: 3px !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .paginationContainer {
+    padding: 16px 10px 66px;
+    gap: 12px;
+  }
+  
+  .paginationInfo {
+    padding: 5px 12px;
+    border-radius: 16px;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
+  }
+  
+  .paginationControls {
+    gap: 4px;
+    max-width: 280px;
+  }
+  
+  .paginationPrevNext {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border-width: 1px;
+  }
+
+  .pageNumber {
+    min-width: 30px;
+    height: 30px;
+    font-size: 12px;
+    border-radius: 8px;
+    border-width: 1px;
+  }
+
+  .paginationInfoText {
+    font-size: 10px;
+  }
+
+  .paginationDots {
+    height: 30px;
+    font-size: 12px;
+    padding: 0 4px;
+  }
+  
+  /* More subtle outline effects on smallest screens */
+  .pageNumber:hover {
+    outline-offset: 1px;
+  }
+  
+  .pageNumberActive {
+    outline-offset: 1px !important;
+  }
+  
+  .pageNumberActive:hover {
+    outline-offset: 2px !important;
+  }
+} 
+
+/* ===========================================
+   ENHANCED PAGINATION FEATURES
+   =========================================== */
+
+/* Progress Bar Component */
+.progressContainer {
+  width: 100%;
+  max-width: 300px;
+  margin: 0 auto 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+}
+
+.progressBar {
+  width: 100%;
+  height: 4px;
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  /* Subtle inward shadow */
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #000000, #333333);
+  border-radius: 8px;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  /* Outward glow effect */
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
+}
+
+.progressFill.progressLoading {
+  animation: progressPulse 1.5s ease-in-out infinite;
+}
+
+.progressGlow {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 20px;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4));
+  animation: progressShimmer 2s ease-in-out infinite;
+}
+
+.progressText {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  color: #666;
+  font-weight: 500;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.progressCurrent {
+  color: #000;
+  font-weight: 600;
+}
+
+.progressSeparator {
+  color: #999;
+  font-size: 9px;
+}
+
+.progressTotal {
+  color: #666;
+}
+
+/* Enhanced Skeleton Loading */
+.paginationSkeleton {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.8;
+  animation: fadeInSkeleton 0.3s ease-in-out;
+}
+
+.paginationSkeleton.transitioning {
+  animation: skeletonPulse 0.8s ease-in-out infinite;
+}
+
+.skeletonPrevNext {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 12px;
+  position: relative;
+  /* Add subtle inward shadow to match real buttons */
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.skeletonButton {
+  width: 38px;
+  height: 38px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 12px;
+  position: relative;
+  /* Add subtle inward shadow to match real buttons */
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.skeletonActive {
+  background: linear-gradient(90deg, #d0d0d0 25%, #c0c0c0 50%, #d0d0d0 75%) !important;
+  animation: shimmerActive 1.2s infinite;
+  /* Deeper inward shadow for active state */
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.12) !important;
+}
+
+.skeletonShimmer {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+  animation: skeletonShine 2s ease-in-out infinite;
+}
+
+/* Pagination Icon and Keyboard Hints */
+.paginationIcon {
+  margin-right: 4px;
+  opacity: 0.7;
+  animation: iconPulse 2s ease-in-out infinite;
+}
+
+.keyboardHint {
+  margin-left: 8px;
+  padding: 2px 6px;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 6px;
+  font-size: 9px;
+  color: #777;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  /* Subtle inward shadow */
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.02);
+  animation: hintGlow 3s ease-in-out infinite;
+}
+
+/* Enhanced Micro-animations */
+.pageNumber,
+.paginationPrevNext {
+  position: relative;
+  overflow: hidden;
+}
+
+.pageNumber::after,
+.paginationPrevNext::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: radial-gradient(circle, rgba(0, 0, 0, 0.1), transparent);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.4s ease, height 0.4s ease;
+  pointer-events: none;
+}
+
+.pageNumber:active::after,
+.paginationPrevNext:active::after {
+  width: 100px;
+  height: 100px;
+  transition: width 0.2s ease, height 0.2s ease;
+}
+
+/* Keyboard Animation States */
+.pageNumber.keyboardSelected {
+  animation: keyboardSelect 0.3s ease-in-out;
+  transform: translateY(-1px) scale(1.05);
+  box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.15), 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Enhanced Loading States */
+.paginationContainer.loading {
+  pointer-events: none;
+}
+
+.paginationContainer.loading .paginationControls {
+  opacity: 0.5;
+  filter: blur(0.5px);
+  transition: opacity 0.3s ease, filter 0.3s ease;
+}
+
+/* Animation Keyframes */
+@keyframes progressPulse {
+  0%, 100% { 
+    opacity: 1; 
+  }
+  50% { 
+    opacity: 0.7; 
+  }
+}
+
+@keyframes progressShimmer {
+  0% { 
+    transform: translateX(-20px); 
+    opacity: 0;
+  }
+  50% { 
+    opacity: 1;
+  }
+  100% { 
+    transform: translateX(300px); 
+    opacity: 0;
+  }
+}
+
+@keyframes fadeInSkeleton {
+  from { 
+    opacity: 0; 
+    transform: translateY(5px);
+  }
+  to { 
+    opacity: 0.8; 
+    transform: translateY(0);
+  }
+}
+
+@keyframes skeletonPulse {
+  0%, 100% { 
+    opacity: 0.8; 
+    transform: scale(1);
+  }
+  50% { 
+    opacity: 0.6; 
+    transform: scale(1.02);
+  }
+}
+
+@keyframes shimmerActive {
+  0% { 
+    background-position: -200% 0; 
+  }
+  100% { 
+    background-position: 200% 0; 
+  }
+}
+
+@keyframes skeletonShine {
+  0% { 
+    left: -100%; 
+  }
+  100% { 
+    left: 100%; 
+  }
+}
+
+@keyframes iconPulse {
+  0%, 100% { 
+    opacity: 0.7; 
+    transform: scale(1);
+  }
+  50% { 
+    opacity: 1; 
+    transform: scale(1.1);
+  }
+}
+
+@keyframes hintGlow {
+  0%, 100% { 
+    background: rgba(0, 0, 0, 0.05); 
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
+  }
+  50% { 
+    background: rgba(0, 0, 0, 0.08); 
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.08);
+  }
+}
+
+@keyframes keyboardSelect {
+  0% { 
+    transform: translateY(0) scale(1); 
+  }
+  50% { 
+    transform: translateY(-2px) scale(1.08); 
+  }
+  100% { 
+    transform: translateY(-1px) scale(1.05); 
+  }
+}
+
+/* Mobile-specific enhancements */
+@media (max-width: 480px) {
+  .progressContainer {
+    max-width: 250px;
+    margin-bottom: 10px;
+  }
+  
+  .progressBar {
+    height: 3px;
+  }
+  
+  .progressText {
+    font-size: 9px;
+  }
+  
+  .keyboardHint {
+    font-size: 8px;
+    padding: 1px 4px;
+  }
+  
+  .skeletonPrevNext {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+  }
+
+  .skeletonButton {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+  }
+}
+
+@media (max-width: 360px) {
+  .progressContainer {
+    max-width: 220px;
+    margin-bottom: 8px;
+  }
+  
+  .progressBar {
+    height: 2px;
+  }
+  
+  .progressText {
+    font-size: 8px;
+  }
+  
+  .keyboardHint {
+    display: none; /* Hide on very small screens */
+  }
+  
+  .skeletonPrevNext {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+  }
+
+  .skeletonButton {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+  }
+}
+
+/* Accessibility and reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .progressFill,
+  .progressGlow,
+  .skeletonShimmer,
+  .paginationIcon,
+  .keyboardHint {
+    animation: none;
+  }
+  
+  .pageNumber,
+  .paginationPrevNext {
+    transition: none;
+  }
+  
+  .pageNumber::after,
+  .paginationPrevNext::after {
+    display: none;
+  }
+}
+
+/* Optimized skeleton loading for page transitions */
+.skeletonContainer {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  padding: 0 16px;
+  animation: fadeIn 0.2s ease;
+}
+
+.skeletonCard {
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.skeletonImage {
+  width: 100%;
+  height: 140px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.skeletonContent {
+  padding: 12px;
+}
+
+.skeletonTitle {
+  height: 14px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.skeletonPrice {
+  height: 12px;
+  width: 60%;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

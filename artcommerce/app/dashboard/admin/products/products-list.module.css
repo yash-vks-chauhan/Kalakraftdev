@@ -150,6 +150,13 @@
   font-weight: 500;
 }
 
+.soldCount {
+  font-family: 'SF Mono', monospace;
+  color: #1f2937;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
 .status {
   display: inline-flex;
   align-items: center;
@@ -198,6 +205,77 @@
   border-radius: 9999px;
   font-size: 0.75rem;
   font-weight: 500;
+}
+
+.statusSwitch {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+  width: 40px;
+  height: 20px;
+}
+
+.statusSwitch input {
+  position: absolute;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  margin: 0;
+  padding: 0;
+  cursor: pointer;
+  z-index: 1;
+}
+
+.statusSlider {
+  z-index: 0;
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: .3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  border-radius: 34px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.statusSlider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  transition: .3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.statusSwitch input:checked + .statusSlider {
+  background-color: #10B981;  /* vibrant green for active state */
+}
+
+.statusSwitch input:checked + .statusSlider:before {
+  transform: translateX(20px);
+}
+
+.statusSwitch input:not(:checked) + .statusSlider {
+  background-color: #E5E7EB;
+}
+
+/* Add ripple effect on click */
+.statusSwitch input:active + .statusSlider:before {
+  width: 18px;
+  transition: .1s ease;
+}
+
+/* Add focus effect */
+.statusSwitch input:focus + .statusSlider {
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
 }
 
 .actionButtons {

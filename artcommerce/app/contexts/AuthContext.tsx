@@ -34,7 +34,7 @@ interface AuthContextValue {
   user: User | null
   token: string | null
   signup: (fullName: string, email: string, password: string) => Promise<void>
-  login: (email: string, password: string) => Promise<{ success: boolean }>
+  login: (email: string, password: string) => Promise<void>
   logout: () => Promise<void>
   fetchProfile: (token?: string | null) => Promise<void>
   loading: boolean
@@ -53,10 +53,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null)
 
   const logout = useCallback(async () => {
-    setToken(null);
-    setUser(null);
-    localStorage.removeItem('token');
-  }, []);
+    try {
+      // First clear all local state
+      setToken(null);
+      setUser(null);
+      localStorage.removeItem('token');
+      sessionStorage.clear(); // Clear any session storage
+      
+      // Then call logout API to clear the cookie
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include' // Important for cookie handling
+      });
+      
+      // Navigate to login page instead of home
+      router.replace('/auth/login');
+      
+      // No need for reload, just ensure loading is false
+      setLoading(false);
+    } catch (err) {
+      console.error('Logout error:', err);
+      // Still ensure state is cleared
+      setToken(null);
+      setUser(null);
+      localStorage.removeItem('token');
+      sessionStorage.clear();
+      setLoading(false);
+      router.replace('/auth/login');
+    }
+  }, [router]);
 
   const refreshToken = useCallback(async (): Promise<string | null> => {
     try {
@@ -130,15 +156,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const savedToken = localStorage.getItem('token');
+    
+    // Set a timeout to ensure loading doesn't persist indefinitely
+    const timeoutId = setTimeout(() => {
+      console.warn('Auth loading timeout - setting loading to false');
+      setLoading(false);
+    }, 10000); // 10 second timeout
+    
     if (savedToken) {
-      fetchProfile(savedToken).catch(() => {
-        // Errors are handled in fetchProfile, just ensure loading is off
+      fetchProfile(savedToken).catch((err) => {
+        console.error('Profile fetch error:', err);
+        // Clear everything if profile fetch fails
+        setToken(null);
+        setUser(null);
+        localStorage.removeItem('token');
+        sessionStorage.clear();
         setLoading(false);
+      }).finally(() => {
+        clearTimeout(timeoutId);
       });
     } else {
       setLoading(false);
+      clearTimeout(timeoutId);
     }
-  }, [fetchProfile]);
+    
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, []); // Remove fetchProfile dependency to prevent re-runs
 
   const signup = useCallback(async (fullName: string, email: string, password: string) => {
     setLoading(true);
@@ -162,14 +207,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(async (email: string, password: string) => {
     setLoading(true);
+    setError(null);
+    
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
+        credentials: 'include' // Important for cookie handling
       });
       
-      const data = await res.json();
+      let data;
+      try {
+        data = await res.json();
+      } catch (err) {
+        throw new Error('Server error: Invalid response');
+      }
       
       if (!res.ok) {
         // Clear any existing auth state
@@ -177,31 +230,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(null);
         localStorage.removeItem('token');
         
-        // For 401 unauthorized, show invalid credentials message
+        // Handle different error cases
         if (res.status === 401) {
-          throw new Error('Invalid email or password');
+          throw new Error('The email or password you entered is incorrect');
+        }
+        if (res.status === 400) {
+          if (data.error === 'Missing fields') {
+            throw new Error('Please enter both email and password');
+          }
+          throw new Error(data.error || 'Invalid request');
+        }
+        // For network errors
+        if (!res.status) {
+          throw new Error('Network error. Please check your connection and try again');
         }
         // For other errors, use the server's error message
-        throw new Error(data.error || 'Login failed');
+        throw new Error(data.error || 'Login failed. Please try again');
       }
 
-      // Set auth state on success
+      // Only set auth state if the response was successful
       setToken(data.token);
       localStorage.setItem('token', data.token);
-      await fetchProfile(data.token);
+      setUser(data.user);
+      setError(null);
       
-      // Return success without navigation
-      return { success: true };
-    } catch (error: any) {
-      // Ensure we're throwing an Error object with the message
-      if (error instanceof Error) {
-        throw error;
-      }
-      throw new Error(error.message || 'Login failed');
+      // Return the data so the login page can handle success
+      return data;
+    } catch (err: any) {
+      // Set the error message
+      const errorMessage = err.message || 'Login failed. Please try again';
+      setError(errorMessage);
+      // Re-throw the error for the login page to handle
+      throw new Error(errorMessage);
     } finally {
       setLoading(false);
     }
-  }, [fetchProfile]);
+  }, []);
 
   const loginWithFirebaseToken = useCallback(async (idToken: string) => {
     setLoading(true);

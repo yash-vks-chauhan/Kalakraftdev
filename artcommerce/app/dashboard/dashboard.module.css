@@ -558,4 +558,58 @@
   .cardTitle {
     font-size: 1.25rem;
   }
+}
+
+/* Skeleton Loading Animations */
+@keyframes skeletonShimmer {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
+}
+
+.skeletonShimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200px 100%;
+  animation: skeletonShimmer 1.5s infinite linear;
+}
+
+/* Skeleton element base styles */
+.skeletonMetricTitle {
+  height: 14px;
+  background: #f0f0f0;
+  border-radius: 2px;
+  width: 60%;
+  margin-bottom: 8px;
+}
+
+.skeletonMetricValue {
+  height: 24px;
+  background: #f0f0f0;
+  border-radius: 4px;
+  width: 40%;
+}
+
+.skeletonOrderImage {
+  width: 50px;
+  height: 50px;
+  background: #f0f0f0;
+  border-radius: 6px;
+}
+
+.skeletonProductName {
+  height: 16px;
+  background: #f0f0f0;
+  border-radius: 2px;
+  width: 80%;
+  margin-bottom: 4px;
+}
+
+.skeletonOrderNumber {
+  height: 12px;
+  background: #f0f0f0;
+  border-radius: 2px;
+  width: 50%;
 } 

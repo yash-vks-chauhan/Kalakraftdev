@@ -86,7 +86,7 @@ export default function PasswordChangeForm({
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded"
+        className="w-full bg-black hover:bg-gray-900 text-white py-2 rounded"
       >
         {loading ? 'Working…' : submitLabel}
       </button>

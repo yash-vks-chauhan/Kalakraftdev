@@ -9,12 +9,16 @@ import prisma from '../../../../lib/prisma'; // Import prisma
 // For development, you might load it directly or use a base64 encoded string.
 // DO NOT expose your private key in client-side code.
 
-const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY || '{}');
-
 // Initialize Firebase Admin SDK if not already initialized
 if (!getApps().length) {
+  const config = {
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+    privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+  };
+
   initializeApp({
-    credential: cert(serviceAccount)
+    credential: cert(config)
   });
 }
 
@@ -50,26 +54,15 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // 3. Create your custom JWT (align expiry with email/password login)
+    // 3. Create your custom JWT
+    // This JWT will be used for subsequent authentication with your backend
     const customToken = jwt.sign(
       { userId: userFromDb.id, email: userFromDb.email, role: userFromDb.role },
       JWT_SECRET,
-      { expiresIn: '7d' }
+      { expiresIn: '1h' } // Token expires in 1 hour
     );
 
-    // 4. Return JSON and set HttpOnly cookie for downstream auth (admin flows)
-    const response = NextResponse.json({ user: userFromDb, token: customToken }, { status: 200 });
-    response.cookies.set({
-      name: 'token',
-      value: customToken,
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 60 * 60 * 24 * 7,
-    });
-
-    return response;
+    return NextResponse.json({ user: userFromDb, token: customToken }, { status: 200 });
 
   } catch (error: any) {
     console.error('Error in /api/auth/google-login:', error);

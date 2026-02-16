@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../../contexts/AuthContext'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 
 interface UserRow {
   id: number
@@ -15,7 +16,10 @@ interface UserRow {
 export default function AdminUsersPage() {
   const { token, user } = useAuth()
   const [users, setUsers] = useState<UserRow[]>([])
+  const [filteredUsers, setFilteredUsers] = useState<UserRow[]>([])
   const [loading, setLoading] = useState(true)
+  const searchParams = useSearchParams()
+  const filterParam = searchParams.get('filter')
 
   useEffect(() => {
     if (user?.role !== 'admin') return
@@ -23,15 +27,30 @@ export default function AdminUsersPage() {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(r => r.json())
-      .then(json => setUsers(json.users))
+      .then(json => {
+        setUsers(json.users)
+        filterUsers(json.users, filterParam)
+      })
       .catch(console.error)
       .finally(() => setLoading(false))
-  }, [token, user])
+  }, [token, user, filterParam])
+
+  const filterUsers = (userList: UserRow[], filter: string | null) => {
+    if (!filter) {
+      setFilteredUsers(userList)
+      return
+    }
+    
+    const filtered = userList.filter(u => u.role === filter)
+    setFilteredUsers(filtered)
+  }
 
   if (user?.role !== 'admin') {
     return <p className="p-8">Unauthorized</p>
   }
   if (loading) return <p className="p-8">Loading users…</p>
+
+  const displayUsers = filterParam ? filteredUsers : users
 
   async function onRoleChange(id: number, newRole: string) {
     const res = await fetch('/api/admin/users', {
@@ -46,13 +65,18 @@ export default function AdminUsersPage() {
       alert('Failed to update role')
     } else {
       const { user: updated } = await res.json()
-      setUsers(u => u.map(u => u.id === id ? updated : u))
+      const updatedUsers = users.map(u => u.id === id ? updated : u)
+      setUsers(updatedUsers)
+      filterUsers(updatedUsers, filterParam)
     }
   }
 
   return (
     <main className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">User Management</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">User Management</h1>
+      </div>
+      
       <table className="w-full border-collapse">
         <thead>
           <tr className="bg-gray-100">
@@ -62,7 +86,7 @@ export default function AdminUsersPage() {
           </tr>
         </thead>
         <tbody>
-          {users.map(u => (
+          {displayUsers.map(u => (
             <tr key={u.id} className="hover:bg-gray-50">
               <td className="border px-4 py-2">{u.fullName}</td>
               <td className="border px-4 py-2">{u.email}</td>
@@ -86,7 +110,9 @@ export default function AdminUsersPage() {
                       headers: { Authorization: `Bearer ${token}` },
                     });
                     if (res.ok) {
-                      setUsers(us => us.filter(x => x.id !== u.id));
+                      const updatedUsers = users.filter(x => x.id !== u.id);
+                      setUsers(updatedUsers);
+                      filterUsers(updatedUsers, filterParam);
                     } else {
                       alert('Failed to delete user');
                     }

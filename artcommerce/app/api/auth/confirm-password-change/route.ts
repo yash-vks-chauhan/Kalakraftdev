@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     )
   }
 
-  // 2️⃣ Find the user whose OTP matches and hasn't expired
+  // 2️⃣ Find the user whose OTP matches and hasn’t expired
   const user = await prisma.user.findFirst({
     where: {
       passwordChangeOtp:     otp.toUpperCase(),

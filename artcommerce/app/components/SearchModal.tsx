@@ -1,13 +1,29 @@
 'use client'
 
-import { useEffect, useState, useRef, FormEvent, useCallback } from 'react'
+import { useEffect, useState, useRef, FormEvent, useCallback, Suspense } from 'react'
 import { createPortal } from 'react-dom'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
+import { motion, AnimatePresence } from 'framer-motion'
 import WishlistButton from './WishlistButton'
 import { useNotificationContext } from '../contexts/NotificationContext'
 import styles from './SearchModal.module.css'
+import Fuse from 'fuse.js'
+import { getImageUrl } from '@/lib/cloudinaryImages'
+import InlineLoader from './InlineLoader'
+// helper to highlight matched substrings
+const getHighlightedText = (text: string, indices: number[][]) => {
+  let lastIndex = 0;
+  const elements = [];
+  indices.forEach(([start, end], idx) => {
+    if (lastIndex < start) elements.push(text.slice(lastIndex, start));
+    elements.push(<mark key={idx}>{text.slice(start, end + 1)}</mark>);
+    lastIndex = end + 1;
+  });
+  if (lastIndex < text.length) elements.push(text.slice(lastIndex));
+  return elements;
+}
 
 interface Product {
   id: number
@@ -20,6 +36,8 @@ interface Product {
   imageUrls: string[]
   stockQuantity: number
   category: { id: number; name: string; slug: string } | null
+  synonyms?: string[]
+  _matches?: Array<{ key: string; indices: number[][] }>;
 }
 
 interface ProductImageState {
@@ -42,6 +60,26 @@ const SYNONYMS: Record<string, string> = {
   decor: 'decor', decoration: 'decor', shringar: 'decor', alankar: 'decor', 'सजावट': 'decor', sajavat: 'decor', diwar: 'decor', diwaar: 'decor',
   'matt rangoli': 'matt rangoli', mattrangoli: 'matt rangoli', 'मैट रंगोली': 'मैट रंगोली',
   'mirror work': 'mirror work', mirrorwork: 'mirror work', shishakala: 'mirror work', 'शीशा कला': 'mirror work', 'shisha kala': 'mirror work',
+  // Additional synonyms for better matching
+  clock: 'clocks', 'घड़ियाँ': 'clocks', 'घड़िया': 'clocks',
+  kolam: 'rangoli', alpana: 'rangoli', alpona: 'rangoli', 'अल्पना': 'rangoli',
+  'wall art': 'decor', wallart: 'decor', 'home decor': 'decor', homedecor: 'decor', walldecor: 'decor',
+  planter: 'pots', planters: 'pots', 'flower vase': 'pots', flowervase: 'pots', gamla: 'pots', 'गमला': 'pots',
+  'mat rangoli': 'matt rangoli', 'flat rangoli': 'matt rangoli', flatrangoli: 'matt rangoli',
+  // Tray-specific synonyms
+  trays: 'tray', 'jewellery tray': 'tray', jewellerytray: 'tray',
+  'puja tray': 'tray', pujatray: 'tray', 'puja thali': 'tray', pujathali: 'tray',
+}
+// Helper to escape regex special chars in synonyms
+const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+// Normalize search text by replacing multi-word synonyms before search
+function normalizeSearch(input: string): string {
+  let result = input.trim().toLowerCase();
+  Object.entries(SYNONYMS).forEach(([key, val]) => {
+    const pattern = new RegExp(`\\b${escapeRegex(key)}\\b`, 'gi');
+    result = result.replace(pattern, val);
+  });
+  return result;
 }
 
 const KNOWN_CATEGORIES = [
@@ -73,15 +111,14 @@ const SORT_OPTIONS = [
 // Maximum number of recent searches to store
 const MAX_RECENT_SEARCHES = 5
 
-export default function SearchModal({ open, onClose }: Props) {
+function SearchModalContent({ open, onClose }: Props) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const currentSearch = searchParams.get('search') || ''
   const { notifications } = useNotificationContext()
 
   const [mounted, setMounted] = useState(false)
-  const [isClosing, setIsClosing] = useState(false)
-  const closeTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
+  const [isVisible, setIsVisible] = useState(false)
   const [searchText, setSearchText] = useState<string>('')
   const [searchResults, setSearchResults] = useState<Product[]>([])
   const [loadingResults, setLoadingResults] = useState<boolean>(false)
@@ -107,6 +144,13 @@ export default function SearchModal({ open, onClose }: Props) {
     }
   }, [])
 
+  // Handle visibility state changes
+  useEffect(() => {
+    if (open) {
+      setIsVisible(true)
+    }
+  }, [open])
+
   // Initialize searchText when modal opens or currentSearch changes
   useEffect(() => {
     if (open) {
@@ -124,48 +168,29 @@ export default function SearchModal({ open, onClose }: Props) {
     setMounted(true)
     return () => {
       setMounted(false)
-      if (closeTimeoutRef.current) {
-        clearTimeout(closeTimeoutRef.current)
-      }
     }
   }, [])
 
-  const handleClose = useCallback((instant: boolean) => {
-    if (instant) {
-      onClose(true)
-      return
-    }
+  // Handle close with animation
+  const handleClose = () => {
+    setIsVisible(false)
+  }
 
-    setIsClosing(true)
-    
-    if (closeTimeoutRef.current) {
-      clearTimeout(closeTimeoutRef.current)
-    }
-    
-    closeTimeoutRef.current = setTimeout(() => {
+  // Handle animation complete
+  const handleAnimationComplete = () => {
+    if (!isVisible) {
       onClose(false)
-      setIsClosing(false)
-    }, 300) // Reduced from 800ms to 300ms for snappier feel
-  }, [onClose])
+    }
+  }
 
   // Close on escape key
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') handleClose(false)
+      if (e.key === 'Escape') handleClose()
     }
     if (open) {
       window.addEventListener('keydown', onKey)
       return () => window.removeEventListener('keydown', onKey)
-    }
-  }, [open, handleClose])
-
-  // Handle open/close transitions
-  useEffect(() => {
-    if (open) {
-      setIsClosing(false)
-      if (closeTimeoutRef.current) {
-        clearTimeout(closeTimeoutRef.current)
-      }
     }
   }, [open])
 
@@ -200,9 +225,13 @@ export default function SearchModal({ open, onClose }: Props) {
     const fetchSearchResults = async () => {
       setErrorResults(null)
       const params = new URLSearchParams()
-      const tokens = searchText.trim().toLowerCase().split(/\s+/).map(tok => SYNONYMS[tok] || tok)
-      const finalSearch = tokens.join(' ')
-      params.set('search', finalSearch)
+      const normalized = normalizeSearch(searchText)
+      // If finalSearch matches a category slug and no category filter set, use category filter
+      if (!selectedCategory && KNOWN_CATEGORIES.some(cat => cat.slug === normalized)) {
+        params.set('category', normalized)
+      } else if (normalized) {
+        params.set('search', normalized)
+      }
 
       if (selectedCategory) {
         params.set('category', selectedCategory)
@@ -224,6 +253,32 @@ export default function SearchModal({ open, onClose }: Props) {
         }
         
         let products = Array.isArray(data.products) ? data.products : []
+        // Add synonyms list for partial synonyms search
+        products = products.map((p: any) => ({
+          ...p,
+          synonyms: Object.entries(SYNONYMS)
+            .filter(([, v]) => v === p.category?.slug)
+            .map(([k]) => k),
+        }))
+        // If normalized term matches a category slug and no category filter is set, skip fuzzy filtering
+        const isCategorySearch = !selectedCategory && KNOWN_CATEGORIES.some(cat => cat.slug === normalized)
+        if (isCategorySearch) {
+          products = products.map(p => ({ ...p, _matches: [] }))
+        } else {
+          // Apply weighted fuzzy matching with match data
+          const fuse = new Fuse(products, {
+            keys: [
+              { name: 'name', weight: 0.6 },
+              { name: 'shortDesc', weight: 0.15 },
+              { name: 'category.name', weight: 0.15 },
+              { name: 'synonyms', weight: 0.3 },
+            ],
+            threshold: 0.4,
+            includeMatches: true,
+          });
+          const fuseResults = fuse.search(normalized);
+          products = fuseResults.map((r: any) => ({ ...r.item, _matches: r.matches }));
+        }
         
         // Client-side sorting if needed
         if (sortOption === 'price_low') {
@@ -252,8 +307,7 @@ export default function SearchModal({ open, onClose }: Props) {
 
   function handleSearchSubmit(e: FormEvent) {
     e.preventDefault()
-    const tokens = searchText.trim().toLowerCase().split(/\s+/).map(tok => SYNONYMS[tok] || tok)
-    const finalSearch = tokens.join(' ')
+    const finalSearch = normalizeSearch(searchText)
     const isCat = KNOWN_CATEGORIES.some(cat => cat.slug === finalSearch)
     const params = new URLSearchParams()
     if (isCat) params.set('category', finalSearch)
@@ -275,7 +329,7 @@ export default function SearchModal({ open, onClose }: Props) {
     }
     
     router.replace(`/products?${params.toString()}`)
-    handleClose(true)
+    handleClose()
   }
 
   const handleCategorySelect = (category: string | null) => {
@@ -339,290 +393,451 @@ export default function SearchModal({ open, onClose }: Props) {
     await new Promise(resolve => setTimeout(resolve, 300))
     
     router.push(productUrl)
-    handleClose(true)
+    handleClose()
   }
 
   // Early return after all hooks
-  if (!mounted || (!open && !isClosing)) return null
+  if (!mounted) return null
 
   // Create portal directly in document.body
   const modalContent = (
-    <div
-      className={`${styles.searchOverlay} ${open ? styles.searchOverlayOpen : ''} ${isClosing ? styles.searchModalClosing : ''}`}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) {
-          handleClose(false)
-        }
-      }}
-    >
-      <div
-        className={styles.searchModal}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className={styles.searchHeader}>
-          <div className={styles.logoContainer}>
-            <img 
-              src="/images/logo.png" 
-              alt="Kalakraft" 
-              className={styles.logoImage}
-              width={150}
-              height={40}
-            />
-          </div>
-          <button
-            type="button"
-            onClick={() => handleClose(false)}
-            className={styles.closeButton}
-            aria-label="Close search"
+    <AnimatePresence mode="wait" onExitComplete={handleAnimationComplete}>
+      {isVisible && (
+        <motion.div
+          className={styles.searchOverlay}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              handleClose()
+            }
+          }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ 
+            duration: 0.4, 
+            ease: [0.25, 0.46, 0.45, 0.94] // Custom cubic-bezier for smooth fade
+          }}
+        >
+          <motion.div
+            className={styles.searchModal}
+            onClick={(e) => e.stopPropagation()}
+            initial={{ 
+              scaleY: 0, 
+              opacity: 0, 
+              y: -20,
+              transformOrigin: 'top center'
+            }}
+            animate={{ 
+              scaleY: 1, 
+              opacity: 1, 
+              y: 0,
+              transformOrigin: 'top center'
+            }}
+            exit={{ 
+              scaleY: 0, 
+              opacity: 0, 
+              y: -10,
+              transformOrigin: 'top center'
+            }}
+            transition={{ 
+              duration: 0.45, 
+              ease: [0.22, 1, 0.36, 1], // Professional easing curve
+              opacity: { duration: 0.3 },
+              y: { duration: 0.4 },
+              // Faster exit for better responsiveness
+              exit: {
+                duration: 0.35,
+                ease: [0.55, 0.085, 0.68, 0.53],
+                opacity: { duration: 0.2 }
+              }
+            }}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-          </button>
-        </div>
-
-        <div className={styles.searchContent}>
-          <form onSubmit={handleSearchSubmit} className={styles.searchForm}>
-            <div className={styles.searchInputContainer}>
-              <svg className={styles.searchIcon} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="11" cy="11" r="8"></circle>
-                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-              </svg>
-              <input
-                autoFocus
-                type="text"
-                placeholder="SEARCH PRODUCTS..."
-                value={searchText}
-                onChange={e => setSearchText(e.target.value)}
-                className={styles.searchInput}
-                autoComplete="off"
-              />
-              {searchText && (
-                <button
-                  type="button"
-                  onClick={handleClearSearch}
-                  className={styles.clearButton}
+            <div className={styles.searchHeader}>
+              <div className={styles.logoContainer}>
+                <img
+                  src={getImageUrl('logo.png')}
+                  alt="Kalakraft"
+                  className={styles.logoImage}
+                  width={150}
+                  height={40}
+                />
+              </div>
+              <button
+                type="button"
+                onClick={handleClose}
+                className={styles.closeButton}
+                aria-label="Close search"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                 >
-                  CLEAR
-                </button>
-              )}
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
             </div>
-            
-            {recentSearches.length > 0 && !searchText && (
-              <div className={styles.recentSearches}>
-                <p className={styles.recentSearchesTitle}>Recent searches:</p>
-                <div className={styles.recentSearchesList}>
-                  {recentSearches.map((search, index) => (
-                    <button 
-                      key={index} 
+
+            <div className={styles.searchContent}>
+              <form onSubmit={handleSearchSubmit} className={styles.searchForm}>
+                <div className={styles.searchInputContainer}>
+                  <svg
+                    className={styles.searchIcon}
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                  </svg>
+                  <input
+                    autoFocus
+                    type="text"
+                    placeholder="SEARCH PRODUCTS..."
+                    value={searchText}
+                    onChange={(e) => setSearchText(e.target.value)}
+                    className={styles.searchInput}
+                    autoComplete="off"
+                  />
+                  {searchText && (
+                    <button
                       type="button"
-                      className={styles.recentSearchItem}
-                      onClick={() => handleRecentSearchClick(search)}
+                      onClick={handleClearSearch}
+                      className={styles.clearButton}
                     >
-                      <svg className={styles.recentSearchIcon} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="9 14 4 9 9 4"></polyline>
-                        <path d="M20 20v-7a4 4 0 0 0-4-4H4"></path>
-                      </svg>
-                      {search}
+                      CLEAR
+                    </button>
+                  )}
+                </div>
+
+                {recentSearches.length > 0 && !searchText && (
+                  <div className={styles.recentSearches}>
+                    <p className={styles.recentSearchesTitle}>
+                      Recent searches:
+                    </p>
+                    <div className={styles.recentSearchesList}>
+                      {recentSearches.map((search, index) => (
+                        <button
+                          key={index}
+                          type="button"
+                          className={styles.recentSearchItem}
+                          onClick={() => handleRecentSearchClick(search)}
+                        >
+                          <svg
+                            className={styles.recentSearchIcon}
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <polyline points="9 14 4 9 9 4"></polyline>
+                            <path d="M20 20v-7a4 4 0 0 0-4-4H4"></path>
+                          </svg>
+                          {search}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className={styles.categoriesContainer}>
+                  {KNOWN_CATEGORIES.map((category) => (
+                    <button
+                      key={category.slug}
+                      type="button"
+                      className={`${styles.categoryPill} ${
+                        selectedCategory === category.slug
+                          ? styles.categoryPillActive
+                          : ''
+                      }`}
+                      onClick={() => handleCategorySelect(category.slug)}
+                    >
+                      {category.name}
                     </button>
                   ))}
                 </div>
-              </div>
-            )}
-            
-            <div className={styles.categoriesContainer}>
-              {KNOWN_CATEGORIES.map(category => (
-                <button 
-                  key={category.slug}
-                  type="button"
-                  className={`${styles.categoryPill} ${selectedCategory === category.slug ? styles.categoryPillActive : ''}`}
-                  onClick={() => handleCategorySelect(category.slug)}
-                >
-                  {category.name}
-                </button>
-              ))}
-            </div>
-            
-            <div className={styles.quickFilters}>
-              {QUICK_FILTERS.map(filter => (
-                <button 
-                  key={filter.id}
-                  type="button"
-                  className={`${styles.quickFilterButton} ${activeFilter === filter.id ? styles.quickFilterActive : ''}`}
-                  onClick={() => handleFilterSelect(filter.id)}
-                >
-                  {filter.name}
-                </button>
-              ))}
-            </div>
-          </form>
 
-          {searchText && (
-            <div className={styles.sortOptions}>
-              <select 
-                className={styles.sortSelect}
-                value={sortOption}
-                onChange={handleSortChange}
-                aria-label="Sort products"
-              >
-                {SORT_OPTIONS.map(option => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-
-          <div className={styles.resultsContainer}>
-            {loadingResults ? (
-              <div className={styles.loadingContainer}>
-                <div className={styles.loadingSpinnerWrapper}>
-                  <div className={styles.loadingSpinner}>
-                    <svg className={styles.loadingCircle} viewBox="0 0 50 50">
-                      <circle cx="25" cy="25" r="20" fill="none" strokeWidth="4" />
-                    </svg>
-                  </div>
-                </div>
-                <div className={styles.emptyResultsText}>
-                  {"SEARCHING PRODUCTS".split('').map((letter, index) => (
-                    <span key={index} className={styles.letter}>
-                      {letter === ' ' ? '\u00A0' : letter}
-                    </span>
-                  ))}
-                  <span className={styles.dots}>
-                    <span>.</span>
-                    <span>.</span>
-                    <span>.</span>
-                  </span>
-                </div>
-              </div>
-            ) : errorResults ? (
-              <div className={styles.errorContainer}>
-                <svg className={styles.errorIcon} xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <line x1="12" y1="8" x2="12" y2="12"></line>
-                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                </svg>
-                <p className={styles.errorText}>ERROR: {errorResults.toUpperCase()}</p>
-              </div>
-            ) : searchResults.length > 0 ? (
-              <div className={styles.resultsGrid}>
-                {searchResults.map(prod => {
-                  const currentImageIndex = currentImages[prod.id] || 0;
-                  const isLoading = loadingProductId === prod.id;
-                  const hasMultipleImages = prod.imageUrls.length > 1;
-                  
-                  return (
-                    <div 
-                      key={prod.id} 
-                      className={`${styles.productCard} ${isLoading ? styles.productCardLoading : ''}`}
+                <div className={styles.quickFilters}>
+                  {QUICK_FILTERS.map((filter) => (
+                    <button
+                      key={filter.id}
+                      type="button"
+                      className={`${styles.quickFilterButton} ${
+                        activeFilter === filter.id
+                          ? styles.quickFilterActive
+                          : ''
+                      }`}
+                      onClick={() => handleFilterSelect(filter.id)}
                     >
-                      <div className={styles.wishlistButtonContainer}>
-                        <WishlistButton productId={prod.id} />
-                      </div>
-                      
-                      <a
-                        href={`/products/${prod.id}`}
-                        className={styles.productLink}
-                        onClick={(e) => handleProductClick(prod.id, `/products/${prod.id}`, e)}
-                      >
-                        <div className={styles.productImageContainer}>
-                          {prod.imageUrls[currentImageIndex] ? (
-                            <img 
-                              src={prod.imageUrls[currentImageIndex]} 
-                              alt={prod.name} 
-                              className={styles.productImage} 
-                            />
-                          ) : (
-                            <div className={styles.noImagePlaceholder}>NO IMAGE</div>
-                          )}
-                          
-                          {isLoading && (
-                            <div className={styles.loadingOverlay}>
-                              <div className={styles.loadingSpinnerSmall}>
-                                <svg className={styles.loadingCircleSmall} viewBox="0 0 50 50">
-                                  <circle cx="25" cy="25" r="20" fill="none" strokeWidth="4" />
-                                </svg>
+                      {filter.name}
+                    </button>
+                  ))}
+                </div>
+              </form>
+
+              {searchText && (
+                <div className={styles.sortOptions}>
+                  <select
+                    className={styles.sortSelect}
+                    value={sortOption}
+                    onChange={handleSortChange}
+                    aria-label="Sort products"
+                  >
+                    {SORT_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              <div className={styles.resultsContainer}>
+                {loadingResults ? (
+                  <div className={styles.loadingContainer}>
+                    <InlineLoader size="medium" message="Searching..." />
+                  </div>
+                ) : errorResults ? (
+                  <div className={styles.errorContainer}>
+                    <svg
+                      className={styles.errorIcon}
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="36"
+                      height="36"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <line x1="12" y1="8" x2="12" y2="12"></line>
+                      <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    <p className={styles.errorText}>
+                      ERROR: {errorResults.toUpperCase()}
+                    </p>
+                  </div>
+                ) : searchResults.length > 0 ? (
+                  <div className={styles.resultsGrid}>
+                    {searchResults.map((prod) => {
+                      const currentImageIndex = currentImages[prod.id] || 0
+                      const isLoading = loadingProductId === prod.id
+                      const hasMultipleImages = prod.imageUrls.length > 1
+                      const nameMatch = prod._matches?.find(
+                        (m) => m.key === 'name'
+                      )
+                      const catMatch = prod._matches?.find(
+                        (m) => m.key === 'category.name'
+                      )
+                      return (
+                        <div
+                          key={prod.id}
+                          className={`${styles.productCard} ${
+                            isLoading ? styles.productCardLoading : ''
+                          }`}
+                        >
+                          <div className={styles.wishlistButtonContainer}>
+                            <WishlistButton productId={prod.id} />
+                          </div>
+
+                          <a
+                            href={`/products/${prod.id}`}
+                            className={styles.productLink}
+                            onClick={(e) =>
+                              handleProductClick(
+                                prod.id,
+                                `/products/${prod.id}`,
+                                e
+                              )
+                            }
+                          >
+                            <div className={styles.productImageContainer}>
+                              {prod.imageUrls[currentImageIndex] ? (
+                                <img
+                                  src={prod.imageUrls[currentImageIndex]}
+                                  alt={prod.name}
+                                  className={styles.productImage}
+                                />
+                              ) : (
+                                <div className={styles.noImagePlaceholder}>
+                                  NO IMAGE
+                                </div>
+                              )}
+
+                              {isLoading && (
+                                <div className={styles.loadingOverlay}>
+                                  <InlineLoader size="small" />
+                                </div>
+                              )}
+
+                              {hasMultipleImages && !isLoading && (
+                                <>
+                                  <button
+                                    className={`${styles.imageNav} ${styles.imageNavPrev}`}
+                                    onClick={(e) =>
+                                      handlePrevImage(prod.id, e)
+                                    }
+                                    aria-label="Previous image"
+                                  >
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      width="16"
+                                      height="16"
+                                      viewBox="0 0 24 24"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      strokeWidth="2"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                    >
+                                      <polyline points="15 18 9 12 15 6"></polyline>
+                                    </svg>
+                                  </button>
+                                  <button
+                                    className={`${styles.imageNav} ${styles.imageNavNext}`}
+                                    onClick={(e) =>
+                                      handleNextImage(prod.id, e)
+                                    }
+                                    aria-label="Next image"
+                                  >
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      width="16"
+                                      height="16"
+                                      viewBox="0 0 24 24"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      strokeWidth="2"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                    >
+                                      <polyline points="9 18 15 12 9 6"></polyline>
+                                    </svg>
+                                  </button>
+                                  <div className={styles.imageCounter}>
+                                    {currentImageIndex + 1} /{' '}
+                                    {prod.imageUrls.length}
+                                  </div>
+                                </>
+                              )}
+
+                              <div className={styles.productInfoOverlay}>
+                                <h3 className={styles.productName}>
+                                  {nameMatch
+                                    ? getHighlightedText(
+                                        prod.name,
+                                        nameMatch.indices
+                                      )
+                                    : prod.name}
+                                </h3>
+                                <p className={styles.productPrice}>
+                                  {prod.currency} {prod.price.toFixed(2)}
+                                </p>
+                                {prod.category && (
+                                  <span className={styles.productCategory}>
+                                    {catMatch
+                                      ? getHighlightedText(
+                                          prod.category.name,
+                                          catMatch.indices
+                                        )
+                                      : prod.category.name}
+                                  </span>
+                                )}
                               </div>
                             </div>
-                          )}
-                          
-                          {hasMultipleImages && !isLoading && (
-                            <>
-                              <button
-                                className={`${styles.imageNav} ${styles.imageNavPrev}`}
-                                onClick={(e) => handlePrevImage(prod.id, e)}
-                                aria-label="Previous image"
-                              >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                  <polyline points="15 18 9 12 15 6"></polyline>
-                                </svg>
-                              </button>
-                              <button
-                                className={`${styles.imageNav} ${styles.imageNavNext}`}
-                                onClick={(e) => handleNextImage(prod.id, e)}
-                                aria-label="Next image"
-                              >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                  <polyline points="9 18 15 12 9 6"></polyline>
-                                </svg>
-                              </button>
-                              <div className={styles.imageCounter}>
-                                {currentImageIndex + 1} / {prod.imageUrls.length}
-                              </div>
-                            </>
-                          )}
-                          
-                          <div className={styles.productInfoOverlay}>
-                            <h3 className={styles.productName}>{prod.name}</h3>
-                            <p className={styles.productPrice}>
-                              {prod.currency} {prod.price.toFixed(2)}
-                            </p>
-                            {prod.category && (
-                              <span className={styles.productCategory}>
-                                {prod.category.name}
-                              </span>
-                            )}
-                          </div>
+                          </a>
                         </div>
-                      </a>
+                      )
+                    })}
+                  </div>
+                ) : searchText ? (
+                  <div className={styles.noResultsContainer}>
+                    <svg
+                      className={styles.noResultsIcon}
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="36"
+                      height="36"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <circle cx="11" cy="11" r="8"></circle>
+                      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                      <line x1="8" y1="11" x2="14" y2="11"></line>
+                    </svg>
+                    <p className={styles.noResultsText}>NO PRODUCTS FOUND</p>
+                    <p className={styles.noResultsSubtext}>
+                      Try a different search term or browse categories
+                    </p>
+                  </div>
+                ) : (
+                  <div className={styles.emptyStateContainer}>
+                    <svg
+                      className={styles.emptyStateIcon}
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="36"
+                      height="36"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <circle cx="11" cy="11" r="8"></circle>
+                      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <div className={styles.emptyResultsText}>
+                      {'SEARCH FOR PRODUCTS'
+                        .split('')
+                        .map((letter, index) => (
+                          <span key={index} className={styles.letter}>
+                            {letter === ' ' ? '\u00A0' : letter}
+                          </span>
+                        ))}
                     </div>
-                  );
-                })}
+                    <p className={styles.emptyStateSubtext}>
+                      Type in the search box above or select a category
+                    </p>
+                  </div>
+                )}
               </div>
-            ) : searchText ? (
-              <div className={styles.noResultsContainer}>
-                <svg className={styles.noResultsIcon} xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="11" cy="11" r="8"></circle>
-                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                  <line x1="8" y1="11" x2="14" y2="11"></line>
-                </svg>
-                <p className={styles.noResultsText}>NO PRODUCTS FOUND</p>
-                <p className={styles.noResultsSubtext}>Try a different search term or browse categories</p>
-              </div>
-            ) : (
-              <div className={styles.emptyStateContainer}>
-                <svg className={styles.emptyStateIcon} xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="11" cy="11" r="8"></circle>
-                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
-                <div className={styles.emptyResultsText}>
-                  {"SEARCH FOR PRODUCTS".split('').map((letter, index) => (
-                    <span key={index} className={styles.letter}>
-                      {letter === ' ' ? '\u00A0' : letter}
-                    </span>
-                  ))}
-                </div>
-                <p className={styles.emptyStateSubtext}>Type in the search box above or select a category</p>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  )
 
-  return createPortal(modalContent, document.body);
+  return createPortal(modalContent, document.body)
+}
+
+// Wrapper component with Suspense boundary
+export default function SearchModal(props: Props) {
+  return (
+    <Suspense fallback={null}>
+      <SearchModalContent {...props} />
+    </Suspense>
+  )
 }

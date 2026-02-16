@@ -1,0 +1,1 @@
+globalThis.__RSC_MANIFEST=(globalThis.__RSC_MANIFEST||{});globalThis.__RSC_MANIFEST["/_not-found/page"]={"moduleLoading":{"prefix":"/_next/"},"ssrModuleMapping":{},"edgeSSRModuleMapping":{},"clientModules":{},"entryCSSFiles":{"/Users/yashchauhan/Artcommerce/":[],"/Users/yashchauhan/Artcommerce/app/_not-found/page":[]},"rscModuleMapping":{},"edgeRscModuleMapping":{}}

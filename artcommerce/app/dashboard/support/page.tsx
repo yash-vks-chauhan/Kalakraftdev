@@ -1,8 +1,11 @@
+// app/dashboard/support/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "../../contexts/AuthContext";
+import styles from "./tickets.module.css";
+import { FiPlus, FiInbox, FiArchive, FiAlertCircle } from 'react-icons/fi';
 
 interface Ticket {
   id: string;
@@ -20,12 +23,14 @@ export default function MySupportTickets() {
   useEffect(() => {
     if (!user || !token) {
       setLoading(false);
+      setError("Please sign in to view your support tickets.");
       return;
     }
     const load = async () => {
       try {
+        setError(null);
         const res = await fetch('/api/support/my-tickets', {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) throw new Error((await res.json()).error || "Failed to load");
         const data = await res.json();
@@ -39,79 +44,111 @@ export default function MySupportTickets() {
     load();
   }, [user, token]);
 
-  if (!user) return <p className="p-4">Please sign in to view support tickets.</p>;
-  if (loading) return <p className="p-4">Loading…</p>;
-  if (error) return <p className="p-4 text-red-600">{error}</p>;
+  if (loading) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.loadingSpinner} />
+      </div>
+    );
+  }
 
-  const openTickets = tickets.filter(t => t.status !== "closed");
-  const closedTickets = tickets.filter(t => t.status === "closed");
+  if (error) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.error}>
+          <FiAlertCircle className={styles.errorIcon} />
+          {error}
+        </div>
+      </div>
+    );
+  }
+
+  const openTickets = tickets.filter((t) => t.status !== "closed");
+  const closedTickets = tickets.filter((t) => t.status === "closed");
 
   return (
-    <div className="max-w-3xl mx-auto p-4 space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">My Support Tickets</h1>
-        <Link
-          href="/support"
-          className="inline-block px-3 py-2 bg-indigo-600 text-sm text-white rounded hover:bg-indigo-700"
-        >
+    <div className={styles.container}>
+      <div className={styles.header}>
+        <h1 className={styles.title}>My Support Tickets</h1>
+        <Link href="/support" className={styles.newTicketButton}>
+          <FiPlus className={styles.buttonIcon} />
           New Ticket
         </Link>
       </div>
-      {/* OPEN & PENDING */}
-      <h2 className="text-xl font-semibold mt-6 mb-2">Open & Pending</h2>
-      {openTickets.length === 0 ? (
-        <p className="text-sm mb-4">No open tickets.</p>
-      ) : (
-        <table className="w-full border divide-y mb-8">
-          <thead>
-            <tr className="bg-gray-100 text-left text-sm">
-              <th className="p-2">Subject</th>
-              <th className="p-2">Status</th>
-              <th className="p-2">Created</th>
-              <th className="p-2"></th>
-            </tr>
-          </thead>
-          <tbody className="divide-y">
-            {openTickets.map((t) => (
-              <tr key={t.id}>
-                <td className="p-2">{t.subject}</td>
-                <td className="p-2 capitalize">{t.status}</td>
-                <td className="p-2">{new Date(t.createdAt).toLocaleDateString()}</td>
-                <td className="p-2 text-right">
-                  <Link href={`/dashboard/support/ticket/${t.id}`} className="text-indigo-600 hover:underline">View</Link>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
 
-      {/* CLOSED */}
-      <h2 className="text-xl font-semibold mb-2">Closed</h2>
-      {closedTickets.length === 0 ? (
-        <p className="text-sm">No closed tickets.</p>
-      ) : (
-        <table className="w-full border divide-y">
-          <thead>
-            <tr className="bg-gray-100 text-left text-sm">
-              <th className="p-2">Subject</th>
-              <th className="p-2">Created</th>
-              <th className="p-2"></th>
-            </tr>
-          </thead>
-          <tbody className="divide-y">
-            {closedTickets.map((t) => (
-              <tr key={t.id}>
-                <td className="p-2">{t.subject}</td>
-                <td className="p-2">{new Date(t.createdAt).toLocaleDateString()}</td>
-                <td className="p-2 text-right">
-                  <Link href={`/dashboard/support/ticket/${t.id}`} className="text-indigo-600 hover:underline">View</Link>
-                </td>
-              </tr>
+      <div className={styles.section}>
+        <div className={styles.sectionHeader}>
+          <h2 className={styles.sectionTitle}>
+            <FiInbox className={styles.sectionIcon} />
+            Open & Pending
+          </h2>
+        </div>
+        
+        {openTickets.length === 0 ? (
+          <div className={styles.emptyState}>
+            <p>No open tickets.</p>
+          </div>
+        ) : (
+          <div className={styles.ticketGrid}>
+            {openTickets.map((ticket) => (
+              <Link
+                key={ticket.id}
+                href={`/dashboard/support/ticket/${ticket.id}`}
+                className={styles.ticketCard}
+              >
+                <div className={styles.ticketContent}>
+                  <h3 className={styles.ticketSubject}>{ticket.subject}</h3>
+                  <span className={`${styles.ticketStatus} ${styles[ticket.status]}`}>
+                    {ticket.status}
+                  </span>
+                </div>
+                <div className={styles.ticketMeta}>
+                  <span className={styles.ticketDate}>
+                    {new Date(ticket.createdAt).toLocaleDateString()}
+                  </span>
+                </div>
+              </Link>
             ))}
-          </tbody>
-        </table>
-      )}
+          </div>
+        )}
+      </div>
+
+      <div className={styles.section}>
+        <div className={styles.sectionHeader}>
+          <h2 className={styles.sectionTitle}>
+            <FiArchive className={styles.sectionIcon} />
+            Closed
+          </h2>
+        </div>
+        
+        {closedTickets.length === 0 ? (
+          <div className={styles.emptyState}>
+            <p>No closed tickets.</p>
+          </div>
+        ) : (
+          <div className={styles.ticketGrid}>
+            {closedTickets.map((ticket) => (
+              <Link
+                key={ticket.id}
+                href={`/dashboard/support/ticket/${ticket.id}`}
+                className={`${styles.ticketCard} ${styles.closedTicket}`}
+              >
+                <div className={styles.ticketContent}>
+                  <h3 className={styles.ticketSubject}>{ticket.subject}</h3>
+                  <span className={`${styles.ticketStatus} ${styles.closed}`}>
+                    closed
+                  </span>
+                </div>
+                <div className={styles.ticketMeta}>
+                  <span className={styles.ticketDate}>
+                    {new Date(ticket.createdAt).toLocaleDateString()}
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
-} 
+}

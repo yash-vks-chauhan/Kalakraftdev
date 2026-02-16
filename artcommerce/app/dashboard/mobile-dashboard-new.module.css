@@ -1,0 +1,839 @@
+/* ============================================
+   IOS-INSPIRED MOBILE DASHBOARD
+   Clean, minimal, white theme with iOS design principles
+   ============================================ */
+
+.mobileDashboardContainer {
+  min-height: 100vh;
+  background: #F2F2F7; /* iOS system background */
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* ============================================
+   HEADER SECTION - iOS Style
+   ============================================ */
+
+.mobileHeader {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.1);
+  padding: 1rem 1.25rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+.headerContent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.headerLeft {
+  flex: 1;
+}
+
+.headerTitle {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #000000;
+  margin: 0;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.headerSubtitle {
+  font-size: 1rem;
+  color: #8E8E93;
+  margin: 2px 0 0 0;
+  font-weight: 500;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.iconButton {
+  width: 36px;
+  height: 36px;
+  border-radius: 18px;
+  background: rgba(120, 120, 128, 0.16);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #000000;
+  transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+  cursor: pointer;
+}
+
+.iconButton:active {
+  background: rgba(120, 120, 128, 0.24);
+  transform: scale(0.94);
+}
+
+.contentWrapper {
+  padding: 0;
+  flex: 1;
+  padding-bottom: 2rem;
+}
+
+/* ============================================
+   USER PROFILE SECTION - iOS Card Style
+   ============================================ */
+
+.userProfile {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  background: #FFFFFF;
+  border-radius: 16px;
+  margin: 16px 16px 24px 16px;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.04);
+  border: 0.5px solid rgba(0, 0, 0, 0.06);
+}
+
+.avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 32px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  object-fit: cover;
+  border: 3px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.userInfo {
+  flex: 1;
+}
+
+.userName {
+  font-size: 1.375rem;
+  font-weight: 600;
+  color: #000000;
+  margin: 0 0 4px 0;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+.userRole {
+  font-size: 1rem;
+  color: #8E8E93;
+  text-transform: capitalize;
+  font-weight: 500;
+  margin: 0;
+}
+
+/* ============================================
+   METRICS SECTION - iOS Cards
+   ============================================ */
+
+.metricsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 0 16px 24px 16px;
+  position: relative;
+  z-index: 1;
+}
+
+.metricCard {
+  background: #FFFFFF;
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.04);
+  border: 0.5px solid rgba(0, 0, 0, 0.06);
+  transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  min-height: 120px;
+  justify-content: space-between;
+}
+
+.metricCard:active {
+  transform: scale(0.97);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.metricIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(0, 122, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  color: #000000;
+}
+
+.metricContent {
+  flex: 1;
+  width: 100%;
+}
+
+.metricValue {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #000000;
+  margin: 0 0 4px 0;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.metricLabel {
+  font-size: 0.9375rem;
+  color: #8E8E93;
+  font-weight: 500;
+  margin: 0;
+}
+
+/* ============================================
+   SECTION HEADERS - iOS Style
+   ============================================ */
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 16px 16px 16px;
+  padding: 0 4px;
+}
+
+.sectionTitleGroup {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sectionTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #000000;
+  margin: 0;
+}
+
+.modernSelect {
+  background: rgba(120, 120, 128, 0.12);
+  border: none;
+  border-radius: 12px;
+  padding: 8px 14px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: #000000;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+.modernSelect:focus {
+  background: rgba(120, 120, 128, 0.16);
+}
+
+.refreshing {
+  animation: spin 1.2s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ============================================
+   IOS SECTIONS & MENU GROUPS
+   ============================================ */
+
+.iosSection {
+  margin: 0 16px 24px 16px;
+}
+
+.iosSectionHeader {
+  margin-bottom: 8px;
+}
+
+.iosSectionTitle {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #8E8E93;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0;
+  padding: 0 4px;
+}
+
+.iosMenuGroup {
+  background: #FFFFFF;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.04);
+  border: 0.5px solid rgba(0, 0, 0, 0.06);
+}
+
+.iosMenuItem {
+  display: flex;
+  align-items: center;
+  padding: 16px 20px;
+  background: #FFFFFF;
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.08);
+  text-decoration: none;
+  color: inherit;
+  transition: background-color 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+  min-height: 60px;
+  cursor: pointer;
+}
+
+.iosMenuItem:last-child {
+  border-bottom: none;
+}
+
+.iosMenuItem:active {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.iosMenuIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16px;
+  color: #000000;
+  flex-shrink: 0;
+}
+
+.iosMenuContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.iosMenuTitle {
+  font-size: 1.0625rem;
+  font-weight: 500;
+  color: #000000;
+  line-height: 1.3;
+}
+
+.iosMenuSubtitle {
+  font-size: 0.9375rem;
+  color: #8E8E93;
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+.iosChevron {
+  color: #C7C7CC;
+  transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  flex-shrink: 0;
+}
+
+.chevronRotated {
+  transform: rotate(90deg);
+}
+
+/* ============================================
+   ACCORDION COMPONENTS - iOS Style
+   ============================================ */
+
+.iosAccordionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: #FFFFFF;
+  border-radius: 16px;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.04);
+  border: 0.5px solid rgba(0, 0, 0, 0.06);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  margin-bottom: 8px;
+}
+
+.iosAccordionHeader:active {
+  background-color: rgba(0, 0, 0, 0.04);
+  transform: scale(0.99);
+}
+
+.iosAccordionTitleGroup {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.iosAccordionIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(0, 122, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #000000;
+}
+
+.iosAccordionTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #000000;
+  margin: 0;
+}
+
+.iosAccordionContent {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s cubic-bezier(0.4, 0.0, 0.2, 1),
+              opacity 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  opacity: 0;
+}
+
+.iosAccordionContent.expanded {
+  max-height: 600px;
+  opacity: 1;
+}
+
+/* ============================================
+   ACTIVITY SECTION & RECENT ORDERS
+   ============================================ */
+
+.activitySection {
+  margin: 0 16px 24px 16px;
+}
+
+.activityHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: #FFFFFF;
+  border-radius: 16px;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.04);
+  border: 0.5px solid rgba(0, 0, 0, 0.06);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  margin-bottom: 8px;
+}
+
+.activityHeader:active {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.expandableContent {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s cubic-bezier(0.4, 0.0, 0.2, 1),
+              opacity 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  opacity: 0;
+}
+
+.expandableContent.expanded {
+  max-height: 400px;
+  opacity: 1;
+}
+
+.chevronIcon {
+  transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  color: #C7C7CC;
+}
+
+.iosOrdersList {
+  background: #FFFFFF;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.04);
+  border: 0.5px solid rgba(0, 0, 0, 0.06);
+  margin-top: 8px;
+}
+
+.iosOrderItem {
+  display: flex;
+  align-items: center;
+  padding: 16px 20px;
+  background: #FFFFFF;
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.08);
+  text-decoration: none;
+  color: inherit;
+  transition: background-color 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+  min-height: 64px;
+}
+
+.iosOrderItem:last-child {
+  border-bottom: none;
+}
+
+.iosOrderItem:active {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.orderIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(0, 122, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16px;
+  color: #000000;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.orderImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+.orderDetails {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.orderTitle {
+  font-size: 1.0625rem;
+  font-weight: 500;
+  color: #000000;
+  margin: 0;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.orderSubtitle {
+  font-size: 0.9375rem;
+  color: #8E8E93;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.orderStatus {
+  display: flex;
+  align-items: center;
+  margin-left: 12px;
+}
+
+.statusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 4px;
+  background: #8E8E93;
+}
+
+.statusDot.statusCompleted {
+  background: #34C759;
+}
+
+.statusDot.statusProcessing {
+  background: #000000;
+}
+
+.statusDot.statusPending {
+  background: #FF9500;
+}
+
+.loadingContainer {
+  padding: 24px;
+  display: flex;
+  justify-content: center;
+  background: #FFFFFF;
+  border-radius: 16px;
+  margin-top: 8px;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.04);
+  border: 0.5px solid rgba(0, 0, 0, 0.06);
+}
+
+.emptyStateSmall {
+  padding: 24px;
+  text-align: center;
+  background: #FFFFFF;
+  border-radius: 16px;
+  margin-top: 8px;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.04);
+  border: 0.5px solid rgba(0, 0, 0, 0.06);
+}
+
+.emptyText {
+  font-size: 0.9375rem;
+  color: #8E8E93;
+  margin: 0;
+}
+
+/* ============================================
+   EMPTY STATES - iOS Style
+   ============================================ */
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 20px;
+  text-align: center;
+  background: #FFFFFF;
+  border-radius: 16px;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.04);
+  border: 0.5px solid rgba(0, 0, 0, 0.06);
+  margin: 16px;
+}
+
+.emptyStateIcon {
+  margin-bottom: 16px;
+  color: #C7C7CC;
+  width: 48px;
+  height: 48px;
+}
+
+.emptyStateText {
+  font-size: 1.0625rem;
+  font-weight: 500;
+  color: #8E8E93;
+  line-height: 1.4;
+}
+
+/* ============================================
+   SKELETON LOADING - iOS Style
+   ============================================ */
+
+.modernSkeleton {
+  background: rgba(120, 120, 128, 0.12);
+  border-radius: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+.modernSkeleton::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  animation: shimmer 1.8s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+.skeletonShimmer {
+  background: rgba(120, 120, 128, 0.12);
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+.skeletonShimmer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  animation: shimmer 1.8s ease-in-out infinite;
+}
+
+/* ============================================
+   ANIMATIONS & TRANSITIONS - iOS Smooth
+   ============================================ */
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes statusPulse {
+  0% {
+    background-color: rgba(0, 122, 255, 0.1);
+  }
+  50% {
+    background-color: rgba(0, 122, 255, 0.2);
+  }
+  100% {
+    background-color: rgba(0, 122, 255, 0.1);
+  }
+}
+
+.statusChanging {
+  animation: statusPulse 0.6s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+@media (max-width: 375px) {
+  .headerTitle {
+    font-size: 1.75rem;
+  }
+  
+  .metricsGrid {
+    gap: 10px;
+    margin: 0 12px 20px 12px;
+  }
+  
+  .iosSection {
+    margin: 0 12px 20px 12px;
+  }
+  
+  .sectionHeader {
+    margin: 0 12px 16px 12px;
+  }
+}
+
+/* Respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .modernSkeleton::after,
+  .skeletonShimmer::after {
+    animation: skeletonPulse 2s ease-in-out infinite;
+  }
+}
+
+@keyframes skeletonPulse {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 0.4; }
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+
+.hidden {
+  display: none !important;
+}
+
+/* ============================================
+   IOS DARK MODE SUPPORT
+   ============================================ */
+
+@media (prefers-color-scheme: dark) {
+  .mobileDashboardContainer {
+    background: #000000;
+  }
+  
+  .mobileHeader {
+    background: rgba(28, 28, 30, 0.95);
+    border-bottom-color: rgba(84, 84, 88, 0.6);
+  }
+  
+  .headerTitle {
+    color: #FFFFFF;
+  }
+  
+  .headerSubtitle {
+    color: #8E8E93;
+  }
+  
+  .iconButton {
+    background: rgba(120, 120, 128, 0.16);
+    color: #0A84FF;
+  }
+  
+  .iconButton:active {
+    background: rgba(120, 120, 128, 0.24);
+  }
+  
+  .userProfile,
+  .metricCard,
+  .iosMenuGroup,
+  .iosOrdersList,
+  .iosAccordionHeader,
+  .activityHeader,
+  .loadingContainer,
+  .emptyState,
+  .emptyStateSmall {
+    background: #1C1C1E;
+    border-color: rgba(84, 84, 88, 0.6);
+    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.3);
+  }
+  
+  .userName,
+  .sectionTitle,
+  .iosAccordionTitle,
+  .iosMenuTitle,
+  .orderTitle {
+    color: #FFFFFF;
+  }
+  
+  .userRole,
+  .iosMenuSubtitle,
+  .orderSubtitle,
+  .emptyText,
+  .emptyStateText {
+    color: #8E8E93;
+  }
+  
+  .iosMenuItem,
+  .iosOrderItem {
+    background: #1C1C1E;
+    border-bottom-color: rgba(84, 84, 88, 0.6);
+  }
+  
+  .iosMenuItem:active,
+  .iosOrderItem:active,
+  .iosAccordionHeader:active,
+  .activityHeader:active {
+    background-color: rgba(120, 120, 128, 0.16);
+  }
+  
+  .iosMenuIcon,
+  .orderIcon,
+  .metricIcon,
+  .iosAccordionIcon {
+    background: rgba(10, 132, 255, 0.16);
+    color: #0A84FF;
+  }
+  
+  .metricValue {
+    color: #FFFFFF;
+  }
+  
+  .metricLabel,
+  .iosSectionTitle {
+    color: #8E8E93;
+  }
+  
+  .modernSelect {
+    background: rgba(120, 120, 128, 0.16);
+    color: #FFFFFF;
+  }
+  
+  .modernSkeleton,
+  .skeletonShimmer {
+    background: rgba(120, 120, 128, 0.16);
+  }
+  
+  .iosChevron,
+  .chevronIcon {
+    color: #636366;
+  }
+}

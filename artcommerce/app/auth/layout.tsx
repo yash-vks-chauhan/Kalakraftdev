@@ -2,6 +2,7 @@
 'use client'
 import { useAuth }     from '../contexts/AuthContext'
 import { usePathname } from 'next/navigation'
+import LoadingSpinner from '../components/LoadingSpinner'
 import React           from 'react'
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
@@ -17,8 +18,24 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
   const isPublic = PUBLIC_ROUTES.some((route) =>
     pathname === route || pathname.startsWith(route + '/')
   )
+  // Only restrict non-public routes
+  if (!isPublic) {
+    if (loading) {
+      return (
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          minHeight: '50vh'
+        }}>
+          <LoadingSpinner message="Loading..." />
+        </div>
+      );
+    }
+    if (!user) {
+      return <p>Unauthorized. Please <a href="/auth/login">log in</a>.</p>;
+    }
+  }
 
-  if (loading) return <p>Loading…</p>
-  if (!user && !isPublic) return <p>Unauthorized. Please <a href="/auth/login">log in</a>.</p>
   return <>{children}</>
 }

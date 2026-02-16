@@ -1,659 +1,1749 @@
+/* ========================================
+   NIKE-STYLE PRODUCT GRID LAYOUT
+   Clean, Modern E-Commerce Design
+   ======================================== */
+
 .productsContainer {
+  /* Clean Color Palette */
+  --color-bg: #ffffff;
+  --color-text-primary: #111111;
+  --color-text-secondary: #757575;
+  --color-border: #e5e5e5;
+  --color-hover-bg: #f5f5f5;
+  
+  /* Spacing System */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 12px;
+  --spacing-lg: 16px;
+  --spacing-xl: 24px;
+  --spacing-2xl: 32px;
+  --spacing-3xl: 48px;
+  
+  /* Typography */
+  --font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-size-sm: 12px;
+  --font-size-base: 15px;
+  --font-size-lg: 16px;
+  --font-size-xl: 24px;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-bold: 700;
+  
+  /* Transitions */
+  --transition: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* Layout */
+  --max-width: 1440px;
+  /* Offset below the navbar for fixed/sticky elements on desktop */
+  --content-top: 94px;
+  
+  /* Apply Base Styles */
+  position: relative;
   min-height: 100vh;
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  font-family: var(--font-family);
   padding: 0;
-  position: relative;
-  overflow: hidden;
-  perspective: 1000px;
+  max-width: 100%;
+  margin: 0 auto;
+  background: var(--color-bg);
 }
 
-.productsContainer::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: radial-gradient(circle at 20% 20%, rgba(26, 32, 44, 0.03) 0%, transparent 50%);
-  opacity: 0.05;
-  z-index: 0;
-}
-
+/* Add padding only to title and top bar, not to grid */
 .title {
-  font-size: 3.5rem;
+  padding: 0 var(--spacing-2xl);
+  margin-top: var(--spacing-2xl);
+    background: linear-gradient(135deg, rgba(255,255,255,0.82) 0%, rgba(245,245,245,0.92) 100%);
+    box-shadow: 0 4px 24px 0 rgba(0,0,0,0.08), 0 1.5px 6px 0 rgba(0,0,0,0.04);
+    backdrop-filter: blur(12px) saturate(120%);
+    -webkit-backdrop-filter: blur(12px) saturate(120%);
+    color: var(--color-text-primary);
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 32px; /* Softer pill shape */
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    letter-spacing: -0.01em;
+    transition: box-shadow 0.18s cubic-bezier(0.4,0,0.2,1);
+  font-size: 32px;
   font-weight: 700;
-  color: #1a202c;
-  margin: 4rem 0;
-  text-align: center;
-  letter-spacing: -0.025em;
+  color: var(--color-text-primary);
+  margin: 0;
+    width: 14px;
+    height: 14px;
+    opacity: 0.7;
+  letter-spacing: -0.03em;
   position: relative;
-  display: inline-block;
-  width: 100%;
+  text-align: center;
+}
+
+@media (min-width: 1024px) {
+  .title {
+    font-size: 38px;
+    padding: 56px var(--spacing-3xl) 36px;
+    font-weight: 700;
+  }
+}
+
+@media (min-width: 1440px) {
+  .title {
+    font-size: 42px;
+    font-weight: 700;
+  }
 }
 
 .title::after {
   content: '';
-  position: absolute;
-  bottom: -4px;
-  left: 0;
-  width: 40%;
-  height: 2px;
-  background: linear-gradient(90deg, #1a202c, transparent);
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.title:hover::after {
-  transform: scaleX(1);
-  animation: gradientFlow 3s ease-in-out infinite;
-}
-
-.categoryContainer {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-bottom: 2rem;
-}
-
-.categoryButton {
-  padding: 0.75rem 1.25rem;
-  border-radius: 9999px;
-  font-size: 0.85rem;
-  font-weight: 500;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  cursor: pointer;
-  border: 1px solid transparent;
-  background-color: rgba(226, 232, 240, 0.5);
-  color: #4a5568;
-  backdrop-filter: blur(5px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-.categoryButton:hover {
-  background-color: #1a202c;
-  color: #ffffff;
-  border-color: #1a202c;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.categoryButton.active {
-  background-color: #1a202c;
-  color: #ffffff;
-  border-color: #1a202c;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-.clearCategoryButton {
-  background-color: rgba(226, 232, 240, 0.3);
-  color: #64748b;
-  border: 1px solid rgba(226, 232, 240, 0.6);
-}
-
-.clearCategoryButton:hover {
-  background-color: rgba(226, 232, 240, 0.6);
-  color: #1a202c;
-}
-
-.loadingText,
-.errorMessage {
-  text-align: center;
-  padding: 2rem;
-  font-size: 1.1rem;
-  color: #4a5568;
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(8px);
-  border-radius: 12px;
-  border: 1px solid rgba(226, 232, 240, 0.8);
-  margin-top: 2rem;
-}
-
-.errorMessage {
-  color: #e53e3e;
-  border-color: rgba(229, 62, 62, 0.4);
-}
-
-.emptyProducts {
-  text-align: center;
-  color: #64748b;
-  font-style: italic;
-  padding: 3rem;
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(8px);
-  border-radius: 16px;
-  border: 1px solid rgba(226, 232, 240, 0.8);
-  margin-top: 2rem;
-}
-
-.productGrid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 2rem;
-  width: 100%;
-}
-
-.mainLayout {
-  display: flex;
-  gap: 3rem;
-  padding: 2rem;
-  max-width: 1600px;
-  margin: 0 auto;
-  position: relative;
-}
-
-.sidebar {
-  width: 280px;
-  flex-shrink: 0;
-  height: fit-content;
-  position: sticky;
-  top: 100px;
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(12px);
-  border-radius: 16px;
-  border: 1px solid rgba(226, 232, 240, 0.8);
-  padding: 1.5rem;
-  transition: transform 0.3s ease;
-  z-index: 40;
-}
-
-.sidebarHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
-}
-
-.sidebarTitle {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #1a202c;
-  margin: 0;
-}
-
-.closeFilterButton {
   display: none;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0.5rem;
-  border-radius: 50%;
-  transition: background 0.2s;
 }
 
-.closeFilterButton:hover {
-  background: rgba(0, 0, 0, 0.05);
-}
-
-.filterSection {
-  margin-bottom: 2rem;
-}
-
-.filterSectionTitle {
-  font-size: 0.875rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #64748b;
-  margin-bottom: 1rem;
-}
-
-.filterOption {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.5rem 0;
-  cursor: pointer;
-  transition: color 0.2s;
-  color: #4a5568;
-}
-
-.filterOption:hover {
-  color: #1a202c;
-}
-
-.radioCircle {
-  width: 20px;
-  height: 20px;
-  border: 2px solid #cbd5e1;
-  border-radius: 50%;
-  position: relative;
-  transition: border-color 0.2s;
-}
-
-.filterOption.active .radioCircle {
-  border-color: #1a202c;
-}
-
-.filterOption.active .radioCircle::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 10px;
-  height: 10px;
-  background: #1a202c;
-  border-radius: 50%;
-}
-
-.filterLabel {
-  font-size: 0.95rem;
-  font-weight: 500;
-}
+/* ========================================
+   TOP BAR - MINIMAL PROFESSIONAL DESIGN
+   Clean, simple, no card container
+   ======================================== */
 
 .topBar {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
-  padding: 1rem 1.5rem;
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(12px);
-  border-radius: 12px;
-  border: 1px solid rgba(226, 232, 240, 0.8);
-  position: sticky;
-  top: 80px;
-  /* Adjust based on navbar height */
-  z-index: 30;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
-}
-
-.filterToggle {
-  display: none;
-  /* Hidden on desktop */
-  align-items: center;
-  gap: 0.5rem;
-  background: none;
-  border: 1px solid #e2e8f0;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
+  justify-content: center;
+  padding: 0 var(--spacing-3xl);
+  margin: 0 var(--spacing-3xl) 48px;
+  position: relative;
+  z-index: 2000; /* Ensure dropdown sits above product grid */
+  
+  background: linear-gradient(135deg, rgba(255,255,255,0.82) 0%, rgba(245,245,245,0.92) 100%);
+  box-shadow: 0 4px 24px 0 rgba(0,0,0,0.08), 0 1.5px 6px 0 rgba(0,0,0,0.04);
+  backdrop-filter: blur(12px) saturate(120%);
+  -webkit-backdrop-filter: blur(12px) saturate(120%);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 32px;
+  color: var(--color-text-primary);
+  font-size: 13px;
   font-weight: 500;
-  color: #1a202c;
+  font-family: var(--font-family);
   cursor: pointer;
+  transition: box-shadow 0.18s cubic-bezier(0.4,0,0.2,1);
+  background: transparent;
 }
 
-.sortContainer {
+@media (min-width: 1024px) {
+  .topBar {
+    padding: 0 32px;
+    margin-left: var(--spacing-3xl);
+    margin-right: var(--spacing-3xl);
+    margin-bottom: 56px;
+    z-index: 2000;
+  }
+}
+
+@media (min-width: 1440px) {
+  .topBar {
+    padding: 0 40px;
+  }
+}
+
+.topBarInner {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  margin-left: auto;
-  /* Push to right */
+  justify-content: space-between;
+  width: 100%;
+  gap: 32px;
+}
+
+.filterSection {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 0 0 auto;
+}
+
+/* Minimal Pill-Shaped Button */
+.filterButton,
+.filterDrawerButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  
+  /* Subtle frosted background with tiny blur */
+  background: rgba(245, 245, 245, 0.95);
+  backdrop-filter: blur(6px) saturate(120%);
+  -webkit-backdrop-filter: blur(6px) saturate(120%);
+  
+  color: var(--color-text-primary);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 50px; /* Pill shape */
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  letter-spacing: -0.01em;
+  
+  /* No transitions or hover effects */
+  transition: none;
+}
+
+.filterButton:hover,
+.filterDrawerButton:hover {
+  /* No hover effect */
+  background: rgba(245, 245, 245, 0.95);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.filterButton:active,
+.filterDrawerButton:active {
+  /* No active effect */
+  transform: none;
+}
+
+.filterButton svg,
+.filterDrawerButton svg {
+  width: 16px;
+  height: 16px;
+}
+
+.filterChipsContainer {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+}
+
+/* Minimal Pill-Shaped Filter Chip */
+.filterChip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  
+  /* Clean minimal background */
+  background: rgba(245, 245, 245, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 50px; /* Pill shape */
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  
+  /* No transitions */
+  transition: none;
+}
+
+.filterChip:hover {
+  /* No hover effect */
+  background: rgba(245, 245, 245, 0.95);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.filterChipRemove {
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  padding: 0;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+  opacity: 0.6;
+}
+
+.filterChipRemove:hover {
+  color: var(--color-text-primary);
+  opacity: 1;
+}
+
+/* Clear All Button - Minimal Pill Shape */
+.clearAllFilters {
+  padding: 8px 18px;
+  
+  background: rgba(245, 245, 245, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 50px; /* Pill shape */
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  
+  /* No transitions */
+  transition: none;
+}
+
+.clearAllFilters:hover {
+  /* No hover effect */
+  background: rgba(245, 245, 245, 0.95);
+  border-color: rgba(0, 0, 0, 0.06);
+  color: var(--color-text-secondary);
+}
+
+.topBarControls,
+.rightSection {
+  display: flex;
+  background: rgba(245, 245, 245, 0.95);
+  backdrop-filter: blur(6px) saturate(120%);
+  -webkit-backdrop-filter: blur(6px) saturate(120%);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 50px; /* Pill shape */
+  font-size: 14px;
+  transition: none;
+}
+
+/* Sort Container */
+.sortContainer {
+  width: 16px;
+  height: 16px;
 }
 
 .sortLabel {
-  font-size: 0.9rem;
-  color: #64748b;
-  font-weight: 500;
+  color: var(--color-text-primary);
+  font-size: 14px;
+    padding: 10px 20px;
+    font-size: 14px;
+    box-shadow: none;
+    border-radius: 50px;
+    background: rgba(245, 245, 245, 0.95);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+  position: relative;
+  min-width: 180px;
 }
 
-.sortSelect {
-  padding: 0.5rem 2rem 0.5rem 1rem;
-  border-radius: 8px;
-  border: 1px solid #e2e8f0;
-  background: transparent;
-  font-size: 0.9rem;
+.selectTrigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 20px;
+  width: 100%;
+  
+  /* Clean minimal background */
+  background: rgba(245, 245, 245, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 50px; /* Pill shape */
+  color: var(--color-text-primary);
+  font-size: 14px;
   font-weight: 500;
-  color: #1a202c;
+  font-family: var(--font-family);
   cursor: pointer;
+  
+  /* No transitions or hover effects */
+  transition: none;
+}
+
+.selectTrigger:hover {
+  /* No hover effect */
+  background: rgba(245, 245, 245, 0.95);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.selectArrow {
+  transition: transform 0.25s ease;
+  opacity: 0.6;
+}
+
+.selectArrowOpen {
+  background: rgba(245, 245, 245, 0.95);
+  box-shadow: none;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 50px; /* Pill shape */
+  font-size: 14px;
+  transition: none;
+  min-width: 220px;
+  z-index: 3000;
+  
+  /* Subtle glassmorphism (tiny blur for polish) */
+    padding: 10px 20px;
+    font-size: 14px;
+    box-shadow: none;
+    border-radius: 50px;
+    background: rgba(245, 245, 245, 0.95);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+  
+  /* Professional shadow */
+  box-shadow: 
+    0 12px 32px rgba(0, 0, 0, 0.12),
+    0 4px 12px rgba(0, 0, 0, 0.06),
+    0 1px 3px rgba(0, 0, 0, 0.04);
+  
+  overflow: hidden;
+  transform-origin: top right;
+  padding: 8px;
+}
+
+/* Dropdown Options - Clean and Simple */
+.selectOption {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px) saturate(120%);
+  -webkit-backdrop-filter: blur(8px) saturate(120%);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 14px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+  border: none;
+  color: var(--color-text-primary);
+  font-size: 14px;
+  font-weight: 500;
+    min-width: 220px;
+    border-radius: 14px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+  position: relative;
+}
+
+.selectOption:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.selectOption:active {
+  background: rgba(0, 0, 0, 0.06);
+  transform: scale(0.98);
+}
+
+.selectOptionActive {
+  background: rgba(0, 0, 0, 0.06);
+  font-weight: 600;
+}
+
+.selectOptionActive:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.checkmark {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  line-height: 1;
+  opacity: 0.9;
+}
+
+/* Keep old sortSelect for backward compatibility */
+.sortSelect {
+  padding: 10px 36px 10px 16px;
+  
+  /* Clean minimal background */
+  background: rgba(250, 250, 250, 0.9);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+  color: var(--color-text-primary);
+  font-size: 14px;
+  font-weight: 500;
+  font-family: var(--font-family);
+  cursor: pointer;
+  
+  transition: all 0.2s ease;
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%234a5568' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  
+  /* Custom arrow */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23111' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 0.75rem center;
+  background-position: right 12px center;
+  min-width: 160px;
+}
+
+.sortSelect:hover {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(0, 0, 0, 0.12);
 }
 
 .sortSelect:focus {
   outline: none;
-  border-color: #1a202c;
+  border-color: rgba(0, 0, 0, 0.2);
 }
 
+/* ========================================
+   PRODUCT GRID - BALANCED GALLERY LAYOUT
+   Smart responsive grid for optimal art showcase
+   ======================================== */
+
+/* ========================================
+   PRODUCT GRID - NIKE-STYLE 3-COLUMN LAYOUT
+   ======================================== */
+
+.productGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  column-gap: 12px;
+  row-gap: 48px;
+  margin-bottom: var(--spacing-3xl);
+  padding: 0 var(--spacing-2xl);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Desktop - 3 columns with professional spacing */
+@media (min-width: 1024px) {
+  .productGrid {
+    grid-template-columns: repeat(3, 1fr);
+    column-gap: 12px;
+    row-gap: 64px;
+    padding: 0 var(--spacing-3xl);
+  }
+}
+
+@media (min-width: 1440px) {
+  .productGrid {
+    column-gap: 16px;
+  }
+}
+
+/* Tablet - 2 columns */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .productGrid {
+    grid-template-columns: repeat(2, 1fr);
+    column-gap: 12px;
+    row-gap: 48px;
+    padding: 0 var(--spacing-xl);
+  }
+}
+
+/* Mobile - 1 column */
+@media (max-width: 767px) {
+  .productGrid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-2xl);
+    padding: 0 var(--spacing-lg);
+  }
+}
+
+/* ========================================
+   PRODUCT CARD - NIKE-STYLE CLEAN DESIGN
+   ======================================== */
+
 .productCard {
-  background: rgba(255, 255, 255, 0.95);
-  border: none;
-  border-radius: 16px;
-  padding: 0;
   position: relative;
-  overflow: hidden;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
-  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-  transform-style: preserve-3d;
   display: flex;
   flex-direction: column;
-  height: 100%;
+  background: var(--color-bg);
+  overflow: visible;
+  transition: all var(--transition);
   cursor: pointer;
-  transform: translateZ(0);
-  opacity: 0;
-  transform: translateY(50px);
-  animation: fadeInUp 0.6s ease forwards;
+  padding: 0;
+  margin: 0;
 }
 
 .productCard:hover {
-  transform: translateY(-10px) scale(1.02);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+  opacity: 0.7;
 }
 
-.productCard:hover::before {
-  transform: translateX(100%);
-}
+/* ========================================
+   IMAGE CONTAINER - SQUARE RATIO
+   ======================================== */
 
-.lowStockBadge {
-  position: absolute;
-  top: 1.25rem;
-  right: 1.25rem;
-  background-color: rgba(229, 62, 62, 0.95);
-  color: white;
-  font-size: 0.7rem;
-  font-weight: 600;
-  padding: 0.4rem 1rem;
-  border-radius: 99px;
-  box-shadow: 0 4px 12px rgba(229, 62, 62, 0.2);
-  z-index: 10;
-  letter-spacing: 0.8px;
-  text-transform: uppercase;
-  backdrop-filter: blur(4px);
-}
-
-.outOfStockBadge {
-  position: absolute;
-  top: 1.25rem;
-  right: 1.25rem;
-  background-color: rgba(45, 55, 72, 0.95);
-  color: white;
-  font-size: 0.7rem;
-  font-weight: 600;
-  padding: 0.4rem 1rem;
-  border-radius: 99px;
-  box-shadow: 0 4px 12px rgba(45, 55, 72, 0.2);
-  z-index: 10;
-  letter-spacing: 0.8px;
-  text-transform: uppercase;
-  backdrop-filter: blur(4px);
-}
-
-.productImageContainer {
+.imageContainer {
   position: relative;
   width: 100%;
-  padding-bottom: 100%;
+  padding-top: 110%; /* Slightly taller to mirror Nike card proportions */
   overflow: hidden;
+  background: #f5f5f5;
+  flex-shrink: 0;
+  margin-bottom: var(--spacing-sm);
+}
+
+/* Larger images for desktop - full card width */
+@media (min-width: 1024px) {
+  .imageContainer {
+    padding-top: 100%;
+    margin-bottom: var(--spacing-md);
+  }
+}
+
+@media (min-width: 1280px) {
+  .imageContainer {
+    padding-top: 105%;
+  }
 }
 
 .productImage {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 85%;
+  height: 85%;
+  object-fit: contain;
+  transition: none; /* No zoom effect, keep it minimal */
 }
 
-.productCard:hover .productImage {
-  transform: scale(1.1);
-}
-
-.productImageOverlay {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 1rem;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
-  display: flex;
-  justify-content: flex-end;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.productCard:hover .productImageOverlay {
-  opacity: 1;
-}
-
+/* Minimal Wishlist Button */
 .wishlistButton {
-  background: white;
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: var(--color-bg);
   border: none;
-  width: 40px;
-  height: 40px;
   border-radius: 50%;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: all var(--transition);
+  z-index: 10;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .wishlistButton:hover {
-  transform: scale(1.1);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  background: var(--color-hover-bg);
+  transform: scale(1.05);
 }
 
-.wishlistButton[data-active="true"] {
-  background: #000000;
-  color: white;
+/* Stock Badges - Enhanced Frosty Glassmorphism Pill */
+.stockBadge {
+  position: absolute;
+  bottom: 14px;
+  left: 14px;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  color: #000000;
+  padding: 10px 20px;
+  border-radius: 50px;
+  font-size: 12.5px;
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  z-index: 10;
+  border: 1.5px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 
+    0 8px 24px rgba(0, 0, 0, 0.12),
+    0 2px 8px rgba(0, 0, 0, 0.06),
+    inset 0 1px 1px rgba(255, 255, 255, 0.8);
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.noImage {
-  background: linear-gradient(135deg, #e2e8f0 0%, #f8fafc 100%);
+.stockBadge:hover {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  box-shadow: 
+    0 12px 32px rgba(0, 0, 0, 0.15),
+    0 4px 12px rgba(0, 0, 0, 0.08),
+    inset 0 1px 1px rgba(255, 255, 255, 0.9);
+  transform: translateY(-1px);
+}
+
+.stockBadge.lowStock {
+  background: rgba(255, 255, 255, 0.90);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  color: #000000;
+  border: 1.5px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 
+    0 8px 24px rgba(0, 0, 0, 0.12),
+    0 2px 8px rgba(0, 0, 0, 0.06),
+    inset 0 1px 1px rgba(255, 255, 255, 0.85);
+}
+
+/* Image Navigation Arrows - Enhanced Frosty Glassmorphism Style */
+.imageNavigation {
+  position: absolute;
+  bottom: 14px;
+  right: 14px;
+  display: flex;
+  gap: 8px;
+  z-index: 15;
+  align-items: center;
+}
+
+.imageNavButton {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1.5px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 
+    0 8px 24px rgba(0, 0, 0, 0.12),
+    0 2px 8px rgba(0, 0, 0, 0.06),
+    inset 0 1px 1px rgba(255, 255, 255, 0.8);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #94a3b8;
-  font-style: italic;
+  cursor: pointer;
+  color: #000000;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1;
+  will-change: transform;
 }
 
-.productInfo {
-  padding: 1.5rem;
+.imageNavButton:hover {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  box-shadow: 
+    0 12px 32px rgba(0, 0, 0, 0.15),
+    0 4px 12px rgba(0, 0, 0, 0.08),
+    inset 0 1px 1px rgba(255, 255, 255, 0.9);
+  border: 1.5px solid rgba(255, 255, 255, 0.75);
+}
+
+.imageNavButton:active {
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.12),
+    0 1px 4px rgba(0, 0, 0, 0.06),
+    inset 0 1px 1px rgba(255, 255, 255, 0.7);
+}
+
+.imageNavButton:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.imageNavButton:disabled:hover {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 
+    0 8px 24px rgba(0, 0, 0, 0.12),
+    0 2px 8px rgba(0, 0, 0, 0.06),
+    inset 0 1px 1px rgba(255, 255, 255, 0.8);
+  border: 1.5px solid rgba(255, 255, 255, 0.6);
+}
+
+/* Image Indicator Dots - Enhanced Frosty Glassmorphism */
+.imageIndicators {
+  position: absolute;
+  bottom: 64px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 7px;
+  z-index: 15;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 50px;
+  border: 1.5px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 
+    0 6px 20px rgba(0, 0, 0, 0.1),
+    0 2px 6px rgba(0, 0, 0, 0.05),
+    inset 0 1px 1px rgba(255, 255, 255, 0.7);
+}
+
+.imageIndicatorDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.35);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  will-change: width, background, box-shadow;
+}
+
+.imageIndicatorDot.active {
+  background: #000000;
+  border-radius: 4px;
+  box-shadow: 
+    0 2px 6px rgba(0, 0, 0, 0.2),
+    0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* ========================================
+   CARD CONTENT - NIKE-STYLE MINIMAL
+   ======================================== */
+
+.cardContent {
+  padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(10px);
+  gap: var(--spacing-xs);
 }
 
-.productName {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #1a202c;
-  margin: 0;
-  line-height: 1.4;
+/* Category Label - Small, subtle, minimal grey */
+.categoryLabel {
+  color: #9ca3af;
+  font-size: 13px;
+  font-weight: var(--font-weight-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
 }
 
-.productPrice {
-  font-size: 1.25rem;
-  font-weight: 500;
-  color: #2d3748;
-  margin: 0;
+@media (min-width: 1024px) {
+  .categoryLabel {
+    font-size: 14px;
+    margin-bottom: 6px;
+  }
 }
 
-.productShortDesc {
-  color: #4a5568;
-  margin: 0;
-  line-height: 1.6;
-  font-size: 0.925rem;
+/* Product Name - Bold primary text */
+.productName,
+.productTitle {
+  font-size: 15px;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+  line-height: 1.5;
+  margin: 0 0 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   line-clamp: 2;
   -webkit-box-orient: vertical;
+}
+
+@media (min-width: 1024px) {
+  .productName,
+  .productTitle {
+    font-size: 16px;
+    margin: 0 0 6px;
+  }
+}
+
+/* Artist/Category - Secondary text */
+.productArtist {
+  font-size: 15px;
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-normal);
+  margin: 0 0 6px;
+  line-height: 1.5;
+}
+
+@media (min-width: 1024px) {
+  .productArtist {
+    font-size: 16px;
+    margin: 0 0 8px;
+  }
+}
+
+/* Price - Bold, prominent */
+.productPrice {
+  font-size: 15px;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+@media (min-width: 1024px) {
+  .productPrice {
+    font-size: 16px;
+  }
+}
+
+.productPrice small {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-normal);
+  color: var(--color-text-secondary);
+  margin-left: var(--spacing-xs);
+}
+
+/* Rating Section - Minimal */
+.ratingSection {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-sm);
+}
+
+.stars {
+  display: flex;
+  gap: 2px;
+}
+
+.stars svg {
+  width: 12px;
+  height: 12px;
+}
+
+.ratingText {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.productPrice small {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  margin-left: 0.25rem;
+}
+
+/* Rating Section - Simple & Clean */
+.ratingSection,
+.ratingContainer {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-sm);
+}
+
+.stars {
+  display: flex;
+  gap: 2px;
+  color: var(--color-text-primary);
+}
+
+.stars svg,
+.stars span {
+  width: 12px;
+  height: 12px;
+  font-size: 12px;
+}
+
+.ratingText {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+/* Add to Cart Button - Hide on desktop, shown for mobile only */
+.addToCartButton {
+  display: none; /* Hidden by default on desktop like Nike */
+}
+
+@media (max-width: 767px) {
+  .addToCartButton {
+    display: block;
+    width: 100%;
+    background: var(--color-text-primary);
+    color: white;
+    border: none;
+    border-radius: 30px;
+    padding: 14px 24px;
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    cursor: pointer;
+    transition: all var(--transition);
+    margin-top: var(--spacing-lg);
+  }
+
+  .addToCartButton:hover:not(:disabled) {
+    opacity: 0.8;
+  }
+
+  .addToCartButton:disabled {
+    background: #e5e5e5;
+    color: #a3a3a3;
+    cursor: not-allowed;
+  }
+}
+
+/* ========================================
+   PAGINATION - NIKE-STYLE (Mobile Only)
+   ======================================== */
+
+.paginationContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-lg);
+  margin-top: var(--spacing-3xl);
+  padding: var(--spacing-2xl) 0;
+  border-top: 1px solid var(--color-border);
+}
+
+/* Hide pagination on desktop */
+@media (min-width: 1024px) {
+  .desktopMain .paginationContainer {
+    display: none;
+  }
+}
+
+.paginationInfo {
+  display: flex;
+  gap: var(--spacing-lg);
+  align-items: center;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.paginationInfoText {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.paginationControls {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.paginationNumbers {
+  display: flex;
+  gap: var(--spacing-xs);
+  align-items: center;
+}
+
+.paginationDots {
+  color: var(--color-text-tertiary);
+  padding: 0 var(--spacing-xs);
+}
+
+.paginationButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  padding: 10px 16px;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.paginationButton:hover:not(:disabled) {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: white;
+}
+
+.paginationButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: var(--color-bg-primary);
+}
+
+.pageNumber {
+  min-width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.pageNumber:hover {
+  background: var(--color-hover);
+  border-color: var(--color-text-tertiary);
+}
+
+.pageNumber.active,
+.pageNumberActive {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: white;
+}
+
+/* ========================================
+   INFINITE SCROLL - DESKTOP ONLY
+   ======================================== */
+
+.loadMoreTrigger {
+  width: 100%;
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: var(--spacing-2xl);
+}
+
+.loadingMoreContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-3xl) 0;
+  width: 100%;
+}
+
+.allLoadedMessage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 120px 40px;
+  margin-top: 80px;
+  margin-left: calc(-1 * var(--spacing-3xl));
+  margin-right: calc(-1 * var(--spacing-3xl));
+  margin-bottom: -80px;
+  background: #000000;
+  position: relative;
   overflow: hidden;
 }
 
-.productCategory {
-  font-size: 0.875rem;
-  color: #4a5568;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+/* Subtle shimmer overlay */
+.allLoadedMessage::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.03) 50%,
+    transparent 100%
+  );
+  animation: shimmerMove 8s ease-in-out infinite;
+  pointer-events: none;
 }
 
-.viewDetailsButton {
-  margin-top: auto;
-  padding: 0.75rem 1rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #1a202c;
-  background: transparent;
-  border: 1px solid #1a202c;
-  border-radius: 8px;
-  transition: all 0.3s ease;
-  text-align: center;
-  text-decoration: none;
-}
-
-.viewDetailsButton:hover {
-  background: #1a202c;
-  color: #ffffff;
-}
-
-@keyframes gradientFlow {
+@keyframes shimmerMove {
   0% {
-    background-position: 0% 50%;
+    left: -100%;
   }
-
-  50% {
-    background-position: 100% 50%;
-  }
-
-  100% {
-    background-position: 0% 50%;
+  50%, 100% {
+    left: 100%;
   }
 }
 
-@media (max-width: 1200px) {
-  .productGrid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+.allLoadedMessage p {
+  color: #ffffff;
+  font-size: 72px;
+  font-weight: 300;
+  text-align: center;
+  margin: 0;
+  padding: 0;
+  letter-spacing: 0.15em;
+  line-height: 1.2;
+  font-family: 'Playfair Display', 'Georgia', 'Times New Roman', serif;
+  position: relative;
+  z-index: 1;
+  text-transform: lowercase;
+  font-style: italic;
+  animation: fadeInGlow 1.5s ease-out forwards;
+  opacity: 0;
+  text-shadow: 
+    0 0 20px rgba(255, 255, 255, 0.1),
+    0 0 40px rgba(255, 255, 255, 0.05);
 }
 
-@media (max-width: 1024px) {
-  .sidebar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: 100vh;
-    width: 300px;
-    background: white;
-    box-shadow: 2px 0 20px rgba(0, 0, 0, 0.1);
-    transform: translateX(-100%);
-    z-index: 100;
-    margin: 0;
-    border-radius: 0;
-    overflow-y: auto;
-  }
-
-  .sidebar.open {
-    transform: translateX(0);
-  }
-
-  .closeFilterButton {
-    display: flex;
-  }
-
-  .mainLayout {
-    display: block;
-    /* Stack layout on mobile */
-    padding: 1rem;
-  }
-
-  .filterToggle {
-    display: flex;
-  }
-
-  .productGrid {
-    padding: 0;
-    /* Remove padding as mainLayout has it */
-  }
-
-  .overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(4px);
-    z-index: 90;
-    animation: fadeIn 0.3s ease;
-  }
-}
-
-@media (max-width: 768px) {
-  .productGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .title {
-    font-size: 2.5rem;
-    margin: 2rem 0;
-  }
-
-  .topBar {
-    flex-direction: row;
-    /* Keep row for filter + sort */
-    gap: 1rem;
-    padding: 0.75rem;
-  }
-
-  .sortLabel {
-    display: none;
-    /* Hide 'Sort:' label on very small screens */
-  }
-}
-
-@keyframes fadeIn {
+@keyframes fadeInGlow {
   from {
     opacity: 0;
+    transform: translateY(20px);
   }
-
-  to {
-    opacity: 1;
-  }
-}
-
-/* Scroll animation classes */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(50px);
-  }
-
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
 
-/* Stagger animation for cards */
-.productCard:nth-child(3n + 1) {
-  animation-delay: 0.1s;
+@media (min-width: 1024px) {
+  .allLoadedMessage {
+    padding: 160px 60px;
+    margin-top: 120px;
+  }
+  
+  .allLoadedMessage p {
+    font-size: 96px;
+    letter-spacing: 0.18em;
+  }
 }
 
-.productCard:nth-child(3n + 2) {
-  animation-delay: 0.2s;
+@media (min-width: 1440px) {
+  .allLoadedMessage p {
+    font-size: 108px;
+    letter-spacing: 0.2em;
+  }
 }
 
-.productCard:nth-child(3n + 3) {
-  animation-delay: 0.3s;
+/* Mobile responsive */
+@media (max-width: 767px) {
+  .allLoadedMessage {
+    padding: 80px 24px;
+    margin-top: 60px;
+    margin-left: calc(-1 * var(--spacing-lg));
+    margin-right: calc(-1 * var(--spacing-lg));
+  }
+  
+  .allLoadedMessage p {
+    font-size: 48px;
+    letter-spacing: 0.12em;
+  }
 }
 
-.loadingContainer {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 300px;
-  width: 100%;
+/* ========================================
+   LOADING & EMPTY STATES - MINIMAL
+   ======================================== */
+
+.loadingText,
+.errorMessage,
+.emptyProducts {
+  text-align: center;
+  padding: var(--spacing-4xl);
+  margin: var(--spacing-xl) auto;
+  font-size: var(--font-size-md);
+  color: var(--color-text-secondary);
 }
 
-.loadingSpinner {
-  animation: spin 1s linear infinite;
+.errorMessage {
+  color: #dc2626;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: var(--radius-lg);
 }
 
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
+/* ========================================
+   MOBILE FILTER DRAWER - MINIMAL GLASSMORPHISM
+   ======================================== */
+
+.mobileFilterOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 998;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.mobileFilterOverlayVisible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.mobileFilterDrawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 320px;
+  max-width: 85vw;
+  
+  /* Glassmorphism styling */
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  
+  /* Minimal shadow */
+  box-shadow: 
+    4px 0 32px rgba(0, 0, 0, 0.12),
+    0 0 1px rgba(0, 0, 0, 0.04);
+  
+  z-index: 999;
+  transform: translateX(-100%);
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  
+  /* Custom scrollbar */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+}
+
+.mobileFilterDrawer::-webkit-scrollbar {
+  width: 6px;
+}
+
+.mobileFilterDrawer::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.mobileFilterDrawer::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 3px;
+}
+
+.mobileFilterDrawer::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.mobileFilterDrawerOpen {
+  transform: translateX(0);
+}
+
+/* ========================================
+   DESKTOP FILTER SIDEBAR (LEFT)
+   Minimal Glassmorphism Design with Clean Aesthetics
+   ======================================== */
+
+@media (min-width: 1024px) {
+  .desktopWrap {
+    position: relative;
+    --sidebar-width: 320px;
   }
 
-  to {
-    transform: rotate(360deg);
+  .desktopSidebar {
+    position: fixed;
+    top: var(--content-top);
+    left: 0;
+    width: var(--sidebar-width);
+    height: calc(100vh - var(--content-top));
+    
+    /* Glassmorphism styling */
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    
+    /* Minimal border and shadow */
+    border-right: 1px solid rgba(0, 0, 0, 0.06);
+    box-shadow: 
+      4px 0 24px rgba(0, 0, 0, 0.04),
+      0 0 1px rgba(0, 0, 0, 0.02);
+    
+    transform: translateX(-100%);
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    
+    /* Custom scrollbar for elegance */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+  }
+
+  .desktopSidebar::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .desktopSidebar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .desktopSidebar::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 3px;
+  }
+
+  .desktopSidebar::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.25);
+  }
+
+  .desktopSidebarOpen {
+    transform: translateX(0);
+  }
+
+  .desktopMain {
+    transition: margin-left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: margin-left;
+  }
+
+  .desktopMainWithSidebar {
+    margin-left: var(--sidebar-width);
+  }
+    background: linear-gradient(135deg, rgba(255,255,255,0.90) 0%, rgba(245,245,245,0.96) 100%);
+    backdrop-filter: blur(16px) saturate(120%);
+    -webkit-backdrop-filter: blur(16px) saturate(120%);
+    border: 1px solid rgba(255,255,255,0.22);
+    border-radius: 18px;
+    box-shadow: 0 16px 40px rgba(0,0,0,0.14), 0 6px 18px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.mobileFilterHeader h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  letter-spacing: -0.02em;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Close Button - Minimal Glassmorphism */
+.mobileFilterCloseButton {
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  color: var(--color-text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mobileFilterCloseButton:hover {
+  background: rgba(0, 0, 0, 0.1);
+  border-color: rgba(0, 0, 0, 0.15);
+  transform: scale(1.05);
+}
+
+.mobileFilterCloseButton:active {
+  transform: scale(0.95);
+}
+
+/* Filter Content Container */
+.mobileFilterContent {
+  padding: 20px 16px 32px;
+  background: transparent;
+}
+
+/* Filter Title */
+.filterTitle {
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.4);
+  margin: 0 0 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  padding: 0 8px;
+}
+
+/* Filter Section - Modern Grey Container */
+.filterSection {
+  margin-bottom: 12px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: linear-gradient(135deg, rgba(245, 245, 245, 0.95), rgba(250, 250, 250, 0.9));
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.04),
+    0 1px 2px rgba(0, 0, 0, 0.02);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.filterSection:hover {
+  border-color: rgba(0, 0, 0, 0.1);
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.06),
+    0 2px 4px rgba(0, 0, 0, 0.03);
+  transform: translateY(-1px);
+}
+
+/* Filter Header - Clickable with Icon */
+.filterHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 20px;
+  background: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  transition: all 0.2s ease;
+  user-select: none;
+  border-bottom: 1px solid transparent;
+}
+
+.filterHeader:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.filterHeader:active {
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.filterHeader span {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  letter-spacing: 0.2px;
+}
+
+.filterHeader svg {
+  font-size: 16px;
+  opacity: 0.7;
+}
+
+.filterHeader .arrow {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0.5;
+  font-size: 16px;
+}
+
+/* Filter Content - Clean Options Container */
+.filterContent {
+  padding: 16px 20px 20px;
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Filter Option - Minimal Radio/Checkbox Items */
+.filterOption {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  font-size: 14px;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 10px;
+  margin: 0;
+  position: relative;
+  background: transparent;
+}
+
+.filterOption:hover {
+  background: rgba(255, 255, 255, 0.6);
+  transform: translateX(4px);
+}
+
+.filterOption input[type="radio"],
+.filterOption input[type="checkbox"] {
+  cursor: pointer;
+  width: 20px;
+  height: 20px;
+  accent-color: #000000;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.filterOption:hover input[type="radio"],
+.filterOption:hover input[type="checkbox"] {
+  transform: scale(1.1);
+}
+
+.filterOption label,
+.filterOption span {
+  cursor: pointer;
+  flex: 1;
+  line-height: 1.5;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  letter-spacing: 0.1px;
+}
+
+/* Price Input Fields */
+.filterContent input[type="number"],
+.filterContent input[type="text"] {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  font-size: 14px;
+  color: var(--color-text-primary);
+  background: rgba(255, 255, 255, 0.7);
+  transition: all 0.2s ease;
+  font-family: var(--font-family);
+  outline: none;
+  font-weight: 500;
+}
+
+.filterContent input[type="number"]:hover,
+.filterContent input[type="text"]:hover {
+  border-color: rgba(0, 0, 0, 0.2);
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.filterContent input[type="number"]:focus,
+.filterContent input[type="text"]:focus {
+  border-color: rgba(0, 0, 0, 0.3);
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.04);
+}
+
+/* Price Range Container */
+.priceRange {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.priceRange > div {
+  flex: 1;
+}
+
+.priceRange label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.5);
+  margin-bottom: 8px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+/* Clear Button - Modern Grey Style */
+.clearButton {
+  margin-top: 16px;
+  padding: 12px 18px;
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.7);
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.clearButton:hover {
+  background: rgba(0, 0, 0, 0.08);
+  border-color: rgba(0, 0, 0, 0.2);
+  color: var(--color-text-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.clearButton:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+/* ========================================
+   MOBILE ADJUSTMENTS
+   ======================================== */
+
+.mobilePageWrapper {
+  background: var(--color-bg-primary);
+}
+
+.mobileProductsContainer {
+  padding: var(--spacing-lg) var(--spacing-md);
+}
+
+.mobileProductGrid {
+  gap: var(--spacing-lg);
+}
+
+.mobileResultsCount {
+  text-align: center;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--spacing-lg);
+  font-weight: 500;
+}
+
+.mobileActiveFilters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: var(--spacing-lg);
+  padding: 0 var(--spacing-md);
+}
+
+.mobileFilterTag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.mobileFilterTag button {
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 0;
+  width: 14px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ========================================
+   RESPONSIVE ADJUSTMENTS
+   ======================================== */
+
+@media (max-width: 1199px) {
+  .productsContainer {
+    padding: var(--spacing-2xl) var(--spacing-lg);
+  }
+  
+  .title {
+    margin-bottom: var(--spacing-lg);
+  }
+}
+
+@media (max-width: 767px) {
+  .productsContainer {
+    padding: var(--spacing-lg) var(--spacing-md);
+  }
+  
+  .title {
+    font-size: 24px;
+    margin-bottom: var(--spacing-md);
+  }
+  
+  .topBar {
+    padding: var(--spacing-md);
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .topBarInner {
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
+  
+  .filterSection {
+    width: 100%;
+  }
+  
+  .topBarControls {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .sortLabel {
+    display: none;
+  }
+  
+  .cardContent {
+    padding: var(--spacing-md);
+  }
+  
+  .paginationContainer {
+    padding: var(--spacing-lg) 0;
+    margin-top: var(--spacing-2xl);
+  }
+  
+  .paginationInfo {
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    text-align: center;
+  }
+  
+  .paginationButton {
+    padding: 8px 12px;
+    font-size: var(--font-size-xs);
+  }
+  
+  .pageNumber {
+    min-width: 32px;
+    height: 32px;
+    font-size: var(--font-size-xs);
   }
 }

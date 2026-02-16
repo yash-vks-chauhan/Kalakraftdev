@@ -53,9 +53,18 @@ export default function AdminOrdersPage() {
     fetch(url, {
       headers: { Authorization: `Bearer ${token}` },
     })
-      .then(r => r.json())
-      .then(data => setOrders(data.orders))
-      .catch(console.error)
+      .then(async r => {
+        if (!r.ok) {
+          const text = await r.text();
+          throw new Error(`Failed to load orders (${r.status}): ${text}`);
+        }
+        return r.json();
+      })
+      .then(data => setOrders(data.orders || []))
+      .catch(err => {
+        console.error(err);
+        setOrders([]);
+      })
       .finally(() => setLoading(false))
   }, [token, user, filterUid])
 
@@ -77,7 +86,7 @@ export default function AdminOrdersPage() {
 
   useEffect(() => {
     if (user?.role !== 'admin') return
-    const evtSource = new EventSource('/api/orders/stream', { withCredentials: true })
+    const evtSource = new EventSource('/api/orders/stream')
     evtSource.onmessage = evt => {
       const { type, order } = JSON.parse(evt.data)
       if (type === 'created') {

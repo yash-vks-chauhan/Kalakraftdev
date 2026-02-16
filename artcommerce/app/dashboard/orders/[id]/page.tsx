@@ -7,6 +7,8 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../../../contexts/AuthContext'
 import { useRouter, useParams } from 'next/navigation'
 import styles from '../order_details.module.css'
+import React from 'react'
+import ButtonLoader from '../../../components/ButtonLoader'
 
 interface OrderItem {
   id: number
@@ -244,7 +246,7 @@ export default function OrderDetailsPage() {
                 disabled={isLoading}
                 className={styles.updateButton}
               >
-                {isLoading ? 'Updating…' : 'Update Status'}
+                {isLoading ? <ButtonLoader size="small" color="white" /> : 'Update Status'}
               </button>
             </form>
           )}
@@ -267,16 +269,39 @@ export default function OrderDetailsPage() {
               const unitPrice = item.priceAtPurchase.toFixed(2)
               const lineTotal = (item.quantity * item.priceAtPurchase).toFixed(2)
               return (
-                <tr key={item.id}>
-                  <td data-label="Product">{item.product.name}</td>
-                  <td data-label="Qty" style={{ textAlign: 'center' }}>{item.quantity}</td>
-                  <td data-label="Unit Price" style={{ textAlign: 'right' }}>
-                    ₹ {unitPrice}
-                  </td>
-                  <td data-label="Line Total" style={{ textAlign: 'right' }}>
-                    ₹ {lineTotal}
-                  </td>
-                </tr>
+                <React.Fragment key={item.id}>
+                  <tr>
+                    <td data-label="Product">{item.product.name}</td>
+                    <td data-label="Qty" style={{ textAlign: 'center' }}>{item.quantity}</td>
+                    <td data-label="Unit Price" style={{ textAlign: 'right' }}>₹ {unitPrice}</td>
+                    <td data-label="Line Total" style={{ textAlign: 'right' }}>₹ {lineTotal}</td>
+                  </tr>
+                  {order.status === 'delivered' && (
+                    <tr key={`${item.id}-rate`}>
+                      <td colSpan={4} style={{ padding: '6px 0' }}>
+                        <span style={{ marginRight: '8px' }}>Rate:</span>
+                        {[1,2,3,4,5].map(n => (
+                          <button
+                            key={n}
+                            style={{ marginRight: 4, cursor: 'pointer' }}
+                            onClick={async ()=>{
+                              const comment = prompt('Any feedback? (optional)', '') || '';
+                              await fetch(`/api/products/${item.product.id}/review`,{
+                                method:'POST',
+                                headers:{
+                                  'Content-Type':'application/json',
+                                  Authorization:`Bearer ${token}`
+                                },
+                                body:JSON.stringify({ rating:n, comment, locale:navigator.language })
+                              })
+                              alert('Thanks for rating!')
+                            }}
+                          >{n}</button>
+                        ))}
+                      </td>
+                    </tr>
+                  )}
+                </React.Fragment>
               )
             })}
           </tbody>

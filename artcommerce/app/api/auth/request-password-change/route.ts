@@ -35,7 +35,7 @@ export async function POST(request: Request) {
     user = await prisma.user.findUnique({ where: { email } })
   }
 
-  // ── 3️⃣ No such user? return OK (don't reveal existence) ─
+  // ── 3️⃣ No such user? return OK (don’t reveal existence) ─
   if (!user) {
     return NextResponse.json({ ok: true })
   }
@@ -71,13 +71,13 @@ export async function POST(request: Request) {
     <p>Your one-time code to reset your password is:</p>
     <h2 style="letter-spacing:4px;">${code}</h2>
     <p>This code expires in 5 minutes.</p>
-    <p>If you didn't request this, ignore this email.</p>
+    <p>If you didn’t request this, ignore this email.</p>
   `
   try {
     await transporter.sendMail({
       from:    `"Artcommerce Support" <${process.env.SMTP_USER}>`,
-      to:        user.email as string,
-      subject:   'Your Artcommerce password reset code',
+      to:      user.email as string,
+      subject: 'Your Artcommerce password reset code',
       html,
     })
   } catch (err) {

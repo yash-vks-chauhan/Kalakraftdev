@@ -17,24 +17,19 @@ export async function GET(
     if (/^[0-9]+$/.test(raw)) {
       // Numeric ID lookup
       product = await prisma.product.findUnique({
-        where: { 
-          id: Number(raw),
-          isActive: true 
-        },
-        include: { category: true }
+        where: { id: Number(raw) },
+        include: { category: true },
       })
     } else {
       // Non-numeric → treat as slug lookup
       product = await prisma.product.findUnique({
-        where: { 
-          slug: raw,
-          isActive: true 
-        },
-        include: { category: true }
+        where: { slug: raw },
+        include: { category: true },
       })
     }
 
-    if (!product) {
+    // Only serve active products
+    if (product && !product.isActive) {
       return NextResponse.json({ error: 'Product not found' }, { status: 404 })
     }
 

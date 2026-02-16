@@ -1,60 +1,13 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@custom-variant dark (&:is(.dark *));
+@import './styles/performance.css';
 
 :root {
   --foreground-rgb: 0, 0, 0;
   --background-rgb: 255, 255, 255;
   --primary-color: #2d3748;
   --secondary-color: #4a5568;
-  --background: 0 0% 100%;
-  --foreground: 240 10% 3.9%;
-  --card: 0 0% 100%;
-  --card-foreground: 240 10% 3.9%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 240 10% 3.9%;
-  --primary: 240 5.9% 10%;
-  --primary-foreground: 0 0% 98%;
-  --secondary: 240 4.8% 95.9%;
-  --secondary-foreground: 240 5.9% 10%;
-  --muted: 240 4.8% 95.9%;
-  --muted-foreground: 240 3.8% 46.1%;
-  --accent: 240 4.8% 95.9%;
-  --accent-foreground: 240 5.9% 10%;
-  --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 0 0% 98%;
-  --border: 240 5.9% 90%;
-  --input: 240 5.9% 90%;
-  --ring: 240 5.9% 10%;
-  --radius: 0.625rem;
-}
-
-@theme inline {
-  --color-background: hsl(var(--background));
-  --color-foreground: hsl(var(--foreground));
-  --color-card: hsl(var(--card));
-  --color-card-foreground: hsl(var(--card-foreground));
-  --color-popover: hsl(var(--popover));
-  --color-popover-foreground: hsl(var(--popover-foreground));
-  --color-primary: hsl(var(--primary));
-  --color-primary-foreground: hsl(var(--primary-foreground));
-  --color-secondary: hsl(var(--secondary));
-  --color-secondary-foreground: hsl(var(--secondary-foreground));
-  --color-muted: hsl(var(--muted));
-  --color-muted-foreground: hsl(var(--muted-foreground));
-  --color-accent: hsl(var(--accent));
-  --color-accent-foreground: hsl(var(--accent-foreground));
-  --color-destructive: hsl(var(--destructive));
-  --color-destructive-foreground: hsl(var(--destructive-foreground));
-  --color-border: hsl(var(--border));
-  --color-input: hsl(var(--input));
-  --color-ring: hsl(var(--ring));
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
 }
 
 /* Add scroll snapping */
@@ -67,10 +20,6 @@ section {
   scroll-snap-align: start;
   min-height: 100vh;
   position: relative;
-}
-
-/* Remove overflow: hidden from section to allow CosmosSection to work properly */
-section:not(:has(.cosmos-card)) {
   overflow: hidden;
 }
 
@@ -82,6 +31,8 @@ body {
   font-family: system-ui, -apple-system, sans-serif;
   min-height: 100vh;
   position: relative;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Home page specific styles */
@@ -89,6 +40,18 @@ body:has(> div > main[data-page="home"]) {
   padding-top: 0;
   background: black;
   color: white;
+}
+
+/* Mobile Dashboard Override - Clean white and light grey theme */
+body:has(.mobileDashboardContainer),
+html:has(.mobileDashboardContainer) {
+  background: #ffffff !important;
+  color: #6b7280 !important;
+}
+
+/* Additional mobile dashboard overrides */
+body:has(.mobileDashboardContainer) * {
+  background-color: inherit;
 }
 
 .home-gradient {
@@ -179,46 +142,145 @@ body:has(> div > main[data-page="home"]) {
 @keyframes slideInFromTop {
   from {
     opacity: 0;
-    transform: translateY(-20px) scale(0.95);
+    transform: translateY(-30px) scale(0.9);
+    filter: blur(4px);
   }
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
+    filter: blur(0px);
   }
 }
 
 @keyframes progressBar {
   from {
     width: 100%;
+    opacity: 0.8;
   }
   to {
     width: 0%;
+    opacity: 0.3;
   }
 }
 
 @keyframes poofOut {
   0% {
     opacity: 1;
-    transform: scale(1);
+    transform: scale(1) rotate(0deg);
+    filter: blur(0px);
   }
   50% {
     opacity: 0.8;
-    transform: scale(1.05);
+    transform: scale(1.05) rotate(-1deg);
+    filter: blur(1px);
   }
   100% {
     opacity: 0;
-    transform: scale(0.9);
+    transform: scale(0.85) rotate(1deg);
+    filter: blur(2px);
+  }
+}
+
+@keyframes puffExplosion {
+  0% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+    filter: blur(0px) brightness(1);
+    box-shadow: 
+      0 0 0 rgba(255, 255, 255, 0),
+      inset 0 0 0 rgba(255, 255, 255, 0);
+  }
+  15% {
+    opacity: 1;
+    transform: scale(1.1) rotate(2deg);
+    filter: blur(1px) brightness(1.2);
+    box-shadow: 
+      0 0 20px rgba(255, 255, 255, 0.4),
+      inset 0 0 20px rgba(255, 255, 255, 0.2);
+  }
+  35% {
+    opacity: 0.9;
+    transform: scale(1.25) rotate(-3deg);
+    filter: blur(2px) brightness(1.4);
+    box-shadow: 
+      0 0 40px rgba(255, 255, 255, 0.6),
+      inset 0 0 40px rgba(255, 255, 255, 0.3);
+  }
+  60% {
+    opacity: 0.6;
+    transform: scale(1.4) rotate(5deg);
+    filter: blur(4px) brightness(1.6);
+    box-shadow: 
+      0 0 60px rgba(255, 255, 255, 0.8),
+      inset 0 0 60px rgba(255, 255, 255, 0.4);
+  }
+  80% {
+    opacity: 0.3;
+    transform: scale(1.6) rotate(-8deg);
+    filter: blur(8px) brightness(1.8);
+    box-shadow: 
+      0 0 80px rgba(255, 255, 255, 0.9),
+      inset 0 0 80px rgba(255, 255, 255, 0.5);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2) rotate(15deg);
+    filter: blur(12px) brightness(2);
+    box-shadow: 
+      0 0 100px rgba(255, 255, 255, 1),
+      inset 0 0 100px rgba(255, 255, 255, 0.6);
   }
 }
 
 .animate-slideInFromTop {
-  animation: slideInFromTop 0.3s ease-out forwards;
+  animation: slideInFromTop 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }
 
 .animate-progressBar {
-  animation: progressBar 5s linear forwards;
+  animation: progressBar 5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 .animate-poofOut {
-  animation: poofOut 0.4s ease-in forwards;
+  animation: poofOut 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.animate-puffExplosion {
+  animation: puffExplosion 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+/* Particle sparkle animation for puff effect */
+@keyframes sparkleParticle {
+  0% {
+    opacity: 0;
+    transform: scale(0) rotate(0deg) translateY(0);
+  }
+  20% {
+    opacity: 1;
+    transform: scale(1) rotate(180deg) translateY(-10px);
+  }
+  80% {
+    opacity: 1;
+    transform: scale(1.5) rotate(360deg) translateY(-30px);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0) rotate(540deg) translateY(-50px);
+  }
+}
+
+/* Enhanced puff explosion with particles */
+.animate-puffExplosion [data-particles] {
+  opacity: 1 !important;
+}
+
+.animate-puffExplosion [data-particle] {
+  animation: sparkleParticle 0.8s ease-out forwards;
+}
+
+/* Utility: two-line clamp for titles on mobile */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }

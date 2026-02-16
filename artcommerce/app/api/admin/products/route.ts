@@ -21,21 +21,45 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
   }
 
-  const products = await prisma.product.findMany({
-    orderBy: { updatedAt: 'desc' },
-    select: {
-      id: true,
-      name: true,
-      slug: true,
-      price: true,
-      currency: true,
-      stockQuantity: true,
-      isActive: true,
-      categoryId: true,
-      imageUrls: true,
-      shortDesc: true,
-    },
-  })
+  // Get products with total sold count
+  const productsWithSales = await prisma.$queryRaw<any[]>`
+    SELECT 
+      p.id,
+      p.name,
+      p.slug,
+      p.price,
+      p.currency,
+      p."stockQuantity",
+      p."isActive",
+      p."categoryId",
+      p."imageUrls",
+      p."shortDesc",
+      COALESCE(SUM(oi.quantity), 0) as "totalSold"
+    FROM "Product" p
+    LEFT JOIN "OrderItem" oi ON oi."productId" = p.id
+    LEFT JOIN "Order" o ON o.id = oi."orderId" 
+      AND o.status IN ('completed', 'shipped', 'delivered')
+      AND o."paymentStatus" = 'paid'
+    GROUP BY p.id
+    ORDER BY p."updatedAt" DESC
+  `
+
+  // Format the products
+  const products = productsWithSales.map(product => ({
+    id: product.id,
+    name: product.name,
+    slug: product.slug,
+    price: Number(product.price),
+    currency: product.currency,
+    stockQuantity: product.stockQuantity,
+    isActive: product.isActive,
+    categoryId: product.categoryId,
+    imageUrls: typeof product.imageUrls === 'string' 
+      ? JSON.parse(product.imageUrls) 
+      : product.imageUrls,
+    shortDesc: product.shortDesc,
+    totalSold: Number(product.totalSold) || 0,
+  }))
 
   return NextResponse.json({ products })
 }
@@ -57,6 +81,10 @@ export async function POST(request: Request) {
     imageUrls,
     shortDesc,
     description,
+    specifications,
+    careInstructions,
+    stylingIdeaImages,
+    usageTags = [],
   } = body
 
   if (
@@ -89,7 +117,11 @@ export async function POST(request: Request) {
       imageUrls,
       shortDesc,
       description,
-    },
+      specifications,
+      careInstructions,
+      stylingIdeaImages: stylingIdeaImages ?? [],
+      usageTags,
+    } as any,
   })
 
   return NextResponse.json({ product })

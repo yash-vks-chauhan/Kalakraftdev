@@ -1,0 +1,258 @@
+.productImagesContainer {
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  margin-top: 0;
+  background-color: #f0f0f0;
+  padding: 0;
+  max-height: 60vh; /* Reduced from 70vh to 60vh */
+}
+
+.imageContainer {
+  position: relative;
+  width: 100%;
+  height: 55vh; /* Reduced from 70vh to 55vh to match Gucci style */
+  overflow: hidden;
+  background-color: #f0f0f0;
+  touch-action: pan-x; /* Allow horizontal panning */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
+}
+
+/* Image slider that will slide horizontally */
+.imageSlider {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  transition: transform 0.3s ease;
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  perspective: 1000;
+  -webkit-perspective: 1000;
+}
+
+/* Individual slide (one per image) */
+.imageSlide {
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Wrapper for image positioning */
+.imageWrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f0f0f0;
+  padding: 6%; /* Reduced from 8% to 6% */
+}
+
+/* Background layer for images */
+.imageBackground {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #f0f0f0;
+  z-index: 0;
+}
+
+.mainImage {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  transition: opacity 0.3s ease;
+  padding: 0;
+  background-color: transparent !important;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  margin: 0 auto;
+  opacity: 1;
+  mix-blend-mode: multiply; /* Help blend with background */
+  z-index: 1;
+}
+
+/* Add loaded class for images that have finished loading */
+.mainImage.loaded {
+  opacity: 1;
+}
+
+/* Fix for Next.js image white background issue */
+.mainImage::before,
+.mainImage::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: transparent !important;
+  z-index: -1;
+}
+
+/* Override any Next.js image styles that might add backgrounds */
+.mainImage > span {
+  background-color: transparent !important;
+  position: absolute !important;
+  width: 100% !important;
+  height: 100% !important;
+  z-index: 1;
+}
+
+.mainImage img {
+  background-color: transparent !important;
+  object-fit: contain !important;
+  object-position: center !important;
+  mix-blend-mode: multiply !important;
+}
+
+/* Fix for Next.js image container */
+.mainImage > span {
+  position: absolute !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.noImagePlaceholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
+  color: #666;
+  font-style: italic;
+}
+
+/* Navigation buttons */
+.navigationButton {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.5);
+  color: #000;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  z-index: 10;
+  opacity: 0.6;
+  transition: all 0.2s ease;
+  pointer-events: auto;
+  backdrop-filter: blur(2px);
+}
+
+.navigationButton:active {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.navigationButton:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.prev {
+  left: 12px;
+}
+
+.next {
+  right: 12px;
+}
+
+/* Progress bar style page indicator */
+.pageIndicator {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: #e0e0e0;
+  z-index: 10;
+  overflow: hidden;
+}
+
+/* Progress bar that fills based on current slide */
+.progressBar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background-color: #000;
+  transform-origin: left center;
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+/* Hide the individual dots as we're using a progress bar instead */
+.indicatorDot {
+  display: none;
+}
+
+/* Active indicator is handled by the progress bar */
+.indicatorDot.active {
+  display: none;
+}
+
+/* Image counter (1/6) in bottom right */
+.imageCounter {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  background-color: transparent;
+  color: #000;
+  padding: 4px 10px;
+  font-size: 14px;
+  font-weight: 400;
+  z-index: 10;
+  transition: opacity 0.3s ease;
+}
+
+/* Media queries for different device sizes */
+@media (max-height: 700px) {
+  .imageContainer {
+    height: 50vh; /* Even smaller for shorter screens */
+  }
+  
+  .productImagesContainer {
+    max-height: 52vh;
+  }
+}
+
+@media (min-height: 800px) {
+  .imageContainer {
+    height: 52vh; /* Slightly taller for larger screens but still shorter than before */
+  }
+} 

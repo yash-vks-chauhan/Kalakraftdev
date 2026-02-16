@@ -9,6 +9,39 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import styles from './wishlist.module.css'
+import { Heart, Trash2 } from 'lucide-react'
+import LoadingSpinner from '../../components/LoadingSpinner'
+import DeleteButton from '../../components/DeleteButton'
+
+// Wishlist Skeleton Component
+const WishlistSkeleton = () => (
+  <main className={styles.container}>
+    <div className={styles.header}>
+      <div className={`${styles.skeletonTitle} ${styles.skeletonShimmer}`}></div>
+      <div className={`${styles.skeletonCount} ${styles.skeletonShimmer}`}></div>
+    </div>
+    
+    <div className={styles.grid}>
+      {[1, 2, 3, 4, 5, 6].map((index) => (
+        <div key={index} className={styles.card}>
+          <div className={styles.imageWrapper}>
+            <div className={`${styles.skeletonImage} ${styles.skeletonShimmer}`}></div>
+          </div>
+          <div className={styles.cardContent}>
+            <div className={styles.productHeader}>
+              <div className={`${styles.skeletonProductName} ${styles.skeletonShimmer}`}></div>
+              <div className={`${styles.skeletonRemoveButton} ${styles.skeletonShimmer}`}></div>
+            </div>
+            <div className={`${styles.skeletonProductPrice} ${styles.skeletonShimmer}`}></div>
+            <div className={styles.actions}>
+              <div className={`${styles.skeletonButton} ${styles.skeletonShimmer}`}></div>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  </main>
+);
 
 type AnimationType = 'removing' | 'moving';
 
@@ -99,11 +132,7 @@ export default function DashboardWishlistPage() {
   }
 
   if (authLoading || wishlistLoading) {
-    return (
-        <div className={styles.loadingContainer}>
-            <div className={styles.spinner} style={{width: '50px', height: '50px', borderLeftColor: '#111827'}}></div>
-        </div>
-    )
+    return <LoadingSpinner overlay={true} message="Loading your wishlist..." />
   }
   
   if (!user) {
@@ -159,19 +188,19 @@ export default function DashboardWishlistPage() {
                         fill
                         className={styles.image}
                         />
-                        <button
-                            onClick={() => handleRemoveFromWishlist(item.id, item.productId)}
-                            className={styles.removeBtn}
-                            aria-label="Remove from wishlist"
-                            disabled={!!animationType}
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
                     </div>
                     <div className={styles.cardContent}>
-                        <h3 className={styles.productName}>{item.product.name}</h3>
+                        <div className={styles.productHeader}>
+                            <h3 className={styles.productName}>{item.product.name}</h3>
+                            <div className={styles.removeBtn}>
+                                <DeleteButton
+                                    onClick={() => handleRemoveFromWishlist(item.id, item.productId)}
+                                    disabled={!!animationType}
+                                    size="small"
+                                    ariaLabel="Remove from wishlist"
+                                />
+                            </div>
+                        </div>
                         <p className={styles.productPrice}>₹{item.product.price.toFixed(2)}</p>
                         {getStockStatus(item.productId)}
                         <div className={styles.actions}>

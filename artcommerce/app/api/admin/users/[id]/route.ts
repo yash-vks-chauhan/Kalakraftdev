@@ -25,7 +25,7 @@ export async function DELETE(
   }
 
   const { id } = await context.params
-  const userId = Number(id)
+  const userId = id // userId is a string (cuid)
 
   // 1️⃣ Fetch the user before deleting
   const target = await prisma.user.findUnique({
@@ -66,17 +66,19 @@ export async function DELETE(
       },
     })
 
-    await transporter.sendMail({
-      from: `"Artcommerce Support" <${process.env.SMTP_USER!}>`,
-      to: target.email,
-      subject: 'Your Artcommerce Account Has Been Deleted',
-      html: `
-        <p>Hi ${target.fullName},</p>
-        <p>We’re writing to let you know that your Artcommerce account has been deleted by an administrator.</p>
-        <p>If you believe this was in error, please contact support@example.com.</p>
-        <p>Regards,<br/>The Artcommerce Team</p>
-      `,
-    })
+    if (target.email) {
+      await transporter.sendMail({
+        from: `"Artcommerce Support" <${process.env.SMTP_USER!}>`,
+        to: target.email,
+        subject: 'Your Artcommerce Account Has Been Deleted',
+        html: `
+          <p>Hi ${target.fullName},</p>
+          <p>We're writing to let you know that your Artcommerce account has been deleted by an administrator.</p>
+          <p>If you believe this was in error, please contact support@example.com.</p>
+          <p>Regards,<br/>The Artcommerce Team</p>
+        `,
+      })
+    }
 
     // 5️⃣ Log to terminal
     console.log(`✅ Deleted user ${userId} (${target.email}) and sent notification email.`)

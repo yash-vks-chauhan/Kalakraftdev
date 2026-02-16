@@ -30,7 +30,7 @@ function makeTransporter() {
 
 export async function POST(
   request: Request,
-  context: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   // 1️⃣ Auth
   if (!requireAdmin(request)) {
@@ -38,11 +38,8 @@ export async function POST(
   }
 
   // 2️⃣ Get userId from dynamic params
-  const { id } = await context.params
-  const userId = Number(id)
-  if (isNaN(userId)) {
-    return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 })
-  }
+  const { id } = params
+  const userId = id // Keep as string for prisma
 
   // 3️⃣ Find their cart items older than 5 minutes
   const cutoff = new Date(Date.now() - 5 * 60 * 1000)
@@ -76,7 +73,7 @@ export async function POST(
         <ul>
           ${items.map(i => `<li>${i.product.name} (qty: ${i.quantity})</li>`).join('')}
         </ul>
-        <p><a href="https://your-site.com/cart">Return to your cart & checkout</a></p>
+        <p><a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://kalakraftdev.vercel.app'}/cart">Return to your cart & checkout</a></p>
       `,
     })
     console.log('✉️ Cart reminder sent, messageId=', info.messageId)

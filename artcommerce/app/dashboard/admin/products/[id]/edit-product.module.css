@@ -639,4 +639,62 @@
 .browseButton svg {
   width: 1.25rem;
   height: 1.25rem;
+}
+
+/* === Styling Idea Preview Grid === */
+.previewItem {
+  position: relative;
+  border: 1px solid #D1D5DB;
+  border-radius: 0.375rem;
+  overflow: hidden;
+  background: white;
+  transition: all 0.2s ease;
+}
+
+.previewItem:hover {
+  border-color: #111827;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.previewImg {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-bottom: 1px solid #D1D5DB;
+}
+
+.stylingCaptionInput {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: none;
+  border-top: 1px solid #D1D5DB;
+  font-size: 0.875rem;
+  color: #374151;
+}
+
+.stylingCaptionInput:focus {
+  outline: none;
+  background-color: #F9FAFB;
+}
+
+.removeBtn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: rgba(255, 255, 255, 0.8);
+  border: none;
+  border-radius: 9999px;
+  padding: 0.25rem;
+  cursor: pointer;
+  color: #6B7280;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.removeBtn:hover {
+  color: #DC2626;
+  transform: scale(1.1);
 } 

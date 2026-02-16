@@ -10,7 +10,7 @@ import styles from '../auth.module.css'
 export default function LoginPage() {
   const router = useRouter()
   const { user: authUser, login, loading: authLoading, loginWithFirebaseToken } = useAuth()
-  const { user: firebaseUser, loading: firebaseLoading, loginWithGoogle, loginWithFacebook } = useFirebaseAuth()
+  const { user: firebaseUser, loading: firebaseLoading, loginWithGoogle, loginWithFacebook, error: firebaseError } = useFirebaseAuth()
 
   console.log('LoginPage: authLoading', authLoading)
   console.log('LoginPage: firebaseLoading', firebaseLoading)
@@ -19,41 +19,115 @@ export default function LoginPage() {
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [formLoading, setFormLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
-    // Only redirect if authUser (from our backend) is present and loading is complete.
-    // FirebaseUser being present here means a Firebase session exists, but not necessarily a backend session.
-    if (!authLoading && authUser) {
-      console.log('LoginPage: authUser present and not loading, redirecting to / ', authUser);
-      router.replace('/')
+    // If we have an authenticated user, redirect to home
+    if (authUser) {
+      console.log('LoginPage: Redirecting to home because authUser exists')
+      router.push('/')
     }
-  }, [authUser, authLoading, router])
+  }, [authUser, router])
 
-  // Temporarily comment out the loading message to ensure the page renders
-  // if (authLoading || firebaseLoading) {
-  //   return <p>Loading authentication...</p>
-  // }
+  // Update local error state when Firebase error changes
+  useEffect(() => {
+    if (firebaseError) {
+      setError(firebaseError);
+    }
+  }, [firebaseError]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault() // Prevent the default form submission
-    if (formLoading) return // Prevent multiple submissions
+    // Prevent default form submission behavior
+    e.preventDefault();
+    
+    // Clear previous error
+    setError('');
 
-    setError(null)
-    setFormLoading(true)
+    // Validate fields individually
+    if (!email.trim() && !password.trim()) {
+      setError('Please enter both email and password');
+      return;
+    }
+    if (!email.trim()) {
+      setError('Please enter your email');
+      return;
+    }
+    if (!password.trim()) {
+      setError('Please enter your password');
+      return;
+    }
+
+    // Prevent double submission
+    if (loading) {
+      return;
+    }
+
+    setIsLoading(true);
 
     try {
-      await login(email, password)
+      await login(email, password);
+      // Reset form state but don't redirect - let useEffect handle that
+      setEmail('');
+      setPassword('');
     } catch (err: any) {
-      setPassword('') // Clear password field but keep email for retry
-      setError(err.message || 'An error occurred during login')
-      // Prevent form submission and page refresh
-      e.stopPropagation()
+      console.error('LoginPage: Login error', err);
+      // Keep the error message from the server
+      setError(err.message);
     } finally {
-      setFormLoading(false)
+      setIsLoading(false);
     }
-  }
+
+    // Done handling submission
+    return;
+  };
+
+  const handleGoogleLogin = async () => {
+    setError('');
+    setIsLoading(true);
+    try {
+      const result = await loginWithGoogle();
+      if (result && result.user) {
+        const idToken = await result.user.getIdToken();
+        await loginWithFirebaseToken(idToken);
+        // Redirect to home
+        router.replace('/');
+      } else {
+        throw new Error('Google Sign-In failed or no user data.');
+      }
+    } catch (err: any) {
+      console.error('LoginPage: Google login error', err);
+      setError(err.message || 'Google Sign-In failed');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleFacebookLogin = async () => {
+    setError('');
+    setIsLoading(true);
+    try {
+      const result = await loginWithFacebook();
+      if (result && result.user) {
+        const idToken = await result.user.getIdToken();
+        await loginWithFirebaseToken(idToken);
+        // Redirect to home
+        router.replace('/');
+      } else {
+        throw new Error('Facebook Sign-In failed or no user data.');
+      }
+    } catch (err: any) {
+      console.error('LoginPage: Facebook login error', err);
+      setError(err.message || 'Facebook Sign-In failed');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const loading = authLoading || firebaseLoading || isLoading
+
+  // Only disable inputs during actual loading, not for empty fields
+  const isFormDisabled = loading
 
   return (
     <div className={styles.authContainer}>
@@ -78,7 +152,11 @@ export default function LoginPage() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} noValidate>
+        <form 
+          onSubmit={handleSubmit}
+          className={styles.form}
+          noValidate
+        >
           <div className={styles.formGroup}>
             <label htmlFor="email" className={styles.formLabel}>
               Email
@@ -86,12 +164,16 @@ export default function LoginPage() {
             <input
               id="email"
               type="email"
-              required
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className={styles.formInput}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setError(''); // Clear error when user types
+              }}
+              className={`${styles.formInput} ${error && !email.trim() ? styles.inputError : ''}`}
               placeholder="Enter your email"
-              disabled={formLoading}
+              disabled={loading}
+              aria-invalid={error && !email.trim() ? 'true' : 'false'}
+              autoComplete="email"
             />
           </div>
 
@@ -102,12 +184,16 @@ export default function LoginPage() {
             <input
               id="password"
               type="password"
-              required
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className={styles.formInput}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                setError(''); // Clear error when user types
+              }}
+              className={`${styles.formInput} ${error && !password.trim() ? styles.inputError : ''}`}
               placeholder="Enter your password"
-              disabled={formLoading}
+              disabled={loading}
+              aria-invalid={error && !password.trim() ? 'true' : 'false'}
+              autoComplete="current-password"
             />
             <Link href="/auth/forgot-password" className={styles.forgotPassword}>
               Forgot password?
@@ -116,10 +202,10 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            disabled={formLoading}
+            disabled={loading}
             className={styles.submitButton}
           >
-            {formLoading ? 'Signing in...' : 'Sign in'}
+            {loading ? 'Signing in...' : 'Sign in'}
           </button>
         </form>
 
@@ -128,42 +214,11 @@ export default function LoginPage() {
         </div>
 
         <button
-          onClick={async () => {
-            setFormLoading(true);
-            setError(null);
-            console.log('LoginPage: Attempting Google Sign-In...');
-            try {
-              const result = await loginWithGoogle();
-              console.log('LoginPage: loginWithGoogle result:', result);
-              if (result && result.user) {
-                console.log('LoginPage: Result and user present, getting ID token...');
-                const idToken = await result.user.getIdToken();
-                console.log('Firebase ID Token:', idToken);
-                await loginWithFirebaseToken(idToken);
-                console.log('LoginPage: loginWithFirebaseToken called.');
-              } else {
-                console.error('LoginPage: Google Sign-In failed or no user data in result.', result);
-                throw new Error('Google Sign-In failed or no user data.');
-              }
-            } catch (err: any) {
-              console.error('LoginPage: Google Sign-In caught error:', err);
-              // Handle specific Firebase errors
-              if (err.code === 'auth/cancelled-popup-request' || 
-                  err.code === 'auth/popup-closed-by-user') {
-                setError('Sign-in was cancelled. Please try again.');
-              } else if (err.code === 'auth/popup-blocked') {
-                setError('Pop-up was blocked by your browser. Please enable pop-ups for this site.');
-              } else {
-                setError(err.message || 'Google Sign-In failed. Please try again.');
-              }
-            } finally {
-              setFormLoading(false);
-            }
-          }}
-          disabled={formLoading}
-          className={`${styles.socialButton} ${formLoading ? styles.loading : ''}`}
+          onClick={handleGoogleLogin}
+          disabled={loading}
+          className={`${styles.socialButton} ${loading ? styles.loading : ''}`}
         >
-          {formLoading ? (
+          {loading ? (
             <div className={styles.buttonContent}>
               <div className={styles.spinner}></div>
               <span>Signing in...</span>
@@ -194,29 +249,7 @@ export default function LoginPage() {
         </button>
 
         <button
-          onClick={async () => {
-            setFormLoading(true);
-            setError(null);
-            console.log('LoginPage: Attempting Facebook Sign-In...');
-            try {
-              const result = await loginWithFacebook();
-              console.log('LoginPage: loginWithFacebook result:', result);
-              if (result && result.user) {
-                console.log('LoginPage: Result and user present, getting ID token...');
-                const idToken = await result.user.getIdToken();
-                console.log('Firebase ID Token:', idToken);
-                await loginWithFirebaseToken(idToken);
-                console.log('LoginPage: loginWithFirebaseToken called.');
-              } else {
-                console.error('LoginPage: Facebook Sign-In failed or no user data in result.', result);
-                throw new Error('Facebook Sign-In failed or no user data.');
-              }
-            } catch (err: any) {
-              console.error('LoginPage: Facebook Sign-In caught error:', err);
-              setError(err.message || 'Facebook Sign-In failed');
-              setFormLoading(false);
-            }
-          }}
+          onClick={handleFacebookLogin}
           className={styles.socialButton}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="#1877F2">
@@ -226,7 +259,7 @@ export default function LoginPage() {
         </button>
 
         <div className={styles.authFooter}>
-          Don't have an account?{' '}
+          Don&apos;t have an account?{' '}
           <Link href="/auth/signup" className={styles.authLink}>
             Sign up
           </Link>

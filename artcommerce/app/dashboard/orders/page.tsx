@@ -7,6 +7,42 @@ import { useAuth } from '../../contexts/AuthContext'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import styles from './orders.module.css'
+import LoadingSpinner from '../../components/LoadingSpinner'
+
+// Orders Skeleton Component
+const OrdersSkeleton = () => (
+  <ul className={styles.orderList}>
+    {[1, 2, 3].map((index) => (
+      <li key={index} className={styles.orderCard}>
+        <div className={styles.orderHeader}>
+          <div className={`${styles.skeletonOrderNumber} ${styles.skeletonShimmer}`}></div>
+          <div className={`${styles.skeletonOrderDate} ${styles.skeletonShimmer}`}></div>
+        </div>
+
+        <div className={styles.orderDetails}>
+          <div className={styles.orderItems}>
+            {[1, 2].map((itemIndex) => (
+              <div key={itemIndex} className={styles.orderItem}>
+                <div className={styles.itemImageContainer}>
+                  <div className={`${styles.skeletonItemImage} ${styles.skeletonShimmer}`}></div>
+                </div>
+                <div className={styles.itemDetails}>
+                  <div className={`${styles.skeletonItemName} ${styles.skeletonShimmer}`}></div>
+                  <div className={`${styles.skeletonItemPrice} ${styles.skeletonShimmer}`}></div>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          <div className={styles.orderSummary}>
+            <div className={`${styles.skeletonTotalAmount} ${styles.skeletonShimmer}`}></div>
+            <div className={`${styles.skeletonOrderStatus} ${styles.skeletonShimmer}`}></div>
+          </div>
+        </div>
+      </li>
+    ))}
+  </ul>
+);
 
 
 // Shape of each order (match what /api/orders returns)
@@ -111,7 +147,7 @@ export default function DashboardOrdersPage() {
     <main className={styles.ordersContainer}>
       <h1 className={styles.title}>Your Orders</h1>
 
-      {loading && <p className={styles.loadingText}>Loading orders…</p>}
+      {loading && <LoadingSpinner size="medium" message="Loading your orders..." />}
       {error && <p className={styles.errorMessage}>{error}</p>}
 
       {!loading && orders.length === 0 && (

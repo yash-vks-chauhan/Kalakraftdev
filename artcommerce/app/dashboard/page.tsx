@@ -7,6 +7,8 @@ import { useAuth } from '../contexts/AuthContext'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import styles from './dashboard.module.css'
+import MobileDashboardHome from './MobileDashboardHome'
+import { useIsMobile } from '../../lib/utils'
 
 // Card styling
 const cardClasses = `
@@ -19,6 +21,8 @@ export default function DashboardHomePage() {
   const { user, token, logout } = useAuth()
   const router = useRouter()
   
+  const isMobile = useIsMobile()
+  const [forceDesktopView, setForceDesktopView] = useState(false)
 
   const [period, setPeriod] = useState<'today'|'week'|'month'|'year'|'all'>('today')
   const [metrics, setMetrics] = useState<null | {
@@ -27,6 +31,15 @@ export default function DashboardHomePage() {
     statusCounts: { status: string; _count: { status: number } }[]
     revenue: number
   }>(null)
+
+  const mobileView = isMobile && !forceDesktopView;
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const pref = localStorage.getItem('viewPreference')
+      if (pref === 'desktop') setForceDesktopView(true)
+    }
+  }, [])
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -38,6 +51,10 @@ export default function DashboardHomePage() {
       .then(setMetrics)
       .catch(console.error)
   }, [token, user, period])
+
+  if (mobileView) {
+    return <MobileDashboardHome />
+  }
 
   if (!user) return null
 
@@ -90,9 +107,9 @@ export default function DashboardHomePage() {
               <h3 className={styles.metricTitle}>
                 Revenue ({period.charAt(0).toUpperCase() + period.slice(1)})
               </h3>
-              <p className={styles.metricValue}>₹{metrics.revenue.toFixed(2)}</p>
+              <p className={styles.metricValue}>₹{metrics.revenue != null ? metrics.revenue.toFixed(2) : '0.00'}</p>
             </div>
-            {metrics.statusCounts.map(sc => (
+            {metrics.statusCounts?.map(sc => (
               <div key={sc.status} className={styles.metricCard}>
                 <h3 className={styles.metricTitle}>
                   {sc.status.charAt(0).toUpperCase() + sc.status.slice(1)}
@@ -112,7 +129,7 @@ export default function DashboardHomePage() {
 
         <Link href="/dashboard/orders" className={styles.dashboardCard}>
           <h2 className={styles.cardTitle}>Your Orders</h2>
-          <p className={styles.cardDescription}>View all the orders you've placed.</p>
+          <p className={styles.cardDescription}>View all the orders you&apos;ve placed.</p>
         </Link>
 
         {user.role === 'admin' && (
@@ -141,18 +158,22 @@ export default function DashboardHomePage() {
               <h2 className={styles.cardTitle}>Low-Stock</h2>
               <p className={styles.cardDescription}>View items below threshold</p>
             </Link>
-
             {/* Support Tickets (admin only) */}
             <Link href="/dashboard/admin/support" className={styles.dashboardCard}>
               <h2 className={styles.cardTitle}>Support Tickets</h2>
               <p className={styles.cardDescription}>View and respond to customer issues.</p>
+            </Link>
+            {/* Reviews & Ratings (admin only) */}
+            <Link href="/dashboard/admin/reviews" className={styles.dashboardCard}>
+              <h2 className={styles.cardTitle}>Reviews & Ratings</h2>
+              <p className={styles.cardDescription}>See and moderate product reviews.</p>
             </Link>
           </>
         )}
 
         <Link href="/dashboard/cart" className={styles.dashboardCard}>
           <h2 className={styles.cardTitle}>Your Cart</h2>
-          <p className={styles.cardDescription}>See what's in your shopping cart.</p>
+          <p className={styles.cardDescription}>See what&apos;s in your shopping cart.</p>
         </Link>
 
         <Link href="/dashboard/wishlist" className={styles.dashboardCard}>

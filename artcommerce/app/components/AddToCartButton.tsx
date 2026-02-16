@@ -1,4 +1,3 @@
-// File: app/components/AddToCartButton.tsx
 'use client'
 
 import { useState } from 'react'
@@ -6,6 +5,7 @@ import { useCart } from '../contexts/CartContext'
 import { useAuth } from '../contexts/AuthContext'
 import { useRouter } from 'next/navigation'
 import clsx from 'clsx'
+import ButtonLoader from './ButtonLoader'
 
 type Props = {
   productId: number
@@ -32,7 +32,6 @@ export default function AddToCartButton({
 
   const handleAddToCart = async () => {
     if (!user) {
-      // If not logged in, redirect to /auth/login
       router.push('/auth/login')
       return
     }
@@ -48,7 +47,6 @@ export default function AddToCartButton({
     try {
       await addToCart(productId, quantity)
 
-      // Show the "Added to cart!" popup for 2 seconds
       setShowPopup(true)
       setTimeout(() => setShowPopup(false), 2000)
     } catch (err: any) {
@@ -73,7 +71,7 @@ export default function AddToCartButton({
           max={stockQuantity}
           value={quantity}
           onChange={(e) => setQuantity(parseInt(e.target.value, 10) || 1)}
-          className="w-16 border rounded px-2 py-1 focus:outline-none focus:ring focus:border-blue-300"
+          className="w-16 border rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-gray-900 focus:border-gray-900"
           disabled={isOutOfStock}
         />
 
@@ -86,10 +84,10 @@ export default function AddToCartButton({
               ? 'bg-gray-400 cursor-not-allowed'
               : isOutOfStock
                 ? 'bg-gray-500 cursor-not-allowed'
-                : 'bg-green-600 hover:bg-green-700'
+                : 'bg-black hover:bg-gray-900'
           )}
         >
-          {loading ? 'Adding…' : isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
+          {loading ? <ButtonLoader size="small" color="white" /> : isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
         </button>
       </div>
 
@@ -99,9 +97,8 @@ export default function AddToCartButton({
         </p>
       )}
 
-      {/* Simple popup / toast */}
       {showPopup && (
-        <div className="absolute top-0 right-0 mt-[-1.5rem] mr-0 bg-green-600 text-white text-sm px-3 py-1 rounded shadow-lg">
+        <div className="absolute top-0 right-0 mt-[-1.5rem] mr-0 bg-black text-white text-sm px-3 py-1 rounded shadow-lg">
           Added to cart!
         </div>
       )}

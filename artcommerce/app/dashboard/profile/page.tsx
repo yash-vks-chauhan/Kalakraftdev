@@ -17,14 +17,93 @@ import { useState, FormEvent, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '../../contexts/AuthContext'
+import { useIsMobile } from '../../../lib/utils'
 import styles from './profile.module.css'
+import MobileProfileSettings from './MobileProfileSettings'
+
+// Profile Skeleton Component
+const ProfileSkeleton = () => (
+  <main className={styles.profileContainer}>
+    {/* Profile Header Skeleton */}
+    <div className={styles.profileHeader}>
+      <div className={styles.avatarSection}>
+        <div className={`${styles.skeletonAvatar} ${styles.skeletonShimmer}`}></div>
+        <div className={styles.userInfo}>
+          <div className={`${styles.skeletonUserName} ${styles.skeletonShimmer}`}></div>
+          <div className={`${styles.skeletonUserEmail} ${styles.skeletonShimmer}`}></div>
+          <div className={`${styles.skeletonUserRole} ${styles.skeletonShimmer}`}></div>
+        </div>
+      </div>
+    </div>
+
+    {/* Profile Form Skeleton */}
+    <div className={styles.profileContent}>
+      <div className={styles.profileSection}>
+        <div className={`${styles.skeletonSectionTitle} ${styles.skeletonShimmer}`}></div>
+        
+        {/* Basic Info Form Skeleton */}
+        <div className={styles.formGrid}>
+          <div className={styles.inputGroup}>
+            <div className={`${styles.skeletonLabel} ${styles.skeletonShimmer}`}></div>
+            <div className={`${styles.skeletonInput} ${styles.skeletonShimmer}`}></div>
+          </div>
+          <div className={styles.inputGroup}>
+            <div className={`${styles.skeletonLabel} ${styles.skeletonShimmer}`}></div>
+            <div className={`${styles.skeletonInput} ${styles.skeletonShimmer}`}></div>
+          </div>
+          <div className={styles.inputGroup}>
+            <div className={`${styles.skeletonLabel} ${styles.skeletonShimmer}`}></div>
+            <div className={`${styles.skeletonInput} ${styles.skeletonShimmer}`}></div>
+          </div>
+        </div>
+        
+        {/* Avatar Selection Skeleton */}
+        <div className={styles.avatarSelection}>
+          <div className={`${styles.skeletonLabel} ${styles.skeletonShimmer}`}></div>
+          <div className={styles.avatarGrid}>
+            {[1, 2, 3, 4, 5, 6].map((index) => (
+              <div key={index} className={`${styles.skeletonAvatarOption} ${styles.skeletonShimmer}`}></div>
+            ))}
+          </div>
+        </div>
+        
+        {/* Save Button Skeleton */}
+        <div className={`${styles.skeletonButton} ${styles.skeletonShimmer}`}></div>
+      </div>
+
+      {/* Addresses Section Skeleton */}
+      <div className={styles.profileSection}>
+        <div className={`${styles.skeletonSectionTitle} ${styles.skeletonShimmer}`}></div>
+        
+        <div className={styles.addressesList}>
+          {[1, 2].map((index) => (
+            <div key={index} className={styles.addressCard}>
+              <div className={`${styles.skeletonAddressText} ${styles.skeletonShimmer}`}></div>
+              <div className={`${styles.skeletonAddressText} ${styles.skeletonShimmer}`}></div>
+              <div className={styles.addressActions}>
+                <div className={`${styles.skeletonAddressButton} ${styles.skeletonShimmer}`}></div>
+                <div className={`${styles.skeletonAddressButton} ${styles.skeletonShimmer}`}></div>
+              </div>
+            </div>
+          ))}
+        </div>
+        
+        <div className={`${styles.skeletonButton} ${styles.skeletonShimmer}`}></div>
+      </div>
+    </div>
+  </main>
+);
 import Image from 'next/image'
 
 export default function ProfilePage() {
   const router = useRouter()
   const { user, token, logout, fetchProfile, loading: authLoading } = useAuth()
+  
+  const isMobile = useIsMobile()
+  const [forceDesktopView, setForceDesktopView] = useState(false)
+  const [isMounted, setIsMounted] = useState(false)
 
-  // Core form state
+  // Core form state - MUST be declared before any conditional returns
   const [fullName, setFullName] = useState<string>('')
   const [avatarUrl, setAvatarUrl] = useState<string>('')
 
@@ -72,7 +151,7 @@ export default function ProfilePage() {
   // Add a loading state
   const [isLoading, setIsLoading] = useState<boolean>(true)
 
-  // Memoized function to load addresses
+  // Memoized function to load addresses - MUST be before conditional returns
   const loadAddresses = useCallback(async () => {
     if (!token) return;
     try {
@@ -88,90 +167,6 @@ export default function ProfilePage() {
       setAddrLoading(false)
     }
   }, [token])
-
-  // Single initialization effect with cleanup
-  useEffect(() => {
-    // Wait for AuthContext to finish loading before taking any action.
-    if (authLoading) return;
-
-    // Once auth is resolved, redirect if unauthenticated.
-    if (!token) {
-      router.replace('/auth/login');
-      return;
-    }
-
-    // Auth is ready and the user is authenticated – fetch addresses once.
-    (async () => {
-      setIsLoading(true);
-      try {
-        await loadAddresses();
-      } catch (error) {
-        console.error('Failed to load addresses:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    })();
-    // We intentionally exclude fetchProfile here to avoid an endless loop caused by toggling the auth loading state.
-  }, [authLoading, token, loadAddresses]);
-
-  // Timer effect for email OTP with cleanup
-  useEffect(() => {
-    if (!emailOtpExpiresAt) return;
-    
-    let mounted = true;
-    const interval = setInterval(() => {
-      if (!mounted) return;
-      
-      const now = Date.now()
-      const remaining = Math.max(0, Math.floor((emailOtpExpiresAt - now) / 1000))
-      setEmailRemaining(remaining)
-      
-      if (remaining === 0) {
-        setOtpSent(false)
-        setEmailOtpExpiresAt(null)
-        setEmailOtp('')
-      }
-    }, 1000)
-
-    return () => {
-      mounted = false;
-      clearInterval(interval)
-    }
-  }, [emailOtpExpiresAt])
-
-  // Timer effect for password OTP with cleanup
-  useEffect(() => {
-    if (!passwordOtpExpiresAt) return;
-    
-    let mounted = true;
-    const interval = setInterval(() => {
-      if (!mounted) return;
-      
-      const now = Date.now()
-      const remaining = Math.max(0, Math.floor((passwordOtpExpiresAt - now) / 1000))
-      setPasswordRemaining(remaining)
-      
-      if (remaining === 0) {
-        setStep('send')
-        setPasswordOtpExpiresAt(null)
-        setOtp('')
-        setError('OTP for password change has expired. Please request a new one.')
-      }
-    }, 1000)
-
-    return () => {
-      mounted = false;
-      clearInterval(interval)
-    }
-  }, [passwordOtpExpiresAt])
-
-  // Sync form data with user data - only when user changes
-  useEffect(() => {
-    if (!user || isLoading) return;
-    
-    setFullName(user.fullName)
-    setAvatarUrl(user.avatarUrl || '')
-  }, [user, isLoading])
 
   // Format time helper function
   const formatTime = (seconds: number): string => {
@@ -261,8 +256,8 @@ export default function ProfilePage() {
     }
   }, [token, newEmail, emailOtp, fetchProfile])
 
-  // ===== Change Password =====
-  async function sendOtp() {
+  // Change password handlers - MUST be before conditional returns
+  const sendOtp = useCallback(async () => {
     setError(null)
     setMessage(null)
     setLoading(true)
@@ -286,9 +281,9 @@ export default function ProfilePage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [token])
 
-  async function handleVerify(e: FormEvent) {
+  const handleVerify = useCallback(async (e: FormEvent) => {
     e.preventDefault()
     setError(null)
     setMessage(null)
@@ -315,22 +310,114 @@ export default function ProfilePage() {
     } finally {
       setLoading(false)
     }
+  }, [token, otp, newPassword, confirmPassword, fetchProfile])
+
+  useEffect(() => {
+    setIsMounted(true)
+    if (typeof window !== 'undefined') {
+      const pref = localStorage.getItem('viewPreference')
+      if (pref === 'desktop') setForceDesktopView(true)
+    }
+  }, [])
+
+  // Single initialization effect with cleanup
+  useEffect(() => {
+    // Wait for AuthContext to finish loading before taking any action.
+    if (authLoading) return;
+
+    // Once auth is resolved, redirect if unauthenticated.
+    if (!token) {
+      router.replace('/auth/login');
+      return;
+    }
+
+    // Auth is ready and the user is authenticated – fetch addresses once.
+    (async () => {
+      setIsLoading(true);
+      try {
+        await loadAddresses();
+      } catch (error) {
+        console.error('Failed to load addresses:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    })();
+    // We intentionally exclude fetchProfile here to avoid an endless loop caused by toggling the auth loading state.
+  }, [authLoading, token, loadAddresses]);
+
+  // Timer effect for email OTP with cleanup
+  useEffect(() => {
+    if (!emailOtpExpiresAt) return;
+    
+    let mounted = true;
+    const interval = setInterval(() => {
+      if (!mounted) return;
+      
+      const now = Date.now()
+      const remaining = Math.max(0, Math.floor((emailOtpExpiresAt - now) / 1000))
+      setEmailRemaining(remaining)
+      
+      if (remaining === 0) {
+        setOtpSent(false)
+        setEmailOtpExpiresAt(null)
+        setEmailOtp('')
+      }
+    }, 1000)
+
+    return () => {
+      mounted = false;
+      clearInterval(interval)
+    }
+  }, [emailOtpExpiresAt])
+
+  // Timer effect for password OTP with cleanup
+  useEffect(() => {
+    if (!passwordOtpExpiresAt) return;
+    
+    let mounted = true;
+    const interval = setInterval(() => {
+      if (!mounted) return;
+      
+      const now = Date.now()
+      const remaining = Math.max(0, Math.floor((passwordOtpExpiresAt - now) / 1000))
+      setPasswordRemaining(remaining)
+      
+      if (remaining === 0) {
+        setStep('send')
+        setPasswordOtpExpiresAt(null)
+        setOtp('')
+        setError('OTP for password change has expired. Please request a new one.')
+      }
+    }, 1000)
+
+    return () => {
+      mounted = false;
+      clearInterval(interval)
+    }
+  }, [passwordOtpExpiresAt])
+
+  // Sync form data with user data - only when user changes
+  useEffect(() => {
+    if (!user || isLoading) return;
+    
+    setFullName(user.fullName)
+    setAvatarUrl(user.avatarUrl || '')
+  }, [user, isLoading])
+
+  // Prevent hydration mismatch by not rendering until mounted
+  if (!isMounted) {
+    return <ProfileSkeleton />
+  }
+
+  const mobileView = isMobile && !forceDesktopView
+
+  // Return mobile version if in mobile view
+  if (mobileView) {
+    return <MobileProfileSettings />
   }
 
   if (isLoading) {
-    return (
-      <div className={styles.loadingContainer}>
-        <div className={styles.loader}>
-          <Image 
-            src="/images/loading.png" 
-            alt="Loading..."
-            width={60}
-            height={60}
-            priority
-          />
-        </div>
-      </div>
-    )
+    return <ProfileSkeleton />
   }
 
   if (!user) return null
@@ -376,54 +463,56 @@ export default function ProfilePage() {
                 alt="Profile avatar" 
                 className={styles.avatar}
               />
-              
-              {/* Preset Avatar Options */}
-              <div className={styles.avatarOptions}>
-                {[
-                  { name: 'Robot', path: '/avatars/robot.svg' },
-                  { name: 'Fox', path: '/avatars/fox.svg' },
-                  { name: 'Owl', path: '/avatars/owl.svg' }
-                ].map(avatar => (
-                  <button
-                    key={avatar.name}
-                    type="button"
-                    onClick={() => setAvatarUrl(avatar.path)}
-                    className={`${styles.avatarOption} ${avatarUrl === avatar.path ? styles.selected : ''}`}
-                    title={`Select ${avatar.name} avatar`}
-                  >
-                    <img src={avatar.path} alt={avatar.name} />
-                  </button>
-                ))}
-              </div>
+            </div>
 
-              {/* Custom Upload Option */}
-              {user?.role === 'admin' && (
-                <div>
-                  <p className={styles.label}>Or upload custom:</p>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={async e => {
-                      const file = e.target.files?.[0]
-                      if (!file) return
-                      const form = new FormData()
-                      form.append('file', file)
-                      const res = await fetch('/api/uploads', { 
-                        method: 'POST', 
-                        body: form,
-                        headers: token ? { Authorization: `Bearer ${token}` } : undefined
-                      })
-                      if (!res.ok) {
-                        setError('Upload failed or unauthorized')
-                        return
-                      }
-                      const { url } = await res.json()
-                      setAvatarUrl(url)
-                    }}
-                    className={styles.input}
-                  />
-                </div>
-              )}
+            {/* Preset Avatar Options */}
+            <div className={styles.avatarOptions}>
+              {[
+                { name: 'Robot', path: '/avatars/robot.svg' },
+                { name: 'Fox', path: '/avatars/fox.svg' },
+                { name: 'Owl', path: '/avatars/owl.svg' }
+              ].map(avatar => (
+                <button
+                  key={avatar.name}
+                  type="button"
+                  onClick={() => setAvatarUrl(avatar.path)}
+                  className={`${styles.avatarOption} ${avatarUrl === avatar.path ? styles.selected : ''}`}
+                  title={`Select ${avatar.name} avatar`}
+                >
+                  <img src={avatar.path} alt={avatar.name} loading="lazy" />
+                </button>
+              ))}
+            </div>
+
+            {/* Custom Upload Option */}
+            <div>
+              <p className={styles.label}>Or upload custom:</p>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={async e => {
+                  const file = e.target.files?.[0]
+                  if (!file) return
+                  if (!token) {
+                    setError('You need to be logged in to upload an avatar.')
+                    return
+                  }
+                  const form = new FormData()
+                  form.append('file', file)
+                  const res = await fetch('/api/uploads', {
+                    method: 'POST',
+                    body: form,
+                    headers: { Authorization: `Bearer ${token}` },
+                  })
+                  const json = await res.json()
+                  if (!res.ok) {
+                    setError(json.error || 'Failed to upload avatar')
+                    return
+                  }
+                  setAvatarUrl(json.url)
+                }}
+                className={styles.input}
+              />
             </div>
 
             {/* ===== Email display & change ===== */}
@@ -573,7 +662,7 @@ export default function ProfilePage() {
               ))}
             </ul>
           ) : (
-            <p className={styles.emptyText}>You haven't placed any orders yet.</p>
+            <p className={styles.emptyText}>You haven&apos;t placed any orders yet.</p>
           )}
           {(user.orders && user.orders.length > visibleOrderCount) && (
             <button 

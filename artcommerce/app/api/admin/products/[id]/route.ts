@@ -54,7 +54,7 @@ export async function PATCH(
   
   // Only pick updatable fields including imageUrls
   const updateData: any = {}
-  ;['name','slug','shortDesc','description','price','currency','stockQuantity','isActive','categoryId','imageUrls'].forEach(key => {
+  ;['name','slug','shortDesc','description','price','currency','stockQuantity','isActive','categoryId','imageUrls','specifications','careInstructions','stylingIdeaImages','usageTags'].forEach(key => {
     if (data[key] !== undefined) updateData[key] = data[key]
   })
 
@@ -66,7 +66,7 @@ export async function PATCH(
   try {
     const updated = await prisma.product.update({
       where: { id },
-      data: updateData
+      data: updateData as any,
     })
     return NextResponse.json({ product: updated })
   } catch (err: any) {
@@ -87,8 +87,20 @@ export async function DELETE(
     return NextResponse.json({ error: 'Invalid product ID' }, { status: 400 })
   }
 
+  // First make sure the product exists so we can return a proper 404 instead of a 500
+  const existing = await prisma.product.findUnique({ where: { id } })
+  if (!existing) {
+    return NextResponse.json({ error: 'Product not found' }, { status: 404 })
+  }
+
   try {
-    await prisma.product.delete({ where: { id } })
+    // Soft-delete the product so historical order data remains intact.
+    // We also remove any cart or wishlist items that still reference it.
+    await prisma.$transaction([
+      prisma.cartItem.deleteMany({ where: { productId: id } }),
+      prisma.wishlistItem.deleteMany({ where: { productId: id } }),
+      prisma.product.delete({ where: { id } })
+    ])
     return NextResponse.json({ ok: true })
   } catch (err: any) {
     console.error('❌ delete-product error:', err)
