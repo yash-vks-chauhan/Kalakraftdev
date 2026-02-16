@@ -6,6 +6,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
+import { Filter, X, Check, ChevronDown } from 'lucide-react'
 import WishlistButton from '../components/WishlistButton'
 import styles from './products.module.css'
 
@@ -45,29 +46,32 @@ export default function ProductsPage() {
   const [loading, setLoading] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
   const [scrollY, setScrollY] = useState(0)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [sortOption, setSortOption] = useState('newest')
 
   function handleCategoryClick(slug: string) {
     // Use exact slug from database, no transformations needed
     router.replace(slug === currentCategory ? '/products' : `/products?category=${encodeURIComponent(slug)}`)
   }
 
-  // fetch products from API (with category and search filter)
+  // fetch products from API (with category, search filter, and sort)
   useEffect(() => {
     async function fetchProducts() {
       setLoading(true)
       setError(null)
       const params = new URLSearchParams()
       if (currentCategory) {
-        // Use exact category slug, no transformations needed
         params.set('category', currentCategory)
       }
+      // Add sort param if supported by API, otherwise client-side sort
+
       try {
         const res = await fetch(`/api/products?${params.toString()}`)
         const data = await res.json()
         if (!res.ok) throw new Error(data.error || 'Failed to fetch products')
-        
+
         let filteredProducts = Array.isArray(data.products) ? data.products : []
-        
+
         // Client-side category filtering as backup
         if (currentCategory && filteredProducts.length > 0) {
           filteredProducts = filteredProducts.filter((product: Product) => {
@@ -75,7 +79,17 @@ export default function ProductsPage() {
             return categorySlug === currentCategory
           })
         }
-        
+
+        // Client-side sorting
+        if (sortOption === 'price_low') {
+          filteredProducts.sort((a: Product, b: Product) => a.price - b.price)
+        } else if (sortOption === 'price_high') {
+          filteredProducts.sort((a: Product, b: Product) => b.price - a.price)
+        } else if (sortOption === 'newest') {
+          // Assuming higher ID is newer if no date field, or separate date field
+          filteredProducts.sort((a: Product, b: Product) => b.id - a.id)
+        }
+
         setProducts(filteredProducts)
       } catch (err: any) {
         setError(err.message)
@@ -84,7 +98,7 @@ export default function ProductsPage() {
       }
     }
     fetchProducts()
-  }, [currentCategory])
+  }, [currentCategory, sortOption])
 
   // Handle scroll animations
   useEffect(() => {
@@ -108,9 +122,9 @@ export default function ProductsPage() {
       const scale = Math.max(0.9, 1 - distanceFromCenter / 1000)
       const opacity = Math.max(0.6, 1 - distanceFromCenter / 800)
       const translateY = distanceFromCenter * 0.05
-      
-      ;(card as HTMLElement).style.transform = `scale(${scale}) translateY(${translateY}px)`
-      ;(card as HTMLElement).style.opacity = opacity.toString()
+
+        ; (card as HTMLElement).style.transform = `scale(${scale}) translateY(${translateY}px)`
+        ; (card as HTMLElement).style.opacity = opacity.toString()
     })
   }, [scrollY, products])
 
@@ -131,80 +145,144 @@ export default function ProductsPage() {
     <main className={styles.productsContainer}>
       <h1 className={styles.title}>Discover Our Collection</h1>
 
-      {/* Category badges */}
-      <div className={styles.categoryContainer}>
-        {KNOWN_CATEGORIES.map(cat => (
-          <button
-            key={cat.slug}
-            onClick={() => handleCategoryClick(cat.slug)}
-            className={`${styles.categoryButton} ${cat.slug === currentCategory ? styles.active : ''}`}
-          >{cat.name}</button>
-        ))}
-        {currentCategory && (
-          <button onClick={() => router.replace('/products')} className={`${styles.categoryButton} ${styles.clearCategoryButton}`}>
-            Clear
-          </button>
-        )}
-      </div>
+      {/* Mobile Overlay */}
+      {isSidebarOpen && (
+        <div
+          className={styles.overlay}
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
 
-      {/* Results */}
-      {(products.length === 0) ? (
-        <p className={styles.emptyProducts}>No products found.</p>
-      ) : (
-        <div className={styles.productGrid} ref={productGridRef}>
-          {(products).map((prod, index) => (
-            <div 
-              key={prod.id} 
-              className={styles.productCard}
-              style={{
-                animationDelay: `${index * 0.1}s`
+      <div className={styles.mainLayout}>
+        {/* Sidebar */}
+        <aside className={`${styles.sidebar} ${isSidebarOpen ? styles.open : ''}`}>
+          <div className={styles.sidebarHeader}>
+            <h2 className={styles.sidebarTitle}>Filters</h2>
+            <button
+              className={styles.closeFilterButton}
+              onClick={() => setIsSidebarOpen(false)}
+            >
+              <X size={20} />
+            </button>
+          </div>
+
+          <div className={styles.filterSection}>
+            <h3 className={styles.filterSectionTitle}>Filters</h3>
+
+            {/* All Products Option */}
+            <div
+              className={`${styles.filterOption} ${!currentCategory ? styles.active : ''}`}
+              onClick={() => {
+                router.replace('/products')
+                setIsSidebarOpen(false)
               }}
             >
-              {prod.stockQuantity <= 0 ? (
-                <span className={styles.outOfStockBadge}>
-                  Out of stock
-                </span>
-              ) : prod.stockQuantity <= LOW_STOCK_THRESHOLD && (
-                <span className={styles.lowStockBadge}>
-                  Low stock
-                </span>
-              )}
-              <div className={styles.productImageContainer}>
-                {prod.imageUrls[0] ? (
-                  <img 
-                    src={prod.imageUrls[0]} 
-                    alt={prod.name} 
-                    className={styles.productImage}
-                    loading="lazy"
-                  />
-                ) : (
-                  <div className={`${styles.productImage} ${styles.noImage}`}>
-                    <span className={styles.noImageText}>No image</span>
-                  </div>
-                )}
-                <div className={styles.productImageOverlay}>
-                  <WishlistButton 
-                    productId={prod.id} 
-                    className={styles.wishlistButton}
-                    preventNavigation={true}
-                  />
-                </div>
-              </div>
-              <div className={styles.productInfo}>
-                {prod.category && (
-                  <span className={styles.productCategory}>{prod.category.name}</span>
-                )}
-                <h3 className={styles.productName}>{prod.name}</h3>
-                <p className={styles.productPrice}>{prod.currency} {prod.price.toFixed(2)}</p>
-                <p className={styles.productShortDesc}>{prod.shortDesc}</p>
-                <Link href={`/products/${prod.id}`} className={styles.viewDetailsButton}>
-                  View Details
-                </Link>
-              </div>
+              <div className={styles.radioCircle} />
+              <span className={styles.filterLabel}>All Products</span>
             </div>
-          ))}
+
+            {/* Categories */}
+            {KNOWN_CATEGORIES.map(cat => (
+              <div
+                key={cat.slug}
+                className={`${styles.filterOption} ${cat.slug === currentCategory ? styles.active : ''}`}
+                onClick={() => {
+                  handleCategoryClick(cat.slug)
+                  setIsSidebarOpen(false) // Close on mobile selection
+                }}
+              >
+                <div className={styles.radioCircle} />
+                <span className={styles.filterLabel}>{cat.name}</span>
+              </div>
+            ))}
+          </div>
+        </aside>
+
+        <div style={{ flex: 1 }}>
+          {/* Top Bar */}
+          <div className={styles.topBar}>
+            <button
+              className={styles.filterToggle}
+              onClick={() => setIsSidebarOpen(true)}
+            >
+              <Filter size={18} />
+              Filters
+            </button>
+
+            <div className={styles.sortContainer}>
+              <span className={styles.sortLabel}>Sort:</span>
+              <select
+                className={styles.sortSelect}
+                value={sortOption}
+                onChange={(e) => setSortOption(e.target.value)}
+              >
+                <option value="newest">Newest</option>
+                <option value="price_low">Price: Low to High</option>
+                <option value="price_high">Price: High to Low</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Results */}
+          {(products.length === 0 && !loading) ? (
+            <p className={styles.emptyProducts}>No products found.</p>
+          ) : (
+            <div className={styles.productGrid} ref={productGridRef}>
+              {(products).map((prod, index) => (
+                <div
+                  key={prod.id}
+                  className={styles.productCard}
+                  style={{
+                    animationDelay: `${index * 0.1}s`
+                  }}
+                >
+                  {prod.stockQuantity <= 0 ? (
+                    <span className={styles.outOfStockBadge}>
+                      Out of stock
+                    </span>
+                  ) : prod.stockQuantity <= LOW_STOCK_THRESHOLD && (
+                    <span className={styles.lowStockBadge}>
+                      Low stock
+                    </span>
+                  )}
+                  <div className={styles.productImageContainer}>
+                    {prod.imageUrls[0] ? (
+                      <img
+                        src={prod.imageUrls[0]}
+                        alt={prod.name}
+                        className={styles.productImage}
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className={`${styles.productImage} ${styles.noImage}`}>
+                        <span className={styles.noImageText}>No image</span>
+                      </div>
+                    )}
+                    <div className={styles.productImageOverlay}>
+                      <WishlistButton
+                        productId={prod.id}
+                        className={styles.wishlistButton}
+                        preventNavigation={true}
+                      />
+                    </div>
+                  </div>
+                  <div className={styles.productInfo}>
+                    {prod.category && (
+                      <span className={styles.productCategory}>{prod.category.name}</span>
+                    )}
+                    <h3 className={styles.productName}>{prod.name}</h3>
+                    <p className={styles.productPrice}>{prod.currency} {prod.price.toFixed(2)}</p>
+                    <p className={styles.productShortDesc}>{prod.shortDesc}</p>
+                    <Link href={`/products/${prod.id}`} className={styles.viewDetailsButton}>
+                      View Details
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </main>
   )
 }
