@@ -14,6 +14,7 @@ import {
 } from "firebase/auth"
 import { auth } from "../firebase/client"
 import { useAuth } from "./AuthContext"
+const LOGOUT_IN_PROGRESS_KEY = 'artcommerce:logout_in_progress'
 
 export interface AuthContextType {
   user: FirebaseUser | null
@@ -63,6 +64,16 @@ const buildGoogleProvider = () => {
   return provider
 }
 
+const isLogoutInProgress = () => {
+  if (typeof window === 'undefined') return false
+  return sessionStorage.getItem(LOGOUT_IN_PROGRESS_KEY) === '1'
+}
+
+const clearLogoutInProgress = () => {
+  if (typeof window === 'undefined') return
+  sessionStorage.removeItem(LOGOUT_IN_PROGRESS_KEY)
+}
+
 export function FirebaseAuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<FirebaseUser | null>(null)
   const [loading, setLoading] = useState(true)
@@ -94,6 +105,12 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
       if (!isMounted) return
 
       if (firebaseUser) {
+        if (isLogoutInProgress()) {
+          setUser(null)
+          setLoading(false)
+          return
+        }
+
         setUser(firebaseUser)
 
         firebaseUser.getIdToken().then((idToken) => {
@@ -106,6 +123,7 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
           setError("Failed to get authentication token")
         })
       } else {
+        clearLogoutInProgress()
         setUser(null)
       }
 
@@ -126,6 +144,7 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
 
     setLoading(true)
     setError(null)
+    clearLogoutInProgress()
 
     const provider = buildGoogleProvider()
 
@@ -160,6 +179,7 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
 
     setLoading(true)
     setError(null)
+    clearLogoutInProgress()
 
     const provider = new FacebookAuthProvider()
 
@@ -188,6 +208,9 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
 
   const signOut = async () => {
     if (!auth) return
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem(LOGOUT_IN_PROGRESS_KEY, '1')
+    }
     await fbSignOut(auth)
   }
 

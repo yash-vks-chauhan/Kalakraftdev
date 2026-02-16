@@ -1306,6 +1306,7 @@ const [featuredProducts, setFeaturedProducts] = useState([]);
 const [isHoveringVideo, setIsHoveringVideo] = useState(false);
 const [isHeroVideoLoaded, setIsHeroVideoLoaded] = useState(false);
 const [hasHeroVideoError, setHasHeroVideoError] = useState(false);
+const [heroVideoSourceIndex, setHeroVideoSourceIndex] = useState(0);
 
 // Words for the flipping text animation
 const flippingWords = ['home decor', 'resin art', 'clocks', 'trays', 'wall art', 'custom pieces']
@@ -1318,8 +1319,9 @@ const [slidePosition, setSlidePosition] = useState(0)
 
 const resumeTimerRef = useRef<NodeJS.Timeout | null>(null)
 const heroVideoSources = [
-  '/images/homepage4.mp4',
   'https://ik.imagekit.io/4pjvf8k9u/Videos/homepage4.mp4?updatedAt=1753532187691',
+  '/images/homepage4.mp4',
+  '/images/homepage.mp4',
 ]
 
 
@@ -1654,6 +1656,13 @@ const handleHeroVideoLoaded = (event: any) => {
 };
 
 const handleHeroVideoError = () => {
+  if (heroVideoSourceIndex < heroVideoSources.length - 1) {
+    setHeroVideoSourceIndex((prev) => prev + 1);
+    setIsHeroVideoLoaded(false);
+    setHasHeroVideoError(false);
+    return;
+  }
+
   setHasHeroVideoError(true);
   setIsHeroVideoLoaded(false);
 };
@@ -1754,20 +1763,19 @@ return (
   </picture>
 
   <video
+    key={heroVideoSources[heroVideoSourceIndex]}
     className={styles.videoBackground}
     autoPlay
     loop
     muted
     playsInline
+    src={heroVideoSources[heroVideoSourceIndex]}
     preload="auto"
     poster="/images/loading.png"
     style={{ display: hasHeroVideoError ? 'none' : 'block' }}
     onLoadedData={handleHeroVideoLoaded}
     onError={handleHeroVideoError}
   >
-    {heroVideoSources.map((src) => (
-      <source key={src} src={src} type="video/mp4" />
-    ))}
     Your browser does not support the video tag.
   </video>
 

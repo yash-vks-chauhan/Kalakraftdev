@@ -40,14 +40,16 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
   const videoRef = useRef<HTMLVideoElement>(null)
   const [isHeroVideoLoaded, setIsHeroVideoLoaded] = useState(false)
   const [hasHeroVideoError, setHasHeroVideoError] = useState(false)
+  const [heroVideoSourceIndex, setHeroVideoSourceIndex] = useState(0)
   const router = useRouter()
   const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false)
   const accountDropdownRef = useRef<HTMLDivElement>(null)
   const [productName, setProductName] = useState<string>('')
   const [isRouteLoading, setIsRouteLoading] = useState(false)
   const heroVideoSources = [
-    '/images/homepage4.mp4',
     'https://ik.imagekit.io/4pjvf8k9u/Videos/homepage4.mp4?updatedAt=1753532187691',
+    '/images/homepage4.mp4',
+    '/images/homepage.mp4',
   ]
 
   const [viewMode, setViewMode] = useState<'mobile' | 'desktop'>('mobile')
@@ -217,6 +219,13 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
   }
 
   const handleHeroVideoError = () => {
+    if (heroVideoSourceIndex < heroVideoSources.length - 1) {
+      setHeroVideoSourceIndex((prev) => prev + 1)
+      setIsHeroVideoLoaded(false)
+      setHasHeroVideoError(false)
+      return
+    }
+
     setHasHeroVideoError(true)
     setIsHeroVideoLoaded(false)
   }
@@ -279,7 +288,6 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
     try {
       await logout()
       setIsAccountDropdownOpen(false)
-      router.push('/')
     } catch (error) {
       console.error('Logout failed:', error)
     }
@@ -664,21 +672,21 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
               />
             </picture>
             <video
+              key={heroVideoSources[heroVideoSourceIndex]}
               ref={videoRef}
               autoPlay
               muted
               loop
               playsInline
               className={styles.curvedHeroVideo}
+              src={heroVideoSources[heroVideoSourceIndex]}
               poster="/images/loading.png"
               preload="auto"
               style={{ display: hasHeroVideoError ? 'none' : 'block' }}
               onLoadedData={handleHeroVideoLoaded}
               onError={handleHeroVideoError}
             >
-              {heroVideoSources.map((src) => (
-                <source key={src} src={src} type="video/mp4" />
-              ))}
+              Your browser does not support the video tag.
             </video>
             
             <div className={styles.curvedHeroContent}>

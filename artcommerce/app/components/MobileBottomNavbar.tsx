@@ -62,7 +62,6 @@ export default function MobileBottomNavbar() {
     try {
       await logout()
       setIsAccountDropdownOpen(false)
-      router.push('/')
     } catch (error) {
       console.error('Logout failed:', error)
     }

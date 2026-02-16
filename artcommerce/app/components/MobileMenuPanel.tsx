@@ -74,7 +74,6 @@ const MobileMenuPanel: React.FC<MobileMenuPanelProps> = ({ isOpen, onClose, togg
   const handleLogout = async () => {
     await logout();
     onClose();
-    router.push('/');
   };
 
   return (

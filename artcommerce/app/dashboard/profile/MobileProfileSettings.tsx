@@ -535,8 +535,12 @@ export default function MobileProfileSettings() {
     }
   }
 
-  const handleLogout = () => {
-    logout()
+  const handleLogout = async () => {
+    try {
+      await logout()
+    } catch (error) {
+      console.error('Logout failed:', error)
+    }
   }
 
   // Prevent hydration mismatch by not rendering until mounted

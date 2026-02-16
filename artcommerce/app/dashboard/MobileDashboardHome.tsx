@@ -168,9 +168,13 @@ export default function MobileDashboardHome() {
     }
   }
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     if (showLogoutConfirm) {
-      logout()
+      try {
+        await logout()
+      } catch (error) {
+        console.error('Logout failed:', error)
+      }
     } else {
       setShowLogoutConfirm(true)
       // Auto hide after 3 seconds

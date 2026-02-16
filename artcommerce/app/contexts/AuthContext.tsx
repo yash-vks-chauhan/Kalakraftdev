@@ -10,6 +10,8 @@ import React, {
   useState,
 } from 'react'
 import { useRouter } from 'next/navigation'
+import { signOut as firebaseSignOut } from 'firebase/auth'
+import { auth as firebaseAuth } from '../firebase/client'
 
 export interface Order {
   id: number
@@ -42,6 +44,7 @@ interface AuthContextValue {
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
+const LOGOUT_IN_PROGRESS_KEY = 'artcommerce:logout_in_progress'
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter()
@@ -141,7 +144,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   )
 
   const logout = useCallback(async () => {
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem(LOGOUT_IN_PROGRESS_KEY, '1')
+    }
+
     try {
+      // Clear Firebase client auth first to prevent immediate auto sign-in.
+      if (firebaseAuth?.currentUser) {
+        await firebaseSignOut(firebaseAuth)
+      }
+
       await fetch('/api/auth/logout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
