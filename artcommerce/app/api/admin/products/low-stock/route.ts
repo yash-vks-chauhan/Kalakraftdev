@@ -1,21 +1,11 @@
 // app/api/admin/products/low-stock/route.ts
 import { NextResponse } from 'next/server'
 import prisma from '../../../../../lib/prisma'
-import jwt from 'jsonwebtoken'
-
-const JWT_SECRET = process.env.JWT_SECRET!
-
-function requireAdmin(req: Request) {
-  const auth = req.headers.get('Authorization')?.replace('Bearer ', '') || ''
-  try {
-    return (jwt.verify(auth, JWT_SECRET) as any).role === 'admin'
-  } catch {
-    return false
-  }
-}
+import { requireAdminUser } from '../../../../../lib/session-auth'
 
 export async function GET(request: Request) {
-  if (!requireAdmin(request)) {
+  const admin = await requireAdminUser(request)
+  if (!admin) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

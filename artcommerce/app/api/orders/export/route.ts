@@ -1,56 +1,55 @@
 import { NextResponse } from 'next/server'
 import prisma from '../../../../lib/prisma'
-import jwt from 'jsonwebtoken'
+import { requireAdminUser } from '../../../../lib/session-auth'
 
-const JWT_SECRET = process.env.JWT_SECRET!
-
-function getUserPayload(req: Request) {
-  const auth = req.headers.get('Authorization')?.replace('Bearer ', '') || ''
-  try {
-    return jwt.verify(auth, JWT_SECRET) as { role: string }
-  } catch {
-    return null
-  }
+function sanitizeCsvCell(value: unknown): string {
+  const asString = String(value ?? '')
+  const escaped = asString.replace(/"/g, '""')
+  const startsWithFormula = /^[=+\-@]/.test(escaped.trim())
+  const safe = startsWithFormula ? `'${escaped}` : escaped
+  return `"${safe}"`
 }
 
 export async function GET(request: Request) {
-  const payload = getUserPayload(request)
-  if (!payload || payload.role !== 'admin') {
+  const admin = await requireAdminUser(request)
+  if (!admin) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  // Fetch all orders + related user info
   const orders = await prisma.order.findMany({
     orderBy: { createdAt: 'desc' },
     include: {
-      user: { select: { fullName: true, email: true } }
-    }
+      user: { select: { fullName: true, email: true } },
+    },
   })
 
-  // Build CSV
   const header = [
     'OrderNumber',
     'CustomerName',
     'CustomerEmail',
     'TotalAmount',
     'Status',
-    'CreatedAt'
+    'CreatedAt',
   ].join(',')
 
-  const rows = orders.map(o => [
-    o.orderNumber,
-    `"${o.user.fullName}"`,
-    o.user.email,
-    o.totalAmount.toFixed(2),
-    o.status,
-    o.createdAt
-  ].join(',')).join('\n')
+  const rows = orders
+    .map((o) =>
+      [
+        sanitizeCsvCell(o.orderNumber),
+        sanitizeCsvCell(o.user.fullName),
+        sanitizeCsvCell(o.user.email),
+        sanitizeCsvCell(o.totalAmount.toFixed(2)),
+        sanitizeCsvCell(o.status),
+        sanitizeCsvCell(o.createdAt.toISOString()),
+      ].join(',')
+    )
+    .join('\n')
 
   const csv = [header, rows].join('\n')
 
   return new Response(csv, {
     headers: {
-      'Content-Type': 'text/csv',
+      'Content-Type': 'text/csv; charset=utf-8',
       'Content-Disposition': 'attachment; filename="orders.csv"',
     },
   })

@@ -1,15 +1,13 @@
-// File: app/contexts/AuthContext.tsx
-
 'use client'
 
 import React, {
   createContext,
-  useContext,
-  useState,
-  useEffect,
-  useCallback,
-  useMemo,
   ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
 } from 'react'
 import { useRouter } from 'next/navigation'
 
@@ -52,260 +50,239 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const logout = useCallback(async () => {
-    try {
-      // First clear all local state
-      setToken(null);
-      setUser(null);
-      localStorage.removeItem('token');
-      sessionStorage.clear(); // Clear any session storage
-      
-      // Then call logout API to clear the cookie
-      await fetch('/api/auth/logout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include' // Important for cookie handling
-      });
-      
-      // Navigate to login page instead of home
-      router.replace('/auth/login');
-      
-      // No need for reload, just ensure loading is false
-      setLoading(false);
-    } catch (err) {
-      console.error('Logout error:', err);
-      // Still ensure state is cleared
-      setToken(null);
-      setUser(null);
-      localStorage.removeItem('token');
-      sessionStorage.clear();
-      setLoading(false);
-      router.replace('/auth/login');
-    }
-  }, [router]);
+  const clearAuthState = useCallback(() => {
+    setToken(null)
+    setUser(null)
+    setError(null)
+  }, [])
 
   const refreshToken = useCallback(async (): Promise<string | null> => {
     try {
       const res = await fetch('/api/auth/refresh', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        }
-      });
-      
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to refresh token');
-      
-      const newToken = data.token;
-      setToken(newToken);
-      localStorage.setItem('token', newToken);
-      return newToken;
-    } catch (err) {
-      console.error('Failed to refresh token:', err);
-      logout();
-      return null;
-    }
-  }, [token, logout]);
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+      })
 
-  const fetchProfile = useCallback(async (currentToken?: string | null) => {
-    const activeToken = currentToken || token;
-    
-    if (!activeToken) {
-      setUser(null);
-      setToken(null);
-      localStorage.removeItem('token');
-      setLoading(false);
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const res = await fetch('/api/auth/me', {
-        headers: { Authorization: `Bearer ${activeToken}` },
-      });
-      
-      if (res.status === 401) {
-        const newToken = await refreshToken();
-        if (newToken) {
-          return fetchProfile(newToken);
-        }
-        throw new Error('Token refresh failed');
-      }
-      
-      const data = await res.json();
-      
       if (!res.ok) {
-        throw new Error(data.error || 'Failed to fetch profile');
+        clearAuthState()
+        return null
       }
-      
-      if (!data.user) {
-        throw new Error('No user data in response');
+
+      const data = await res.json().catch(() => ({}))
+      const newToken = typeof data.token === 'string' ? data.token : null
+      if (!newToken) {
+        clearAuthState()
+        return null
       }
-      
-      setToken(activeToken);
-      localStorage.setItem('token', activeToken);
-      setUser(data.user);
+
+      setToken(newToken)
+      return newToken
     } catch (err) {
-      console.error("Fetch profile error:", err);
-      logout();
-    } finally {
-      setLoading(false);
+      console.error('Failed to refresh token:', err)
+      clearAuthState()
+      return null
     }
-  }, [token, refreshToken, logout]);
+  }, [clearAuthState])
 
-  useEffect(() => {
-    const savedToken = localStorage.getItem('token');
-    
-    // Set a timeout to ensure loading doesn't persist indefinitely
-    const timeoutId = setTimeout(() => {
-      console.warn('Auth loading timeout - setting loading to false');
-      setLoading(false);
-    }, 10000); // 10 second timeout
-    
-    if (savedToken) {
-      fetchProfile(savedToken).catch((err) => {
-        console.error('Profile fetch error:', err);
-        // Clear everything if profile fetch fails
-        setToken(null);
-        setUser(null);
-        localStorage.removeItem('token');
-        sessionStorage.clear();
-        setLoading(false);
-      }).finally(() => {
-        clearTimeout(timeoutId);
-      });
-    } else {
-      setLoading(false);
-      clearTimeout(timeoutId);
-    }
-    
-    return () => {
-      clearTimeout(timeoutId);
-    };
-  }, []); // Remove fetchProfile dependency to prevent re-runs
+  const fetchProfile = useCallback(
+    async (currentToken?: string | null) => {
+      setLoading(true)
+      let accessToken = currentToken || token
 
-  const signup = useCallback(async (fullName: string, email: string, password: string) => {
-    setLoading(true);
+      if (!accessToken) {
+        accessToken = await refreshToken()
+        if (!accessToken) {
+          setLoading(false)
+          return
+        }
+      }
+
+      try {
+        let res = await fetch('/api/auth/me', {
+          headers: { Authorization: `Bearer ${accessToken}` },
+          credentials: 'include',
+        })
+
+        if (res.status === 401) {
+          const refreshed = await refreshToken()
+          if (!refreshed) {
+            setLoading(false)
+            return
+          }
+          accessToken = refreshed
+          res = await fetch('/api/auth/me', {
+            headers: { Authorization: `Bearer ${accessToken}` },
+            credentials: 'include',
+          })
+        }
+
+        if (!res.ok) {
+          clearAuthState()
+          return
+        }
+
+        const data = await res.json().catch(() => ({}))
+        if (!data.user) {
+          clearAuthState()
+          return
+        }
+
+        setToken(accessToken)
+        setUser(data.user)
+      } catch (err) {
+        console.error('Fetch profile error:', err)
+        clearAuthState()
+      } finally {
+        setLoading(false)
+      }
+    },
+    [token, refreshToken, clearAuthState]
+  )
+
+  const logout = useCallback(async () => {
     try {
-      const res = await fetch('/api/auth/signup', {
+      await fetch('/api/auth/logout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fullName, email, password }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Signup failed');
-
-      setToken(data.token);
-      localStorage.setItem('token', data.token);
-      await fetchProfile(data.token);
-      router.replace('/');
+        credentials: 'include',
+      })
+    } catch (err) {
+      console.error('Logout error:', err)
     } finally {
-      setLoading(false);
+      clearAuthState()
+      setLoading(false)
+      router.replace('/auth/login')
     }
-  }, [router, fetchProfile]);
+  }, [clearAuthState, router])
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setLoading(false)
+    }, 12000)
+
+    fetchProfile(null).finally(() => clearTimeout(timeoutId))
+    return () => clearTimeout(timeoutId)
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const signup = useCallback(
+    async (fullName: string, email: string, password: string) => {
+      setLoading(true)
+      try {
+        const res = await fetch('/api/auth/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fullName, email, password }),
+          credentials: 'include',
+        })
+        const data = await res.json().catch(() => ({}))
+        if (!res.ok) throw new Error(data.error || 'Signup failed')
+
+        if (typeof data.token === 'string') {
+          setToken(data.token)
+          await fetchProfile(data.token)
+        } else {
+          await fetchProfile(null)
+        }
+        router.replace('/')
+      } finally {
+        setLoading(false)
+      }
+    },
+    [router, fetchProfile]
+  )
 
   const login = useCallback(async (email: string, password: string) => {
-    setLoading(true);
-    setError(null);
-    
+    setLoading(true)
+    setError(null)
+
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
-        credentials: 'include' // Important for cookie handling
-      });
-      
-      let data;
-      try {
-        data = await res.json();
-      } catch (err) {
-        throw new Error('Server error: Invalid response');
-      }
-      
+        credentials: 'include',
+      })
+
+      const data = await res.json().catch(() => ({}))
       if (!res.ok) {
-        // Clear any existing auth state
-        setToken(null);
-        setUser(null);
-        localStorage.removeItem('token');
-        
-        // Handle different error cases
+        clearAuthState()
         if (res.status === 401) {
-          throw new Error('The email or password you entered is incorrect');
+          throw new Error('The email or password you entered is incorrect')
         }
-        if (res.status === 400) {
-          if (data.error === 'Missing fields') {
-            throw new Error('Please enter both email and password');
-          }
-          throw new Error(data.error || 'Invalid request');
-        }
-        // For network errors
-        if (!res.status) {
-          throw new Error('Network error. Please check your connection and try again');
-        }
-        // For other errors, use the server's error message
-        throw new Error(data.error || 'Login failed. Please try again');
+        throw new Error(data.error || 'Login failed. Please try again')
       }
 
-      // Only set auth state if the response was successful
-      setToken(data.token);
-      localStorage.setItem('token', data.token);
-      setUser(data.user);
-      setError(null);
-      
-      // Return the data so the login page can handle success
-      return data;
+      if (typeof data.token === 'string') {
+        setToken(data.token)
+      }
+      if (data.user) {
+        setUser(data.user)
+      } else {
+        await fetchProfile(data.token || null)
+      }
+      setError(null)
     } catch (err: any) {
-      // Set the error message
-      const errorMessage = err.message || 'Login failed. Please try again';
-      setError(errorMessage);
-      // Re-throw the error for the login page to handle
-      throw new Error(errorMessage);
+      const errorMessage = err.message || 'Login failed. Please try again'
+      setError(errorMessage)
+      throw new Error(errorMessage)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  }, []);
+  }, [clearAuthState, fetchProfile])
 
   const loginWithFirebaseToken = useCallback(async (idToken: string) => {
-    setLoading(true);
+    setLoading(true)
     try {
       const res = await fetch('/api/auth/firebase-login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ idToken }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Firebase login failed');
+        credentials: 'include',
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.error || 'Firebase login failed')
 
-      setToken(data.token);
-      setUser(data.user);
-      localStorage.setItem('token', data.token);
-      
-      router.replace('/');
+      if (typeof data.token === 'string') {
+        setToken(data.token)
+      }
+      if (data.user) setUser(data.user)
+      else await fetchProfile(data.token || null)
+
+      router.replace('/')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  }, [router]);
+  }, [fetchProfile, router])
 
-  const contextValue = useMemo(() => ({
-    user,
-    token,
-    signup,
-    login,
-    logout,
-    fetchProfile,
-    loading,
-    loginWithFirebaseToken,
-    refreshToken,
-    error,
-  }), [user, token, signup, login, logout, fetchProfile, loading, loginWithFirebaseToken, refreshToken, error]);
-
-  return (
-    <AuthContext.Provider value={contextValue}>
-      {children}
-    </AuthContext.Provider>
+  const contextValue = useMemo(
+    () => ({
+      user,
+      token,
+      signup,
+      login,
+      logout,
+      fetchProfile,
+      loading,
+      loginWithFirebaseToken,
+      refreshToken,
+      error,
+    }),
+    [
+      user,
+      token,
+      signup,
+      login,
+      logout,
+      fetchProfile,
+      loading,
+      loginWithFirebaseToken,
+      refreshToken,
+      error,
+    ]
   )
+
+  return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
 }
 
 export function useAuth() {

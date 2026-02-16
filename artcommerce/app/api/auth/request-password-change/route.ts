@@ -1,71 +1,115 @@
 // File: app/api/auth/request-password-change/route.ts
 
+import { customAlphabet } from 'nanoid'
 import { NextResponse } from 'next/server'
-import prisma           from '../../../../lib/prisma'
-import jwt              from 'jsonwebtoken'
-import { nanoid }       from 'nanoid'
-import nodemailer       from 'nodemailer'
+import { getAuthContext } from '../../../../lib/auth'
+import { getSecureMailer } from '../../../../lib/mailer'
+import { getOtpSecretValidationError, hashOtpForScope } from '../../../../lib/otp-security'
+import prisma from '../../../../lib/prisma'
 
 export const runtime = 'nodejs'
-const JWT_SECRET = process.env.JWT_SECRET!
 
-export async function POST(request: Request) {
-  let user
+const OTP_EXPIRY_MS = 5 * 60 * 1000
+const OTP_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+const OTP_LENGTH = 6
+const REQUEST_WINDOW_MS = 15 * 60 * 1000
+const MAX_REQUESTS_PER_WINDOW = 5
 
-  // ── 1️⃣ Try dashboard flow via JWT ───────────────────────
-  const auth = request.headers.get('authorization') || ''
-  if (auth.startsWith('Bearer ')) {
-    try {
-      const payload = jwt.verify(auth.replace('Bearer ', ''), JWT_SECRET) as any
-      user = await prisma.user.findUnique({ where: { id: payload.userId } })
-    } catch {
-      // invalid or expired token → fall back to public flow
-    }
+const generateOtp = customAlphabet(OTP_ALPHABET, OTP_LENGTH)
+
+type RateLimitEntry = {
+  count: number
+  resetAt: number
+}
+
+const resetRequestRateLimit = new Map<string, RateLimitEntry>()
+
+function getClientIp(request: Request): string {
+  const forwardedFor = request.headers.get('x-forwarded-for')
+  if (forwardedFor) {
+    const [ip] = forwardedFor.split(',')
+    return ip?.trim() || 'unknown'
+  }
+  return request.headers.get('x-real-ip') || 'unknown'
+}
+
+function consumeRateLimit(key: string): boolean {
+  const now = Date.now()
+  const current = resetRequestRateLimit.get(key)
+
+  if (!current || current.resetAt <= now) {
+    resetRequestRateLimit.set(key, {
+      count: 1,
+      resetAt: now + REQUEST_WINDOW_MS,
+    })
+    return true
   }
 
-  // ── 2️⃣ Public flow: parse email from body ───────────────
+  if (current.count >= MAX_REQUESTS_PER_WINDOW) {
+    return false
+  }
+
+  current.count += 1
+  resetRequestRateLimit.set(key, current)
+  return true
+}
+
+export async function POST(request: Request) {
+  const otpSecretError = getOtpSecretValidationError()
+  if (otpSecretError) {
+    console.error(`[auth/request-password-change] ${otpSecretError}`)
+    return NextResponse.json(
+      { error: 'Password reset is temporarily unavailable' },
+      { status: 503 }
+    )
+  }
+
+  const auth = getAuthContext(request)
+  let user = auth?.userId
+    ? await prisma.user.findUnique({ where: { id: String(auth.userId) } })
+    : null
+
+  let requestedEmail: string | null = null
   if (!user) {
-    const { email } = await request.json().catch(() => ({}))
-    if (!email || typeof email !== 'string') {
+    const body = await request.json().catch(() => ({}))
+    const email = typeof body?.email === 'string' ? body.email.trim().toLowerCase() : ''
+
+    if (!email) {
       return NextResponse.json(
         { error: 'Missing or invalid email' },
         { status: 400 }
       )
     }
+
+    requestedEmail = email
     user = await prisma.user.findUnique({ where: { email } })
   }
 
-  // ── 3️⃣ No such user? return OK (don’t reveal existence) ─
-  if (!user) {
+  const rateLimitScope = user?.id || requestedEmail || 'unknown'
+  const rateLimitKey = `password-reset:${getClientIp(request)}:${rateLimitScope}`
+
+  // Return 200 for public requests to avoid account enumeration.
+  if (!consumeRateLimit(rateLimitKey)) {
     return NextResponse.json({ ok: true })
   }
 
-  // ── 4️⃣ Generate & persist OTP ───────────────────────────
-  const code    = nanoid(6).toUpperCase()
-  const expires = new Date(Date.now() + 5 * 60 * 1000)
+  if (!user || !user.email) {
+    return NextResponse.json({ ok: true })
+  }
+
+  const code = generateOtp()
+  const expires = new Date(Date.now() + OTP_EXPIRY_MS)
+
   await prisma.user.update({
     where: { id: user.id },
     data: {
-      passwordChangeOtp:     code,
+      passwordChangeOtp: hashOtpForScope(code, 'password-reset'),
       passwordChangeExpires: expires,
     },
   })
 
-  // Log for admin/debugging purposes (visible in server console)
-  console.log(`🔐 Password-reset OTP generated for ${user.email}: ${code}`)
+  const { transporter, smtpUser } = getSecureMailer()
 
-  // ── 5️⃣ Email the OTP ──────────────────────────────────
-  const transporter = nodemailer.createTransport({
-    host:   process.env.SMTP_HOST!,
-    port:   Number(process.env.SMTP_PORT!),
-    secure: process.env.SMTP_PORT === '465',
-    auth: {
-      user: process.env.SMTP_USER!,
-      pass: process.env.SMTP_PASS!,
-    },
-  })
-
-  // craft a simple text + fallback link in case
   const html = `
     <p>Hi ${user.fullName || ''},</p>
     <p>Your one-time code to reset your password is:</p>
@@ -73,18 +117,17 @@ export async function POST(request: Request) {
     <p>This code expires in 5 minutes.</p>
     <p>If you didn’t request this, ignore this email.</p>
   `
+
   try {
     await transporter.sendMail({
-      from:    `"Artcommerce Support" <${process.env.SMTP_USER}>`,
-      to:      user.email as string,
+      from: `"Artcommerce Support" <${smtpUser}>`,
+      to: user.email as string,
       subject: 'Your Artcommerce password reset code',
       html,
     })
   } catch (err) {
     console.error('❌ Error sending OTP email:', err)
-    // swallow errors so we still return 200
   }
 
-  // ── 6️⃣ Done ─────────────────────────────────────────────
   return NextResponse.json({ ok: true })
 }

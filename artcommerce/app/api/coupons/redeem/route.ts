@@ -1,25 +1,46 @@
 import { NextResponse } from 'next/server'
 import prisma from '../../../../lib/prisma'
+import { consumeRateLimit, getClientIp } from '../../../../lib/rateLimit'
+import { getAuthenticatedUser } from '../../../../lib/session-auth'
 
 export const runtime = 'nodejs'
 
+const REDEEM_WINDOW_MS = 10 * 60 * 1000
+const REDEEM_MAX_ATTEMPTS = 30
+
 export async function POST(req: Request) {
-  const { code } = await req.json()
+  const user = await getAuthenticatedUser(req)
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const clientIp = getClientIp(req)
+  const limit = consumeRateLimit(`coupon-redeem:${user.id}:ip:${clientIp}`, {
+    windowMs: REDEEM_WINDOW_MS,
+    max: REDEEM_MAX_ATTEMPTS,
+  })
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { error: 'Too many coupon attempts. Please try again later.' },
+      { status: 429 }
+    )
+  }
+
+  const body = await req.json().catch(() => ({}))
+  const code = String(body.code || '').trim().toUpperCase()
   if (!code) {
     return NextResponse.json({ error: 'Missing code' }, { status: 400 })
   }
 
-  // 1. Look up coupon
   const coupon = await prisma.coupon.findUnique({
     where: { code },
     select: {
-      id:           true,
-      code:         true,
-      type:         true,
-      amount:       true,
-      expiresAt:    true,
-      usageLimit:   true,
-      usedCount:    true,
+      code: true,
+      type: true,
+      amount: true,
+      expiresAt: true,
+      usageLimit: true,
+      usedCount: true,
     },
   })
 
@@ -27,29 +48,18 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Invalid coupon' }, { status: 404 })
   }
 
-  // 2. Check expiry
-  if (coupon.expiresAt && coupon.expiresAt < new Date()) {
+  if (coupon.expiresAt < new Date()) {
     return NextResponse.json({ error: 'Coupon expired' }, { status: 400 })
   }
 
-  // 3. Check usage limit
-  if (
-    coupon.usageLimit !== null &&
-    coupon.usedCount >= coupon.usageLimit
-  ) {
+  if (coupon.usageLimit !== null && coupon.usedCount >= coupon.usageLimit) {
     return NextResponse.json({ error: 'Coupon usage limit reached' }, { status: 400 })
   }
 
-  // 4. Increment usedCount
-  await prisma.coupon.update({
-    where: { id: coupon.id },
-    data: { usedCount: { increment: 1 } },
-  })
-
-  // 5. Return amount & type
+  // Validation endpoint only; usage count is incremented on successful order creation.
   return NextResponse.json({
     code: coupon.code,
-    type: coupon.type,     // 'percentage' or 'flat'
-    amount: coupon.amount, // e.g. 10 (for 10% or ₹10)
+    type: coupon.type,
+    amount: coupon.amount,
   })
 }

@@ -1,47 +1,37 @@
 // app/api/admin/users/[id]/remind-cart/route.ts
 import { NextResponse } from 'next/server'
 import prisma from '../../../../../../lib/prisma'
-import jwt from 'jsonwebtoken'
-import nodemailer from 'nodemailer'
+import { getSecureMailer } from '../../../../../../lib/mailer'
+import { consumeRateLimit, getClientIp } from '../../../../../../lib/rateLimit'
+import { requireAdminUser } from '../../../../../../lib/session-auth'
 
-const JWT_SECRET = process.env.JWT_SECRET!
-
-function requireAdmin(req: Request) {
-  const auth = req.headers.get('Authorization')?.replace('Bearer ', '') || ''
-  try {
-    return (jwt.verify(auth, JWT_SECRET) as any).role === 'admin'
-  } catch {
-    return false
-  }
-}
-
-function makeTransporter() {
-  return nodemailer.createTransport({
-    host:    process.env.SMTP_HOST!,
-    port:    Number(process.env.SMTP_PORT),
-    secure:  process.env.SMTP_PORT === '465', // true for 465, false for other ports
-    auth: {
-      user: process.env.SMTP_USER!,
-      pass: process.env.SMTP_PASS!,
-    },
-    tls: { rejectUnauthorized: false }
-  })
-}
+const REMIND_WINDOW_MS = 60 * 60 * 1000
+const REMIND_MAX_PER_TARGET = 3
 
 export async function POST(
   request: Request,
   { params }: { params: { id: string } }
 ) {
-  // 1️⃣ Auth
-  if (!requireAdmin(request)) {
+  const admin = await requireAdminUser(request)
+  if (!admin) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  // 2️⃣ Get userId from dynamic params
+  const clientIp = getClientIp(request)
   const { id } = params
-  const userId = id // Keep as string for prisma
+  const userId = id
 
-  // 3️⃣ Find their cart items older than 5 minutes
+  const limiter = consumeRateLimit(`remind-cart:${admin.id}:target:${userId}:ip:${clientIp}`, {
+    windowMs: REMIND_WINDOW_MS,
+    max: REMIND_MAX_PER_TARGET,
+  })
+  if (!limiter.allowed) {
+    return NextResponse.json(
+      { error: 'Reminder rate limit reached for this user.' },
+      { status: 429 }
+    )
+  }
+
   const cutoff = new Date(Date.now() - 5 * 60 * 1000)
   const items = await prisma.cartItem.findMany({
     where: { userId, addedAt: { lt: cutoff } },
@@ -51,7 +41,6 @@ export async function POST(
     return NextResponse.json({ error: 'No abandoned cart items found' }, { status: 404 })
   }
 
-  // 4️⃣ Load user info
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: { fullName: true, email: true }
@@ -60,11 +49,10 @@ export async function POST(
     return NextResponse.json({ error: 'User not found' }, { status: 404 })
   }
 
-  // 5️⃣ Send the reminder email
   try {
-    const transporter = makeTransporter()
-    const info = await transporter.sendMail({
-      from:    `"Artcommerce" <${process.env.SMTP_USER!}>`,
+    const { transporter, smtpUser } = getSecureMailer()
+    await transporter.sendMail({
+      from:    `"Artcommerce" <${smtpUser}>`,
       to:      user.email,
       subject: 'You left items in your cart!',
       html: `
@@ -76,7 +64,6 @@ export async function POST(
         <p><a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://kalakraftdev.vercel.app'}/cart">Return to your cart & checkout</a></p>
       `,
     })
-    console.log('✉️ Cart reminder sent, messageId=', info.messageId)
   } catch (err) {
     console.error('❌ remind-cart error:', err)
     return NextResponse.json({ error: 'Failed to send reminder' }, { status: 500 })

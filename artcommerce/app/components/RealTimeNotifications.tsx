@@ -17,7 +17,13 @@ export default function RealTimeNotifications() {
 
     const pusherClient = new Pusher(
       process.env.NEXT_PUBLIC_PUSHER_KEY!,
-      { cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER! }
+      {
+        cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER!,
+        channelAuthorization: {
+          endpoint: '/api/orders/pusher-auth',
+          transport: 'ajax',
+        },
+      }
     )
 
     pusherClient.connection.bind('connected', () =>
@@ -27,7 +33,7 @@ export default function RealTimeNotifications() {
       console.error('🔴 Pusher connection error (root)', err)
     )
 
-    const channel = pusherClient.subscribe('admin-channel')
+    const channel = pusherClient.subscribe('private-admin-channel')
     channel.bind('new-order', (data: {
       id: number
       total: number
@@ -80,7 +86,7 @@ export default function RealTimeNotifications() {
 
     return () => {
       channel.unbind_all()
-      pusherClient.unsubscribe('admin-channel')
+      pusherClient.unsubscribe('private-admin-channel')
       pusherClient.disconnect()
     }
   }, [notify, incrementUnread, user, loading])

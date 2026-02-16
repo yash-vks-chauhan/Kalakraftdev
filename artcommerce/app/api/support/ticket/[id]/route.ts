@@ -3,9 +3,9 @@ import { NextResponse } from "next/server";
 import prisma from "../../../../../lib/prisma";
 import pusher from "../../../../../lib/pusher";
 import { randomUUID } from 'crypto';
-import { getAuthContext } from "../../../../../lib/auth";
 import { isAllowedOrigin } from "@/lib/security";
 import { sanitizeSupportAttachments } from "@/lib/supportAttachments";
+import { getAuthenticatedUser } from "../../../../../lib/session-auth";
 
 const MAX_ATTACHMENTS = 4;
 const MAX_ATTACHMENT_SIZE_BYTES = 3 * 1024 * 1024; // 3MB
@@ -37,7 +37,7 @@ export async function GET(
   request: Request,
   { params }: { params: { id: string } }
 ) {
-  const auth = getAuthContext(request);
+  const auth = await getAuthenticatedUser(request)
   if (!auth) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -75,7 +75,7 @@ export async function POST(
   request: Request,
   { params }: { params: { id: string } }
 ) {
-  const auth = getAuthContext(request);
+  const auth = await getAuthenticatedUser(request)
   if (!auth) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

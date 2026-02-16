@@ -1,74 +1,103 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getAuth } from 'firebase-admin/auth';
-import { initializeApp, getApps, cert } from 'firebase-admin/app';
-import jwt from 'jsonwebtoken'; // Import jsonwebtoken
-import prisma from '../../../../lib/prisma'; // Import prisma
+import { NextRequest, NextResponse } from 'next/server'
+import { auth as adminAuth } from '../../../../lib/firebase-admin'
+import prisma from '../../../../lib/prisma'
+import { consumeRateLimit, getClientIp } from '../../../../lib/rateLimit'
+import {
+  createRefreshSession,
+  setAuthCookies,
+  signAccessToken,
+} from '../../../../lib/session-auth'
 
-// NOTE: This part requires your Firebase Admin SDK private key.
-// Store your service account key file securely, e.g., in a .env variable or directly in a non-public environment.
-// For development, you might load it directly or use a base64 encoded string.
-// DO NOT expose your private key in client-side code.
+const LOGIN_WINDOW_MS = 15 * 60 * 1000
+const MAX_ATTEMPTS_PER_IP = 25
+const allowedDomains = (process.env.AUTH_EMAIL_ALLOWLIST_DOMAINS || '')
+  .split(',')
+  .map((d) => d.trim().toLowerCase())
+  .filter(Boolean)
 
-// Initialize Firebase Admin SDK if not already initialized
-if (!getApps().length) {
-  const config = {
-    projectId: process.env.FIREBASE_PROJECT_ID,
-    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-    privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-  };
-
-  initializeApp({
-    credential: cert(config)
-  });
+function isEmailDomainAllowed(email: string): boolean {
+  if (!allowedDomains.length) return true
+  const domain = email.split('@')[1]?.toLowerCase() || ''
+  return allowedDomains.includes(domain)
 }
 
-const adminAuth = getAuth();
-const JWT_SECRET = process.env.JWT_SECRET!; // Define JWT_SECRET
-
 export async function POST(req: NextRequest) {
+  const clientIp = getClientIp(req)
+  const limit = consumeRateLimit(`google-login:ip:${clientIp}`, {
+    windowMs: LOGIN_WINDOW_MS,
+    max: MAX_ATTEMPTS_PER_IP,
+  })
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { error: 'Too many login attempts. Please try again later.' },
+      { status: 429 }
+    )
+  }
+
   try {
-    const { firebaseIdToken } = await req.json();
+    const body = await req.json().catch(() => ({}))
+    const firebaseIdToken = String(body.firebaseIdToken || '').trim()
 
     if (!firebaseIdToken) {
-      return NextResponse.json({ error: 'Firebase ID token is required' }, { status: 400 });
+      return NextResponse.json({ error: 'Firebase ID token is required' }, { status: 400 })
     }
 
-    // 1. Verify the Firebase ID token
-    const decodedToken = await adminAuth.verifyIdToken(firebaseIdToken);
-    const uid = decodedToken.uid;
+    const decodedToken = await adminAuth.verifyIdToken(firebaseIdToken)
+    const email = decodedToken.email?.toLowerCase()
+    const isEmailVerified = decodedToken.email_verified === true
 
-    // 2. Look up or create user in your database (Prisma example)
-    let userFromDb = await prisma.user.findUnique({
-      where: { email: decodedToken.email || '' }, // Ensure email is not undefined
-    });
+    if (!email || !isEmailVerified) {
+      return NextResponse.json(
+        { error: 'Google account email must be verified' },
+        { status: 403 }
+      )
+    }
 
+    if (!isEmailDomainAllowed(email)) {
+      return NextResponse.json({ error: 'Email domain is not allowed' }, { status: 403 })
+    }
+
+    let userFromDb = await prisma.user.findUnique({ where: { email } })
     if (!userFromDb) {
-      // Create new user if not found
       userFromDb = await prisma.user.create({
         data: {
-          id: uid, // Use Firebase UID as the ID
-          email: decodedToken.email!,
-          fullName: decodedToken.name || decodedToken.email!,
+          email,
+          fullName: decodedToken.name || email,
           role: 'user',
+          avatarUrl: decodedToken.picture || null,
         },
-      });
+      })
     }
 
-    // 3. Create your custom JWT
-    // This JWT will be used for subsequent authentication with your backend
-    const customToken = jwt.sign(
-      { userId: userFromDb.id, email: userFromDb.email, role: userFromDb.role },
-      JWT_SECRET,
-      { expiresIn: '1h' } // Token expires in 1 hour
-    );
+    const token = signAccessToken({
+      id: userFromDb.id,
+      email: userFromDb.email,
+      role: userFromDb.role,
+    })
+    const refresh = await createRefreshSession(userFromDb.id)
 
-    return NextResponse.json({ user: userFromDb, token: customToken }, { status: 200 });
+    const response = NextResponse.json(
+      {
+        user: {
+          id: userFromDb.id,
+          fullName: userFromDb.fullName,
+          email: userFromDb.email,
+          avatarUrl: userFromDb.avatarUrl,
+          role: userFromDb.role,
+        },
+        token,
+      },
+      { status: 200 }
+    )
 
-  } catch (error: any) {
-    console.error('Error in /api/auth/google-login:', error);
-    if (error.code === 'auth/invalid-credential') {
-      return NextResponse.json({ error: 'Invalid Firebase ID token' }, { status: 401 });
-    }
-    return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 });
+    setAuthCookies(response, {
+      accessToken: token,
+      refreshToken: refresh.refreshToken,
+    })
+
+    return response
+  } catch (error) {
+    console.error('Error in /api/auth/google-login:', error)
+    return NextResponse.json({ error: 'Invalid Firebase ID token' }, { status: 401 })
   }
-} 
+}

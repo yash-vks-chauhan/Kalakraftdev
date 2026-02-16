@@ -6,14 +6,8 @@ declare global {
   var prisma: PrismaClient | undefined
 }
 
-// Add better error handling and logging for database connection
 const prismaClientSingleton = () => {
   try {
-    // Log database connection info (without exposing credentials)
-    const dbUrl = process.env.DATABASE_URL || '';
-    console.log('Initializing Prisma client with DATABASE_URL:', 
-      dbUrl ? `${dbUrl.split('@')[1]?.split('/')[0] || 'configured'}` : 'undefined');
-    
     return new PrismaClient({
       log: ['error', 'warn'],
       errorFormat: 'pretty',
@@ -24,9 +18,8 @@ const prismaClientSingleton = () => {
       }
     })
   } catch (error) {
-    console.error('Failed to initialize Prisma client:', error);
-    // Return a minimal client that will throw clear errors when used
-    return new PrismaClient();
+    console.error('Failed to initialize Prisma client:', error)
+    return new PrismaClient()
   }
 }
 

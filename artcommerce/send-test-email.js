@@ -18,14 +18,32 @@ console.log(
 )
 
 ;(async () => {
+  const host = process.env.SMTP_HOST
+  const smtpUser = process.env.SMTP_USER
+  const smtpPass = process.env.SMTP_PASS
+  const port = Number(process.env.SMTP_PORT)
+
+  if (!host || !smtpUser || !smtpPass || !Number.isInteger(port) || port <= 0 || port > 65535) {
+    console.error('❌ Invalid SMTP configuration. Check SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS.')
+    process.exit(1)
+  }
+
+  const secure = port === 465
+
   // Create the transporter using those env vars:
   const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,                   // e.g. smtp.gmail.com
-    port: Number(process.env.SMTP_PORT),           // e.g. 587 or 465
-    secure: process.env.SMTP_PORT === '465',       // true if port 465
+    host,                                          // e.g. smtp.gmail.com
+    port,                                          // e.g. 587 or 465
+    secure,                                        // true if port 465
+    requireTLS: !secure,
     auth: {
-      user: process.env.SMTP_USER,                 // your Gmail address
-      pass: process.env.SMTP_PASS,                 // your 16-character App Password
+      user: smtpUser,                              // your Gmail address
+      pass: smtpPass,                              // your 16-character App Password
+    },
+    tls: {
+      rejectUnauthorized: true,
+      minVersion: 'TLSv1.2',
+      servername: host,
     },
   })
 
@@ -41,8 +59,8 @@ console.log(
   // Send a test email:
   try {
     const info = await transporter.sendMail({
-      from: `"Artcommerce Test" <${process.env.SMTP_USER}>`,
-      to: process.env.SMTP_USER,  // send to yourself
+      from: `"Artcommerce Test" <${smtpUser}>`,
+      to: smtpUser,  // send to yourself
       subject: 'Test Email from Next.js App',
       text: 'If you see this, SMTP is working!',
       html: '<p><strong>If you see this, SMTP is working!</strong></p>',

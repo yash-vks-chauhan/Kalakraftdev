@@ -2,25 +2,15 @@
 
 import { NextResponse } from 'next/server'
 import prisma from '../../../../../lib/prisma'
-import jwt from 'jsonwebtoken'
-
-const JWT_SECRET = process.env.JWT_SECRET!
-
-function requireAdmin(req: Request) {
-  const auth = req.headers.get('Authorization')?.replace('Bearer ', '') || ''
-  try {
-    return (jwt.verify(auth, JWT_SECRET) as any).role === 'admin'
-  } catch {
-    return false
-  }
-}
+import { requireAdminUser } from '../../../../../lib/session-auth'
 
 // GET, PATCH and DELETE all by numeric ID
 export async function GET(
   request: Request,
   { params }: { params: { id: string } }
 ) {
-  if (!requireAdmin(request)) {
+  const admin = await requireAdminUser(request)
+  if (!admin) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   const id = Number(params.id)
@@ -42,7 +32,8 @@ export async function PATCH(
   request: Request,
   { params }: { params: { id: string } }
 ) {
-  if (!requireAdmin(request)) {
+  const admin = await requireAdminUser(request)
+  if (!admin) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   const id = Number(params.id)
@@ -79,7 +70,8 @@ export async function DELETE(
   request: Request,
   { params }: { params: { id: string } }
 ) {
-  if (!requireAdmin(request)) {
+  const admin = await requireAdminUser(request)
+  if (!admin) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   const id = Number(params.id)

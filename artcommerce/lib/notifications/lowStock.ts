@@ -1,5 +1,5 @@
 // src/lib/notifications/lowStock.ts
-import nodemailer from 'nodemailer'
+import { getSecureMailer } from '../mailer'
 
 interface LowStockEmailParams {
   productId: number
@@ -15,15 +15,7 @@ export async function sendLowStockEmail({
   threshold,
 }: LowStockEmailParams) {
   // 1. Create transporter
-  const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST!,
-    port: Number(process.env.SMTP_PORT),
-    secure: process.env.SMTP_PORT === '465',
-    auth: {
-      user: process.env.SMTP_USER!,
-      pass: process.env.SMTP_PASS!,
-    },
-  })
+  const { transporter, smtpUser } = getSecureMailer()
 
   // 2. Build HTML content
   const htmlContent = `
@@ -51,7 +43,7 @@ export async function sendLowStockEmail({
 
   // 3. Send email
   await transporter.sendMail({
-    from: `"Artcommerce" <${process.env.SMTP_USER!}>`,
+    from: `"Artcommerce" <${smtpUser}>`,
     to: process.env.ADMIN_EMAIL!,
     subject: `Low Stock Alert: ${productName}`,
     html: htmlContent,

@@ -1,6 +1,7 @@
-import jwt from 'jsonwebtoken'
-
-const JWT_SECRET = process.env.JWT_SECRET
+import {
+  getTokenFromRequest as getTokenFromRequestStrict,
+  verifyAccessToken,
+} from './session-auth'
 
 export type AuthPayload = {
   userId?: string | number
@@ -9,23 +10,20 @@ export type AuthPayload = {
 }
 
 export function getTokenFromRequest(request: Request): string | null {
-  const authHeader = request.headers.get('authorization') || request.headers.get('Authorization')
-  if (authHeader?.startsWith('Bearer ')) {
-    return authHeader.replace('Bearer ', '').trim()
-  }
-
-  const cookieHeader = request.headers.get('cookie') || ''
-  const match = cookieHeader.match(/(?:^|;\s*)token=([^;]+)/)
-  return match ? decodeURIComponent(match[1]) : null
+  return getTokenFromRequestStrict(request)
 }
 
 export function verifyJwtFromRequest(request: Request): AuthPayload | null {
   const token = getTokenFromRequest(request)
-  if (!token || !JWT_SECRET) return null
-  try {
-    return jwt.verify(token, JWT_SECRET) as AuthPayload
-  } catch {
+  if (!token) return null
+  const payload = verifyAccessToken(token)
+  if (!payload?.userId) {
     return null
+  }
+  return {
+    userId: payload.userId,
+    email: payload.email,
+    role: payload.role,
   }
 }
 

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { AuthContext, getAuthContext } from './auth'
+import { requireAdminUser } from './session-auth'
 
 type RateBucket = {
   count: number
@@ -235,8 +236,12 @@ export async function guardUploadRequest(
     return { ok: false, response: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) }
   }
 
-  if (requireAdmin && auth.role !== 'admin') {
-    return { ok: false, response: NextResponse.json({ error: 'Admin access required' }, { status: 403 }) }
+  if (requireAdmin) {
+    const admin = await requireAdminUser(request)
+    if (!admin) {
+      return { ok: false, response: NextResponse.json({ error: 'Admin access required' }, { status: 403 }) }
+    }
+    auth.role = admin.role || auth.role
   }
 
   const rateKey = `${routeKey}:${getClientIdentifier(request, auth)}`

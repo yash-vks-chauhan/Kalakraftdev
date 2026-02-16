@@ -1,35 +1,50 @@
-// File: app/api/auth/confirm-email-change/route.ts
-
 import { NextResponse } from 'next/server'
+import { getOtpSecretValidationError, hashOtpForScope } from '../../../../lib/otp-security'
 import prisma from '../../../../lib/prisma'
-import jwt from 'jsonwebtoken'
+import { consumeRateLimit, getClientIp } from '../../../../lib/rateLimit'
+import { getAuthenticatedUser } from '../../../../lib/session-auth'
 
 export const runtime = 'nodejs'
-const JWT_SECRET = process.env.JWT_SECRET!
+
+const VERIFY_WINDOW_MS = 15 * 60 * 1000
+const MAX_VERIFY_ATTEMPTS = 10
 
 export async function POST(request: Request) {
-  // 1️⃣ Authenticate via Bearer token
-  const authHeader = request.headers.get('authorization') || ''
-  if (!authHeader.startsWith('Bearer ')) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-  const token = authHeader.substring(7)
-  let userId: number
-  try {
-    userId = (jwt.verify(token, JWT_SECRET) as any).userId
-  } catch {
-    return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
+  const otpSecretError = getOtpSecretValidationError()
+  if (otpSecretError) {
+    console.error(`[auth/confirm-email-change] ${otpSecretError}`)
+    return NextResponse.json(
+      { error: 'Email change is temporarily unavailable' },
+      { status: 503 }
+    )
   }
 
-  // 2️⃣ Parse newEmail & OTP
-  const { newEmail, otp } = await request.json()
+  const authUser = await getAuthenticatedUser(request)
+  if (!authUser) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const clientIp = getClientIp(request)
+  const limit = consumeRateLimit(`email-change:verify:${authUser.id}:ip:${clientIp}`, {
+    windowMs: VERIFY_WINDOW_MS,
+    max: MAX_VERIFY_ATTEMPTS,
+  })
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { error: 'Too many attempts. Please try again later.' },
+      { status: 429 }
+    )
+  }
+
+  const body = await request.json().catch(() => ({}))
+  const newEmail = String(body?.newEmail || '').trim().toLowerCase()
+  const otp = String(body?.otp || '').trim().toUpperCase()
   if (!newEmail || !otp) {
     return NextResponse.json({ error: 'Missing newEmail or OTP' }, { status: 400 })
   }
 
-  // 3️⃣ Fetch pending OTP from DB
   const userPending = await prisma.user.findUnique({
-    where: { id: userId },
+    where: { id: authUser.id },
     select: {
       emailChangeOtp: true,
       emailChangeNew: true,
@@ -38,28 +53,35 @@ export async function POST(request: Request) {
     },
   })
 
-  if (
-    !userPending ||
-    userPending.emailChangeOtp !== otp ||
-    userPending.emailChangeNew !== newEmail ||
-    !userPending.emailChangeExpires ||
-    userPending.emailChangeExpires < new Date()
-  ) {
+  const otpHash = hashOtpForScope(otp, 'email-change')
+  const isOtpValid =
+    !!userPending &&
+    !!userPending.emailChangeOtp &&
+    userPending.emailChangeOtp === otpHash &&
+    userPending.emailChangeNew === newEmail &&
+    !!userPending.emailChangeExpires &&
+    userPending.emailChangeExpires > new Date()
+
+  if (!isOtpValid) {
     return NextResponse.json({ error: 'Invalid OTP or email' }, { status: 400 })
   }
 
-  // 4️⃣ Update user email and clear pending fields
+  const emailInUse = await prisma.user.findUnique({ where: { email: newEmail } })
+  if (emailInUse && emailInUse.id !== authUser.id) {
+    return NextResponse.json({ error: 'Email already in use' }, { status: 409 })
+  }
+
   let updatedUser
   try {
     updatedUser = await prisma.user.update({
-      where: { id: userId },
+      where: { id: authUser.id },
       data: {
         email: newEmail,
         emailChangeOtp: null,
         emailChangeNew: null,
         emailChangeExpires: null,
       },
-      select: { id: true, fullName: true, email: true, avatarUrl: true }
+      select: { id: true, fullName: true, email: true, avatarUrl: true, role: true },
     })
   } catch (err: any) {
     console.error('Error updating email:', err)
@@ -68,17 +90,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: msg }, { status })
   }
 
-  // 5️⃣ Send confirmation email to the new address
   try {
     const resp = await fetch('https://api.sendinblue.com/v3/smtp/email', {
       method: 'POST',
       headers: {
-        'Content-Type':  'application/json',
+        'Content-Type': 'application/json',
         'api-key': process.env.SENDINBLUE_API_KEY!,
       },
       body: JSON.stringify({
         sender: { name: 'Artcommerce Support', email: process.env.SENDINBLUE_FROM_EMAIL! },
-        to:     [{ email: updatedUser.email, name: updatedUser.fullName }],
+        to: [{ email: updatedUser.email, name: updatedUser.fullName }],
         subject: 'Your Artcommerce email has been changed',
         htmlContent: `
           <p>Hi ${updatedUser.fullName},</p>
@@ -88,10 +109,9 @@ export async function POST(request: Request) {
       }),
     })
     if (!resp.ok) console.error('Sendinblue confirm-email error:', await resp.text())
-  } catch (e) {
-    console.error('Error sending confirm email:', e)
+  } catch (error) {
+    console.error('Error sending confirm email:', error)
   }
 
-  // 6️⃣ Return the updated user
   return NextResponse.json({ ok: true, user: updatedUser })
 }

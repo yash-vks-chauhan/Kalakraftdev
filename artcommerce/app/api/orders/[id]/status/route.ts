@@ -1,29 +1,17 @@
 // File: app/api/orders/[id]/status/route.ts
 
 import { NextResponse } from 'next/server'
+import { getSecureMailer } from '../../../../../lib/mailer'
 import prisma from '../../../../../lib/prisma'
-import jwt from 'jsonwebtoken'
-import nodemailer from 'nodemailer'
 import { orderEvents } from '../../../../../lib/orderEvents'
-
-const JWT_SECRET = process.env.JWT_SECRET!
+import { requireAdminUser } from '../../../../../lib/session-auth'
 
 export async function PATCH(
   req: Request,
   context: { params: Promise<{ id: string }> }
 ) {
-  // 1️⃣ Authenticate & require admin
-  const authHeader = req.headers.get('Authorization') || ''
-  const token = authHeader.replace(/^Bearer\s+/, '')
-  if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  let payload: { userId: number; role: string }
-  try {
-    payload = jwt.verify(token, JWT_SECRET) as any
-  } catch {
-    return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
-  }
-  if (payload.role !== 'admin') {
+  const admin = await requireAdminUser(req)
+  if (!admin) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
   }
 
@@ -46,18 +34,10 @@ export async function PATCH(
 
   // 4️⃣ Send notification email (wrapped in try/catch)
   try {
-    const transporter = nodemailer.createTransport({
-      host:   process.env.SMTP_HOST!,
-      port:   Number(process.env.SMTP_PORT),
-      secure: process.env.SMTP_PORT === '465',
-      auth: {
-        user: process.env.SMTP_USER!,
-        pass: process.env.SMTP_PASS!,
-      },
-    })
+    const { transporter, smtpUser } = getSecureMailer()
 
     await transporter.sendMail({
-      from:    `"Artcommerce" <${process.env.SMTP_USER}>`,
+      from:    `"Artcommerce" <${smtpUser}>`,
       to:      order.user.email,
       subject: `Your order #${order.orderNumber} is now ${status}`,
       html: `

@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import pusher from "../../../../lib/pusher";
 import prisma from "../../../../lib/prisma";
-import { getAuthContext } from "../../../../lib/auth";
+import { getAuthenticatedUser } from "../../../../lib/session-auth";
 
 export async function POST(request: Request) {
-  const auth = getAuthContext(request);
+  const auth = await getAuthenticatedUser(request)
   if (!auth) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

@@ -1,23 +1,12 @@
 import { NextResponse } from 'next/server'
 import prisma from '../../../../lib/prisma'
-import jwt from 'jsonwebtoken'
-
-const JWT_SECRET = process.env.JWT_SECRET!
+import { requireAdminUser } from '../../../../lib/session-auth'
 
 const abandonedThreshold = new Date(Date.now() - 5 * 60 * 1000);
 
-function getUserPayload(req: Request) {
-  const auth = req.headers.get('Authorization')?.replace('Bearer ', '') || ''
-  try {
-    return jwt.verify(auth, JWT_SECRET) as { role: string }
-  } catch {
-    return null
-  }
-}
-
 export async function GET(request: Request) {
-  const payload = getUserPayload(request)
-  if (!payload?.role || payload.role !== 'admin') {
+  const admin = await requireAdminUser(request)
+  if (!admin) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -52,8 +41,8 @@ export async function GET(request: Request) {
 }
 
 export async function PATCH(request: Request) {
-  const payload = getUserPayload(request)
-  if (!payload?.role || payload.role !== 'admin') {
+  const admin = await requireAdminUser(request)
+  if (!admin) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

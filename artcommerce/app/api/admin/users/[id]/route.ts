@@ -1,26 +1,16 @@
 // File: app/api/admin/users/[id]/route.ts
 
 import { NextResponse } from 'next/server'
+import { getSecureMailer } from '../../../../../lib/mailer'
 import prisma from '../../../../../lib/prisma'
-import jwt from 'jsonwebtoken'
-import nodemailer from 'nodemailer'
-
-const JWT_SECRET = process.env.JWT_SECRET!
-
-function requireAdmin(req: Request) {
-  const auth = req.headers.get('Authorization')?.replace('Bearer ', '') || ''
-  try {
-    return (jwt.verify(auth, JWT_SECRET) as any).role === 'admin'
-  } catch {
-    return false
-  }
-}
+import { requireAdminUser } from '../../../../../lib/session-auth'
 
 export async function DELETE(
   request: Request,
   context: { params: Promise<{ id: string }> }
 ) {
-  if (!requireAdmin(request)) {
+  const admin = await requireAdminUser(request)
+  if (!admin) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -56,19 +46,11 @@ export async function DELETE(
     await prisma.user.delete({ where: { id: userId } })
 
     // 4️⃣ Send notification email
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST!,
-      port: Number(process.env.SMTP_PORT),
-      secure: process.env.SMTP_PORT === '465',
-      auth: {
-        user: process.env.SMTP_USER!,
-        pass: process.env.SMTP_PASS!,
-      },
-    })
+    const { transporter, smtpUser } = getSecureMailer()
 
     if (target.email) {
       await transporter.sendMail({
-        from: `"Artcommerce Support" <${process.env.SMTP_USER!}>`,
+        from: `"Artcommerce Support" <${smtpUser}>`,
         to: target.email,
         subject: 'Your Artcommerce Account Has Been Deleted',
         html: `

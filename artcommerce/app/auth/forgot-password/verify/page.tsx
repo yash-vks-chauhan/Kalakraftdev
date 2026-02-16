@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 export default function VerifyOtpPage() {
+  const [email, setEmail]       = useState('')
   const [code, setCode]         = useState('')
   const [newPw, setNewPw]       = useState('')
   const [confirm, setConfirm]   = useState('')
@@ -20,12 +21,21 @@ export default function VerifyOtpPage() {
       return
     }
 
+    if (!email.trim()) {
+      setError('Please enter your email.')
+      return
+    }
+
     setLoading(true)
     try {
       const res = await fetch('/api/auth/confirm-password-change', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ otp: code, newPassword: newPw }),
+        body: JSON.stringify({
+          email: email.trim().toLowerCase(),
+          otp: code,
+          newPassword: newPw,
+        }),
       })
       const json = await res.json()
       if (!res.ok) throw new Error(json.error || 'Failed to reset')
@@ -42,6 +52,16 @@ export default function VerifyOtpPage() {
       <h1 className="text-2xl font-bold mb-4">Enter Reset Code</h1>
       {error && <p className="text-red-600 mb-2">{error}</p>}
       <form onSubmit={handleSubmit} className="space-y-4">
+        <label className="block">
+          Email
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className="w-full border rounded px-3 py-2 mt-1"
+          />
+        </label>
         <label className="block">
           Reset Code
           <input

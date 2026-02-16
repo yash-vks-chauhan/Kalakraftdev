@@ -5,6 +5,8 @@ node_modules
 !.env.example
 
 /generated/prisma
-.next/
+# Next.js build artifacts (root + nested apps)
+/.next/
+**/.next/
 node_modules/
 .DS_Store

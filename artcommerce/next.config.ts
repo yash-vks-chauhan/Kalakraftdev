@@ -1,57 +1,79 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next'
+
+const contentSecurityPolicy = [
+  "default-src 'self'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "frame-ancestors 'none'",
+  "object-src 'none'",
+  "img-src 'self' https: data: blob:",
+  "font-src 'self' https: data:",
+  "style-src 'self' 'unsafe-inline' https:",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://www.googletagmanager.com https://js.pusher.com",
+  "connect-src 'self' https://api.sendinblue.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://api.pusherapp.com https://*.pusher.com wss://ws-*.pusher.com",
+].join('; ')
+
+const securityHeaders = [
+  { key: 'Content-Security-Policy', value: contentSecurityPolicy },
+  { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+  { key: 'X-Frame-Options', value: 'DENY' },
+  { key: 'X-Content-Type-Options', value: 'nosniff' },
+  { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+  {
+    key: 'Strict-Transport-Security',
+    value: 'max-age=63072000; includeSubDomains; preload',
+  },
+]
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  productionBrowserSourceMaps: true,
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
+  productionBrowserSourceMaps: false,
   distDir: '.next',
   images: {
-    domains: ['localhost', 'firebasestorage.googleapis.com', 'lh3.googleusercontent.com', 'res.cloudinary.com', 'ik.imagekit.io', 'images.unsplash.com'],
+    domains: [
+      'localhost',
+      'firebasestorage.googleapis.com',
+      'lh3.googleusercontent.com',
+      'res.cloudinary.com',
+      'ik.imagekit.io',
+      'images.unsplash.com',
+    ],
     formats: ['image/webp', 'image/avif'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: '**',
-      },
+      { protocol: 'https', hostname: 'firebasestorage.googleapis.com' },
+      { protocol: 'https', hostname: 'lh3.googleusercontent.com' },
+      { protocol: 'https', hostname: 'res.cloudinary.com' },
+      { protocol: 'https', hostname: 'ik.imagekit.io' },
+      { protocol: 'https', hostname: 'images.unsplash.com' },
     ],
   },
-  // Ensure CSS is properly included
   webpack: (config) => {
-    // Add proper handling for video files
-    config.module = config.module || {};
-    config.module.rules = config.module.rules || [];
-    
-    // Add specific handling for media files
+    config.module = config.module || {}
+    config.module.rules = config.module.rules || []
+
     config.module.rules.push({
       test: /\.(mp4|webm|ogg|mp3|wav|flac|aac)(\?.*)?$/,
       type: 'asset/resource',
       generator: {
-        filename: 'static/media/[name].[hash:8][ext]'
-      }
-    });
+        filename: 'static/media/[name].[hash:8][ext]',
+      },
+    })
 
-    // Configure reasonable asset size limits
     config.performance = {
       ...config.performance,
-      maxAssetSize: 512 * 1024, // 512KB for individual assets
-      maxEntrypointSize: 1024 * 1024 // 1MB for entry points
-    };
-    
-    return config;
-  },
-  // Ensure public directory is copied to the output
-  assetPrefix: process.env.NODE_ENV === 'production' ? undefined : undefined,
-  // Increase the buffer size for large assets
-  experimental: {
-    largePageDataBytes: 128 * 1000, // 128KB
-  },
-};
+      maxAssetSize: 512 * 1024,
+      maxEntrypointSize: 1024 * 1024,
+    }
 
-export default nextConfig;
+    return config
+  },
+  async headers() {
+    return [{ source: '/(.*)', headers: securityHeaders }]
+  },
+  experimental: {
+    largePageDataBytes: 128 * 1000,
+  },
+}
+
+export default nextConfig

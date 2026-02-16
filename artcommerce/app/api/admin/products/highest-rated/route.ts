@@ -1,34 +1,24 @@
 import { NextResponse } from 'next/server'
 import prisma from '../../../../../lib/prisma'
-import jwt from 'jsonwebtoken'
-
-const JWT_SECRET = process.env.JWT_SECRET!
-
-function requireAdmin(req: Request) {
-  const auth = req.headers.get('Authorization')?.replace('Bearer ', '') || ''
-  try {
-    return (jwt.verify(auth, JWT_SECRET) as any).role === 'admin'
-  } catch {
-    return false
-  }
-}
+import { requireAdminUser } from '../../../../../lib/session-auth'
 
 export async function GET(request: Request) {
-  if (!requireAdmin(request)) {
+  const admin = await requireAdminUser(request)
+  if (!admin) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const rows = await prisma.$queryRawUnsafe<any[]>(
-    `SELECT p.id, p.name,
-            AVG(r.rating)  AS avgRating,
-            COUNT(r.id)    AS reviewCount
-     FROM   "Product" p
-     JOIN   "ProductReview" r ON r."productId" = p.id
-     GROUP  BY p.id
-     HAVING COUNT(r.id) > 0
-     ORDER  BY avgRating DESC
-     LIMIT  20;`
-  )
+  const rows = await prisma.$queryRaw<any[]>`
+    SELECT p.id, p.name,
+           AVG(r.rating)  AS "avgRating",
+           COUNT(r.id)    AS "reviewCount"
+    FROM "Product" p
+    JOIN "ProductReview" r ON r."productId" = p.id
+    GROUP BY p.id
+    HAVING COUNT(r.id) > 0
+    ORDER BY "avgRating" DESC
+    LIMIT 20
+  `
 
   // SQLite may return BigInt objects for aggregate COUNT(); convert them and any other BigInt values
   const sanitized = rows.map((row) => {

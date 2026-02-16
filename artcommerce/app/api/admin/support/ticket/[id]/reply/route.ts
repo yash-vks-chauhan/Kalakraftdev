@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import prisma from "../../../../../../../lib/prisma";
 import pusher from "../../../../../../../lib/pusher";
 import { randomUUID } from 'crypto';
-import { requireAdmin } from "../../../../../../../lib/auth";
+import { requireAdminUser } from "../../../../../../../lib/session-auth";
 import { isAllowedOrigin } from "@/lib/security";
 import { sanitizeSupportAttachments } from "@/lib/supportAttachments";
 
@@ -31,7 +31,8 @@ export async function POST(
   request: Request,
   { params }: { params: { id: string } }
 ) {
-  if (!requireAdmin(request)) {
+  const admin = await requireAdminUser(request)
+  if (!admin) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
   if (!isAllowedOrigin(request)) {

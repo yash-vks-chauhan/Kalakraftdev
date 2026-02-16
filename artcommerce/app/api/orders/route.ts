@@ -1,35 +1,18 @@
 // @ts-nocheck
 import { NextResponse } from 'next/server'
+import { getSecureMailer } from '../../../lib/mailer'
 import prisma from '../../../lib/prisma'
-import jwt from 'jsonwebtoken'
-import nodemailer from 'nodemailer'
 import { orderEvents } from '../../../lib/orderEvents'
 import { PrismaClient, Order, OrderItem, Product, User } from '@prisma/client'
 import { sendOrderNotificationEmail } from '../../../lib/notifications/sendinblue'
 import pusher from '../../../lib/pusher'
 import { sendLowStockEmail } from '../../../lib/notifications/lowStock'
 import { sendOutOfStockEmail } from '../../../lib/notifications/outOfStock'
-
-
-const JWT_SECRET = process.env.JWT_SECRET!
-
-function getUserPayload(request: Request): { userId: number; userEmail: string; role: string } | null {
-  const authHeader = request.headers.get('Authorization') || ''
-  const token = authHeader.replace('Bearer ', '').trim()
-  if (!token) return null
-
-  try {
-    const payload = jwt.verify(token, JWT_SECRET) as { userId: number; email: string; role: string}
-    return { userId: payload.userId, userEmail: payload.email, role: payload.role }
-  } catch (err) {
-    console.error('🔍 [order route] JWT verify failed:', err)
-    return null
-  }
-}
+import { getAuthenticatedUser } from '../../../lib/session-auth'
 
 export async function GET(request: Request) {
   try {
-    const payload = getUserPayload(request)
+    const payload = await getAuthenticatedUser(request)
     if (!payload) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -85,7 +68,7 @@ export async function POST(request: Request) {
   console.log('🔍 [order route] Entered POST /api/orders')
 
   // 1️⃣ Authenticate
-  const payload = getUserPayload(request)
+  const payload = await getAuthenticatedUser(request)
   if (!payload) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const { userId } = payload
 
@@ -96,7 +79,10 @@ export async function POST(request: Request) {
   } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
-  const { addressId, billingAddressId, paymentMethod, couponCode } = body
+  const { addressId, billingAddressId, paymentMethod } = body
+  const couponCode = typeof body.couponCode === 'string'
+    ? body.couponCode.trim().toUpperCase()
+    : ''
   if (!addressId) return NextResponse.json({ error: 'Missing addressId' }, { status: 400 })
 
   // 3️⃣ Load shipping & billing addresses
@@ -124,6 +110,7 @@ export async function POST(request: Request) {
 
   // Handle coupon discount
   let discountAmount = 0
+  let applicableCoupon: { id: number; usageLimit: number | null } | null = null
   if (couponCode) {
     const coupon = await prisma.coupon.findUnique({ where: { code: couponCode } })
     if (coupon && coupon.expiresAt > new Date() && (coupon.usageLimit == null || coupon.usedCount < coupon.usageLimit)) {
@@ -134,12 +121,9 @@ export async function POST(request: Request) {
         // Fixed amount discount
         discountAmount = coupon.amount
       }
-      
-      // Update coupon usage count
-      await prisma.coupon.update({
-        where: { id: coupon.id },
-        data: { usedCount: { increment: 1 } }
-      })
+      applicableCoupon = { id: coupon.id, usageLimit: coupon.usageLimit }
+    } else {
+      return NextResponse.json({ error: 'Invalid or expired coupon' }, { status: 400 })
     }
   }
 
@@ -153,52 +137,71 @@ export async function POST(request: Request) {
     user: Pick<User, 'email' | 'fullName'>;
   }
   try {
-    createdOrder = await prisma.order.create({
-      data: {
-        userId,
-        orderNumber,
-        status: 'pending',
-        subtotal,
-        tax,
-        shippingFee,
-        discountAmount,
-        discountedTotal,
-        totalAmount: discountedTotal,
-        couponCode,
-        shippingAddress: {
-          line1: shippingAddr.line1,
-          line2: shippingAddr.line2,
-          city:  shippingAddr.city,
-          postalCode: shippingAddr.postalCode,
-          country: shippingAddr.country,
+    createdOrder = await prisma.$transaction(async (tx) => {
+      if (applicableCoupon) {
+        const couponUpdate = await tx.coupon.updateMany({
+          where: {
+            id: applicableCoupon.id,
+            expiresAt: { gt: new Date() },
+            ...(applicableCoupon.usageLimit == null
+              ? {}
+              : { usedCount: { lt: applicableCoupon.usageLimit } }),
+          },
+          data: { usedCount: { increment: 1 } },
+        })
+
+        if (couponUpdate.count === 0) {
+          throw new Error('COUPON_NO_LONGER_AVAILABLE')
+        }
+      }
+
+      return tx.order.create({
+        data: {
+          userId,
+          orderNumber,
+          status: 'pending',
+          subtotal,
+          tax,
+          shippingFee,
+          discountAmount,
+          discountedTotal,
+          totalAmount: discountedTotal,
+          couponCode: couponCode || null,
+          shippingAddress: {
+            line1: shippingAddr.line1,
+            line2: shippingAddr.line2,
+            city: shippingAddr.city,
+            postalCode: shippingAddr.postalCode,
+            country: shippingAddr.country,
+          },
+          billingAddress: {
+            line1: billingAddr.line1,
+            line2: billingAddr.line2,
+            city: billingAddr.city,
+            postalCode: billingAddr.postalCode,
+            country: billingAddr.country,
+          },
+          paymentMethod,
+          paymentStatus: 'unpaid',
+          orderItems: {
+            create: cartItems.map(item => ({
+              productId: item.productId,
+              quantity: item.quantity,
+              priceAtPurchase: item.product.price,
+            })),
+          },
         },
-        billingAddress: {
-          line1: billingAddr.line1,
-          line2: billingAddr.line2,
-          city:  billingAddr.city,
-          postalCode: billingAddr.postalCode,
-          country: billingAddr.country,
+        include: {
+          orderItems: { include: { product: true } },
+          user: { select: { email: true, fullName: true } },
         },
-        paymentMethod,
-        paymentStatus: 'unpaid',
-        orderItems: {
-          create: cartItems.map(item => ({
-            productId: item.productId,
-            quantity: item.quantity,
-            priceAtPurchase: item.product.price,
-          })),
-        },
-      },
-      include: { 
-        orderItems: { include: { product: true } },
-        user: { select: { email: true, fullName: true } }
-      },
+      })
     })
     console.log('✅ [order route] Order created in DB:', createdOrder)
 
     // Emit Pusher event for real-time admin notification
     const products = createdOrder.orderItems.map(item => item.product.name)
-    pusher.trigger('admin-channel', 'new-order', {
+    pusher.trigger('private-admin-channel', 'new-order', {
       id: createdOrder.id,
       total: createdOrder.totalAmount,
       customerName: createdOrder.user.fullName,
@@ -258,7 +261,7 @@ export async function POST(request: Request) {
           productName: updated.name,
         }).catch(console.error)
 
-        pusher.trigger('admin-channel', 'out-of-stock', {
+        pusher.trigger('private-admin-channel', 'out-of-stock', {
           productId: updated.id,
           productName: updated.name,
         }).catch(console.error)
@@ -272,7 +275,7 @@ export async function POST(request: Request) {
           threshold: LOW_STOCK_THRESHOLD,
         }).catch(console.error)
 
-        pusher.trigger('admin-channel', 'low-stock', {
+        pusher.trigger('private-admin-channel', 'low-stock', {
           productId: updated.id,
           productName: updated.name,
           remaining: updated.stockQuantity,
@@ -284,6 +287,12 @@ export async function POST(request: Request) {
     await prisma.cartItem.deleteMany({ where: { userId } })
     console.log('✅ [order route] Cleared cart for userId:', userId)
   } catch (dbErr) {
+    if (dbErr instanceof Error && dbErr.message === 'COUPON_NO_LONGER_AVAILABLE') {
+      return NextResponse.json(
+        { error: 'Coupon is no longer available' },
+        { status: 409 }
+      )
+    }
     console.error('❌ [order route] Error creating order:', dbErr)
     return NextResponse.json({ error: 'Order creation failed' }, { status: 500 })
   }
@@ -298,12 +307,7 @@ export async function POST(request: Request) {
 
   if (toEmail) {
     try {
-      const transporter = nodemailer.createTransport({
-        host:   process.env.SMTP_HOST!,
-        port:   Number(process.env.SMTP_PORT),
-        secure: process.env.SMTP_PORT === '465',
-        auth:   { user: process.env.SMTP_USER!, pass: process.env.SMTP_PASS! },
-      })
+      const { transporter, smtpUser } = getSecureMailer()
 
       // build the HTML body
       const itemsRows = createdOrder.orderItems.map(item => {
@@ -358,7 +362,7 @@ export async function POST(request: Request) {
       `
 
       await transporter.sendMail({
-        from:    `"Artcommerce" <${process.env.SMTP_USER!}>`,
+        from:    `"Artcommerce" <${smtpUser}>`,
         to:      toEmail,
         subject: `Order Confirmation (#${createdOrder.orderNumber})`,
         html:    htmlBody,

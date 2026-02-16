@@ -1,4 +1,4 @@
-import nodemailer from 'nodemailer'
+import { getSecureMailer } from '../mailer'
 
 interface OutOfStockEmailParams {
   productId: number
@@ -10,15 +10,7 @@ export async function sendOutOfStockEmail({
   productName,
 }: OutOfStockEmailParams) {
   // 1. Create transporter
-  const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST!,
-    port: Number(process.env.SMTP_PORT),
-    secure: process.env.SMTP_PORT === '465',
-    auth: {
-      user: process.env.SMTP_USER!,
-      pass: process.env.SMTP_PASS!,
-    },
-  })
+  const { transporter, smtpUser } = getSecureMailer()
 
   // 2. Build HTML content
   const htmlContent = `
@@ -44,7 +36,7 @@ export async function sendOutOfStockEmail({
 
   // 3. Send email
   await transporter.sendMail({
-    from: `"Artcommerce" <${process.env.SMTP_USER!}>`,
+    from: `"Artcommerce" <${smtpUser}>`,
     to: process.env.ADMIN_EMAIL!,
     subject: `Out of Stock Alert: ${productName}`,
     html: htmlContent,

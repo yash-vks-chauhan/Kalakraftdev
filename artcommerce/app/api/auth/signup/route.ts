@@ -3,46 +3,79 @@
 import { NextResponse } from 'next/server'
 import prisma from '../../../../lib/prisma'
 import bcrypt from 'bcryptjs'
-import jwt from 'jsonwebtoken'
+import { PASSWORD_POLICY_MESSAGE, isStrongPassword } from '../../../../lib/password-policy'
+import { consumeRateLimit, getClientIp } from '../../../../lib/rateLimit'
+import {
+  createRefreshSession,
+  setAuthCookies,
+  signAccessToken,
+} from '../../../../lib/session-auth'
 
-const JWT_SECRET = process.env.JWT_SECRET!
+const SIGNUP_WINDOW_MS = 30 * 60 * 1000
+const SIGNUP_MAX_PER_IP = 10
+const SIGNUP_MAX_PER_EMAIL = 5
 
 export async function POST(request: Request) {
-  try {
-    const { fullName, email, password } = await request.json()
+  const clientIp = getClientIp(request)
+  const ipLimit = consumeRateLimit(`signup:ip:${clientIp}`, {
+    windowMs: SIGNUP_WINDOW_MS,
+    max: SIGNUP_MAX_PER_IP,
+  })
+  if (!ipLimit.allowed) {
+    return NextResponse.json(
+      { error: 'Too many signup attempts. Please try again later.' },
+      { status: 429 }
+    )
+  }
 
-    // 1️⃣ Check if already exists
+  try {
+    const body = await request.json().catch(() => ({}))
+    const fullName = String(body.fullName || '').trim()
+    const email = String(body.email || '').trim().toLowerCase()
+    const password = String(body.password || '')
+
+    if (!fullName || !email || !password) {
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+    }
+
+    const emailLimit = consumeRateLimit(`signup:email:${email}:ip:${clientIp}`, {
+      windowMs: SIGNUP_WINDOW_MS,
+      max: SIGNUP_MAX_PER_EMAIL,
+    })
+    if (!emailLimit.allowed) {
+      return NextResponse.json(
+        { error: 'Too many signup attempts. Please try again later.' },
+        { status: 429 }
+      )
+    }
+
+    if (!isStrongPassword(password)) {
+      return NextResponse.json({ error: PASSWORD_POLICY_MESSAGE }, { status: 400 })
+    }
+
     const existing = await prisma.user.findUnique({ where: { email } })
     if (existing) {
       return NextResponse.json({ error: 'Email already in use' }, { status: 400 })
     }
 
-    // 2️⃣ Hash & create (role defaults to "user")
     const passwordHash = await bcrypt.hash(password, 10)
     const user = await prisma.user.create({
       data: { fullName, email, passwordHash, role: 'user' },
       select: { id: true, fullName: true, email: true, avatarUrl: true, role: true }
     })
 
-    // 3️⃣ Sign a JWT including role
-    const token = jwt.sign(
-      { userId: user.id, email: user.email, role: user.role },
-      JWT_SECRET,
-      { expiresIn: '7d' }
-    )
+    const token = signAccessToken({
+      id: user.id,
+      email: user.email,
+      role: user.role,
+    })
+    const refresh = await createRefreshSession(user.id)
 
-    // 4️⃣ Build the response
     const response = NextResponse.json({ user, token })
 
-    // 5️⃣ Set the JWT as an HTTP-only cookie
-    response.cookies.set({
-      name: 'token',
-      value: token,
-      httpOnly: true,
-      path: '/',
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 7, // 7 days
+    setAuthCookies(response, {
+      accessToken: token,
+      refreshToken: refresh.refreshToken,
     })
 
     return response

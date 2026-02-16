@@ -86,7 +86,7 @@ export default function AdminOrdersPage() {
 
   useEffect(() => {
     if (user?.role !== 'admin') return
-    const evtSource = new EventSource('/api/orders/stream')
+    const evtSource = new EventSource('/api/orders/stream', { withCredentials: true })
     evtSource.onmessage = evt => {
       const { type, order } = JSON.parse(evt.data)
       if (type === 'created') {
