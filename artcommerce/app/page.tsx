@@ -1304,6 +1304,8 @@ export default function Home() {
 const [message, setMessage] = useState<string|null>(null)
 const [featuredProducts, setFeaturedProducts] = useState([]);
 const [isHoveringVideo, setIsHoveringVideo] = useState(false);
+const [isHeroVideoLoaded, setIsHeroVideoLoaded] = useState(false);
+const [hasHeroVideoError, setHasHeroVideoError] = useState(false);
 
 // Words for the flipping text animation
 const flippingWords = ['home decor', 'resin art', 'clocks', 'trays', 'wall art', 'custom pieces']
@@ -1315,6 +1317,10 @@ const [isManualNav, setIsManualNav] = useState(false)
 const [slidePosition, setSlidePosition] = useState(0)
 
 const resumeTimerRef = useRef<NodeJS.Timeout | null>(null)
+const heroVideoSources = [
+  '/images/homepage4.mp4',
+  'https://ik.imagekit.io/4pjvf8k9u/Videos/homepage4.mp4?updatedAt=1753532187691',
+]
 
 
 
@@ -1634,41 +1640,23 @@ easing: 'ease-in-out',
 
 }, [])
 
+const handleHeroVideoLoaded = (event: any) => {
+  setIsHeroVideoLoaded(true);
+  setHasHeroVideoError(false);
 
+  const playPromise = event.currentTarget?.play?.();
+  if (playPromise && typeof playPromise.catch === 'function') {
+    playPromise.catch(() => {
+      // Some browsers block autoplay in strict power/data modes.
+      // Keep the decoded first frame instead of forcing an error fallback.
+    });
+  }
+};
 
-// Add this new useEffect for video loading
-useEffect(() => {
-  // Function to handle video loading
-  const handleVideoLoading = () => {
-    const videoElement = document.querySelector(`.${styles.videoBackground}`) as HTMLVideoElement;
-    const fallbackImage = document.getElementById('videoFallback');
-    
-    if (videoElement && fallbackImage) {
-      // Check if video loaded successfully
-      videoElement.addEventListener('loadeddata', () => {
-        // Video loaded successfully
-        videoElement.style.display = 'block';
-        fallbackImage.style.display = 'none';
-      });
-      
-      videoElement.addEventListener('error', () => {
-        // Video failed to load
-        videoElement.style.display = 'none';
-        fallbackImage.style.display = 'block';
-      });
-      
-      // Force reload the video (guard for environments without load())
-      if (typeof (videoElement as any).load === 'function') {
-        videoElement.load();
-      }
-    }
-  };
-  
-  // Small delay to ensure DOM is ready
-  const timer = setTimeout(handleVideoLoading, 300);
-  
-  return () => clearTimeout(timer);
-}, []);
+const handleHeroVideoError = () => {
+  setHasHeroVideoError(true);
+  setIsHeroVideoLoaded(false);
+};
 
 
 
@@ -1759,7 +1747,7 @@ return (
       src={getImageUrl('featured3.JPG')}
       alt="Handcrafted resin art" 
       className={styles.videoBackground}
-      style={{ display: 'none' }}
+      style={{ display: hasHeroVideoError || !isHeroVideoLoaded ? 'block' : 'none' }}
       id="videoFallback"
       loading="lazy"
     />
@@ -1771,19 +1759,15 @@ return (
     loop
     muted
     playsInline
-    preload="metadata"
+    preload="auto"
     poster="/images/loading.png"
-    onError={(e) => {
-      // If video fails to load, show the fallback image
-      const videoElement = e.currentTarget;
-      videoElement.style.display = 'none';
-      document.getElementById('videoFallback')!.style.display = 'block';
-    }}
+    style={{ display: hasHeroVideoError ? 'none' : 'block' }}
+    onLoadedData={handleHeroVideoLoaded}
+    onError={handleHeroVideoError}
   >
-    <source 
-      src="https://ik.imagekit.io/4pjvf8k9u/Videos/homepage4.mp4?updatedAt=1753532187691" 
-      type="video/mp4" 
-    />
+    {heroVideoSources.map((src) => (
+      <source key={src} src={src} type="video/mp4" />
+    ))}
     Your browser does not support the video tag.
   </video>
 

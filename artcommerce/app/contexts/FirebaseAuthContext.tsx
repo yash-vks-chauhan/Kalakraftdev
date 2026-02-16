@@ -1,26 +1,19 @@
 'use client'
-import React, {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-} from "react"
+
+import React, { createContext, useContext, useEffect, useState } from "react"
 import {
   onAuthStateChanged,
   signInWithPopup,
-  signOut,
+  signInWithRedirect,
+  getRedirectResult,
   GoogleAuthProvider,
   FacebookAuthProvider,
   UserCredential,
-  getAuth,
-} from "firebase/auth"
-import { auth } from "../firebase/client"
-import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app'
-import {
   signOut as fbSignOut,
   User as FirebaseUser,
-} from 'firebase/auth'
-import { useAuth } from './AuthContext'
+} from "firebase/auth"
+import { auth } from "../firebase/client"
+import { useAuth } from "./AuthContext"
 
 export interface AuthContextType {
   user: FirebaseUser | null
@@ -37,8 +30,38 @@ export const AuthContext = createContext<AuthContextType>({
   loginWithGoogle: async () => undefined,
   loginWithFacebook: async () => undefined,
   signOut: async () => {},
-  error: null
+  error: null,
 })
+
+const getFriendlyAuthError = (error: any) => {
+  const code = String(error?.code || "")
+  const message = String(error?.message || "Unknown error")
+
+  if (code === "auth/unauthorized-domain") {
+    return "This domain is not authorized for login. Add it in Firebase Authentication > Settings > Authorized domains."
+  }
+  if (code === "auth/popup-closed-by-user") {
+    return "Login was cancelled."
+  }
+  if (code === "auth/popup-blocked") {
+    return "Your browser blocked the sign-in popup."
+  }
+  if (code === "auth/internal-error") {
+    return "Google sign-in popup failed in this browser. A redirect sign-in fallback was triggered."
+  }
+  return `Login failed: ${message}`
+}
+
+const shouldFallbackToRedirect = (error: any) => {
+  const code = String(error?.code || "")
+  return code === "auth/internal-error" || code === "auth/popup-blocked"
+}
+
+const buildGoogleProvider = () => {
+  const provider = new GoogleAuthProvider()
+  provider.setCustomParameters({ prompt: "select_account" })
+  return provider
+}
 
 export function FirebaseAuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<FirebaseUser | null>(null)
@@ -46,111 +69,126 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
   const [error, setError] = useState<string | null>(null)
   const { loginWithFirebaseToken } = useAuth()
 
-  console.log('FirebaseAuthProvider: Initial Render - loading:', loading, 'user:', user)
-
   useEffect(() => {
-    console.log('FirebaseAuthProvider: useEffect triggered')
     if (!auth) {
-      setError('Firebase authentication is not configured')
+      setError("Firebase authentication is not configured")
       setLoading(false)
       return
     }
 
+    let isMounted = true
+
+    const restoreRedirectSignIn = async () => {
+      try {
+        await getRedirectResult(auth)
+      } catch (redirectError: any) {
+        if (isMounted) {
+          setError(getFriendlyAuthError(redirectError))
+        }
+      }
+    }
+
+    restoreRedirectSignIn()
+
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      console.log('FirebaseAuthProvider: onAuthStateChanged - firebaseUser:', firebaseUser)
+      if (!isMounted) return
+
       if (firebaseUser) {
         setUser(firebaseUser)
-        
-        // Get ID token to send to backend
-        firebaseUser.getIdToken().then(idToken => {
-          console.log('Firebase ID token obtained, length:', idToken.length)
-          // Send to our backend to create a session
-          loginWithFirebaseToken(idToken).catch(err => {
-            console.error('Error in loginWithFirebaseToken:', err)
-            setError('Failed to authenticate with server')
+
+        firebaseUser.getIdToken().then((idToken) => {
+          loginWithFirebaseToken(idToken).catch((tokenError) => {
+            console.error("Error in loginWithFirebaseToken:", tokenError)
+            setError("Failed to authenticate with server")
           })
-        }).catch(err => {
-          console.error('Error getting Firebase ID token:', err)
-          setError('Failed to get authentication token')
+        }).catch((idTokenError) => {
+          console.error("Error getting Firebase ID token:", idTokenError)
+          setError("Failed to get authentication token")
         })
       } else {
         setUser(null)
       }
+
       setLoading(false)
-      console.log('FirebaseAuthProvider: onAuthStateChanged - loading set to false')
     })
+
     return () => {
-      console.log('FirebaseAuthProvider: useEffect cleanup')
+      isMounted = false
       unsubscribe()
     }
   }, [loginWithFirebaseToken])
 
   const loginWithGoogle = async () => {
     if (!auth) {
-      setError('Firebase authentication is not configured')
+      setError("Firebase authentication is not configured")
       return undefined
     }
+
     setLoading(true)
     setError(null)
-    console.log('FirebaseAuthProvider: signInWithGoogle started - loading set to true')
+
+    const provider = buildGoogleProvider()
+
     try {
-      const provider = new GoogleAuthProvider()
-      provider.setCustomParameters({
-        prompt: 'select_account'
-      })
       const result = await signInWithPopup(auth, provider)
-      console.log('FirebaseAuthProvider: signInWithGoogle success', result.user)
       return result
-    } catch (error) {
-      console.error("Firebase Google login error:", error)
-      if (error.code === 'auth/unauthorized-domain') {
-        setError('This domain is not authorized for login. Please add it in Firebase console.')
-      } else if (error.code === 'auth/popup-closed-by-user') {
-        setError('Login was cancelled')
-      } else {
-        setError(`Login failed: ${error.message || 'Unknown error'}`)
+    } catch (popupError: any) {
+      if (shouldFallbackToRedirect(popupError)) {
+        try {
+          await signInWithRedirect(auth, provider)
+          return undefined
+        } catch (redirectError: any) {
+          const friendly = getFriendlyAuthError(redirectError)
+          setError(friendly)
+          throw redirectError
+        }
       }
-      throw error
+
+      const friendly = getFriendlyAuthError(popupError)
+      setError(friendly)
+      throw popupError
     } finally {
       setLoading(false)
-      console.log('FirebaseAuthProvider: signInWithGoogle finished - loading set to false')
     }
   }
 
   const loginWithFacebook = async () => {
     if (!auth) {
-      setError('Firebase authentication is not configured')
+      setError("Firebase authentication is not configured")
       return undefined
     }
+
     setLoading(true)
     setError(null)
-    console.log('FirebaseAuthProvider: signInWithFacebook started - loading set to true')
+
+    const provider = new FacebookAuthProvider()
+
     try {
-      const provider = new FacebookAuthProvider()
       const result = await signInWithPopup(auth, provider)
-      console.log('FirebaseAuthProvider: signInWithFacebook success', result.user)
       return result
-    } catch (error) {
-      console.error("Firebase Facebook login error:", error)
-      if (error.code === 'auth/unauthorized-domain') {
-        setError('This domain is not authorized for login. Please add it in Firebase console.')
-      } else if (error.code === 'auth/popup-closed-by-user') {
-        setError('Login was cancelled')
-      } else {
-        setError(`Login failed: ${error.message || 'Unknown error'}`)
+    } catch (popupError: any) {
+      if (shouldFallbackToRedirect(popupError)) {
+        try {
+          await signInWithRedirect(auth, provider)
+          return undefined
+        } catch (redirectError: any) {
+          const friendly = getFriendlyAuthError(redirectError)
+          setError(friendly)
+          throw redirectError
+        }
       }
-      throw error
+
+      const friendly = getFriendlyAuthError(popupError)
+      setError(friendly)
+      throw popupError
     } finally {
       setLoading(false)
-      console.log('FirebaseAuthProvider: signInWithFacebook finished - loading set to false')
     }
   }
 
   const signOut = async () => {
     if (!auth) return
-    console.log('FirebaseAuthProvider: logout started')
     await fbSignOut(auth)
-    console.log('FirebaseAuthProvider: logout finished')
   }
 
   return (

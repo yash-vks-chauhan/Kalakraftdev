@@ -38,11 +38,17 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
   const [lastScrollY, setLastScrollY] = useState(0)
   const [rotatingText, setRotatingText] = useState('coasters')
   const videoRef = useRef<HTMLVideoElement>(null)
+  const [isHeroVideoLoaded, setIsHeroVideoLoaded] = useState(false)
+  const [hasHeroVideoError, setHasHeroVideoError] = useState(false)
   const router = useRouter()
   const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false)
   const accountDropdownRef = useRef<HTMLDivElement>(null)
   const [productName, setProductName] = useState<string>('')
   const [isRouteLoading, setIsRouteLoading] = useState(false)
+  const heroVideoSources = [
+    '/images/homepage4.mp4',
+    'https://ik.imagekit.io/4pjvf8k9u/Videos/homepage4.mp4?updatedAt=1753532187691',
+  ]
 
   const [viewMode, setViewMode] = useState<'mobile' | 'desktop'>('mobile')
 
@@ -198,34 +204,22 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
     return () => clearInterval(interval)
   }, [])
 
-  useEffect(() => {
-    if (!isHomePage || !videoRef.current) return;
-    
-    const handleVideoLoading = () => {
-      const videoElement = videoRef.current;
-      const fallbackImage = document.getElementById('mobileVideoFallback');
-      
-      if (videoElement && fallbackImage) {
-        videoElement.addEventListener('loadeddata', () => {
-          videoElement.style.display = 'block';
-          if (fallbackImage) fallbackImage.style.display = 'none';
-        });
-        
-        videoElement.addEventListener('error', () => {
-          videoElement.style.display = 'none';
-          if (fallbackImage) fallbackImage.style.display = 'block';
-        });
-        
-        if (typeof (videoElement as any).load === 'function') {
-          videoElement.load();
-        }
-      }
-    };
-    
-    const timer = setTimeout(handleVideoLoading, 300);
-    
-    return () => clearTimeout(timer);
-  }, [isHomePage]);
+  const handleHeroVideoLoaded = (event: any) => {
+    setIsHeroVideoLoaded(true)
+    setHasHeroVideoError(false)
+
+    const playPromise = event.currentTarget?.play?.()
+    if (playPromise && typeof playPromise.catch === 'function') {
+      playPromise.catch(() => {
+        // If autoplay is blocked, keep the decoded frame visible.
+      })
+    }
+  }
+
+  const handleHeroVideoError = () => {
+    setHasHeroVideoError(true)
+    setIsHeroVideoLoaded(false)
+  }
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen)
@@ -665,7 +659,7 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
                 src={getImageUrl('featured3.JPG')}
                 alt="Handcrafted resin art" 
                 className={styles.curvedHeroVideo}
-                style={{ display: 'none' }}
+                style={{ display: hasHeroVideoError || !isHeroVideoLoaded ? 'block' : 'none' }}
                 id="mobileVideoFallback"
               />
             </picture>
@@ -677,18 +671,14 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
               playsInline
               className={styles.curvedHeroVideo}
               poster="/images/loading.png"
-              preload="metadata"
-              onError={(e) => {
-                // If video fails to load, show the fallback image
-                const videoElement = e.currentTarget;
-                videoElement.style.display = 'none';
-                document.getElementById('mobileVideoFallback')!.style.display = 'block';
-              }}
+              preload="auto"
+              style={{ display: hasHeroVideoError ? 'none' : 'block' }}
+              onLoadedData={handleHeroVideoLoaded}
+              onError={handleHeroVideoError}
             >
-              <source 
-                src="https://ik.imagekit.io/4pjvf8k9u/Videos/homepage4.mp4?updatedAt=1753532187691" 
-                type="video/mp4" 
-              />
+              {heroVideoSources.map((src) => (
+                <source key={src} src={src} type="video/mp4" />
+              ))}
             </video>
             
             <div className={styles.curvedHeroContent}>

@@ -87,14 +87,14 @@ export default function LoginPage() {
     setIsLoading(true);
     try {
       const result = await loginWithGoogle();
-      if (result && result.user) {
-        const idToken = await result.user.getIdToken();
-        await loginWithFirebaseToken(idToken);
-        // Redirect to home
-        router.replace('/');
-      } else {
-        throw new Error('Google Sign-In failed or no user data.');
+      // Redirect fallback can return no immediate user object.
+      if (!result?.user) {
+        return;
       }
+
+      const idToken = await result.user.getIdToken();
+      await loginWithFirebaseToken(idToken);
+      router.replace('/');
     } catch (err: any) {
       console.error('LoginPage: Google login error', err);
       setError(err.message || 'Google Sign-In failed');
@@ -108,14 +108,14 @@ export default function LoginPage() {
     setIsLoading(true);
     try {
       const result = await loginWithFacebook();
-      if (result && result.user) {
-        const idToken = await result.user.getIdToken();
-        await loginWithFirebaseToken(idToken);
-        // Redirect to home
-        router.replace('/');
-      } else {
-        throw new Error('Facebook Sign-In failed or no user data.');
+      // Redirect fallback can return no immediate user object.
+      if (!result?.user) {
+        return;
       }
+
+      const idToken = await result.user.getIdToken();
+      await loginWithFirebaseToken(idToken);
+      router.replace('/');
     } catch (err: any) {
       console.error('LoginPage: Facebook login error', err);
       setError(err.message || 'Facebook Sign-In failed');

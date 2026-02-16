@@ -149,12 +149,13 @@ export default function SignupPage() {
             setError(null);
             try {
               const result = await loginWithGoogle();
-              if (result && result.user) {
-                const idToken = await result.user.getIdToken();
-                await loginWithFirebaseToken(idToken);
-              } else {
-                throw new Error('Google Sign-In failed or no user data.');
+              // Redirect fallback can return no immediate user object.
+              if (!result?.user) {
+                return;
               }
+
+              const idToken = await result.user.getIdToken();
+              await loginWithFirebaseToken(idToken);
             } catch (err: any) {
               setError(err.message || 'Google Sign-In failed');
               setFormLoading(false);
@@ -189,12 +190,13 @@ export default function SignupPage() {
             setError(null);
             try {
               const result = await loginWithFacebook();
-              if (result && result.user) {
-                const idToken = await result.user.getIdToken();
-                await loginWithFirebaseToken(idToken);
-              } else {
-                throw new Error('Facebook Sign-In failed or no user data.');
+              // Redirect fallback can return no immediate user object.
+              if (!result?.user) {
+                return;
               }
+
+              const idToken = await result.user.getIdToken();
+              await loginWithFirebaseToken(idToken);
             } catch (err: any) {
               setError(err.message || 'Facebook Sign-In failed');
               setFormLoading(false);
