@@ -3,7 +3,7 @@
 import { useState, useEffect, FormEvent, ChangeEvent, useRef } from "react";
 import { useParams } from "next/navigation";
 import { useAuth } from "../../../../contexts/AuthContext";
-import Pusher from "pusher-js";
+import Pusher, { type Channel } from "pusher-js";
 import styles from "../../../../support/support.module.css";
 
 interface Attachment {
@@ -29,6 +29,7 @@ interface Ticket {
   message: string;
   status: "open" | "pending" | "closed";
   email: string;
+  createdAt: string;
   messages: Message[];
 }
 
@@ -52,7 +53,7 @@ export default function TicketThread() {
   const [files, setFiles] = useState<ValidatedFile[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [remoteTyping, setRemoteTyping] = useState<string | null>(null);
-  const channelRef = useRef<Pusher.Channel | null>(null);
+  const channelRef = useRef<Channel | null>(null);
   const lastTypingSent = useRef<number>(0);
   const typingTimeout = useRef<NodeJS.Timeout | null>(null);
 
@@ -76,6 +77,7 @@ export default function TicketThread() {
       cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER!,
       channelAuthorization: {
         endpoint: "/api/support/pusher-auth",
+        transport: "ajax",
         headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       },
     });

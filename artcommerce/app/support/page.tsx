@@ -191,7 +191,7 @@ export default function SupportPage() {
             Contact Support
           </h1>
           <p className="text-gray-500">
-            We're here to help. Tell us what's wrong and we'll fix it.
+            We&apos;re here to help. Tell us what&apos;s wrong and we&apos;ll fix it.
           </p>
         </motion.div>
 
@@ -200,7 +200,7 @@ export default function SupportPage() {
           {/* 1. Issue Category */}
           <section>
             <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">
-              1. What's the issue?
+              1. What&apos;s the issue?
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {issueTypes.map((type) => {

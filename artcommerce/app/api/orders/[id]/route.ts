@@ -6,14 +6,15 @@ import { getAuthenticatedUser } from '../../../../lib/session-auth'
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const payload = await getAuthenticatedUser(request)
   if (!payload) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const id = Number(params.id)
+  const { id: rawId } = await params
+  const id = Number(rawId)
   if (isNaN(id)) {
     return NextResponse.json({ error: 'Invalid order ID' }, { status: 400 })
   }
@@ -21,7 +22,7 @@ export async function GET(
   // admin can see any order, normal users only their own
   const whereClause = payload.role === 'admin'
     ? { id }
-    : { id, userId: payload.userId }
+    : { id, userId: payload.id }
 
   const order = await prisma.order.findFirst({
     where: whereClause,

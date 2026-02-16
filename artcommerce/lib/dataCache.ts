@@ -19,7 +19,7 @@ let globalCache: CachedData = {
 
 export const DataCache = {
   // Get cached data
-  get: (key: keyof CachedData) => {
+  get: <K extends keyof CachedData>(key: K): CachedData[K] | null => {
     // First try memory cache
     if (globalCache[key] !== null && globalCache[key] !== false) {
       return globalCache[key]
@@ -29,12 +29,20 @@ export const DataCache = {
     try {
       const cached = sessionStorage.getItem('preloadedData')
       if (cached) {
-        const parsedCache = JSON.parse(cached)
-        const isRecent = Date.now() - parsedCache.timestamp < 30 * 60 * 1000 // 30 minutes
-        
-        if (isRecent && parsedCache[key]) {
-          globalCache[key] = parsedCache[key]
-          return parsedCache[key]
+        const parsedCache = JSON.parse(cached) as Partial<CachedData>
+        const cachedTimestamp =
+          typeof parsedCache.timestamp === 'number' ? parsedCache.timestamp : 0
+        const isRecent = Date.now() - cachedTimestamp < 30 * 60 * 1000 // 30 minutes
+        const cachedValue = parsedCache[key] as CachedData[K] | undefined
+
+        if (
+          isRecent &&
+          cachedValue !== undefined &&
+          cachedValue !== null &&
+          cachedValue !== false
+        ) {
+          globalCache[key] = cachedValue
+          return cachedValue
         }
       }
     } catch (error) {
@@ -45,7 +53,7 @@ export const DataCache = {
   },
 
   // Set cached data
-  set: (key: keyof CachedData, value: any) => {
+  set: <K extends keyof CachedData>(key: K, value: CachedData[K]) => {
     globalCache[key] = value
   },
 

@@ -26,17 +26,18 @@ function isValidSignature(filename: string, expires: number, signature: string) 
 
 export async function GET(
   request: Request,
-  { params }: { params: { filename: string } }
+  { params }: { params: Promise<{ filename: string }> }
 ) {
   if (!SIGNING_SECRET) {
     return NextResponse.json({ error: 'Server not configured for signed URLs' }, { status: 500 })
   }
 
+  const { filename } = await params
   const url = new URL(request.url)
   const expires = Number(url.searchParams.get('expires'))
   const signature = url.searchParams.get('signature') || ''
-  const safeName = path.basename(params.filename || '')
-  if (!safeName || safeName !== params.filename) {
+  const safeName = path.basename(filename || '')
+  if (!safeName || safeName !== filename) {
     return NextResponse.json({ error: 'Invalid file name' }, { status: 400 })
   }
 

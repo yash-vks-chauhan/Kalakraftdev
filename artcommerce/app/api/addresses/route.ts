@@ -7,12 +7,16 @@ import jwt from 'jsonwebtoken'
 const JWT_SECRET = process.env.JWT_SECRET!
 
 /** Helper to extract userId from Bearer token */
-function getUserId(request: Request): number | null {
+function getUserId(request: Request): string | null {
   const auth = request.headers.get('Authorization') || ''
   const token = auth.replace('Bearer ', '').trim()
   if (!token) return null
   try {
-    return (jwt.verify(token, JWT_SECRET) as any).userId
+    const payload = jwt.verify(token, JWT_SECRET) as { userId?: string | number }
+    if (payload.userId === undefined || payload.userId === null) {
+      return null
+    }
+    return String(payload.userId)
   } catch {
     return null
   }

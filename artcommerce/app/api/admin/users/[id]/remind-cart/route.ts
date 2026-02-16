@@ -10,7 +10,7 @@ const REMIND_MAX_PER_TARGET = 3
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const admin = await requireAdminUser(request)
   if (!admin) {
@@ -18,7 +18,7 @@ export async function POST(
   }
 
   const clientIp = getClientIp(request)
-  const { id } = params
+  const { id } = await params
   const userId = id
 
   const limiter = consumeRateLimit(`remind-cart:${admin.id}:target:${userId}:ip:${clientIp}`, {

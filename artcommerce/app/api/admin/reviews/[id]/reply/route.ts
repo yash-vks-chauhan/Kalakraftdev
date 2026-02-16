@@ -3,12 +3,13 @@ import { NextResponse } from 'next/server'
 import prisma from '../../../../../../lib/prisma'
 import { requireAdminUser } from '../../../../../../lib/session-auth'
 
-export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const admin = await requireAdminUser(request)
   if (!admin) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
-  const reviewId = Number(params.id)
+  const { id } = await params
+  const reviewId = Number(id)
   if (isNaN(reviewId)) {
     return NextResponse.json({ error: 'Invalid id' }, { status: 400 })
   }

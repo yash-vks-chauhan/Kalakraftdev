@@ -24,7 +24,7 @@ export async function GET(request: Request) {
 
     // normal users always only see their own
     if (payload.role !== 'admin') {
-      where.userId = payload.userId
+      where.userId = payload.id
     }
     // admins, if they passed a userId, filter by it
     else if (queryUserId) {
@@ -70,7 +70,7 @@ export async function POST(request: Request) {
   // 1️⃣ Authenticate
   const payload = await getAuthenticatedUser(request)
   if (!payload) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  const { userId } = payload
+  const userId = payload.id
 
   // 2️⃣ Parse body
   let body: any

@@ -443,13 +443,7 @@ function SearchModalContent({ open, onClose }: Props) {
               duration: 0.45, 
               ease: [0.22, 1, 0.36, 1], // Professional easing curve
               opacity: { duration: 0.3 },
-              y: { duration: 0.4 },
-              // Faster exit for better responsiveness
-              exit: {
-                duration: 0.35,
-                ease: [0.55, 0.085, 0.68, 0.53],
-                opacity: { duration: 0.2 }
-              }
+              y: { duration: 0.4 }
             }}
           >
             <div className={styles.searchHeader}>

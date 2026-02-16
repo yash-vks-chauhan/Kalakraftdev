@@ -23,14 +23,15 @@ function getUserIdFromRequest(request: Request): string | null {
 // PUT /api/cart/[id] (id is cartItemId)
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const userId = getUserIdFromRequest(request)
   if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const cartItemId = parseInt(params.id, 10)
+  const { id } = await params
+  const cartItemId = parseInt(id, 10)
   if (isNaN(cartItemId)) {
     return NextResponse.json({ error: 'Invalid cart item ID' }, { status: 400 })
   }
@@ -92,15 +93,14 @@ export async function PUT(
 // DELETE /api/cart/[id]? (id is cartItemId)
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const userId = getUserIdFromRequest(request)
   if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  // This is an async function, so the params are available
-  const { id } = params;
+  const { id } = await params
   const cartItemId = parseInt(id, 10)
 
   if (isNaN(cartItemId)) {

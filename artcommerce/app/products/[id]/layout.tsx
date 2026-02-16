@@ -2,16 +2,17 @@ import { Metadata, ResolvingMetadata } from 'next/types';
 
 type Props = {
   children: React.ReactNode;
-  params: { id: string };
+  params: Promise<{ id: string }>;
 };
 
 export async function generateMetadata(
   { params }: Props,
   parent: ResolvingMetadata
 ): Promise<Metadata> {
+  const { id } = await params;
   // Fetch product data
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || ''}/api/products/${params.id}`, { 
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || ''}/api/products/${id}`, {
       next: { revalidate: 3600 } // Revalidate every hour
     });
     

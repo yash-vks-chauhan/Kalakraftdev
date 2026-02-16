@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import imagekit from '@/lib/imagekit'
+import { getImageKitClient } from '@/lib/imagekit'
 import { optimizeImageIfNeeded, MAX_FILE_SIZE } from '@/lib/imageOptimizer'
 import {
   guardUploadRequest,
@@ -21,10 +21,14 @@ export async function POST(request: Request): Promise<NextResponse> {
     requireAdmin: true,
   })
 
-  if (!guarded.ok) return guarded.response
+  if ('response' in guarded) return guarded.response
 
   const { upload, auth } = guarded
   const ownerSegment = sanitizeFilename(auth.userId)
+  const imagekit = getImageKitClient()
+  if (!imagekit) {
+    return NextResponse.json({ message: 'ImageKit is not configured.' }, { status: 503 })
+  }
 
   try {
     const { buffer: processedBuffer, optimized } = await optimizeImageIfNeeded(upload.buffer, upload.filename)

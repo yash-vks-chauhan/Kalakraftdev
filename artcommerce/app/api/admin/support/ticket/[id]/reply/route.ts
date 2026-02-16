@@ -29,7 +29,7 @@ function validateAttachments(attachments: any[]) {
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const admin = await requireAdminUser(request)
   if (!admin) {
@@ -40,7 +40,7 @@ export async function POST(
   }
 
   // 1) Get the ticketId
-  const { id: ticketId } = params;
+  const { id: ticketId } = await params;
 
   // 2) Parse JSON body instead of formData()
   const { reply, status, attachments = [] } = (await request.json()) as {

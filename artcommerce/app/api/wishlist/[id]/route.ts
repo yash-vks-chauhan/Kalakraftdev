@@ -6,13 +6,16 @@ import jwt from 'jsonwebtoken'
 
 const JWT_SECRET = process.env.JWT_SECRET!
 
-function getUserId(request: Request): number | null {
+function getUserId(request: Request): string | null {
   const authHeader = request.headers.get('Authorization') || ''
   const token = authHeader.replace('Bearer ', '')
   if (!token) return null
   try {
-    const payload: any = jwt.verify(token, JWT_SECRET)
-    return payload.userId
+    const payload = jwt.verify(token, JWT_SECRET) as { userId?: string | number }
+    if (payload.userId === undefined || payload.userId === null) {
+      return null
+    }
+    return String(payload.userId)
   } catch {
     return null
   }
@@ -20,14 +23,15 @@ function getUserId(request: Request): number | null {
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const userId = getUserId(request)
   if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const productId = Number(params.id)
+  const { id } = await params
+  const productId = Number(id)
   if (isNaN(productId)) {
     return NextResponse.json({ error: 'Invalid ID' }, { status: 400 })
   }

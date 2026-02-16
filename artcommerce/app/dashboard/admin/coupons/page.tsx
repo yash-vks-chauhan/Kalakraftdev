@@ -5,7 +5,13 @@ import { useAuth } from '../../../contexts/AuthContext'
 export default function CouponManager() {
   const { token, user } = useAuth()
   const [coupons, setCoupons] = useState<any[]>([])
-  const [form, setForm] = useState({ code:'', type:'percentage', amount:0, expiresAt:'', usageLimit:'' })
+  const [form, setForm] = useState({
+    code: '',
+    type: 'percentage' as 'percentage' | 'flat',
+    amount: '',
+    expiresAt: '',
+    usageLimit: '',
+  })
 
   // 1️⃣ Load
   useEffect(() => {
@@ -60,7 +66,10 @@ export default function CouponManager() {
       <h1 className="text-2xl mb-4">Coupon Manager</h1>
       <form onSubmit={handleCreate} className="space-x-2 mb-6">
         <input placeholder="Code" value={form.code} onChange={e=>setForm({...form,code:e.target.value})}/>
-        <select value={form.type} onChange={e=>setForm({...form,type:e.target.value})}>
+        <select
+          value={form.type}
+          onChange={e=>setForm({...form, type: e.target.value as 'percentage' | 'flat'})}
+        >
           <option value="percentage">Percentage</option>
           <option value="flat">Flat</option>
         </select>

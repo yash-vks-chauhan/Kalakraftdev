@@ -116,7 +116,7 @@ function createOptimizedLazy<T = {}>(config: LazyComponentConfig) {
     const startTime = performance.now();
     
     try {
-      const module = await loader();
+      const loadedModule = await loader();
       const loadTime = performance.now() - startTime;
       
       bundleManager.markChunkLoaded(chunkName);
@@ -129,7 +129,7 @@ function createOptimizedLazy<T = {}>(config: LazyComponentConfig) {
         console.log(`[Bundle] Loaded ${chunkName} in ${loadTime.toFixed(2)}ms`);
       }
 
-      return module;
+      return loadedModule;
     } catch (error) {
       const loadTime = performance.now() - startTime;
       bundleManager.getMetrics().push({
@@ -149,11 +149,14 @@ function createOptimizedLazy<T = {}>(config: LazyComponentConfig) {
   }
 
   // Return wrapped component
-  return React.forwardRef<any, T>((props, ref) => (
+  const WrappedLazyComponent = React.forwardRef<any, T>((props, ref) => (
     <Suspense fallback={fallback}>
       <LazyComponent {...props} ref={ref} />
     </Suspense>
   ));
+
+  WrappedLazyComponent.displayName = `OptimizedLazy(${chunkName})`;
+  return WrappedLazyComponent;
 }
 
 // Bundle splitting utilities for different component types

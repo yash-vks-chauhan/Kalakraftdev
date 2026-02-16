@@ -4,7 +4,7 @@ import prisma from '../../../../lib/prisma';
 import { randomUUID } from 'crypto';
 import { getAuthContext } from '../../../../lib/auth';
 import { put } from '@vercel/blob';
-import { sanitizeFilename, shouldUsePrivateAccess } from '@/lib/uploadGuard';
+import { sanitizeFilename } from '@/lib/uploadGuard';
 import { isAllowedOrigin } from '@/lib/security';
 import { sanitizeSupportAttachments } from '@/lib/supportAttachments';
 
@@ -70,7 +70,7 @@ export async function POST(request: Request) {
     productId = form.get('productId') ? Number(form.get('productId')) : null;
 
     const fileBlobs = form.getAll('files') as File[];
-    const access = shouldUsePrivateAccess() ? 'private' : 'public';
+    const access = 'public' as const;
     const ownerSegment = sanitizeFilename(auth.userId);
     for (const file of fileBlobs.slice(0, MAX_ATTACHMENTS)) {
       if (!file.type?.startsWith('image/')) {

@@ -7,13 +7,14 @@ import { requireAdminUser } from '../../../../../lib/session-auth'
 // GET, PATCH and DELETE all by numeric ID
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const admin = await requireAdminUser(request)
   if (!admin) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
-  const id = Number(params.id)
+  const { id: rawId } = await params
+  const id = Number(rawId)
   if (isNaN(id)) {
     return NextResponse.json({ error: 'Invalid product ID' }, { status: 400 })
   }
@@ -30,13 +31,14 @@ export async function GET(
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const admin = await requireAdminUser(request)
   if (!admin) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
-  const id = Number(params.id)
+  const { id: rawId } = await params
+  const id = Number(rawId)
   if (isNaN(id)) {
     return NextResponse.json({ error: 'Invalid product ID' }, { status: 400 })
   }
@@ -68,13 +70,14 @@ export async function PATCH(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const admin = await requireAdminUser(request)
   if (!admin) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
-  const id = Number(params.id)
+  const { id: rawId } = await params
+  const id = Number(rawId)
   if (isNaN(id)) {
     return NextResponse.json({ error: 'Invalid product ID' }, { status: 400 })
   }

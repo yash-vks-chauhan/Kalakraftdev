@@ -12,20 +12,17 @@ import {
 } from 'firebase/auth'
 
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN!,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID!,
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || '',
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || '',
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || '',
 }
 
-// Log Firebase config for debugging (without sensitive values)
-console.log('Firebase config loaded:', {
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  apiKeyPresent: !!process.env.NEXT_PUBLIC_FIREBASE_API_KEY
-});
+const hasFirebaseConfig = Boolean(
+  firebaseConfig.apiKey && firebaseConfig.authDomain && firebaseConfig.projectId,
+)
 
-const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig)
-export const auth = getAuth(app)
+const app = hasFirebaseConfig ? (getApps().length ? getApps()[0] : initializeApp(firebaseConfig)) : null
+export const auth = app ? getAuth(app) : null
 const googleProvider = new GoogleAuthProvider()
 
 export interface AuthContextType {
@@ -47,6 +44,11 @@ export function FirebaseAuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    if (!auth) {
+      setLoading(false)
+      return
+    }
+
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser)
       setLoading(false)
@@ -55,6 +57,9 @@ export function FirebaseAuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const signInWithGoogle = async () => {
+    if (!auth) {
+      throw new Error('Firebase authentication is not configured')
+    }
     setLoading(true)
     try {
       await signInWithPopup(auth, googleProvider)
@@ -72,6 +77,7 @@ export function FirebaseAuthProvider({ children }: { children: ReactNode }) {
   }
 
   const signOut = async () => {
+    if (!auth) return
     await fbSignOut(auth)
   }
 

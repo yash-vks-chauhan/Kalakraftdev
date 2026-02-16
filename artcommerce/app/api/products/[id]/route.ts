@@ -4,10 +4,10 @@ import prisma from '../../../../lib/prisma'
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const raw = params.id
+    const { id: raw } = await params
     if (!raw) {
       return NextResponse.json({ error: 'Missing product identifier' }, { status: 400 })
     }

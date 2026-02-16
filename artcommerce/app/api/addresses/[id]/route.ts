@@ -6,22 +6,27 @@ import jwt from 'jsonwebtoken'
 
 const JWT_SECRET = process.env.JWT_SECRET!
 
-function getUserId(request: Request): number | null {
+function getUserId(request: Request): string | null {
   const auth = request.headers.get('Authorization') || ''
   const token = auth.replace('Bearer ', '').trim()
   if (!token) return null
   try {
-    return (jwt.verify(token, JWT_SECRET) as any).userId
+    const payload = jwt.verify(token, JWT_SECRET) as { userId?: string | number }
+    if (payload.userId === undefined || payload.userId === null) {
+      return null
+    }
+    return String(payload.userId)
   } catch {
     return null
   }
 }
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const userId = getUserId(request)
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const id = Number(params.id)
+  const { id: rawId } = await params
+  const id = Number(rawId)
   const address = await prisma.address.findFirst({
     where: { id, userId },
   })
@@ -31,11 +36,12 @@ export async function GET(request: Request, { params }: { params: { id: string }
   return NextResponse.json({ address })
 }
 
-export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const userId = getUserId(request)
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const id = Number(params.id)
+  const { id: rawId } = await params
+  const id = Number(rawId)
   const body = await request.json()
   const { label, line1, line2, city, postalCode, country } = body
 
@@ -61,11 +67,12 @@ export async function PATCH(request: Request, { params }: { params: { id: string
   return NextResponse.json({ address: updated })
 }
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const userId = getUserId(request)
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const id = Number(params.id)
+  const { id: rawId } = await params
+  const id = Number(rawId)
   // Ensure it belongs to the user
   const existing = await prisma.address.findFirst({
     where: { id, userId },

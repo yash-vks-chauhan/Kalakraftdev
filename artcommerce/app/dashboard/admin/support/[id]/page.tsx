@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useParams } from "next/navigation";
-import Pusher from "pusher-js";
+import Pusher, { type Channel } from "pusher-js";
 import { useAuth } from "../../../../contexts/AuthContext";
 import { Send, Paperclip, X, CheckCheck, Loader2, ChevronLeft } from 'lucide-react';
 import { motion, AnimatePresence } from "framer-motion";
@@ -45,7 +45,7 @@ export default function TicketDetailPage() {
   const [status, setStatus] = useState<"open" | "pending" | "closed">("open");
   const [error, setError] = useState<string | null>(null);
   const [remoteTyping, setRemoteTyping] = useState<boolean>(false);
-  const channelRef = useRef<Pusher.Channel | null>(null);
+  const channelRef = useRef<Channel | null>(null);
   const lastTypingSent = useRef<number>(0);
   const typingTimeout = useRef<NodeJS.Timeout | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -92,6 +92,7 @@ export default function TicketDetailPage() {
       cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER!,
       channelAuthorization: {
         endpoint: "/api/support/pusher-auth",
+        transport: "ajax",
         headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       },
     });

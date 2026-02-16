@@ -66,7 +66,7 @@ interface Order {
 export default async function OrderDetailsPage({
   params,
 }: {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
   // 1) Verify JWT via the cookie:
   const userId = await getUserIdFromCookie()

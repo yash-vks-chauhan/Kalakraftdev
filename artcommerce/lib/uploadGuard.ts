@@ -247,20 +247,22 @@ export async function guardUploadRequest(
   const rateKey = `${routeKey}:${getClientIdentifier(request, auth)}`
   const rateResult = applyRateLimit(rateKey, rateLimit, rateWindowMs)
   if (!rateResult.allowed) {
+    const retryAfterSeconds =
+      'retryAfterSeconds' in rateResult ? rateResult.retryAfterSeconds : Math.ceil(rateWindowMs / 1000)
     return {
       ok: false,
       response: NextResponse.json(
         { error: 'Too many upload attempts. Please try again later.' },
         {
           status: 429,
-          headers: { 'Retry-After': `${rateResult.retryAfterSeconds}` },
+          headers: { 'Retry-After': `${retryAfterSeconds}` },
         },
       ),
     }
   }
 
   const parsed = await extractFileFromRequest(request, { maxSizeBytes, allowedMimeTypes })
-  if (!parsed.ok) return parsed
+  if ('response' in parsed) return parsed
 
   return { ok: true, auth, upload: parsed.upload }
 }

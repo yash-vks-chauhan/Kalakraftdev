@@ -4,7 +4,7 @@ import { getAuthenticatedUser } from '../../../../../lib/session-auth'
 
 async function getAccessibleOrder(
   orderId: number,
-  payload: { userId: string; role?: string | null },
+  payload: { id: string; role?: string | null },
   options?: { requireAdmin?: boolean }
 ) {
   const order = await prisma.order.findUnique({
@@ -20,7 +20,7 @@ async function getAccessibleOrder(
     return { ok: false as const, status: 403, error: 'Forbidden' }
   }
 
-  if (payload.role !== 'admin' && order.userId !== String(payload.userId)) {
+  if (payload.role !== 'admin' && order.userId !== String(payload.id)) {
     return { ok: false as const, status: 403, error: 'Forbidden' }
   }
 
@@ -29,12 +29,13 @@ async function getAccessibleOrder(
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const payload = await getAuthenticatedUser(req)
   if (!payload) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const orderId = Number(params.id)
+  const { id } = await params
+  const orderId = Number(id)
   if (Number.isNaN(orderId)) {
     return NextResponse.json({ error: 'Invalid order ID' }, { status: 400 })
   }
@@ -57,12 +58,13 @@ export async function GET(
 
 export async function POST(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const payload = await getAuthenticatedUser(req)
   if (!payload) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const orderId = Number(params.id)
+  const { id } = await params
+  const orderId = Number(id)
   if (Number.isNaN(orderId)) {
     return NextResponse.json({ error: 'Invalid order ID' }, { status: 400 })
   }
@@ -82,7 +84,7 @@ export async function POST(
   const note = await prisma.orderNote.create({
     data: {
       orderId,
-      authorId: String(payload.userId),
+      authorId: String(payload.id),
       text,
     },
     include: { author: { select: { fullName: true } } },

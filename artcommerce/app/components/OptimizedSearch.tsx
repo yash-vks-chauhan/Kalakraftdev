@@ -269,7 +269,7 @@ export default function OptimizedSearch({
           
           {searchQuery.length >= 2 && !hasResults && !isSearching && (
             <span className={styles.noResults}>
-              No results found for "{searchQuery}"
+              No results found for &quot;{searchQuery}&quot;
             </span>
           )}
         </div>

@@ -22,7 +22,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     requireAdmin: true,
   })
 
-  if (!guarded.ok) return guarded.response
+  if ('response' in guarded) return guarded.response
 
   const { upload, auth } = guarded
   const ownerSegment = sanitizeFilename(auth.userId)

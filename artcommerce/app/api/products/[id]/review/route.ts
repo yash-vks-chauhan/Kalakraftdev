@@ -17,8 +17,9 @@ function getUserIdFromToken(request: Request): string | null {
   }
 }
 
-export async function GET(_req: Request, { params }: { params: { id: string } }) {
-  const productId = Number(params.id)
+export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  const productId = Number(id)
   if (isNaN(productId)) return NextResponse.json({ error: 'Invalid id' }, { status: 400 })
 
   // @ts-ignore
@@ -48,7 +49,7 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
   return NextResponse.json({ avg: stats._avg.rating ?? 0, count: stats._count.rating, reviews })
 }
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   // First try to authenticate via JWT (used by most of our client calls)
   const tokenUserId = getUserIdFromToken(req)
 
@@ -62,7 +63,8 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const productId = Number(params.id)
+  const { id } = await params
+  const productId = Number(id)
   if (isNaN(productId)) return NextResponse.json({ error: 'Invalid id' }, { status: 400 })
 
   const { rating, comment, locale="en" } = await req.json()

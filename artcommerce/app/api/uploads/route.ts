@@ -5,7 +5,6 @@ import {
   guardUploadRequest,
   MAX_UPLOAD_SIZE_BYTES,
   sanitizeFilename,
-  shouldUsePrivateAccess,
 } from '@/lib/uploadGuard'
 
 export const runtime = 'nodejs'
@@ -16,12 +15,12 @@ export async function POST(request: Request): Promise<NextResponse> {
     maxSizeBytes: MAX_UPLOAD_SIZE_BYTES,
   })
 
-  if (!guarded.ok) return guarded.response
+  if ('response' in guarded) return guarded.response
 
   const { auth, upload } = guarded
 
   try {
-    const access = shouldUsePrivateAccess() ? 'private' : 'public'
+    const access = 'public' as const
     const ownerSegment = sanitizeFilename(auth.userId)
     const uniqueFilename = `${ownerSegment}/${Date.now()}-${upload.filename}`
 

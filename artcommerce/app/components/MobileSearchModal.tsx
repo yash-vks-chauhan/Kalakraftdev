@@ -642,12 +642,6 @@ function MobileSearchModalContent({ open, onClose }: Props) {
             opacity: { 
               duration: 0.3,
               ease: 'easeOut'
-            },
-            // Faster exit for better responsiveness
-            exit: {
-              duration: 0.3,
-              ease: [0.55, 0.085, 0.68, 0.53],
-              opacity: { duration: 0.2 }
             }
           }}
           onClick={(e) => {

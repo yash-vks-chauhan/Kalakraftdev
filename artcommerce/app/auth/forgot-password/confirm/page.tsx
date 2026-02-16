@@ -1,8 +1,12 @@
 export const dynamic = 'force-dynamic';
 import ForgotPasswordConfirmClient from './ForgotPasswordConfirmClient';
 
-export default function ForgotPasswordConfirmPage({ searchParams }: { searchParams: { token?: string } }) {
-  const token = searchParams.token ?? '';
+export default async function ForgotPasswordConfirmPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ token?: string }>
+}) {
+  const { token = '' } = await searchParams;
 
   return (
     <main className="py-12">

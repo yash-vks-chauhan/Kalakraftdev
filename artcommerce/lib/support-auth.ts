@@ -1,4 +1,4 @@
-import { firebaseAdmin } from './firebase-admin'
+import { auth as adminAuth } from './firebase-admin'
 import { getTokenFromRequest, verifyJwtFromRequest } from './auth-helpers'
 
 export type SupportAuth = {
@@ -20,7 +20,7 @@ export async function getSupportAuth(request: Request): Promise<SupportAuth | nu
   const token = getTokenFromRequest(request)
   if (token) {
     try {
-      const decoded = await firebaseAdmin.auth().verifyIdToken(token)
+      const decoded = await adminAuth.verifyIdToken(token)
       return {
         userId: decoded.uid,
         email: decoded.email,

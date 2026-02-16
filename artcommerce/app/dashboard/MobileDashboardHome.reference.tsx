@@ -318,83 +318,85 @@ export default function MobileDashboardHome() {
               </div>
               <div className={`${styles.expandableContent} ${showOverview ? styles.expanded : ''}`}>
                 {metrics ? (
-                  <div className={styles.overviewMetricsScroll}>
-                    {/* Revenue Card */}
-                    <div className={styles.overviewMetricCard}>
-                      <div className={styles.metricCardHeader}>
-                        <div className={styles.metricCardIcon}>
-                          <DollarSign size={24} />
-                        </div>
-                      </div>
-                      <div className={styles.metricCardContent}>
-                        <h4 className={styles.metricCardTitle}>Total Revenue</h4>
-                        <p className={styles.metricCardValue}>₹{metrics?.revenue ? metrics.revenue.toFixed(0) : '0'}</p>
-                        <p className={styles.metricCardSubtitle}>This {period === 'today' ? 'day' : period}</p>
-                      </div>
-                    </div>
-
-                    {/* Orders Card */}
-                    <div className={styles.overviewMetricCard}>
-                      <div className={styles.metricCardHeader}>
-                        <div className={styles.metricCardIcon}>
-                          <Package size={24} />
-                        </div>
-                      </div>
-                      <div className={styles.metricCardContent}>
-                        <h4 className={styles.metricCardTitle}>Total Orders</h4>
-                        <p className={styles.metricCardValue}>{metrics?.totalOrders || '0'}</p>
-                        <p className={styles.metricCardSubtitle}>Orders processed</p>
-                      </div>
-                    </div>
-
-                    {/* Status Breakdown Cards */}
-                    {metrics?.statusCounts?.slice(0, 4).map((sc: any) => (
-                      <div key={sc.status} className={styles.overviewMetricCard}>
+                  <>
+                    <div className={styles.overviewMetricsScroll}>
+                      {/* Revenue Card */}
+                      <div className={styles.overviewMetricCard}>
                         <div className={styles.metricCardHeader}>
                           <div className={styles.metricCardIcon}>
-                            {sc.status === 'completed' && <PackageOpen size={24} />}
-                            {sc.status === 'processing' && <Clock size={24} />}
-                            {sc.status === 'shipped' && <Package size={24} />}
-                            {sc.status === 'pending' && <Calendar size={24} />}
-                            {!['completed', 'processing', 'shipped', 'pending'].includes(sc.status) && <BarChart3 size={24} />}
+                            <DollarSign size={24} />
                           </div>
                         </div>
                         <div className={styles.metricCardContent}>
-                          <h4 className={styles.metricCardTitle}>
-                            {sc.status.charAt(0).toUpperCase() + sc.status.slice(1)}
-                          </h4>
-                          <p className={styles.metricCardValue}>{sc._count.status}</p>
-                          <p className={styles.metricCardSubtitle}>orders</p>
+                          <h4 className={styles.metricCardTitle}>Total Revenue</h4>
+                          <p className={styles.metricCardValue}>₹{metrics?.revenue ? metrics.revenue.toFixed(0) : '0'}</p>
+                          <p className={styles.metricCardSubtitle}>This {period === 'today' ? 'day' : period}</p>
                         </div>
                       </div>
-                    ))}
 
-                    {/* Period Info Card */}
-                    <div className={styles.overviewMetricCard}>
-                      <div className={styles.metricCardHeader}>
-                        <div className={styles.metricCardIcon}>
-                          <BarChart3 size={24} />
+                      {/* Orders Card */}
+                      <div className={styles.overviewMetricCard}>
+                        <div className={styles.metricCardHeader}>
+                          <div className={styles.metricCardIcon}>
+                            <Package size={24} />
+                          </div>
+                        </div>
+                        <div className={styles.metricCardContent}>
+                          <h4 className={styles.metricCardTitle}>Total Orders</h4>
+                          <p className={styles.metricCardValue}>{metrics?.totalOrders || '0'}</p>
+                          <p className={styles.metricCardSubtitle}>Orders processed</p>
                         </div>
                       </div>
-                      <div className={styles.metricCardContent}>
-                        <h4 className={styles.metricCardTitle}>Time Period</h4>
-                        <p className={styles.metricCardValue}>
-                          {period === 'today' ? 'Today' : 
-                           period === 'week' ? '7 Days' : 
-                           period === 'month' ? '1 Month' : 
-                           period === 'year' ? '1 Year' : 'All Time'}
-                        </p>
-                        <p className={styles.metricCardSubtitle}>current view</p>
+
+                      {/* Status Breakdown Cards */}
+                      {metrics?.statusCounts?.slice(0, 4).map((sc: any) => (
+                        <div key={sc.status} className={styles.overviewMetricCard}>
+                          <div className={styles.metricCardHeader}>
+                            <div className={styles.metricCardIcon}>
+                              {sc.status === 'completed' && <PackageOpen size={24} />}
+                              {sc.status === 'processing' && <Clock size={24} />}
+                              {sc.status === 'shipped' && <Package size={24} />}
+                              {sc.status === 'pending' && <Calendar size={24} />}
+                              {!['completed', 'processing', 'shipped', 'pending'].includes(sc.status) && <BarChart3 size={24} />}
+                            </div>
+                          </div>
+                          <div className={styles.metricCardContent}>
+                            <h4 className={styles.metricCardTitle}>
+                              {sc.status.charAt(0).toUpperCase() + sc.status.slice(1)}
+                            </h4>
+                            <p className={styles.metricCardValue}>{sc._count.status}</p>
+                            <p className={styles.metricCardSubtitle}>orders</p>
+                          </div>
+                        </div>
+                      ))}
+
+                      {/* Period Info Card */}
+                      <div className={styles.overviewMetricCard}>
+                        <div className={styles.metricCardHeader}>
+                          <div className={styles.metricCardIcon}>
+                            <BarChart3 size={24} />
+                          </div>
+                        </div>
+                        <div className={styles.metricCardContent}>
+                          <h4 className={styles.metricCardTitle}>Time Period</h4>
+                          <p className={styles.metricCardValue}>
+                            {period === 'today' ? 'Today' :
+                             period === 'week' ? '7 Days' :
+                             period === 'month' ? '1 Month' :
+                             period === 'year' ? '1 Year' : 'All Time'}
+                          </p>
+                          <p className={styles.metricCardSubtitle}>current view</p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  
-                  {/* Scroll Indicator for Analytics Cards */}
-                  <div className={styles.analyticsScrollIndicator}>
-                    {[1, 2, 3, 4, 5, 6].map((i) => (
-                      <div key={i} className={styles.scrollIndicatorDot}></div>
-                    ))}
-                  </div>
+
+                    {/* Scroll Indicator for Analytics Cards */}
+                    <div className={styles.analyticsScrollIndicator}>
+                      {[1, 2, 3, 4, 5, 6].map((i) => (
+                        <div key={i} className={styles.scrollIndicatorDot}></div>
+                      ))}
+                    </div>
+                  </>
                 ) : (
                   <div className={styles.loadingContainer}>
                     <InlineLoader size="small" message="Loading metrics..." />

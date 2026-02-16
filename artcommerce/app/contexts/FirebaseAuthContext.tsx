@@ -50,6 +50,12 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
 
   useEffect(() => {
     console.log('FirebaseAuthProvider: useEffect triggered')
+    if (!auth) {
+      setError('Firebase authentication is not configured')
+      setLoading(false)
+      return
+    }
+
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       console.log('FirebaseAuthProvider: onAuthStateChanged - firebaseUser:', firebaseUser)
       if (firebaseUser) {
@@ -80,6 +86,10 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
   }, [loginWithFirebaseToken])
 
   const loginWithGoogle = async () => {
+    if (!auth) {
+      setError('Firebase authentication is not configured')
+      return undefined
+    }
     setLoading(true)
     setError(null)
     console.log('FirebaseAuthProvider: signInWithGoogle started - loading set to true')
@@ -108,6 +118,10 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
   }
 
   const loginWithFacebook = async () => {
+    if (!auth) {
+      setError('Firebase authentication is not configured')
+      return undefined
+    }
     setLoading(true)
     setError(null)
     console.log('FirebaseAuthProvider: signInWithFacebook started - loading set to true')
@@ -133,6 +147,7 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
   }
 
   const signOut = async () => {
+    if (!auth) return
     console.log('FirebaseAuthProvider: logout started')
     await fbSignOut(auth)
     console.log('FirebaseAuthProvider: logout finished')

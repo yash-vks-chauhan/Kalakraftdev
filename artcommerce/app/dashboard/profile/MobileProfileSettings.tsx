@@ -1068,7 +1068,7 @@ export default function MobileProfileSettings() {
                 {!isStepTransitioning && step === 'send' && (
                   <div className={`${styles.stepContent} ${styles.otpStep}`}>
                     <p className={styles.stepDescription}>
-                      We'll send an OTP to your email address to verify your identity before changing your password.
+                      We&apos;ll send an OTP to your email address to verify your identity before changing your password.
                     </p>
                     <button
                       onClick={sendPasswordOtp}
@@ -1198,7 +1198,7 @@ export default function MobileProfileSettings() {
                 {!isEmailStepTransitioning && emailStep === 'send' && (
                   <div className={`${styles.stepContent} ${styles.otpStep}`}>
                     <p className={styles.stepDescription}>
-                      Enter your new email address. We'll send an OTP to your current email to verify the change.
+                      Enter your new email address. We&apos;ll send an OTP to your current email to verify the change.
                     </p>
                     <div className={styles.inputGroup}>
                       <div className={styles.floatingInputContainer}>

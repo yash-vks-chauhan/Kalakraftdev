@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useState, useEffect, useRef, TouchEvent, useCallback } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence, useMotionValue, useTransform, animate } from "framer-motion";

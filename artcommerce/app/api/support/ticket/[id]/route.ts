@@ -35,7 +35,7 @@ function validateAttachments(attachments: any[]) {
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const auth = await getAuthenticatedUser(request)
   if (!auth) {
@@ -45,7 +45,7 @@ export async function GET(
   const userEmail =
     auth.email ||
     (await prisma.user.findUnique({
-      where: { id: auth.userId },
+      where: { id: auth.id },
       select: { email: true },
     }))?.email;
 
@@ -53,7 +53,7 @@ export async function GET(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { id } = params;
+  const { id } = await params;
   const ticket = await prisma.supportTicket.findUnique({
     where: { id },
     include: { messages: { orderBy: { createdAt: 'asc' } } },
@@ -73,7 +73,7 @@ export async function GET(
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const auth = await getAuthenticatedUser(request)
   if (!auth) {
@@ -86,7 +86,7 @@ export async function POST(
   const userEmail =
     auth.email ||
     (await prisma.user.findUnique({
-      where: { id: auth.userId },
+      where: { id: auth.id },
       select: { email: true },
     }))?.email;
 
@@ -94,7 +94,7 @@ export async function POST(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { id: ticketId } = params;
+  const { id: ticketId } = await params;
 
   const ticket = await prisma.supportTicket.findUnique({
     where: { id: ticketId },

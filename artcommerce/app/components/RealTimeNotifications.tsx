@@ -6,7 +6,7 @@ import { useNotificationContext } from '../contexts/NotificationContext'
 
 export default function RealTimeNotifications() {
   const { user, loading } = useAuth()
-  const { notify, incrementUnread } = useNotificationContext()
+  const { addNotification } = useNotificationContext()
 
   useEffect(() => {
     // don't subscribe unless we're sure it's an admin
@@ -42,15 +42,14 @@ export default function RealTimeNotifications() {
     }) => {
       console.log('➡️  Received new-order at root:', data)
       
-      notify({
+      addNotification({
         title: `New Order #${data.id}`,
         body: `${data.customerName} ordered ${data.products.join(
           ', '
         )} for ₹${data.total.toFixed(2)}.`,
-        category: 'admin',
+        category: 'system',
         severity: 'info'
       })
-      incrementUnread()
     })
 
     // Low stock notification
@@ -60,13 +59,12 @@ export default function RealTimeNotifications() {
     }) => {
       console.log('➡️  Received low-stock at root:', data)
       
-      notify({
+      addNotification({
         title: `Low Stock: ${data.productName}`,
         body: `Only ${data.remaining} left.`,
-        category: 'admin',
+        category: 'system',
         severity: 'warning'
       })
-      incrementUnread()
     })
 
     // Out of stock notification
@@ -75,13 +73,12 @@ export default function RealTimeNotifications() {
     }) => {
       console.log('➡️  Received out-of-stock at root:', data)
       
-      notify({
+      addNotification({
         title: `Out of Stock: ${data.productName}`,
         body: `"${data.productName}" is now sold out.`,
-        category: 'admin',
+        category: 'system',
         severity: 'error'
       })
-      incrementUnread()
     })
 
     return () => {
@@ -89,7 +86,7 @@ export default function RealTimeNotifications() {
       pusherClient.unsubscribe('private-admin-channel')
       pusherClient.disconnect()
     }
-  }, [notify, incrementUnread, user, loading])
+  }, [addNotification, user, loading])
 
   return null
 }

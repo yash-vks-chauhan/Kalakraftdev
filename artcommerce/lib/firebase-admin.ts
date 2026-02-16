@@ -22,21 +22,38 @@ function loadServiceAccountConfig() {
   }
 }
 
+const firebaseInitError = new Error('Firebase Admin credentials are missing required fields')
+
 if (!admin.apps.length) {
   const config = loadServiceAccountConfig()
-  if (!config.projectId || !config.clientEmail || !config.privateKey) {
-    throw new Error('Firebase Admin credentials are missing required fields')
+  if (config.projectId && config.clientEmail && config.privateKey) {
+    admin.initializeApp({
+      credential: admin.credential.cert({
+        projectId: config.projectId,
+        clientEmail: config.clientEmail,
+        privateKey: config.privateKey,
+      }),
+    })
+  } else {
+    console.warn('Firebase Admin is not configured. Auth endpoints will return errors until credentials are set.')
   }
-
-  admin.initializeApp({
-    credential: admin.credential.cert({
-      projectId: config.projectId,
-      clientEmail: config.clientEmail,
-      privateKey: config.privateKey,
-    }),
-  })
 }
 
-export const auth = admin.auth()
-export const db = admin.firestore()
+const unconfiguredAuth = {
+  verifyIdToken: async () => {
+    throw firebaseInitError
+  },
+} as unknown as admin.auth.Auth
+
+const unconfiguredDb = {
+  collection: () => {
+    throw firebaseInitError
+  },
+} as unknown as admin.firestore.Firestore
+
+const hasFirebaseAdminConfig = admin.apps.length > 0
+
+export const auth = hasFirebaseAdminConfig ? admin.auth() : unconfiguredAuth
+export const db = hasFirebaseAdminConfig ? admin.firestore() : unconfiguredDb
 export const firebaseAdmin = admin
+export const isFirebaseAdminConfigured = hasFirebaseAdminConfig

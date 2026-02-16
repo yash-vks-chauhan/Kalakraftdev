@@ -1,10 +1,17 @@
 // Example of how to update the main Home component with optimized state management
 
-import { useTypingAnimation } from './hooks/useTypingAnimation'
-import { useAsyncState } from './hooks/useAsyncState'
-import BestSellersSection from './components/BestSellersSection'
+import { useRef, useState } from 'react'
+import { useTypingAnimation } from '../hooks/useTypingAnimation'
+import { useAsyncState } from '../hooks/useAsyncState'
+import BestSellersSection from '../components/BestSellersSection'
 
-export default function Home() {
+const styles: Record<string, string> = {
+  typingText: '',
+  cursor: '',
+  typing: '',
+}
+
+export default function OptimizedHomeComponent() {
   // Consolidated state management
   const messageState = useAsyncState<string | null>(null)
   const featuredProductsState = useAsyncState([])
