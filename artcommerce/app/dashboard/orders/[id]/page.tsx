@@ -51,8 +51,8 @@ interface Order {
   paymentStatus: string
   createdAt: string
   orderItems: OrderItem[]
-  orderNotes: OrderNote[];
-  user: { id: number; fullName: string; email: string };
+  orderNotes?: OrderNote[];
+  user: { id: string; fullName: string; email: string };
 }
 
 interface OrderNote {
@@ -86,16 +86,10 @@ export default function OrderDetailsPage() {
       const { order } = await res.json()
       setOrder(order)
       setNewStatus(order.status)
-      const notesRes = await fetch(`/api/orders/${params.id}/notes`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      if (notesRes.ok) {
-        const { notes } = await notesRes.json()
-        setNotes(notes)
-      }
+      setNotes(user?.role === 'admin' ? order.orderNotes ?? [] : [])
     }
     loadData()
-  }, [params.id, token, router])
+  }, [params.id, token, router, user?.role])
 
   async function handleStatusUpdate(e: React.FormEvent) {
     e.preventDefault()
@@ -350,27 +344,25 @@ export default function OrderDetailsPage() {
         </table>
       </section>
 
-      {/* ─── Notes & Audit Trail ──────────────────────────────────── */}
-      <section className={styles.notesSection}>
-        <h2 className={styles.sectionTitle}>Notes & Audit Trail</h2>
-        {(order.orderNotes?.length ?? 0) === 0 ? (
-          <p className={styles.noteText}>No notes yet.</p>
-        ) : (
-          <ul className={styles.noteList}>
-            {order.orderNotes.map(note => (
-              <li key={note.id} className={styles.noteItem}>
-                <p className={styles.noteText}>{note.text}</p>
-                <p className={styles.noteMeta}>
-                  — {note.author.fullName},
-                  {new Date(note.createdAt).toLocaleString()}
-                </p>
-              </li>
-            ))}
-          </ul>
-        )}
+      {user?.role === 'admin' && (
+        <section className={styles.notesSection}>
+          <h2 className={styles.sectionTitle}>Notes & Audit Trail</h2>
+          {notes.length === 0 ? (
+            <p className={styles.noteText}>No notes yet.</p>
+          ) : (
+            <ul className={styles.noteList}>
+              {notes.map(note => (
+                <li key={note.id} className={styles.noteItem}>
+                  <p className={styles.noteText}>{note.text}</p>
+                  <p className={styles.noteMeta}>
+                    — {note.author.fullName},
+                    {new Date(note.createdAt).toLocaleString()}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          )}
 
-        {/* Admin-only: add new note */}
-        {user?.role === 'admin' && (
           <form onSubmit={handleAddNote} className={styles.addNoteForm}>
             <input
               name="note"
@@ -387,8 +379,8 @@ export default function OrderDetailsPage() {
               Add Note
             </button>
           </form>
-        )}
-      </section>
+        </section>
+      )}
 
       <Link href="/dashboard/orders" className={styles.backLink}>
         ← Back to My Orders

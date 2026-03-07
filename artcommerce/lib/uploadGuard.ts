@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { AuthContext, getAuthContext } from './auth'
+import { getClientIp } from './rateLimit'
 import { requireAdminUser } from './session-auth'
 
 type RateBucket = {
@@ -95,9 +96,7 @@ function scanForMalware(buffer: Buffer): string | null {
 
 function getClientIdentifier(request: Request, auth?: AuthContext): string {
   if (auth?.userId) return auth.userId
-  const forwarded = request.headers.get('x-forwarded-for')
-  if (forwarded) return forwarded.split(',')[0]?.trim() || 'unknown'
-  return 'unknown'
+  return getClientIp(request)
 }
 
 function applyRateLimit(

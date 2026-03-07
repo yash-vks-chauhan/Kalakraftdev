@@ -2,7 +2,7 @@ import { Readable } from 'stream'
 import sharp from 'sharp'
 import cloudinary from './cloudinary'
 import { getImageKitClient, isImageKitConfigured } from './imagekit'
-import { sanitizeFilename, SIGNED_URL_TTL_SECONDS } from './uploadGuard'
+import { sanitizeFilename } from './uploadGuard'
 
 export type SupportAttachmentStorageProvider = 'cloudinary' | 'imagekit'
 
@@ -19,6 +19,17 @@ export type StoredSupportAttachment = {
 }
 
 export const MAX_SUPPORT_ATTACHMENT_DIMENSION = 1080
+const DEFAULT_SUPPORT_ATTACHMENT_URL_TTL_SECONDS = 5 * 60
+
+function getSupportAttachmentUrlTtlSeconds(): number {
+  const configured = Number(process.env.SUPPORT_ATTACHMENT_URL_TTL_SECONDS)
+  if (Number.isFinite(configured) && configured >= 60) {
+    return configured
+  }
+  return DEFAULT_SUPPORT_ATTACHMENT_URL_TTL_SECONDS
+}
+
+const SUPPORT_ATTACHMENT_URL_TTL_SECONDS = getSupportAttachmentUrlTtlSeconds()
 
 function isCloudinaryConfigured(): boolean {
   return Boolean(
@@ -37,7 +48,7 @@ function baseName(filename: string): string {
 }
 
 function buildCloudinaryUrl(publicId: string): string {
-  const expiresAt = Math.floor(Date.now() / 1000) + SIGNED_URL_TTL_SECONDS
+  const expiresAt = Math.floor(Date.now() / 1000) + SUPPORT_ATTACHMENT_URL_TTL_SECONDS
   return cloudinary.url(publicId, {
     secure: true,
     type: 'authenticated',
@@ -54,7 +65,7 @@ function buildImageKitUrl(filePath: string): string | null {
   return imagekit.url({
     path: filePath,
     signed: true,
-    expireSeconds: SIGNED_URL_TTL_SECONDS,
+    expireSeconds: SUPPORT_ATTACHMENT_URL_TTL_SECONDS,
   })
 }
 

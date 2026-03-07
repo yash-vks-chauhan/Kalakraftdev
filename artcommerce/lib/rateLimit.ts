@@ -16,6 +16,15 @@ type RateLimitResult = {
   retryAfterSeconds: number
 }
 
+const TRUSTED_IP_HEADERS = [
+  'cf-connecting-ip',
+  'x-vercel-forwarded-for',
+  'fly-client-ip',
+  'fastly-client-ip',
+  'x-real-ip',
+  'x-forwarded-for',
+]
+
 function cleanupExpired(now: number) {
   for (const [key, bucket] of buckets.entries()) {
     if (bucket.resetAt <= now) {
@@ -62,11 +71,37 @@ export function consumeRateLimit(key: string, config: RateLimitConfig): RateLimi
   }
 }
 
-export function getClientIp(request: Request): string {
-  const xff = request.headers.get('x-forwarded-for')
-  if (xff) {
-    const [first] = xff.split(',')
-    if (first?.trim()) return first.trim()
+function normalizeClientIp(raw: string | null): string | null {
+  if (!raw) return null
+
+  const candidate = raw.split(',')[0]?.trim()
+  if (!candidate) return null
+
+  if (/^\d{1,3}(?:\.\d{1,3}){3}:\d+$/.test(candidate)) {
+    return candidate.replace(/:\d+$/, '')
   }
-  return request.headers.get('x-real-ip') || 'unknown'
+
+  if (candidate.startsWith('[')) {
+    const closingBracket = candidate.indexOf(']')
+    if (closingBracket > 0) {
+      return candidate.slice(1, closingBracket)
+    }
+  }
+
+  return /^[A-Fa-f0-9:.]+$/.test(candidate) ? candidate : null
+}
+
+export function getClientIp(request: Request): string {
+  for (const header of TRUSTED_IP_HEADERS) {
+    const normalized = normalizeClientIp(request.headers.get(header))
+    if (normalized) {
+      return normalized
+    }
+  }
+
+  return 'unknown'
+}
+
+export function clearRateLimit(key: string) {
+  buckets.delete(key)
 }

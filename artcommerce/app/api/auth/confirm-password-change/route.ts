@@ -5,48 +5,12 @@ import { PASSWORD_POLICY_MESSAGE, isStrongPassword } from '../../../../lib/passw
 import { getAuthContext } from '../../../../lib/auth'
 import { getOtpSecretValidationError, hashOtpForScope } from '../../../../lib/otp-security'
 import prisma from '../../../../lib/prisma'
+import { clearRateLimit, consumeRateLimit, getClientIp } from '../../../../lib/rateLimit'
 
 export const runtime = 'nodejs'
 
 const VERIFY_WINDOW_MS = 10 * 60 * 1000
 const MAX_VERIFY_ATTEMPTS_PER_WINDOW = 10
-
-type RateLimitEntry = {
-  count: number
-  resetAt: number
-}
-
-const verifyAttemptRateLimit = new Map<string, RateLimitEntry>()
-
-function getClientIp(request: Request): string {
-  const forwardedFor = request.headers.get('x-forwarded-for')
-  if (forwardedFor) {
-    const [ip] = forwardedFor.split(',')
-    return ip?.trim() || 'unknown'
-  }
-  return request.headers.get('x-real-ip') || 'unknown'
-}
-
-function consumeRateLimit(key: string): boolean {
-  const now = Date.now()
-  const current = verifyAttemptRateLimit.get(key)
-
-  if (!current || current.resetAt <= now) {
-    verifyAttemptRateLimit.set(key, {
-      count: 1,
-      resetAt: now + VERIFY_WINDOW_MS,
-    })
-    return true
-  }
-
-  if (current.count >= MAX_VERIFY_ATTEMPTS_PER_WINDOW) {
-    return false
-  }
-
-  current.count += 1
-  verifyAttemptRateLimit.set(key, current)
-  return true
-}
 
 export async function POST(request: Request) {
   const otpSecretError = getOtpSecretValidationError()
@@ -98,7 +62,11 @@ export async function POST(request: Request) {
   const rateLimitScope = authUserId ? `user:${authUserId}` : `email:${email}`
   const rateLimitKey = `password-reset-verify:${getClientIp(request)}:${rateLimitScope}`
 
-  if (!consumeRateLimit(rateLimitKey)) {
+  const limit = consumeRateLimit(rateLimitKey, {
+    windowMs: VERIFY_WINDOW_MS,
+    max: MAX_VERIFY_ATTEMPTS_PER_WINDOW,
+  })
+  if (!limit.allowed) {
     return NextResponse.json(
       { error: 'Too many attempts. Please try again later.' },
       { status: 429 }
@@ -130,8 +98,7 @@ export async function POST(request: Request) {
     )
   }
 
-  // Successful verification resets the attempt window for this scope.
-  verifyAttemptRateLimit.delete(rateLimitKey)
+  clearRateLimit(rateLimitKey)
 
   const hash = await bcrypt.hash(newPassword, 10)
   await prisma.user.update({

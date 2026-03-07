@@ -33,6 +33,37 @@ function getAllowedHosts(): Set<string> {
   return hosts
 }
 
+function getAllowedLegacyBlobHosts(): Set<string> {
+  return new Set(
+    (process.env.SUPPORT_ATTACHMENT_LEGACY_HOSTS || '')
+      .split(',')
+      .map((value) => value.trim().toLowerCase())
+      .filter(Boolean),
+  )
+}
+
+function normalizeStorageKey(value: string): string {
+  return value.trim()
+}
+
+function hasTrustedManagedStorage(
+  provider: SupportAttachmentStorageProvider,
+  storageKey: string,
+): boolean {
+  const normalized = normalizeStorageKey(storageKey)
+  if (!normalized || normalized.includes('..')) return false
+
+  if (provider === 'cloudinary') {
+    return normalized.startsWith('support/')
+  }
+
+  if (provider === 'imagekit') {
+    return normalized.startsWith('/support/') || normalized.startsWith('support/')
+  }
+
+  return false
+}
+
 function isTrustedLegacyAttachmentUrl(value: string): boolean {
   if (!value) return false
   if (value.startsWith('/api/uploads/')) return true
@@ -46,7 +77,7 @@ function isTrustedLegacyAttachmentUrl(value: string): boolean {
       return parsed.pathname.startsWith('/api/uploads/')
     }
 
-    if (parsed.host.endsWith('.public.blob.vercel-storage.com')) return true
+    if (getAllowedLegacyBlobHosts().has(parsed.host.toLowerCase())) return true
 
     if (parsed.host === 'res.cloudinary.com') {
       const cloudName = process.env.CLOUDINARY_CLOUD_NAME
@@ -90,11 +121,13 @@ export function sanitizeSupportAttachments(raw: any): SupportAttachment[] {
           : undefined
       const storageKey =
         typeof att.storageKey === 'string' && att.storageKey.trim()
-          ? att.storageKey.trim()
+          ? normalizeStorageKey(att.storageKey)
           : undefined
 
       const resolvedUrl =
-        storageProvider && storageKey ? resolveSupportAttachmentUrl(storageProvider, storageKey) : null
+        storageProvider && storageKey && hasTrustedManagedStorage(storageProvider, storageKey)
+          ? resolveSupportAttachmentUrl(storageProvider, storageKey)
+          : null
       const legacyUrl =
         typeof att.url === 'string' && isTrustedLegacyAttachmentUrl(att.url) ? att.url : null
       const url = resolvedUrl || legacyUrl
@@ -142,7 +175,7 @@ export function validateSupportAttachments(
     const hasManagedStorage =
       (att.storageProvider === 'cloudinary' || att.storageProvider === 'imagekit') &&
       typeof att.storageKey === 'string' &&
-      att.storageKey.trim().length > 0
+      hasTrustedManagedStorage(att.storageProvider, att.storageKey)
     const hasLocalSignedUrl = typeof att.url === 'string' && isLocalSignedAttachmentUrl(att.url)
 
     if (!hasManagedStorage && !hasLocalSignedUrl) {

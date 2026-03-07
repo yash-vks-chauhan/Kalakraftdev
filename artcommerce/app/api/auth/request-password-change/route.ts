@@ -6,6 +6,7 @@ import { getAuthContext } from '../../../../lib/auth'
 import { getSecureMailer } from '../../../../lib/mailer'
 import { getOtpSecretValidationError, hashOtpForScope } from '../../../../lib/otp-security'
 import prisma from '../../../../lib/prisma'
+import { consumeRateLimit, getClientIp } from '../../../../lib/rateLimit'
 
 export const runtime = 'nodejs'
 
@@ -16,43 +17,6 @@ const REQUEST_WINDOW_MS = 15 * 60 * 1000
 const MAX_REQUESTS_PER_WINDOW = 5
 
 const generateOtp = customAlphabet(OTP_ALPHABET, OTP_LENGTH)
-
-type RateLimitEntry = {
-  count: number
-  resetAt: number
-}
-
-const resetRequestRateLimit = new Map<string, RateLimitEntry>()
-
-function getClientIp(request: Request): string {
-  const forwardedFor = request.headers.get('x-forwarded-for')
-  if (forwardedFor) {
-    const [ip] = forwardedFor.split(',')
-    return ip?.trim() || 'unknown'
-  }
-  return request.headers.get('x-real-ip') || 'unknown'
-}
-
-function consumeRateLimit(key: string): boolean {
-  const now = Date.now()
-  const current = resetRequestRateLimit.get(key)
-
-  if (!current || current.resetAt <= now) {
-    resetRequestRateLimit.set(key, {
-      count: 1,
-      resetAt: now + REQUEST_WINDOW_MS,
-    })
-    return true
-  }
-
-  if (current.count >= MAX_REQUESTS_PER_WINDOW) {
-    return false
-  }
-
-  current.count += 1
-  resetRequestRateLimit.set(key, current)
-  return true
-}
 
 export async function POST(request: Request) {
   const otpSecretError = getOtpSecretValidationError()
@@ -89,7 +53,11 @@ export async function POST(request: Request) {
   const rateLimitKey = `password-reset:${getClientIp(request)}:${rateLimitScope}`
 
   // Return 200 for public requests to avoid account enumeration.
-  if (!consumeRateLimit(rateLimitKey)) {
+  const limit = consumeRateLimit(rateLimitKey, {
+    windowMs: REQUEST_WINDOW_MS,
+    max: MAX_REQUESTS_PER_WINDOW,
+  })
+  if (!limit.allowed) {
     return NextResponse.json({ ok: true })
   }
 

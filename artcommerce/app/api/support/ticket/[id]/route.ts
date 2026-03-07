@@ -61,6 +61,12 @@ export async function POST(
   if (!isAllowedOrigin(request)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
+  if (auth.role === 'admin') {
+    return NextResponse.json(
+      { error: 'Admins must use the admin reply route for support tickets' },
+      { status: 403 },
+    );
+  }
 
   const userEmail =
     auth.email ||

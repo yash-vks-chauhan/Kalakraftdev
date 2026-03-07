@@ -75,19 +75,23 @@ export async function GET(
           }
         }
       },
-      orderNotes: {
-        select: {
-          id: true,
-          text: true, // whatever your note field is called
-          createdAt: true,
-          author: {
-            select: {
-              id: true,
-              fullName: true
+      ...(payload.role === 'admin'
+        ? {
+            orderNotes: {
+              select: {
+                id: true,
+                text: true,
+                createdAt: true,
+                author: {
+                  select: {
+                    id: true,
+                    fullName: true
+                  }
+                }
+              }
             }
           }
-        }
-      }
+        : {})
     }
   })
 

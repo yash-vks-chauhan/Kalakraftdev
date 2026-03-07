@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server'
 import prisma from '../../../../../lib/prisma'
+import { isAllowedOrigin } from '../../../../../lib/security'
 import { getAuthenticatedUser } from '../../../../../lib/session-auth'
+
+const MAX_NOTE_LENGTH = 2000
 
 async function getAccessibleOrder(
   orderId: number,
@@ -44,6 +47,9 @@ export async function GET(
   if (!access.ok) {
     return NextResponse.json({ error: access.error }, { status: access.status })
   }
+  if (payload.role !== 'admin') {
+    return NextResponse.json({ notes: [] })
+  }
 
   const notes = await prisma.orderNote.findMany({
     where: { orderId },
@@ -73,12 +79,21 @@ export async function POST(
   if (!access.ok) {
     return NextResponse.json({ error: access.error }, { status: access.status })
   }
+  if (!isAllowedOrigin(req)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
 
   const body = await req.json().catch(() => ({}))
   const text = typeof body?.text === 'string' ? body.text.trim() : ''
 
   if (!text) {
     return NextResponse.json({ error: 'Empty note' }, { status: 400 })
+  }
+  if (text.length > MAX_NOTE_LENGTH) {
+    return NextResponse.json(
+      { error: `Note must be ${MAX_NOTE_LENGTH} characters or fewer` },
+      { status: 400 },
+    )
   }
 
   const note = await prisma.orderNote.create({
