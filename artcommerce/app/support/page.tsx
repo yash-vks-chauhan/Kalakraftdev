@@ -17,6 +17,18 @@ type ValidatedFile = {
   height: number;
 };
 
+type Attachment = {
+  url: string;
+  type: 'image';
+  mimeType?: string;
+  size?: number;
+  width?: number;
+  height?: number;
+  name?: string;
+  storageProvider?: 'cloudinary' | 'imagekit';
+  storageKey?: string;
+};
+
 const MAX_ATTACHMENTS = 4;
 const MAX_FILE_SIZE_BYTES = 3 * 1024 * 1024; // 3MB
 const MAX_DIMENSION = 1080;
@@ -136,29 +148,50 @@ export default function SupportPage() {
     }
 
     try {
-      const formData = new FormData();
-      formData.append("name", form.name);
-      formData.append("email", form.email);
+      const attachments: Attachment[] = [];
+      for (const { file } of files) {
+        const uploadForm = new FormData();
+        uploadForm.append("file", file);
+
+        const uploadResponse = await fetch("/api/support/attachments", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+          body: uploadForm,
+        });
+
+        const uploadData = await uploadResponse.json().catch(() => ({}));
+        if (!uploadResponse.ok || !uploadData.url) {
+          throw new Error(uploadData.error || "Failed to upload attachment");
+        }
+
+        attachments.push(uploadData as Attachment);
+      }
 
       const selectedProduct = products.find((p) => p.id === selectedProductId);
       const autoSubject = issueCategory && selectedProduct
         ? `[${issueCategory}] ${selectedProduct.name}`
         : form.subject || `Support Request: ${issueCategory}`;
 
-      formData.append("subject", autoSubject);
-      formData.append("message", form.message);
-      if (issueCategory) formData.append("issueCategory", issueCategory);
-      if (selectedProductId) formData.append("productId", String(selectedProductId));
-      files.forEach(({ file }) => formData.append("files", file));
-
       const response = await fetch("/api/support/ticket", {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name: form.name,
+          email: form.email,
+          subject: autoSubject,
+          message: form.message,
+          issueCategory,
+          productId: selectedProductId,
+          attachments,
+        }),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to submit ticket");
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to submit ticket");
       }
 
       const data = await response.json();

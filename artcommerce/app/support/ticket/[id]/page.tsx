@@ -12,6 +12,12 @@ type Attachment = {
   url: string;
   type?: "image" | "video" | string;
   mimeType?: string;
+  size?: number;
+  width?: number;
+  height?: number;
+  name?: string;
+  storageProvider?: "cloudinary" | "imagekit";
+  storageKey?: string;
 };
 
 type Message = {
@@ -156,7 +162,7 @@ export default function TicketThread() {
       for (const file of files) {
         const fd = new FormData()
         fd.append("file", file)
-        const res = await fetch("/api/uploads", {
+        const res = await fetch("/api/support/attachments", {
           method: "POST",
           body: fd,
           headers: { Authorization: `Bearer ${token}` }
@@ -165,7 +171,7 @@ export default function TicketThread() {
         if (!res.ok || !data.url) {
           throw new Error(data.error || "Failed to upload image");
         }
-        attachments.push({ url: data.url, type: 'image', mimeType: data.mimeType || file.type })
+        attachments.push(data as Attachment)
       }
 
       const res = await fetch(`/api/support/ticket/${id}`, {

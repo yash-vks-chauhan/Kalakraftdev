@@ -1,31 +1,17 @@
 // File: app/api/cart/route.ts
 import { NextResponse } from 'next/server'
 import prisma from '../../../lib/prisma'
-import jwt from 'jsonwebtoken'
-
-const JWT_SECRET = process.env.JWT_SECRET!
-
-function getUserId(request: Request): string | null {
-  const authHeader = request.headers.get('Authorization') || ''
-  const token = authHeader.replace('Bearer ', '')
-  if (!token) return null
-  try {
-    const payload: any = jwt.verify(token, JWT_SECRET)
-    return payload.userId
-  } catch {
-    return null
-  }
-}
+import { getAuthenticatedUser } from '../../../lib/session-auth'
 
 export async function GET(request: Request) {
-  const userId = getUserId(request)
-  if (!userId) {
+  const authUser = await getAuthenticatedUser(request)
+  if (!authUser) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   // Fetch that user's cart items
   const cartItems = await prisma.cartItem.findMany({
-    where: { userId },
+    where: { userId: authUser.id },
     include: {
       product: {
         select: {
@@ -43,8 +29,8 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const userId = getUserId(request)
-  if (!userId) {
+  const authUser = await getAuthenticatedUser(request)
+  if (!authUser) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -75,7 +61,7 @@ export async function POST(request: Request) {
 
   // Check if an item already exists in the cart
   const existing = await prisma.cartItem.findFirst({
-    where: { userId, productId },
+    where: { userId: authUser.id, productId },
   })
 
   let cartItem
@@ -96,7 +82,7 @@ export async function POST(request: Request) {
   } else {
     // Insert a brand‐new cartItem
     cartItem = await prisma.cartItem.create({
-      data: { userId, productId, quantity },
+      data: { userId: authUser.id, productId, quantity },
       include: { product: true },
     })
   }
@@ -105,8 +91,8 @@ export async function POST(request: Request) {
 }
 
 export async function PUT(request: Request) {
-  const userId = getUserId(request)
-  if (!userId) {
+  const authUser = await getAuthenticatedUser(request)
+  if (!authUser) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -124,7 +110,7 @@ export async function PUT(request: Request) {
   const existing = await prisma.cartItem.findUnique({
     where: { id: cartItemId },
   })
-  if (!existing || existing.userId !== userId) {
+  if (!existing || existing.userId !== authUser.id) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
@@ -138,8 +124,8 @@ export async function PUT(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  const userId = getUserId(request)
-  if (!userId) {
+  const authUser = await getAuthenticatedUser(request)
+  if (!authUser) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -152,7 +138,7 @@ export async function DELETE(request: Request) {
   const existing = await prisma.cartItem.findUnique({
     where: { id: cartItemId },
   })
-  if (!existing || existing.userId !== userId) {
+  if (!existing || existing.userId !== authUser.id) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 

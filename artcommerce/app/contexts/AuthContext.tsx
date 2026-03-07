@@ -12,6 +12,7 @@ import React, {
 import { useRouter } from 'next/navigation'
 import { signOut as firebaseSignOut } from 'firebase/auth'
 import { auth as firebaseAuth } from '../firebase/client'
+import { SESSION_AUTH_MARKER } from '../../lib/auth-session-marker'
 
 export interface Order {
   id: number
@@ -59,6 +60,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setError(null)
   }, [])
 
+  const markSessionAuthenticated = useCallback(() => {
+    setToken(SESSION_AUTH_MARKER)
+  }, [])
+
   const refreshToken = useCallback(async (): Promise<string | null> => {
     try {
       const res = await fetch('/api/auth/refresh', {
@@ -72,52 +77,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return null
       }
 
-      const data = await res.json().catch(() => ({}))
-      const newToken = typeof data.token === 'string' ? data.token : null
-      if (!newToken) {
-        clearAuthState()
-        return null
-      }
-
-      setToken(newToken)
-      return newToken
+      markSessionAuthenticated()
+      return SESSION_AUTH_MARKER
     } catch (err) {
       console.error('Failed to refresh token:', err)
       clearAuthState()
       return null
     }
-  }, [clearAuthState])
+  }, [clearAuthState, markSessionAuthenticated])
 
   const fetchProfile = useCallback(
-    async (currentToken?: string | null) => {
+    async (_currentToken?: string | null) => {
       setLoading(true)
-      let accessToken = currentToken || token
-
-      if (!accessToken) {
-        accessToken = await refreshToken()
-        if (!accessToken) {
-          setLoading(false)
-          return
-        }
-      }
 
       try {
-        let res = await fetch('/api/auth/me', {
-          headers: { Authorization: `Bearer ${accessToken}` },
-          credentials: 'include',
-        })
+        const requestProfile = () =>
+          fetch('/api/auth/me', {
+            credentials: 'include',
+          })
+
+        let res = await requestProfile()
 
         if (res.status === 401) {
           const refreshed = await refreshToken()
           if (!refreshed) {
-            setLoading(false)
             return
           }
-          accessToken = refreshed
-          res = await fetch('/api/auth/me', {
-            headers: { Authorization: `Bearer ${accessToken}` },
-            credentials: 'include',
-          })
+          res = await requestProfile()
         }
 
         if (!res.ok) {
@@ -131,7 +117,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return
         }
 
-        setToken(accessToken)
+        markSessionAuthenticated()
         setUser(data.user)
       } catch (err) {
         console.error('Fetch profile error:', err)
@@ -140,7 +126,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setLoading(false)
       }
     },
-    [token, refreshToken, clearAuthState]
+    [refreshToken, clearAuthState, markSessionAuthenticated]
   )
 
   const logout = useCallback(async () => {
@@ -190,18 +176,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const data = await res.json().catch(() => ({}))
         if (!res.ok) throw new Error(data.error || 'Signup failed')
 
-        if (typeof data.token === 'string') {
-          setToken(data.token)
-          await fetchProfile(data.token)
-        } else {
-          await fetchProfile(null)
-        }
+        markSessionAuthenticated()
+        await fetchProfile(SESSION_AUTH_MARKER)
         router.replace('/')
       } finally {
         setLoading(false)
       }
     },
-    [router, fetchProfile]
+    [router, fetchProfile, markSessionAuthenticated]
   )
 
   const login = useCallback(async (email: string, password: string) => {
@@ -225,14 +207,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error(data.error || 'Login failed. Please try again')
       }
 
-      if (typeof data.token === 'string') {
-        setToken(data.token)
-      }
-      if (data.user) {
-        setUser(data.user)
-      } else {
-        await fetchProfile(data.token || null)
-      }
+      markSessionAuthenticated()
+      await fetchProfile(SESSION_AUTH_MARKER)
       setError(null)
     } catch (err: any) {
       const errorMessage = err.message || 'Login failed. Please try again'
@@ -241,7 +217,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false)
     }
-  }, [clearAuthState, fetchProfile])
+  }, [clearAuthState, fetchProfile, markSessionAuthenticated])
 
   const loginWithFirebaseToken = useCallback(async (idToken: string) => {
     setLoading(true)
@@ -255,17 +231,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data.error || 'Firebase login failed')
 
-      if (typeof data.token === 'string') {
-        setToken(data.token)
-      }
-      if (data.user) setUser(data.user)
-      else await fetchProfile(data.token || null)
+      markSessionAuthenticated()
+      await fetchProfile(SESSION_AUTH_MARKER)
 
       router.replace('/')
     } finally {
       setLoading(false)
     }
-  }, [fetchProfile, router])
+  }, [fetchProfile, router, markSessionAuthenticated])
 
   const contextValue = useMemo(
     () => ({

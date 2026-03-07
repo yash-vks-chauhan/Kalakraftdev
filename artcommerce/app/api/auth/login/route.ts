@@ -97,7 +97,7 @@ export async function POST(request: Request) {
       )
     }
 
-    const token = signAccessToken({
+    const accessToken = signAccessToken({
       id: user.id,
       email: user.email,
       role: user.role,
@@ -112,11 +112,10 @@ export async function POST(request: Request) {
         avatarUrl: user.avatarUrl,
         role: user.role,
       },
-      token,
     })
 
     setAuthCookies(response, {
-      accessToken: token,
+      accessToken,
       refreshToken: refresh.refreshToken,
     })
 

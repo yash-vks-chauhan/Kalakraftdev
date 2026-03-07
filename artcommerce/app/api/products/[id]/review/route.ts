@@ -1,21 +1,7 @@
 import { NextResponse } from 'next/server'
 import prisma from '../../../../../lib/prisma'
 import { getServerSession } from 'next-auth'
-import jwt from 'jsonwebtoken'
-
-const JWT_SECRET = process.env.JWT_SECRET!
-
-function getUserIdFromToken(request: Request): string | null {
-  const authHeader = request.headers.get('Authorization') || ''
-  const token = authHeader.replace('Bearer ', '')
-  if (!token) return null
-  try {
-    const payload: any = jwt.verify(token, JWT_SECRET)
-    return payload.userId
-  } catch {
-    return null
-  }
-}
+import { getAuthenticatedUser } from '../../../../../lib/session-auth'
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -50,14 +36,13 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
 }
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  // First try to authenticate via JWT (used by most of our client calls)
-  const tokenUserId = getUserIdFromToken(req)
+  const authUser = await getAuthenticatedUser(req)
 
   // Fallback to Next-Auth session cookie (used when browsing without the custom AuthContext)
-  const session = await getServerSession()
+  const session = authUser ? null : await getServerSession()
 
   // @ts-ignore - Handle session user ID
-  const userId = tokenUserId || session?.user?.id
+  const userId = authUser?.id || session?.user?.id
 
   if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

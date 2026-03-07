@@ -12,6 +12,12 @@ interface Attachment {
   url: string;
   type?: "image" | "video" | string;
   mimeType?: string;
+  size?: number;
+  width?: number;
+  height?: number;
+  name?: string;
+  storageProvider?: "cloudinary" | "imagekit";
+  storageKey?: string;
 }
 
 interface Message {
@@ -173,7 +179,7 @@ export default function TicketDetailPage() {
       for (const file of files) {
         const fd = new FormData();
         fd.append("file", file);
-        const resUp = await fetch("/api/uploads", {
+        const resUp = await fetch("/api/support/attachments", {
           method: "POST",
           body: fd,
           headers: token ? { Authorization: `Bearer ${token}` } : undefined,
@@ -182,11 +188,7 @@ export default function TicketDetailPage() {
         if (!resUp.ok || !uploadJson.url) {
           throw new Error(uploadJson.error || "Failed to upload image.");
         }
-        attachments.push({
-          url: uploadJson.url,
-          type: "image",
-          mimeType: uploadJson.mimeType || file.type,
-        });
+        attachments.push(uploadJson as Attachment);
       }
 
       // 2) Send reply with attachments and status update

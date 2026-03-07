@@ -2,6 +2,7 @@ import { createHash, randomBytes } from 'crypto'
 import jwt from 'jsonwebtoken'
 import { NextResponse } from 'next/server'
 import prisma from './prisma'
+import { SESSION_AUTH_MARKER } from './auth-session-marker'
 
 const JWT_SECRET = process.env.JWT_SECRET
 const JWT_ISSUER = process.env.JWT_ISSUER || 'artcommerce-api'
@@ -38,13 +39,20 @@ function getCookieFromHeader(cookieHeader: string, name: string): string | null 
   return match ? decodeURIComponent(match[1]) : null
 }
 
-export function getTokenFromRequest(request: Request): string | null {
-  const authHeader = request.headers.get('authorization') || request.headers.get('Authorization') || ''
-  const bearer = authHeader.replace(/^Bearer\s+/i, '').trim()
-  if (bearer) return bearer
-
+export function getAccessCookieTokenFromRequest(request: Request): string | null {
   const cookieHeader = request.headers.get('cookie') || ''
   return getCookieFromHeader(cookieHeader, ACCESS_COOKIE_NAME)
+}
+
+export function getBearerTokenFromRequest(request: Request): string | null {
+  const authHeader = request.headers.get('authorization') || request.headers.get('Authorization') || ''
+  const bearer = authHeader.replace(/^Bearer\s+/i, '').trim()
+  if (!bearer || bearer === SESSION_AUTH_MARKER) return null
+  return bearer
+}
+
+export function getTokenFromRequest(request: Request): string | null {
+  return getAccessCookieTokenFromRequest(request) || getBearerTokenFromRequest(request)
 }
 
 export function getRefreshTokenFromRequest(request: Request): string | null {
@@ -98,6 +106,21 @@ export function verifyAccessToken(token: string): AccessTokenPayload | null {
       return null
     }
   }
+}
+
+export function verifyRequestAccessToken(request: Request): AccessTokenPayload | null {
+  const candidates = [getAccessCookieTokenFromRequest(request), getBearerTokenFromRequest(request)]
+    .filter((token): token is string => Boolean(token))
+    .filter((token, index, allTokens) => allTokens.indexOf(token) === index)
+
+  for (const token of candidates) {
+    const payload = verifyAccessToken(token)
+    if (payload?.userId) {
+      return payload
+    }
+  }
+
+  return null
 }
 
 function hashRefreshToken(raw: string): string {
@@ -223,10 +246,7 @@ export function clearAuthCookies(response: NextResponse) {
 }
 
 export async function getAuthenticatedUser(request: Request): Promise<UserForToken | null> {
-  const token = getTokenFromRequest(request)
-  if (!token) return null
-
-  const payload = verifyAccessToken(token)
+  const payload = verifyRequestAccessToken(request)
   if (!payload?.userId) return null
 
   const user = await prisma.user.findUnique({

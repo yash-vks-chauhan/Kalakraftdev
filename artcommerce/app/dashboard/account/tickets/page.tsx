@@ -2,7 +2,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useFirebaseAuth } from '../../../contexts/FirebaseAuthContext';
+import { useAuth } from '../../../contexts/AuthContext';
 
 type Ticket = {
   id: string;
@@ -11,21 +11,24 @@ type Ticket = {
 };
 
 export default function MyTicketsPage() {
-  const { user } = useFirebaseAuth();
+  const { user, loading: authLoading } = useAuth();
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (authLoading) {
+      return;
+    }
+
     if (!user) {
       setLoading(false);
       return;
     }
     (async () => {
       try {
-        const token = await user.getIdToken();
         const res = await fetch('/api/support/my-tickets', {
-          headers: { Authorization: `Bearer ${token}` },
+          credentials: 'include',
         });
         if (!res.ok) throw new Error('Failed to fetch tickets');
         const data = await res.json();
@@ -37,7 +40,7 @@ export default function MyTicketsPage() {
         setLoading(false);
       }
     })();
-  }, [user]);
+  }, [authLoading, user]);
 
   if (loading) return <p>Loading your tickets…</p>;
   if (error) return <p className="text-red-600">{error}</p>;

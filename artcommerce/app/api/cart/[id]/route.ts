@@ -1,32 +1,15 @@
 // File: app/api/cart/[id]/route.ts
 import { NextResponse } from 'next/server'
 import prisma from '../../../../lib/prisma'
-import jwt from 'jsonwebtoken'
-
-const JWT_SECRET = process.env.JWT_SECRET!
-
-// Helper: extract userId from the JWT in the Authorization header
-function getUserIdFromRequest(request: Request): string | null {
-  const header = request.headers.get('Authorization') || ''
-  const token = header.replace('Bearer ', '')
-  if (!token) return null
-
-  try {
-    // Assuming your token payload has { userId: string, ... }
-    const payload = jwt.verify(token, JWT_SECRET) as { userId: string }
-    return payload.userId
-  } catch {
-    return null
-  }
-}
+import { getAuthenticatedUser } from '../../../../lib/session-auth'
 
 // PUT /api/cart/[id] (id is cartItemId)
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const userId = getUserIdFromRequest(request)
-  if (!userId) {
+  const authUser = await getAuthenticatedUser(request)
+  if (!authUser) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -57,7 +40,7 @@ export async function PUT(
     }
   })
   
-  if (!existing || existing.userId !== userId) {
+  if (!existing || existing.userId !== authUser.id) {
     return NextResponse.json({ error: 'Not Found' }, { status: 404 })
   }
   
@@ -95,8 +78,8 @@ export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const userId = getUserIdFromRequest(request)
-  if (!userId) {
+  const authUser = await getAuthenticatedUser(request)
+  if (!authUser) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -111,7 +94,7 @@ export async function DELETE(
   const existing = await prisma.cartItem.findUnique({
     where: { id: cartItemId },
   })
-  if (!existing || existing.userId !== userId) {
+  if (!existing || existing.userId !== authUser.id) {
     return NextResponse.json({ error: 'Not Found' }, { status: 404 })
   }
 

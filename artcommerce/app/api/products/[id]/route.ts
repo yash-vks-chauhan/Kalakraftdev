@@ -35,14 +35,7 @@ export async function GET(
 
     return NextResponse.json({ product })
   } catch (err: any) {
-    // Log the full error for debugging
-    console.error('GET /api/products/[id] error (full):', err)
-    if (err?.code) {
-      console.error('Prisma error code:', err.code)
-    }
-    return NextResponse.json(
-      { error: `Server error: ${err.message}` },
-      { status: 500 }
-    )
+    console.error('GET /api/products/[id] error:', err)
+    return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
 }

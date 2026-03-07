@@ -20,11 +20,6 @@ export default function SignupPage() {
   const [formLoading, setFormLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  console.log('SignupPage: authLoading', authLoading)
-  console.log('SignupPage: firebaseLoading', firebaseLoading)
-  console.log('SignupPage: authUser', authUser)
-  console.log('SignupPage: firebaseUser', firebaseUser)
-
   useEffect(() => {
     if (!authLoading && authUser) {
       router.replace('/')

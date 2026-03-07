@@ -3,36 +3,16 @@ import { NextResponse } from 'next/server';
 import prisma from '../../../../lib/prisma';
 import { randomUUID } from 'crypto';
 import { getAuthContext } from '../../../../lib/auth';
-import { put } from '@vercel/blob';
-import { sanitizeFilename } from '@/lib/uploadGuard';
 import { isAllowedOrigin } from '@/lib/security';
-import { sanitizeSupportAttachments } from '@/lib/supportAttachments';
+import { validateSupportAttachments } from '@/lib/supportAttachments';
+import { storeSupportAttachment } from '@/lib/supportUploadStorage';
+import { consumeRateLimit, getClientIp } from '@/lib/rateLimit';
+import { validateUploadBuffer } from '@/lib/uploadGuard';
 
-const MAX_ATTACHMENTS = 4;
-const MAX_ATTACHMENT_SIZE_BYTES = 3 * 1024 * 1024; // 3MB
-const MAX_ATTACHMENT_DIMENSION = 1080;
-
-function validateAttachments(attachments: any[]) {
-  if (!Array.isArray(attachments)) return 'Attachments must be an array';
-  if (attachments.length > MAX_ATTACHMENTS) return `Maximum ${MAX_ATTACHMENTS} images allowed`;
-  for (const att of attachments) {
-    if (!att || typeof att !== 'object') return 'Invalid attachment payload';
-    if (!att.url || typeof att.url !== 'string') return 'Each attachment must include a URL';
-    if (att.type && typeof att.type === 'string' && !att.type.startsWith('image')) {
-      return 'Only image attachments are allowed';
-    }
-    if (typeof att.size === 'number' && att.size > MAX_ATTACHMENT_SIZE_BYTES) {
-      return 'Each image must be 3MB or smaller';
-    }
-    if (typeof att.width === 'number' && att.width > MAX_ATTACHMENT_DIMENSION) {
-      return 'Images must be at most 1080px in width';
-    }
-    if (typeof att.height === 'number' && att.height > MAX_ATTACHMENT_DIMENSION) {
-      return 'Images must be at most 1080px in height';
-    }
-  }
-  return null;
-}
+const TICKET_WINDOW_MS = 15 * 60 * 1000;
+const MAX_TICKETS_PER_WINDOW = 5;
+const MAX_SUBJECT_LENGTH = 200;
+const MAX_MESSAGE_LENGTH = 5000;
 
 export async function POST(request: Request) {
   const auth = getAuthContext(request);
@@ -52,6 +32,17 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
   const authenticatedName = user?.fullName;
+  const clientIp = getClientIp(request);
+  const limit = consumeRateLimit(`support:ticket:create:${auth.userId}:ip:${clientIp}`, {
+    windowMs: TICKET_WINDOW_MS,
+    max: MAX_TICKETS_PER_WINDOW,
+  });
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { error: 'Too many support requests. Please try again later.' },
+      { status: 429 },
+    );
+  }
 
   // Detect if multipart or JSON
   const contentType = request.headers.get('content-type') || '';
@@ -69,37 +60,48 @@ export async function POST(request: Request) {
     issueCategory = (form.get('issueCategory') as string) || null;
     productId = form.get('productId') ? Number(form.get('productId')) : null;
 
-    const fileBlobs = form.getAll('files') as File[];
-    const access = 'public' as const;
-    const ownerSegment = sanitizeFilename(auth.userId);
-    for (const file of fileBlobs.slice(0, MAX_ATTACHMENTS)) {
-      if (!file.type?.startsWith('image/')) {
-        return NextResponse.json({ error: 'Only image attachments are allowed' }, { status: 400 });
-      }
-      if (file.size > MAX_ATTACHMENT_SIZE_BYTES) {
-        return NextResponse.json({ error: 'Each image must be 3MB or smaller' }, { status: 400 });
+    const fileBlobs = (form.getAll('files') as File[]).slice(0, 4);
+    for (const file of fileBlobs) {
+      const buffer = Buffer.from(await file.arrayBuffer());
+      const validated = validateUploadBuffer({
+        buffer,
+        filename: file.name || 'attachment',
+        mimeFromHeader: file.type || '',
+        maxSizeBytes: 3 * 1024 * 1024,
+      });
+
+      if ('response' in validated) {
+        return validated.response;
       }
 
-      const buffer = Buffer.from(await file.arrayBuffer());
-      const safeName = sanitizeFilename(file.name || 'attachment');
-      const uniqueFilename = `${ownerSegment}/${Date.now()}-${safeName}`;
-      let blob;
       try {
-        blob = await put(uniqueFilename, buffer, {
-          access,
-          contentType: file.type || 'image/*',
-        });
+        attachments.push(
+          await storeSupportAttachment({
+            buffer: validated.upload.buffer,
+            filename: validated.upload.filename,
+            mimeType: validated.upload.mimeType,
+            userId: auth.userId,
+          }),
+        );
       } catch (err) {
         console.error('Support ticket attachment upload failed', err);
-        return NextResponse.json({ error: 'Failed to upload attachment' }, { status: 500 });
+        const message = err instanceof Error ? err.message : ''
+        const status = /not configured/i.test(message)
+          ? 503
+          : /1080px/i.test(message)
+            ? 400
+            : 500
+        return NextResponse.json(
+          {
+            error: /not configured/i.test(message)
+              ? 'Support attachments are temporarily unavailable'
+              : /1080px/i.test(message)
+                ? message
+              : 'Failed to upload attachment',
+          },
+          { status },
+        );
       }
-      attachments.push({
-        url: blob.url,
-        type: 'image',
-        size: buffer.byteLength,
-        name: safeName,
-        mimeType: file.type || 'image/*',
-      });
     }
   } else {
     // Fallback to raw JSON body
@@ -107,21 +109,45 @@ export async function POST(request: Request) {
     ({ name, subject, message, attachments = [], issueCategory = null, productId = null } = body);
   }
 
-  const attachmentError = validateAttachments(attachments);
-  if (attachmentError) {
-    return NextResponse.json({ error: attachmentError }, { status: 400 });
+  if (!subject.trim()) {
+    return NextResponse.json({ error: 'Subject is required' }, { status: 400 });
   }
-  const safeAttachments = sanitizeSupportAttachments(attachments);
+  if (!message.trim()) {
+    return NextResponse.json({ error: 'Message is required' }, { status: 400 });
+  }
+  const trimmedSubject = subject.trim();
+  const trimmedMessage = message.trim();
+  if (trimmedSubject.length > MAX_SUBJECT_LENGTH) {
+    return NextResponse.json(
+      { error: `Subject must be ${MAX_SUBJECT_LENGTH} characters or fewer` },
+      { status: 400 },
+    );
+  }
+  if (trimmedMessage.length > MAX_MESSAGE_LENGTH) {
+    return NextResponse.json(
+      { error: `Message must be ${MAX_MESSAGE_LENGTH} characters or fewer` },
+      { status: 400 },
+    );
+  }
+
+  const validatedAttachments = validateSupportAttachments(attachments);
+  if (!validatedAttachments.ok) {
+    return NextResponse.json(
+      { error: 'error' in validatedAttachments ? validatedAttachments.error : 'Invalid attachment payload' },
+      { status: 400 },
+    );
+  }
+  const safeAttachments = validatedAttachments.attachments;
 
   // 2) Create the support ticket in the database (store category/product info as part of subject for now)
-  const fullSubject = issueCategory ? `[${issueCategory}] ${subject}` : subject;
+  const fullSubject = issueCategory ? `[${issueCategory}] ${trimmedSubject}` : trimmedSubject;
   const ticket = await prisma.supportTicket.create({
     data: { 
       id: randomUUID(),
       name: authenticatedName || name || 'Customer', 
       email: authenticatedEmail, 
       subject: fullSubject, 
-      message 
+      message: trimmedMessage,
     },
   });
 

@@ -1,10 +1,12 @@
 # Security Findings – Artcommerce
 
 ## Critical
+- [Fixed] Real SQLite database artifacts were committed to source control – removed tracked `*.db` / backup files, expanded ignore rules, and added `npm run security:check` to block future commits of databases, env files, private keys, and `.next` output.
 - [Fixed] Support data is fully public – support/admin ticket endpoints now require auth and enforce owner/admin authorization.
 - [Fixed] Order details leak across users – `app/api/orders/[id]/route.ts` now applies scoped ownership checks (`id + userId`) for non-admin users.
 
 ## High
+- [Fixed] Support attachments bypassed hardened upload validation – support uploads now go through a dedicated authenticated route with server-side content validation, trusted attachment metadata, and private Cloudinary/ImageKit storage instead of browser-MIME-trusted public blob uploads.
 - [Fixed] Arbitrary file upload to web root – upload endpoints now require auth/admin controls with server-side validation and guarded storage.
 - [Fixed] Admin coupons endpoint exposed – `app/api/admin/coupons/route.ts` now enforces admin auth on `GET` and all write methods.
 - [Fixed] Build artifacts committed to source control – tracked `.next/*` files (for example `.next/server/app-paths-manifest.json`) were removed from git index and `.next` is ignored to prevent metadata leakage.

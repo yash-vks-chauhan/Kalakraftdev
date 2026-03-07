@@ -24,7 +24,7 @@ export async function POST(request: Request) {
       role: rotated.user.role,
     })
 
-    const response = NextResponse.json({ token: accessToken })
+    const response = NextResponse.json({ authenticated: true })
     setAuthCookies(response, {
       accessToken,
       refreshToken: rotated.refreshToken,

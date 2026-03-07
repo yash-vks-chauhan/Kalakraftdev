@@ -14,6 +14,14 @@ export type ValidatedUpload = {
   size: number
 }
 
+type UploadValidationOptions = {
+  buffer: Buffer
+  filename?: string
+  mimeFromHeader?: string
+  maxSizeBytes?: number
+  allowedMimeTypes?: string[]
+}
+
 type GuardFailure = { ok: false; response: NextResponse }
 type GuardSuccess = { ok: true; auth: AuthContext; upload: ValidatedUpload }
 
@@ -152,6 +160,24 @@ async function extractFileFromRequest(
     return { ok: false, response: NextResponse.json({ error: 'No file content received.' }, { status: 400 }) }
   }
 
+  return validateUploadBuffer({
+    buffer,
+    filename,
+    mimeFromHeader,
+    maxSizeBytes,
+    allowedMimeTypes,
+  })
+}
+
+export function validateUploadBuffer(
+  {
+    buffer,
+    filename = '',
+    mimeFromHeader = '',
+    maxSizeBytes = MAX_UPLOAD_SIZE_BYTES,
+    allowedMimeTypes = DEFAULT_ALLOWED_MIME_TYPES,
+  }: UploadValidationOptions,
+): { ok: true; upload: ValidatedUpload } | GuardFailure {
   const detectedMime = detectMimeFromBuffer(buffer)
   const mimeType = (detectedMime || mimeFromHeader || '').toLowerCase()
 

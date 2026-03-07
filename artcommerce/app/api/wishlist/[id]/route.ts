@@ -2,31 +2,14 @@
 
 import { NextResponse } from 'next/server'
 import prisma from '../../../../lib/prisma'
-import jwt from 'jsonwebtoken'
-
-const JWT_SECRET = process.env.JWT_SECRET!
-
-function getUserId(request: Request): string | null {
-  const authHeader = request.headers.get('Authorization') || ''
-  const token = authHeader.replace('Bearer ', '')
-  if (!token) return null
-  try {
-    const payload = jwt.verify(token, JWT_SECRET) as { userId?: string | number }
-    if (payload.userId === undefined || payload.userId === null) {
-      return null
-    }
-    return String(payload.userId)
-  } catch {
-    return null
-  }
-}
+import { getAuthenticatedUser } from '../../../../lib/session-auth'
 
 export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const userId = getUserId(request)
-  if (!userId) {
+  const authUser = await getAuthenticatedUser(request)
+  if (!authUser) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -38,7 +21,7 @@ export async function DELETE(
 
   // Find the wishlist item for this user and product
   const existing = await prisma.wishlistItem.findFirst({
-    where: { userId, productId },
+    where: { userId: authUser.id, productId },
   })
   if (!existing) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })

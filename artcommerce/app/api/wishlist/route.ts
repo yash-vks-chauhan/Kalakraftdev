@@ -2,37 +2,19 @@
 
 import { NextResponse } from 'next/server'
 import prisma from '../../../lib/prisma'
-import jwt from 'jsonwebtoken'
-
-const JWT_SECRET = process.env.JWT_SECRET!
-
-// Helper to extract userId from Bearer token
-function getUserId(request: Request): string | null {
-  const authHeader = request.headers.get('Authorization') || ''
-  const token = authHeader.replace('Bearer ', '')
-  if (!token) return null
-  try {
-    const payload = jwt.verify(token, JWT_SECRET) as { userId?: string | number }
-    if (payload.userId === undefined || payload.userId === null) {
-      return null
-    }
-    return String(payload.userId)
-  } catch {
-    return null
-  }
-}
+import { getAuthenticatedUser } from '../../../lib/session-auth'
 
 //
 // GET /api/wishlist → list all wishlist items for current user
 //
 export async function GET(request: Request) {
-  const userId = getUserId(request)
-  if (!userId) {
+  const authUser = await getAuthenticatedUser(request)
+  if (!authUser) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   const items = await prisma.wishlistItem.findMany({
-    where: { userId },
+    where: { userId: authUser.id },
     include: {
       product: {
         include: {
@@ -49,8 +31,8 @@ export async function GET(request: Request) {
 // POST /api/wishlist → add a new product to the current user’s wishlist
 //
 export async function POST(request: Request) {
-  const userId = getUserId(request)
-  if (!userId) {
+  const authUser = await getAuthenticatedUser(request)
+  if (!authUser) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -61,7 +43,7 @@ export async function POST(request: Request) {
 
   // (Optional) check if this product is already in the wishlist:
   const existing = await prisma.wishlistItem.findFirst({
-    where: { userId, productId },
+    where: { userId: authUser.id, productId },
   })
   if (existing) {
     return NextResponse.json(
@@ -73,7 +55,7 @@ export async function POST(request: Request) {
   // Create new wishlist entry
   const newItem = await prisma.wishlistItem.create({
     data: {
-      user: { connect: { id: userId } },
+      user: { connect: { id: authUser.id } },
       product: { connect: { id: productId } },
     },
     include: {

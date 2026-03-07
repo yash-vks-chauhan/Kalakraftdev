@@ -4,10 +4,6 @@ import { useEffect, useState, useRef, useMemo } from 'react'
 import AOS from 'aos'
 import 'aos/dist/aos.css'
 
-import { auth } from '../lib/firebase-client'
-
-import { onAuthStateChanged } from 'firebase/auth'
-
 import { ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react'
 
 import styles from './home.module.css'
@@ -1301,7 +1297,6 @@ const FeaturedCategoriesSection = () => {
 };
 
 export default function Home() {
-const [message, setMessage] = useState<string|null>(null)
 const [featuredProducts, setFeaturedProducts] = useState([]);
 const [isHoveringVideo, setIsHoveringVideo] = useState(false);
 const [isHeroVideoLoaded, setIsHeroVideoLoaded] = useState(false);
@@ -1412,57 +1407,6 @@ alt: 'Stylish resin serving trays'
 
 ]
 
-
-
-useEffect(() => {
-
-const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
-
-if (!fbUser) {
-
-setMessage('Not signed in')
-
-return
-
-}
-
-// Get fresh ID token
-
-const idToken = await fbUser.getIdToken()
-
-
-
-// Call your protected API
-
-const res = await fetch('/api/secure/hello', {
-
-headers: { Authorization: `Bearer ${idToken}` },
-
-})
-
-if (res.ok) {
-
-const json = await res.json()
-
-setMessage(json.message || json.error)
-
-} else {
-
-console.error('Failed to fetch secure data:', res.status)
-
-// Optional: Set a message to indicate the failure
-
-// setMessage('Could not authenticate with server.');
-
-}
-
-})
-
-
-
-return () => unsubscribe()
-
-}, [])
 
 
 

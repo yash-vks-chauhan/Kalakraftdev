@@ -1,6 +1,6 @@
 import {
-  getTokenFromRequest as getTokenFromRequestStrict,
-  verifyAccessToken,
+  getBearerTokenFromRequest,
+  verifyRequestAccessToken,
 } from './session-auth'
 
 export type AuthPayload = {
@@ -10,13 +10,11 @@ export type AuthPayload = {
 }
 
 export function getTokenFromRequest(request: Request): string | null {
-  return getTokenFromRequestStrict(request)
+  return getBearerTokenFromRequest(request)
 }
 
 export function verifyJwtFromRequest(request: Request): AuthPayload | null {
-  const token = getTokenFromRequest(request)
-  if (!token) return null
-  const payload = verifyAccessToken(token)
+  const payload = verifyRequestAccessToken(request)
   if (!payload?.userId) {
     return null
   }

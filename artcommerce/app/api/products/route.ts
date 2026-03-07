@@ -56,10 +56,7 @@ export async function GET(request: Request) {
       if (priceMax) (whereClause.price as any).lte = parseFloat(priceMax)
     }
 
-    // 4) Log the final whereClause for debugging
-    console.log('GET /api/products → whereClause =', whereClause)
-
-    // 5) Query Prisma with whereClause and dynamic orderBy
+    // 4) Query Prisma with whereClause and dynamic orderBy
     let orderBy: any = { createdAt: 'desc' }
     if (sortParam === 'price_asc') orderBy = { price: 'asc' }
     else if (sortParam === 'price_desc') orderBy = { price: 'desc' }
@@ -149,14 +146,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ products: filteredProducts })
   } catch (err: any) {
-    // 7) Log the full error so you can inspect it
-    console.error('GET /api/products error (full):', err)
-    if (err?.code) {
-      console.error('Prisma error code:', err.code)
-    }
-    return NextResponse.json(
-      { error: `Server error: ${err.message}` },
-      { status: 500 }
-    )
+    console.error('GET /api/products error:', err)
+    return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
 }

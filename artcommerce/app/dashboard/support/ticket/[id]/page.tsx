@@ -13,6 +13,9 @@ interface Attachment {
   width?: number;
   height?: number;
   mimeType?: string;
+  name?: string;
+  storageProvider?: "cloudinary" | "imagekit";
+  storageKey?: string;
 }
 
 interface Message {
@@ -152,7 +155,7 @@ export default function TicketThread() {
     for (const { file, width, height } of files) {
       const fd = new FormData();
       fd.append("file", file);
-      const uploadRes = await fetch("/api/uploads", { 
+      const uploadRes = await fetch("/api/support/attachments", {
         method: "POST", 
         body: fd,
         headers: { Authorization: `Bearer ${token}` }
@@ -163,14 +166,7 @@ export default function TicketThread() {
         setLoading(false);
         return;
       }
-      attachments.push({
-        url: uploadJson.url,
-        type: "image",
-        size: file.size,
-        width,
-        height,
-        mimeType: uploadJson.mimeType || file.type,
-      });
+      attachments.push(uploadJson as Attachment);
     }
 
     const res = await fetch(`/api/support/ticket/${id}`, {

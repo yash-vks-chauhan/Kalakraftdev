@@ -4,34 +4,13 @@ import prisma from "../../../../../lib/prisma";
 import pusher from "../../../../../lib/pusher";
 import { randomUUID } from 'crypto';
 import { isAllowedOrigin } from "@/lib/security";
-import { sanitizeSupportAttachments } from "@/lib/supportAttachments";
+import { sanitizeSupportAttachments, validateSupportAttachments } from "@/lib/supportAttachments";
+import { consumeRateLimit, getClientIp } from "../../../../../lib/rateLimit";
 import { getAuthenticatedUser } from "../../../../../lib/session-auth";
 
-const MAX_ATTACHMENTS = 4;
-const MAX_ATTACHMENT_SIZE_BYTES = 3 * 1024 * 1024; // 3MB
-const MAX_ATTACHMENT_DIMENSION = 1080;
-
-function validateAttachments(attachments: any[]) {
-  if (!Array.isArray(attachments)) return 'Attachments must be an array';
-  if (attachments.length > MAX_ATTACHMENTS) return `Maximum ${MAX_ATTACHMENTS} images allowed`;
-  for (const att of attachments) {
-    if (!att || typeof att !== 'object') return 'Invalid attachment payload';
-    if (!att.url || typeof att.url !== 'string') return 'Each attachment must include a URL';
-    if (att.type && typeof att.type === 'string' && !att.type.startsWith('image')) {
-      return 'Only image attachments are allowed';
-    }
-    if (typeof att.size === 'number' && att.size > MAX_ATTACHMENT_SIZE_BYTES) {
-      return 'Each image must be 3MB or smaller';
-    }
-    if (typeof att.width === 'number' && att.width > MAX_ATTACHMENT_DIMENSION) {
-      return 'Images must be at most 1080px in width';
-    }
-    if (typeof att.height === 'number' && att.height > MAX_ATTACHMENT_DIMENSION) {
-      return 'Images must be at most 1080px in height';
-    }
-  }
-  return null;
-}
+const MESSAGE_WINDOW_MS = 15 * 60 * 1000;
+const MAX_MESSAGES_PER_WINDOW = 20;
+const MAX_MESSAGE_LENGTH = 5000;
 
 export async function GET(
   request: Request,
@@ -106,6 +85,17 @@ export async function POST(
   if (auth.role !== 'admin' && ticket.email !== userEmail) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
+  const clientIp = getClientIp(request);
+  const limit = consumeRateLimit(`support:ticket:reply:${auth.id}:ticket:${ticketId}:ip:${clientIp}`, {
+    windowMs: MESSAGE_WINDOW_MS,
+    max: MAX_MESSAGES_PER_WINDOW,
+  });
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { error: 'Too many messages. Please try again later.' },
+      { status: 429 },
+    );
+  }
 
   // parse JSON body { content: string, attachments?: any[] }
   const { content, attachments = [] } = (await request.json()) as {
@@ -113,11 +103,25 @@ export async function POST(
     attachments?: any[];
   };
 
-  const attachmentError = validateAttachments(attachments);
-  if (attachmentError) {
-    return NextResponse.json({ error: attachmentError }, { status: 400 });
+  if (!content?.trim() && attachments.length === 0) {
+    return NextResponse.json({ error: "Message or attachment is required" }, { status: 400 });
   }
-  const safeAttachments = sanitizeSupportAttachments(attachments);
+  const trimmedContent = typeof content === 'string' ? content.trim() : '';
+  if (trimmedContent.length > MAX_MESSAGE_LENGTH) {
+    return NextResponse.json(
+      { error: `Message must be ${MAX_MESSAGE_LENGTH} characters or fewer` },
+      { status: 400 },
+    );
+  }
+
+  const validatedAttachments = validateSupportAttachments(attachments);
+  if (!validatedAttachments.ok) {
+    return NextResponse.json(
+      { error: 'error' in validatedAttachments ? validatedAttachments.error : 'Invalid attachment payload' },
+      { status: 400 },
+    );
+  }
+  const safeAttachments = validatedAttachments.attachments;
 
   // Create the message
   // @ts-ignore – attachments field added after latest Prisma migration
@@ -126,7 +130,7 @@ export async function POST(
       id: randomUUID(),
       ticketId, 
       sender: "customer", 
-      content, 
+      content: trimmedContent,
       attachments: safeAttachments,
     } as any,
   });

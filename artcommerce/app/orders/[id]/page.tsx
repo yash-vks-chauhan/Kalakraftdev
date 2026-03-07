@@ -2,28 +2,26 @@
 
 import Link from 'next/link'
 import prisma from '../../../lib/prisma'
-import jwt from 'jsonwebtoken'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
-
-const JWT_SECRET = process.env.JWT_SECRET!
+import { verifyAccessToken } from '../../../lib/session-auth'
 
 /**
  * Read and verify “token” HTTP‐only cookie.
  * Must `await cookies()` before calling `.get(...)`.
  */
-async function getUserIdFromCookie(): Promise<number | null> {
+async function getUserIdFromCookie(): Promise<string | null> {
   const cookieStore = await cookies()
   const tokenCookie = cookieStore.get('token')?.value
   if (!tokenCookie) return null
 
-  try {
-    const payload = jwt.verify(tokenCookie, JWT_SECRET) as { userId: number }
-    return payload.userId
-  } catch (err) {
-    console.error('[getUserIdFromCookie] JWT verify failed:', err)
+  const payload = verifyAccessToken(tokenCookie)
+  if (!payload?.userId) {
+    console.error('[getUserIdFromCookie] JWT verify failed')
     return null
   }
+
+  return String(payload.userId)
 }
 
 interface OrderItem {
@@ -82,7 +80,7 @@ export default async function OrderDetailsPage({
   const order = await prisma.order.findFirst({
     where: {
       orderNumber: orderNumber,
-      userId: userId.toString(),
+      userId,
     },
     include: {
       orderItems: {

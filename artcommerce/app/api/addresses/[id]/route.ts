@@ -2,33 +2,16 @@
 
 import { NextResponse } from 'next/server'
 import prisma from '../../../../lib/prisma'
-import jwt from 'jsonwebtoken'
-
-const JWT_SECRET = process.env.JWT_SECRET!
-
-function getUserId(request: Request): string | null {
-  const auth = request.headers.get('Authorization') || ''
-  const token = auth.replace('Bearer ', '').trim()
-  if (!token) return null
-  try {
-    const payload = jwt.verify(token, JWT_SECRET) as { userId?: string | number }
-    if (payload.userId === undefined || payload.userId === null) {
-      return null
-    }
-    return String(payload.userId)
-  } catch {
-    return null
-  }
-}
+import { getAuthenticatedUser } from '../../../../lib/session-auth'
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const userId = getUserId(request)
-  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const authUser = await getAuthenticatedUser(request)
+  if (!authUser) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { id: rawId } = await params
   const id = Number(rawId)
   const address = await prisma.address.findFirst({
-    where: { id, userId },
+    where: { id, userId: authUser.id },
   })
   if (!address) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
@@ -37,8 +20,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 }
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const userId = getUserId(request)
-  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const authUser = await getAuthenticatedUser(request)
+  if (!authUser) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { id: rawId } = await params
   const id = Number(rawId)
@@ -46,7 +29,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   const { label, line1, line2, city, postalCode, country } = body
 
   const existing = await prisma.address.findFirst({
-    where: { id, userId },
+    where: { id, userId: authUser.id },
   })
   if (!existing) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
@@ -68,14 +51,14 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 }
 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const userId = getUserId(request)
-  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const authUser = await getAuthenticatedUser(request)
+  if (!authUser) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { id: rawId } = await params
   const id = Number(rawId)
   // Ensure it belongs to the user
   const existing = await prisma.address.findFirst({
-    where: { id, userId },
+    where: { id, userId: authUser.id },
   })
   if (!existing) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })

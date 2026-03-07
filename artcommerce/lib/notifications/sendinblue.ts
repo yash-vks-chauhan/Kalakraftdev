@@ -34,12 +34,6 @@ export async function sendOrderNotificationEmail(order: Order) {
     </p>
   `
 
-  // 2. Send via Sendinblue REST API
-  console.log('Constructing Sendinblue request...');
-  console.log(`Admin Email: ${process.env.ADMIN_EMAIL}`);
-  console.log(`Sender Email: ${process.env.SENDINBLUE_FROM_EMAIL}`);
-  console.log(`API Key set: ${!!process.env.SENDINBLUE_API_KEY}`);
-
   const resp = await fetch('https://api.sendinblue.com/v3/smtp/email', {
     method: 'POST',
     headers: {
@@ -63,6 +57,4 @@ export async function sendOrderNotificationEmail(order: Order) {
     console.error('Sendinblue API error status:', resp.status)
     throw new Error('Failed to send order notification email')
   }
-
-  console.log('Successfully sent email via Sendinblue');
 }

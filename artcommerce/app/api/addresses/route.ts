@@ -2,34 +2,16 @@
 
 import { NextResponse } from 'next/server'
 import prisma from '../../../lib/prisma'
-import jwt from 'jsonwebtoken'
-
-const JWT_SECRET = process.env.JWT_SECRET!
-
-/** Helper to extract userId from Bearer token */
-function getUserId(request: Request): string | null {
-  const auth = request.headers.get('Authorization') || ''
-  const token = auth.replace('Bearer ', '').trim()
-  if (!token) return null
-  try {
-    const payload = jwt.verify(token, JWT_SECRET) as { userId?: string | number }
-    if (payload.userId === undefined || payload.userId === null) {
-      return null
-    }
-    return String(payload.userId)
-  } catch {
-    return null
-  }
-}
+import { getAuthenticatedUser } from '../../../lib/session-auth'
 
 // GET /api/addresses → list all addresses for the current user
 export async function GET(request: Request) {
-  const userId = getUserId(request)
-  if (!userId) {
+  const authUser = await getAuthenticatedUser(request)
+  if (!authUser) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   const addresses = await prisma.address.findMany({
-    where: { userId },
+    where: { userId: authUser.id },
     orderBy: { createdAt: 'desc' },
   })
   return NextResponse.json({ addresses })
@@ -37,8 +19,8 @@ export async function GET(request: Request) {
 
 // POST /api/addresses → create a new address for the current user
 export async function POST(request: Request) {
-  const userId = getUserId(request)
-  if (!userId) {
+  const authUser = await getAuthenticatedUser(request)
+  if (!authUser) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   const body = await request.json()
@@ -54,7 +36,7 @@ export async function POST(request: Request) {
 
   const address = await prisma.address.create({
     data: {
-      userId,
+      userId: authUser.id,
       label,
       line1,
       line2: line2 || null,

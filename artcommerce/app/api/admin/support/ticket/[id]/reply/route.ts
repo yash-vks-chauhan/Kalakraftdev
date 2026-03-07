@@ -5,27 +5,10 @@ import pusher from "../../../../../../../lib/pusher";
 import { randomUUID } from 'crypto';
 import { requireAdminUser } from "../../../../../../../lib/session-auth";
 import { isAllowedOrigin } from "@/lib/security";
-import { sanitizeSupportAttachments } from "@/lib/supportAttachments";
+import { sanitizeSupportAttachments, validateSupportAttachments } from "@/lib/supportAttachments";
 
-const MAX_ATTACHMENTS = 4;
-const MAX_ATTACHMENT_SIZE_BYTES = 3 * 1024 * 1024; // 3MB
 const ALLOWED_STATUSES = ['open', 'pending', 'resolved', 'closed'];
-
-function validateAttachments(attachments: any[]) {
-  if (!Array.isArray(attachments)) return 'Attachments must be an array';
-  if (attachments.length > MAX_ATTACHMENTS) return `Maximum ${MAX_ATTACHMENTS} images allowed`;
-  for (const att of attachments) {
-    if (!att || typeof att !== 'object') return 'Invalid attachment payload';
-    if (!att.url || typeof att.url !== 'string') return 'Each attachment must include a URL';
-    if (att.type && typeof att.type === 'string' && !att.type.startsWith('image')) {
-      return 'Only image attachments are allowed';
-    }
-    if (typeof att.size === 'number' && att.size > MAX_ATTACHMENT_SIZE_BYTES) {
-      return 'Each image must be 3MB or smaller';
-    }
-  }
-  return null;
-}
+const MAX_REPLY_LENGTH = 5000;
 
 export async function POST(
   request: Request,
@@ -54,11 +37,25 @@ export async function POST(
     return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
   }
 
-  const attachmentError = validateAttachments(attachments);
-  if (attachmentError) {
-    return NextResponse.json({ error: attachmentError }, { status: 400 });
+  if (!reply?.trim() && attachments.length === 0) {
+    return NextResponse.json({ error: 'Reply or attachment is required' }, { status: 400 });
   }
-  const safeAttachments = sanitizeSupportAttachments(attachments);
+  const trimmedReply = typeof reply === 'string' ? reply.trim() : '';
+  if (trimmedReply.length > MAX_REPLY_LENGTH) {
+    return NextResponse.json(
+      { error: `Reply must be ${MAX_REPLY_LENGTH} characters or fewer` },
+      { status: 400 },
+    );
+  }
+
+  const validatedAttachments = validateSupportAttachments(attachments);
+  if (!validatedAttachments.ok) {
+    return NextResponse.json(
+      { error: 'error' in validatedAttachments ? validatedAttachments.error : 'Invalid attachment payload' },
+      { status: 400 },
+    );
+  }
+  const safeAttachments = validatedAttachments.attachments;
 
   // 3) Record the agent's message
   const message = await prisma.supportMessage.create({
@@ -67,7 +64,7 @@ export async function POST(
       id: randomUUID(),
       ticketId, 
       sender: "agent", 
-      content: reply, 
+      content: trimmedReply, 
       attachments: safeAttachments,
     } as any,
   });
@@ -111,7 +108,7 @@ export async function POST(
         },
         to: [{ email: ticket.email }],
         subject: `Re: ${ticket.subject}`,
-        htmlContent: `<p>${reply}</p><p>Your ticket status is now <strong>${normalizedStatus}</strong>.</p>`,
+        htmlContent: `<p>${trimmedReply}</p><p>Your ticket status is now <strong>${normalizedStatus}</strong>.</p>`,
       }),
     });
     if (!resp.ok) {

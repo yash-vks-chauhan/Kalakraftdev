@@ -3,6 +3,15 @@ node_modules
 .env
 .env*
 !.env.example
+*.db
+*.db-*
+*.db.*
+*.sqlite
+*.sqlite3
+*.sqlite-*
+*.sqlite.*
+*.bak
+*.backup
 
 /generated/prisma
 # Next.js build artifacts (root + nested apps)

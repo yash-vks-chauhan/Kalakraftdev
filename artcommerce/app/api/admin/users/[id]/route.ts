@@ -62,9 +62,6 @@ export async function DELETE(
       })
     }
 
-    // 5️⃣ Log to terminal
-    console.log(`✅ Deleted user ${userId} (${target.email}) and sent notification email.`)
-
     return NextResponse.json({ ok: true })
   } catch (e) {
     console.error('❌ delete-user error:', e)

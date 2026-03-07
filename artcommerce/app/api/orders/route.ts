@@ -10,6 +10,8 @@ import { sendLowStockEmail } from '../../../lib/notifications/lowStock'
 import { sendOutOfStockEmail } from '../../../lib/notifications/outOfStock'
 import { getAuthenticatedUser } from '../../../lib/session-auth'
 
+const OUT_OF_STOCK_ERROR_PREFIX = 'INSUFFICIENT_STOCK:'
+
 export async function GET(request: Request) {
   try {
     const payload = await getAuthenticatedUser(request)
@@ -65,8 +67,6 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  console.log('🔍 [order route] Entered POST /api/orders')
-
   // 1️⃣ Authenticate
   const payload = await getAuthenticatedUser(request)
   if (!payload) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -102,6 +102,7 @@ export async function POST(request: Request) {
     include: { product: true },
   })
   if (cartItems.length === 0) return NextResponse.json({ error: 'Cart is empty' }, { status: 400 })
+  const productById = new Map(cartItems.map((item) => [item.productId, item.product]))
 
   // 5️⃣ Compute totals
   const subtotal = cartItems.reduce((sum, i) => sum + i.quantity * i.product.price, 0)
@@ -136,6 +137,11 @@ export async function POST(request: Request) {
     orderItems: (OrderItem & { product: Product })[];
     user: Pick<User, 'email' | 'fullName'>;
   }
+  let stockAfterPurchase: Array<{
+    id: number
+    name: string
+    stockQuantity: number
+  }> = []
   try {
     createdOrder = await prisma.$transaction(async (tx) => {
       if (applicableCoupon) {
@@ -155,7 +161,24 @@ export async function POST(request: Request) {
         }
       }
 
-      return tx.order.create({
+      for (const item of cartItems) {
+        const stockUpdate = await tx.product.updateMany({
+          where: {
+            id: item.productId,
+            isActive: true,
+            stockQuantity: { gte: item.quantity },
+          },
+          data: {
+            stockQuantity: { decrement: item.quantity },
+          },
+        })
+
+        if (stockUpdate.count === 0) {
+          throw new Error(`${OUT_OF_STOCK_ERROR_PREFIX}${item.productId}`)
+        }
+      }
+
+      const order = await tx.order.create({
         data: {
           userId,
           orderNumber,
@@ -196,9 +219,24 @@ export async function POST(request: Request) {
           user: { select: { email: true, fullName: true } },
         },
       })
-    })
-    console.log('✅ [order route] Order created in DB:', createdOrder)
 
+      stockAfterPurchase = await tx.product.findMany({
+        where: {
+          id: {
+            in: cartItems.map((item) => item.productId),
+          },
+        },
+        select: {
+          id: true,
+          name: true,
+          stockQuantity: true,
+        },
+      })
+
+      await tx.cartItem.deleteMany({ where: { userId } })
+
+      return order
+    })
     // Emit Pusher event for real-time admin notification
     const products = createdOrder.orderItems.map(item => item.product.name)
     pusher.trigger('private-admin-channel', 'new-order', {
@@ -207,7 +245,6 @@ export async function POST(request: Request) {
       customerName: createdOrder.user.fullName,
       products, // Array of product names
     })
-    .then(() => console.log('✅ Pusher event sent'))
     .catch((err: Error) => console.error('❌ [order route] Pusher error:', err))
 
     // fire-and-forget: send admin email via Sendinblue
@@ -241,18 +278,15 @@ export async function POST(request: Request) {
     };
     
     sendOrderNotificationEmail(orderForEmail)
-    .then(() => console.log('✅ Admin email sent to', process.env.ADMIN_EMAIL))
     .catch(err => console.error('❌ Failed admin email:', err))
 
-    // ─── 7️⃣ Decrement stock & check for low stock ────────────────────────────────────
+    // ─── 7️⃣ Check resulting stock levels after the transactional reservation ─────────
     const LOW_STOCK_THRESHOLD = 5
+    const updatedProductsById = new Map(stockAfterPurchase.map((product) => [product.id, product]))
 
     for (const item of createdOrder.orderItems) {
-      // atomically decrement stock
-      const updated = await prisma.product.update({
-        where: { id: item.productId },
-        data: { stockQuantity: { decrement: item.quantity } },
-      })
+      const updated = updatedProductsById.get(item.productId)
+      if (!updated) continue
 
       if (updated.stockQuantity <= 0) {
         // OUT OF STOCK
@@ -282,16 +316,27 @@ export async function POST(request: Request) {
         }).catch(console.error)
       }
     }
-
-    // 7️⃣ Clear cart
-    await prisma.cartItem.deleteMany({ where: { userId } })
-    console.log('✅ [order route] Cleared cart for userId:', userId)
   } catch (dbErr) {
-    if (dbErr instanceof Error && dbErr.message === 'COUPON_NO_LONGER_AVAILABLE') {
-      return NextResponse.json(
-        { error: 'Coupon is no longer available' },
-        { status: 409 }
-      )
+    if (dbErr instanceof Error) {
+      if (dbErr.message === 'COUPON_NO_LONGER_AVAILABLE') {
+        return NextResponse.json(
+          { error: 'Coupon is no longer available' },
+          { status: 409 }
+        )
+      }
+
+      if (dbErr.message.startsWith(OUT_OF_STOCK_ERROR_PREFIX)) {
+        const productId = Number(dbErr.message.slice(OUT_OF_STOCK_ERROR_PREFIX.length))
+        const product = productById.get(productId)
+        return NextResponse.json(
+          {
+            error: product
+              ? `${product.name} is no longer available in the requested quantity`
+              : 'One or more items are no longer available in the requested quantity',
+          },
+          { status: 409 }
+        )
+      }
     }
     console.error('❌ [order route] Error creating order:', dbErr)
     return NextResponse.json({ error: 'Order creation failed' }, { status: 500 })
@@ -303,7 +348,6 @@ export async function POST(request: Request) {
     select: { email: true, fullName: true },
   })
   const toEmail = customer?.email
-  console.log('✉️  [order route] About to send confirmation e-mail to:', toEmail)
 
   if (toEmail) {
     try {
@@ -367,13 +411,10 @@ export async function POST(request: Request) {
         subject: `Order Confirmation (#${createdOrder.orderNumber})`,
         html:    htmlBody,
       })
-      console.log('✅ [order route] Email sent successfully!')
     } catch (emailErr) {
       console.error('❌ [order route] Error sending confirmation email:', emailErr)
       // we don't block on mail failures
     }
-  } else {
-    console.warn(`⚠️ [order route] No email for userId ${userId}; skipping send.`)
   }
 
   // 🔟 Return the order

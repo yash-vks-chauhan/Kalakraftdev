@@ -1,7 +1,4 @@
-import {
-  getTokenFromRequest as getTokenFromRequestStrict,
-  verifyAccessToken,
-} from './session-auth'
+import { verifyRequestAccessToken } from './session-auth'
 
 export type AuthContext = {
   userId: string
@@ -9,14 +6,8 @@ export type AuthContext = {
   role?: string
 }
 
-function getTokenFromRequest(request: Request): string | null {
-  return getTokenFromRequestStrict(request)
-}
-
 export function getAuthContext(request: Request): AuthContext | null {
-  const token = getTokenFromRequest(request)
-  if (!token) return null
-  const payload = verifyAccessToken(token)
+  const payload = verifyRequestAccessToken(request)
   if (!payload?.userId) {
     return null
   }

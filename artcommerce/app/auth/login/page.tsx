@@ -12,11 +12,6 @@ export default function LoginPage() {
   const { user: authUser, login, loading: authLoading, loginWithFirebaseToken } = useAuth()
   const { user: firebaseUser, loading: firebaseLoading, loginWithGoogle, loginWithFacebook, error: firebaseError } = useFirebaseAuth()
 
-  console.log('LoginPage: authLoading', authLoading)
-  console.log('LoginPage: firebaseLoading', firebaseLoading)
-  console.log('LoginPage: authUser', authUser)
-  console.log('LoginPage: firebaseUser', firebaseUser)
-
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -25,7 +20,6 @@ export default function LoginPage() {
   useEffect(() => {
     // If we have an authenticated user, redirect to home
     if (authUser) {
-      console.log('LoginPage: Redirecting to home because authUser exists')
       router.push('/')
     }
   }, [authUser, router])

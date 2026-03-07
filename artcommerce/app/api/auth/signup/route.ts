@@ -64,17 +64,17 @@ export async function POST(request: Request) {
       select: { id: true, fullName: true, email: true, avatarUrl: true, role: true }
     })
 
-    const token = signAccessToken({
+    const accessToken = signAccessToken({
       id: user.id,
       email: user.email,
       role: user.role,
     })
     const refresh = await createRefreshSession(user.id)
 
-    const response = NextResponse.json({ user, token })
+    const response = NextResponse.json({ user })
 
     setAuthCookies(response, {
-      accessToken: token,
+      accessToken,
       refreshToken: refresh.refreshToken,
     })
 
