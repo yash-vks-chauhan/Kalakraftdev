@@ -3,12 +3,17 @@
 import { NextResponse } from 'next/server'
 import { getSecureMailer } from '../../../../../lib/mailer'
 import prisma from '../../../../../lib/prisma'
+import { isAllowedOrigin } from '../../../../../lib/security'
 import { requireAdminUser } from '../../../../../lib/session-auth'
 
 export async function DELETE(
   request: Request,
   context: { params: Promise<{ id: string }> }
 ) {
+  if (!isAllowedOrigin(request)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
   const admin = await requireAdminUser(request)
   if (!admin) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

@@ -518,11 +518,15 @@ export default function MobileProfileSettings() {
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
-      setModalMessage('Password updated successfully')
       setNewPassword('')
       setConfirmPassword('')
       setOtp('')
       setStep('send')
+      if (data.reauthRequired) {
+        await logout()
+        return
+      }
+      setModalMessage('Password updated successfully')
       // Close modal after a brief delay to show success message
       setTimeout(() => {
         handlePasswordModalClose()

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth as adminAuth } from '../../../../lib/firebase-admin'
 import prisma from '../../../../lib/prisma'
 import { consumeRateLimit, getClientIp } from '../../../../lib/rateLimit'
+import { isAllowedOrigin } from '../../../../lib/security'
 import {
   createRefreshSession,
   setAuthCookies,
@@ -22,6 +23,10 @@ function isEmailDomainAllowed(email: string): boolean {
 }
 
 export async function POST(req: NextRequest) {
+  if (!isAllowedOrigin(req)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
   const clientIp = getClientIp(req)
   const limit = consumeRateLimit(`google-login:ip:${clientIp}`, {
     windowMs: LOGIN_WINDOW_MS,
@@ -73,6 +78,7 @@ export async function POST(req: NextRequest) {
       id: userFromDb.id,
       email: userFromDb.email,
       role: userFromDb.role,
+      sessionVersion: userFromDb.sessionVersion,
     })
     const refresh = await createRefreshSession(userFromDb.id)
 

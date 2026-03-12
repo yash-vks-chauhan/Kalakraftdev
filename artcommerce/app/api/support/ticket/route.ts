@@ -15,7 +15,7 @@ const MAX_SUBJECT_LENGTH = 200;
 const MAX_MESSAGE_LENGTH = 5000;
 
 export async function POST(request: Request) {
-  const auth = getAuthContext(request);
+  const auth = await getAuthContext(request);
   if (!auth) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }

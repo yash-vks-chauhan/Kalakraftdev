@@ -18,6 +18,7 @@ export type AccessTokenPayload = {
   userId: string
   email?: string | null
   role?: string | null
+  sessionVersion?: number | null
   tokenType?: 'access'
 }
 
@@ -25,6 +26,7 @@ type UserForToken = {
   id: string
   email?: string | null
   role?: string | null
+  sessionVersion?: number | null
 }
 
 function ensureJwtSecret(): string {
@@ -67,6 +69,7 @@ export function signAccessToken(user: UserForToken): string {
       userId: user.id,
       email: user.email || undefined,
       role: user.role || undefined,
+      sessionVersion: normalizeSessionVersion(user.sessionVersion),
       tokenType: 'access',
     },
     secret,
@@ -77,6 +80,15 @@ export function signAccessToken(user: UserForToken): string {
       subject: user.id,
     }
   )
+}
+
+function normalizeSessionVersion(value: unknown): number {
+  return Number.isInteger(value) && Number(value) >= 0 ? Number(value) : 0
+}
+
+function readTokenSessionVersion(value: unknown): number | null {
+  if (value == null) return null
+  return normalizeSessionVersion(value)
 }
 
 export function verifyAccessToken(token: string): AccessTokenPayload | null {
@@ -90,6 +102,7 @@ export function verifyAccessToken(token: string): AccessTokenPayload | null {
     return {
       ...decoded,
       userId: String(decoded.userId),
+      sessionVersion: readTokenSessionVersion(decoded.sessionVersion),
       tokenType: 'access',
     }
   } catch {
@@ -100,6 +113,7 @@ export function verifyAccessToken(token: string): AccessTokenPayload | null {
       return {
         ...decoded,
         userId: String(decoded.userId),
+        sessionVersion: readTokenSessionVersion(decoded.sessionVersion),
         tokenType: 'access',
       }
     } catch {
@@ -162,7 +176,7 @@ export async function rotateRefreshSession(rawRefreshToken: string): Promise<{
     where: { sessionToken: currentHash },
     include: {
       user: {
-        select: { id: true, email: true, role: true },
+        select: { id: true, email: true, role: true, sessionVersion: true },
       },
     },
   })
@@ -251,9 +265,17 @@ export async function getAuthenticatedUser(request: Request): Promise<UserForTok
 
   const user = await prisma.user.findUnique({
     where: { id: String(payload.userId) },
-    select: { id: true, email: true, role: true },
+    select: { id: true, email: true, role: true, sessionVersion: true },
   })
-  return user || null
+  if (!user) return null
+
+  const tokenSessionVersion = readTokenSessionVersion(payload.sessionVersion)
+  const currentSessionVersion = normalizeSessionVersion(user.sessionVersion)
+  if (tokenSessionVersion === null ? currentSessionVersion !== 0 : tokenSessionVersion !== currentSessionVersion) {
+    return null
+  }
+
+  return user
 }
 
 export async function requireAdminUser(request: Request): Promise<UserForToken | null> {

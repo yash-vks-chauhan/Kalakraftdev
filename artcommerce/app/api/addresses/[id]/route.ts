@@ -2,6 +2,7 @@
 
 import { NextResponse } from 'next/server'
 import prisma from '../../../../lib/prisma'
+import { isAllowedOrigin } from '../../../../lib/security'
 import { getAuthenticatedUser } from '../../../../lib/session-auth'
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -20,6 +21,10 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 }
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  if (!isAllowedOrigin(request)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
   const authUser = await getAuthenticatedUser(request)
   if (!authUser) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
@@ -51,6 +56,10 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 }
 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  if (!isAllowedOrigin(request)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
   const authUser = await getAuthenticatedUser(request)
   if (!authUser) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 

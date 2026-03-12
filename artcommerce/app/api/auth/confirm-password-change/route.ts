@@ -6,6 +6,8 @@ import { getAuthContext } from '../../../../lib/auth'
 import { getOtpSecretValidationError, hashOtpForScope } from '../../../../lib/otp-security'
 import prisma from '../../../../lib/prisma'
 import { clearRateLimit, consumeRateLimit, getClientIp } from '../../../../lib/rateLimit'
+import { clearAuthCookies } from '../../../../lib/session-auth'
+import { isAllowedOrigin } from '../../../../lib/security'
 
 export const runtime = 'nodejs'
 
@@ -13,6 +15,10 @@ const VERIFY_WINDOW_MS = 10 * 60 * 1000
 const MAX_VERIFY_ATTEMPTS_PER_WINDOW = 10
 
 export async function POST(request: Request) {
+  if (!isAllowedOrigin(request)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
   const otpSecretError = getOtpSecretValidationError()
   if (otpSecretError) {
     console.error(`[auth/confirm-password-change] ${otpSecretError}`)
@@ -49,7 +55,7 @@ export async function POST(request: Request) {
     )
   }
 
-  const auth = getAuthContext(request)
+  const auth = await getAuthContext(request)
   const authUserId = auth?.userId ? String(auth.userId) : null
 
   if (!authUserId && !email) {
@@ -101,19 +107,27 @@ export async function POST(request: Request) {
   clearRateLimit(rateLimitKey)
 
   const hash = await bcrypt.hash(newPassword, 10)
-  await prisma.user.update({
-    where: { id: user.id },
-    data: {
-      passwordHash: hash,
-      passwordChangeOtp: null,
-      passwordChangeExpires: null,
-    },
-  })
+  await prisma.$transaction([
+    prisma.user.update({
+      where: { id: user.id },
+      data: {
+        passwordHash: hash,
+        passwordChangeOtp: null,
+        passwordChangeExpires: null,
+        sessionVersion: { increment: 1 },
+      },
+    }),
+    prisma.session.deleteMany({
+      where: { userId: user.id },
+    }),
+  ])
 
-  // Revoke all refresh sessions after password reset.
-  await prisma.session.deleteMany({
-    where: { userId: user.id },
+  const response = NextResponse.json({
+    ok: true,
+    reauthRequired: Boolean(authUserId),
   })
-
-  return NextResponse.json({ ok: true })
+  if (authUserId) {
+    clearAuthCookies(response)
+  }
+  return response
 }

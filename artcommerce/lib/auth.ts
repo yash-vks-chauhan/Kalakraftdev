@@ -1,4 +1,4 @@
-import { verifyRequestAccessToken } from './session-auth'
+import { getAuthenticatedUser, requireAdminUser } from './session-auth'
 
 export type AuthContext = {
   userId: string
@@ -6,20 +6,24 @@ export type AuthContext = {
   role?: string
 }
 
-export function getAuthContext(request: Request): AuthContext | null {
-  const payload = verifyRequestAccessToken(request)
-  if (!payload?.userId) {
+export async function getAuthContext(request: Request): Promise<AuthContext | null> {
+  const user = await getAuthenticatedUser(request)
+  if (!user?.id) {
     return null
   }
   return {
-    userId: String(payload.userId),
-    email: payload.email || undefined,
-    role: payload.role || undefined,
+    userId: String(user.id),
+    email: user.email || undefined,
+    role: user.role || undefined,
   }
 }
 
-export function requireAdmin(request: Request): AuthContext | null {
-  const ctx = getAuthContext(request)
-  if (!ctx || ctx.role !== 'admin') return null
-  return ctx
+export async function requireAdmin(request: Request): Promise<AuthContext | null> {
+  const admin = await requireAdminUser(request)
+  if (!admin?.id) return null
+  return {
+    userId: admin.id,
+    email: admin.email || undefined,
+    role: admin.role || undefined,
+  }
 }

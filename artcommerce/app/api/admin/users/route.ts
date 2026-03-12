@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import prisma from '../../../../lib/prisma'
+import { isAllowedOrigin } from '../../../../lib/security'
 import { requireAdminUser } from '../../../../lib/session-auth'
 
 const abandonedThreshold = new Date(Date.now() - 5 * 60 * 1000);
@@ -41,6 +42,10 @@ export async function GET(request: Request) {
 }
 
 export async function PATCH(request: Request) {
+  if (!isAllowedOrigin(request)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
   const admin = await requireAdminUser(request)
   if (!admin) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

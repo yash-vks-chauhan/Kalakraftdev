@@ -8,6 +8,7 @@ import { sendOrderNotificationEmail } from '../../../lib/notifications/sendinblu
 import pusher from '../../../lib/pusher'
 import { sendLowStockEmail } from '../../../lib/notifications/lowStock'
 import { sendOutOfStockEmail } from '../../../lib/notifications/outOfStock'
+import { isAllowedOrigin } from '../../../lib/security'
 import { getAuthenticatedUser } from '../../../lib/session-auth'
 
 const OUT_OF_STOCK_ERROR_PREFIX = 'INSUFFICIENT_STOCK:'
@@ -67,6 +68,10 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  if (!isAllowedOrigin(request)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
   // 1️⃣ Authenticate
   const payload = await getAuthenticatedUser(request)
   if (!payload) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

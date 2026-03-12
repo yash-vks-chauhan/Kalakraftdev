@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import prisma from '../../../../lib/prisma'
 import { consumeRateLimit, getClientIp } from '../../../../lib/rateLimit'
+import { isAllowedOrigin } from '../../../../lib/security'
 import { getAuthenticatedUser } from '../../../../lib/session-auth'
 
 export const runtime = 'nodejs'
@@ -10,6 +11,10 @@ const VALIDATE_MAX_ATTEMPTS = 20
 const MAX_COUPON_CODE_LENGTH = 64
 
 export async function POST(req: Request) {
+  if (!isAllowedOrigin(req)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
   const user = await getAuthenticatedUser(req)
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

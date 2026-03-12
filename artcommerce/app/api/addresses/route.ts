@@ -2,6 +2,7 @@
 
 import { NextResponse } from 'next/server'
 import prisma from '../../../lib/prisma'
+import { isAllowedOrigin } from '../../../lib/security'
 import { getAuthenticatedUser } from '../../../lib/session-auth'
 
 // GET /api/addresses → list all addresses for the current user
@@ -19,6 +20,10 @@ export async function GET(request: Request) {
 
 // POST /api/addresses → create a new address for the current user
 export async function POST(request: Request) {
+  if (!isAllowedOrigin(request)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
   const authUser = await getAuthenticatedUser(request)
   if (!authUser) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

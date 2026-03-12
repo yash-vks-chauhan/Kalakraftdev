@@ -5,6 +5,7 @@ import prisma from '../../../../lib/prisma'
 import bcrypt from 'bcryptjs'
 import { PASSWORD_POLICY_MESSAGE, isStrongPassword } from '../../../../lib/password-policy'
 import { consumeRateLimit, getClientIp } from '../../../../lib/rateLimit'
+import { isAllowedOrigin } from '../../../../lib/security'
 import {
   createRefreshSession,
   setAuthCookies,
@@ -16,6 +17,10 @@ const SIGNUP_MAX_PER_IP = 10
 const SIGNUP_MAX_PER_EMAIL = 5
 
 export async function POST(request: Request) {
+  if (!isAllowedOrigin(request)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
   const clientIp = getClientIp(request)
   const ipLimit = consumeRateLimit(`signup:ip:${clientIp}`, {
     windowMs: SIGNUP_WINDOW_MS,
@@ -61,13 +66,14 @@ export async function POST(request: Request) {
     const passwordHash = await bcrypt.hash(password, 10)
     const user = await prisma.user.create({
       data: { fullName, email, passwordHash, role: 'user' },
-      select: { id: true, fullName: true, email: true, avatarUrl: true, role: true }
+      select: { id: true, fullName: true, email: true, avatarUrl: true, role: true, sessionVersion: true }
     })
 
     const accessToken = signAccessToken({
       id: user.id,
       email: user.email,
       role: user.role,
+      sessionVersion: user.sessionVersion,
     })
     const refresh = await createRefreshSession(user.id)
 

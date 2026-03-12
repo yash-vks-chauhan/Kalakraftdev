@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import prisma from '../../../../lib/prisma'
+import { isAllowedOrigin } from '../../../../lib/security'
 import { requireAdminUser } from '../../../../lib/session-auth'
 
 type CouponType = 'percentage' | 'flat'
@@ -20,6 +21,10 @@ export async function GET(request: Request) {
 }
 
 export async function POST(req: Request) {
+  if (!isAllowedOrigin(req)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
   const admin = await requireAdminUser(req)
   if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
@@ -61,6 +66,10 @@ export async function POST(req: Request) {
 }
 
 export async function PATCH(req: Request) {
+  if (!isAllowedOrigin(req)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
   const admin = await requireAdminUser(req)
   if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
@@ -120,6 +129,10 @@ export async function PATCH(req: Request) {
 }
 
 export async function DELETE(req: Request) {
+  if (!isAllowedOrigin(req)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
   const admin = await requireAdminUser(req)
   if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 

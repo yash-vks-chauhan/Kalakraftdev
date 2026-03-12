@@ -5,9 +5,14 @@ import {
   setAuthCookies,
   signAccessToken,
 } from '../../../../lib/session-auth'
+import { isAllowedOrigin } from '../../../../lib/security'
 
 export async function POST(request: Request) {
   try {
+    if (!isAllowedOrigin(request)) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
     const refreshToken = getRefreshTokenFromRequest(request)
     if (!refreshToken) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -22,6 +27,7 @@ export async function POST(request: Request) {
       id: rotated.user.id,
       email: rotated.user.email,
       role: rotated.user.role,
+      sessionVersion: rotated.user.sessionVersion,
     })
 
     const response = NextResponse.json({ authenticated: true })

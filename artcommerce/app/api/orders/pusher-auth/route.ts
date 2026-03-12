@@ -1,10 +1,15 @@
 import { NextResponse } from 'next/server'
 import pusher from '../../../../lib/pusher'
+import { isAllowedOrigin } from '../../../../lib/security'
 import { requireAdminUser } from '../../../../lib/session-auth'
 
 const ADMIN_CHANNEL = 'private-admin-channel'
 
 export async function POST(request: Request) {
+  if (!isAllowedOrigin(request)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
   const admin = await requireAdminUser(request)
   if (!admin) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

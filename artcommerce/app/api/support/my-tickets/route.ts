@@ -4,7 +4,7 @@ import prisma from '../../../../lib/prisma';
 import { getAuthContext } from '../../../../lib/auth';
 
 export async function GET(request: Request) {
-  const auth = getAuthContext(request);
+  const auth = await getAuthContext(request);
   if (!auth) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }

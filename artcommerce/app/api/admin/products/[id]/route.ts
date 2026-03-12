@@ -2,6 +2,7 @@
 
 import { NextResponse } from 'next/server'
 import prisma from '../../../../../lib/prisma'
+import { isAllowedOrigin } from '../../../../../lib/security'
 import { requireAdminUser } from '../../../../../lib/session-auth'
 
 // GET, PATCH and DELETE all by numeric ID
@@ -33,6 +34,10 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  if (!isAllowedOrigin(request)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
   const admin = await requireAdminUser(request)
   if (!admin) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -72,6 +77,10 @@ export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  if (!isAllowedOrigin(request)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
   const admin = await requireAdminUser(request)
   if (!admin) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
