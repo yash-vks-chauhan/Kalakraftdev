@@ -22,6 +22,22 @@ export type VerifiedFirebaseToken = {
   picture?: string
 }
 
+export class FirebaseTokenVerificationError extends Error {
+  code: 'project_mismatch' | 'invalid_token' | 'config_error'
+  statusCode: number
+
+  constructor(
+    code: 'project_mismatch' | 'invalid_token' | 'config_error',
+    message: string,
+    statusCode = 401,
+  ) {
+    super(message)
+    this.name = 'FirebaseTokenVerificationError'
+    this.code = code
+    this.statusCode = statusCode
+  }
+}
+
 let certCache:
   | {
       certs: Record<string, string>
@@ -29,12 +45,40 @@ let certCache:
     }
   | null = null
 
-function getExpectedFirebaseProjectId(): string {
-  return (
-    process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ||
-    process.env.FIREBASE_PROJECT_ID ||
-    DEFAULT_FIREBASE_PROJECT_ID
-  )
+function parseProjectIdFromAuthDomain(value: string | undefined): string | null {
+  const trimmed = value?.trim()
+  if (!trimmed) return null
+
+  const match = trimmed.match(/^([a-z0-9-]+)\.(?:firebaseapp\.com|web\.app)$/i)
+  return match?.[1] || null
+}
+
+function getAllowedFirebaseProjectIds(): string[] {
+  const fromAllowlist = (process.env.FIREBASE_ALLOWED_PROJECT_IDS || '')
+    .split(',')
+    .map((value) => value.trim())
+    .filter(Boolean)
+
+  const configured = [
+    ...fromAllowlist,
+    process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID?.trim(),
+    process.env.FIREBASE_PROJECT_ID?.trim(),
+    parseProjectIdFromAuthDomain(process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN),
+  ].filter((value): value is string => Boolean(value))
+
+  return Array.from(new Set(configured.length > 0 ? configured : [DEFAULT_FIREBASE_PROJECT_ID]))
+}
+
+function getDecodedProjectId(payload: JwtPayload | null): string | null {
+  if (!payload) return null
+  if (typeof payload.aud === 'string' && payload.aud.trim()) {
+    return payload.aud.trim()
+  }
+  if (typeof payload.iss === 'string') {
+    const match = payload.iss.match(/https:\/\/securetoken\.google\.com\/([^/]+)$/i)
+    return match?.[1] || null
+  }
+  return null
 }
 
 function normalizeVerifiedToken(payload: FirebaseJwtPayload & { uid?: string }): VerifiedFirebaseToken {
@@ -94,18 +138,32 @@ async function getFirebasePublicCerts(): Promise<Record<string, string>> {
   return certs
 }
 
+function verifyFirebaseTokenAgainstProject(
+  idToken: string,
+  signingCert: string,
+  projectId: string,
+): VerifiedFirebaseToken {
+  const verified = jwt.verify(idToken, signingCert, {
+    algorithms: ['RS256'],
+    audience: projectId,
+    issuer: `https://securetoken.google.com/${projectId}`,
+  }) as FirebaseJwtPayload
+
+  return normalizeVerifiedToken(verified)
+}
+
 async function verifyFirebaseIdTokenWithGoogleCerts(idToken: string): Promise<VerifiedFirebaseToken> {
   const decoded = jwt.decode(idToken, { complete: true })
   if (!decoded || typeof decoded !== 'object' || !decoded.header) {
-    throw new Error('Firebase token could not be decoded')
+    throw new FirebaseTokenVerificationError('invalid_token', 'Firebase token could not be decoded')
   }
 
   const header = decoded.header
   if (header.alg !== 'RS256' || typeof header.kid !== 'string' || !header.kid) {
-    throw new Error('Firebase token header is invalid')
+    throw new FirebaseTokenVerificationError('invalid_token', 'Firebase token header is invalid')
   }
 
-  const projectId = getExpectedFirebaseProjectId()
+  const allowedProjectIds = getAllowedFirebaseProjectIds()
   const certs = await getFirebasePublicCerts()
   const signingCert = certs[header.kid]
 
@@ -114,25 +172,38 @@ async function verifyFirebaseIdTokenWithGoogleCerts(idToken: string): Promise<Ve
     const refreshedCerts = await getFirebasePublicCerts()
     const refreshedSigningCert = refreshedCerts[header.kid]
     if (!refreshedSigningCert) {
-      throw new Error('Firebase token signing key was not recognized')
+      throw new FirebaseTokenVerificationError('invalid_token', 'Firebase token signing key was not recognized')
     }
-
-    const verified = jwt.verify(idToken, refreshedSigningCert, {
-      algorithms: ['RS256'],
-      audience: projectId,
-      issuer: `https://securetoken.google.com/${projectId}`,
-    }) as FirebaseJwtPayload
-
-    return normalizeVerifiedToken(verified)
+    return verifyFirebaseIdTokenWithCertForAllowedProjects(idToken, refreshedSigningCert, allowedProjectIds)
   }
 
-  const verified = jwt.verify(idToken, signingCert, {
-    algorithms: ['RS256'],
-    audience: projectId,
-    issuer: `https://securetoken.google.com/${projectId}`,
-  }) as FirebaseJwtPayload
+  return verifyFirebaseIdTokenWithCertForAllowedProjects(idToken, signingCert, allowedProjectIds)
+}
 
-  return normalizeVerifiedToken(verified)
+function verifyFirebaseIdTokenWithCertForAllowedProjects(
+  idToken: string,
+  signingCert: string,
+  allowedProjectIds: string[],
+): VerifiedFirebaseToken {
+  for (const projectId of allowedProjectIds) {
+    try {
+      return verifyFirebaseTokenAgainstProject(idToken, signingCert, projectId)
+    } catch {
+      // Try the next configured project ID.
+    }
+  }
+
+  const payload = jwt.decode(idToken) as JwtPayload | null
+  const actualProjectId = getDecodedProjectId(payload)
+
+  if (actualProjectId && !allowedProjectIds.includes(actualProjectId)) {
+    throw new FirebaseTokenVerificationError(
+      'project_mismatch',
+      `Firebase token project "${actualProjectId}" does not match configured project IDs: ${allowedProjectIds.join(', ')}`,
+    )
+  }
+
+  throw new FirebaseTokenVerificationError('invalid_token', 'Firebase token could not be verified')
 }
 
 export async function verifyFirebaseIdToken(idToken: string): Promise<VerifiedFirebaseToken> {

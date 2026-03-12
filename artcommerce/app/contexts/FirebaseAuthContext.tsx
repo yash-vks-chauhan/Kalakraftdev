@@ -12,7 +12,7 @@ import {
   signOut as fbSignOut,
   User as FirebaseUser,
 } from "firebase/auth"
-import { auth } from "../firebase/client"
+import { auth, firebaseClientConfigError } from "../firebase/client"
 import { useAuth } from "./AuthContext"
 const LOGOUT_IN_PROGRESS_KEY = 'artcommerce:logout_in_progress'
 
@@ -92,7 +92,7 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
 
   useEffect(() => {
     if (!auth) {
-      setError("Firebase authentication is not configured")
+      setError(firebaseClientConfigError || "Firebase authentication is not configured")
       setLoading(false)
       return
     }
@@ -158,7 +158,7 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
 
   const loginWithGoogle = async () => {
     if (!auth) {
-      setError("Firebase authentication is not configured")
+      setError(firebaseClientConfigError || "Firebase authentication is not configured")
       return undefined
     }
 
@@ -193,7 +193,7 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
 
   const loginWithFacebook = async () => {
     if (!auth) {
-      setError("Firebase authentication is not configured")
+      setError(firebaseClientConfigError || "Firebase authentication is not configured")
       return undefined
     }
 

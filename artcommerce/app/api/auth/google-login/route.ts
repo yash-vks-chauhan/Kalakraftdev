@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { verifyFirebaseIdToken } from '../../../../lib/firebase-id-token'
+import {
+  FirebaseTokenVerificationError,
+  verifyFirebaseIdToken,
+} from '../../../../lib/firebase-id-token'
 import prisma from '../../../../lib/prisma'
 import { consumeRateLimit, getClientIp } from '../../../../lib/rateLimit'
 import { isAllowedOrigin } from '../../../../lib/security'
@@ -47,7 +50,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Firebase ID token is required' }, { status: 400 })
     }
 
-    const decodedToken = await verifyFirebaseIdToken(firebaseIdToken)
+    let decodedToken
+    try {
+      decodedToken = await verifyFirebaseIdToken(firebaseIdToken)
+    } catch (error) {
+      if (error instanceof FirebaseTokenVerificationError) {
+        return NextResponse.json({ error: error.message }, { status: error.statusCode })
+      }
+
+      console.error('Google login token verification error:', error)
+      return NextResponse.json(
+        { error: 'Could not verify Firebase login token' },
+        { status: 500 },
+      )
+    }
+
     const email = decodedToken.email?.toLowerCase()
     const isEmailVerified = decodedToken.email_verified === true
 
@@ -103,6 +120,9 @@ export async function POST(req: NextRequest) {
     return response
   } catch (error) {
     console.error('Error in /api/auth/google-login:', error)
-    return NextResponse.json({ error: 'Invalid Firebase ID token' }, { status: 401 })
+    return NextResponse.json(
+      { error: 'Google login failed while creating or loading the account' },
+      { status: 500 },
+    )
   }
 }
