@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth as adminAuth } from '../../../../lib/firebase-admin'
+import { verifyFirebaseIdToken } from '../../../../lib/firebase-id-token'
 import prisma from '../../../../lib/prisma'
 import { consumeRateLimit, getClientIp } from '../../../../lib/rateLimit'
 import { isAllowedOrigin } from '../../../../lib/security'
@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'ID token is required' }, { status: 400 })
     }
 
-    const decodedToken = await adminAuth.verifyIdToken(idToken)
+    const decodedToken = await verifyFirebaseIdToken(idToken)
     const email = decodedToken.email?.toLowerCase()
     const isEmailVerified = decodedToken.email_verified === true
 

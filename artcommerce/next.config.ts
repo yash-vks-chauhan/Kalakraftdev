@@ -25,7 +25,7 @@ const contentSecurityPolicy = [
   "font-src 'self' https: data:",
   "style-src 'self' 'unsafe-inline' https:",
   `script-src ${scriptSrc}`,
-  "connect-src 'self' https://api.sendinblue.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://oauth2.googleapis.com https://*.firebaseapp.com https://*.web.app https://api.pusherapp.com https://*.pusher.com wss://ws-*.pusher.com",
+  "connect-src 'self' https://api.sendinblue.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://oauth2.googleapis.com https://*.firebaseapp.com https://*.web.app https://api.pusherapp.com https://*.pusher.com wss://*.pusher.com",
   "worker-src 'self' blob:",
   ...(isProduction ? ['upgrade-insecure-requests'] : []),
 ].join('; ')

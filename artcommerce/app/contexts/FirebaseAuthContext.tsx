@@ -53,6 +53,16 @@ const getFriendlyAuthError = (error: any) => {
   return `Login failed: ${message}`
 }
 
+const getFriendlyServerAuthError = (error: any) => {
+  const message = String(error?.message || '')
+
+  if (/invalid id token/i.test(message)) {
+    return 'Social login could not be verified by the server. The Firebase web app and server must use the same project.'
+  }
+
+  return message || 'Failed to authenticate with server'
+}
+
 const shouldFallbackToRedirect = (error: any) => {
   const code = String(error?.code || "")
   return code === "auth/internal-error" || code === "auth/popup-blocked"
@@ -113,15 +123,25 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
 
         setUser(firebaseUser)
 
-        firebaseUser.getIdToken().then((idToken) => {
-          loginWithFirebaseToken(idToken).catch((tokenError) => {
-            console.error("Error in loginWithFirebaseToken:", tokenError)
-            setError("Failed to authenticate with server")
+        firebaseUser
+          .getIdToken()
+          .then((idToken) => {
+            loginWithFirebaseToken(idToken).catch(async (tokenError) => {
+              console.error("Error in loginWithFirebaseToken:", tokenError)
+              setError(getFriendlyServerAuthError(tokenError))
+              setUser(null)
+
+              try {
+                await fbSignOut(auth)
+              } catch (signOutError) {
+                console.error("Error clearing Firebase session after server auth failure:", signOutError)
+              }
+            })
           })
-        }).catch((idTokenError) => {
-          console.error("Error getting Firebase ID token:", idTokenError)
-          setError("Failed to get authentication token")
-        })
+          .catch((idTokenError) => {
+            console.error("Error getting Firebase ID token:", idTokenError)
+            setError("Failed to get authentication token")
+          })
       } else {
         clearLogoutInProgress()
         setUser(null)
