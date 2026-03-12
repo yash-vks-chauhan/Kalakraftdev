@@ -32,18 +32,38 @@ const requiredFirebaseKeys = [
   'appId',
 ] as const
 
+const envVarNames: Record<(typeof requiredFirebaseKeys)[number], string> = {
+  apiKey: 'NEXT_PUBLIC_FIREBASE_API_KEY',
+  authDomain: 'NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN',
+  projectId: 'NEXT_PUBLIC_FIREBASE_PROJECT_ID',
+  storageBucket: 'NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET',
+  messagingSenderId: 'NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID',
+  appId: 'NEXT_PUBLIC_FIREBASE_APP_ID',
+}
+
 const hasAnyEnvFirebaseConfig = Object.values(envFirebaseConfig).some(Boolean)
 const missingFirebaseKeys = requiredFirebaseKeys.filter((key) => !envFirebaseConfig[key])
+const canSafelyFillFromDefault =
+  hasAnyEnvFirebaseConfig &&
+  missingFirebaseKeys.length > 0 &&
+  requiredFirebaseKeys.every((key) => !envFirebaseConfig[key] || envFirebaseConfig[key] === defaultFirebaseConfig[key])
 
 export const firebaseClientConfigError =
-  hasAnyEnvFirebaseConfig && missingFirebaseKeys.length > 0
-    ? `Firebase client config is incomplete. Missing: ${missingFirebaseKeys.join(', ')}`
+  hasAnyEnvFirebaseConfig && missingFirebaseKeys.length > 0 && !canSafelyFillFromDefault
+    ? `Firebase client config is incomplete. Missing env vars: ${missingFirebaseKeys
+        .map((key) => envVarNames[key])
+        .join(', ')}`
     : null
 
 const firebaseConfig = firebaseClientConfigError
   ? null
   : hasAnyEnvFirebaseConfig
-    ? envFirebaseConfig
+    ? canSafelyFillFromDefault
+      ? {
+          ...defaultFirebaseConfig,
+          ...Object.fromEntries(Object.entries(envFirebaseConfig).filter(([, value]) => Boolean(value))),
+        }
+      : envFirebaseConfig
     : defaultFirebaseConfig
 
 const app = firebaseConfig ? (getApps().length ? getApps()[0] : initializeApp(firebaseConfig)) : null
