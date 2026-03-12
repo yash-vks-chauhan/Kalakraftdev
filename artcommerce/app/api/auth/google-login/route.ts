@@ -1,11 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import {
-  FirebaseTokenVerificationError,
-  verifyFirebaseIdToken,
-} from '../../../../lib/firebase-id-token'
+import { auth as adminAuth } from '../../../../lib/firebase-admin'
 import prisma from '../../../../lib/prisma'
 import { consumeRateLimit, getClientIp } from '../../../../lib/rateLimit'
-import { isAllowedOrigin } from '../../../../lib/security'
 import {
   createRefreshSession,
   setAuthCookies,
@@ -26,10 +22,6 @@ function isEmailDomainAllowed(email: string): boolean {
 }
 
 export async function POST(req: NextRequest) {
-  if (!isAllowedOrigin(req)) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
-
   const clientIp = getClientIp(req)
   const limit = consumeRateLimit(`google-login:ip:${clientIp}`, {
     windowMs: LOGIN_WINDOW_MS,
@@ -50,21 +42,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Firebase ID token is required' }, { status: 400 })
     }
 
-    let decodedToken
-    try {
-      decodedToken = await verifyFirebaseIdToken(firebaseIdToken)
-    } catch (error) {
-      if (error instanceof FirebaseTokenVerificationError) {
-        return NextResponse.json({ error: error.message }, { status: error.statusCode })
-      }
-
-      console.error('Google login token verification error:', error)
-      return NextResponse.json(
-        { error: 'Could not verify Firebase login token' },
-        { status: 500 },
-      )
-    }
-
+    const decodedToken = await adminAuth.verifyIdToken(firebaseIdToken)
     const email = decodedToken.email?.toLowerCase()
     const isEmailVerified = decodedToken.email_verified === true
 
@@ -79,30 +57,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Email domain is not allowed' }, { status: 403 })
     }
 
-    const userFromDb = await prisma.user.upsert({
-      where: { email },
-      update: {},
-      create: {
-        email,
-        fullName: decodedToken.name || email,
-        role: 'user',
-        avatarUrl: decodedToken.picture || null,
-      },
-      select: {
-        id: true,
-        fullName: true,
-        email: true,
-        avatarUrl: true,
-        role: true,
-        sessionVersion: true,
-      },
-    })
+    let userFromDb = await prisma.user.findUnique({ where: { email } })
+    if (!userFromDb) {
+      userFromDb = await prisma.user.create({
+        data: {
+          email,
+          fullName: decodedToken.name || email,
+          role: 'user',
+          avatarUrl: decodedToken.picture || null,
+        },
+      })
+    }
 
     const accessToken = signAccessToken({
       id: userFromDb.id,
       email: userFromDb.email,
       role: userFromDb.role,
-      sessionVersion: userFromDb.sessionVersion,
     })
     const refresh = await createRefreshSession(userFromDb.id)
 
@@ -127,9 +97,6 @@ export async function POST(req: NextRequest) {
     return response
   } catch (error) {
     console.error('Error in /api/auth/google-login:', error)
-    return NextResponse.json(
-      { error: 'Google login failed while creating or loading the account' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'Invalid Firebase ID token' }, { status: 401 })
   }
 }

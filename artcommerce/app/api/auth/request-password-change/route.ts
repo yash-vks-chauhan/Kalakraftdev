@@ -7,7 +7,6 @@ import { getSecureMailer } from '../../../../lib/mailer'
 import { getOtpSecretValidationError, hashOtpForScope } from '../../../../lib/otp-security'
 import prisma from '../../../../lib/prisma'
 import { consumeRateLimit, getClientIp } from '../../../../lib/rateLimit'
-import { isAllowedOrigin } from '../../../../lib/security'
 
 export const runtime = 'nodejs'
 
@@ -20,10 +19,6 @@ const MAX_REQUESTS_PER_WINDOW = 5
 const generateOtp = customAlphabet(OTP_ALPHABET, OTP_LENGTH)
 
 export async function POST(request: Request) {
-  if (!isAllowedOrigin(request)) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
-
   const otpSecretError = getOtpSecretValidationError()
   if (otpSecretError) {
     console.error(`[auth/request-password-change] ${otpSecretError}`)
@@ -33,7 +28,7 @@ export async function POST(request: Request) {
     )
   }
 
-  const auth = await getAuthContext(request)
+  const auth = getAuthContext(request)
   let user = auth?.userId
     ? await prisma.user.findUnique({ where: { id: String(auth.userId) } })
     : null

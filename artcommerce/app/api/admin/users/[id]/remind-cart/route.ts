@@ -3,7 +3,6 @@ import { NextResponse } from 'next/server'
 import prisma from '../../../../../../lib/prisma'
 import { getSecureMailer } from '../../../../../../lib/mailer'
 import { consumeRateLimit, getClientIp } from '../../../../../../lib/rateLimit'
-import { isAllowedOrigin } from '../../../../../../lib/security'
 import { requireAdminUser } from '../../../../../../lib/session-auth'
 
 const REMIND_WINDOW_MS = 60 * 60 * 1000
@@ -13,10 +12,6 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (!isAllowedOrigin(request)) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
-
   const admin = await requireAdminUser(request)
   if (!admin) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

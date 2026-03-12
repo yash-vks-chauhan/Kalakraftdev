@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import { AuthContext, getAuthContext } from './auth'
 import { getClientIp } from './rateLimit'
-import { isAllowedOrigin } from './security'
 import { requireAdminUser } from './session-auth'
 
 type RateBucket = {
@@ -257,11 +256,7 @@ export async function guardUploadRequest(
     rateWindowMs?: number
   },
 ): Promise<GuardSuccess | GuardFailure> {
-  if (!isAllowedOrigin(request)) {
-    return { ok: false, response: NextResponse.json({ error: 'Forbidden' }, { status: 403 }) }
-  }
-
-  const auth = await getAuthContext(request)
+  const auth = getAuthContext(request)
   if (!auth?.userId) {
     return { ok: false, response: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) }
   }

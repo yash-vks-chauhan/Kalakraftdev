@@ -4,14 +4,9 @@ import {
   getRefreshTokenFromRequest,
   revokeRefreshSession,
 } from '../../../../lib/session-auth'
-import { isAllowedOrigin } from '../../../../lib/security'
 
 export async function POST(request: Request) {
   try {
-    if (!isAllowedOrigin(request)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
-
     const refreshToken = getRefreshTokenFromRequest(request)
     await revokeRefreshSession(refreshToken)
 

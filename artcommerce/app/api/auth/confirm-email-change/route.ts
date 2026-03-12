@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server'
 import { getOtpSecretValidationError, hashOtpForScope } from '../../../../lib/otp-security'
 import prisma from '../../../../lib/prisma'
 import { consumeRateLimit, getClientIp } from '../../../../lib/rateLimit'
-import { isAllowedOrigin } from '../../../../lib/security'
 import { getAuthenticatedUser } from '../../../../lib/session-auth'
 
 export const runtime = 'nodejs'
@@ -11,10 +10,6 @@ const VERIFY_WINDOW_MS = 15 * 60 * 1000
 const MAX_VERIFY_ATTEMPTS = 10
 
 export async function POST(request: Request) {
-  if (!isAllowedOrigin(request)) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
-
   const otpSecretError = getOtpSecretValidationError()
   if (otpSecretError) {
     console.error(`[auth/confirm-email-change] ${otpSecretError}`)

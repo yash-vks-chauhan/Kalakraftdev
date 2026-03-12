@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import prisma from '../../../../lib/prisma'
 import { consumeRateLimit, getClientIp } from '../../../../lib/rateLimit'
-import { isAllowedOrigin } from '../../../../lib/security'
 import { getAuthenticatedUser } from '../../../../lib/session-auth'
 
 export const runtime = 'nodejs'
@@ -10,10 +9,6 @@ const REDEEM_WINDOW_MS = 10 * 60 * 1000
 const REDEEM_MAX_ATTEMPTS = 30
 
 export async function POST(req: Request) {
-  if (!isAllowedOrigin(req)) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
-
   const user = await getAuthenticatedUser(req)
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

@@ -299,22 +299,18 @@ export default function ProfilePage() {
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
+      setMessage('Password updated successfully')
       setNewPassword('')
       setConfirmPassword('')
       setOtp('')
       setStep('send')
-      if (data.reauthRequired) {
-        await logout()
-        return
-      }
-      setMessage('Password updated successfully')
       await fetchProfile()
     } catch (err: any) {
       setError(err.message)
     } finally {
       setLoading(false)
     }
-  }, [token, otp, newPassword, confirmPassword, fetchProfile, logout])
+  }, [token, otp, newPassword, confirmPassword, fetchProfile])
 
   useEffect(() => {
     setIsMounted(true)

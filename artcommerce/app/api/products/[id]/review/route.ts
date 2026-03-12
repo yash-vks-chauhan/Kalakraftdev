@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import prisma from '../../../../../lib/prisma'
 import { getServerSession } from 'next-auth'
-import { isAllowedOrigin } from '../../../../../lib/security'
 import { getAuthenticatedUser } from '../../../../../lib/session-auth'
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -37,10 +36,6 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
 }
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  if (!isAllowedOrigin(req)) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
-
   const authUser = await getAuthenticatedUser(req)
 
   // Fallback to Next-Auth session cookie (used when browsing without the custom AuthContext)

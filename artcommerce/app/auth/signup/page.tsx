@@ -10,8 +10,8 @@ import styles from '../auth.module.css'
 
 export default function SignupPage() {
   const router = useRouter()
-  const { user: authUser, signup, loading: authLoading } = useAuth()
-  const { loading: firebaseLoading, loginWithGoogle, loginWithFacebook, error: firebaseError } = useFirebaseAuth()
+  const { user: authUser, signup, loading: authLoading, loginWithFirebaseToken } = useAuth()
+  const { user: firebaseUser, loading: firebaseLoading, loginWithGoogle, loginWithFacebook } = useFirebaseAuth()
 
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -25,12 +25,6 @@ export default function SignupPage() {
       router.replace('/')
     }
   }, [authUser, authLoading, router])
-
-  useEffect(() => {
-    if (firebaseError) {
-      setError(firebaseError)
-    }
-  }, [firebaseError])
 
   // Get email from URL if redirected from login
   useEffect(() => {
@@ -56,23 +50,6 @@ export default function SignupPage() {
       await signup(name, email, password)
     } catch (err: any) {
       setError(err.message || 'Signup failed')
-      setFormLoading(false)
-    }
-  }
-
-  const handleSocialSignup = async (provider: 'google' | 'facebook') => {
-    setFormLoading(true)
-    setError(null)
-
-    try {
-      if (provider === 'google') {
-        await loginWithGoogle()
-      } else {
-        await loginWithFacebook()
-      }
-    } catch (err: any) {
-      setError(err.message || `${provider === 'google' ? 'Google' : 'Facebook'} Sign-In failed`)
-    } finally {
       setFormLoading(false)
     }
   }
@@ -162,7 +139,23 @@ export default function SignupPage() {
         </div>
 
         <button
-          onClick={() => void handleSocialSignup('google')}
+          onClick={async () => {
+            setFormLoading(true);
+            setError(null);
+            try {
+              const result = await loginWithGoogle();
+              // Redirect fallback can return no immediate user object.
+              if (!result?.user) {
+                return;
+              }
+
+              const idToken = await result.user.getIdToken();
+              await loginWithFirebaseToken(idToken);
+            } catch (err: any) {
+              setError(err.message || 'Google Sign-In failed');
+              setFormLoading(false);
+            }
+          }}
           className={styles.socialButton}
         >
           <svg width="20" height="20" viewBox="0 0 24 24">
@@ -187,7 +180,23 @@ export default function SignupPage() {
         </button>
 
         <button
-          onClick={() => void handleSocialSignup('facebook')}
+          onClick={async () => {
+            setFormLoading(true);
+            setError(null);
+            try {
+              const result = await loginWithFacebook();
+              // Redirect fallback can return no immediate user object.
+              if (!result?.user) {
+                return;
+              }
+
+              const idToken = await result.user.getIdToken();
+              await loginWithFirebaseToken(idToken);
+            } catch (err: any) {
+              setError(err.message || 'Facebook Sign-In failed');
+              setFormLoading(false);
+            }
+          }}
           className={styles.socialButton}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="#1877F2">

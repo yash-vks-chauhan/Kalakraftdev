@@ -9,8 +9,8 @@ import styles from '../auth.module.css'
 
 export default function LoginPage() {
   const router = useRouter()
-  const { user: authUser, login, loading: authLoading } = useAuth()
-  const { loading: firebaseLoading, loginWithGoogle, loginWithFacebook, error: firebaseError } = useFirebaseAuth()
+  const { user: authUser, login, loading: authLoading, loginWithFirebaseToken } = useAuth()
+  const { user: firebaseUser, loading: firebaseLoading, loginWithGoogle, loginWithFacebook, error: firebaseError } = useFirebaseAuth()
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -80,7 +80,15 @@ export default function LoginPage() {
     setError('');
     setIsLoading(true);
     try {
-      await loginWithGoogle();
+      const result = await loginWithGoogle();
+      // Redirect fallback can return no immediate user object.
+      if (!result?.user) {
+        return;
+      }
+
+      const idToken = await result.user.getIdToken();
+      await loginWithFirebaseToken(idToken);
+      router.replace('/');
     } catch (err: any) {
       console.error('LoginPage: Google login error', err);
       setError(err.message || 'Google Sign-In failed');
@@ -93,7 +101,15 @@ export default function LoginPage() {
     setError('');
     setIsLoading(true);
     try {
-      await loginWithFacebook();
+      const result = await loginWithFacebook();
+      // Redirect fallback can return no immediate user object.
+      if (!result?.user) {
+        return;
+      }
+
+      const idToken = await result.user.getIdToken();
+      await loginWithFirebaseToken(idToken);
+      router.replace('/');
     } catch (err: any) {
       console.error('LoginPage: Facebook login error', err);
       setError(err.message || 'Facebook Sign-In failed');
@@ -103,6 +119,9 @@ export default function LoginPage() {
   };
 
   const loading = authLoading || firebaseLoading || isLoading
+
+  // Only disable inputs during actual loading, not for empty fields
+  const isFormDisabled = loading
 
   return (
     <div className={styles.authContainer}>

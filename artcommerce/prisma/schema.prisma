@@ -26,7 +26,6 @@ model User {
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
   role             String    @default("user")
-  sessionVersion   Int       @default(0)
   addresses        Address[]
   defaultAddressId Int?      @unique
   defaultAddress   Address?  @relation("DefaultAddress", fields: [defaultAddressId], references: [id], onDelete: NoAction, onUpdate: Cascade)

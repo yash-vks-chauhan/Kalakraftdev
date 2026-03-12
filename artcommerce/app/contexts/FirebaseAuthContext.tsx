@@ -12,7 +12,7 @@ import {
   signOut as fbSignOut,
   User as FirebaseUser,
 } from "firebase/auth"
-import { auth, firebaseClientConfigError } from "../firebase/client"
+import { auth } from "../firebase/client"
 import { useAuth } from "./AuthContext"
 const LOGOUT_IN_PROGRESS_KEY = 'artcommerce:logout_in_progress'
 
@@ -53,16 +53,6 @@ const getFriendlyAuthError = (error: any) => {
   return `Login failed: ${message}`
 }
 
-const getFriendlyServerAuthError = (error: any) => {
-  const message = String(error?.message || '')
-
-  if (/invalid id token/i.test(message)) {
-    return 'Social login could not be verified by the server. The Firebase web app and server must use the same project.'
-  }
-
-  return message || 'Failed to authenticate with server'
-}
-
 const shouldFallbackToRedirect = (error: any) => {
   const code = String(error?.code || "")
   return code === "auth/internal-error" || code === "auth/popup-blocked"
@@ -92,7 +82,7 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
 
   useEffect(() => {
     if (!auth) {
-      setError(firebaseClientConfigError || "Firebase authentication is not configured")
+      setError("Firebase authentication is not configured")
       setLoading(false)
       return
     }
@@ -123,25 +113,15 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
 
         setUser(firebaseUser)
 
-        firebaseUser
-          .getIdToken()
-          .then((idToken) => {
-            loginWithFirebaseToken(idToken).catch(async (tokenError) => {
-              console.error("Error in loginWithFirebaseToken:", tokenError)
-              setError(getFriendlyServerAuthError(tokenError))
-              setUser(null)
-
-              try {
-                await fbSignOut(auth)
-              } catch (signOutError) {
-                console.error("Error clearing Firebase session after server auth failure:", signOutError)
-              }
-            })
+        firebaseUser.getIdToken().then((idToken) => {
+          loginWithFirebaseToken(idToken).catch((tokenError) => {
+            console.error("Error in loginWithFirebaseToken:", tokenError)
+            setError("Failed to authenticate with server")
           })
-          .catch((idTokenError) => {
-            console.error("Error getting Firebase ID token:", idTokenError)
-            setError("Failed to get authentication token")
-          })
+        }).catch((idTokenError) => {
+          console.error("Error getting Firebase ID token:", idTokenError)
+          setError("Failed to get authentication token")
+        })
       } else {
         clearLogoutInProgress()
         setUser(null)
@@ -158,7 +138,7 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
 
   const loginWithGoogle = async () => {
     if (!auth) {
-      setError(firebaseClientConfigError || "Firebase authentication is not configured")
+      setError("Firebase authentication is not configured")
       return undefined
     }
 
@@ -193,7 +173,7 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
 
   const loginWithFacebook = async () => {
     if (!auth) {
-      setError(firebaseClientConfigError || "Firebase authentication is not configured")
+      setError("Firebase authentication is not configured")
       return undefined
     }
 

@@ -4,7 +4,6 @@ import { NextResponse } from 'next/server'
 import prisma from '../../../../lib/prisma'
 import bcrypt from 'bcryptjs'
 import { consumeRateLimit, getClientIp } from '../../../../lib/rateLimit'
-import { isAllowedOrigin } from '../../../../lib/security'
 import {
   createRefreshSession,
   setAuthCookies,
@@ -16,10 +15,6 @@ const LOGIN_MAX_ATTEMPTS_PER_IP = 30
 const LOGIN_MAX_ATTEMPTS_PER_EMAIL = 10
 
 export async function POST(request: Request) {
-  if (!isAllowedOrigin(request)) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
-
   const clientIp = getClientIp(request)
   const ipLimit = consumeRateLimit(`login:ip:${clientIp}`, {
     windowMs: LOGIN_WINDOW_MS,
@@ -69,7 +64,6 @@ export async function POST(request: Request) {
         email: true,
         avatarUrl: true,
         role: true,
-        sessionVersion: true,
         passwordHash: true,
       },
     });
@@ -107,7 +101,6 @@ export async function POST(request: Request) {
       id: user.id,
       email: user.email,
       role: user.role,
-      sessionVersion: user.sessionVersion,
     })
     const refresh = await createRefreshSession(user.id)
 

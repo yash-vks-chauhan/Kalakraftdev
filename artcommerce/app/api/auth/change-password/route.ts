@@ -3,18 +3,13 @@ import { NextResponse } from 'next/server'
 import { PASSWORD_POLICY_MESSAGE, isStrongPassword } from '../../../../lib/password-policy'
 import prisma from '../../../../lib/prisma'
 import { consumeRateLimit, getClientIp } from '../../../../lib/rateLimit'
-import { clearAuthCookies, getAuthenticatedUser } from '../../../../lib/session-auth'
-import { isAllowedOrigin } from '../../../../lib/security'
+import { getAuthenticatedUser } from '../../../../lib/session-auth'
 
 const CHANGE_WINDOW_MS = 15 * 60 * 1000
 const CHANGE_MAX_ATTEMPTS = 10
 
 export async function POST(request: Request) {
   try {
-    if (!isAllowedOrigin(request)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
-
     const authUser = await getAuthenticatedUser(request)
     if (!authUser) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -60,22 +55,14 @@ export async function POST(request: Request) {
     await prisma.$transaction([
       prisma.user.update({
         where: { id: authUser.id },
-        data: {
-          passwordHash: newHash,
-          sessionVersion: { increment: 1 },
-        },
+        data: { passwordHash: newHash },
       }),
       prisma.session.deleteMany({
         where: { userId: authUser.id },
       }),
     ])
 
-    const response = NextResponse.json({
-      message: 'Password updated. Please sign in again.',
-      reauthRequired: true,
-    })
-    clearAuthCookies(response)
-    return response
+    return NextResponse.json({ message: 'Password updated' })
   } catch (error: any) {
     console.error('Change password error:', error)
     return NextResponse.json({ error: 'Server error' }, { status: 500 })
