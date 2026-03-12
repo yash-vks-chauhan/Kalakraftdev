@@ -1,18 +1,33 @@
 import type { NextConfig } from 'next'
 
+const isProduction = process.env.NODE_ENV === 'production'
+
+const scriptSrc = [
+  "'self'",
+  "'unsafe-inline'",
+  ...(isProduction ? [] : ["'unsafe-eval'"]),
+  'https://www.gstatic.com',
+  'https://www.googletagmanager.com',
+  'https://js.pusher.com',
+  'https://apis.google.com',
+].join(' ')
+
 const contentSecurityPolicy = [
   "default-src 'self'",
   "base-uri 'self'",
   "form-action 'self'",
   "frame-ancestors 'none'",
   "frame-src 'self' https://*.firebaseapp.com https://*.web.app https://accounts.google.com",
+  "manifest-src 'self'",
   "object-src 'none'",
   "media-src 'self' https: data: blob:",
   "img-src 'self' https: data: blob:",
   "font-src 'self' https: data:",
   "style-src 'self' 'unsafe-inline' https:",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://www.googletagmanager.com https://js.pusher.com https://apis.google.com",
+  `script-src ${scriptSrc}`,
   "connect-src 'self' https://api.sendinblue.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://oauth2.googleapis.com https://*.firebaseapp.com https://*.web.app https://api.pusherapp.com https://*.pusher.com wss://ws-*.pusher.com",
+  "worker-src 'self' blob:",
+  ...(isProduction ? ['upgrade-insecure-requests'] : []),
 ].join('; ')
 
 const securityHeaders = [
