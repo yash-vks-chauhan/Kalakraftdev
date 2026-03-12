@@ -79,17 +79,24 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Email domain is not allowed' }, { status: 403 })
     }
 
-    let userFromDb = await prisma.user.findUnique({ where: { email } })
-    if (!userFromDb) {
-      userFromDb = await prisma.user.create({
-        data: {
-          email,
-          fullName: decodedToken.name || email,
-          role: 'user',
-          avatarUrl: decodedToken.picture || null,
-        },
-      })
-    }
+    const userFromDb = await prisma.user.upsert({
+      where: { email },
+      update: {},
+      create: {
+        email,
+        fullName: decodedToken.name || email,
+        role: 'user',
+        avatarUrl: decodedToken.picture || null,
+      },
+      select: {
+        id: true,
+        fullName: true,
+        email: true,
+        avatarUrl: true,
+        role: true,
+        sessionVersion: true,
+      },
+    })
 
     const accessToken = signAccessToken({
       id: userFromDb.id,
