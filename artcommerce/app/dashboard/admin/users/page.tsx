@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../../../contexts/AuthContext'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
+import ConfirmDialog from '../../../components/ConfirmDialog'
 
 interface UserRow {
   id: number
@@ -18,6 +19,8 @@ export default function AdminUsersPage() {
   const [users, setUsers] = useState<UserRow[]>([])
   const [filteredUsers, setFilteredUsers] = useState<UserRow[]>([])
   const [loading, setLoading] = useState(true)
+  const [deleteTarget, setDeleteTarget] = useState<UserRow | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
   const searchParams = useSearchParams()
   const filterParam = searchParams.get('filter')
 
@@ -71,6 +74,31 @@ export default function AdminUsersPage() {
     }
   }
 
+  async function handleDeleteUser() {
+    if (!deleteTarget) return
+
+    setIsDeleting(true)
+    try {
+      const res = await fetch(`/api/admin/users/${deleteTarget.id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      })
+
+      if (!res.ok) {
+        throw new Error('Failed to delete user')
+      }
+
+      const updatedUsers = users.filter(userItem => userItem.id !== deleteTarget.id)
+      setUsers(updatedUsers)
+      filterUsers(updatedUsers, filterParam)
+      setDeleteTarget(null)
+    } catch (error: any) {
+      alert(error.message || 'Failed to delete user')
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
   return (
     <main className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
@@ -103,20 +131,7 @@ export default function AdminUsersPage() {
                 <button
                   type="button"
                   className="ml-2 text-red-600 hover:underline"
-                  onClick={async () => {
-                    if (!confirm(`Delete ${u.fullName}?`)) return;
-                    const res = await fetch(`/api/admin/users/${u.id}`, {
-                      method: 'DELETE',
-                      headers: { Authorization: `Bearer ${token}` },
-                    });
-                    if (res.ok) {
-                      const updatedUsers = users.filter(x => x.id !== u.id);
-                      setUsers(updatedUsers);
-                      filterUsers(updatedUsers, filterParam);
-                    } else {
-                      alert('Failed to delete user');
-                    }
-                  }}
+                  onClick={() => setDeleteTarget(u)}
                 >
                   Delete
                 </button>
@@ -157,6 +172,24 @@ export default function AdminUsersPage() {
           ))}
         </tbody>
       </table>
+
+      <ConfirmDialog
+        open={Boolean(deleteTarget)}
+        title="Delete User"
+        description={
+          deleteTarget
+            ? `Delete ${deleteTarget.fullName}? This action cannot be undone.`
+            : ''
+        }
+        confirmLabel="Delete User"
+        isProcessing={isDeleting}
+        onConfirm={handleDeleteUser}
+        onClose={() => {
+          if (!isDeleting) {
+            setDeleteTarget(null)
+          }
+        }}
+      />
     </main>
   )
 }

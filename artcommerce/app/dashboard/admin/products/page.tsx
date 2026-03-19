@@ -8,6 +8,7 @@ import { useAuth } from '../../../contexts/AuthContext'
 import styles from './products-list.module.css'
 import { FiEdit2, FiTrash2, FiArrowRight } from 'react-icons/fi'
 import LoadingSpinner from '../../../components/LoadingSpinner'
+import ConfirmDialog from '../../../components/ConfirmDialog'
 import { useRouter } from 'next/navigation'
 
 interface Product {
@@ -28,6 +29,8 @@ export default function AdminProductsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<Product | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
@@ -49,20 +52,25 @@ export default function AdminProductsPage() {
       .finally(() => setIsLoading(false))
   }, [token, user])
 
-  async function handleDelete(id: number) {
-    if (!confirm('Are you sure you want to delete this product? This action cannot be undone.')) return
-    setIsTransitioning(true)
+  function requestDelete(product: Product) {
+    setDeleteTarget(product)
+  }
+
+  async function handleDelete() {
+    if (!deleteTarget) return
+    setIsDeleting(true)
     try {
-      const res = await fetch(`/api/admin/products/${id}`, {
+      const res = await fetch(`/api/admin/products/${deleteTarget.id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       })
       if (!res.ok) throw new Error((await res.json()).error)
-      setProducts(products.filter(p => p.id !== id))
+      setProducts(currentProducts => currentProducts.filter(product => product.id !== deleteTarget.id))
+      setDeleteTarget(null)
     } catch (err: any) {
       alert('Failed to delete product: ' + err.message)
     } finally {
-      setIsTransitioning(false)
+      setIsDeleting(false)
     }
   }
 
@@ -163,6 +171,7 @@ export default function AdminProductsPage() {
                 <td className={styles.tableCell}>
                   <div className={styles.actionButtons}>
                     <button
+                      type="button"
                       onClick={() => handleEdit(p.id)}
                       className={styles.editButton}
                     >
@@ -171,7 +180,8 @@ export default function AdminProductsPage() {
                       <FiArrowRight className={styles.arrowIcon} />
                     </button>
                     <button
-                      onClick={() => handleDelete(p.id)}
+                      type="button"
+                      onClick={() => requestDelete(p)}
                       className={styles.deleteButton}
                     >
                       <FiTrash2 />
@@ -185,6 +195,24 @@ export default function AdminProductsPage() {
           })}
         </tbody>
       </table>
+
+      <ConfirmDialog
+        open={Boolean(deleteTarget)}
+        title="Delete Product"
+        description={
+          deleteTarget
+            ? `Delete "${deleteTarget.name}" permanently? This action cannot be undone.`
+            : ''
+        }
+        confirmLabel="Delete Product"
+        isProcessing={isDeleting}
+        onConfirm={handleDelete}
+        onClose={() => {
+          if (!isDeleting) {
+            setDeleteTarget(null)
+          }
+        }}
+      />
     </main>
   )
 }

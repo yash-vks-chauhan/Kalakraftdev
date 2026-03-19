@@ -1,10 +1,23 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../../contexts/AuthContext'
+import ConfirmDialog from '../../../components/ConfirmDialog'
+
+interface Coupon {
+  id: number
+  code: string
+  type: string
+  amount: number
+  expiresAt: string
+  usedCount: number
+  usageLimit: number | null
+}
 
 export default function CouponManager() {
   const { token, user } = useAuth()
-  const [coupons, setCoupons] = useState<any[]>([])
+  const [coupons, setCoupons] = useState<Coupon[]>([])
+  const [deleteTarget, setDeleteTarget] = useState<Coupon | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
   const [form, setForm] = useState({
     code: '',
     type: 'percentage' as 'percentage' | 'flat',
@@ -49,14 +62,27 @@ export default function CouponManager() {
       setCoupons(coupons.map(c=>c.id===coupon.id?coupon:c))
     }
   }
-  async function deleteOne(id:number){
-    if (!confirm('Delete?')) return
-    const res = await fetch('/api/admin/coupons', {
-      method:'DELETE',
-      headers:{'Content-Type':'application/json', Authorization:`Bearer ${token}`},
-      body: JSON.stringify({ id })
-    })
-    if (res.ok) setCoupons(coupons.filter(c=>c.id!==id))
+  async function deleteOne() {
+    if (!deleteTarget) return
+    setIsDeleting(true)
+    try {
+      const res = await fetch('/api/admin/coupons', {
+        method:'DELETE',
+        headers:{'Content-Type':'application/json', Authorization:`Bearer ${token}`},
+        body: JSON.stringify({ id: deleteTarget.id })
+      })
+
+      if (!res.ok) {
+        throw new Error('Failed to delete coupon')
+      }
+
+      setCoupons(currentCoupons => currentCoupons.filter(coupon => coupon.id !== deleteTarget.id))
+      setDeleteTarget(null)
+    } catch (error: any) {
+      alert(error.message || 'Failed to delete coupon')
+    } finally {
+      setIsDeleting(false)
+    }
   }
 
   if (user?.role !== 'admin') return <p>Unauthorized</p>
@@ -94,13 +120,31 @@ export default function CouponManager() {
               <td className="border px-2">{new Date(c.expiresAt).toLocaleDateString()}</td>
               <td className="border px-2">{c.usedCount}/{c.usageLimit||'∞'}</td>
               <td className="border px-2 space-x-2">
-                <button onClick={()=>deleteOne(c.id)} className="text-red-600">Delete</button>
+                <button type="button" onClick={() => setDeleteTarget(c)} className="text-red-600">Delete</button>
                 {/* you could add inline edit UI here */}
               </td>
             </tr>
           ))}
         </tbody>
       </table>
+
+      <ConfirmDialog
+        open={Boolean(deleteTarget)}
+        title="Delete Coupon"
+        description={
+          deleteTarget
+            ? `Delete coupon "${deleteTarget.code}" permanently? This action cannot be undone.`
+            : ''
+        }
+        confirmLabel="Delete Coupon"
+        isProcessing={isDeleting}
+        onConfirm={deleteOne}
+        onClose={() => {
+          if (!isDeleting) {
+            setDeleteTarget(null)
+          }
+        }}
+      />
     </main>
   )
 }

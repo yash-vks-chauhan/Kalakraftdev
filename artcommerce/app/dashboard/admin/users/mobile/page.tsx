@@ -8,6 +8,7 @@ import { useSearchParams } from 'next/navigation'
 import styles from './mobile-users.module.css'
 import { FiSearch, FiFilter, FiChevronDown, FiChevronUp, FiTrash2, FiShoppingCart, FiMail, FiCalendar, FiUser, FiShield, FiChevronLeft } from 'react-icons/fi'
 import LoadingSpinner from '../../../../components/LoadingSpinner'
+import ConfirmDialog from '../../../../components/ConfirmDialog'
 
 interface UserRow {
   id: number
@@ -29,6 +30,8 @@ export default function MobileAdminUsersPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [roleFilter, setRoleFilter] = useState<'all' | 'user' | 'admin'>('all')
   const [expandedUsers, setExpandedUsers] = useState<Set<number>>(new Set())
+  const [deleteTarget, setDeleteTarget] = useState<UserRow | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
   const searchParams = useSearchParams()
   const filterParam = searchParams.get('filter')
 
@@ -123,12 +126,12 @@ export default function MobileAdminUsersPage() {
     }
   }
 
-  const handleDeleteUser = async (id: number, userName: string) => {
-    if (!confirm(`Delete ${userName}? This action cannot be undone.`)) return
-    
-    setIsTransitioning(true)
+  const handleDeleteUser = async () => {
+    if (!deleteTarget) return
+
+    setIsDeleting(true)
     try {
-      const res = await fetch(`/api/admin/users/${id}`, {
+      const res = await fetch(`/api/admin/users/${deleteTarget.id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       })
@@ -137,13 +140,14 @@ export default function MobileAdminUsersPage() {
         throw new Error('Failed to delete user')
       }
 
-      const updatedUsers = users.filter(u => u.id !== id)
+      const updatedUsers = users.filter(userItem => userItem.id !== deleteTarget.id)
       setUsers(updatedUsers)
       filterUsers(updatedUsers, filterParam)
+      setDeleteTarget(null)
     } catch (err: any) {
       alert('Failed to delete user: ' + err.message)
     } finally {
-      setIsTransitioning(false)
+      setIsDeleting(false)
     }
   }
 
@@ -353,7 +357,8 @@ export default function MobileAdminUsersPage() {
                     </div>
 
                     <button
-                      onClick={() => handleDeleteUser(userItem.id, userItem.fullName)}
+                      type="button"
+                      onClick={() => setDeleteTarget(userItem)}
                       className={styles.deleteButton}
                       title="Delete User"
                     >
@@ -371,6 +376,24 @@ export default function MobileAdminUsersPage() {
       {(isLoading || isTransitioning) && (
         <LoadingSpinner overlay={true} message={isTransitioning ? "Processing..." : "Loading..."} />
       )}
+
+      <ConfirmDialog
+        open={Boolean(deleteTarget)}
+        title="Delete User"
+        description={
+          deleteTarget
+            ? `Delete ${deleteTarget.fullName}? This action cannot be undone.`
+            : ''
+        }
+        confirmLabel="Delete User"
+        isProcessing={isDeleting}
+        onConfirm={handleDeleteUser}
+        onClose={() => {
+          if (!isDeleting) {
+            setDeleteTarget(null)
+          }
+        }}
+      />
     </div>
   )
 }

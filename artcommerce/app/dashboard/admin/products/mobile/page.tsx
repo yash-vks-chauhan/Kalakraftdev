@@ -6,6 +6,7 @@ import { useAuth } from '../../../../contexts/AuthContext'
 import styles from './mobile-products.module.css'
 import { FiEdit2, FiTrash2, FiPlus, FiSearch, FiFilter, FiEye, FiEyeOff, FiChevronLeft } from 'react-icons/fi'
 import LoadingSpinner from '../../../../components/LoadingSpinner'
+import ConfirmDialog from '../../../../components/ConfirmDialog'
 import { useRouter } from 'next/navigation'
 import { getOptimizedImageUrl } from '../../../../../lib/cloudinaryImages'
 
@@ -47,6 +48,8 @@ export default function MobileAdminProductsPage() {
   })
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all')
+  const [deleteTarget, setDeleteTarget] = useState<Product | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
   const router = useRouter()
 
   const PRODUCTS_PER_PAGE = 10
@@ -125,24 +128,29 @@ export default function MobileAdminProductsPage() {
     }
   }
 
-  const handleDelete = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this product? This action cannot be undone.')) return
-    setIsTransitioning(true)
+  const requestDelete = (product: Product) => {
+    setDeleteTarget(product)
+  }
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return
+    setIsDeleting(true)
     try {
-      const res = await fetch(`/api/admin/products/${id}`, {
+      const res = await fetch(`/api/admin/products/${deleteTarget.id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       })
       if (!res.ok) throw new Error((await res.json()).error)
       
       // Remove from current products list and refresh
-      setProducts(products.filter(p => p.id !== id))
+      setProducts(currentProducts => currentProducts.filter(product => product.id !== deleteTarget.id))
+      setDeleteTarget(null)
       // Also refresh to get updated totals
       setTimeout(() => fetchProducts(), 100)
     } catch (err: any) {
       alert('Failed to delete product: ' + err.message)
     } finally {
-      setIsTransitioning(false)
+      setIsDeleting(false)
     }
   }
 
@@ -361,6 +369,7 @@ export default function MobileAdminProductsPage() {
 
                 <div className={styles.cardActions}>
                   <button
+                    type="button"
                     onClick={() => handleEdit(product.id)}
                     className={styles.editAction}
                     title="Edit Product"
@@ -378,7 +387,8 @@ export default function MobileAdminProductsPage() {
                   </label>
 
                   <button
-                    onClick={() => handleDelete(product.id)}
+                    type="button"
+                    onClick={() => requestDelete(product)}
                     className={styles.deleteAction}
                     title="Delete Product"
                   >
@@ -449,6 +459,24 @@ export default function MobileAdminProductsPage() {
       {(isLoading || isTransitioning) && (
         <LoadingSpinner overlay={true} message={isTransitioning ? "Navigating..." : "Loading..."} />
       )}
+
+      <ConfirmDialog
+        open={Boolean(deleteTarget)}
+        title="Delete Product"
+        description={
+          deleteTarget
+            ? `Delete "${deleteTarget.name}" permanently? This action cannot be undone.`
+            : ''
+        }
+        confirmLabel="Delete Product"
+        isProcessing={isDeleting}
+        onConfirm={handleDelete}
+        onClose={() => {
+          if (!isDeleting) {
+            setDeleteTarget(null)
+          }
+        }}
+      />
     </div>
   )
 }
