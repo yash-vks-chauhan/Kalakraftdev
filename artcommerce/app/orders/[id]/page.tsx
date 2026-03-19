@@ -4,15 +4,17 @@ import Link from 'next/link'
 import prisma from '../../../lib/prisma'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { verifyAccessToken } from '../../../lib/session-auth'
+import { getAccessCookieNames, verifyAccessToken } from '../../../lib/session-auth'
 
 /**
- * Read and verify “token” HTTP‐only cookie.
+ * Read and verify the access-token HTTP-only cookie.
  * Must `await cookies()` before calling `.get(...)`.
  */
 async function getUserIdFromCookie(): Promise<string | null> {
   const cookieStore = await cookies()
-  const tokenCookie = cookieStore.get('token')?.value
+  const tokenCookie = getAccessCookieNames()
+    .map((name) => cookieStore.get(name)?.value)
+    .find(Boolean)
   if (!tokenCookie) return null
 
   const payload = verifyAccessToken(tokenCookie)

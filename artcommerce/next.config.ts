@@ -1,19 +1,50 @@
 import type { NextConfig } from 'next'
 
+const isProduction = process.env.NODE_ENV === 'production'
+
 const contentSecurityPolicy = [
   "default-src 'self'",
   "base-uri 'self'",
   "form-action 'self'",
   "frame-ancestors 'none'",
   "frame-src 'self' https://*.firebaseapp.com https://*.web.app https://accounts.google.com",
+  "manifest-src 'self'",
   "object-src 'none'",
   "media-src 'self' https: data: blob:",
   "img-src 'self' https: data: blob:",
   "font-src 'self' https: data:",
+  "worker-src 'self' blob:",
   "style-src 'self' 'unsafe-inline' https:",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://www.googletagmanager.com https://js.pusher.com https://apis.google.com",
-  "connect-src 'self' https://api.sendinblue.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://oauth2.googleapis.com https://*.firebaseapp.com https://*.web.app https://api.pusherapp.com https://*.pusher.com wss://ws-*.pusher.com",
-].join('; ')
+  [
+    "script-src 'self' 'unsafe-inline'",
+    !isProduction ? "'unsafe-eval'" : '',
+    'https://www.gstatic.com',
+    'https://www.googletagmanager.com',
+    'https://js.pusher.com',
+    'https://apis.google.com',
+  ]
+    .filter(Boolean)
+    .join(' '),
+  [
+    "connect-src 'self'",
+    'https://identitytoolkit.googleapis.com',
+    'https://securetoken.googleapis.com',
+    'https://www.googleapis.com',
+    'https://oauth2.googleapis.com',
+    'https://*.firebaseapp.com',
+    'https://*.web.app',
+    'https://api.pusherapp.com',
+    'https://*.pusher.com',
+    'wss://ws-*.pusher.com',
+    !isProduction ? 'http://localhost:*' : '',
+    !isProduction ? 'http://127.0.0.1:*' : '',
+    !isProduction ? 'ws://localhost:*' : '',
+    !isProduction ? 'ws://127.0.0.1:*' : '',
+  ]
+    .filter(Boolean)
+    .join(' '),
+  isProduction ? 'upgrade-insecure-requests' : '',
+].filter(Boolean).join('; ')
 
 const securityHeaders = [
   { key: 'Content-Security-Policy', value: contentSecurityPolicy },
@@ -21,11 +52,14 @@ const securityHeaders = [
   { key: 'X-Frame-Options', value: 'DENY' },
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
-  {
+]
+
+if (isProduction) {
+  securityHeaders.push({
     key: 'Strict-Transport-Security',
     value: 'max-age=63072000; includeSubDomains; preload',
-  },
-]
+  })
+}
 
 const nextConfig: NextConfig = {
   productionBrowserSourceMaps: false,

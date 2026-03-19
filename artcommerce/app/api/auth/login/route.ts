@@ -13,6 +13,19 @@ import {
 const LOGIN_WINDOW_MS = 15 * 60 * 1000
 const LOGIN_MAX_ATTEMPTS_PER_IP = 30
 const LOGIN_MAX_ATTEMPTS_PER_EMAIL = 10
+const DUMMY_PASSWORD_HASH = '$2b$10$7s4jH2VvFQ3cyLHPZ4Jkxu6rQ6K8A1glnH8JwW4u8cW4Rr2pL2u3a'
+
+async function comparePasswordSafely(password: string, passwordHash?: string | null): Promise<boolean> {
+  const hashToCompare = passwordHash || DUMMY_PASSWORD_HASH
+
+  try {
+    const matched = await bcrypt.compare(password, hashToCompare)
+    return Boolean(passwordHash) && matched
+  } catch (err) {
+    console.error('Password comparison error:', err)
+    return false
+  }
+}
 
 export async function POST(request: Request) {
   const clientIp = getClientIp(request)
@@ -68,29 +81,8 @@ export async function POST(request: Request) {
       },
     });
 
-    if (!user) {
-      return NextResponse.json(
-        { error: 'The email or password you entered is incorrect' },
-        { status: 401 }
-      )
-    }
-
-    if (!user.passwordHash || typeof user.passwordHash !== 'string') {
-      return NextResponse.json(
-        { error: 'The email or password you entered is incorrect' },
-        { status: 401 }
-      )
-    }
-
-    let isValid = false
-    try {
-      isValid = await bcrypt.compare(password, user.passwordHash)
-    } catch (err) {
-      console.error('Password comparison error:', err)
-      return NextResponse.json({ error: 'Authentication error occurred' }, { status: 401 })
-    }
-
-    if (!isValid) {
+    const isValid = await comparePasswordSafely(password, user?.passwordHash)
+    if (!user || !user.passwordHash || typeof user.passwordHash !== 'string' || !isValid) {
       return NextResponse.json(
         { error: 'The email or password you entered is incorrect' },
         { status: 401 }

@@ -1,21 +1,42 @@
 import { NextResponse } from 'next/server'
 import {
+  clearAuthCookies,
   getRefreshTokenFromRequest,
   rotateRefreshSession,
   setAuthCookies,
   signAccessToken,
 } from '../../../../lib/session-auth'
+import { consumeRateLimit, getClientIp } from '../../../../lib/rateLimit'
+
+const REFRESH_WINDOW_MS = 5 * 60 * 1000
+const MAX_REFRESH_ATTEMPTS_PER_IP = 60
 
 export async function POST(request: Request) {
   try {
+    const clientIp = getClientIp(request)
+    const limit = consumeRateLimit(`refresh:ip:${clientIp}`, {
+      windowMs: REFRESH_WINDOW_MS,
+      max: MAX_REFRESH_ATTEMPTS_PER_IP,
+    })
+    if (!limit.allowed) {
+      return NextResponse.json(
+        { error: 'Too many session refresh attempts. Please try again later.' },
+        { status: 429 }
+      )
+    }
+
     const refreshToken = getRefreshTokenFromRequest(request)
     if (!refreshToken) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      const response = NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      clearAuthCookies(response)
+      return response
     }
 
     const rotated = await rotateRefreshSession(refreshToken)
     if (!rotated) {
-      return NextResponse.json({ error: 'Invalid session' }, { status: 401 })
+      const response = NextResponse.json({ error: 'Invalid session' }, { status: 401 })
+      clearAuthCookies(response)
+      return response
     }
 
     const accessToken = signAccessToken({
