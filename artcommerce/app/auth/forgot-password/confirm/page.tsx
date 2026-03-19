@@ -1,17 +1,12 @@
 export const dynamic = 'force-dynamic';
-import ForgotPasswordConfirmClient from './ForgotPasswordConfirmClient';
+import ResetPasswordClient from '../ResetPasswordClient';
 
 export default async function ForgotPasswordConfirmPage({
   searchParams,
 }: {
-  searchParams: Promise<{ token?: string }>
+  searchParams: Promise<{ token?: string; email?: string }>
 }) {
-  const { token = '' } = await searchParams;
+  const { token = '', email = '' } = await searchParams;
 
-  return (
-    <main className="py-12">
-      <h1 className="text-2xl font-bold mb-4">Set a New Password</h1>
-      <ForgotPasswordConfirmClient token={token} />
-    </main>
-  );
+  return <ResetPasswordClient initialCode={token} initialEmail={email} />;
 }

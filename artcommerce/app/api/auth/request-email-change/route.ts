@@ -1,5 +1,6 @@
 import { customAlphabet } from 'nanoid'
 import { NextResponse } from 'next/server'
+import { getSecureMailer } from '../../../../lib/mailer'
 import { getOtpSecretValidationError, hashOtpForScope } from '../../../../lib/otp-security'
 import prisma from '../../../../lib/prisma'
 import { consumeRateLimit, getClientIp } from '../../../../lib/rateLimit'
@@ -85,31 +86,33 @@ export async function POST(request: Request) {
     },
   })
 
-  const resp = await fetch('https://api.sendinblue.com/v3/smtp/email', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'api-key': process.env.SENDINBLUE_API_KEY!,
-    },
-    body: JSON.stringify({
-      sender: {
-        name: 'Artcommerce Support',
-        email: process.env.SENDINBLUE_FROM_EMAIL!,
-      },
-      to: [{ email: user.email, name: user.fullName }],
+  try {
+    const { transporter, smtpUser } = getSecureMailer()
+
+    await transporter.sendMail({
+      from: `"Artcommerce Support" <${smtpUser}>`,
+      to: user.email,
       subject: 'Your OTP to change your Artcommerce email',
-      htmlContent: `
+      html: `
         <p>Hi ${user.fullName},</p>
         <p>Your OTP to change your email to <strong>${newEmail}</strong> is:</p>
         <h2 style="letter-spacing:4px;">${code}</h2>
         <p>This code expires in 5 minutes.</p>
         <p>If you didn’t request this, ignore this email.</p>
       `,
-    }),
-  })
+    })
+  } catch (error) {
+    console.error('[auth/request-email-change] Failed to send OTP email:', error)
 
-  if (!resp.ok) {
-    console.error('Sendinblue error:', await resp.text())
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        emailChangeOtp: null,
+        emailChangeNew: null,
+        emailChangeExpires: null,
+      },
+    }).catch(() => undefined)
+
     return NextResponse.json({ error: 'Failed to send OTP' }, { status: 502 })
   }
 

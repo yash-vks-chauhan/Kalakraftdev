@@ -350,4 +350,227 @@
 
 .forgotPassword:hover::after {
   width: 100%;
-} 
+}
+
+.flowCard {
+  max-width: 520px;
+}
+
+.flowRail {
+  display: grid;
+  gap: 0.85rem;
+  margin-bottom: 2rem;
+}
+
+.flowStep {
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  gap: 0.9rem;
+  align-items: start;
+  padding: 0.95rem 1rem;
+  border-radius: 14px;
+  border: 1px solid rgba(203, 213, 225, 0.9);
+  background: rgba(248, 250, 252, 0.72);
+  transition: all 0.25s ease;
+}
+
+.flowStep[data-state='active'] {
+  border-color: #1a202c;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.08);
+}
+
+.flowStep[data-state='complete'] {
+  border-color: rgba(148, 163, 184, 0.9);
+  background: rgba(241, 245, 249, 0.82);
+}
+
+.flowStepNumber {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: #475569;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.flowStep[data-state='active'] .flowStepNumber {
+  background: #1a202c;
+  border-color: #1a202c;
+  color: #ffffff;
+}
+
+.flowStep[data-state='complete'] .flowStepNumber {
+  background: rgba(226, 232, 240, 0.95);
+}
+
+.flowStepContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.flowStepLabel {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1a202c;
+}
+
+.flowStepDescription {
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: #64748b;
+}
+
+.successMessage {
+  display: flex;
+  align-items: center;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  background-color: #ecfdf5;
+  border: 1px solid #bbf7d0;
+  border-radius: 6px;
+  color: #166534;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.sequenceCard {
+  margin-top: 1.5rem;
+  padding: 1.2rem;
+  border-radius: 14px;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(248, 250, 252, 0.92));
+}
+
+.sequenceTitle {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1a202c;
+  margin-bottom: 0.55rem;
+}
+
+.sequenceText {
+  color: #64748b;
+  font-size: 0.88rem;
+  line-height: 1.65;
+}
+
+.sequenceList {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 0.55rem;
+  color: #64748b;
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+.inlineActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+.submitButtonLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0.9rem 1.35rem;
+  border-radius: 4px;
+  border: 1px solid #1a202c;
+  background: #1a202c;
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: all 0.25s ease;
+}
+
+.submitButtonLink:hover {
+  background: transparent;
+  color: #1a202c;
+}
+
+.secondaryButtonLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0.8rem 1.1rem;
+  border-radius: 10px;
+  border: 1px solid rgba(203, 213, 225, 0.95);
+  background: rgba(255, 255, 255, 0.88);
+  color: #1a202c;
+  text-decoration: none;
+  font-size: 0.84rem;
+  font-weight: 500;
+  transition: all 0.25s ease;
+}
+
+.secondaryButtonLink:hover {
+  border-color: #1a202c;
+  transform: translateY(-1px);
+}
+
+.ghostLink {
+  color: #475569;
+  text-decoration: none;
+  font-size: 0.84rem;
+  font-weight: 500;
+}
+
+.ghostLink:hover {
+  color: #1a202c;
+}
+
+.codeInput {
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+@media (max-width: 640px) {
+  .authContainer {
+    padding: 1.25rem;
+  }
+
+  .authCard {
+    padding: 2.3rem 1.25rem;
+  }
+
+  .flowStep {
+    grid-template-columns: 40px 1fr;
+    padding: 0.85rem;
+  }
+
+  .flowStepNumber {
+    width: 40px;
+    height: 40px;
+  }
+
+  .inlineActions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .submitButtonLink,
+  .secondaryButtonLink {
+    width: 100%;
+  }
+
+  .ghostLink {
+    text-align: center;
+  }
+}

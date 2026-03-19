@@ -1,7 +1,7 @@
 // File: app/auth/login/page.tsx
 'use client'
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '../../contexts/AuthContext'
 import { useFirebaseAuth } from '../../contexts/FirebaseAuthContext'
 import Link from 'next/link'
@@ -9,12 +9,14 @@ import styles from '../auth.module.css'
 
 export default function LoginPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { user: authUser, login, loading: authLoading, loginWithFirebaseToken } = useAuth()
   const { user: firebaseUser, loading: firebaseLoading, loginWithGoogle, loginWithFacebook, error: firebaseError } = useFirebaseAuth()
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [successMessage, setSuccessMessage] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
@@ -31,12 +33,26 @@ export default function LoginPage() {
     }
   }, [firebaseError]);
 
+  useEffect(() => {
+    const emailParam = searchParams.get('email')
+    const resetParam = searchParams.get('reset')
+
+    if (emailParam) {
+      setEmail(emailParam)
+    }
+
+    if (resetParam === '1') {
+      setSuccessMessage('Password updated. Sign in with your new password.')
+    }
+  }, [searchParams])
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     // Prevent default form submission behavior
     e.preventDefault();
     
     // Clear previous error
     setError('');
+    setSuccessMessage('');
 
     // Validate fields individually
     if (!email.trim() && !password.trim()) {
@@ -143,6 +159,12 @@ export default function LoginPage() {
               <path fillRule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zm-1.72 6.97a.75.75 0 10-1.06 1.06L10.94 12l-1.72 1.72a.75.75 0 101.06 1.06L12 13.06l1.72 1.72a.75.75 0 101.06-1.06L13.06 12l1.72-1.72a.75.75 0 10-1.06-1.06L12 10.94l-1.72-1.72z" clipRule="evenodd" />
             </svg>
             {error}
+          </div>
+        )}
+
+        {successMessage && (
+          <div className={styles.successMessage} role="status">
+            {successMessage}
           </div>
         )}
 

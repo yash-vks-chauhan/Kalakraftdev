@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { getSecureMailer } from '../../../../lib/mailer'
 import { getOtpSecretValidationError, hashOtpForScope } from '../../../../lib/otp-security'
 import prisma from '../../../../lib/prisma'
 import { consumeRateLimit, getClientIp } from '../../../../lib/rateLimit'
@@ -91,26 +92,20 @@ export async function POST(request: Request) {
   }
 
   try {
-    const resp = await fetch('https://api.sendinblue.com/v3/smtp/email', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'api-key': process.env.SENDINBLUE_API_KEY!,
-      },
-      body: JSON.stringify({
-        sender: { name: 'Artcommerce Support', email: process.env.SENDINBLUE_FROM_EMAIL! },
-        to: [{ email: updatedUser.email, name: updatedUser.fullName }],
-        subject: 'Your Artcommerce email has been changed',
-        htmlContent: `
-          <p>Hi ${updatedUser.fullName},</p>
-          <p>Your account email has been successfully updated to <strong>${updatedUser.email}</strong>.</p>
-          <p>If you did not make this change, please contact support immediately.</p>
-        `,
-      }),
+    const { transporter, smtpUser } = getSecureMailer()
+
+    await transporter.sendMail({
+      from: `"Artcommerce Support" <${smtpUser}>`,
+      to: updatedUser.email,
+      subject: 'Your Artcommerce email has been changed',
+      html: `
+        <p>Hi ${updatedUser.fullName},</p>
+        <p>Your account email has been successfully updated to <strong>${updatedUser.email}</strong>.</p>
+        <p>If you did not make this change, please contact support immediately.</p>
+      `,
     })
-    if (!resp.ok) console.error('Sendinblue confirm-email error:', await resp.text())
   } catch (error) {
-    console.error('Error sending confirm email:', error)
+    console.error('[auth/confirm-email-change] Error sending confirmation email:', error)
   }
 
   return NextResponse.json({ ok: true, user: updatedUser })
