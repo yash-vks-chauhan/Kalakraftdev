@@ -1,7 +1,7 @@
 // File: app/auth/login/page.tsx
 'use client'
 import { useState, useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '../../contexts/AuthContext'
 import { useFirebaseAuth } from '../../contexts/FirebaseAuthContext'
 import Link from 'next/link'
@@ -9,7 +9,6 @@ import styles from '../auth.module.css'
 
 export default function LoginPage() {
   const router = useRouter()
-  const searchParams = useSearchParams()
   const { user: authUser, login, loading: authLoading, loginWithFirebaseToken } = useAuth()
   const { user: firebaseUser, loading: firebaseLoading, loginWithGoogle, loginWithFacebook, error: firebaseError } = useFirebaseAuth()
 
@@ -34,8 +33,9 @@ export default function LoginPage() {
   }, [firebaseError]);
 
   useEffect(() => {
-    const emailParam = searchParams.get('email')
-    const resetParam = searchParams.get('reset')
+    const params = new URLSearchParams(window.location.search)
+    const emailParam = params.get('email')
+    const resetParam = params.get('reset')
 
     if (emailParam) {
       setEmail(emailParam)
@@ -44,7 +44,7 @@ export default function LoginPage() {
     if (resetParam === '1') {
       setSuccessMessage('Password updated. Sign in with your new password.')
     }
-  }, [searchParams])
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     // Prevent default form submission behavior

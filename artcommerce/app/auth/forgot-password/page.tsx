@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import ForgotPasswordShell from './ForgotPasswordShell'
 import styles from '../auth.module.css'
 
@@ -18,18 +18,17 @@ function isValidEmail(email: string): boolean {
 
 export default function ForgotPasswordRequestPage() {
   const router = useRouter()
-  const searchParams = useSearchParams()
   const [email, setEmail] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [loadingIndex, setLoadingIndex] = useState(0)
 
   useEffect(() => {
-    const emailParam = searchParams.get('email')
+    const emailParam = new URLSearchParams(window.location.search).get('email')
     if (emailParam) {
       setEmail(emailParam)
     }
-  }, [searchParams])
+  }, [])
 
   useEffect(() => {
     if (!loading) {
