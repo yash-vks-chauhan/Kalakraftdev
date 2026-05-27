@@ -37,6 +37,8 @@
   --max-width: 1440px;
   /* Offset below the navbar for fixed/sticky elements on desktop */
   --content-top: 94px;
+  /* Navbar height + sticky toolbar height (sidebar starts below this) */
+  --sidebar-top: 132px;
   /* Sidebar drawer width (used by desktop slide-in filter panel) */
   --sidebar-width: 300px;
 
@@ -88,14 +90,17 @@
    ======================================== */
 
 .topBar {
-  position: relative;
-  z-index: 2000; /* keep dropdown above product grid */
+  position: sticky;
+  top: 75px; /* sit flush under the fixed navbar (75px tall) */
+  z-index: 900; /* below navbar (1000), above grid */
   display: flex;
-  align-items: center;
+  align-items: stretch;
   padding: 0 var(--spacing-2xl);
   margin: 0 0 32px;
+  background: #ffffff;
   border-bottom: 1px solid var(--color-border);
-  background: transparent;
+  height: 57px; /* stable height regardless of chip presence */
+  box-sizing: border-box;
 }
 
 @media (min-width: 1024px) {
@@ -110,9 +115,8 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  gap: 24px;
-  padding: 16px 0;
-  min-height: 56px;
+  gap: 16px;
+  height: 100%;
 }
 
 /* Minimal text-style Filter button */
@@ -132,6 +136,8 @@
   cursor: pointer;
   font-family: var(--font-family);
   transition: border-color 160ms ease, background 160ms ease;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .filterButton:hover,
@@ -149,10 +155,33 @@
 .filterChipsContainer {
   display: flex;
   gap: 8px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
-  flex: 1;
+  flex: 1 1 0;
   min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  /* Fade edges to hint at horizontal scroll */
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    #000 16px,
+    #000 calc(100% - 16px),
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    #000 16px,
+    #000 calc(100% - 16px),
+    transparent 100%
+  );
+}
+
+.filterChipsContainer::-webkit-scrollbar {
+  display: none;
 }
 
 /* Active filter chip - minimal outlined pill */
@@ -169,6 +198,8 @@
   color: var(--color-text-primary);
   letter-spacing: 0.01em;
   line-height: 1.4;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .filterChipRemove {
@@ -207,6 +238,8 @@
   text-decoration-thickness: 1px;
   letter-spacing: 0.02em;
   transition: color 160ms ease;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .clearAllFilters:hover {
@@ -1177,10 +1210,10 @@
 
 .desktopSidebar {
   position: fixed;
-  top: var(--content-top);
+  top: var(--sidebar-top);
   left: 0;
   width: var(--sidebar-width);
-  height: calc(100vh - var(--content-top));
+  height: calc(100vh - var(--sidebar-top));
   background: #ffffff;
   border-right: 1px solid var(--color-border);
   box-shadow: none;

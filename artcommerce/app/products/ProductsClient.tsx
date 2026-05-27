@@ -907,211 +907,12 @@ export default function ProductsClient() {
       </AnimatePresence>
 
       <main className={`
-        ${styles.productsContainer} 
+        ${styles.productsContainer}
         ${isMobileView ? styles.mobileProductsContainer : ''}
       `}>
-        <h1 className={styles.title}>Discover Our Collection</h1>
-
-        {/* Desktop Top Filter Bar */}
-        {!isMobileView && (
-          <div className={styles.topBar}>
-            <div className={styles.topBarInner}>
-              {/* Left: Filters toggle */}
-              <button
-                className={styles.filterDrawerButton}
-                onClick={() => setIsDesktopFilterOpen(!isDesktopFilterOpen)}
-                aria-expanded={isDesktopFilterOpen}
-              >
-                <FiFilter size={14} />
-                Filters
-              </button>
-
-              {/* Middle: active filter chips (only when filters applied) */}
-              {(currentCategory || currentTag || ratingMin || lowStockOnly || inStockOnly) && (
-                <div className={styles.filterChipsContainer}>
-                  {currentCategory && (
-                    <div className={styles.filterChip}>
-                      {KNOWN_CATEGORIES.find(cat => cat.slug === currentCategory)?.name || currentCategory}
-                      <button
-                        className={styles.filterChipRemove}
-                        onClick={() => {
-                          const qs = new URLSearchParams(searchParams.toString())
-                          qs.delete('category')
-                          router.replace(qs.toString() ? `/products?${qs}` : '/products')
-                        }}
-                        aria-label="Remove category filter"
-                      >
-                        ×
-                      </button>
-                    </div>
-                  )}
-                  {currentTag && (
-                    <div className={styles.filterChip}>
-                      {currentTag}
-                      <button
-                        className={styles.filterChipRemove}
-                        onClick={() => {
-                          const qs = new URLSearchParams(searchParams.toString())
-                          qs.delete('usageTag')
-                          router.replace(qs.toString() ? `/products?${qs}` : '/products')
-                        }}
-                        aria-label="Remove tag filter"
-                      >
-                        ×
-                      </button>
-                    </div>
-                  )}
-                  {ratingMin && (
-                    <div className={styles.filterChip}>
-                      {ratingMin}+ ★
-                      <button
-                        className={styles.filterChipRemove}
-                        onClick={() => updateFilter('ratingMin', '')}
-                        aria-label="Remove rating filter"
-                      >
-                        ×
-                      </button>
-                    </div>
-                  )}
-                  {lowStockOnly && (
-                    <div className={styles.filterChip}>
-                      Low Stock
-                      <button
-                        className={styles.filterChipRemove}
-                        onClick={() => updateFilter('lowStockOnly', false)}
-                        aria-label="Remove low stock filter"
-                      >
-                        ×
-                      </button>
-                    </div>
-                  )}
-                  {inStockOnly && (
-                    <div className={styles.filterChip}>
-                      In Stock
-                      <button
-                        className={styles.filterChipRemove}
-                        onClick={() => updateFilter('inStockOnly', false)}
-                        aria-label="Remove in stock filter"
-                      >
-                        ×
-                      </button>
-                    </div>
-                  )}
-                  <button
-                    className={styles.clearAllFilters}
-                    onClick={() => {
-                      clearAllFilters()
-                      router.replace('/products')
-                    }}
-                  >
-                    Clear all
-                  </button>
-                </div>
-              )}
-
-              {/* Right: Sort */}
-              <div className={styles.topBarControls}>
-                <div className={styles.sortContainer} ref={sortDropdownRef}>
-                  <label className={styles.sortLabel}>Sort:</label>
-                  <div className={styles.customSelect}>
-                    <motion.button
-                      className={styles.selectTrigger}
-                      onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
-                      aria-expanded={isSortDropdownOpen}
-                      aria-haspopup="listbox"
-                      onKeyDown={handleSortKeyDown}
-                      whileTap={{ scale: 0.99 }}
-                      transition={{ duration: 0.15, ease: [0.25, 0.1, 0.25, 1] }}
-                    >
-                      <AnimatePresence mode="wait" initial={false}>
-                        <motion.span
-                          key={getCurrentSortLabel()}
-                          initial={{ opacity: 0, y: 8, filter: 'blur(2px)' }}
-                          animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                          exit={{ opacity: 0, y: -8, filter: 'blur(2px)' }}
-                          transition={{ duration: 0.22, ease: [0.25, 0.1, 0.25, 1] }}
-                        >
-                          {getCurrentSortLabel()}
-                        </motion.span>
-                      </AnimatePresence>
-                      <motion.div
-                        animate={{ rotate: isSortDropdownOpen ? 180 : 0 }}
-                        transition={{ 
-                          duration: 0.35, 
-                          ease: [0.25, 0.1, 0.25, 1],
-                          type: "spring",
-                          stiffness: 200,
-                          damping: 20
-                        }}
-                      >
-                        <FiChevronDown size={16} style={{ opacity: 0.6 }} />
-                      </motion.div>
-                    </motion.button>
-                    
-                    <AnimatePresence>
-                      {isSortDropdownOpen && (
-                        <motion.div 
-                          className={styles.selectDropdown}
-                          role="listbox"
-                          aria-activedescendant={`sort-opt-${highlightedSortIndex}`}
-                          variants={sortMenuVariants}
-                          initial="hidden"
-                          animate="visible"
-                          exit="hidden"
-                          onKeyDown={handleSortKeyDown}
-                        >
-                          {SORT_OPTIONS.map((option, index) => (
-                            <motion.button
-                              id={`sort-opt-${index}`}
-                              key={option.value}
-                              role="option"
-                              aria-selected={sortOrder === option.value}
-                              className={`${styles.selectOption} ${sortOrder === option.value ? styles.selectOptionActive : ''}`}
-                              onMouseEnter={() => setHighlightedSortIndex(index)}
-                              onClick={() => handleSortSelect(option.value)}
-                              variants={sortItemVariants}
-                              style={highlightedSortIndex === index ? { background: '#f5f5f5' } : undefined}
-                            >
-                              <motion.span
-                                animate={sortOrder === option.value ? { 
-                                  fontWeight: 600,
-                                  transition: { duration: 0.2 }
-                                } : {
-                                  fontWeight: 400
-                                }}
-                              >
-                                {option.label}
-                              </motion.span>
-                              {sortOrder === option.value && (
-                                <motion.span 
-                                  className={styles.checkmark}
-                                  initial={{ scale: 0, rotate: -90, opacity: 0 }}
-                                  animate={{ scale: 1, rotate: 0, opacity: 1 }}
-                                  exit={{ scale: 0, rotate: 90, opacity: 0 }}
-                                  transition={{ 
-                                    duration: 0.25, 
-                                    ease: [0.34, 1.56, 0.64, 1],
-                                    type: "spring",
-                                    stiffness: 300,
-                                    damping: 18
-                                  }}
-                                >
-                                  ✓
-                                </motion.span>
-                              )}
-                            </motion.button>
-                          ))}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+        {isMobileView && (
+          <h1 className={styles.title}>Discover Our Collection</h1>
         )}
-
-        {/* Desktop filter handled as left sidebar below; no overlay here */}
 
         {/* Results count for mobile */}
         {isMobileView && (
@@ -1219,16 +1020,185 @@ export default function ProductsClient() {
                 </motion.aside>
               )}
             </AnimatePresence>
-            <motion.div 
+            <motion.div
               className={styles.desktopMain}
-              animate={{ 
+              animate={{
                 marginLeft: isDesktopFilterOpen ? 'var(--sidebar-width)' : 0
               }}
-              transition={{ 
-                duration: 0.4, 
+              transition={{
+                duration: 0.4,
                 ease: [0.4, 0, 0.2, 1]
               }}
             >
+              <h1 className={styles.title}>Discover Our Collection</h1>
+
+              <div className={styles.topBar}>
+                <div className={styles.topBarInner}>
+                  <button
+                    className={styles.filterDrawerButton}
+                    onClick={() => setIsDesktopFilterOpen(!isDesktopFilterOpen)}
+                    aria-expanded={isDesktopFilterOpen}
+                  >
+                    <FiFilter size={14} />
+                    Filters
+                  </button>
+
+                  {(currentCategory || currentTag || ratingMin || lowStockOnly || inStockOnly) && (
+                    <div className={styles.filterChipsContainer}>
+                      {currentCategory && (
+                        <div className={styles.filterChip}>
+                          {KNOWN_CATEGORIES.find(cat => cat.slug === currentCategory)?.name || currentCategory}
+                          <button
+                            className={styles.filterChipRemove}
+                            onClick={() => {
+                              const qs = new URLSearchParams(searchParams.toString())
+                              qs.delete('category')
+                              router.replace(qs.toString() ? `/products?${qs}` : '/products')
+                            }}
+                            aria-label="Remove category filter"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      )}
+                      {currentTag && (
+                        <div className={styles.filterChip}>
+                          {currentTag}
+                          <button
+                            className={styles.filterChipRemove}
+                            onClick={() => {
+                              const qs = new URLSearchParams(searchParams.toString())
+                              qs.delete('usageTag')
+                              router.replace(qs.toString() ? `/products?${qs}` : '/products')
+                            }}
+                            aria-label="Remove tag filter"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      )}
+                      {ratingMin && (
+                        <div className={styles.filterChip}>
+                          {ratingMin}+ ★
+                          <button
+                            className={styles.filterChipRemove}
+                            onClick={() => updateFilter('ratingMin', '')}
+                            aria-label="Remove rating filter"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      )}
+                      {lowStockOnly && (
+                        <div className={styles.filterChip}>
+                          Low Stock
+                          <button
+                            className={styles.filterChipRemove}
+                            onClick={() => updateFilter('lowStockOnly', false)}
+                            aria-label="Remove low stock filter"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      )}
+                      {inStockOnly && (
+                        <div className={styles.filterChip}>
+                          In Stock
+                          <button
+                            className={styles.filterChipRemove}
+                            onClick={() => updateFilter('inStockOnly', false)}
+                            aria-label="Remove in stock filter"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      )}
+                      <button
+                        className={styles.clearAllFilters}
+                        onClick={() => {
+                          clearAllFilters()
+                          router.replace('/products')
+                        }}
+                      >
+                        Clear all
+                      </button>
+                    </div>
+                  )}
+
+                  <div className={styles.topBarControls}>
+                    <div className={styles.sortContainer} ref={sortDropdownRef}>
+                      <label className={styles.sortLabel}>Sort:</label>
+                      <div className={styles.customSelect}>
+                        <motion.button
+                          className={styles.selectTrigger}
+                          onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
+                          aria-expanded={isSortDropdownOpen}
+                          aria-haspopup="listbox"
+                          onKeyDown={handleSortKeyDown}
+                          whileTap={{ scale: 0.99 }}
+                          transition={{ duration: 0.15, ease: [0.25, 0.1, 0.25, 1] }}
+                        >
+                          <AnimatePresence mode="wait" initial={false}>
+                            <motion.span
+                              key={getCurrentSortLabel()}
+                              initial={{ opacity: 0, y: 8, filter: 'blur(2px)' }}
+                              animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                              exit={{ opacity: 0, y: -8, filter: 'blur(2px)' }}
+                              transition={{ duration: 0.22, ease: [0.25, 0.1, 0.25, 1] }}
+                            >
+                              {getCurrentSortLabel()}
+                            </motion.span>
+                          </AnimatePresence>
+                          <motion.div
+                            animate={{ rotate: isSortDropdownOpen ? 180 : 0 }}
+                            transition={{
+                              duration: 0.3,
+                              ease: [0.25, 0.1, 0.25, 1]
+                            }}
+                          >
+                            <FiChevronDown size={16} style={{ opacity: 0.6 }} />
+                          </motion.div>
+                        </motion.button>
+
+                        <AnimatePresence>
+                          {isSortDropdownOpen && (
+                            <motion.div
+                              className={styles.selectDropdown}
+                              role="listbox"
+                              aria-activedescendant={`sort-opt-${highlightedSortIndex}`}
+                              variants={sortMenuVariants}
+                              initial="hidden"
+                              animate="visible"
+                              exit="hidden"
+                              onKeyDown={handleSortKeyDown}
+                            >
+                              {SORT_OPTIONS.map((option, index) => (
+                                <motion.button
+                                  id={`sort-opt-${index}`}
+                                  key={option.value}
+                                  role="option"
+                                  aria-selected={sortOrder === option.value}
+                                  className={`${styles.selectOption} ${sortOrder === option.value ? styles.selectOptionActive : ''}`}
+                                  onMouseEnter={() => setHighlightedSortIndex(index)}
+                                  onClick={() => handleSortSelect(option.value)}
+                                  variants={sortItemVariants}
+                                  style={highlightedSortIndex === index ? { background: '#f5f5f5' } : undefined}
+                                >
+                                  <span>{option.label}</span>
+                                  {sortOrder === option.value && (
+                                    <span className={styles.checkmark}>✓</span>
+                                  )}
+                                </motion.button>
+                              ))}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               {(products.length === 0) ? (
                 <p className={styles.emptyProducts}>No products found.</p>
               ) : products.length > 50 ? (
