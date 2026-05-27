@@ -37,7 +37,9 @@
   --max-width: 1440px;
   /* Offset below the navbar for fixed/sticky elements on desktop */
   --content-top: 94px;
-  
+  /* Sidebar drawer width (used by desktop slide-in filter panel) */
+  --sidebar-width: 300px;
+
   /* Apply Base Styles */
   position: relative;
   min-height: 100vh;
@@ -48,32 +50,16 @@
   background: var(--color-bg);
 }
 
-/* Add padding only to title and top bar, not to grid */
+/* Page title */
 .title {
-  padding: 0 var(--spacing-2xl);
-  margin-top: var(--spacing-2xl);
-    background: linear-gradient(135deg, rgba(255,255,255,0.82) 0%, rgba(245,245,245,0.92) 100%);
-    box-shadow: 0 4px 24px 0 rgba(0,0,0,0.08), 0 1.5px 6px 0 rgba(0,0,0,0.04);
-    backdrop-filter: blur(12px) saturate(120%);
-    -webkit-backdrop-filter: blur(12px) saturate(120%);
-    color: var(--color-text-primary);
-    border: 1px solid rgba(255,255,255,0.18);
-    border-radius: 32px; /* Softer pill shape */
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    letter-spacing: -0.01em;
-    transition: box-shadow 0.18s cubic-bezier(0.4,0,0.2,1);
-  font-size: 32px;
-  font-weight: 700;
-  color: var(--color-text-primary);
   margin: 0;
-    width: 14px;
-    height: 14px;
-    opacity: 0.7;
-  letter-spacing: -0.03em;
-  position: relative;
+  padding: 40px var(--spacing-2xl) 28px;
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  letter-spacing: -0.02em;
   text-align: center;
+  line-height: 1.2;
 }
 
 @media (min-width: 1024px) {
@@ -102,42 +88,20 @@
    ======================================== */
 
 .topBar {
+  position: relative;
+  z-index: 2000; /* keep dropdown above product grid */
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 0 var(--spacing-3xl);
-  margin: 0 var(--spacing-3xl) 48px;
-  position: relative;
-  z-index: 2000; /* Ensure dropdown sits above product grid */
-  
-  background: linear-gradient(135deg, rgba(255,255,255,0.82) 0%, rgba(245,245,245,0.92) 100%);
-  box-shadow: 0 4px 24px 0 rgba(0,0,0,0.08), 0 1.5px 6px 0 rgba(0,0,0,0.04);
-  backdrop-filter: blur(12px) saturate(120%);
-  -webkit-backdrop-filter: blur(12px) saturate(120%);
-  border: 1px solid rgba(255,255,255,0.18);
-  border-radius: 32px;
-  color: var(--color-text-primary);
-  font-size: 13px;
-  font-weight: 500;
-  font-family: var(--font-family);
-  cursor: pointer;
-  transition: box-shadow 0.18s cubic-bezier(0.4,0,0.2,1);
+  padding: 0 var(--spacing-2xl);
+  margin: 0 0 32px;
+  border-bottom: 1px solid var(--color-border);
   background: transparent;
 }
 
 @media (min-width: 1024px) {
   .topBar {
-    padding: 0 32px;
-    margin-left: var(--spacing-3xl);
-    margin-right: var(--spacing-3xl);
-    margin-bottom: 56px;
-    z-index: 2000;
-  }
-}
-
-@media (min-width: 1440px) {
-  .topBar {
-    padding: 0 40px;
+    padding: 0 var(--spacing-3xl);
+    margin-bottom: 40px;
   }
 }
 
@@ -146,95 +110,65 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  gap: 32px;
+  gap: 24px;
+  padding: 16px 0;
+  min-height: 56px;
 }
 
-.filterSection {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex: 0 0 auto;
-}
-
-/* Minimal Pill-Shaped Button */
+/* Minimal text-style Filter button */
 .filterButton,
 .filterDrawerButton {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 20px;
-  
-  /* Subtle frosted background with tiny blur */
-  background: rgba(245, 245, 245, 0.95);
-  backdrop-filter: blur(6px) saturate(120%);
-  -webkit-backdrop-filter: blur(6px) saturate(120%);
-  
+  padding: 8px 14px;
+  background: transparent;
   color: var(--color-text-primary);
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  border-radius: 50px; /* Pill shape */
-  font-size: 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  font-size: 13px;
   font-weight: 500;
+  letter-spacing: 0.02em;
   cursor: pointer;
-  letter-spacing: -0.01em;
-  
-  /* No transitions or hover effects */
-  transition: none;
+  font-family: var(--font-family);
+  transition: border-color 160ms ease, background 160ms ease;
 }
 
 .filterButton:hover,
 .filterDrawerButton:hover {
-  /* No hover effect */
-  background: rgba(245, 245, 245, 0.95);
-  border-color: rgba(0, 0, 0, 0.06);
-}
-
-.filterButton:active,
-.filterDrawerButton:active {
-  /* No active effect */
-  transform: none;
+  border-color: var(--color-text-primary);
+  background: #fafafa;
 }
 
 .filterButton svg,
 .filterDrawerButton svg {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
 }
 
 .filterChipsContainer {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: center;
   flex: 1;
+  min-width: 0;
 }
 
-/* Minimal Pill-Shaped Filter Chip */
+/* Active filter chip - minimal outlined pill */
 .filterChip {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 18px;
-  
-  /* Clean minimal background */
-  background: rgba(245, 245, 245, 0.95);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  border-radius: 50px; /* Pill shape */
-  font-size: 13px;
+  gap: 6px;
+  padding: 4px 10px 4px 12px;
+  background: #fafafa;
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+  font-size: 12px;
   font-weight: 500;
   color: var(--color-text-primary);
-  
-  /* No transitions */
-  transition: none;
-}
-
-.filterChip:hover {
-  /* No hover effect */
-  background: rgba(245, 245, 245, 0.95);
-  border-color: rgba(0, 0, 0, 0.06);
+  letter-spacing: 0.01em;
+  line-height: 1.4;
 }
 
 .filterChipRemove {
@@ -250,183 +184,156 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: color 0.2s ease;
-  opacity: 0.6;
+  border-radius: 50%;
+  transition: color 160ms ease, background 160ms ease;
 }
 
 .filterChipRemove:hover {
   color: var(--color-text-primary);
-  opacity: 1;
+  background: rgba(0, 0, 0, 0.06);
 }
 
-/* Clear All Button - Minimal Pill Shape */
 .clearAllFilters {
-  padding: 8px 18px;
-  
-  background: rgba(245, 245, 245, 0.95);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  border-radius: 50px; /* Pill shape */
-  font-size: 13px;
+  padding: 4px 10px;
+  background: transparent;
+  border: none;
+  font-size: 12px;
   font-weight: 500;
   color: var(--color-text-secondary);
   cursor: pointer;
-  
-  /* No transitions */
-  transition: none;
+  font-family: var(--font-family);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  letter-spacing: 0.02em;
+  transition: color 160ms ease;
 }
 
 .clearAllFilters:hover {
-  /* No hover effect */
-  background: rgba(245, 245, 245, 0.95);
-  border-color: rgba(0, 0, 0, 0.06);
-  color: var(--color-text-secondary);
+  color: var(--color-text-primary);
 }
 
-.topBarControls,
-.rightSection {
+.topBarControls {
   display: flex;
-  background: rgba(245, 245, 245, 0.95);
-  backdrop-filter: blur(6px) saturate(120%);
-  -webkit-backdrop-filter: blur(6px) saturate(120%);
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  border-radius: 50px; /* Pill shape */
-  font-size: 14px;
-  transition: none;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
 }
 
-/* Sort Container */
+/* ========================================
+   SORT CONTROL — minimal, professional
+   ======================================== */
+
 .sortContainer {
-  width: 16px;
-  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .sortLabel {
-  color: var(--color-text-primary);
-  font-size: 14px;
-    padding: 10px 20px;
-    font-size: 14px;
-    box-shadow: none;
-    border-radius: 50px;
-    background: rgba(245, 245, 245, 0.95);
-    border: 1px solid rgba(0, 0, 0, 0.06);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.customSelect {
   position: relative;
-  min-width: 180px;
+  min-width: 170px;
 }
 
 .selectTrigger {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 10px 20px;
+  gap: 10px;
+  padding: 8px 14px;
   width: 100%;
-  
-  /* Clean minimal background */
-  background: rgba(245, 245, 245, 0.95);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  border-radius: 50px; /* Pill shape */
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
   color: var(--color-text-primary);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   font-family: var(--font-family);
   cursor: pointer;
-  
-  /* No transitions or hover effects */
-  transition: none;
+  letter-spacing: 0.01em;
+  transition: border-color 160ms ease, background 160ms ease;
 }
 
 .selectTrigger:hover {
-  /* No hover effect */
-  background: rgba(245, 245, 245, 0.95);
-  border-color: rgba(0, 0, 0, 0.06);
+  border-color: var(--color-text-primary);
+  background: #fafafa;
+}
+
+.selectTrigger:focus-visible {
+  outline: none;
+  border-color: var(--color-text-primary);
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.06);
 }
 
 .selectArrow {
-  transition: transform 0.25s ease;
-  opacity: 0.6;
+  transition: transform 0.2s ease;
+  opacity: 0.55;
 }
 
 .selectArrowOpen {
-  background: rgba(245, 245, 245, 0.95);
-  box-shadow: none;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  border-radius: 50px; /* Pill shape */
-  font-size: 14px;
-  transition: none;
-  min-width: 220px;
-  z-index: 3000;
-  
-  /* Subtle glassmorphism (tiny blur for polish) */
-    padding: 10px 20px;
-    font-size: 14px;
-    box-shadow: none;
-    border-radius: 50px;
-    background: rgba(245, 245, 245, 0.95);
-    border: 1px solid rgba(0, 0, 0, 0.06);
-  
-  /* Professional shadow */
-  box-shadow: 
-    0 12px 32px rgba(0, 0, 0, 0.12),
-    0 4px 12px rgba(0, 0, 0, 0.06),
-    0 1px 3px rgba(0, 0, 0, 0.04);
-  
-  overflow: hidden;
-  transform-origin: top right;
-  padding: 8px;
+  transform: rotate(180deg);
 }
 
-/* Dropdown Options - Clean and Simple */
+/* Dropdown menu (the popover) */
+.selectDropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 100%;
+  background: #ffffff;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  box-shadow:
+    0 12px 28px rgba(0, 0, 0, 0.08),
+    0 2px 6px rgba(0, 0, 0, 0.04);
+  padding: 4px;
+  z-index: 3000;
+  overflow: hidden;
+  transform-origin: top right;
+}
+
+/* Dropdown options */
 .selectOption {
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(8px) saturate(120%);
-  -webkit-backdrop-filter: blur(8px) saturate(120%);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 14px;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 9px 12px;
+  background: transparent;
   border: none;
   color: var(--color-text-primary);
-  font-size: 14px;
-  font-weight: 500;
-    min-width: 220px;
-    border-radius: 14px;
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
-    background: rgba(255, 255, 255, 0.92);
-    border: 1px solid rgba(0, 0, 0, 0.08);
-  position: relative;
+  font-size: 13px;
+  font-weight: 400;
+  font-family: var(--font-family);
+  text-align: left;
+  cursor: pointer;
+  border-radius: 4px;
+  letter-spacing: 0.01em;
+  transition: background 140ms ease;
 }
 
 .selectOption:hover {
-  background: rgba(0, 0, 0, 0.04);
-}
-
-.selectOption:active {
-  background: rgba(0, 0, 0, 0.06);
-  transform: scale(0.98);
+  background: #f5f5f5;
 }
 
 .selectOptionActive {
-  background: rgba(0, 0, 0, 0.06);
-  font-weight: 600;
-}
-
-.selectOptionActive:hover {
-  background: rgba(0, 0, 0, 0.08);
+  font-weight: 500;
+  background: #f5f5f5;
 }
 
 .checkmark {
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 13px;
   color: var(--color-text-primary);
   line-height: 1;
-  opacity: 0.9;
+  margin-left: 12px;
 }
 
 /* Keep old sortSelect for backward compatibility */
@@ -1226,26 +1133,16 @@
   bottom: 0;
   width: 320px;
   max-width: 85vw;
-  
-  /* Glassmorphism styling */
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  
-  /* Minimal shadow */
-  box-shadow: 
-    4px 0 32px rgba(0, 0, 0, 0.12),
-    0 0 1px rgba(0, 0, 0, 0.04);
-  
+  background: #ffffff;
+  border-right: 1px solid var(--color-border);
+  box-shadow: 0 0 24px rgba(0, 0, 0, 0.08);
   z-index: 999;
   transform: translateX(-100%);
-  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  
-  /* Custom scrollbar */
   scrollbar-width: thin;
-  scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+  scrollbar-color: rgba(0, 0, 0, 0.18) transparent;
 }
 
 .mobileFilterDrawer::-webkit-scrollbar {
@@ -1274,78 +1171,67 @@
    Minimal Glassmorphism Design with Clean Aesthetics
    ======================================== */
 
-@media (min-width: 1024px) {
-  .desktopWrap {
-    position: relative;
-    --sidebar-width: 320px;
-  }
+.desktopWrap {
+  position: relative;
+}
 
-  .desktopSidebar {
-    position: fixed;
-    top: var(--content-top);
-    left: 0;
-    width: var(--sidebar-width);
-    height: calc(100vh - var(--content-top));
-    
-    /* Glassmorphism styling */
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
-    
-    /* Minimal border and shadow */
-    border-right: 1px solid rgba(0, 0, 0, 0.06);
-    box-shadow: 
-      4px 0 24px rgba(0, 0, 0, 0.04),
-      0 0 1px rgba(0, 0, 0, 0.02);
-    
-    transform: translateX(-100%);
-    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    overflow-y: auto;
-    overflow-x: hidden;
-    -webkit-overflow-scrolling: touch;
-    
-    /* Custom scrollbar for elegance */
-    scrollbar-width: thin;
-    scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
-  }
+.desktopSidebar {
+  position: fixed;
+  top: var(--content-top);
+  left: 0;
+  width: var(--sidebar-width);
+  height: calc(100vh - var(--content-top));
+  background: #ffffff;
+  border-right: 1px solid var(--color-border);
+  box-shadow: none;
+  transform: translateX(-100%);
+  transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  z-index: 50;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.18) transparent;
+}
 
-  .desktopSidebar::-webkit-scrollbar {
-    width: 6px;
-  }
+.desktopSidebar::-webkit-scrollbar {
+  width: 4px;
+}
 
-  .desktopSidebar::-webkit-scrollbar-track {
-    background: transparent;
-  }
+.desktopSidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
 
-  .desktopSidebar::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.15);
-    border-radius: 3px;
-  }
+.desktopSidebar::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.18);
+  border-radius: 2px;
+}
 
-  .desktopSidebar::-webkit-scrollbar-thumb:hover {
-    background: rgba(0, 0, 0, 0.25);
-  }
+.desktopSidebar::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.32);
+}
 
-  .desktopSidebarOpen {
-    transform: translateX(0);
-  }
+.desktopSidebarOpen {
+  transform: translateX(0);
+}
 
-  .desktopMain {
-    transition: margin-left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    will-change: margin-left;
-  }
+.desktopMain {
+  transition: margin-left 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: margin-left;
+}
 
-  .desktopMainWithSidebar {
-    margin-left: var(--sidebar-width);
-  }
-    background: linear-gradient(135deg, rgba(255,255,255,0.90) 0%, rgba(245,245,245,0.96) 100%);
-    backdrop-filter: blur(16px) saturate(120%);
-    -webkit-backdrop-filter: blur(16px) saturate(120%);
-    border: 1px solid rgba(255,255,255,0.22);
-    border-radius: 18px;
-    box-shadow: 0 16px 40px rgba(0,0,0,0.14), 0 6px 18px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+.desktopMainWithSidebar {
+  margin-left: var(--sidebar-width);
+}
+
+/* Drawer sticky header (used by both mobile drawer and desktop slide-in) */
+.mobileFilterHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  background: #ffffff;
+  border-bottom: 1px solid var(--color-border);
   position: sticky;
   top: 0;
   z-index: 10;
@@ -1353,170 +1239,136 @@
 
 .mobileFilterHeader h2 {
   margin: 0;
-  font-size: 20px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--color-text-primary);
-  letter-spacing: -0.02em;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-/* Close Button - Minimal Glassmorphism */
-.mobileFilterCloseButton {
-  background: rgba(0, 0, 0, 0.05);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  cursor: pointer;
-  color: var(--color-text-primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.mobileFilterCloseButton:hover {
-  background: rgba(0, 0, 0, 0.1);
-  border-color: rgba(0, 0, 0, 0.15);
-  transform: scale(1.05);
-}
-
-.mobileFilterCloseButton:active {
-  transform: scale(0.95);
-}
-
-/* Filter Content Container */
-.mobileFilterContent {
-  padding: 20px 16px 32px;
-  background: transparent;
-}
-
-/* Filter Title */
-.filterTitle {
-  font-size: 11px;
-  font-weight: 600;
-  color: rgba(0, 0, 0, 0.4);
-  margin: 0 0 20px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
   display: flex;
   align-items: center;
   gap: 8px;
-  letter-spacing: 1.2px;
-  text-transform: uppercase;
-  padding: 0 8px;
 }
 
-/* Filter Section - Modern Grey Container */
+/* Close Button — flat, neutral */
+.mobileFilterCloseButton {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  margin: -4px;
+  transition: background 160ms ease, color 160ms ease;
+}
+
+.mobileFilterCloseButton:hover {
+  background: #f5f5f5;
+  color: var(--color-text-primary);
+}
+
+/* Filter content body */
+.mobileFilterContent {
+  padding: 8px 24px 32px;
+  background: transparent;
+}
+
+/* Hide the redundant in-drawer "Filters" title (already in the sticky header) */
+.filterTitle {
+  display: none;
+}
+
+/* Filter section — flat, separated by hairline divider */
 .filterSection {
-  margin-bottom: 12px;
-  border-radius: 16px;
-  overflow: hidden;
-  background: linear-gradient(135deg, rgba(245, 245, 245, 0.95), rgba(250, 250, 250, 0.9));
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  box-shadow: 
-    0 2px 8px rgba(0, 0, 0, 0.04),
-    0 1px 2px rgba(0, 0, 0, 0.02);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: none;
+  border-radius: 0;
 }
 
-.filterSection:hover {
-  border-color: rgba(0, 0, 0, 0.1);
-  box-shadow: 
-    0 4px 12px rgba(0, 0, 0, 0.06),
-    0 2px 4px rgba(0, 0, 0, 0.03);
-  transform: translateY(-1px);
+.filterSection:last-child {
+  border-bottom: none;
 }
 
-/* Filter Header - Clickable with Icon */
+/* Section header — quiet, clickable row */
 .filterHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 18px 20px;
+  padding: 18px 0;
   background: transparent;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--color-text-primary);
-  transition: all 0.2s ease;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   user-select: none;
-  border-bottom: 1px solid transparent;
+  transition: color 160ms ease;
 }
 
 .filterHeader:hover {
-  background: rgba(255, 255, 255, 0.5);
-}
-
-.filterHeader:active {
-  background: rgba(255, 255, 255, 0.7);
+  color: #000;
 }
 
 .filterHeader span {
   display: flex;
   align-items: center;
   gap: 10px;
-  letter-spacing: 0.2px;
 }
 
 .filterHeader svg {
-  font-size: 16px;
-  opacity: 0.7;
+  font-size: 14px;
+  opacity: 0.55;
 }
 
 .filterHeader .arrow {
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  opacity: 0.5;
-  font-size: 16px;
+  transition: transform 0.25s ease;
+  opacity: 0.45;
+  font-size: 14px;
 }
 
-/* Filter Content - Clean Options Container */
+/* Options container */
 .filterContent {
-  padding: 16px 20px 20px;
-  background: rgba(255, 255, 255, 0.4);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  padding: 0 0 18px;
+  background: transparent;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 2px;
 }
 
-/* Filter Option - Minimal Radio/Checkbox Items */
+/* Option row — minimal */
 .filterOption {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
+  gap: 10px;
+  padding: 8px 0;
   font-size: 14px;
   color: var(--color-text-primary);
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  border-radius: 10px;
   margin: 0;
-  position: relative;
   background: transparent;
+  transition: color 160ms ease;
 }
 
 .filterOption:hover {
-  background: rgba(255, 255, 255, 0.6);
-  transform: translateX(4px);
+  color: #000;
 }
 
 .filterOption input[type="radio"],
 .filterOption input[type="checkbox"] {
   cursor: pointer;
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
   accent-color: #000000;
-  transition: all 0.2s ease;
   flex-shrink: 0;
-}
-
-.filterOption:hover input[type="radio"],
-.filterOption:hover input[type="checkbox"] {
-  transform: scale(1.1);
+  margin: 0;
 }
 
 .filterOption label,
@@ -1524,41 +1376,31 @@
   cursor: pointer;
   flex: 1;
   line-height: 1.5;
-  font-weight: 500;
-  color: var(--color-text-primary);
-  letter-spacing: 0.1px;
+  font-weight: 400;
+  color: inherit;
+  letter-spacing: 0.005em;
 }
 
-/* Price Input Fields */
+/* Price/number inputs (if used) */
 .filterContent input[type="number"],
 .filterContent input[type="text"] {
   width: 100%;
-  padding: 12px 14px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: 10px;
-  font-size: 14px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  font-size: 13px;
   color: var(--color-text-primary);
-  background: rgba(255, 255, 255, 0.7);
-  transition: all 0.2s ease;
+  background: #ffffff;
   font-family: var(--font-family);
   outline: none;
-  font-weight: 500;
-}
-
-.filterContent input[type="number"]:hover,
-.filterContent input[type="text"]:hover {
-  border-color: rgba(0, 0, 0, 0.2);
-  background: rgba(255, 255, 255, 0.9);
+  transition: border-color 160ms ease;
 }
 
 .filterContent input[type="number"]:focus,
 .filterContent input[type="text"]:focus {
-  border-color: rgba(0, 0, 0, 0.3);
-  background: #ffffff;
-  box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.04);
+  border-color: var(--color-text-primary);
 }
 
-/* Price Range Container */
 .priceRange {
   display: flex;
   gap: 12px;
@@ -1572,45 +1414,36 @@
 .priceRange label {
   display: block;
   font-size: 11px;
-  font-weight: 600;
-  color: rgba(0, 0, 0, 0.5);
-  margin-bottom: 8px;
-  letter-spacing: 0.8px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  margin-bottom: 6px;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
-/* Clear Button - Modern Grey Style */
+/* Per-section clear — subtle text link */
 .clearButton {
-  margin-top: 16px;
-  padding: 12px 18px;
-  background: rgba(0, 0, 0, 0.05);
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: 10px;
-  font-size: 12px;
-  font-weight: 600;
-  color: rgba(0, 0, 0, 0.7);
+  margin-top: 8px;
+  padding: 6px 0;
+  background: transparent;
+  border: none;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: var(--font-family);
   text-transform: uppercase;
-  letter-spacing: 1px;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
+  letter-spacing: 0.08em;
+  text-align: left;
+  align-self: flex-start;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  transition: color 160ms ease;
 }
 
 .clearButton:hover {
-  background: rgba(0, 0, 0, 0.08);
-  border-color: rgba(0, 0, 0, 0.2);
   color: var(--color-text-primary);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-.clearButton:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
 }
 
 /* ========================================

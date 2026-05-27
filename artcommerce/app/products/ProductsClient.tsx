@@ -73,7 +73,6 @@ export default function ProductsClient() {
   const [loading, setLoading] = useState<boolean>(false)
   const [loadingMore, setLoadingMore] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false)
   const [isDesktopFilterOpen, setIsDesktopFilterOpen] = useState(false)
   const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false)
@@ -190,19 +189,6 @@ export default function ProductsClient() {
       productGridRef.current?.scrollIntoView({ behavior: 'smooth' })
     }
   }
-
-  // Reset sidebar state when switching between views
-  useEffect(() => {
-    if (!isMobileView && !isSidebarOpen) {
-      setIsSidebarOpen(true)
-    }
-  }, [isMobileView, isSidebarOpen])
-  
-  // Ensure sidebar toggle button position updates correctly
-  useEffect(() => {
-    // This empty effect ensures the toggle button position is updated when sidebar state changes
-    // The state change triggers a re-render with the updated style
-  }, [isSidebarOpen])
 
   // Close sort dropdown when clicking outside
   useEffect(() => {
@@ -517,8 +503,6 @@ export default function ProductsClient() {
                       router.replace(qs.toString() ? `/products?${qs}` : '/products')
                       if (isMobileView) setIsMobileFilterOpen(false)
                     }}
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.95 }}
                   />
                   <span>{cat.name}</span>
                 </motion.label>
@@ -531,8 +515,6 @@ export default function ProductsClient() {
                     qs.delete('category');
                     router.replace(qs.toString() ? `/products?${qs}` : '/products')
                   }}
-                  whileHover={{ scale: 1.02, y: -2 }}
-                  whileTap={{ scale: 0.98 }}
                 >
                   Clear
                 </motion.button>
@@ -594,8 +576,6 @@ export default function ProductsClient() {
                         router.replace(qs.toString() ? `/products?${qs}` : '/products')
                         if (isMobileView) setIsMobileFilterOpen(false)
                       }}
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.95 }}
                     />
                     <span>{tag}</span>
                   </motion.label>
@@ -608,8 +588,6 @@ export default function ProductsClient() {
                       qs.delete('usageTag');
                       router.replace(qs.toString() ? `/products?${qs}` : '/products')
                     }}
-                    whileHover={{ scale: 1.02, y: -2 }}
-                    whileTap={{ scale: 0.98 }}
                   >
                     Clear
                   </motion.button>
@@ -669,8 +647,6 @@ export default function ProductsClient() {
                       updateFilter('ratingMin', newValue)
                       if (isMobileView) setIsMobileFilterOpen(false)
                     }}
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.95 }}
                   />
                   <span>{thr}+ stars</span>
                 </motion.label>
@@ -681,8 +657,6 @@ export default function ProductsClient() {
                   onClick={() => {
                     updateFilter('ratingMin', '')
                   }}
-                  whileHover={{ scale: 1.02, y: -2 }}
-                  whileTap={{ scale: 0.98 }}
                 >
                   Clear
                 </motion.button>
@@ -737,8 +711,6 @@ export default function ProductsClient() {
                     updateFilter('lowStockOnly', e.target.checked)
                     if (isMobileView) setIsMobileFilterOpen(false)
                   }}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
                 />
                 <span>Only low stock</span>
               </motion.label>
@@ -755,8 +727,6 @@ export default function ProductsClient() {
                     updateFilter('inStockOnly', e.target.checked)
                     if (isMobileView) setIsMobileFilterOpen(false)
                   }}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
                 />
                 <span>In stock only</span>
               </motion.label>
@@ -811,8 +781,6 @@ export default function ProductsClient() {
                     updateFilter('sortOrder', '')
                     if (isMobileView) setIsMobileFilterOpen(false)
                   }}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
                 />
                 <span>Newest</span>
               </motion.label>
@@ -830,8 +798,6 @@ export default function ProductsClient() {
                     updateFilter('sortOrder', 'oldest')
                     if (isMobileView) setIsMobileFilterOpen(false)
                   }}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
                 />
                 <span>Oldest</span>
               </motion.label>
@@ -849,8 +815,6 @@ export default function ProductsClient() {
                     updateFilter('sortOrder', 'price_asc')
                     if (isMobileView) setIsMobileFilterOpen(false)
                   }}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
                 />
                 <span>Low to High</span>
               </motion.label>
@@ -868,8 +832,6 @@ export default function ProductsClient() {
                     updateFilter('sortOrder', 'price_desc')
                     if (isMobileView) setIsMobileFilterOpen(false)
                   }}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
                 />
                 <span>High to Low</span>
               </motion.label>
@@ -879,8 +841,6 @@ export default function ProductsClient() {
                   onClick={() => {
                     updateFilter('sortOrder', '')
                   }}
-                  whileHover={{ scale: 1.02, y: -2 }}
-                  whileTap={{ scale: 0.98 }}
                 >
                   Clear
                 </motion.button>
@@ -956,113 +916,112 @@ export default function ProductsClient() {
         {!isMobileView && (
           <div className={styles.topBar}>
             <div className={styles.topBarInner}>
-              {/* Center: Filter Chips */}
-              <div className={styles.filterChipsContainer}>
-                {currentCategory && (
-                  <div className={styles.filterChip}>
-                    {KNOWN_CATEGORIES.find(cat => cat.slug === currentCategory)?.name || currentCategory}
-                    <button 
-                      className={styles.filterChipRemove}
-                      onClick={() => {
-                        const qs = new URLSearchParams(searchParams.toString())
-                        qs.delete('category')
-                        router.replace(qs.toString() ? `/products?${qs}` : '/products')
-                      }}
-                    >
-                      ×
-                    </button>
-                  </div>
-                )}
-                {currentTag && (
-                  <div className={styles.filterChip}>
-                    {currentTag}
-                    <button 
-                      className={styles.filterChipRemove}
-                      onClick={() => {
-                        const qs = new URLSearchParams(searchParams.toString())
-                        qs.delete('usageTag')
-                        router.replace(qs.toString() ? `/products?${qs}` : '/products')
-                      }}
-                    >
-                      ×
-                    </button>
-                  </div>
-                )}
-                {ratingMin && (
-                  <div className={styles.filterChip}>
-                    {ratingMin}+ ★
-                    <button 
-                      className={styles.filterChipRemove}
-                      onClick={() => updateFilter('ratingMin', '')}
-                    >
-                      ×
-                    </button>
-                  </div>
-                )}
-                {lowStockOnly && (
-                  <div className={styles.filterChip}>
-                    Low Stock
-                    <button 
-                      className={styles.filterChipRemove}
-                      onClick={() => updateFilter('lowStockOnly', false)}
-                    >
-                      ×
-                    </button>
-                  </div>
-                )}
-                {inStockOnly && (
-                  <div className={styles.filterChip}>
-                    In Stock
-                    <button 
-                      className={styles.filterChipRemove}
-                      onClick={() => updateFilter('inStockOnly', false)}
-                    >
-                      ×
-                    </button>
-                  </div>
-                )}
-                
-                {/* Clear all filters */}
-                {(currentCategory || currentTag || ratingMin || lowStockOnly || inStockOnly) && (
-                  <button 
+              {/* Left: Filters toggle */}
+              <button
+                className={styles.filterDrawerButton}
+                onClick={() => setIsDesktopFilterOpen(!isDesktopFilterOpen)}
+                aria-expanded={isDesktopFilterOpen}
+              >
+                <FiFilter size={14} />
+                Filters
+              </button>
+
+              {/* Middle: active filter chips (only when filters applied) */}
+              {(currentCategory || currentTag || ratingMin || lowStockOnly || inStockOnly) && (
+                <div className={styles.filterChipsContainer}>
+                  {currentCategory && (
+                    <div className={styles.filterChip}>
+                      {KNOWN_CATEGORIES.find(cat => cat.slug === currentCategory)?.name || currentCategory}
+                      <button
+                        className={styles.filterChipRemove}
+                        onClick={() => {
+                          const qs = new URLSearchParams(searchParams.toString())
+                          qs.delete('category')
+                          router.replace(qs.toString() ? `/products?${qs}` : '/products')
+                        }}
+                        aria-label="Remove category filter"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  )}
+                  {currentTag && (
+                    <div className={styles.filterChip}>
+                      {currentTag}
+                      <button
+                        className={styles.filterChipRemove}
+                        onClick={() => {
+                          const qs = new URLSearchParams(searchParams.toString())
+                          qs.delete('usageTag')
+                          router.replace(qs.toString() ? `/products?${qs}` : '/products')
+                        }}
+                        aria-label="Remove tag filter"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  )}
+                  {ratingMin && (
+                    <div className={styles.filterChip}>
+                      {ratingMin}+ ★
+                      <button
+                        className={styles.filterChipRemove}
+                        onClick={() => updateFilter('ratingMin', '')}
+                        aria-label="Remove rating filter"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  )}
+                  {lowStockOnly && (
+                    <div className={styles.filterChip}>
+                      Low Stock
+                      <button
+                        className={styles.filterChipRemove}
+                        onClick={() => updateFilter('lowStockOnly', false)}
+                        aria-label="Remove low stock filter"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  )}
+                  {inStockOnly && (
+                    <div className={styles.filterChip}>
+                      In Stock
+                      <button
+                        className={styles.filterChipRemove}
+                        onClick={() => updateFilter('inStockOnly', false)}
+                        aria-label="Remove in stock filter"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  )}
+                  <button
                     className={styles.clearAllFilters}
                     onClick={() => {
                       clearAllFilters()
                       router.replace('/products')
                     }}
                   >
-                    Clear All
+                    Clear all
                   </button>
-                )}
-              </div>
+                </div>
+              )}
 
-              {/* Right: Controls */}
+              {/* Right: Sort */}
               <div className={styles.topBarControls}>
-                {/* Filter Button */}
-                <button 
-                  className={styles.filterDrawerButton}
-                  onClick={() => setIsDesktopFilterOpen(!isDesktopFilterOpen)}
-                >
-                  <FiFilter size={14} />
-                  Filters
-                </button>
-
-                {/* Sort Dropdown */}
                 <div className={styles.sortContainer} ref={sortDropdownRef}>
                   <label className={styles.sortLabel}>Sort:</label>
                   <div className={styles.customSelect}>
-                    <motion.button 
+                    <motion.button
                       className={styles.selectTrigger}
                       onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
                       aria-expanded={isSortDropdownOpen}
                       aria-haspopup="listbox"
                       onKeyDown={handleSortKeyDown}
-                      whileHover={{ 
-                        scale: 1.015,
-                        backgroundColor: 'rgba(0, 0, 0, 0.02)'
-                      }}
-                      whileTap={{ scale: 0.985 }}
-                      transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
+                      whileTap={{ scale: 0.99 }}
+                      transition={{ duration: 0.15, ease: [0.25, 0.1, 0.25, 1] }}
                     >
                       <AnimatePresence mode="wait" initial={false}>
                         <motion.span
@@ -1111,19 +1070,7 @@ export default function ProductsClient() {
                               onMouseEnter={() => setHighlightedSortIndex(index)}
                               onClick={() => handleSortSelect(option.value)}
                               variants={sortItemVariants}
-                              whileHover={{ 
-                                x: 6, 
-                                backgroundColor: 'rgba(255, 255, 255, 0.5)',
-                                transition: { 
-                                  duration: 0.2, 
-                                  ease: [0.25, 0.1, 0.25, 1] 
-                                }
-                              }}
-                              whileTap={{ 
-                                scale: 0.97,
-                                transition: { duration: 0.1 }
-                              }}
-                              style={highlightedSortIndex === index ? { backgroundColor: 'rgba(0,0,0,0.04)' } : undefined}
+                              style={highlightedSortIndex === index ? { background: '#f5f5f5' } : undefined}
                             >
                               <motion.span
                                 animate={sortOrder === option.value ? { 
