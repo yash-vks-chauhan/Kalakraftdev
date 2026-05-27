@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useMemo } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -30,13 +30,6 @@ const KNOWN_CATEGORIES = [
   { slug: 'decor', name: 'Wall Decor' },
   { slug: 'matt rangoli', name: 'Matt Rangoli' },
   { slug: 'mirror work', name: 'Mirror Work' }
-]
-
-const SORT_OPTIONS = [
-  { value: '', label: 'Newest' },
-  { value: 'oldest', label: 'Oldest' },
-  { value: 'price_asc', label: 'Price: Low to High' },
-  { value: 'price_desc', label: 'Price: High to Low' }
 ]
 
 interface Product {
@@ -75,8 +68,6 @@ export default function ProductsClient() {
   const [error, setError] = useState<string | null>(null)
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false)
   const [isDesktopFilterOpen, setIsDesktopFilterOpen] = useState(false)
-  const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false)
-  const [highlightedSortIndex, setHighlightedSortIndex] = useState(0)
 
   // State for accordion open/close
   const [openSections, setOpenSections] = useState<{[key: string]: boolean}>({
@@ -90,7 +81,6 @@ export default function ProductsClient() {
   // Infinite scroll state (desktop only)
   const [displayCount, setDisplayCount] = useState(15)
   const loadMoreTriggerRef = useRef<HTMLDivElement>(null)
-  const sortDropdownRef = useRef<HTMLDivElement>(null)
 
   // Pagination state (mobile only)
   const [currentPage, setCurrentPage] = useState(1)
@@ -190,114 +180,17 @@ export default function ProductsClient() {
     }
   }
 
-  // Close sort dropdown when clicking outside
+  // Listen for navbar-dispatched filter toggle (Filters button lives in the morph navbar)
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (sortDropdownRef.current && !sortDropdownRef.current.contains(event.target as Node)) {
-        setIsSortDropdownOpen(false)
-      }
-    }
-
-    if (isSortDropdownOpen) {
-      document.addEventListener('mousedown', handleClickOutside)
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [isSortDropdownOpen])
+    if (isMobileView) return
+    const handler = () => setIsDesktopFilterOpen(prev => !prev)
+    window.addEventListener('toggle-product-filter', handler)
+    return () => window.removeEventListener('toggle-product-filter', handler)
+  }, [isMobileView])
 
   function handleCategoryClick(slug: string) {
     // Use exact slug from database, no transformations needed
     router.replace(slug === currentCategory ? '/products' : `/products?category=${encodeURIComponent(slug)}`)
-  }
-
-  // Handle sort option selection
-  const handleSortSelect = (value: string) => {
-    updateFilter('sortOrder', value)
-    setIsSortDropdownOpen(false)
-  }
-
-  // Get current sort label
-  const getCurrentSortLabel = () => {
-    return SORT_OPTIONS.find(opt => opt.value === sortOrder)?.label || 'Newest'
-  }
-
-  // Keep highlighted option in sync with current value when opening
-  useEffect(() => {
-    if (isSortDropdownOpen) {
-      const idx = Math.max(0, SORT_OPTIONS.findIndex(o => o.value === sortOrder))
-      setHighlightedSortIndex(idx)
-    }
-  }, [isSortDropdownOpen, sortOrder])
-
-  // Framer variants for professional, minimal animation
-  const sortMenuVariants = useMemo(() => ({
-    hidden: { 
-      opacity: 0, 
-      y: -12, 
-      scale: 0.95,
-      filter: 'blur(4px)',
-      transition: { 
-        duration: 0.2, 
-        ease: [0.4, 0, 0.2, 1] as any
-      } 
-    },
-    visible:{ 
-      opacity: 1, 
-      y: 0, 
-      scale: 1,
-      filter: 'blur(0px)',
-      transition: { 
-        duration: 0.25, 
-        ease: [0.25, 0.1, 0.25, 1] as any,
-        when: 'beforeChildren', 
-        staggerChildren: 0.04,
-        delayChildren: 0.02
-      } 
-    }
-  }), [])
-
-  const sortItemVariants = useMemo(() => ({
-    hidden: { 
-      opacity: 0, 
-      x: -8,
-      filter: 'blur(2px)'
-    },
-    visible:{ 
-      opacity: 1, 
-      x: 0,
-      filter: 'blur(0px)',
-      transition: {
-        duration: 0.2,
-        ease: [0.25, 0.1, 0.25, 1] as any
-      }
-    }
-  }), [])
-
-  // Keyboard navigation for dropdown
-  const handleSortKeyDown = (e: React.KeyboardEvent<HTMLButtonElement | HTMLDivElement>) => {
-    if (!isSortDropdownOpen && (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Enter' || e.key === ' ')) {
-      e.preventDefault()
-      setIsSortDropdownOpen(true)
-      return
-    }
-    if (!isSortDropdownOpen) return
-
-    if (e.key === 'ArrowDown') {
-      e.preventDefault()
-      setHighlightedSortIndex((i) => Math.min(SORT_OPTIONS.length - 1, i + 1))
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault()
-      setHighlightedSortIndex((i) => Math.max(0, i - 1))
-    } else if (e.key === 'Enter') {
-      e.preventDefault()
-      const opt = SORT_OPTIONS[highlightedSortIndex]
-      if (opt) handleSortSelect(opt.value)
-    } else if (e.key === 'Escape') {
-      e.preventDefault()
-      setIsSortDropdownOpen(false)
-    }
   }
 
   // Fetch list of available usage tags once
@@ -1031,173 +924,6 @@ export default function ProductsClient() {
               }}
             >
               <h1 className={styles.title}>Discover Our Collection</h1>
-
-              <div className={styles.topBar}>
-                <div className={styles.topBarInner}>
-                  <button
-                    className={styles.filterDrawerButton}
-                    onClick={() => setIsDesktopFilterOpen(!isDesktopFilterOpen)}
-                    aria-expanded={isDesktopFilterOpen}
-                  >
-                    <FiFilter size={14} />
-                    Filters
-                  </button>
-
-                  {(currentCategory || currentTag || ratingMin || lowStockOnly || inStockOnly) && (
-                    <div className={styles.filterChipsContainer}>
-                      {currentCategory && (
-                        <div className={styles.filterChip}>
-                          {KNOWN_CATEGORIES.find(cat => cat.slug === currentCategory)?.name || currentCategory}
-                          <button
-                            className={styles.filterChipRemove}
-                            onClick={() => {
-                              const qs = new URLSearchParams(searchParams.toString())
-                              qs.delete('category')
-                              router.replace(qs.toString() ? `/products?${qs}` : '/products')
-                            }}
-                            aria-label="Remove category filter"
-                          >
-                            ×
-                          </button>
-                        </div>
-                      )}
-                      {currentTag && (
-                        <div className={styles.filterChip}>
-                          {currentTag}
-                          <button
-                            className={styles.filterChipRemove}
-                            onClick={() => {
-                              const qs = new URLSearchParams(searchParams.toString())
-                              qs.delete('usageTag')
-                              router.replace(qs.toString() ? `/products?${qs}` : '/products')
-                            }}
-                            aria-label="Remove tag filter"
-                          >
-                            ×
-                          </button>
-                        </div>
-                      )}
-                      {ratingMin && (
-                        <div className={styles.filterChip}>
-                          {ratingMin}+ ★
-                          <button
-                            className={styles.filterChipRemove}
-                            onClick={() => updateFilter('ratingMin', '')}
-                            aria-label="Remove rating filter"
-                          >
-                            ×
-                          </button>
-                        </div>
-                      )}
-                      {lowStockOnly && (
-                        <div className={styles.filterChip}>
-                          Low Stock
-                          <button
-                            className={styles.filterChipRemove}
-                            onClick={() => updateFilter('lowStockOnly', false)}
-                            aria-label="Remove low stock filter"
-                          >
-                            ×
-                          </button>
-                        </div>
-                      )}
-                      {inStockOnly && (
-                        <div className={styles.filterChip}>
-                          In Stock
-                          <button
-                            className={styles.filterChipRemove}
-                            onClick={() => updateFilter('inStockOnly', false)}
-                            aria-label="Remove in stock filter"
-                          >
-                            ×
-                          </button>
-                        </div>
-                      )}
-                      <button
-                        className={styles.clearAllFilters}
-                        onClick={() => {
-                          clearAllFilters()
-                          router.replace('/products')
-                        }}
-                      >
-                        Clear all
-                      </button>
-                    </div>
-                  )}
-
-                  <div className={styles.topBarControls}>
-                    <div className={styles.sortContainer} ref={sortDropdownRef}>
-                      <label className={styles.sortLabel}>Sort:</label>
-                      <div className={styles.customSelect}>
-                        <motion.button
-                          className={styles.selectTrigger}
-                          onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
-                          aria-expanded={isSortDropdownOpen}
-                          aria-haspopup="listbox"
-                          onKeyDown={handleSortKeyDown}
-                          whileTap={{ scale: 0.99 }}
-                          transition={{ duration: 0.15, ease: [0.25, 0.1, 0.25, 1] }}
-                        >
-                          <AnimatePresence mode="wait" initial={false}>
-                            <motion.span
-                              key={getCurrentSortLabel()}
-                              initial={{ opacity: 0, y: 8, filter: 'blur(2px)' }}
-                              animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                              exit={{ opacity: 0, y: -8, filter: 'blur(2px)' }}
-                              transition={{ duration: 0.22, ease: [0.25, 0.1, 0.25, 1] }}
-                            >
-                              {getCurrentSortLabel()}
-                            </motion.span>
-                          </AnimatePresence>
-                          <motion.div
-                            animate={{ rotate: isSortDropdownOpen ? 180 : 0 }}
-                            transition={{
-                              duration: 0.3,
-                              ease: [0.25, 0.1, 0.25, 1]
-                            }}
-                          >
-                            <FiChevronDown size={16} style={{ opacity: 0.6 }} />
-                          </motion.div>
-                        </motion.button>
-
-                        <AnimatePresence>
-                          {isSortDropdownOpen && (
-                            <motion.div
-                              className={styles.selectDropdown}
-                              role="listbox"
-                              aria-activedescendant={`sort-opt-${highlightedSortIndex}`}
-                              variants={sortMenuVariants}
-                              initial="hidden"
-                              animate="visible"
-                              exit="hidden"
-                              onKeyDown={handleSortKeyDown}
-                            >
-                              {SORT_OPTIONS.map((option, index) => (
-                                <motion.button
-                                  id={`sort-opt-${index}`}
-                                  key={option.value}
-                                  role="option"
-                                  aria-selected={sortOrder === option.value}
-                                  className={`${styles.selectOption} ${sortOrder === option.value ? styles.selectOptionActive : ''}`}
-                                  onMouseEnter={() => setHighlightedSortIndex(index)}
-                                  onClick={() => handleSortSelect(option.value)}
-                                  variants={sortItemVariants}
-                                  style={highlightedSortIndex === index ? { background: '#f5f5f5' } : undefined}
-                                >
-                                  <span>{option.label}</span>
-                                  {sortOrder === option.value && (
-                                    <span className={styles.checkmark}>✓</span>
-                                  )}
-                                </motion.button>
-                              ))}
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
 
               {(products.length === 0) ? (
                 <p className={styles.emptyProducts}>No products found.</p>

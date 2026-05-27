@@ -37,8 +37,8 @@
   --max-width: 1440px;
   /* Offset below the navbar for fixed/sticky elements on desktop */
   --content-top: 94px;
-  /* Navbar height + sticky toolbar height (sidebar starts below this) */
-  --sidebar-top: 132px;
+  /* Sidebar drawer top offset (sits just below the navbar) */
+  --sidebar-top: 94px;
   /* Sidebar drawer width (used by desktop slide-in filter panel) */
   --sidebar-width: 300px;
 
