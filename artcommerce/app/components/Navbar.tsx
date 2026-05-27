@@ -1,7 +1,7 @@
 // File: app/components/Navbar.tsx
 'use client'
 
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
+import React, { Suspense, useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useSearchParams, useRouter } from 'next/navigation'
@@ -92,29 +92,21 @@ const featuredItems = [
   }
 ];
 
-export default function Navbar() {
-  const { user, loading, logout } = useAuth()
-  const { cartItems } = useCart()
-  const { wishlistItems } = useWishlist()
-  const [searchOpen, setSearchOpen] = useState(false)
-  const [isProfileOpen, setIsProfileOpen] = useState(false)
-  const { isMobileMenuOpen, setIsMobileMenuOpen } = useMobileMenu()
-  const [isMinimized, setIsMinimized] = useState(false)
-  const profileDropdownRef = useRef<HTMLDivElement>(null)
+const PRODUCT_SORT_OPTIONS = [
+  { value: '', label: 'Newest' },
+  { value: 'oldest', label: 'Oldest' },
+  { value: 'price_asc', label: 'Price: Low to High' },
+  { value: 'price_desc', label: 'Price: High to Low' },
+]
+
+function ProductNavbarTools({ isMinimized }: { isMinimized: boolean }) {
   const sortDropdownRef = useRef<HTMLDivElement>(null)
-  const pathname = usePathname()
   const searchParams = useSearchParams()
   const router = useRouter()
-  const [showMegaMenu, setShowMegaMenu] = useState(false)
-  const [isSignupActive, setIsSignupActive] = useState(false)
-  const [isScrolled, setIsScrolled] = useState(false)
+  const pathname = usePathname()
   const [isSortOpen, setIsSortOpen] = useState(false)
-  const isHomePage = pathname === '/'
-  const isProductsPage = pathname === '/products'
 
-  // Count active product filters (for badge on Filters button)
   const productFilterCount = useMemo(() => {
-    if (!isProductsPage) return 0
     let n = 0
     if (searchParams.get('category')) n++
     if (searchParams.get('usageTag')) n++
@@ -122,14 +114,7 @@ export default function Navbar() {
     if (searchParams.get('inStock') === 'true') n++
     if (searchParams.get('lowStock') === 'true') n++
     return n
-  }, [isProductsPage, searchParams])
-
-  const PRODUCT_SORT_OPTIONS = [
-    { value: '', label: 'Newest' },
-    { value: 'oldest', label: 'Oldest' },
-    { value: 'price_asc', label: 'Price: Low to High' },
-    { value: 'price_desc', label: 'Price: High to Low' },
-  ]
+  }, [searchParams])
 
   const currentSort = searchParams.get('sort') || ''
   const currentSortLabel = PRODUCT_SORT_OPTIONS.find(o => o.value === currentSort)?.label || 'Newest'
@@ -145,6 +130,93 @@ export default function Navbar() {
     router.replace(qs.toString() ? `${pathname}?${qs}` : pathname)
     setIsSortOpen(false)
   }, [searchParams, router, pathname])
+
+  useEffect(() => {
+    if (!isSortOpen) return
+    function handleClickOutside(event: MouseEvent) {
+      if (sortDropdownRef.current && !sortDropdownRef.current.contains(event.target as Node)) {
+        setIsSortOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [isSortOpen])
+
+  return (
+    <div
+      className={`${styles.productsTools} ${isMinimized ? styles.productsToolsVisible : ''}`}
+      aria-hidden={!isMinimized}
+    >
+      <button
+        type="button"
+        onClick={handleToggleProductFilter}
+        className={styles.productsToolBtn}
+        aria-label="Toggle filters"
+        tabIndex={isMinimized ? 0 : -1}
+      >
+        <FilterIcon size={14} strokeWidth={2} />
+        <span>Filters</span>
+        {productFilterCount > 0 && (
+          <span className={styles.productsToolBadge}>{productFilterCount}</span>
+        )}
+      </button>
+
+      <div className={styles.productsSortWrap} ref={sortDropdownRef}>
+        <button
+          type="button"
+          onClick={() => setIsSortOpen(o => !o)}
+          className={styles.productsToolBtn}
+          aria-expanded={isSortOpen}
+          aria-haspopup="listbox"
+          tabIndex={isMinimized ? 0 : -1}
+        >
+          <span className={styles.productsToolMuted}>Sort:</span>
+          <span>{currentSortLabel}</span>
+          <ChevronDown
+            size={14}
+            strokeWidth={2}
+            className={`${styles.productsToolChevron} ${isSortOpen ? styles.productsToolChevronOpen : ''}`}
+          />
+        </button>
+        <div
+          className={`${styles.productsSortMenu} ${isSortOpen ? styles.productsSortMenuOpen : ''}`}
+          role="listbox"
+          aria-hidden={!isSortOpen}
+        >
+          {PRODUCT_SORT_OPTIONS.map(opt => (
+            <button
+              key={opt.value || 'default'}
+              type="button"
+              role="option"
+              aria-selected={currentSort === opt.value}
+              onClick={() => handleSelectProductSort(opt.value)}
+              className={`${styles.productsSortOption} ${currentSort === opt.value ? styles.productsSortOptionActive : ''}`}
+              tabIndex={isSortOpen ? 0 : -1}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default function Navbar() {
+  const { user, loading, logout } = useAuth()
+  const { cartItems } = useCart()
+  const { wishlistItems } = useWishlist()
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [isProfileOpen, setIsProfileOpen] = useState(false)
+  const { isMobileMenuOpen, setIsMobileMenuOpen } = useMobileMenu()
+  const [isMinimized, setIsMinimized] = useState(false)
+  const profileDropdownRef = useRef<HTMLDivElement>(null)
+  const pathname = usePathname()
+  const [showMegaMenu, setShowMegaMenu] = useState(false)
+  const [isSignupActive, setIsSignupActive] = useState(false)
+  const [isScrolled, setIsScrolled] = useState(false)
+  const isHomePage = pathname === '/'
+  const isProductsPage = pathname === '/products'
 
   // Add scroll event listener
   useEffect(() => {
@@ -168,18 +240,6 @@ export default function Navbar() {
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
-
-  // Close sort dropdown when clicking outside
-  useEffect(() => {
-    if (!isSortOpen) return
-    function handleClickOutside(event: MouseEvent) {
-      if (sortDropdownRef.current && !sortDropdownRef.current.contains(event.target as Node)) {
-        setIsSortOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [isSortOpen])
 
   // Reset mobile menu when auth state changes
   useEffect(() => {
@@ -360,62 +420,9 @@ export default function Navbar() {
 
         <div className={styles.right}>
           {isProductsPage && (
-            <div
-              className={`${styles.productsTools} ${isMinimized ? styles.productsToolsVisible : ''}`}
-              aria-hidden={!isMinimized}
-            >
-              <button
-                type="button"
-                onClick={handleToggleProductFilter}
-                className={styles.productsToolBtn}
-                aria-label="Toggle filters"
-                tabIndex={isMinimized ? 0 : -1}
-              >
-                <FilterIcon size={14} strokeWidth={2} />
-                <span>Filters</span>
-                {productFilterCount > 0 && (
-                  <span className={styles.productsToolBadge}>{productFilterCount}</span>
-                )}
-              </button>
-
-              <div className={styles.productsSortWrap} ref={sortDropdownRef}>
-                <button
-                  type="button"
-                  onClick={() => setIsSortOpen(o => !o)}
-                  className={styles.productsToolBtn}
-                  aria-expanded={isSortOpen}
-                  aria-haspopup="listbox"
-                  tabIndex={isMinimized ? 0 : -1}
-                >
-                  <span className={styles.productsToolMuted}>Sort:</span>
-                  <span>{currentSortLabel}</span>
-                  <ChevronDown
-                    size={14}
-                    strokeWidth={2}
-                    className={`${styles.productsToolChevron} ${isSortOpen ? styles.productsToolChevronOpen : ''}`}
-                  />
-                </button>
-                <div
-                  className={`${styles.productsSortMenu} ${isSortOpen ? styles.productsSortMenuOpen : ''}`}
-                  role="listbox"
-                  aria-hidden={!isSortOpen}
-                >
-                  {PRODUCT_SORT_OPTIONS.map(opt => (
-                    <button
-                      key={opt.value || 'default'}
-                      type="button"
-                      role="option"
-                      aria-selected={currentSort === opt.value}
-                      onClick={() => handleSelectProductSort(opt.value)}
-                      className={`${styles.productsSortOption} ${currentSort === opt.value ? styles.productsSortOptionActive : ''}`}
-                      tabIndex={isSortOpen ? 0 : -1}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
+            <Suspense fallback={null}>
+              <ProductNavbarTools isMinimized={isMinimized} />
+            </Suspense>
           )}
 
           <button
