@@ -1,7 +1,7 @@
 'use client'
 
 import { createContext, ReactNode, useEffect, useState, useContext } from 'react'
-import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app'
+import { initializeApp, getApps } from 'firebase/app'
 import {
   getAuth,
   signInWithPopup,
@@ -10,29 +10,23 @@ import {
   User as FirebaseUser,
   onAuthStateChanged,
 } from 'firebase/auth'
+import {
+  firebaseClientConfig,
+  isFirebaseClientConfigured,
+  missingFirebaseClientEnv,
+} from '../../lib/firebase-client-config'
 
-const defaultFirebaseConfig = {
-  apiKey: "AIzaSyCGGjfLkDB7QPE0CODQ6eVSh86GWpDrI9A",
-  authDomain: "kalakraft-b41a3.firebaseapp.com",
-  projectId: "kalakraft-b41a3",
-  storageBucket: "kalakraft-b41a3.appspot.com",
-  messagingSenderId: "37104566365",
-  appId: "1:37104566365:web:a4e50eac7489ff895e4db4",
-  measurementId: "G-CGYL0MM4SN",
+if (!isFirebaseClientConfigured) {
+  console.warn(`Firebase client configuration is incomplete. Missing: ${missingFirebaseClientEnv.join(', ')}`)
 }
 
-const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || defaultFirebaseConfig.apiKey,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || defaultFirebaseConfig.authDomain,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || defaultFirebaseConfig.projectId,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || defaultFirebaseConfig.storageBucket,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || defaultFirebaseConfig.messagingSenderId,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || defaultFirebaseConfig.appId,
-  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID || defaultFirebaseConfig.measurementId,
-}
+const app = isFirebaseClientConfigured
+  ? getApps().length
+    ? getApps()[0]
+    : initializeApp(firebaseClientConfig)
+  : null
 
-const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig)
-export const auth = getAuth(app)
+export const auth = app ? getAuth(app) : null
 const googleProvider = new GoogleAuthProvider()
 
 export interface AuthContextType {

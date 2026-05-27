@@ -103,13 +103,17 @@ npm install
 
 ### 3. Configure Environment Variables
 
-Create a `.env.local` file inside the `artcommerce/` directory:
+Create a `.env.local` file inside the `artcommerce/` directory. Use `artcommerce/.env.example` as the template and keep real values out of git:
 
 ```env
 # ─── Firebase ───────────────────────────────────────
 NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
 NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
 NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
+NEXT_PUBLIC_FIREBASE_APP_ID=your_firebase_app_id
+NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=your_measurement_id
 
 # ─── JWT ────────────────────────────────────────────
 JWT_SECRET=your_jwt_secret
@@ -248,7 +252,7 @@ The application uses **Prisma ORM** with **PostgreSQL**. Key models include:
 1. Push your code to GitHub
 2. Import the project on [Vercel](https://vercel.com)
 3. Set the **Root Directory** to `artcommerce`
-4. Add all environment variables from `.env.local` to the Vercel project settings
+4. Add all environment variables from `.env.local` to the Vercel project settings; do not place secrets in `vercel.json`
 5. Deploy — Vercel will run `npm run build` automatically
 
 ### Firebase Auth — Authorized Domains
@@ -267,7 +271,7 @@ Set up a hosted PostgreSQL instance on one of:
 - [Railway](https://railway.app/)
 - [Vercel Postgres](https://vercel.com/docs/storage/vercel-postgres)
 
-Then add the connection string as `DATABASE_URL` in your Vercel environment variables and run:
+Then add the connection string as `DATABASE_URL` in your Vercel environment variables, rotate it immediately if it was ever committed publicly, and run:
 
 ```bash
 npx prisma migrate deploy
