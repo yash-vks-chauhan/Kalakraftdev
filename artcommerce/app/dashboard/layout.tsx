@@ -80,8 +80,9 @@ export default function DashboardLayout({
       {/* Desktop sidebar */}
       <aside
         data-state={collapsed ? "collapsed" : "expanded"}
+        style={{ willChange: "width" }}
         className={cn(
-          "fixed inset-y-0 left-0 z-30 hidden overflow-hidden border-r bg-background transition-[width] duration-200 ease-linear lg:flex lg:flex-col",
+          "fixed inset-y-0 left-0 z-30 hidden overflow-hidden border-r bg-background/95 backdrop-blur-md transition-[width] duration-[320ms] ease-[cubic-bezier(0.32,0.72,0,1)] lg:flex lg:flex-col",
           collapsed ? "w-16" : "w-72"
         )}
       >
@@ -119,7 +120,7 @@ export default function DashboardLayout({
       {/* Main content */}
       <main
         className={cn(
-          "transition-[padding-left] duration-200 ease-linear",
+          "transition-[padding-left] duration-[320ms] ease-[cubic-bezier(0.32,0.72,0,1)]",
           collapsed ? "lg:pl-16" : "lg:pl-72"
         )}
       >

@@ -46,6 +46,12 @@ const adminNav: NavItem[] = [
   { href: "/dashboard/admin/support", label: "Support", icon: LifeBuoy },
 ]
 
+// Apple-like spring easing + staggered fades so labels disappear before the
+// sidebar width shrinks and reappear after it has opened.
+const LABEL_FADE = "transition-[opacity,transform] ease-[cubic-bezier(0.32,0.72,0,1)] will-change-[opacity,transform]"
+const LABEL_HIDDEN = "duration-[140ms] opacity-0 -translate-x-1 pointer-events-none"
+const LABEL_VISIBLE = "duration-[220ms] delay-[140ms] opacity-100 translate-x-0"
+
 function initialsOf(name?: string) {
   if (!name) return "?"
   return name
@@ -71,13 +77,27 @@ function NavGroup({ label, items, pathname, onNavigate, collapsed }: {
 }) {
   return (
     <div className="flex flex-col gap-0.5">
-      {label && !collapsed && (
-        <p className="px-3 pb-2 pt-4 text-xs font-medium text-muted-foreground/80">
-          {label}
-        </p>
-      )}
-      {label && collapsed && (
-        <div className="mx-2 my-2 h-px bg-border" aria-hidden />
+      {label && (
+        <div className="relative mt-3 mb-1 h-6">
+          <p
+            className={cn(
+              "absolute inset-x-0 bottom-1 px-3 text-xs font-medium text-muted-foreground/80 whitespace-nowrap",
+              LABEL_FADE,
+              collapsed ? LABEL_HIDDEN : LABEL_VISIBLE
+            )}
+          >
+            {label}
+          </p>
+          <div
+            className={cn(
+              "absolute inset-x-2 bottom-2 h-px bg-border transition-opacity ease-[cubic-bezier(0.32,0.72,0,1)]",
+              collapsed
+                ? "duration-[220ms] delay-[140ms] opacity-100"
+                : "duration-[140ms] opacity-0"
+            )}
+            aria-hidden
+          />
+        </div>
       )}
       {items.map((item) => {
         const active = isActive(pathname, item.href, item.exact)
@@ -90,22 +110,29 @@ function NavGroup({ label, items, pathname, onNavigate, collapsed }: {
             title={collapsed ? item.label : undefined}
             aria-label={collapsed ? item.label : undefined}
             className={cn(
-              "group relative flex items-center rounded-md text-sm transition-colors",
-              collapsed
-                ? "h-10 w-10 justify-center mx-auto"
-                : "gap-3 px-3 py-2.5",
+              "group relative flex h-10 items-center overflow-hidden rounded-md whitespace-nowrap transition-colors duration-150",
               active
                 ? "bg-secondary text-foreground font-medium"
                 : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
             )}
           >
-            <Icon
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center">
+              <Icon
+                className={cn(
+                  "h-[18px] w-[18px]",
+                  active ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"
+                )}
+              />
+            </span>
+            <span
               className={cn(
-                "h-[18px] w-[18px] shrink-0",
-                active ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"
+                "min-w-0 flex-1 truncate text-sm",
+                LABEL_FADE,
+                collapsed ? LABEL_HIDDEN : LABEL_VISIBLE
               )}
-            />
-            {!collapsed && <span className="truncate">{item.label}</span>}
+            >
+              {item.label}
+            </span>
           </Link>
         )
       })}
@@ -134,45 +161,45 @@ export function SidebarNav({
   return (
     <div className="flex h-full flex-col">
       {/* Brand + collapse toggle */}
-      <div
-        className={cn(
-          "flex h-14 items-center border-b",
-          collapsed ? "justify-center px-2" : "justify-between px-5"
-        )}
-      >
-        {!collapsed && (
-          <Link
-            href="/"
-            onClick={onNavigate}
-            className="text-base font-semibold tracking-tight text-foreground"
-          >
-            Kalakraft
-          </Link>
-        )}
+      <div className="flex h-14 shrink-0 items-center overflow-hidden border-b pl-3">
         {onToggleCollapsed && (
           <button
             type="button"
             onClick={onToggleCollapsed}
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
             title={collapsed ? "Expand sidebar (⌘B)" : "Collapse sidebar (⌘B)"}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+            className="relative inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors duration-150 hover:bg-secondary hover:text-foreground"
           >
-            {collapsed ? (
-              <PanelLeftOpen className="h-4 w-4" />
-            ) : (
-              <PanelLeftClose className="h-4 w-4" />
-            )}
+            <PanelLeftClose
+              className={cn(
+                "absolute h-4 w-4 transition-[opacity,transform] duration-[220ms] ease-[cubic-bezier(0.32,0.72,0,1)]",
+                collapsed ? "opacity-0 -rotate-90 scale-75" : "opacity-100 rotate-0 scale-100"
+              )}
+            />
+            <PanelLeftOpen
+              className={cn(
+                "absolute h-4 w-4 transition-[opacity,transform] duration-[220ms] ease-[cubic-bezier(0.32,0.72,0,1)]",
+                collapsed ? "opacity-100 rotate-0 scale-100" : "opacity-0 rotate-90 scale-75"
+              )}
+            />
           </button>
         )}
+        <Link
+          href="/"
+          onClick={onNavigate}
+          className={cn(
+            "whitespace-nowrap text-base font-semibold tracking-tight text-foreground",
+            onToggleCollapsed ? "ml-2" : "ml-1",
+            LABEL_FADE,
+            collapsed ? LABEL_HIDDEN : LABEL_VISIBLE
+          )}
+        >
+          Kalakraft
+        </Link>
       </div>
 
       {/* Nav */}
-      <nav
-        className={cn(
-          "flex-1 overflow-y-auto pb-4",
-          collapsed ? "px-2 pt-3" : "px-3"
-        )}
-      >
+      <nav className="flex-1 overflow-y-auto overflow-x-hidden px-3 pb-4 pt-2">
         <NavGroup
           items={userNav}
           pathname={pathname}
@@ -191,38 +218,42 @@ export function SidebarNav({
       </nav>
 
       {/* User footer */}
-      <div
-        className={cn(
-          "flex items-center border-t",
-          collapsed ? "justify-center px-2 py-3" : "gap-3 px-4 py-4"
-        )}
-      >
-        <Avatar
-          className={cn("border", collapsed ? "h-8 w-8" : "h-9 w-9")}
-          title={collapsed ? user.fullName : undefined}
-        >
-          {user.avatarUrl && <AvatarImage src={user.avatarUrl} alt={user.fullName} />}
-          <AvatarFallback className="bg-secondary text-xs font-medium text-foreground">
-            {initialsOf(user.fullName)}
-          </AvatarFallback>
-        </Avatar>
+      <div className="flex h-16 shrink-0 items-center overflow-hidden border-t pl-3">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center">
+          <Avatar
+            className="h-9 w-9 border"
+            title={collapsed ? user.fullName : undefined}
+          >
+            {user.avatarUrl && <AvatarImage src={user.avatarUrl} alt={user.fullName} />}
+            <AvatarFallback className="bg-secondary text-xs font-medium text-foreground">
+              {initialsOf(user.fullName)}
+            </AvatarFallback>
+          </Avatar>
+        </span>
 
-        {!collapsed && (
-          <>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-foreground">{user.fullName}</p>
-              <p className="truncate text-xs text-muted-foreground">{user.email}</p>
-            </div>
-            <button
-              type="button"
-              onClick={onLogout}
-              aria-label="Log out"
-              className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-            >
-              <LogOut className="h-4 w-4" />
-            </button>
-          </>
-        )}
+        <div
+          className={cn(
+            "ml-2 min-w-0 flex-1",
+            LABEL_FADE,
+            collapsed ? LABEL_HIDDEN : LABEL_VISIBLE
+          )}
+        >
+          <p className="truncate text-sm font-medium text-foreground">{user.fullName}</p>
+          <p className="truncate text-xs text-muted-foreground">{user.email}</p>
+        </div>
+        <button
+          type="button"
+          onClick={onLogout}
+          aria-label="Log out"
+          tabIndex={collapsed ? -1 : 0}
+          className={cn(
+            "mr-3 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors duration-150 hover:bg-secondary hover:text-foreground",
+            LABEL_FADE,
+            collapsed ? LABEL_HIDDEN : LABEL_VISIBLE
+          )}
+        >
+          <LogOut className="h-4 w-4" />
+        </button>
       </div>
     </div>
   )
