@@ -190,14 +190,14 @@ export default function AdminUsersPage() {
 
   if (user?.role !== 'admin') {
     return (
-      <main className="container mx-auto px-4 py-10">
+      <main>
         <p className="text-sm text-muted-foreground">Unauthorized</p>
       </main>
     )
   }
 
   return (
-    <main className="container mx-auto flex flex-col gap-6 px-4 py-8">
+    <main className="flex flex-col gap-6">
       {/* Page header */}
       <header className="flex flex-col gap-1">
         <h1 className="text-2xl font-semibold tracking-tight">User management</h1>

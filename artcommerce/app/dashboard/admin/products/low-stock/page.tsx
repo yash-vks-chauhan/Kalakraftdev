@@ -44,7 +44,7 @@ export default function LowStockPage() {
   if (error)   return <p className="p-8 text-red-600">{error}</p>
 
   return (
-    <main className="container mx-auto p-8 space-y-6">
+    <main className="space-y-6">
       <h1 className="text-2xl font-bold">Low-Stock Alerts</h1>
       {products.length === 0 ? (
         <p className="text-gray-600">All products are sufficiently stocked.</p>

@@ -141,36 +141,29 @@ export function SidebarNav({
           collapsed ? "justify-center px-2" : "justify-between px-5"
         )}
       >
-        {collapsed ? (
+        {!collapsed && (
           <Link
             href="/"
             onClick={onNavigate}
-            aria-label="Kalakraft home"
-            className="flex h-9 w-9 items-center justify-center rounded-md bg-secondary text-sm font-semibold tracking-tight text-foreground"
+            className="text-base font-semibold tracking-tight text-foreground"
           >
-            K
+            Kalakraft
           </Link>
-        ) : (
-          <>
-            <Link
-              href="/"
-              onClick={onNavigate}
-              className="text-base font-semibold tracking-tight text-foreground"
-            >
-              Kalakraft
-            </Link>
-            {onToggleCollapsed && (
-              <button
-                type="button"
-                onClick={onToggleCollapsed}
-                aria-label="Collapse sidebar"
-                title="Collapse sidebar (⌘B)"
-                className="hidden h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground lg:inline-flex"
-              >
-                <PanelLeftClose className="h-4 w-4" />
-              </button>
+        )}
+        {onToggleCollapsed && (
+          <button
+            type="button"
+            onClick={onToggleCollapsed}
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            title={collapsed ? "Expand sidebar (⌘B)" : "Collapse sidebar (⌘B)"}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+          >
+            {collapsed ? (
+              <PanelLeftOpen className="h-4 w-4" />
+            ) : (
+              <PanelLeftClose className="h-4 w-4" />
             )}
-          </>
+          </button>
         )}
       </div>
 
@@ -207,18 +200,6 @@ export function SidebarNav({
             : "gap-3 px-4 py-4"
         )}
       >
-        {collapsed && onToggleCollapsed && (
-          <button
-            type="button"
-            onClick={onToggleCollapsed}
-            aria-label="Expand sidebar"
-            title="Expand sidebar (⌘B)"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-          >
-            <PanelLeftOpen className="h-4 w-4" />
-          </button>
-        )}
-
         <Avatar
           className={cn("border", collapsed ? "h-8 w-8" : "h-9 w-9")}
           title={collapsed ? user.fullName : undefined}

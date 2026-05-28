@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { redirect } from "next/navigation"
-import { Menu, Search, Heart, ShoppingCart, ArrowUpRight, PanelLeftClose, PanelLeftOpen } from "lucide-react"
+import { Menu, Search, Heart, ShoppingCart, ArrowUpRight } from "lucide-react"
 
 import { useAuth } from "../contexts/AuthContext"
 import LoadingSpinner from "../components/LoadingSpinner"
@@ -124,20 +124,7 @@ export default function DashboardLayout({
         )}
       >
         {/* Desktop top bar: search + store shortcuts */}
-        <div className="sticky top-0 z-20 hidden h-14 items-center gap-3 border-b bg-background/95 px-10 backdrop-blur lg:flex">
-          <button
-            type="button"
-            onClick={toggleCollapsed}
-            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-            title={collapsed ? "Expand sidebar (⌘B)" : "Collapse sidebar (⌘B)"}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-          >
-            {collapsed ? (
-              <PanelLeftOpen className="h-4 w-4" />
-            ) : (
-              <PanelLeftClose className="h-4 w-4" />
-            )}
-          </button>
+        <div className="sticky top-0 z-20 hidden h-14 items-center gap-3 border-b bg-background/95 px-6 backdrop-blur lg:flex lg:px-10">
           <button
             type="button"
             onClick={() => setSearchOpen(true)}
@@ -176,7 +163,7 @@ export default function DashboardLayout({
           </div>
         </div>
 
-        <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
+        <div className="w-full px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
           {children}
         </div>
       </main>

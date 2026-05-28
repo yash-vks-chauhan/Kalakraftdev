@@ -213,14 +213,14 @@ export default function AdminProductsPage() {
   }
   if (error) {
     return (
-      <main className="container mx-auto px-4 py-10">
+      <main>
         <p className="text-sm text-destructive">{error}</p>
       </main>
     )
   }
 
   return (
-    <main className="container mx-auto flex flex-col gap-6 px-4 py-8">
+    <main className="flex flex-col gap-6">
       {/* Page header */}
       <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-col gap-1">
