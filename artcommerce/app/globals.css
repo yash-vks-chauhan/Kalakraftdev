@@ -10,6 +10,54 @@
   --secondary-color: #4a5568;
 }
 
+/*
+ * Shadcn design tokens — scoped to the dashboard shell so the rest of the
+ * site (home, products, navbar) keeps its existing look. Any element that
+ * lives under `.dashboard-shell` can use bg-background, text-foreground,
+ * border-border, etc.
+ */
+.dashboard-shell {
+  --background: 0 0% 100%;
+  --foreground: 222.2 47.4% 11.2%;
+  --card: 0 0% 100%;
+  --card-foreground: 222.2 47.4% 11.2%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222.2 47.4% 11.2%;
+  --primary: 222.2 47.4% 11.2%;
+  --primary-foreground: 210 40% 98%;
+  --secondary: 210 40% 96.1%;
+  --secondary-foreground: 222.2 47.4% 11.2%;
+  --muted: 210 40% 96.1%;
+  --muted-foreground: 215.4 16.3% 46.9%;
+  --accent: 210 40% 96.1%;
+  --accent-foreground: 222.2 47.4% 11.2%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 214.3 31.8% 91.4%;
+  --input: 214.3 31.8% 91.4%;
+  --ring: 222.2 84% 4.9%;
+  --radius: 0.625rem;
+
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.dashboard-shell *,
+.dashboard-shell *::before,
+.dashboard-shell *::after {
+  border-color: hsl(var(--border));
+}
+
+/* Disable the global scroll-snap section sizing inside the dashboard shell. */
+.dashboard-shell section {
+  scroll-snap-align: none;
+  min-height: 0;
+  position: static;
+  overflow: visible;
+}
+
 /* Add scroll snapping */
 html, body {
   scroll-snap-type: y proximity;

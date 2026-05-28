@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e ' *)",
+      "Bash(sed -i.bak '/whileHover={{ scale: 1\\\\.1 }}/d; /whileTap={{ scale: 0\\\\.95 }}/d; /whileHover={{ scale: 1\\\\.02, y: -2 }}/d; /whileTap={{ scale: 0\\\\.98 }}/d' app/products/ProductsClient.tsx)",
+      "Bash(rm app/products/ProductsClient.tsx.bak)"
+    ]
+  }
+}

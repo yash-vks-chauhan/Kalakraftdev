@@ -84,327 +84,197 @@
   display: none;
 }
 
-/* ========================================
-   TOP BAR - MINIMAL PROFESSIONAL DESIGN
-   Clean, simple, no card container
-   ======================================== */
-
-.topBar {
-  position: sticky;
-  top: 75px; /* sit flush under the fixed navbar (75px tall) */
-  z-index: 900; /* below navbar (1000), above grid */
+/* ============================================================
+   IN-PAGE FILTER + SORT TOOLBAR
+   Lives on /products at the top of the page. Fades out and lets
+   the morph navbar take over once the user scrolls past 100px.
+   Same pill aesthetic as the navbar's productsTools so the
+   handoff feels continuous.
+   ============================================================ */
+.pageToolbar {
   display: flex;
-  align-items: stretch;
-  padding: 0 var(--spacing-2xl);
-  margin: 0 0 32px;
-  background: #ffffff;
-  border-bottom: 1px solid var(--color-border);
-  height: 57px; /* stable height regardless of chip presence */
-  box-sizing: border-box;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 var(--spacing-2xl) 28px;
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity 380ms cubic-bezier(0.32, 0.72, 0, 1),
+    transform 380ms cubic-bezier(0.32, 0.72, 0, 1),
+    visibility 0s linear 0s;
 }
 
 @media (min-width: 1024px) {
-  .topBar {
-    padding: 0 var(--spacing-3xl);
-    margin-bottom: 40px;
+  .pageToolbar {
+    padding: 0 var(--spacing-3xl) 36px;
   }
 }
 
-.topBarInner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  gap: 16px;
-  height: 100%;
+.pageToolbarHidden {
+  opacity: 0;
+  transform: translateY(-8px);
+  pointer-events: none;
+  visibility: hidden;
+  transition:
+    opacity 380ms cubic-bezier(0.32, 0.72, 0, 1),
+    transform 380ms cubic-bezier(0.32, 0.72, 0, 1),
+    visibility 0s linear 380ms;
 }
 
-/* Minimal text-style Filter button */
-.filterButton,
-.filterDrawerButton {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 14px;
-  background: transparent;
-  color: var(--color-text-primary);
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  cursor: pointer;
-  font-family: var(--font-family);
-  transition: border-color 160ms ease, background 160ms ease;
-  flex-shrink: 0;
-  white-space: nowrap;
-}
-
-.filterButton:hover,
-.filterDrawerButton:hover {
-  border-color: var(--color-text-primary);
-  background: #fafafa;
-}
-
-.filterButton svg,
-.filterDrawerButton svg {
-  width: 14px;
-  height: 14px;
-}
-
-.filterChipsContainer {
-  display: flex;
-  gap: 8px;
-  flex-wrap: nowrap;
-  align-items: center;
-  flex: 1 1 0;
-  min-width: 0;
-  overflow-x: auto;
-  overflow-y: hidden;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  /* Fade edges to hint at horizontal scroll */
-  mask-image: linear-gradient(
-    to right,
-    transparent 0,
-    #000 16px,
-    #000 calc(100% - 16px),
-    transparent 100%
-  );
-  -webkit-mask-image: linear-gradient(
-    to right,
-    transparent 0,
-    #000 16px,
-    #000 calc(100% - 16px),
-    transparent 100%
-  );
-}
-
-.filterChipsContainer::-webkit-scrollbar {
-  display: none;
-}
-
-/* Active filter chip - minimal outlined pill */
-.filterChip {
+.pageToolBtn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 10px 4px 12px;
-  background: #fafafa;
+  height: 36px;
+  padding: 0 14px;
+  background: #ffffff;
   border: 1px solid var(--color-border);
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--color-text-primary);
-  letter-spacing: 0.01em;
-  line-height: 1.4;
-  flex-shrink: 0;
-  white-space: nowrap;
-}
-
-.filterChipRemove {
-  background: none;
-  border: none;
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  font-size: 16px;
-  line-height: 1;
-  padding: 0;
-  width: 16px;
-  height: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: color 160ms ease, background 160ms ease;
-}
-
-.filterChipRemove:hover {
-  color: var(--color-text-primary);
-  background: rgba(0, 0, 0, 0.06);
-}
-
-.clearAllFilters {
-  padding: 4px 10px;
-  background: transparent;
-  border: none;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  font-family: var(--font-family);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  text-decoration-thickness: 1px;
-  letter-spacing: 0.02em;
-  transition: color 160ms ease;
-  flex-shrink: 0;
-  white-space: nowrap;
-}
-
-.clearAllFilters:hover {
-  color: var(--color-text-primary);
-}
-
-.topBarControls {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-shrink: 0;
-}
-
-/* ========================================
-   SORT CONTROL — minimal, professional
-   ======================================== */
-
-.sortContainer {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.sortLabel {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--color-text-secondary);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.customSelect {
-  position: relative;
-  min-width: 170px;
-}
-
-.selectTrigger {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 8px 14px;
-  width: 100%;
-  background: transparent;
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
-  color: var(--color-text-primary);
+  border-radius: 999px;
   font-size: 13px;
   font-weight: 500;
-  font-family: var(--font-family);
-  cursor: pointer;
   letter-spacing: 0.01em;
-  transition: border-color 160ms ease, background 160ms ease;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  font-family: var(--font-family);
+  white-space: nowrap;
+  transition:
+    background 220ms cubic-bezier(0.32, 0.72, 0, 1),
+    border-color 220ms cubic-bezier(0.32, 0.72, 0, 1),
+    color 220ms cubic-bezier(0.32, 0.72, 0, 1),
+    transform 220ms cubic-bezier(0.32, 0.72, 0, 1);
 }
 
-.selectTrigger:hover {
-  border-color: var(--color-text-primary);
+.pageToolBtn:hover {
   background: #fafafa;
+  border-color: rgba(0, 0, 0, 0.22);
 }
 
-.selectTrigger:focus-visible {
+.pageToolBtn:active {
+  transform: scale(0.97);
+}
+
+.pageToolBtn:focus-visible {
   outline: none;
-  border-color: var(--color-text-primary);
+  border-color: rgba(0, 0, 0, 0.32);
   box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.06);
 }
 
-.selectArrow {
-  transition: transform 0.2s ease;
-  opacity: 0.55;
+.pageToolMuted {
+  color: var(--color-text-secondary);
+  font-weight: 500;
 }
 
-.selectArrowOpen {
+.pageToolBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  margin-left: 2px;
+  background: #111;
+  color: #fff;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 600;
+  line-height: 1;
+  animation: pageBadgePop 320ms cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+@keyframes pageBadgePop {
+  0%   { transform: scale(0); opacity: 0; }
+  60%  { transform: scale(1.08); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.pageToolChevron {
+  opacity: 0.55;
+  transition: transform 260ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.pageToolChevronOpen {
   transform: rotate(180deg);
 }
 
-/* Dropdown menu (the popover) */
-.selectDropdown {
-  position: absolute;
-  top: calc(100% + 6px);
-  right: 0;
-  min-width: 100%;
-  background: #ffffff;
-  border: 1px solid var(--color-border);
-  border-radius: 6px;
-  box-shadow:
-    0 12px 28px rgba(0, 0, 0, 0.08),
-    0 2px 6px rgba(0, 0, 0, 0.04);
-  padding: 4px;
-  z-index: 3000;
-  overflow: hidden;
-  transform-origin: top right;
+.pageSortWrap {
+  position: relative;
 }
 
-/* Dropdown options */
-.selectOption {
+.pageSortMenu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 200px;
+  background: #ffffff;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  box-shadow:
+    0 12px 32px rgba(0, 0, 0, 0.08),
+    0 2px 6px rgba(0, 0, 0, 0.04);
+  padding: 4px;
+  z-index: 950;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  transform-origin: top right;
+  opacity: 0;
+  transform: translateY(-6px) scale(0.96);
+  pointer-events: none;
+  visibility: hidden;
+  transition:
+    opacity 220ms cubic-bezier(0.32, 0.72, 0, 1),
+    transform 260ms cubic-bezier(0.32, 0.72, 0, 1),
+    visibility 0s linear 260ms;
+}
+
+.pageSortMenuOpen {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+  visibility: visible;
+  transition:
+    opacity 240ms cubic-bezier(0.32, 0.72, 0, 1),
+    transform 280ms cubic-bezier(0.32, 0.72, 0, 1),
+    visibility 0s linear 0s;
+}
+
+.pageSortOption {
+  display: block;
   width: 100%;
   padding: 9px 12px;
   background: transparent;
   border: none;
-  color: var(--color-text-primary);
+  border-radius: 6px;
   font-size: 13px;
   font-weight: 400;
-  font-family: var(--font-family);
-  text-align: left;
+  letter-spacing: 0.005em;
+  color: var(--color-text-primary);
   cursor: pointer;
-  border-radius: 4px;
-  letter-spacing: 0.01em;
+  text-align: left;
+  font-family: var(--font-family);
   transition: background 140ms ease;
 }
 
-.selectOption:hover {
+.pageSortOption:hover {
   background: #f5f5f5;
 }
 
-.selectOptionActive {
-  font-weight: 500;
+.pageSortOptionActive {
   background: #f5f5f5;
-}
-
-.checkmark {
-  font-size: 13px;
-  color: var(--color-text-primary);
-  line-height: 1;
-  margin-left: 12px;
-}
-
-/* Keep old sortSelect for backward compatibility */
-.sortSelect {
-  padding: 10px 36px 10px 16px;
-  
-  /* Clean minimal background */
-  background: rgba(250, 250, 250, 0.9);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 8px;
-  color: var(--color-text-primary);
-  font-size: 14px;
   font-weight: 500;
-  font-family: var(--font-family);
-  cursor: pointer;
-  
-  transition: all 0.2s ease;
-  appearance: none;
-  
-  /* Custom arrow */
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23111' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  min-width: 160px;
 }
 
-.sortSelect:hover {
-  background: rgba(255, 255, 255, 0.95);
-  border-color: rgba(0, 0, 0, 0.12);
+@media (prefers-reduced-motion: reduce) {
+  .pageToolbar,
+  .pageToolBtn,
+  .pageToolChevron,
+  .pageSortMenu,
+  .pageToolBadge {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
 }
 
-.sortSelect:focus {
-  outline: none;
-  border-color: rgba(0, 0, 0, 0.2);
-}
 
 /* ========================================
    PRODUCT GRID - BALANCED GALLERY LAYOUT
@@ -1006,6 +876,16 @@
   width: 100%;
 }
 
+/* Initial grid-area loading state (keeps surrounding layout in place) */
+.gridLoadingContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 320px;
+  padding: var(--spacing-3xl) var(--spacing-2xl);
+  width: 100%;
+}
+
 .allLoadedMessage {
   display: flex;
   flex-direction: column;
@@ -1209,6 +1089,8 @@
 }
 
 .desktopSidebar {
+  /* Sidebar slide is fully driven by framer-motion (x property);
+     no CSS transform/transition needed here. */
   position: fixed;
   top: var(--sidebar-top);
   left: 0;
@@ -1216,15 +1098,13 @@
   height: calc(100vh - var(--sidebar-top));
   background: #ffffff;
   border-right: 1px solid var(--color-border);
-  box-shadow: none;
-  transform: translateX(-100%);
-  transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   z-index: 50;
   scrollbar-width: thin;
   scrollbar-color: rgba(0, 0, 0, 0.18) transparent;
+  will-change: transform;
 }
 
 .desktopSidebar::-webkit-scrollbar {
@@ -1244,17 +1124,9 @@
   background: rgba(0, 0, 0, 0.32);
 }
 
-.desktopSidebarOpen {
-  transform: translateX(0);
-}
-
 .desktopMain {
-  transition: margin-left 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+  /* marginLeft is animated by framer-motion; nothing to transition here. */
   will-change: margin-left;
-}
-
-.desktopMainWithSidebar {
-  margin-left: var(--sidebar-width);
 }
 
 /* Drawer sticky header (used by both mobile drawer and desktop slide-in) */

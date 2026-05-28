@@ -1,186 +1,238 @@
-// File: app/dashboard/page.tsx
+"use client"
 
-'use client'
+import Link from "next/link"
+import { useEffect, useState } from "react"
+import {
+  ArrowUpRight,
+  Package,
+  Heart,
+  ShoppingCart,
+  LifeBuoy,
+  User,
+  ShoppingBag,
+  Users,
+  Tag,
+  Star,
+  AlertTriangle,
+  Boxes,
+  LucideIcon,
+} from "lucide-react"
 
-import Link from 'next/link'
-import { useAuth } from '../contexts/AuthContext'
-import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
-import styles from './dashboard.module.css'
-import MobileDashboardHome from './MobileDashboardHome'
-import { useIsMobile } from '../../lib/utils'
+import { useAuth } from "../contexts/AuthContext"
+import { cn } from "@/lib/utils"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
-// Card styling
-const cardClasses = `
-  border rounded-lg p-6 shadow-sm 
-  hover:shadow-md transition-shadow 
-  bg-white
-`
+type Period = "today" | "week" | "month" | "year" | "all"
+
+interface Metrics {
+  period: string
+  totalOrders: number
+  statusCounts: { status: string; _count: { status: number } }[]
+  revenue: number
+}
+
+const periodLabels: Record<Period, string> = {
+  today: "Today",
+  week: "Last 7 days",
+  month: "This month",
+  year: "This year",
+  all: "All time",
+}
+
+type QuickLink = {
+  href: string
+  label: string
+  description: string
+  icon: LucideIcon
+}
+
+const userLinks: QuickLink[] = [
+  { href: "/dashboard/orders", label: "Orders", description: "Track and review your past orders", icon: Package },
+  { href: "/dashboard/wishlist", label: "Wishlist", description: "Items you've saved for later", icon: Heart },
+  { href: "/dashboard/cart", label: "Cart", description: "Continue your in-progress checkout", icon: ShoppingCart },
+  { href: "/dashboard/support", label: "Support", description: "Open a ticket or browse FAQs", icon: LifeBuoy },
+  { href: "/dashboard/profile", label: "Profile", description: "Manage personal details and security", icon: User },
+]
+
+const adminLinks: QuickLink[] = [
+  { href: "/dashboard/admin/orders", label: "All Orders", description: "Manage customer orders and statuses", icon: ShoppingBag },
+  { href: "/dashboard/admin/products", label: "Products", description: "Edit listings, pricing, and inventory", icon: Boxes },
+  { href: "/dashboard/admin/products/low-stock", label: "Low Stock", description: "Items at or below threshold", icon: AlertTriangle },
+  { href: "/dashboard/admin/users", label: "Users", description: "Roles, access, and customer accounts", icon: Users },
+  { href: "/dashboard/admin/coupons", label: "Coupons", description: "Discount codes and campaigns", icon: Tag },
+  { href: "/dashboard/admin/reviews", label: "Reviews", description: "Moderate ratings and feedback", icon: Star },
+  { href: "/dashboard/admin/support", label: "Support", description: "Tickets from customers", icon: LifeBuoy },
+]
+
+function formatCurrency(value: number) {
+  if (!Number.isFinite(value)) return "₹0"
+  return `₹${value.toLocaleString("en-IN", { maximumFractionDigits: 0 })}`
+}
+
+function capitalize(str: string) {
+  return str.charAt(0).toUpperCase() + str.slice(1)
+}
+
+function MetricTile({
+  label,
+  value,
+  hint,
+}: {
+  label: string
+  value: string | number
+  hint?: string
+}) {
+  return (
+    <div className="rounded-lg border bg-card p-5">
+      <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{label}</p>
+      <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">{value}</p>
+      {hint && <p className="mt-1 text-xs text-muted-foreground">{hint}</p>}
+    </div>
+  )
+}
+
+function QuickLinkRow({ link }: { link: QuickLink }) {
+  const Icon = link.icon
+  return (
+    <Link
+      href={link.href}
+      className={cn(
+        "group flex items-center justify-between gap-4 rounded-lg border bg-card px-4 py-4 transition-colors",
+        "hover:border-foreground/20 hover:bg-secondary/40"
+      )}
+    >
+      <div className="flex items-center gap-3 min-w-0">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border bg-background text-muted-foreground group-hover:text-foreground">
+          <Icon className="h-4 w-4" />
+        </span>
+        <div className="min-w-0">
+          <p className="text-sm font-medium text-foreground">{link.label}</p>
+          <p className="truncate text-xs text-muted-foreground">{link.description}</p>
+        </div>
+      </div>
+      <ArrowUpRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-foreground" />
+    </Link>
+  )
+}
 
 export default function DashboardHomePage() {
-  const { user, token, logout } = useAuth()
-  const router = useRouter()
-  
-  const isMobile = useIsMobile()
-  const [forceDesktopView, setForceDesktopView] = useState(false)
-
-  const [period, setPeriod] = useState<'today'|'week'|'month'|'year'|'all'>('today')
-  const [metrics, setMetrics] = useState<null | {
-    period: string
-    totalOrders: number
-    statusCounts: { status: string; _count: { status: number } }[]
-    revenue: number
-  }>(null)
-
-  const mobileView = isMobile && !forceDesktopView;
+  const { user, token } = useAuth()
+  const [period, setPeriod] = useState<Period>("today")
+  const [metrics, setMetrics] = useState<Metrics | null>(null)
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const pref = localStorage.getItem('viewPreference')
-      if (pref === 'desktop') setForceDesktopView(true)
-    }
-  }, [])
-
-  // Redirect to login if not authenticated
-  useEffect(() => {
-    if (user?.role !== 'admin') return
+    if (user?.role !== "admin" || !token) return
+    let cancelled = false
     fetch(`/api/admin/metrics?period=${period}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
-      .then(r => r.json())
-      .then(setMetrics)
+      .then((r) => r.json())
+      .then((data) => {
+        if (!cancelled) setMetrics(data)
+      })
       .catch(console.error)
+    return () => {
+      cancelled = true
+    }
   }, [token, user, period])
-
-  if (mobileView) {
-    return <MobileDashboardHome />
-  }
 
   if (!user) return null
 
+  const isAdmin = user.role === "admin"
+  const firstName = user.fullName?.split(" ")[0] ?? user.fullName
+
   return (
-    <main className={styles.dashboardContainer}>
-      <div className={styles.header}>
-        <div className={styles.userInfo}>
-          {user.avatarUrl ? (
-            <img
-              src={user.avatarUrl}
-              alt={`${user.fullName}'s avatar`}
-              className={styles.avatar}
+    <div className="flex flex-col gap-10">
+      {/* Header */}
+      <header className="flex flex-col gap-2">
+        <p className="text-sm text-muted-foreground">Welcome back</p>
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+          {firstName}
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          {isAdmin
+            ? "Here's a quick look at your store today."
+            : "Manage your orders, profile, and saved items."}
+        </p>
+      </header>
+
+      {/* Admin metrics */}
+      {isAdmin && (
+        <section className="flex flex-col gap-4">
+          <div className="flex items-center justify-between gap-4">
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+              Overview
+            </h2>
+            <Select value={period} onValueChange={(v) => setPeriod(v as Period)}>
+              <SelectTrigger className="h-9 w-[160px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {(Object.keys(periodLabels) as Period[]).map((p) => (
+                  <SelectItem key={p} value={p}>
+                    {periodLabels[p]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
+            <MetricTile
+              label="Orders"
+              value={metrics ? metrics.totalOrders.toLocaleString("en-IN") : "—"}
+              hint={periodLabels[period]}
             />
-          ) : (
-            <div className={styles.avatar} />
-          )}
-          <h1 className={styles.welcomeText}>Welcome, {user.fullName}!</h1>
-        </div>
-        <button
-          onClick={logout}
-          className={styles.logoutButton}
-        >
-          Log Out
-        </button>
-      </div>
-
-      {user.role === 'admin' && metrics && (
-        <div className={styles.metricsContainer}>
-          <div className={styles.periodSelector}>
-            <label className={styles.periodLabel}>Period:</label>
-            <select
-              value={period}
-              onChange={e => setPeriod(e.target.value as any)}
-              className={styles.periodSelect}
-            >
-              <option value="today">Today</option>
-              <option value="week">Last 7 days</option>
-              <option value="month">This month</option>
-              <option value="year">This year</option>
-              <option value="all">All time</option>
-            </select>
-          </div>
-
-          <div className={styles.metricsGrid}>
-            <div className={styles.metricCard}>
-              <h3 className={styles.metricTitle}>Total Orders</h3>
-              <p className={styles.metricValue}>{metrics.totalOrders}</p>
-            </div>
-            <div className={styles.metricCard}>
-              <h3 className={styles.metricTitle}>
-                Revenue ({period.charAt(0).toUpperCase() + period.slice(1)})
-              </h3>
-              <p className={styles.metricValue}>₹{metrics.revenue != null ? metrics.revenue.toFixed(2) : '0.00'}</p>
-            </div>
-            {metrics.statusCounts?.map(sc => (
-              <div key={sc.status} className={styles.metricCard}>
-                <h3 className={styles.metricTitle}>
-                  {sc.status.charAt(0).toUpperCase() + sc.status.slice(1)}
-                </h3>
-                <p className={styles.metricValue}>{sc._count.status}</p>
-              </div>
+            <MetricTile
+              label="Revenue"
+              value={metrics ? formatCurrency(metrics.revenue ?? 0) : "—"}
+              hint={periodLabels[period]}
+            />
+            {(metrics?.statusCounts ?? []).slice(0, 2).map((sc) => (
+              <MetricTile
+                key={sc.status}
+                label={capitalize(sc.status)}
+                value={sc._count.status.toLocaleString("en-IN")}
+              />
             ))}
+            {metrics && metrics.statusCounts.length < 2 &&
+              Array.from({ length: 2 - metrics.statusCounts.length }).map((_, i) => (
+                <MetricTile key={`placeholder-${i}`} label="—" value="—" />
+              ))}
           </div>
-        </div>
+        </section>
       )}
 
-      <div className={styles.dashboardGrid}>
-        <Link href="/dashboard/profile" className={styles.dashboardCard}>
-          <h2 className={styles.cardTitle}>Profile Settings</h2>
-          <p className={styles.cardDescription}>Update your name, avatar, and password.</p>
-        </Link>
+      {/* Quick links */}
+      <section className="flex flex-col gap-4">
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+          Account
+        </h2>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {userLinks.map((link) => (
+            <QuickLinkRow key={link.href} link={link} />
+          ))}
+        </div>
+      </section>
 
-        <Link href="/dashboard/orders" className={styles.dashboardCard}>
-          <h2 className={styles.cardTitle}>Your Orders</h2>
-          <p className={styles.cardDescription}>View all the orders you&apos;ve placed.</p>
-        </Link>
-
-        {user.role === 'admin' && (
-          <>
-            <Link href="/dashboard/admin/orders" className={styles.dashboardCard}>
-              <h2 className={styles.cardTitle}>All Orders</h2>
-              <p className={styles.cardDescription}>View and manage every customer order.</p>
-            </Link>
-
-            {/* Manage Products (admin only) */}
-            {user.role === 'admin' && (
-              <Link href="/dashboard/admin/products" className={styles.dashboardCard}>
-                <h2 className={styles.cardTitle}>Manage Products</h2>
-                <p className={styles.cardDescription}>Add, edit, or delete product SKUs.</p>
-              </Link>
-            )}
-            <Link href="/dashboard/admin/users" className={styles.dashboardCard}>
-              <h2 className={styles.cardTitle}>User Management</h2>
-              <p className={styles.cardDescription}>Promote or demote users</p>
-            </Link>
-            <Link href="/dashboard/admin/coupons" className={styles.dashboardCard}>
-              <h2 className={styles.cardTitle}>Coupon Manager</h2>
-              <p className={styles.cardDescription}>Create, edit & delete discount codes.</p>
-            </Link>
-            <Link href="/dashboard/admin/products/low-stock" className={styles.dashboardCard}>
-              <h2 className={styles.cardTitle}>Low-Stock</h2>
-              <p className={styles.cardDescription}>View items below threshold</p>
-            </Link>
-            {/* Support Tickets (admin only) */}
-            <Link href="/dashboard/admin/support" className={styles.dashboardCard}>
-              <h2 className={styles.cardTitle}>Support Tickets</h2>
-              <p className={styles.cardDescription}>View and respond to customer issues.</p>
-            </Link>
-            {/* Reviews & Ratings (admin only) */}
-            <Link href="/dashboard/admin/reviews" className={styles.dashboardCard}>
-              <h2 className={styles.cardTitle}>Reviews & Ratings</h2>
-              <p className={styles.cardDescription}>See and moderate product reviews.</p>
-            </Link>
-          </>
-        )}
-
-        <Link href="/dashboard/cart" className={styles.dashboardCard}>
-          <h2 className={styles.cardTitle}>Your Cart</h2>
-          <p className={styles.cardDescription}>See what&apos;s in your shopping cart.</p>
-        </Link>
-
-        <Link href="/dashboard/wishlist" className={styles.dashboardCard}>
-          <h2 className={styles.cardTitle}>Your Wishlist</h2>
-          <p className={styles.cardDescription}>Manage your saved items.</p>
-        </Link>
-      </div>
-    </main>
+      {isAdmin && (
+        <section className="flex flex-col gap-4">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            Admin
+          </h2>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {adminLinks.map((link) => (
+              <QuickLinkRow key={link.href} link={link} />
+            ))}
+          </div>
+        </section>
+      )}
+    </div>
   )
 }

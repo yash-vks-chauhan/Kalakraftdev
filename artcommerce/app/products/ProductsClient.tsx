@@ -2,13 +2,9 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import Link from 'next/link'
-import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
-import WishlistButton from '../components/WishlistButton'
 import ProductCard from '../components/ProductCard'
 import VirtualProductGrid from '../components/VirtualProductGrid'
-import LazyComponents from '../components/LazyComponents'
 import LoadingSpinner from '../components/LoadingSpinner'
 import styles from './products.module.css'
 import animationStyles from './products-animations.module.css'
@@ -16,10 +12,11 @@ import { FiChevronLeft, FiChevronRight, FiFilter, FiGrid, FiStar, FiPackage, FiT
 import { DataCache } from '../../lib/dataCache'
 import { useDeviceDetection } from '../hooks/useDeviceDetection'
 import { useProductFilters } from '../hooks/useProductFilters'
-import { useIntersectionImagePreload } from '../hooks/useImagePreload'
 import { useScrollCardAnimations } from '../hooks/useOptimizedScroll'
 
-const LOW_STOCK_THRESHOLD = 5 // Products with stock <= 5 will show low stock warning
+// Single easing curve used across every motion on this page — matches
+// the navbar's morph curve so the whole experience feels like one motion.
+const SMOOTH_EASE = [0.32, 0.72, 0, 1] as [number, number, number, number]
 
 const KNOWN_CATEGORIES = [
   { slug: 'clocks', name: 'Clocks' },
@@ -30,6 +27,13 @@ const KNOWN_CATEGORIES = [
   { slug: 'decor', name: 'Wall Decor' },
   { slug: 'matt rangoli', name: 'Matt Rangoli' },
   { slug: 'mirror work', name: 'Mirror Work' }
+]
+
+const PAGE_SORT_OPTIONS = [
+  { value: '', label: 'Newest' },
+  { value: 'oldest', label: 'Oldest' },
+  { value: 'price_asc', label: 'Price: Low to High' },
+  { value: 'price_desc', label: 'Price: High to Low' },
 ]
 
 interface Product {
@@ -54,7 +58,7 @@ export default function ProductsClient() {
   const productGridRef = useRef<HTMLDivElement>(null)
 
   // Consolidated state management using optimized hooks
-  const { filters, updateFilter, clearAllFilters } = useProductFilters()
+  const { filters, updateFilter } = useProductFilters()
   const { isSmallScreen } = useDeviceDetection()
   const { applyCardAnimations } = useScrollCardAnimations()
   
@@ -68,6 +72,9 @@ export default function ProductsClient() {
   const [error, setError] = useState<string | null>(null)
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false)
   const [isDesktopFilterOpen, setIsDesktopFilterOpen] = useState(false)
+  // Mirror the navbar's minimize threshold so the on-page toolbar
+  // fades out exactly when the navbar morphs and picks up the controls.
+  const [isPageScrolled, setIsPageScrolled] = useState(false)
 
   // State for accordion open/close
   const [openSections, setOpenSections] = useState<{[key: string]: boolean}>({
@@ -81,6 +88,10 @@ export default function ProductsClient() {
   // Infinite scroll state (desktop only)
   const [displayCount, setDisplayCount] = useState(15)
   const loadMoreTriggerRef = useRef<HTMLDivElement>(null)
+
+  // In-page sort dropdown state (only used at top of page on desktop)
+  const [pageSortOpen, setPageSortOpen] = useState(false)
+  const pageSortRef = useRef<HTMLDivElement>(null)
 
   // Pagination state (mobile only)
   const [currentPage, setCurrentPage] = useState(1)
@@ -188,10 +199,38 @@ export default function ProductsClient() {
     return () => window.removeEventListener('toggle-product-filter', handler)
   }, [isMobileView])
 
-  function handleCategoryClick(slug: string) {
-    // Use exact slug from database, no transformations needed
-    router.replace(slug === currentCategory ? '/products' : `/products?category=${encodeURIComponent(slug)}`)
-  }
+  // Track scroll position so we can hide the in-page toolbar
+  // when the navbar morphs and takes over Filter + Sort.
+  useEffect(() => {
+    if (isMobileView) return
+    const onScroll = () => setIsPageScrolled(window.scrollY > 100)
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [isMobileView])
+
+  // Close in-page Sort dropdown on outside click
+  useEffect(() => {
+    if (!pageSortOpen) return
+    const onDown = (e: MouseEvent) => {
+      if (pageSortRef.current && !pageSortRef.current.contains(e.target as Node)) {
+        setPageSortOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', onDown)
+    return () => document.removeEventListener('mousedown', onDown)
+  }, [pageSortOpen])
+
+  // Active filter count (drives the badge on the Filters button)
+  const pageFilterCount =
+    (currentCategory ? 1 : 0) +
+    (currentTag ? 1 : 0) +
+    (ratingMin ? 1 : 0) +
+    (inStockOnly ? 1 : 0) +
+    (lowStockOnly ? 1 : 0)
+
+  const currentPageSortLabel =
+    PAGE_SORT_OPTIONS.find(o => o.value === sortOrder)?.label || 'Newest'
 
   // Fetch list of available usage tags once
   useEffect(() => {
@@ -319,73 +358,47 @@ export default function ProductsClient() {
     }
   }, [isMobileView])
 
-  if (loading) return (
-    <LoadingSpinner 
-      size="large" 
-      overlay={true}
-      message="Loading products..."
-    />
-  )
   if (error) return <p className={styles.errorMessage}>Error: {error}</p>
+
+  // Loading state: only true initially when there's no data to show.
+  // Once products are loaded, subsequent fetches keep the layout visible
+  // and surface a subtle inline spinner inside the grid area instead.
+  const showInitialLoading = loading && allProducts.length === 0
 
   const toggleSection = (section: string) => {
     setOpenSections(prev => ({ ...prev, [section]: !prev[section] }))
   }
 
+  // Accordion content animation — single source of truth so every
+  // section opens/closes with the same feel.
+  const accordionMotion = {
+    initial: { height: 0, opacity: 0 },
+    animate: { height: 'auto' as const, opacity: 1 },
+    exit:    { height: 0, opacity: 0 },
+    transition: { duration: 0.32, ease: SMOOTH_EASE },
+    style: { overflow: 'hidden' as const },
+  }
+
+  // Chevron rotation — one shared transition.
+  const chevronTransition = { duration: 0.28, ease: SMOOTH_EASE }
+
   // Render the filter sidebar/drawer
   const renderFilters = () => (
     <>
-      <motion.h2 
-        className={styles.filterTitle}
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-      >
-        <FiFilter style={{ marginRight: '8px', opacity: 0.8 }} />
-        Filters
-      </motion.h2>
-      
       {/* Category filter */}
-      <motion.div 
-        className={styles.filterSection}
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3, delay: 0.1 }}
-      >
-        <div 
-          className={styles.filterHeader}
-          onClick={() => toggleSection('category')}
-        >
-          <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <FiGrid />
-            Category
-          </span>
-          <motion.div
-            animate={{ rotate: openSections.category ? 180 : 0 }}
-            transition={{ duration: 0.3, ease: 'easeInOut' }}
-          >
+      <div className={styles.filterSection}>
+        <div className={styles.filterHeader} onClick={() => toggleSection('category')}>
+          <span><FiGrid />Category</span>
+          <motion.div animate={{ rotate: openSections.category ? 180 : 0 }} transition={chevronTransition}>
             <FiChevronDown className={styles.arrow} />
           </motion.div>
         </div>
-        <AnimatePresence>
+        <AnimatePresence initial={false}>
           {openSections.category && (
-            <motion.div 
-              className={styles.filterContent}
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.3, ease: 'easeInOut' }}
-              style={{ overflow: 'hidden' }}
-            >
-              {KNOWN_CATEGORIES.map((cat, idx) => (
-                <motion.label 
-                  key={cat.slug} 
-                  className={styles.filterOption}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.2, delay: idx * 0.05 }}
-                >
-                  <motion.input
+            <motion.div className={styles.filterContent} {...accordionMotion}>
+              {KNOWN_CATEGORIES.map(cat => (
+                <label key={cat.slug} className={styles.filterOption}>
+                  <input
                     type="radio"
                     name="categoryFilter"
                     checked={currentCategory === cat.slug}
@@ -398,67 +411,41 @@ export default function ProductsClient() {
                     }}
                   />
                   <span>{cat.name}</span>
-                </motion.label>
+                </label>
               ))}
               {currentCategory && (
-                <motion.button 
-                  className={styles.clearButton} 
+                <button
+                  type="button"
+                  className={styles.clearButton}
                   onClick={() => {
                     const qs = new URLSearchParams(searchParams.toString())
-                    qs.delete('category');
+                    qs.delete('category')
                     router.replace(qs.toString() ? `/products?${qs}` : '/products')
                   }}
                 >
                   Clear
-                </motion.button>
+                </button>
               )}
             </motion.div>
           )}
         </AnimatePresence>
-      </motion.div>
+      </div>
 
       {/* Mood Tags */}
       {usageTags.length > 0 && (
-        <motion.div 
-          className={styles.filterSection}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.15 }}
-        >
-          <div 
-            className={styles.filterHeader}
-            onClick={() => toggleSection('mood')}
-          >
-            <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <FiTrendingUp />
-              Purpose / Mood
-            </span>
-            <motion.div
-              animate={{ rotate: openSections.mood ? 180 : 0 }}
-              transition={{ duration: 0.3, ease: 'easeInOut' }}
-            >
+        <div className={styles.filterSection}>
+          <div className={styles.filterHeader} onClick={() => toggleSection('mood')}>
+            <span><FiTrendingUp />Purpose / Mood</span>
+            <motion.div animate={{ rotate: openSections.mood ? 180 : 0 }} transition={chevronTransition}>
               <FiChevronDown className={styles.arrow} />
             </motion.div>
           </div>
-          <AnimatePresence>
+          <AnimatePresence initial={false}>
             {openSections.mood && (
-              <motion.div 
-                className={styles.filterContent}
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.3, ease: 'easeInOut' }}
-                style={{ overflow: 'hidden' }}
-              >
-                {usageTags.map((tag, idx) => (
-                  <motion.label 
-                    key={tag} 
-                    className={styles.filterOption}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.2, delay: idx * 0.05 }}
-                  >
-                    <motion.input
+              <motion.div className={styles.filterContent} {...accordionMotion}>
+                {usageTags.map(tag => (
+                  <label key={tag} className={styles.filterOption}>
+                    <input
                       type="radio"
                       name="tagFilter"
                       checked={currentTag === tag}
@@ -471,67 +458,41 @@ export default function ProductsClient() {
                       }}
                     />
                     <span>{tag}</span>
-                  </motion.label>
+                  </label>
                 ))}
                 {currentTag && (
-                  <motion.button 
-                    className={styles.clearButton} 
+                  <button
+                    type="button"
+                    className={styles.clearButton}
                     onClick={() => {
-                      const qs = new URLSearchParams(searchParams.toString());
-                      qs.delete('usageTag');
+                      const qs = new URLSearchParams(searchParams.toString())
+                      qs.delete('usageTag')
                       router.replace(qs.toString() ? `/products?${qs}` : '/products')
                     }}
                   >
                     Clear
-                  </motion.button>
+                  </button>
                 )}
               </motion.div>
             )}
           </AnimatePresence>
-        </motion.div>
+        </div>
       )}
 
       {/* Rating */}
-      <motion.div 
-        className={styles.filterSection}
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3, delay: 0.2 }}
-      >
-        <div 
-          className={styles.filterHeader}
-          onClick={() => toggleSection('rating')}
-        >
-          <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <FiStar />
-            Rating
-          </span>
-          <motion.div
-            animate={{ rotate: openSections.rating ? 180 : 0 }}
-            transition={{ duration: 0.3, ease: 'easeInOut' }}
-          >
+      <div className={styles.filterSection}>
+        <div className={styles.filterHeader} onClick={() => toggleSection('rating')}>
+          <span><FiStar />Rating</span>
+          <motion.div animate={{ rotate: openSections.rating ? 180 : 0 }} transition={chevronTransition}>
             <FiChevronDown className={styles.arrow} />
           </motion.div>
         </div>
-        <AnimatePresence>
+        <AnimatePresence initial={false}>
           {openSections.rating && (
-            <motion.div 
-              className={styles.filterContent}
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.3, ease: 'easeInOut' }}
-              style={{ overflow: 'hidden' }}
-            >
-              {[4,3,2,1].map((thr, idx) => (
-                <motion.label 
-                  key={thr} 
-                  className={styles.filterOption}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.2, delay: idx * 0.05 }}
-                >
-                  <motion.input
+            <motion.div className={styles.filterContent} {...accordionMotion}>
+              {[4, 3, 2, 1].map(thr => (
+                <label key={thr} className={styles.filterOption}>
+                  <input
                     type="radio"
                     name="ratingFilter"
                     checked={Number(ratingMin) === thr}
@@ -542,62 +503,31 @@ export default function ProductsClient() {
                     }}
                   />
                   <span>{thr}+ stars</span>
-                </motion.label>
+                </label>
               ))}
               {ratingMin && (
-                <motion.button 
-                  className={styles.clearButton} 
-                  onClick={() => {
-                    updateFilter('ratingMin', '')
-                  }}
-                >
+                <button type="button" className={styles.clearButton} onClick={() => updateFilter('ratingMin', '')}>
                   Clear
-                </motion.button>
+                </button>
               )}
             </motion.div>
           )}
         </AnimatePresence>
-      </motion.div>
+      </div>
 
       {/* Stock */}
-      <motion.div 
-        className={styles.filterSection}
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3, delay: 0.25 }}
-      >
-        <div 
-          className={styles.filterHeader}
-          onClick={() => toggleSection('stock')}
-        >
-          <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <FiPackage />
-            Stock
-          </span>
-          <motion.div
-            animate={{ rotate: openSections.stock ? 180 : 0 }}
-            transition={{ duration: 0.3, ease: 'easeInOut' }}
-          >
+      <div className={styles.filterSection}>
+        <div className={styles.filterHeader} onClick={() => toggleSection('stock')}>
+          <span><FiPackage />Stock</span>
+          <motion.div animate={{ rotate: openSections.stock ? 180 : 0 }} transition={chevronTransition}>
             <FiChevronDown className={styles.arrow} />
           </motion.div>
         </div>
-        <AnimatePresence>
+        <AnimatePresence initial={false}>
           {openSections.stock && (
-            <motion.div 
-              className={styles.filterContent}
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.3, ease: 'easeInOut' }}
-              style={{ overflow: 'hidden' }}
-            >
-              <motion.label 
-                className={styles.filterOption}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.2 }}
-              >
-                <motion.input
+            <motion.div className={styles.filterContent} {...accordionMotion}>
+              <label className={styles.filterOption}>
+                <input
                   type="checkbox"
                   checked={lowStockOnly}
                   onChange={e => {
@@ -606,179 +536,85 @@ export default function ProductsClient() {
                   }}
                 />
                 <span>Only low stock</span>
-              </motion.label>
-              <motion.label 
-                className={styles.filterOption}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.2, delay: 0.05 }}
-              >
-                <motion.input
+              </label>
+              <label className={styles.filterOption}>
+                <input
                   type="checkbox"
                   checked={inStockOnly}
-                  onChange={e=>{
+                  onChange={e => {
                     updateFilter('inStockOnly', e.target.checked)
                     if (isMobileView) setIsMobileFilterOpen(false)
                   }}
                 />
                 <span>In stock only</span>
-              </motion.label>
+              </label>
             </motion.div>
           )}
         </AnimatePresence>
-      </motion.div>
+      </div>
 
       {/* Sort */}
-      <motion.div 
-        className={styles.filterSection}
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3, delay: 0.3 }}
-      >
-        <div 
-          className={styles.filterHeader}
-          onClick={() => toggleSection('sort')}
-        >
-          <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <FiTrendingUp />
-            Sort
-          </span>
-          <motion.div
-            animate={{ rotate: openSections.sort ? 180 : 0 }}
-            transition={{ duration: 0.3, ease: 'easeInOut' }}
-          >
+      <div className={styles.filterSection}>
+        <div className={styles.filterHeader} onClick={() => toggleSection('sort')}>
+          <span><FiTrendingUp />Sort</span>
+          <motion.div animate={{ rotate: openSections.sort ? 180 : 0 }} transition={chevronTransition}>
             <FiChevronDown className={styles.arrow} />
           </motion.div>
         </div>
-        <AnimatePresence>
+        <AnimatePresence initial={false}>
           {openSections.sort && (
-            <motion.div 
-              className={styles.filterContent}
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.3, ease: 'easeInOut' }}
-              style={{ overflow: 'hidden' }}
-            >
-              <motion.label 
-                className={styles.filterOption}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.2 }}
-              >
-                <motion.input
-                  type="radio"
-                  name="sortoption"
-                  checked={sortOrder === '' || sortOrder === 'newest'}
-                  onChange={() => {
-                    updateFilter('sortOrder', '')
-                    if (isMobileView) setIsMobileFilterOpen(false)
-                  }}
-                />
-                <span>Newest</span>
-              </motion.label>
-              <motion.label 
-                className={styles.filterOption}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.2, delay: 0.05 }}
-              >
-                <motion.input
-                  type="radio"
-                  name="sortoption"
-                  checked={sortOrder === 'oldest'}
-                  onChange={() => {
-                    updateFilter('sortOrder', 'oldest')
-                    if (isMobileView) setIsMobileFilterOpen(false)
-                  }}
-                />
-                <span>Oldest</span>
-              </motion.label>
-              <motion.label 
-                className={styles.filterOption}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.2, delay: 0.1 }}
-              >
-                <motion.input
-                  type="radio"
-                  name="sortoption"
-                  checked={sortOrder === 'price_asc'}
-                  onChange={() => {
-                    updateFilter('sortOrder', 'price_asc')
-                    if (isMobileView) setIsMobileFilterOpen(false)
-                  }}
-                />
-                <span>Low to High</span>
-              </motion.label>
-              <motion.label 
-                className={styles.filterOption}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.2, delay: 0.15 }}
-              >
-                <motion.input
-                  type="radio"
-                  name="sortoption"
-                  checked={sortOrder === 'price_desc'}
-                  onChange={() => {
-                    updateFilter('sortOrder', 'price_desc')
-                    if (isMobileView) setIsMobileFilterOpen(false)
-                  }}
-                />
-                <span>High to Low</span>
-              </motion.label>
+            <motion.div className={styles.filterContent} {...accordionMotion}>
+              {PAGE_SORT_OPTIONS.map(opt => (
+                <label key={opt.value || 'default'} className={styles.filterOption}>
+                  <input
+                    type="radio"
+                    name="sortoption"
+                    checked={sortOrder === opt.value || (opt.value === '' && sortOrder === 'newest')}
+                    onChange={() => {
+                      updateFilter('sortOrder', opt.value)
+                      if (isMobileView) setIsMobileFilterOpen(false)
+                    }}
+                  />
+                  <span>{opt.label}</span>
+                </label>
+              ))}
               {sortOrder && sortOrder !== '' && (
-                <motion.button 
-                  className={styles.clearButton} 
-                  onClick={() => {
-                    updateFilter('sortOrder', '')
-                  }}
-                >
+                <button type="button" className={styles.clearButton} onClick={() => updateFilter('sortOrder', '')}>
                   Clear
-                </motion.button>
+                </button>
               )}
             </motion.div>
           )}
         </AnimatePresence>
-      </motion.div>
+      </div>
     </>
   )
 
   return (
     <div style={{ display: 'flex', position: 'relative' }} className={isMobileView ? styles.mobilePageWrapper : ''}>
-      {/* Desktop Sidebar - REMOVED FOR REBUILD */}
-
       {/* Mobile Filter Drawer */}
       <AnimatePresence>
         {isMobileView && isMobileFilterOpen && (
           <>
-            <motion.div 
+            <motion.div
               className={styles.mobileFilterDrawer}
               initial={{ x: '-100%' }}
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
-              transition={{ 
-                duration: 0.4, 
-                ease: [0.4, 0, 0.2, 1]
-              }}
+              transition={{ duration: 0.46, ease: SMOOTH_EASE }}
             >
               <div className={styles.mobileFilterHeader}>
-                <motion.h2
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: 0.2 }}
-                >
-                  Filters
-                </motion.h2>
-                <motion.button 
+                <h2>Filters</h2>
+                <motion.button
+                  type="button"
                   className={styles.mobileFilterCloseButton}
                   onClick={() => setIsMobileFilterOpen(false)}
                   aria-label="Close filters"
-                  whileHover={{ rotate: 90, scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
+                  whileHover={{ rotate: 90 }}
+                  whileTap={{ scale: 0.94 }}
+                  transition={{ duration: 0.26, ease: SMOOTH_EASE }}
                 >
-                  <FiX size={24} />
+                  <FiX size={22} />
                 </motion.button>
               </div>
               <div className={styles.mobileFilterContent}>
@@ -787,12 +623,12 @@ export default function ProductsClient() {
             </motion.div>
 
             {/* Mobile Filter Overlay */}
-            <motion.div 
+            <motion.div
               className={styles.mobileFilterOverlay}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
+              transition={{ duration: 0.32, ease: SMOOTH_EASE }}
               onClick={() => setIsMobileFilterOpen(false)}
             />
           </>
@@ -879,32 +715,25 @@ export default function ProductsClient() {
           <div className={styles.desktopWrap}>
             <AnimatePresence>
               {isDesktopFilterOpen && (
-                <motion.aside 
+                <motion.aside
                   className={styles.desktopSidebar}
-                  initial={{ x: '-100%', opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  exit={{ x: '-100%', opacity: 0 }}
-                  transition={{ 
-                    duration: 0.4, 
-                    ease: [0.4, 0, 0.2, 1]
-                  }}
+                  initial={{ x: '-100%' }}
+                  animate={{ x: 0 }}
+                  exit={{ x: '-100%' }}
+                  transition={{ duration: 0.46, ease: SMOOTH_EASE }}
                 >
                   <div className={styles.mobileFilterHeader}>
-                    <motion.h2
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3, delay: 0.2 }}
-                    >
-                      Filters
-                    </motion.h2>
-                    <motion.button 
+                    <h2>Filters</h2>
+                    <motion.button
+                      type="button"
                       className={styles.mobileFilterCloseButton}
                       onClick={() => setIsDesktopFilterOpen(false)}
                       aria-label="Close filters"
-                      whileHover={{ rotate: 90, scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
+                      whileHover={{ rotate: 90 }}
+                      whileTap={{ scale: 0.94 }}
+                      transition={{ duration: 0.26, ease: SMOOTH_EASE }}
                     >
-                      <FiX size={24} />
+                      <FiX size={22} />
                     </motion.button>
                   </div>
                   <div className={styles.mobileFilterContent}>
@@ -916,16 +745,79 @@ export default function ProductsClient() {
             <motion.div
               className={styles.desktopMain}
               animate={{
-                marginLeft: isDesktopFilterOpen ? 'var(--sidebar-width)' : 0
+                marginLeft: isDesktopFilterOpen ? 'var(--sidebar-width)' : 0,
               }}
-              transition={{
-                duration: 0.4,
-                ease: [0.4, 0, 0.2, 1]
-              }}
+              transition={{ duration: 0.46, ease: SMOOTH_EASE }}
             >
               <h1 className={styles.title}>Discover Our Collection</h1>
 
-              {(products.length === 0) ? (
+              {/* In-page Filter + Sort toolbar (top of page only; hands off
+                  to the morph navbar once isPageScrolled flips). */}
+              <div
+                className={`${styles.pageToolbar} ${isPageScrolled ? styles.pageToolbarHidden : ''}`}
+                aria-hidden={isPageScrolled}
+              >
+                <button
+                  type="button"
+                  className={styles.pageToolBtn}
+                  onClick={() => setIsDesktopFilterOpen(prev => !prev)}
+                  aria-expanded={isDesktopFilterOpen}
+                  aria-label="Toggle filters"
+                  tabIndex={isPageScrolled ? -1 : 0}
+                >
+                  <FiFilter size={14} />
+                  <span>Filters</span>
+                  {pageFilterCount > 0 && (
+                    <span className={styles.pageToolBadge}>{pageFilterCount}</span>
+                  )}
+                </button>
+
+                <div className={styles.pageSortWrap} ref={pageSortRef}>
+                  <button
+                    type="button"
+                    className={styles.pageToolBtn}
+                    onClick={() => setPageSortOpen(o => !o)}
+                    aria-expanded={pageSortOpen}
+                    aria-haspopup="listbox"
+                    tabIndex={isPageScrolled ? -1 : 0}
+                  >
+                    <span className={styles.pageToolMuted}>Sort:</span>
+                    <span>{currentPageSortLabel}</span>
+                    <FiChevronDown
+                      size={14}
+                      className={`${styles.pageToolChevron} ${pageSortOpen ? styles.pageToolChevronOpen : ''}`}
+                    />
+                  </button>
+                  <div
+                    className={`${styles.pageSortMenu} ${pageSortOpen ? styles.pageSortMenuOpen : ''}`}
+                    role="listbox"
+                    aria-hidden={!pageSortOpen}
+                  >
+                    {PAGE_SORT_OPTIONS.map(opt => (
+                      <button
+                        key={opt.value || 'default'}
+                        type="button"
+                        role="option"
+                        aria-selected={sortOrder === opt.value}
+                        onClick={() => {
+                          updateFilter('sortOrder', opt.value)
+                          setPageSortOpen(false)
+                        }}
+                        className={`${styles.pageSortOption} ${sortOrder === opt.value ? styles.pageSortOptionActive : ''}`}
+                        tabIndex={pageSortOpen ? 0 : -1}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {showInitialLoading ? (
+                <div className={styles.gridLoadingContainer}>
+                  <LoadingSpinner size="large" message="Loading products..." />
+                </div>
+              ) : products.length === 0 ? (
                 <p className={styles.emptyProducts}>No products found.</p>
               ) : products.length > 50 ? (
                 <VirtualProductGrid
@@ -936,7 +828,7 @@ export default function ProductsClient() {
                 <>
                   <div className={styles.productGrid} ref={productGridRef}>
                     {displayedProducts.map((prod, index) => (
-                      <ProductCard 
+                      <ProductCard
                         key={prod.id}
                         product={prod}
                         index={index}
@@ -944,7 +836,7 @@ export default function ProductsClient() {
                       />
                     ))}
                   </div>
-                  
+
                   {/* Infinite Scroll Trigger for Desktop */}
                   {displayedProducts.length < allProducts.length && (
                     <div ref={loadMoreTriggerRef} className={styles.loadMoreTrigger}>
@@ -968,7 +860,11 @@ export default function ProductsClient() {
           </div>
         ) : (
           <>
-            {(products.length === 0) ? (
+            {showInitialLoading ? (
+              <div className={styles.gridLoadingContainer}>
+                <LoadingSpinner size="large" message="Loading products..." />
+              </div>
+            ) : products.length === 0 ? (
               <p className={styles.emptyProducts}>No products found.</p>
             ) : products.length > 50 ? (
               <VirtualProductGrid
@@ -978,7 +874,7 @@ export default function ProductsClient() {
             ) : (
               <div className={`${styles.productGrid} ${styles.mobileProductGrid}`} ref={productGridRef}>
                 {products.map((prod, index) => (
-                  <ProductCard 
+                  <ProductCard
                     key={prod.id}
                     product={prod}
                     index={index}

@@ -1,0 +1,242 @@
+classDiagram
+    direction LR
+
+    class User {
+        +String id
+        +String email
+        +String fullName
+        +String passwordHash
+        +String avatarUrl
+        +String role
+        +Int defaultAddressId
+        +DateTime createdAt
+        +DateTime updatedAt
+        +String emailChangeOtp
+        +String emailChangeNew
+        +DateTime emailChangeExpires
+        +String passwordChangeOtp
+        +DateTime passwordChangeExpires
+    }
+
+    class Account {
+        +String id
+        +String userId
+        +String type
+        +String provider
+        +String providerAccountId
+        +String refresh_token
+        +String access_token
+        +Int expires_at
+    }
+
+    class Session {
+        +String id
+        +String sessionToken
+        +String userId
+        +DateTime expires
+    }
+
+    class VerificationToken {
+        +String identifier
+        +String token
+        +DateTime expires
+    }
+
+    class Address {
+        +Int id
+        +String userId
+        +String label
+        +String line1
+        +String line2
+        +String city
+        +String postalCode
+        +String country
+        +DateTime createdAt
+        +DateTime updatedAt
+    }
+
+    class Category {
+        +Int id
+        +String name
+        +String slug
+        +Int parentId
+    }
+
+    class Product {
+        +Int id
+        +String name
+        +String slug
+        +String description
+        +String shortDesc
+        +Float price
+        +String currency
+        +Json imageUrls
+        +Int stockQuantity
+        +Boolean isActive
+        +String specifications
+        +String careInstructions
+        +Json stylingIdeaImages
+        +Json usageTags
+        +DateTime createdAt
+        +DateTime updatedAt
+    }
+
+    class CartItem {
+        +Int id
+        +String userId
+        +Int productId
+        +Int quantity
+        +DateTime addedAt
+    }
+
+    class WishlistItem {
+        +Int id
+        +String userId
+        +Int productId
+        +DateTime addedAt
+    }
+
+    class Order {
+        +Int id
+        +String userId
+        +String orderNumber
+        +String status
+        +Float subtotal
+        +Float tax
+        +Float shippingFee
+        +Float discount
+        +Float totalAmount
+        +Json shippingAddress
+        +Json billingAddress
+        +String couponCode
+        +Float discountAmount
+        +Float discountedTotal
+        +String paymentMethod
+        +String paymentStatus
+        +DateTime createdAt
+        +DateTime updatedAt
+    }
+
+    class OrderItem {
+        +Int id
+        +Int orderId
+        +Int productId
+        +Int quantity
+        +Float priceAtPurchase
+        +Json variantOptions
+    }
+
+    class OrderNote {
+        +Int id
+        +Int orderId
+        +String authorId
+        +String customerId
+        +String text
+        +DateTime createdAt
+    }
+
+    class Coupon {
+        +Int id
+        +String code
+        +String type
+        +Float amount
+        +DateTime expiresAt
+        +Int usageLimit
+        +Int usedCount
+        +DateTime createdAt
+    }
+
+    class Banner {
+        +Int id
+        +String imageUrl
+        +String linkUrl
+        +String caption
+        +Int order
+        +Boolean isActive
+        +DateTime createdAt
+    }
+
+    class FlashSale {
+        +Int id
+        +String title
+        +Int categoryId
+        +DateTime startsAt
+        +DateTime endsAt
+        +Float discountPct
+        +DateTime createdAt
+    }
+
+    class SupportTicket {
+        +String id
+        +String name
+        +String email
+        +String subject
+        +String message
+        +String status
+        +DateTime createdAt
+        +DateTime updatedAt
+    }
+
+    class SupportMessage {
+        +String id
+        +String ticketId
+        +String sender
+        +String content
+        +Json attachments
+        +DateTime createdAt
+    }
+
+    class ProductReview {
+        +Int id
+        +Int productId
+        +String userId
+        +Int rating
+        +String comment
+        +String locale
+        +String adminReply
+        +String adminReaction
+        +DateTime createdAt
+    }
+
+    class Notification {
+        +Int id
+        +String userId
+        +String message
+        +Boolean isRead
+        +String link
+        +DateTime createdAt
+    }
+
+    class StockAlert {
+        +Int id
+        +Int productId
+        +Boolean emailSent
+    }
+
+    User "1" *-- "0..*" Account : accounts
+    User "1" *-- "0..*" Session : sessions
+    User "1" *-- "0..*" Address : addresses
+    User "0..1" --> "0..1" Address : defaultAddress
+    User "1" *-- "0..*" CartItem : cartItems
+    User "1" *-- "0..*" WishlistItem : wishlistItems
+    User "1" *-- "0..*" Order : orders
+    User "1" --> "0..*" OrderNote : authoredNotes
+    User "0..1" --> "0..*" OrderNote : customerNotes
+    User "1" --> "0..*" ProductReview : reviews
+    User "1" *-- "0..*" Notification : notifications
+
+    Category "0..1" --> "0..*" Category : parent/children
+    Category "1" --> "0..*" Product : products
+    Category "0..1" --> "0..*" FlashSale : flashSales
+
+    Product "1" --> "0..*" CartItem : cartEntries
+    Product "1" --> "0..*" WishlistItem : wishlistEntries
+    Product "1" --> "0..*" OrderItem : orderedAs
+    Product "1" --> "0..*" ProductReview : reviews
+    Product "1" *-- "0..1" StockAlert : stockAlert
+
+    Order "1" *-- "1..*" OrderItem : orderItems
+    Order "1" *-- "0..*" OrderNote : orderNotes
+    Order ..> Coupon : uses couponCode
+
+    SupportTicket "1" *-- "0..*" SupportMessage : messages

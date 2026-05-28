@@ -26,14 +26,14 @@ export default function AppRootClient({ children }: { children: React.ReactNode 
   const mobileOnlyRoutes = new Set<string>(['/cart/mobile']);
   const isMobileOnlyRoute = mobileOnlyRoutes.has(pathname);
 
-  // Routes that should bypass MobileLayout (have their own navigation)
+  // Routes that should bypass MobileLayout (have their own navigation).
+  // All /dashboard routes own their shell now, so bypass the entire subtree.
   const bypassMobileLayoutRoutes = [
-    '/dashboard/admin/users/mobile',
-    '/dashboard/admin/products/mobile',
-    '/dashboard/profile',
-    '/dashboard'
+    '/dashboard',
   ];
-  const shouldBypassMobileLayout = bypassMobileLayoutRoutes.some(route => pathname === route || (route !== '/dashboard' && pathname.startsWith(route)));
+  const shouldBypassMobileLayout = bypassMobileLayoutRoutes.some(
+    (route) => pathname === route || pathname.startsWith(route + '/')
+  );
 
   // Use optimized device detection hook
   const { isMobile, forceDesktopView, isSmallScreen, switchToDesktopView, switchToMobileView } = useDeviceDetection(isMobileOnlyRoute);
@@ -117,6 +117,9 @@ export default function AppRootClient({ children }: { children: React.ReactNode 
   // Show desktop view if forced or not mobile, but never on mobile-only routes
   const showDesktopView = (forceDesktopView || !isMobile) && !isMobileOnlyRoute;
 
+  // Dashboard routes own their own shell (sidebar) — suppress the global navbar
+  const isDashboardRoute = pathname === '/dashboard' || pathname.startsWith('/dashboard/');
+
   // Always use standard layout pipeline; mobile-only routes are handled via showDesktopView and MobileLayout
 
   return (
@@ -152,7 +155,7 @@ export default function AppRootClient({ children }: { children: React.ReactNode 
 
               {/* Main content wrapper */}
           <div className={isMobileMenuOpen ? styles.mainContentBlurred : ''}>
-            <Navbar />
+            {!isDashboardRoute && <Navbar />}
             <UserNotifications />
             <AdminNotifications />
             {children}

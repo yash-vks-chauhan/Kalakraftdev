@@ -1,0 +1,486 @@
+sequenceDiagram
+    autonumber
+    actor Customer
+    actor Admin
+    participant CustomerUI as Customer UI
+    participant AdminUI as Admin UI
+    participant Middleware as Next.js Middleware
+    participant AuthAPI as Auth API
+    participant StoreAPI as Storefront API
+    participant OrdersAPI as Orders API
+    participant SupportAPI as Support API
+    participant AdminAPI as Admin API
+    participant UploadAPI as Upload API
+    participant Firebase as Firebase Auth
+    participant Pusher as Pusher
+    participant SSE as orderEvents / SSE
+    participant Mail as SMTP / Sendinblue
+    participant Storage as Image Storage
+    participant Prisma as Prisma ORM
+    participant DB as PostgreSQL
+
+    Note over CustomerUI,AdminAPI: Sensitive pages and APIs pass through middleware security headers. Mutating routes also use JWT auth, origin checks, rate limits, and upload guards where applicable.
+
+    rect rgb(247, 247, 247)
+        Note over Customer,CustomerUI: 1. Session bootstrap and authentication
+        Customer->>CustomerUI: Open site or auth page
+        CustomerUI->>Middleware: Request page or API
+        Middleware-->>CustomerUI: Continue with security headers
+        CustomerUI->>AuthAPI: GET /api/auth/me
+        AuthAPI->>Prisma: getAuthenticatedUser()
+        Prisma->>DB: SELECT user by JWT subject
+        DB-->>Prisma: user, default address, order summary
+        Prisma-->>AuthAPI: user
+        alt Access token missing or expired
+            AuthAPI-->>CustomerUI: 401 Unauthorized
+            CustomerUI->>AuthAPI: POST /api/auth/refresh
+            AuthAPI->>Prisma: rotateRefreshSession()
+            Prisma->>DB: SELECT hashed session
+            DB-->>Prisma: current session and user
+            Prisma->>DB: DELETE old session and INSERT new session
+            DB-->>Prisma: rotated session
+            AuthAPI-->>CustomerUI: Set fresh access and refresh cookies
+            CustomerUI->>AuthAPI: Retry GET /api/auth/me
+            AuthAPI->>Prisma: getAuthenticatedUser()
+            Prisma->>DB: SELECT user
+            DB-->>Prisma: user
+            Prisma-->>AuthAPI: user
+        else Session already valid
+            AuthAPI-->>CustomerUI: user profile
+        end
+
+        alt Email/password signup
+            Customer->>CustomerUI: Submit signup form
+            CustomerUI->>AuthAPI: POST /api/auth/signup
+            AuthAPI->>Prisma: Validate email uniqueness and create user
+            Prisma->>DB: INSERT user
+            DB-->>Prisma: created user
+            AuthAPI->>AuthAPI: Hash password and sign access JWT
+            AuthAPI->>Prisma: createRefreshSession()
+            Prisma->>DB: INSERT session
+            DB-->>Prisma: refresh session
+            AuthAPI-->>CustomerUI: Set auth cookies and return user
+        else Email/password login
+            Customer->>CustomerUI: Submit login form
+            CustomerUI->>AuthAPI: POST /api/auth/login
+            AuthAPI->>Prisma: Load user and password hash
+            Prisma->>DB: SELECT user
+            DB-->>Prisma: user
+            AuthAPI->>AuthAPI: bcrypt.compare(password, hash)
+            AuthAPI->>AuthAPI: sign access JWT
+            AuthAPI->>Prisma: createRefreshSession()
+            Prisma->>DB: INSERT session
+            DB-->>Prisma: refresh session
+            AuthAPI-->>CustomerUI: Set auth cookies and return user
+        else Google or Firebase login
+            Customer->>Firebase: Popup or redirect sign-in
+            Firebase-->>CustomerUI: Firebase ID token
+            CustomerUI->>AuthAPI: POST /api/auth/firebase-login or /api/auth/google-login
+            AuthAPI->>Firebase: verifyIdToken()
+            Firebase-->>AuthAPI: verified identity
+            AuthAPI->>Prisma: Find or create user
+            Prisma->>DB: SELECT or INSERT user
+            DB-->>Prisma: user
+            AuthAPI->>AuthAPI: sign access JWT
+            AuthAPI->>Prisma: createRefreshSession()
+            Prisma->>DB: INSERT session
+            DB-->>Prisma: refresh session
+            AuthAPI-->>CustomerUI: Set auth cookies and return user
+        end
+    end
+
+    rect rgb(245, 250, 255)
+        Note over Customer,CustomerUI: 2. Storefront discovery and client state hydration
+        par Load catalog data
+            CustomerUI->>StoreAPI: GET /api/categories
+            StoreAPI->>Prisma: category.findMany()
+            Prisma->>DB: SELECT categories
+            DB-->>Prisma: categories
+            Prisma-->>StoreAPI: categories
+            StoreAPI-->>CustomerUI: categories
+        and Search and filter products
+            CustomerUI->>StoreAPI: GET /api/products with filters
+            StoreAPI->>Prisma: product.findMany() and review aggregates
+            Prisma->>DB: SELECT products and grouped review stats
+            DB-->>Prisma: products and ratings
+            Prisma-->>StoreAPI: filtered products
+            StoreAPI-->>CustomerUI: product list
+        and Open a product
+            CustomerUI->>StoreAPI: GET /api/products/[id or slug]
+            StoreAPI->>Prisma: product.findUnique()
+            Prisma->>DB: SELECT product and category
+            DB-->>Prisma: product
+            Prisma-->>StoreAPI: product
+            StoreAPI-->>CustomerUI: product detail
+            CustomerUI->>StoreAPI: GET /api/products/[id]/review
+            StoreAPI->>Prisma: aggregate reviews and latest reviews
+            Prisma->>DB: SELECT review stats and reviews
+            DB-->>Prisma: review data
+            Prisma-->>StoreAPI: ratings and reviews
+            StoreAPI-->>CustomerUI: review summary
+        and Hydrate authenticated state
+            CustomerUI->>StoreAPI: GET /api/cart
+            StoreAPI->>Prisma: cartItem.findMany()
+            Prisma->>DB: SELECT cart items and products
+            DB-->>Prisma: cart items
+            Prisma-->>StoreAPI: cart items
+            StoreAPI-->>CustomerUI: cart state
+            CustomerUI->>StoreAPI: GET /api/wishlist
+            StoreAPI->>Prisma: wishlistItem.findMany()
+            Prisma->>DB: SELECT wishlist items and products
+            DB-->>Prisma: wishlist items
+            Prisma-->>StoreAPI: wishlist items
+            StoreAPI-->>CustomerUI: wishlist state
+        end
+    end
+
+    rect rgb(248, 255, 248)
+        Note over Customer,CustomerUI: 3. Cart, wishlist, and address book mutations
+        alt Add or update cart
+            Customer->>CustomerUI: Add item or change quantity
+            CustomerUI->>StoreAPI: POST /api/cart or PUT /api/cart/[id]
+            StoreAPI->>Prisma: Load product and existing cart item
+            Prisma->>DB: SELECT product and cartItem
+            DB-->>Prisma: product and cartItem
+            alt Stock available
+                StoreAPI->>Prisma: CREATE or UPDATE cartItem
+                Prisma->>DB: INSERT or UPDATE cartItem
+                DB-->>Prisma: saved cart item
+                Prisma-->>StoreAPI: cart item
+                StoreAPI-->>CustomerUI: updated cart item
+            else Stock unavailable
+                StoreAPI-->>CustomerUI: 400 stock validation error
+            end
+        else Remove cart item
+            CustomerUI->>StoreAPI: DELETE /api/cart/[id]
+            StoreAPI->>Prisma: delete cartItem
+            Prisma->>DB: DELETE cartItem
+            DB-->>Prisma: success
+            Prisma-->>StoreAPI: success
+            StoreAPI-->>CustomerUI: success
+        else Add or remove wishlist item
+            CustomerUI->>StoreAPI: POST /api/wishlist or DELETE /api/wishlist/[productId]
+            StoreAPI->>Prisma: create or delete wishlistItem
+            Prisma->>DB: INSERT or DELETE wishlistItem
+            DB-->>Prisma: success
+            Prisma-->>StoreAPI: wishlist result
+            StoreAPI-->>CustomerUI: updated wishlist state
+        else Manage addresses
+            CustomerUI->>StoreAPI: GET /api/addresses
+            StoreAPI->>Prisma: address.findMany()
+            Prisma->>DB: SELECT addresses
+            DB-->>Prisma: addresses
+            Prisma-->>StoreAPI: addresses
+            StoreAPI-->>CustomerUI: address book
+            CustomerUI->>StoreAPI: POST, PATCH, or DELETE /api/addresses...
+            StoreAPI->>Prisma: create, update, or delete address
+            Prisma->>DB: INSERT, UPDATE, or DELETE address
+            DB-->>Prisma: address result
+            Prisma-->>StoreAPI: address result
+            StoreAPI-->>CustomerUI: updated address book
+        end
+    end
+
+    rect rgb(255, 250, 245)
+        Note over Customer,CustomerUI: 4. Checkout and order creation
+        Customer->>CustomerUI: Open checkout
+        CustomerUI->>StoreAPI: GET /api/addresses
+        StoreAPI->>Prisma: address.findMany(userId)
+        Prisma->>DB: SELECT addresses
+        DB-->>Prisma: addresses
+        Prisma-->>StoreAPI: addresses
+        StoreAPI-->>CustomerUI: addresses
+
+        opt Apply coupon
+            Customer->>CustomerUI: Enter coupon code
+            CustomerUI->>OrdersAPI: POST /api/coupons/validate
+            OrdersAPI->>Prisma: coupon.findUnique(code)
+            Prisma->>DB: SELECT coupon
+            DB-->>Prisma: coupon
+            Prisma-->>OrdersAPI: coupon
+            OrdersAPI-->>CustomerUI: coupon type and amount
+        end
+
+        Customer->>CustomerUI: Submit order
+        CustomerUI->>OrdersAPI: POST /api/orders
+        OrdersAPI->>Prisma: Load shipping address, billing address, and cart items
+        Prisma->>DB: SELECT addresses, cart items, and products
+        DB-->>Prisma: addresses and cart snapshot
+        Prisma-->>OrdersAPI: checkout inputs
+        Note right of OrdersAPI: paymentMethod is recorded locally<br/>paymentStatus starts as unpaid<br/>No external payment gateway is called here
+        OrdersAPI->>Prisma: prisma.$transaction(...)
+        Prisma->>DB: UPDATE coupon usedCount if present
+        Prisma->>DB: UPDATE each product stockQuantity
+        Prisma->>DB: INSERT order and orderItems
+        Prisma->>DB: DELETE all user cartItems
+        DB-->>Prisma: created order and stock snapshot
+        Prisma-->>OrdersAPI: created order
+
+        par Notify admin dashboard
+            OrdersAPI->>Pusher: trigger private-admin-channel:new-order
+            Pusher-->>AdminUI: new-order notification
+        and Send admin email
+            OrdersAPI->>Mail: sendOrderNotificationEmail()
+            Mail-->>Admin: new order email
+        and Send customer confirmation
+            OrdersAPI->>Mail: send order confirmation email
+            Mail-->>Customer: order confirmation email
+        end
+
+        opt Stock crossed alert threshold
+            OrdersAPI->>Mail: send low-stock or out-of-stock email
+            OrdersAPI->>Pusher: trigger low-stock or out-of-stock
+            Pusher-->>AdminUI: stock alert notification
+            Mail-->>Admin: stock alert email
+        end
+
+        OrdersAPI-->>CustomerUI: created order
+        CustomerUI->>CustomerUI: clear cart and save lastOrderNumber
+        CustomerUI-->>Customer: Redirect to /checkout/success
+    end
+
+    rect rgb(245, 255, 255)
+        Note over Admin,AdminUI: 5. Admin orders, analytics, exports, and customer order lifecycle
+        Admin->>AdminUI: Open orders dashboard
+        AdminUI->>OrdersAPI: GET /api/orders
+        OrdersAPI->>Prisma: order.findMany()
+        Prisma->>DB: SELECT orders, orderItems, and users
+        DB-->>Prisma: orders
+        Prisma-->>OrdersAPI: orders
+        OrdersAPI-->>AdminUI: orders list
+
+        AdminUI->>AdminAPI: GET /api/admin/metrics?period=...
+        AdminAPI->>Prisma: count, group, and aggregate orders
+        Prisma->>DB: SELECT metrics aggregates
+        DB-->>Prisma: metrics
+        Prisma-->>AdminAPI: metrics
+        AdminAPI-->>AdminUI: charts and totals
+
+        AdminUI->>OrdersAPI: POST /api/orders/pusher-auth
+        OrdersAPI->>Pusher: authorize private-admin-channel
+        Pusher-->>AdminUI: admin realtime subscription auth
+
+        AdminUI->>OrdersAPI: GET /api/orders/stream
+        OrdersAPI->>SSE: Register admin listener
+        SSE-->>AdminUI: Keep SSE connection open
+
+        Admin->>AdminUI: Change order status
+        AdminUI->>OrdersAPI: PATCH /api/orders/[id]/status
+        OrdersAPI->>Prisma: order.update(status)
+        Prisma->>DB: UPDATE order and SELECT order.user
+        DB-->>Prisma: updated order
+        Prisma-->>OrdersAPI: updated order
+
+        par Notify customer
+            OrdersAPI->>Mail: send status change email
+            Mail-->>Customer: accepted, shipped, or delivered email
+        and Update live admin dashboards
+            OrdersAPI->>SSE: emit updated order event
+            SSE-->>AdminUI: onmessage(order updated)
+        end
+
+        opt Customer views order history or detail
+            CustomerUI->>OrdersAPI: GET /api/orders or /api/orders/[id]
+            OrdersAPI->>Prisma: order.findMany() or order.findFirst()
+            Prisma->>DB: SELECT order data
+            DB-->>Prisma: order data
+            Prisma-->>OrdersAPI: order data
+            OrdersAPI-->>CustomerUI: order history or detail
+        end
+
+        opt Customer reviews delivered product
+            Customer->>CustomerUI: Submit product review
+            CustomerUI->>StoreAPI: POST /api/products/[id]/review
+            StoreAPI->>Prisma: verify delivered orderItem exists
+            Prisma->>DB: SELECT eligible orderItem
+            DB-->>Prisma: eligibility result
+            StoreAPI->>Prisma: upsert productReview
+            Prisma->>DB: INSERT or UPDATE review
+            DB-->>Prisma: saved review
+            Prisma-->>StoreAPI: review
+            StoreAPI-->>CustomerUI: review saved
+        end
+
+        opt Admin exports orders
+            AdminUI->>OrdersAPI: GET /api/orders/export
+            OrdersAPI->>Prisma: order.findMany()
+            Prisma->>DB: SELECT orders and users
+            DB-->>Prisma: export data
+            Prisma-->>OrdersAPI: CSV rows
+            OrdersAPI-->>AdminUI: orders.csv download
+        end
+    end
+
+    rect rgb(255, 245, 250)
+        Note over Customer,Admin: 6. Support ticket lifecycle with live customer and admin chat
+        Customer->>CustomerUI: Create support ticket with optional image attachments
+        loop Each attachment
+            CustomerUI->>SupportAPI: POST /api/support/attachments
+            SupportAPI->>UploadAPI: guardUploadRequest() and validateUploadBuffer()
+            UploadAPI->>Storage: storeSupportAttachment()
+            Storage-->>UploadAPI: signed attachment URL and metadata
+            UploadAPI-->>SupportAPI: attachment payload
+            SupportAPI-->>CustomerUI: attachment payload
+        end
+
+        CustomerUI->>SupportAPI: POST /api/support/ticket
+        SupportAPI->>Prisma: create supportTicket
+        Prisma->>DB: INSERT supportTicket
+        DB-->>Prisma: ticket
+        opt First message only contains attachments
+            SupportAPI->>Prisma: create supportMessage(sender=customer)
+            Prisma->>DB: INSERT supportMessage
+            DB-->>Prisma: message
+        end
+        SupportAPI->>Mail: Sendinblue acknowledgement email
+        Mail-->>Customer: ticket received email
+        SupportAPI-->>CustomerUI: ticket id
+        CustomerUI-->>Customer: Redirect to /support/ticket/[id]
+
+        opt Admin opens support inbox
+            AdminUI->>AdminAPI: GET /api/admin/support/ticket
+            AdminAPI->>Prisma: supportTicket.findMany()
+            Prisma->>DB: SELECT support tickets
+            DB-->>Prisma: tickets
+            Prisma-->>AdminAPI: tickets
+            AdminAPI-->>AdminUI: support queue
+        end
+
+        CustomerUI->>SupportAPI: GET /api/support/ticket/[id]
+        SupportAPI->>Prisma: supportTicket.findUnique(include messages)
+        Prisma->>DB: SELECT ticket and ordered messages
+        DB-->>Prisma: ticket thread
+        Prisma-->>SupportAPI: ticket thread
+        SupportAPI-->>CustomerUI: initial thread state
+
+        Admin->>AdminUI: Open support ticket detail
+        AdminUI->>SupportAPI: GET /api/support/ticket/[id]
+        SupportAPI->>Prisma: supportTicket.findUnique(include messages)
+        Prisma->>DB: SELECT ticket and ordered messages
+        DB-->>Prisma: ticket thread
+        Prisma-->>SupportAPI: ticket thread
+        SupportAPI-->>AdminUI: initial thread state
+
+        par Customer subscribes to live thread
+            CustomerUI->>SupportAPI: POST /api/support/pusher-auth
+            SupportAPI->>Prisma: verify ticket ownership
+            Prisma->>DB: SELECT ticket and user email
+            DB-->>Prisma: authorization data
+            SupportAPI->>Pusher: authorize private-support-ticket-{id}
+            Pusher-->>CustomerUI: subscription auth
+        and Admin subscribes to live thread
+            AdminUI->>SupportAPI: POST /api/support/pusher-auth
+            SupportAPI->>Prisma: verify admin access
+            Prisma->>DB: SELECT ticket
+            DB-->>Prisma: authorization data
+            SupportAPI->>Pusher: authorize private-support-ticket-{id}
+            Pusher-->>AdminUI: subscription auth
+        end
+
+        opt Typing indicators
+            CustomerUI->>Pusher: client-typing from customer
+            Pusher-->>AdminUI: client-typing
+            AdminUI->>Pusher: client-typing from agent
+            Pusher-->>CustomerUI: client-typing
+        end
+
+        alt Customer sends follow-up message
+            CustomerUI->>SupportAPI: POST /api/support/ticket/[id]
+            SupportAPI->>Prisma: create supportMessage(sender=customer)
+            Prisma->>DB: INSERT supportMessage
+            DB-->>Prisma: message
+            SupportAPI->>Pusher: trigger new-message
+            Pusher-->>AdminUI: new-message
+            Pusher-->>CustomerUI: new-message
+        else Admin replies and changes status
+            AdminUI->>SupportAPI: POST /api/admin/support/ticket/[id]/reply
+            SupportAPI->>Prisma: create supportMessage(sender=agent)
+            Prisma->>DB: INSERT supportMessage
+            DB-->>Prisma: message
+            SupportAPI->>Prisma: update supportTicket.status
+            Prisma->>DB: UPDATE supportTicket
+            DB-->>Prisma: updated ticket
+            par Live chat update
+                SupportAPI->>Pusher: trigger new-message
+                Pusher-->>CustomerUI: new-message
+                Pusher-->>AdminUI: new-message
+            and Live status update
+                SupportAPI->>Pusher: trigger status-changed
+                Pusher-->>CustomerUI: status-changed
+                Pusher-->>AdminUI: status-changed
+            and Customer email
+                SupportAPI->>Mail: Sendinblue reply email
+                Mail-->>Customer: support reply email
+            end
+        end
+    end
+
+    rect rgb(245, 245, 255)
+        Note over Admin,AdminUI: 7. Admin catalog, coupon, user, review, and upload management
+        opt Upload product media
+            loop Each product image
+                AdminUI->>UploadAPI: POST /api/uploads/imagekit?folder=products
+                UploadAPI->>UploadAPI: guardUploadRequest(requireAdmin)
+                UploadAPI->>UploadAPI: optimizeImageIfNeeded()
+                UploadAPI->>Storage: Upload to ImageKit
+                Storage-->>UploadAPI: asset URL and metadata
+                UploadAPI-->>AdminUI: uploaded asset payload
+            end
+        end
+
+        par Product CRUD
+            AdminUI->>AdminAPI: GET, POST, PATCH, or DELETE /api/admin/products...
+            AdminAPI->>Prisma: query or mutate Product
+            Prisma->>DB: SELECT, INSERT, UPDATE, or DELETE product
+            DB-->>Prisma: product result
+            Prisma-->>AdminAPI: product response
+            AdminAPI-->>AdminUI: refreshed product state
+        and Coupon CRUD
+            AdminUI->>AdminAPI: GET, POST, PATCH, or DELETE /api/admin/coupons
+            AdminAPI->>Prisma: query or mutate Coupon
+            Prisma->>DB: SELECT, INSERT, UPDATE, or DELETE coupon
+            DB-->>Prisma: coupon result
+            Prisma-->>AdminAPI: coupon response
+            AdminAPI-->>AdminUI: refreshed coupon state
+        and User administration
+            AdminUI->>AdminAPI: GET or PATCH /api/admin/users
+            AdminAPI->>Prisma: list users or update role
+            Prisma->>DB: SELECT or UPDATE user
+            DB-->>Prisma: user data
+            Prisma-->>AdminAPI: user response
+            AdminAPI-->>AdminUI: refreshed user state
+        and Review moderation
+            AdminUI->>AdminAPI: GET /api/admin/reviews
+            AdminAPI->>Prisma: review.findMany()
+            Prisma->>DB: SELECT reviews, product, and user
+            DB-->>Prisma: reviews
+            Prisma-->>AdminAPI: reviews
+            AdminAPI-->>AdminUI: review queue
+            AdminUI->>AdminAPI: PATCH /api/admin/reviews/[id]/reply
+            AdminAPI->>Prisma: update adminReply and adminReaction
+            Prisma->>DB: UPDATE productReview
+            DB-->>Prisma: updated review
+            Prisma-->>AdminAPI: review response
+            AdminAPI-->>AdminUI: updated moderation state
+        end
+
+        opt Send abandoned cart reminder
+            AdminUI->>AdminAPI: POST /api/admin/users/[id]/remind-cart
+            AdminAPI->>Prisma: find stale cart items and target user
+            Prisma->>DB: SELECT cartItems and user
+            DB-->>Prisma: items and user
+            AdminAPI->>Mail: send reminder email
+            Mail-->>Customer: return-to-cart email
+            AdminAPI-->>AdminUI: success
+        end
+
+        opt Delete user account
+            AdminUI->>AdminAPI: DELETE /api/admin/users/[id]
+            AdminAPI->>Prisma: delete cart, wishlist, addresses, orders, notes, and user
+            Prisma->>DB: DELETE dependent records and user
+            DB-->>Prisma: delete result
+            AdminAPI->>Mail: send account deletion email
+            Mail-->>Customer: account deleted email
+            AdminAPI-->>AdminUI: success
+        end
+    end

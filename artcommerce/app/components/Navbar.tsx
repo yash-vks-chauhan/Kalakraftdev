@@ -256,11 +256,6 @@ export default function Navbar() {
     await logout()
   }, [logout])
 
-  // Debug search state
-  useEffect(() => {
-    console.log('Search state changed:', searchOpen)
-  }, [searchOpen])
-
   // Only show search on these base routes (and their children)
   const enableSearch = ['/', '/products', '/dashboard'].some(
     base => pathname === base || pathname.startsWith(base + '/')
@@ -308,9 +303,6 @@ export default function Navbar() {
   const handleSearchClose = (instant = false) => {
     setSearchOpen(false)
   }
-
-  // Debug render
-  console.log('Navbar rendering with searchOpen:', searchOpen)
 
   return (
     <>
