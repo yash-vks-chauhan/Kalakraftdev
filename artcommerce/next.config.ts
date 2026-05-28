@@ -35,7 +35,7 @@ const contentSecurityPolicy = [
     'https://*.web.app',
     'https://api.pusherapp.com',
     'https://*.pusher.com',
-    'wss://ws-*.pusher.com',
+    'wss://*.pusher.com',
     !isProduction ? 'http://localhost:*' : '',
     !isProduction ? 'http://127.0.0.1:*' : '',
     !isProduction ? 'ws://localhost:*' : '',
