@@ -32,7 +32,7 @@ type Side = "top" | "right" | "bottom" | "left"
 
 const baseSide: Record<Side, string> = {
   top: "inset-x-0 top-0 border-b w-full",
-  bottom: "inset-x-0 bottom-0 border-t w-full",
+  bottom: "inset-x-0 bottom-0 border-t w-full max-h-[92vh] rounded-t-xl",
   left: "inset-y-0 left-0 h-full w-80 max-w-[85vw] border-r",
   right: "inset-y-0 right-0 h-full w-80 max-w-[85vw] border-l",
 }

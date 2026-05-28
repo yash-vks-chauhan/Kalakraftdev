@@ -21,7 +21,6 @@ const bundledImageNames = new Set([
   'imageclock.png',
   'imagecollection1.png',
   'imagecollection99.png',
-  'logo.png',
   'trayscollection.png',
   'vases.png',
   'featured1.png',

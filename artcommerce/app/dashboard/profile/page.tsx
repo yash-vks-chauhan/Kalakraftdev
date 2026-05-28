@@ -11,7 +11,11 @@ import {
   Loader2,
   Check,
   Pencil,
+  UserRound,
+  Shield,
+  MapPin,
 } from "lucide-react"
+import type { LucideIcon } from "lucide-react"
 
 import { useAuth } from "../../contexts/AuthContext"
 import { cn } from "@/lib/utils"
@@ -19,6 +23,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet"
 
 interface Address {
   id: number
@@ -35,6 +46,14 @@ const presetAvatars = [
   { name: "Robot", path: "/avatars/robot.svg" },
   { name: "Fox", path: "/avatars/fox.svg" },
   { name: "Owl", path: "/avatars/owl.svg" },
+]
+
+type SectionKey = "identity" | "security" | "addresses"
+
+const sections: { key: SectionKey; label: string; description: string; icon: LucideIcon }[] = [
+  { key: "identity", label: "Identity", description: "Name, avatar, email", icon: UserRound },
+  { key: "security", label: "Security", description: "Password & sign-in", icon: Shield },
+  { key: "addresses", label: "Addresses", description: "Saved delivery locations", icon: MapPin },
 ]
 
 function initialsOf(name?: string) {
@@ -54,10 +73,23 @@ function formatTime(seconds: number) {
   return `${minutes}:${remaining.toString().padStart(2, "0")}`
 }
 
+function useMediaQuery(query: string) {
+  const [matches, setMatches] = useState(false)
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    const mq = window.matchMedia(query)
+    setMatches(mq.matches)
+    const handler = (e: MediaQueryListEvent) => setMatches(e.matches)
+    mq.addEventListener("change", handler)
+    return () => mq.removeEventListener("change", handler)
+  }, [query])
+  return matches
+}
+
 function SectionHeader({ title, description }: { title: string; description?: string }) {
   return (
     <div className="flex flex-col gap-1">
-      <h2 className="text-base font-semibold text-foreground">{title}</h2>
+      <h2 className="text-lg font-semibold tracking-tight text-foreground">{title}</h2>
       {description && <p className="text-sm text-muted-foreground">{description}</p>}
     </div>
   )
@@ -84,6 +116,9 @@ function Banner({ kind, message }: { kind: "success" | "error"; message: string 
 export default function ProfilePage() {
   const router = useRouter()
   const { user, token, fetchProfile, loading: authLoading } = useAuth()
+  const isDesktop = useMediaQuery("(min-width: 768px)")
+
+  const [active, setActive] = useState<SectionKey>("identity")
 
   const [fullName, setFullName] = useState("")
   const [avatarUrl, setAvatarUrl] = useState("")
@@ -110,7 +145,7 @@ export default function ProfilePage() {
     country: "",
   })
   const [savingAddress, setSavingAddress] = useState(false)
-  const [addAddressOpen, setAddAddressOpen] = useState(false)
+  const [addressSheetOpen, setAddressSheetOpen] = useState(false)
 
   const [emailOtpExpiresAt, setEmailOtpExpiresAt] = useState<number | null>(null)
   const [emailRemaining, setEmailRemaining] = useState(0)
@@ -363,7 +398,7 @@ export default function ProfilePage() {
       if (!res.ok) throw new Error(json.error || "Failed to save address")
       setAddresses([json.address, ...addresses])
       setNewAddr({ label: "", line1: "", line2: "", city: "", postalCode: "", country: "" })
-      setAddAddressOpen(false)
+      setAddressSheetOpen(false)
       setMessage("Address saved.")
     } catch (err: any) {
       setError(err.message)
@@ -396,16 +431,13 @@ export default function ProfilePage() {
   if (!user) return null
 
   return (
-    <div className="flex flex-col gap-10">
+    <div className="flex flex-col gap-8">
       {/* Header */}
       <header className="flex flex-col gap-2">
         <p className="text-sm text-muted-foreground">Settings</p>
         <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
           Profile
         </h1>
-        <p className="text-sm text-muted-foreground">
-          Manage your personal details, security, and saved addresses.
-        </p>
       </header>
 
       {/* Status banners */}
@@ -416,371 +448,441 @@ export default function ProfilePage() {
         </div>
       )}
 
-      {/* Identity */}
-      <section className="flex flex-col gap-5">
-        <SectionHeader
-          title="Identity"
-          description="Your name and avatar appear across the store."
-        />
-
-        <form onSubmit={handleProfileSubmit} className="flex flex-col gap-6 rounded-lg border bg-card p-6">
-          {/* Avatar block */}
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-            <Avatar className="h-20 w-20 border">
-              {avatarUrl && <AvatarImage src={avatarUrl} alt={fullName} />}
-              <AvatarFallback className="bg-secondary text-base font-medium text-foreground">
-                {initialsOf(fullName)}
-              </AvatarFallback>
-            </Avatar>
-
-            <div className="flex flex-col gap-3">
-              <p className="text-sm font-medium text-foreground">Avatar</p>
-              <div className="flex flex-wrap items-center gap-2">
-                {presetAvatars.map((avatar) => (
-                  <button
-                    key={avatar.name}
-                    type="button"
-                    onClick={() => setAvatarUrl(avatar.path)}
-                    aria-label={`Use ${avatar.name} avatar`}
-                    className={cn(
-                      "relative flex h-12 w-12 items-center justify-center rounded-md border bg-background transition-colors hover:border-foreground/30",
-                      avatarUrl === avatar.path && "border-foreground ring-2 ring-foreground/10"
-                    )}
-                  >
-                    <img src={avatar.path} alt="" className="h-8 w-8" loading="lazy" />
-                    {avatarUrl === avatar.path && (
-                      <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-foreground text-background">
-                        <Check className="h-2.5 w-2.5" />
-                      </span>
-                    )}
-                  </button>
-                ))}
-
-                <label
+      {/* Two-column shell: vertical sub-rail + active section */}
+      <div className="grid gap-8 md:grid-cols-[220px_1fr]">
+        {/* Vertical sub-rail (desktop) / horizontal pills (mobile) */}
+        <nav
+          aria-label="Profile sections"
+          className="flex gap-1 overflow-x-auto md:sticky md:top-20 md:flex-col md:self-start md:overflow-visible"
+        >
+          {sections.map((s) => {
+            const isActive = active === s.key
+            const Icon = s.icon
+            return (
+              <button
+                key={s.key}
+                type="button"
+                onClick={() => setActive(s.key)}
+                className={cn(
+                  "group inline-flex shrink-0 items-center gap-3 rounded-md px-3 py-2.5 text-left text-sm transition-colors md:w-full",
+                  isActive
+                    ? "bg-secondary text-foreground font-medium"
+                    : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
+                )}
+              >
+                <Icon
                   className={cn(
-                    "inline-flex h-12 cursor-pointer items-center gap-2 rounded-md border border-dashed border-input bg-background px-3 text-xs font-medium text-muted-foreground transition-colors",
-                    "hover:border-foreground/40 hover:text-foreground"
+                    "h-4 w-4 shrink-0",
+                    isActive
+                      ? "text-foreground"
+                      : "text-muted-foreground group-hover:text-foreground"
                   )}
-                >
-                  <Upload className="h-3.5 w-3.5" />
-                  Upload
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleAvatarUpload}
-                    className="sr-only"
-                  />
-                </label>
-              </div>
-            </div>
-          </div>
-
-          {/* Name + email */}
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="grid gap-1.5">
-              <Label htmlFor="fullName">Full name</Label>
-              <Input
-                id="fullName"
-                type="text"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-              />
-            </div>
-
-            <div className="grid gap-1.5">
-              <Label htmlFor="email">Email</Label>
-              <div className="flex items-center gap-2">
-                <Input
-                  id="email"
-                  type="email"
-                  value={user.email}
-                  readOnly
-                  className="cursor-not-allowed bg-secondary/40 text-muted-foreground"
                 />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setEmailFormOpen((v) => !v)}
-                >
-                  <Pencil className="h-3.5 w-3.5" />
-                  {emailFormOpen ? "Cancel" : "Change"}
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          {/* Email change collapsible */}
-          {emailFormOpen && (
-            <div className="flex flex-col gap-3 rounded-md border border-dashed bg-background p-4">
-              <p className="text-sm font-medium text-foreground">Change email</p>
-              <div className="grid gap-1.5">
-                <Label htmlFor="newEmail">New email address</Label>
-                <Input
-                  id="newEmail"
-                  type="email"
-                  placeholder="you@example.com"
-                  value={newEmail}
-                  onChange={(e) => setNewEmail(e.target.value)}
-                />
-              </div>
-
-              {!otpSent ? (
-                <div>
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    size="sm"
-                    onClick={handleRequestEmailOtp}
-                    disabled={!newEmail}
-                  >
-                    Send OTP to current email
-                  </Button>
+                <div className="hidden md:flex md:flex-col">
+                  <span>{s.label}</span>
+                  <span className="text-xs text-muted-foreground">{s.description}</span>
                 </div>
-              ) : (
-                <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
+                <span className="md:hidden">{s.label}</span>
+              </button>
+            )
+          })}
+        </nav>
+
+        {/* Content */}
+        <div className="min-w-0">
+          {active === "identity" && (
+            <section className="flex flex-col gap-5">
+              <SectionHeader
+                title="Identity"
+                description="Your name and avatar appear across the store."
+              />
+
+              <form
+                onSubmit={handleProfileSubmit}
+                className="flex flex-col gap-6 rounded-lg border bg-card p-6"
+              >
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+                  <Avatar className="h-20 w-20 border">
+                    {avatarUrl && <AvatarImage src={avatarUrl} alt={fullName} />}
+                    <AvatarFallback className="bg-secondary text-base font-medium text-foreground">
+                      {initialsOf(fullName)}
+                    </AvatarFallback>
+                  </Avatar>
+
+                  <div className="flex flex-col gap-3">
+                    <p className="text-sm font-medium text-foreground">Avatar</p>
+                    <div className="flex flex-wrap items-center gap-2">
+                      {presetAvatars.map((avatar) => (
+                        <button
+                          key={avatar.name}
+                          type="button"
+                          onClick={() => setAvatarUrl(avatar.path)}
+                          aria-label={`Use ${avatar.name} avatar`}
+                          className={cn(
+                            "relative flex h-12 w-12 items-center justify-center rounded-md border bg-background transition-colors hover:border-foreground/30",
+                            avatarUrl === avatar.path && "border-foreground ring-2 ring-foreground/10"
+                          )}
+                        >
+                          <img src={avatar.path} alt="" className="h-8 w-8" loading="lazy" />
+                          {avatarUrl === avatar.path && (
+                            <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-foreground text-background">
+                              <Check className="h-2.5 w-2.5" />
+                            </span>
+                          )}
+                        </button>
+                      ))}
+
+                      <label className="inline-flex h-12 cursor-pointer items-center gap-2 rounded-md border border-dashed border-input bg-background px-3 text-xs font-medium text-muted-foreground transition-colors hover:border-foreground/40 hover:text-foreground">
+                        <Upload className="h-3.5 w-3.5" />
+                        Upload
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleAvatarUpload}
+                          className="sr-only"
+                        />
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
                   <div className="grid gap-1.5">
-                    <Label htmlFor="emailOtp">Enter OTP</Label>
+                    <Label htmlFor="fullName">Full name</Label>
                     <Input
-                      id="emailOtp"
-                      placeholder="6-digit code"
-                      value={emailOtp}
-                      onChange={(e) => setEmailOtp(e.target.value)}
+                      id="fullName"
+                      type="text"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
                     />
-                    {emailRemaining > 0 && (
-                      <p className="text-xs text-muted-foreground">
-                        Expires in {formatTime(emailRemaining)}
-                      </p>
+                  </div>
+
+                  <div className="grid gap-1.5">
+                    <Label htmlFor="email">Email</Label>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        id="email"
+                        type="email"
+                        value={user.email}
+                        readOnly
+                        className="cursor-not-allowed bg-secondary/40 text-muted-foreground"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setEmailFormOpen((v) => !v)}
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                        {emailFormOpen ? "Cancel" : "Change"}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                {emailFormOpen && (
+                  <div className="flex flex-col gap-3 rounded-md border border-dashed bg-background p-4">
+                    <p className="text-sm font-medium text-foreground">Change email</p>
+                    <div className="grid gap-1.5">
+                      <Label htmlFor="newEmail">New email address</Label>
+                      <Input
+                        id="newEmail"
+                        type="email"
+                        placeholder="you@example.com"
+                        value={newEmail}
+                        onChange={(e) => setNewEmail(e.target.value)}
+                      />
+                    </div>
+
+                    {!otpSent ? (
+                      <div>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          size="sm"
+                          onClick={handleRequestEmailOtp}
+                          disabled={!newEmail}
+                        >
+                          Send OTP to current email
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
+                        <div className="grid gap-1.5">
+                          <Label htmlFor="emailOtp">Enter OTP</Label>
+                          <Input
+                            id="emailOtp"
+                            placeholder="6-digit code"
+                            value={emailOtp}
+                            onChange={(e) => setEmailOtp(e.target.value)}
+                          />
+                          {emailRemaining > 0 && (
+                            <p className="text-xs text-muted-foreground">
+                              Expires in {formatTime(emailRemaining)}
+                            </p>
+                          )}
+                        </div>
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={handleConfirmEmailChange}
+                          disabled={confirming || !emailOtp}
+                        >
+                          {confirming && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                          Confirm change
+                        </Button>
+                      </div>
                     )}
                   </div>
-                  <Button
-                    type="button"
-                    size="sm"
-                    onClick={handleConfirmEmailChange}
-                    disabled={confirming || !emailOtp}
-                  >
-                    {confirming && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-                    Confirm change
+                )}
+
+                <div className="flex justify-end">
+                  <Button type="submit" disabled={savingProfile} size="sm">
+                    {savingProfile && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                    Save changes
                   </Button>
                 </div>
-              )}
-            </div>
+              </form>
+            </section>
           )}
 
-          <div className="flex justify-end">
-            <Button type="submit" disabled={savingProfile} size="sm">
-              {savingProfile && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-              Save changes
-            </Button>
-          </div>
-        </form>
-      </section>
+          {active === "security" && (
+            <section className="flex flex-col gap-5">
+              <SectionHeader
+                title="Security"
+                description="Update your password using one-time verification."
+              />
 
-      {/* Security */}
-      <section className="flex flex-col gap-5">
-        <SectionHeader
-          title="Security"
-          description="Update your password using one-time verification."
-        />
-
-        <div className="rounded-lg border bg-card p-6">
-          {!pwOpen ? (
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="text-sm font-medium text-foreground">Password</p>
-                <p className="text-sm text-muted-foreground">
-                  We&apos;ll send a one-time code to your email to confirm changes.
-                </p>
-              </div>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setPwOpen(true)}
-              >
-                Change password
-              </Button>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-4">
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-medium text-foreground">Change password</p>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setPwOpen(false)
-                    setStep("send")
-                    setOtp("")
-                    setNewPassword("")
-                    setConfirmPassword("")
-                  }}
-                >
-                  Cancel
-                </Button>
-              </div>
-
-              {step === "send" ? (
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="secondary"
-                  onClick={sendPasswordOtp}
-                  disabled={loading}
-                  className="self-start"
-                >
-                  {loading && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-                  Send OTP to my email
-                </Button>
-              ) : (
-                <form onSubmit={handleVerifyPassword} className="flex flex-col gap-4">
-                  <div className="grid gap-1.5">
-                    <Label htmlFor="pwOtp">OTP code</Label>
-                    <Input
-                      id="pwOtp"
-                      value={otp}
-                      onChange={(e) => setOtp(e.target.value.toUpperCase())}
-                      required
-                    />
-                    {passwordRemaining > 0 && (
-                      <p className="text-xs text-muted-foreground">
-                        Expires in {formatTime(passwordRemaining)}
+              <div className="rounded-lg border bg-card p-6">
+                {!pwOpen ? (
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-foreground">Password</p>
+                      <p className="text-sm text-muted-foreground">
+                        We&apos;ll send a one-time code to your email to confirm changes.
                       </p>
-                    )}
-                  </div>
-
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="grid gap-1.5">
-                      <Label htmlFor="newPassword">New password</Label>
-                      <Input
-                        id="newPassword"
-                        type="password"
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                        required
-                      />
                     </div>
-                    <div className="grid gap-1.5">
-                      <Label htmlFor="confirmPassword">Confirm new password</Label>
-                      <Input
-                        id="confirmPassword"
-                        type="password"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex justify-end">
-                    <Button type="submit" size="sm" disabled={loading}>
-                      {loading && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-                      Update password
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setPwOpen(true)}
+                    >
+                      Change password
                     </Button>
                   </div>
-                </form>
-              )}
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Addresses */}
-      <section className="flex flex-col gap-5">
-        <div className="flex items-end justify-between gap-4">
-          <SectionHeader
-            title="Addresses"
-            description="Saved delivery locations for faster checkout."
-          />
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            onClick={() => setAddAddressOpen((v) => !v)}
-          >
-            <Plus className="h-3.5 w-3.5" />
-            {addAddressOpen ? "Close" : "Add address"}
-          </Button>
-        </div>
-
-        {addrError && <Banner kind="error" message={addrError} />}
-
-        {addrLoading ? (
-          <p className="text-sm text-muted-foreground">Loading addresses…</p>
-        ) : addresses.length === 0 ? (
-          <div className="rounded-lg border border-dashed bg-card p-8 text-center">
-            <p className="text-sm font-medium text-foreground">No saved addresses yet</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Add an address to speed up your next checkout.
-            </p>
-          </div>
-        ) : (
-          <div className="grid gap-3 sm:grid-cols-2">
-            {addresses.map((a) => {
-              const isDefault = user.defaultAddressId === a.id
-              return (
-                <div
-                  key={a.id}
-                  className="flex flex-col gap-3 rounded-lg border bg-card p-4"
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-medium text-foreground">{a.label}</p>
-                      <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                        {a.line1}
-                        {a.line2 && <>, {a.line2}</>}
-                        <br />
-                        {a.city}, {a.postalCode}
-                        <br />
-                        {a.country}
-                      </p>
-                    </div>
-                    {isDefault && (
-                      <span className="inline-flex shrink-0 items-center rounded-full border bg-secondary px-2 py-0.5 text-[11px] font-medium text-foreground">
-                        Default
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="flex items-center justify-between gap-2 pt-2 border-t">
-                    {!isDefault ? (
+                ) : (
+                  <div className="flex flex-col gap-4">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-medium text-foreground">Change password</p>
                       <Button
                         type="button"
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleSetDefault(a.id)}
+                        onClick={() => {
+                          setPwOpen(false)
+                          setStep("send")
+                          setOtp("")
+                          setNewPassword("")
+                          setConfirmPassword("")
+                        }}
                       >
-                        Make default
+                        Cancel
+                      </Button>
+                    </div>
+
+                    {step === "send" ? (
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="secondary"
+                        onClick={sendPasswordOtp}
+                        disabled={loading}
+                        className="self-start"
+                      >
+                        {loading && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                        Send OTP to my email
                       </Button>
                     ) : (
-                      <span className="text-xs text-muted-foreground">In use at checkout</span>
-                    )}
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDeleteAddress(a.id)}
-                      className="text-destructive hover:text-destructive"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                      Delete
-                    </Button>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        )}
+                      <form onSubmit={handleVerifyPassword} className="flex flex-col gap-4">
+                        <div className="grid gap-1.5">
+                          <Label htmlFor="pwOtp">OTP code</Label>
+                          <Input
+                            id="pwOtp"
+                            value={otp}
+                            onChange={(e) => setOtp(e.target.value.toUpperCase())}
+                            required
+                          />
+                          {passwordRemaining > 0 && (
+                            <p className="text-xs text-muted-foreground">
+                              Expires in {formatTime(passwordRemaining)}
+                            </p>
+                          )}
+                        </div>
 
-        {addAddressOpen && (
+                        <div className="grid gap-4 sm:grid-cols-2">
+                          <div className="grid gap-1.5">
+                            <Label htmlFor="newPassword">New password</Label>
+                            <Input
+                              id="newPassword"
+                              type="password"
+                              value={newPassword}
+                              onChange={(e) => setNewPassword(e.target.value)}
+                              required
+                            />
+                          </div>
+                          <div className="grid gap-1.5">
+                            <Label htmlFor="confirmPassword">Confirm new password</Label>
+                            <Input
+                              id="confirmPassword"
+                              type="password"
+                              value={confirmPassword}
+                              onChange={(e) => setConfirmPassword(e.target.value)}
+                              required
+                            />
+                          </div>
+                        </div>
+
+                        <div className="flex justify-end">
+                          <Button type="submit" size="sm" disabled={loading}>
+                            {loading && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                            Update password
+                          </Button>
+                        </div>
+                      </form>
+                    )}
+                  </div>
+                )}
+              </div>
+            </section>
+          )}
+
+          {active === "addresses" && (
+            <section className="flex flex-col gap-5">
+              <div className="flex items-end justify-between gap-4">
+                <SectionHeader
+                  title="Addresses"
+                  description="Saved delivery locations for faster checkout."
+                />
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setAddressSheetOpen(true)}
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  Add address
+                </Button>
+              </div>
+
+              {addrError && <Banner kind="error" message={addrError} />}
+
+              {addrLoading ? (
+                <p className="text-sm text-muted-foreground">Loading addresses…</p>
+              ) : addresses.length === 0 ? (
+                <div className="rounded-lg border border-dashed bg-card p-8 text-center">
+                  <p className="text-sm font-medium text-foreground">No saved addresses yet</p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Add an address to speed up your next checkout.
+                  </p>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => setAddressSheetOpen(true)}
+                    className="mt-4"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    Add your first address
+                  </Button>
+                </div>
+              ) : (
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {addresses.map((a) => {
+                    const isDefault = user.defaultAddressId === a.id
+                    return (
+                      <div
+                        key={a.id}
+                        className="flex flex-col gap-3 rounded-lg border bg-card p-4"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-medium text-foreground">
+                              {a.label}
+                            </p>
+                            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                              {a.line1}
+                              {a.line2 && <>, {a.line2}</>}
+                              <br />
+                              {a.city}, {a.postalCode}
+                              <br />
+                              {a.country}
+                            </p>
+                          </div>
+                          {isDefault && (
+                            <span className="inline-flex shrink-0 items-center rounded-full border bg-secondary px-2 py-0.5 text-[11px] font-medium text-foreground">
+                              Default
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex items-center justify-between gap-2 border-t pt-2">
+                          {!isDefault ? (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleSetDefault(a.id)}
+                            >
+                              Make default
+                            </Button>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">
+                              In use at checkout
+                            </span>
+                          )}
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteAddress(a.id)}
+                            className="text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                            Delete
+                          </Button>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </section>
+          )}
+        </div>
+      </div>
+
+      {/* Add-address sheet (right on desktop, bottom on mobile) */}
+      <Sheet open={addressSheetOpen} onOpenChange={setAddressSheetOpen}>
+        <SheetContent
+          side={isDesktop ? "right" : "bottom"}
+          className={cn(
+            "flex flex-col gap-0 p-0",
+            isDesktop ? "w-[480px] max-w-[90vw]" : "max-h-[90vh]"
+          )}
+        >
+          <SheetHeader className="border-b">
+            <SheetTitle>New address</SheetTitle>
+            <SheetDescription>
+              Add a delivery location to your saved addresses.
+            </SheetDescription>
+          </SheetHeader>
+
           <form
             onSubmit={handleAddAddress}
-            className="flex flex-col gap-4 rounded-lg border bg-card p-6"
+            className="flex flex-1 flex-col gap-4 overflow-y-auto p-6"
           >
-            <p className="text-sm font-medium text-foreground">New address</p>
-
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-4">
               <div className="grid gap-1.5">
                 <Label htmlFor="addr-label">Label</Label>
                 <Input
@@ -801,7 +903,7 @@ export default function ProfilePage() {
                   required
                 />
               </div>
-              <div className="grid gap-1.5 sm:col-span-2">
+              <div className="grid gap-1.5">
                 <Label htmlFor="addr-line2">Address line 2</Label>
                 <Input
                   id="addr-line2"
@@ -810,25 +912,27 @@ export default function ProfilePage() {
                   onChange={(e) => setNewAddr({ ...newAddr, line2: e.target.value })}
                 />
               </div>
-              <div className="grid gap-1.5">
-                <Label htmlFor="addr-city">City</Label>
-                <Input
-                  id="addr-city"
-                  value={newAddr.city}
-                  onChange={(e) => setNewAddr({ ...newAddr, city: e.target.value })}
-                  required
-                />
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="grid gap-1.5">
+                  <Label htmlFor="addr-city">City</Label>
+                  <Input
+                    id="addr-city"
+                    value={newAddr.city}
+                    onChange={(e) => setNewAddr({ ...newAddr, city: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="grid gap-1.5">
+                  <Label htmlFor="addr-postal">Postal code</Label>
+                  <Input
+                    id="addr-postal"
+                    value={newAddr.postalCode}
+                    onChange={(e) => setNewAddr({ ...newAddr, postalCode: e.target.value })}
+                    required
+                  />
+                </div>
               </div>
               <div className="grid gap-1.5">
-                <Label htmlFor="addr-postal">Postal code</Label>
-                <Input
-                  id="addr-postal"
-                  value={newAddr.postalCode}
-                  onChange={(e) => setNewAddr({ ...newAddr, postalCode: e.target.value })}
-                  required
-                />
-              </div>
-              <div className="grid gap-1.5 sm:col-span-2">
                 <Label htmlFor="addr-country">Country</Label>
                 <Input
                   id="addr-country"
@@ -838,16 +942,29 @@ export default function ProfilePage() {
                 />
               </div>
             </div>
-
-            <div className="flex justify-end">
-              <Button type="submit" size="sm" disabled={savingAddress}>
-                {savingAddress && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-                Save address
-              </Button>
-            </div>
           </form>
-        )}
-      </section>
+
+          <div className="flex items-center justify-end gap-2 border-t bg-background p-4">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setAddressSheetOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              size="sm"
+              onClick={handleAddAddress}
+              disabled={savingAddress}
+            >
+              {savingAddress && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+              Save address
+            </Button>
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   )
 }
