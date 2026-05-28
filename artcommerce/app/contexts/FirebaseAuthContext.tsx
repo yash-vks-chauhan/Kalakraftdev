@@ -1,6 +1,6 @@
 'use client'
 
-import React, { createContext, useContext, useEffect, useState } from "react"
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from "react"
 import {
   onAuthStateChanged,
   signInWithPopup,
@@ -79,6 +79,34 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const { loginWithFirebaseToken } = useAuth()
+  const completedServerLoginUidRef = useRef<string | null>(null)
+  const serverLoginPromiseRef = useRef<{ uid: string; promise: Promise<void> } | null>(null)
+
+  const completeServerLogin = useCallback(async (firebaseUser: FirebaseUser) => {
+    if (completedServerLoginUidRef.current === firebaseUser.uid) {
+      return
+    }
+
+    if (serverLoginPromiseRef.current?.uid === firebaseUser.uid) {
+      return serverLoginPromiseRef.current.promise
+    }
+
+    const serverLoginPromise = firebaseUser
+      .getIdToken()
+      .then((idToken) => loginWithFirebaseToken(idToken))
+      .then(() => {
+        completedServerLoginUidRef.current = firebaseUser.uid
+      })
+      .finally(() => {
+        serverLoginPromiseRef.current = null
+      })
+
+    serverLoginPromiseRef.current = {
+      uid: firebaseUser.uid,
+      promise: serverLoginPromise,
+    }
+    return serverLoginPromise
+  }, [loginWithFirebaseToken])
 
   useEffect(() => {
     if (!auth) {
@@ -91,7 +119,10 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
 
     const restoreRedirectSignIn = async () => {
       try {
-        await getRedirectResult(auth)
+        const result = await getRedirectResult(auth)
+        if (result?.user) {
+          await completeServerLogin(result.user)
+        }
       } catch (redirectError: any) {
         if (isMounted) {
           setError(getFriendlyAuthError(redirectError))
@@ -106,6 +137,7 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
 
       if (firebaseUser) {
         if (isLogoutInProgress()) {
+          completedServerLoginUidRef.current = null
           setUser(null)
           setLoading(false)
           return
@@ -113,28 +145,27 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
 
         setUser(firebaseUser)
 
-        firebaseUser.getIdToken().then((idToken) => {
-          loginWithFirebaseToken(idToken).catch((tokenError) => {
+        completeServerLogin(firebaseUser)
+          .catch((tokenError) => {
             console.error("Error in loginWithFirebaseToken:", tokenError)
-            setError("Failed to authenticate with server")
+            if (isMounted) setError("Failed to authenticate with server")
           })
-        }).catch((idTokenError) => {
-          console.error("Error getting Firebase ID token:", idTokenError)
-          setError("Failed to get authentication token")
-        })
+          .finally(() => {
+            if (isMounted) setLoading(false)
+          })
       } else {
+        completedServerLoginUidRef.current = null
         clearLogoutInProgress()
         setUser(null)
+        setLoading(false)
       }
-
-      setLoading(false)
     })
 
     return () => {
       isMounted = false
       unsubscribe()
     }
-  }, [loginWithFirebaseToken])
+  }, [completeServerLogin])
 
   const loginWithGoogle = async () => {
     if (!auth) {
@@ -150,6 +181,7 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
 
     try {
       const result = await signInWithPopup(auth, provider)
+      await completeServerLogin(result.user)
       return result
     } catch (popupError: any) {
       if (shouldFallbackToRedirect(popupError)) {
@@ -185,6 +217,7 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
 
     try {
       const result = await signInWithPopup(auth, provider)
+      await completeServerLogin(result.user)
       return result
     } catch (popupError: any) {
       if (shouldFallbackToRedirect(popupError)) {
@@ -208,6 +241,7 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
 
   const signOut = async () => {
     if (!auth) return
+    completedServerLoginUidRef.current = null
     if (typeof window !== 'undefined') {
       sessionStorage.setItem(LOGOUT_IN_PROGRESS_KEY, '1')
     }

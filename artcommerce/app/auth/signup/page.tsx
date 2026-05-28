@@ -10,8 +10,8 @@ import styles from '../auth.module.css'
 
 export default function SignupPage() {
   const router = useRouter()
-  const { user: authUser, signup, loading: authLoading, loginWithFirebaseToken } = useAuth()
-  const { user: firebaseUser, loading: firebaseLoading, loginWithGoogle, loginWithFacebook } = useFirebaseAuth()
+  const { user: authUser, signup, loading: authLoading } = useAuth()
+  const { loginWithGoogle, loginWithFacebook } = useFirebaseAuth()
 
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -144,13 +144,9 @@ export default function SignupPage() {
             setError(null);
             try {
               const result = await loginWithGoogle();
-              // Redirect fallback can return no immediate user object.
-              if (!result?.user) {
-                return;
+              if (result?.user) {
+                router.replace('/');
               }
-
-              const idToken = await result.user.getIdToken();
-              await loginWithFirebaseToken(idToken);
             } catch (err: any) {
               setError(err.message || 'Google Sign-In failed');
               setFormLoading(false);
@@ -185,13 +181,9 @@ export default function SignupPage() {
             setError(null);
             try {
               const result = await loginWithFacebook();
-              // Redirect fallback can return no immediate user object.
-              if (!result?.user) {
-                return;
+              if (result?.user) {
+                router.replace('/');
               }
-
-              const idToken = await result.user.getIdToken();
-              await loginWithFirebaseToken(idToken);
             } catch (err: any) {
               setError(err.message || 'Facebook Sign-In failed');
               setFormLoading(false);
