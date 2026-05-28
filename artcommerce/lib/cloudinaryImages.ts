@@ -8,12 +8,42 @@ try {
   // File doesn't exist yet, will use environment variables
 }
 
+const bundledImageNames = new Set([
+  'category1.png',
+  'category2.png',
+  'category3.png',
+  'category4.png',
+  'category5.png',
+  'category6.png',
+  'category7.png',
+  'category8.png',
+  'collectionwall.png',
+  'imageclock.png',
+  'imagecollection1.png',
+  'imagecollection99.png',
+  'logo.png',
+  'trayscollection.png',
+  'vases.png',
+  'featured1.png',
+  'featured2.png',
+  'featured3.JPG',
+  'DSC01366.JPG',
+])
+
 /**
  * Get the Cloudinary URL for an image, falling back to the local path if not available
  * @param imageName The name of the image file (e.g., 'logo.png')
  * @returns The Cloudinary URL or local path
  */
 export function getImageUrl(imageName: string): string {
+  if (imageName.startsWith('http://') || imageName.startsWith('https://') || imageName.startsWith('/')) {
+    return imageName
+  }
+
+  if (bundledImageNames.has(imageName)) {
+    return `/images/${imageName}`
+  }
+
   // First check if we have the URL in our mapping
   if (imageUrlMapping[imageName]) {
     return imageUrlMapping[imageName];
@@ -39,7 +69,7 @@ export function getImageUrl(imageName: string): string {
  */
 export function getOptimizedImageUrl(imageName: string, transformations: string): string {
   const baseUrl = getImageUrl(imageName);
-  
+
   // If it's a Cloudinary URL, apply transformations
   if (baseUrl.includes('res.cloudinary.com')) {
     // Insert transformations before the upload part
@@ -48,4 +78,4 @@ export function getOptimizedImageUrl(imageName: string, transformations: string)
   
   // If it's a local URL, return as is
   return baseUrl;
-} 
+}

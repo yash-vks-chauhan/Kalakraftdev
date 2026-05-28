@@ -58,6 +58,20 @@ const shouldFallbackToRedirect = (error: any) => {
   return code === "auth/internal-error" || code === "auth/popup-blocked"
 }
 
+const getFriendlyServerAuthError = (error: any) => {
+  const message = String(error?.message || "")
+
+  if (error?.status === 401) {
+    return message || "Google sign-in could not be verified. Please try again."
+  }
+
+  if (error?.status >= 500) {
+    return message || "The server could not complete sign-in. Please try again later."
+  }
+
+  return message || "Failed to authenticate with server"
+}
+
 const buildGoogleProvider = () => {
   const provider = new GoogleAuthProvider()
   provider.setCustomParameters({ prompt: "select_account" })
@@ -81,6 +95,11 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
   const { loginWithFirebaseToken } = useAuth()
   const completedServerLoginUidRef = useRef<string | null>(null)
   const serverLoginPromiseRef = useRef<{ uid: string; promise: Promise<void> } | null>(null)
+
+  const clearServerLoginState = useCallback(() => {
+    completedServerLoginUidRef.current = null
+    serverLoginPromiseRef.current = null
+  }, [])
 
   const completeServerLogin = useCallback(async (firebaseUser: FirebaseUser) => {
     if (completedServerLoginUidRef.current === firebaseUser.uid) {
@@ -107,6 +126,15 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
     }
     return serverLoginPromise
   }, [loginWithFirebaseToken])
+
+  const signOutAfterServerLoginFailure = useCallback(async () => {
+    clearServerLoginState()
+    if (auth?.currentUser) {
+      await fbSignOut(auth).catch((signOutError) => {
+        console.error("Error clearing Firebase session after server login failure:", signOutError)
+      })
+    }
+  }, [clearServerLoginState])
 
   useEffect(() => {
     if (!auth) {
@@ -137,7 +165,7 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
 
       if (firebaseUser) {
         if (isLogoutInProgress()) {
-          completedServerLoginUidRef.current = null
+          clearServerLoginState()
           setUser(null)
           setLoading(false)
           return
@@ -148,13 +176,14 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
         completeServerLogin(firebaseUser)
           .catch((tokenError) => {
             console.error("Error in loginWithFirebaseToken:", tokenError)
-            if (isMounted) setError("Failed to authenticate with server")
+            if (isMounted) setError(getFriendlyServerAuthError(tokenError))
+            return signOutAfterServerLoginFailure()
           })
           .finally(() => {
             if (isMounted) setLoading(false)
           })
       } else {
-        completedServerLoginUidRef.current = null
+        clearServerLoginState()
         clearLogoutInProgress()
         setUser(null)
         setLoading(false)
@@ -165,7 +194,7 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
       isMounted = false
       unsubscribe()
     }
-  }, [completeServerLogin])
+  }, [clearServerLoginState, completeServerLogin, signOutAfterServerLoginFailure])
 
   const loginWithGoogle = async () => {
     if (!auth) {
@@ -180,24 +209,33 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
     const provider = buildGoogleProvider()
 
     try {
-      const result = await signInWithPopup(auth, provider)
-      await completeServerLogin(result.user)
-      return result
-    } catch (popupError: any) {
-      if (shouldFallbackToRedirect(popupError)) {
-        try {
-          await signInWithRedirect(auth, provider)
-          return undefined
-        } catch (redirectError: any) {
-          const friendly = getFriendlyAuthError(redirectError)
-          setError(friendly)
-          throw redirectError
+      let result: UserCredential
+      try {
+        result = await signInWithPopup(auth, provider)
+      } catch (popupError: any) {
+        if (shouldFallbackToRedirect(popupError)) {
+          try {
+            await signInWithRedirect(auth, provider)
+            return undefined
+          } catch (redirectError: any) {
+            const friendly = getFriendlyAuthError(redirectError)
+            setError(friendly)
+            throw redirectError
+          }
         }
+
+        const friendly = getFriendlyAuthError(popupError)
+        setError(friendly)
+        throw popupError
       }
 
-      const friendly = getFriendlyAuthError(popupError)
+      await completeServerLogin(result.user)
+      return result
+    } catch (serverError: any) {
+      const friendly = getFriendlyServerAuthError(serverError)
       setError(friendly)
-      throw popupError
+      await signOutAfterServerLoginFailure()
+      throw new Error(friendly)
     } finally {
       setLoading(false)
     }
@@ -216,24 +254,33 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
     const provider = new FacebookAuthProvider()
 
     try {
-      const result = await signInWithPopup(auth, provider)
-      await completeServerLogin(result.user)
-      return result
-    } catch (popupError: any) {
-      if (shouldFallbackToRedirect(popupError)) {
-        try {
-          await signInWithRedirect(auth, provider)
-          return undefined
-        } catch (redirectError: any) {
-          const friendly = getFriendlyAuthError(redirectError)
-          setError(friendly)
-          throw redirectError
+      let result: UserCredential
+      try {
+        result = await signInWithPopup(auth, provider)
+      } catch (popupError: any) {
+        if (shouldFallbackToRedirect(popupError)) {
+          try {
+            await signInWithRedirect(auth, provider)
+            return undefined
+          } catch (redirectError: any) {
+            const friendly = getFriendlyAuthError(redirectError)
+            setError(friendly)
+            throw redirectError
+          }
         }
+
+        const friendly = getFriendlyAuthError(popupError)
+        setError(friendly)
+        throw popupError
       }
 
-      const friendly = getFriendlyAuthError(popupError)
+      await completeServerLogin(result.user)
+      return result
+    } catch (serverError: any) {
+      const friendly = getFriendlyServerAuthError(serverError)
       setError(friendly)
-      throw popupError
+      await signOutAfterServerLoginFailure()
+      throw new Error(friendly)
     } finally {
       setLoading(false)
     }
@@ -241,7 +288,7 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
 
   const signOut = async () => {
     if (!auth) return
-    completedServerLoginUidRef.current = null
+    clearServerLoginState()
     if (typeof window !== 'undefined') {
       sessionStorage.setItem(LOGOUT_IN_PROGRESS_KEY, '1')
     }

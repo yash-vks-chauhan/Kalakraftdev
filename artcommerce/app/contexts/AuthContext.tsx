@@ -229,7 +229,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         credentials: 'include',
       })
       const data = await res.json().catch(() => ({}))
-      if (!res.ok) throw new Error(data.error || 'Firebase login failed')
+      if (!res.ok) {
+        const error = new Error(data.error || 'Firebase login failed') as Error & { status?: number }
+        error.status = res.status
+        throw error
+      }
 
       markSessionAuthenticated()
       await fetchProfile(SESSION_AUTH_MARKER)
