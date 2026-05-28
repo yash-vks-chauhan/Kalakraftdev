@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer'
+import { cleanEmailHeader } from './emailContent'
 
 type SecureMailer = {
   transporter: nodemailer.Transporter
@@ -6,6 +7,13 @@ type SecureMailer = {
 }
 
 let cachedMailer: SecureMailer | null = null
+
+type TransactionalEmail = {
+  to: string
+  subject: string
+  html: string
+  fromName?: string
+}
 
 function getRequiredEnv(name: string): string {
   const value = process.env[name]
@@ -48,4 +56,55 @@ export function getSecureMailer(): SecureMailer {
 
   cachedMailer = { transporter, smtpUser }
   return cachedMailer
+}
+
+async function sendViaBrevo({ to, subject, html, fromName = 'Artcommerce Support' }: TransactionalEmail) {
+  const apiKey = process.env.SENDINBLUE_API_KEY
+  const senderEmail = process.env.SENDINBLUE_FROM_EMAIL
+  const senderName = process.env.SENDINBLUE_FROM || fromName
+
+  if (!apiKey || !senderEmail) {
+    throw new Error('Missing Brevo email configuration')
+  }
+
+  const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+    method: 'POST',
+    headers: {
+      accept: 'application/json',
+      'api-key': apiKey,
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify({
+      sender: {
+        name: senderName,
+        email: senderEmail,
+      },
+      to: [{ email: to }],
+      subject: cleanEmailHeader(subject),
+      htmlContent: html,
+    }),
+  })
+
+  if (!response.ok) {
+    const body = await response.text().catch(() => '')
+    throw new Error(`Brevo email failed with status ${response.status}: ${body.slice(0, 300)}`)
+  }
+}
+
+export async function sendSecureMail(message: TransactionalEmail) {
+  try {
+    const { transporter, smtpUser } = getSecureMailer()
+    const info = await transporter.sendMail({
+      from: `"${message.fromName || 'Artcommerce Support'}" <${smtpUser}>`,
+      to: message.to,
+      subject: cleanEmailHeader(message.subject),
+      html: message.html,
+    })
+    if (Array.isArray(info.rejected) && info.rejected.length > 0) {
+      throw new Error(`SMTP rejected recipients: ${info.rejected.join(', ')}`)
+    }
+  } catch (smtpError) {
+    console.error('SMTP email failed; trying Brevo fallback:', smtpError)
+    await sendViaBrevo(message)
+  }
 }

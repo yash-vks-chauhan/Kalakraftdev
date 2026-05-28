@@ -1,7 +1,7 @@
 import { customAlphabet } from 'nanoid'
 import { NextResponse } from 'next/server'
 import { escapeHtml } from '../../../../lib/emailContent'
-import { getSecureMailer } from '../../../../lib/mailer'
+import { sendSecureMail } from '../../../../lib/mailer'
 import { getOtpSecretValidationError, hashOtpForScope } from '../../../../lib/otp-security'
 import prisma from '../../../../lib/prisma'
 import { consumeRateLimit, getClientIp } from '../../../../lib/rateLimit'
@@ -88,10 +88,7 @@ export async function POST(request: Request) {
   })
 
   try {
-    const { transporter, smtpUser } = getSecureMailer()
-
-    await transporter.sendMail({
-      from: `"Artcommerce Support" <${smtpUser}>`,
+    await sendSecureMail({
       to: user.email,
       subject: 'Your OTP to change your Artcommerce email',
       html: `

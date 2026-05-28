@@ -4,7 +4,7 @@ import { customAlphabet } from 'nanoid'
 import { NextResponse } from 'next/server'
 import { getAuthContext } from '../../../../lib/auth'
 import { escapeHtml } from '../../../../lib/emailContent'
-import { getSecureMailer } from '../../../../lib/mailer'
+import { sendSecureMail } from '../../../../lib/mailer'
 import { getOtpSecretValidationError, hashOtpForScope } from '../../../../lib/otp-security'
 import prisma from '../../../../lib/prisma'
 import { consumeRateLimit, getClientIp } from '../../../../lib/rateLimit'
@@ -86,10 +86,7 @@ export async function POST(request: Request) {
   `
 
   try {
-    const { transporter, smtpUser } = getSecureMailer()
-
-    await transporter.sendMail({
-      from: `"Artcommerce Support" <${smtpUser}>`,
+    await sendSecureMail({
       to: user.email as string,
       subject: 'Your Artcommerce password reset code',
       html,
@@ -103,6 +100,13 @@ export async function POST(request: Request) {
         passwordChangeExpires: null,
       },
     }).catch(() => undefined)
+
+    if (auth?.userId) {
+      return NextResponse.json(
+        { error: 'Could not send OTP email. Please try again later.' },
+        { status: 502 }
+      )
+    }
   }
 
   return NextResponse.json({ ok: true })

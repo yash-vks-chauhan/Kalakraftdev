@@ -78,6 +78,16 @@ const buildGoogleProvider = () => {
   return provider
 }
 
+const shouldUseRedirectForGoogle = () => {
+  if (typeof window === 'undefined') return false
+
+  const isSmallViewport = window.matchMedia('(max-width: 768px)').matches
+  const isCoarsePointer = window.matchMedia('(pointer: coarse)').matches
+  const isMobileUserAgent = /Android|iPhone|iPad|iPod|IEMobile|Opera Mini/i.test(window.navigator.userAgent)
+
+  return isSmallViewport || (isCoarsePointer && isMobileUserAgent)
+}
+
 const isLogoutInProgress = () => {
   if (typeof window === 'undefined') return false
   return sessionStorage.getItem(LOGOUT_IN_PROGRESS_KEY) === '1'
@@ -209,10 +219,31 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
     const provider = buildGoogleProvider()
 
     try {
-      await signInWithRedirect(auth, provider)
-      return undefined
-    } catch (redirectError: any) {
-      const friendly = getFriendlyAuthError(redirectError)
+      if (shouldUseRedirectForGoogle()) {
+        await signInWithRedirect(auth, provider)
+        return undefined
+      }
+
+      let result: UserCredential
+      try {
+        result = await signInWithPopup(auth, provider)
+      } catch (popupError: any) {
+        if (shouldFallbackToRedirect(popupError)) {
+          await signInWithRedirect(auth, provider)
+          return undefined
+        }
+
+        const friendly = getFriendlyAuthError(popupError)
+        setError(friendly)
+        throw new Error(friendly)
+      }
+
+      await completeServerLogin(result.user)
+      return result
+    } catch (loginError: any) {
+      const friendly = loginError?.code
+        ? getFriendlyAuthError(loginError)
+        : loginError?.message || getFriendlyServerAuthError(loginError)
       setError(friendly)
       await signOutAfterServerLoginFailure()
       throw new Error(friendly)
