@@ -91,20 +91,32 @@ async function sendViaBrevo({ to, subject, html, fromName = 'Artcommerce Support
   }
 }
 
-export async function sendSecureMail(message: TransactionalEmail) {
-  try {
-    const { transporter, smtpUser } = getSecureMailer()
-    const info = await transporter.sendMail({
-      from: `"${message.fromName || 'Artcommerce Support'}" <${smtpUser}>`,
-      to: message.to,
-      subject: cleanEmailHeader(message.subject),
-      html: message.html,
-    })
-    if (Array.isArray(info.rejected) && info.rejected.length > 0) {
-      throw new Error(`SMTP rejected recipients: ${info.rejected.join(', ')}`)
-    }
-  } catch (smtpError) {
-    console.error('SMTP email failed; trying Brevo fallback:', smtpError)
-    await sendViaBrevo(message)
+async function sendViaSmtp(message: TransactionalEmail) {
+  const { transporter, smtpUser } = getSecureMailer()
+  const info = await transporter.sendMail({
+    from: `"${message.fromName || 'Artcommerce Support'}" <${smtpUser}>`,
+    to: message.to,
+    subject: cleanEmailHeader(message.subject),
+    html: message.html,
+  })
+  if (Array.isArray(info.rejected) && info.rejected.length > 0) {
+    throw new Error(`SMTP rejected recipients: ${info.rejected.join(', ')}`)
   }
+}
+
+function hasBrevoConfig() {
+  return Boolean(process.env.SENDINBLUE_API_KEY && process.env.SENDINBLUE_FROM_EMAIL)
+}
+
+export async function sendSecureMail(message: TransactionalEmail) {
+  if (hasBrevoConfig()) {
+    try {
+      await sendViaBrevo(message)
+      return
+    } catch (brevoError) {
+      console.error('Brevo email failed; trying SMTP fallback:', brevoError)
+    }
+  }
+
+  await sendViaSmtp(message)
 }
