@@ -16,6 +16,8 @@ import {
   AlertTriangle,
   Boxes,
   LogOut,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from "lucide-react"
 import { LucideIcon } from "lucide-react"
 
@@ -61,18 +63,22 @@ function isActive(pathname: string, href: string, exact?: boolean) {
   return pathname === href || pathname.startsWith(href + "/")
 }
 
-function NavGroup({ label, items, pathname, onNavigate }: {
+function NavGroup({ label, items, pathname, onNavigate, collapsed }: {
   label?: string
   items: NavItem[]
   pathname: string
   onNavigate?: () => void
+  collapsed?: boolean
 }) {
   return (
     <div className="flex flex-col gap-0.5">
-      {label && (
+      {label && !collapsed && (
         <p className="px-3 pb-2 pt-4 text-xs font-medium text-muted-foreground/80">
           {label}
         </p>
+      )}
+      {label && collapsed && (
+        <div className="mx-2 my-2 h-px bg-border" aria-hidden />
       )}
       {items.map((item) => {
         const active = isActive(pathname, item.href, item.exact)
@@ -82,8 +88,13 @@ function NavGroup({ label, items, pathname, onNavigate }: {
             key={item.href}
             href={item.href}
             onClick={onNavigate}
+            title={collapsed ? item.label : undefined}
+            aria-label={collapsed ? item.label : undefined}
             className={cn(
-              "group relative flex items-center gap-3 rounded-md px-3 py-2.5 text-sm transition-colors",
+              "group relative flex items-center rounded-md text-sm transition-colors",
+              collapsed
+                ? "h-10 w-10 justify-center mx-auto"
+                : "gap-3 px-3 py-2.5",
               active
                 ? "bg-secondary text-foreground font-medium"
                 : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
@@ -95,7 +106,7 @@ function NavGroup({ label, items, pathname, onNavigate }: {
                 active ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"
               )}
             />
-            <span className="truncate">{item.label}</span>
+            {!collapsed && <span className="truncate">{item.label}</span>}
           </Link>
         )
       })}
@@ -107,54 +118,129 @@ export interface SidebarNavProps {
   user: AuthUser
   onLogout: () => void
   onNavigate?: () => void
+  collapsed?: boolean
+  onToggleCollapsed?: () => void
 }
 
-export function SidebarNav({ user, onLogout, onNavigate }: SidebarNavProps) {
+export function SidebarNav({
+  user,
+  onLogout,
+  onNavigate,
+  collapsed = false,
+  onToggleCollapsed,
+}: SidebarNavProps) {
   const pathname = usePathname() ?? "/dashboard"
   const isAdmin = user.role === "admin"
 
   return (
     <div className="flex h-full flex-col">
-      {/* Brand */}
-      <div className="flex h-16 items-center px-5">
-        <Link
-          href="/"
-          onClick={onNavigate}
-          className="text-base font-semibold tracking-tight text-foreground"
-        >
-          Kalakraft
-        </Link>
+      {/* Brand + collapse toggle */}
+      <div
+        className={cn(
+          "flex h-16 items-center border-b",
+          collapsed ? "justify-center px-2" : "justify-between px-5"
+        )}
+      >
+        {collapsed ? (
+          <Link
+            href="/"
+            onClick={onNavigate}
+            aria-label="Kalakraft home"
+            className="flex h-9 w-9 items-center justify-center rounded-md bg-secondary text-sm font-semibold tracking-tight text-foreground"
+          >
+            K
+          </Link>
+        ) : (
+          <>
+            <Link
+              href="/"
+              onClick={onNavigate}
+              className="text-base font-semibold tracking-tight text-foreground"
+            >
+              Kalakraft
+            </Link>
+            {onToggleCollapsed && (
+              <button
+                type="button"
+                onClick={onToggleCollapsed}
+                aria-label="Collapse sidebar"
+                title="Collapse sidebar (⌘B)"
+                className="hidden h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground lg:inline-flex"
+              >
+                <PanelLeftClose className="h-4 w-4" />
+              </button>
+            )}
+          </>
+        )}
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 overflow-y-auto px-3 pb-4">
-        <NavGroup items={userNav} pathname={pathname} onNavigate={onNavigate} />
+      <nav
+        className={cn(
+          "flex-1 overflow-y-auto pb-4",
+          collapsed ? "px-2 pt-3" : "px-3"
+        )}
+      >
+        <NavGroup
+          items={userNav}
+          pathname={pathname}
+          onNavigate={onNavigate}
+          collapsed={collapsed}
+        />
         {isAdmin && (
           <NavGroup
             label="Admin"
             items={adminNav}
             pathname={pathname}
             onNavigate={onNavigate}
+            collapsed={collapsed}
           />
         )}
       </nav>
 
       {/* User footer */}
-      <div className="flex items-center gap-3 border-t px-4 py-4">
-        <Avatar className="h-9 w-9 border">
+      <div
+        className={cn(
+          "flex items-center border-t",
+          collapsed
+            ? "flex-col gap-2 px-2 py-3"
+            : "gap-3 px-4 py-4"
+        )}
+      >
+        {collapsed && onToggleCollapsed && (
+          <button
+            type="button"
+            onClick={onToggleCollapsed}
+            aria-label="Expand sidebar"
+            title="Expand sidebar (⌘B)"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+          >
+            <PanelLeftOpen className="h-4 w-4" />
+          </button>
+        )}
+
+        <Avatar
+          className={cn("border", collapsed ? "h-8 w-8" : "h-9 w-9")}
+          title={collapsed ? user.fullName : undefined}
+        >
           {user.avatarUrl && <AvatarImage src={user.avatarUrl} alt={user.fullName} />}
           <AvatarFallback className="bg-secondary text-xs font-medium text-foreground">
             {initialsOf(user.fullName)}
           </AvatarFallback>
         </Avatar>
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium text-foreground">{user.fullName}</p>
-          <p className="truncate text-xs text-muted-foreground">{user.email}</p>
-        </div>
+
+        {!collapsed && (
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-medium text-foreground">{user.fullName}</p>
+            <p className="truncate text-xs text-muted-foreground">{user.email}</p>
+          </div>
+        )}
+
         <button
           type="button"
           onClick={onLogout}
           aria-label="Log out"
+          title={collapsed ? "Log out" : undefined}
           className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
         >
           <LogOut className="h-4 w-4" />

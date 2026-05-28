@@ -1,15 +1,47 @@
-// File: app/dashboard/admin/products/page.tsx
-
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import {
+  Package,
+  Plus,
+  Search,
+  Pencil,
+  Trash2,
+  Star,
+  CheckCircle2,
+  CircleSlash,
+  AlertTriangle,
+  Tag,
+  Boxes,
+  ChevronRight,
+} from 'lucide-react'
+
 import { useAuth } from '../../../contexts/AuthContext'
-import styles from './products-list.module.css'
-import { FiEdit2, FiTrash2, FiArrowRight } from 'react-icons/fi'
 import LoadingSpinner from '../../../components/LoadingSpinner'
 import ConfirmDialog from '../../../components/ConfirmDialog'
-import { useRouter } from 'next/navigation'
+import { cn } from '@/lib/utils'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Separator } from '@/components/ui/separator'
+import { Switch } from '@/components/ui/switch'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 
 interface Product {
   id: number
@@ -21,40 +53,117 @@ interface Product {
   isActive: boolean
   categoryId: number | null
   totalSold: number
+  imageUrls?: string[]
+  shortDesc?: string
+}
+
+interface Category {
+  id: number
+  name: string
+}
+
+type TabKey = 'all' | number
+
+const LOW_STOCK_THRESHOLD = 10
+
+function formatPrice(value: number, currency: string) {
+  try {
+    return new Intl.NumberFormat(undefined, {
+      style: 'currency',
+      currency: currency || 'INR',
+      maximumFractionDigits: 0,
+    }).format(value)
+  } catch {
+    return `${currency} ${value.toFixed(0)}`
+  }
+}
+
+function stockTone(qty: number) {
+  if (qty === 0) return 'text-destructive'
+  if (qty <= LOW_STOCK_THRESHOLD) return 'text-amber-600 dark:text-amber-500'
+  return 'text-foreground'
+}
+
+function stockLabel(qty: number) {
+  if (qty === 0) return 'Out of stock'
+  if (qty <= LOW_STOCK_THRESHOLD) return `${qty} left — low`
+  return `${qty} in stock`
 }
 
 export default function AdminProductsPage() {
   const { user, token } = useAuth()
+  const router = useRouter()
+
   const [products, setProducts] = useState<Product[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [isTransitioning, setIsTransitioning] = useState(false)
+  const [categories, setCategories] = useState<Category[]>([])
+  const [activeTab, setActiveTab] = useState<TabKey>('all')
+  const [query, setQuery] = useState('')
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<Product | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
-  const router = useRouter()
+  const [isTransitioning, setIsTransitioning] = useState(false)
 
   useEffect(() => {
     if (user?.role !== 'admin') {
       setError('Unauthorized')
-      setIsLoading(false)
+      setLoading(false)
       return
     }
-
-    fetch('/api/admin/products', {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(async r => {
+    Promise.all([
+      fetch('/api/admin/products', {
+        headers: { Authorization: `Bearer ${token}` },
+      }).then(async (r) => {
         if (!r.ok) throw new Error((await r.json()).error || r.statusText)
         return r.json()
+      }),
+      fetch('/api/categories')
+        .then((r) => r.json())
+        .catch(() => ({ categories: [] })),
+    ])
+      .then(([productsJson, categoriesJson]) => {
+        setProducts(productsJson.products ?? [])
+        setCategories(categoriesJson.categories ?? [])
       })
-      .then(json => setProducts(json.products))
-      .catch(err => setError(err.message))
-      .finally(() => setIsLoading(false))
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false))
   }, [token, user])
 
-  function requestDelete(product: Product) {
-    setDeleteTarget(product)
-  }
+  const categoryCounts = useMemo(() => {
+    const map = new Map<number, number>()
+    for (const p of products) {
+      if (p.categoryId != null) {
+        map.set(p.categoryId, (map.get(p.categoryId) ?? 0) + 1)
+      }
+    }
+    return map
+  }, [products])
+
+  const stats = useMemo(() => {
+    const total = products.length
+    const active = products.filter((p) => p.isActive).length
+    const lowStock = products.filter(
+      (p) => p.stockQuantity > 0 && p.stockQuantity <= LOW_STOCK_THRESHOLD
+    ).length
+    const outOfStock = products.filter((p) => p.stockQuantity === 0).length
+    return { total, active, lowStock, outOfStock }
+  }, [products])
+
+  const displayProducts = useMemo(() => {
+    let list = products
+    if (activeTab !== 'all') {
+      list = list.filter((p) => p.categoryId === activeTab)
+    }
+    const q = query.trim().toLowerCase()
+    if (q) {
+      list = list.filter(
+        (p) =>
+          p.name.toLowerCase().includes(q) ||
+          p.slug.toLowerCase().includes(q)
+      )
+    }
+    return list
+  }, [products, activeTab, query])
 
   async function handleDelete() {
     if (!deleteTarget) return
@@ -62,10 +171,10 @@ export default function AdminProductsPage() {
     try {
       const res = await fetch(`/api/admin/products/${deleteTarget.id}`, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       })
       if (!res.ok) throw new Error((await res.json()).error)
-      setProducts(currentProducts => currentProducts.filter(product => product.id !== deleteTarget.id))
+      setProducts((prev) => prev.filter((p) => p.id !== deleteTarget.id))
       setDeleteTarget(null)
     } catch (err: any) {
       alert('Failed to delete product: ' + err.message)
@@ -80,13 +189,15 @@ export default function AdminProductsPage() {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ isActive: newStatus })
+        body: JSON.stringify({ isActive: newStatus }),
       })
       if (!res.ok) throw new Error((await res.json()).error)
       const json = await res.json()
-      setProducts(products.map(p => p.id === id ? { ...p, isActive: json.product.isActive } : p))
+      setProducts((prev) =>
+        prev.map((p) => (p.id === id ? { ...p, isActive: json.product.isActive } : p))
+      )
     } catch (err: any) {
       alert('Failed to update product status: ' + err.message)
     }
@@ -97,122 +208,397 @@ export default function AdminProductsPage() {
     router.push(`/dashboard/admin/products/${id}`)
   }
 
-  function handleAddNew() {
-    setIsTransitioning(true)
-    router.push('/dashboard/admin/products/new')
+  if (loading || isTransitioning) {
+    return <LoadingSpinner overlay message="Loading products..." />
+  }
+  if (error) {
+    return (
+      <main className="container mx-auto px-4 py-10">
+        <p className="text-sm text-destructive">{error}</p>
+      </main>
+    )
   }
 
-  if (isLoading || isTransitioning) return <LoadingSpinner overlay={true} message="Loading products..." />
-  if (error) return <div className={styles.error}>{error}</div>
-
   return (
-    <main className={styles.container}>
-      <div className={styles.header}>
-        <h1 className={styles.title}>Manage Products</h1>
-        <button
-          onClick={handleAddNew}
-          className={styles.newButton}
-        >
-          + Add New Product
-          <FiArrowRight className={styles.arrowIcon} />
-        </button>
-        <Link href="/dashboard/admin/products/highest-rated" className={styles.newButton} style={{marginLeft:'1rem'}}>
-          ⭐ Highest Rated
-          <FiArrowRight className={styles.arrowIcon} />
-        </Link>
+    <main className="container mx-auto flex flex-col gap-6 px-4 py-8">
+      {/* Page header */}
+      <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-1">
+          <h1 className="text-2xl font-semibold tracking-tight">Products</h1>
+          <p className="text-sm text-muted-foreground">
+            Manage your catalog, stock levels, and product visibility.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button asChild variant="outline" className="gap-1.5">
+            <Link href="/dashboard/admin/products/highest-rated">
+              <Star className="h-4 w-4" />
+              Highest rated
+            </Link>
+          </Button>
+          <Button
+            onClick={() => {
+              setIsTransitioning(true)
+              router.push('/dashboard/admin/products/new')
+            }}
+            className="gap-1.5"
+          >
+            <Plus className="h-4 w-4" />
+            Add product
+          </Button>
+        </div>
+      </header>
+
+      {/* Stats */}
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard
+          icon={Boxes}
+          label="Total products"
+          value={stats.total}
+          tone="default"
+        />
+        <StatCard
+          icon={CheckCircle2}
+          label="Active"
+          value={stats.active}
+          tone="default"
+        />
+        <StatCard
+          icon={AlertTriangle}
+          label="Low stock"
+          value={stats.lowStock}
+          tone="warning"
+          hint={`≤ ${LOW_STOCK_THRESHOLD} units`}
+        />
+        <StatCard
+          icon={CircleSlash}
+          label="Out of stock"
+          value={stats.outOfStock}
+          tone="destructive"
+        />
       </div>
 
-      <table className={styles.table}>
-        <thead className={styles.tableHeader}>
-          <tr>
-            <th className={styles.tableHeaderCell}>Product Name</th>
-            <th className={styles.tableHeaderCell}>Price</th>
-            <th className={styles.tableHeaderCell}>Stock</th>
-            <th className={styles.tableHeaderCell}>Products Sold</th>
-            <th className={styles.tableHeaderCell}>Status</th>
-            <th className={styles.tableHeaderCell}>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {products && products.map(p => {
-            if (!p) return null; // Defensively skip rendering if a product object is null
-            
-            const priceDisplay = typeof p.price === 'number' ? p.price.toFixed(2) : '0.00';
-            const currencyDisplay = p.currency || 'N/A';
-            const stockDisplay = typeof p.stockQuantity === 'number' ? p.stockQuantity : 'N/A';
-            const soldDisplay = typeof p.totalSold === 'number' ? p.totalSold : 0;
-            const statusClass = p.isActive ? styles.statusActive : styles.statusInactive;
-            const statusText = p.isActive ? 'Active' : 'Inactive';
+      {/* Two-column shell: vertical category rail + table */}
+      <div className="grid gap-6 md:grid-cols-[220px_1fr]">
+        {/* Vertical category rail */}
+        <aside>
+          <nav
+            aria-label="Filter by category"
+            className="flex gap-1 overflow-x-auto rounded-md border bg-card p-2 md:sticky md:top-20 md:flex-col md:overflow-visible md:p-2"
+          >
+            <CategoryButton
+              icon={Package}
+              label="All products"
+              count={stats.total}
+              isActive={activeTab === 'all'}
+              onClick={() => setActiveTab('all')}
+            />
 
-            return (
-              <tr key={p.id} className={styles.tableRow}>
-                <td className={styles.tableCell}>{p.name || 'No Name'}</td>
-                <td className={styles.tableCell}>
-                  <span className={styles.price}>
-                    {currencyDisplay} {priceDisplay}
-                  </span>
-                </td>
-                <td className={styles.tableCell}>{stockDisplay}</td>
-                <td className={styles.tableCell}>
-                  <span className={styles.soldCount}>
-                    {soldDisplay}
-                  </span>
-                </td>
-                <td className={styles.tableCell}>
-                  <label className={styles.statusSwitch}>
-                    <input
-                      type="checkbox"
-                      checked={p.isActive}
-                      onChange={() => handleToggleStatus(p.id, !p.isActive)}
-                    />
-                    <span className={styles.statusSlider} />
-                  </label>
-                </td>
-                <td className={styles.tableCell}>
-                  <div className={styles.actionButtons}>
-                    <button
-                      type="button"
-                      onClick={() => handleEdit(p.id)}
-                      className={styles.editButton}
-                    >
-                      <FiEdit2 />
-                      Edit
-                      <FiArrowRight className={styles.arrowIcon} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => requestDelete(p)}
-                      className={styles.deleteButton}
-                    >
-                      <FiTrash2 />
-                      Delete
-                      <FiArrowRight className={styles.arrowIcon} />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            )
-          })}
-        </tbody>
-      </table>
+            {categories.length > 0 && (
+              <Separator className="my-1 hidden md:block" />
+            )}
+
+            {categories.map((c) => (
+              <CategoryButton
+                key={c.id}
+                icon={Tag}
+                label={c.name}
+                count={categoryCounts.get(c.id) ?? 0}
+                isActive={activeTab === c.id}
+                onClick={() => setActiveTab(c.id)}
+              />
+            ))}
+          </nav>
+        </aside>
+
+        {/* Main content */}
+        <div className="min-w-0">
+          <Card className="shadow-sm">
+            <CardHeader className="gap-4 p-4 sm:p-6">
+              <div className="flex flex-col gap-1">
+                <CardTitle>
+                  {activeTab === 'all'
+                    ? 'All products'
+                    : categories.find((c) => c.id === activeTab)?.name ??
+                      'Products'}
+                </CardTitle>
+                <CardDescription>
+                  {displayProducts.length}{' '}
+                  {displayProducts.length === 1 ? 'item' : 'items'} shown.
+                </CardDescription>
+              </div>
+
+              <div className="relative w-full lg:max-w-sm">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Search by name or slug"
+                  className="pl-9"
+                  aria-label="Search products"
+                />
+              </div>
+            </CardHeader>
+
+            <CardContent className="p-0">
+              <div className="border-t">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-muted/30 hover:bg-muted/30">
+                      <TableHead className="px-4">Product</TableHead>
+                      <TableHead className="px-4">Price</TableHead>
+                      <TableHead className="px-4">Stock</TableHead>
+                      <TableHead className="px-4">Sold</TableHead>
+                      <TableHead className="px-4">Active</TableHead>
+                      <TableHead className="px-4 text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {displayProducts.length === 0 ? (
+                      <TableRow>
+                        <TableCell
+                          colSpan={6}
+                          className="px-4 py-10 text-center text-sm text-muted-foreground"
+                        >
+                          No products match this view.
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      displayProducts.map((p) => {
+                        const cover = p.imageUrls?.[0]
+                        return (
+                          <TableRow key={p.id} className="align-middle">
+                            <TableCell className="px-4 py-3">
+                              <div className="flex items-center gap-3">
+                                <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-muted/40">
+                                  {cover ? (
+                                    <img
+                                      src={cover}
+                                      alt={p.name}
+                                      loading="lazy"
+                                      className="h-full w-full object-cover"
+                                    />
+                                  ) : (
+                                    <Package className="h-4 w-4 text-muted-foreground" />
+                                  )}
+                                </div>
+                                <div className="flex min-w-0 flex-col">
+                                  <span className="truncate text-sm font-medium text-foreground">
+                                    {p.name || 'Untitled product'}
+                                  </span>
+                                  <span className="truncate text-xs text-muted-foreground">
+                                    /{p.slug}
+                                  </span>
+                                </div>
+                              </div>
+                            </TableCell>
+
+                            <TableCell className="px-4 py-3 text-sm font-medium text-foreground">
+                              {formatPrice(p.price, p.currency)}
+                            </TableCell>
+
+                            <TableCell className="px-4 py-3">
+                              <div className="flex items-center gap-2">
+                                <span
+                                  className={cn(
+                                    'inline-flex h-2 w-2 rounded-full',
+                                    p.stockQuantity === 0
+                                      ? 'bg-destructive'
+                                      : p.stockQuantity <= LOW_STOCK_THRESHOLD
+                                      ? 'bg-amber-500'
+                                      : 'bg-emerald-500'
+                                  )}
+                                />
+                                <span
+                                  className={cn(
+                                    'text-sm',
+                                    stockTone(p.stockQuantity)
+                                  )}
+                                >
+                                  {stockLabel(p.stockQuantity)}
+                                </span>
+                              </div>
+                            </TableCell>
+
+                            <TableCell className="px-4 py-3 text-sm text-muted-foreground">
+                              {p.totalSold.toLocaleString()}
+                            </TableCell>
+
+                            <TableCell className="px-4 py-3">
+                              <div className="flex items-center gap-2">
+                                <Switch
+                                  checked={p.isActive}
+                                  onCheckedChange={(v) =>
+                                    handleToggleStatus(p.id, v)
+                                  }
+                                  aria-label={`Toggle ${p.name} active`}
+                                />
+                                <Badge
+                                  variant={p.isActive ? 'secondary' : 'outline'}
+                                  className="h-5 px-1.5 text-[11px]"
+                                >
+                                  {p.isActive ? 'Active' : 'Inactive'}
+                                </Badge>
+                              </div>
+                            </TableCell>
+
+                            <TableCell className="px-4 py-3">
+                              <div className="flex items-center justify-end gap-1.5">
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleEdit(p.id)}
+                                  className="gap-1.5"
+                                >
+                                  <Pencil className="h-3.5 w-3.5" />
+                                  Edit
+                                </Button>
+                                <Separator
+                                  orientation="vertical"
+                                  className="mx-1 h-6"
+                                />
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon-sm"
+                                  onClick={() => setDeleteTarget(p)}
+                                  aria-label={`Delete ${p.name}`}
+                                  className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        )
+                      })
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
 
       <ConfirmDialog
         open={Boolean(deleteTarget)}
-        title="Delete Product"
+        title="Delete product"
         description={
           deleteTarget
             ? `Delete "${deleteTarget.name}" permanently? This action cannot be undone.`
             : ''
         }
-        confirmLabel="Delete Product"
+        confirmLabel="Delete product"
         isProcessing={isDeleting}
         onConfirm={handleDelete}
         onClose={() => {
-          if (!isDeleting) {
-            setDeleteTarget(null)
-          }
+          if (!isDeleting) setDeleteTarget(null)
         }}
       />
     </main>
+  )
+}
+
+function CategoryButton({
+  icon: Icon,
+  label,
+  count,
+  isActive,
+  onClick,
+}: {
+  icon: typeof Package
+  label: string
+  count: number
+  isActive: boolean
+  onClick: () => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={isActive}
+      className={cn(
+        'group inline-flex shrink-0 items-center gap-2.5 rounded-md px-3 py-2 text-left text-sm transition-colors md:w-full',
+        isActive
+          ? 'bg-secondary text-foreground font-medium'
+          : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground'
+      )}
+    >
+      <Icon
+        className={cn(
+          'h-4 w-4 shrink-0',
+          isActive
+            ? 'text-foreground'
+            : 'text-muted-foreground group-hover:text-foreground'
+        )}
+      />
+      <span className="flex-1 truncate">{label}</span>
+      <Badge
+        variant="secondary"
+        className={cn(
+          'h-5 px-1.5 text-[11px]',
+          isActive && 'bg-background border border-border'
+        )}
+      >
+        {count}
+      </Badge>
+      <ChevronRight
+        className={cn(
+          'hidden h-3.5 w-3.5 shrink-0 text-muted-foreground/60 md:inline-block',
+          isActive && 'text-foreground'
+        )}
+      />
+    </button>
+  )
+}
+
+function StatCard({
+  icon: Icon,
+  label,
+  value,
+  tone,
+  hint,
+}: {
+  icon: typeof Package
+  label: string
+  value: number
+  tone: 'default' | 'warning' | 'destructive'
+  hint?: string
+}) {
+  const toneStyles =
+    tone === 'destructive'
+      ? 'bg-destructive/10 text-destructive'
+      : tone === 'warning'
+      ? 'bg-amber-500/10 text-amber-600 dark:text-amber-500'
+      : 'bg-muted/50 text-foreground border'
+
+  return (
+    <Card className="shadow-sm">
+      <CardContent className="flex items-center gap-4 p-4">
+        <span
+          className={cn(
+            'flex h-10 w-10 items-center justify-center rounded-md',
+            toneStyles
+          )}
+        >
+          <Icon className="h-5 w-5" />
+        </span>
+        <div className="flex min-w-0 flex-col">
+          <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            {label}
+          </span>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-xl font-semibold tracking-tight text-foreground">
+              {value.toLocaleString()}
+            </span>
+            {hint && (
+              <span className="text-[11px] text-muted-foreground">{hint}</span>
+            )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   )
 }

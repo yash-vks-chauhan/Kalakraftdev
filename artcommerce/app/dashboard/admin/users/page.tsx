@@ -12,7 +12,8 @@ import {
   Trash2,
   ShoppingBag,
   Send,
-  MoreHorizontal,
+  ArrowUpCircle,
+  ArrowDownCircle,
 } from 'lucide-react'
 
 import { useAuth } from '../../../contexts/AuthContext'
@@ -29,13 +30,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { Separator } from '@/components/ui/separator'
 import {
   Table,
   TableBody,
@@ -93,6 +88,8 @@ export default function AdminUsersPage() {
   const [deleteTarget, setDeleteTarget] = useState<UserRow | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
   const [remindingId, setRemindingId] = useState<number | null>(null)
+  const [roleTarget, setRoleTarget] = useState<UserRow | null>(null)
+  const [isUpdatingRole, setIsUpdatingRole] = useState(false)
 
   const activeTab: TabKey =
     filterParam === 'admin' ? 'admin' : filterParam === 'user' ? 'user' : 'all'
@@ -136,21 +133,28 @@ export default function AdminUsersPage() {
     router.push(qs ? `/dashboard/admin/users?${qs}` : '/dashboard/admin/users')
   }
 
-  async function onRoleChange(id: number, newRole: string) {
-    const res = await fetch('/api/admin/users', {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ userId: id, role: newRole }),
-    })
-    if (!res.ok) {
-      alert('Failed to update role')
-      return
+  async function handleConfirmRoleChange() {
+    if (!roleTarget) return
+    const newRole = roleTarget.role === 'admin' ? 'user' : 'admin'
+    setIsUpdatingRole(true)
+    try {
+      const res = await fetch('/api/admin/users', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ userId: roleTarget.id, role: newRole }),
+      })
+      if (!res.ok) throw new Error('Failed to update role')
+      const { user: updated } = await res.json()
+      setUsers((prev) => prev.map((u) => (u.id === roleTarget.id ? updated : u)))
+      setRoleTarget(null)
+    } catch (error: any) {
+      alert(error.message || 'Failed to update role')
+    } finally {
+      setIsUpdatingRole(false)
     }
-    const { user: updated } = await res.json()
-    setUsers((prev) => prev.map((u) => (u.id === id ? updated : u)))
   }
 
   async function handleDeleteUser() {
@@ -374,23 +378,26 @@ export default function AdminUsersPage() {
                       </TableCell>
 
                       <TableCell className="px-4 py-3">
-                        <div className="flex items-center justify-end gap-2">
-                          <Select
-                            value={u.role}
-                            onValueChange={(v) => onRoleChange(u.id, v)}
+                        <div className="flex items-center justify-end gap-1.5">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setRoleTarget(u)}
+                            className="gap-1.5"
                           >
-                            <SelectTrigger
-                              size="sm"
-                              className="w-[110px]"
-                              aria-label={`Change role for ${u.fullName}`}
-                            >
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="user">Customer</SelectItem>
-                              <SelectItem value="admin">Admin</SelectItem>
-                            </SelectContent>
-                          </Select>
+                            {u.role === 'admin' ? (
+                              <>
+                                <ArrowDownCircle className="h-3.5 w-3.5" />
+                                Demote
+                              </>
+                            ) : (
+                              <>
+                                <ArrowUpCircle className="h-3.5 w-3.5" />
+                                Promote
+                              </>
+                            )}
+                          </Button>
 
                           <Button
                             asChild
@@ -421,13 +428,18 @@ export default function AdminUsersPage() {
                             Remind
                           </Button>
 
+                          <Separator
+                            orientation="vertical"
+                            className="mx-1 h-6"
+                          />
+
                           <Button
                             type="button"
                             variant="ghost"
                             size="icon-sm"
                             onClick={() => setDeleteTarget(u)}
                             aria-label={`Delete ${u.fullName}`}
-                            className="text-muted-foreground hover:text-destructive"
+                            className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -455,6 +467,30 @@ export default function AdminUsersPage() {
         onConfirm={handleDeleteUser}
         onClose={() => {
           if (!isDeleting) setDeleteTarget(null)
+        }}
+      />
+
+      <ConfirmDialog
+        open={Boolean(roleTarget)}
+        title={
+          roleTarget?.role === 'admin'
+            ? 'Demote to customer'
+            : 'Promote to admin'
+        }
+        description={
+          roleTarget
+            ? roleTarget.role === 'admin'
+              ? `Remove admin privileges from ${roleTarget.fullName}? They will lose access to the dashboard.`
+              : `Grant admin privileges to ${roleTarget.fullName}? They will gain full dashboard access.`
+            : ''
+        }
+        confirmLabel={
+          roleTarget?.role === 'admin' ? 'Demote' : 'Promote'
+        }
+        isProcessing={isUpdatingRole}
+        onConfirm={handleConfirmRoleChange}
+        onClose={() => {
+          if (!isUpdatingRole) setRoleTarget(null)
         }}
       />
     </main>

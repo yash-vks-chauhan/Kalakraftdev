@@ -3,13 +3,16 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { redirect } from "next/navigation"
-import { Menu, Search, Heart, ShoppingCart, ArrowUpRight } from "lucide-react"
+import { Menu, Search, Heart, ShoppingCart, ArrowUpRight, PanelLeftClose, PanelLeftOpen } from "lucide-react"
 
 import { useAuth } from "../contexts/AuthContext"
 import LoadingSpinner from "../components/LoadingSpinner"
 import SearchModal from "../components/SearchModal"
 import { SidebarNav } from "./_components/SidebarNav"
+import { cn } from "@/lib/utils"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+
+const SIDEBAR_STORAGE_KEY = "dashboard:sidebar:collapsed"
 
 export default function DashboardLayout({
   children,
@@ -19,12 +22,36 @@ export default function DashboardLayout({
   const { user, loading, logout } = useAuth()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
+  const [collapsed, setCollapsed] = useState(false)
+
+  // Hydrate collapsed state from localStorage
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem(SIDEBAR_STORAGE_KEY)
+      if (stored === "1") setCollapsed(true)
+    } catch {}
+  }, [])
+
+  const toggleCollapsed = () => {
+    setCollapsed((prev) => {
+      const next = !prev
+      try {
+        window.localStorage.setItem(SIDEBAR_STORAGE_KEY, next ? "1" : "0")
+      } catch {}
+      return next
+    })
+  }
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+      const key = e.key.toLowerCase()
+      if ((e.metaKey || e.ctrlKey) && key === "k") {
         e.preventDefault()
         setSearchOpen((v) => !v)
+      }
+      if ((e.metaKey || e.ctrlKey) && key === "b") {
+        e.preventDefault()
+        toggleCollapsed()
       }
     }
     window.addEventListener("keydown", onKey)
@@ -51,8 +78,19 @@ export default function DashboardLayout({
   return (
     <div className="dashboard-shell min-h-screen bg-background text-foreground">
       {/* Desktop sidebar */}
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-72 border-r bg-background lg:flex lg:flex-col">
-        <SidebarNav user={user} onLogout={handleLogout} />
+      <aside
+        data-state={collapsed ? "collapsed" : "expanded"}
+        className={cn(
+          "fixed inset-y-0 left-0 z-30 hidden overflow-hidden border-r bg-background transition-[width] duration-200 ease-linear lg:flex lg:flex-col",
+          collapsed ? "w-16" : "w-72"
+        )}
+      >
+        <SidebarNav
+          user={user}
+          onLogout={handleLogout}
+          collapsed={collapsed}
+          onToggleCollapsed={toggleCollapsed}
+        />
       </aside>
 
       {/* Mobile top bar */}
@@ -79,9 +117,27 @@ export default function DashboardLayout({
       </header>
 
       {/* Main content */}
-      <main className="lg:pl-72">
+      <main
+        className={cn(
+          "transition-[padding-left] duration-200 ease-linear",
+          collapsed ? "lg:pl-16" : "lg:pl-72"
+        )}
+      >
         {/* Desktop top bar: search + store shortcuts */}
         <div className="sticky top-0 z-20 hidden h-14 items-center gap-3 border-b bg-background/95 px-10 backdrop-blur lg:flex">
+          <button
+            type="button"
+            onClick={toggleCollapsed}
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            title={collapsed ? "Expand sidebar (⌘B)" : "Collapse sidebar (⌘B)"}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+          >
+            {collapsed ? (
+              <PanelLeftOpen className="h-4 w-4" />
+            ) : (
+              <PanelLeftClose className="h-4 w-4" />
+            )}
+          </button>
           <button
             type="button"
             onClick={() => setSearchOpen(true)}
