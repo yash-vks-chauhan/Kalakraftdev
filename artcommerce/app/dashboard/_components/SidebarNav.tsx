@@ -26,7 +26,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import type { User as AuthUser } from "../../contexts/AuthContext"
 
 type NavItem = { href: string; label: string; icon: LucideIcon; exact?: boolean }
-type NavSection = { label: string; items: NavItem[] }
 
 const userNav: NavItem[] = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard, exact: true },
@@ -137,7 +136,7 @@ export function SidebarNav({
       {/* Brand + collapse toggle */}
       <div
         className={cn(
-          "flex h-16 items-center border-b",
+          "flex h-14 items-center border-b",
           collapsed ? "justify-center px-2" : "justify-between px-5"
         )}
       >
@@ -195,9 +194,7 @@ export function SidebarNav({
       <div
         className={cn(
           "flex items-center border-t",
-          collapsed
-            ? "flex-col gap-2 px-2 py-3"
-            : "gap-3 px-4 py-4"
+          collapsed ? "justify-center px-2 py-3" : "gap-3 px-4 py-4"
         )}
       >
         <Avatar
@@ -211,21 +208,21 @@ export function SidebarNav({
         </Avatar>
 
         {!collapsed && (
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium text-foreground">{user.fullName}</p>
-            <p className="truncate text-xs text-muted-foreground">{user.email}</p>
-          </div>
+          <>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium text-foreground">{user.fullName}</p>
+              <p className="truncate text-xs text-muted-foreground">{user.email}</p>
+            </div>
+            <button
+              type="button"
+              onClick={onLogout}
+              aria-label="Log out"
+              className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+            >
+              <LogOut className="h-4 w-4" />
+            </button>
+          </>
         )}
-
-        <button
-          type="button"
-          onClick={onLogout}
-          aria-label="Log out"
-          title={collapsed ? "Log out" : undefined}
-          className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-        >
-          <LogOut className="h-4 w-4" />
-        </button>
       </div>
     </div>
   )

@@ -1,134 +1,476 @@
-import prisma from "@/lib/prisma";
-import Link from "next/link";
-import {
-  Mail, Clock, User, ArrowRight, Search, Filter,
-  CheckCircle2, AlertCircle, Clock3, MoreHorizontal
-} from 'lucide-react';
+'use client'
 
-interface SupportTicket {
-  id: string;
-  name: string;
-  email: string;
-  subject: string;
-  status: string;
-  createdAt: Date;
-  issueCategory?: string;
+import { useEffect, useMemo, useState } from 'react'
+import Link from 'next/link'
+import {
+  LifeBuoy,
+  Mail,
+  Search,
+  Inbox,
+  CircleDot,
+  Clock,
+  CheckCircle2,
+  ArrowRight,
+  RefreshCw,
+} from 'lucide-react'
+
+import { useAuth } from '../../../contexts/AuthContext'
+import { cn } from '@/lib/utils'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+
+interface Ticket {
+  id: string
+  name: string
+  email: string
+  subject: string
+  status: string
+  createdAt: string
 }
 
-export const revalidate = 0;
+type TabKey = 'all' | 'open' | 'pending' | 'closed'
 
-export default async function SupportListPage() {
-  const tickets = await prisma.supportTicket.findMany({
-    orderBy: { createdAt: 'desc' },
-    take: 50,
-  });
+const tabs: {
+  key: TabKey
+  label: string
+  icon: typeof Inbox
+  status: string | null
+}[] = [
+  { key: 'all', label: 'All', icon: Inbox, status: null },
+  { key: 'open', label: 'Open', icon: CircleDot, status: 'open' },
+  { key: 'pending', label: 'Pending', icon: Clock, status: 'pending' },
+  { key: 'closed', label: 'Closed', icon: CheckCircle2, status: 'closed' },
+]
 
-  const getStatusBadge = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'open':
-        return <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-black text-white border border-black">Open</span>;
-      case 'pending':
-        return <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-white text-gray-900 border border-gray-200">Pending</span>;
-      case 'closed':
-        return <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500 border border-gray-100">Closed</span>;
-      default: return null;
+function initialsOf(name?: string) {
+  if (!name) return '?'
+  return name
+    .split(' ')
+    .map((p) => p[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join('')
+    .toUpperCase()
+}
+
+function formatRelative(value: string) {
+  const date = new Date(value)
+  const diffMs = Date.now() - date.getTime()
+  const min = Math.round(diffMs / 60000)
+  if (min < 1) return 'just now'
+  if (min < 60) return `${min}m ago`
+  const hr = Math.round(min / 60)
+  if (hr < 24) return `${hr}h ago`
+  const day = Math.round(hr / 24)
+  if (day < 7) return `${day}d ago`
+  return date.toLocaleDateString(undefined, {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  })
+}
+
+export default function AdminSupportPage() {
+  const { token, user } = useAuth()
+  const [tickets, setTickets] = useState<Ticket[]>([])
+  const [activeTab, setActiveTab] = useState<TabKey>('all')
+  const [query, setQuery] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  async function loadTickets(initial = false) {
+    if (initial) setLoading(true)
+    else setRefreshing(true)
+    try {
+      const res = await fetch('/api/admin/support/ticket', {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (!res.ok) throw new Error('Failed to load tickets')
+      const data: Ticket[] = await res.json()
+      setTickets(data)
+      setError(null)
+    } catch (err: any) {
+      setError(err.message || 'Failed to load tickets')
+    } finally {
+      if (initial) setLoading(false)
+      else setRefreshing(false)
     }
-  };
+  }
+
+  useEffect(() => {
+    if (user?.role !== 'admin') return
+    loadTickets(true)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token, user])
+
+  const counts = useMemo(() => {
+    const open = tickets.filter((t) => t.status.toLowerCase() === 'open').length
+    const pending = tickets.filter((t) => t.status.toLowerCase() === 'pending').length
+    const closed = tickets.filter((t) => t.status.toLowerCase() === 'closed').length
+    return { total: tickets.length, open, pending, closed }
+  }, [tickets])
+
+  const displayTickets = useMemo(() => {
+    let list = tickets
+    if (activeTab !== 'all') {
+      list = list.filter((t) => t.status.toLowerCase() === activeTab)
+    }
+    const q = query.trim().toLowerCase()
+    if (q) {
+      list = list.filter(
+        (t) =>
+          t.subject.toLowerCase().includes(q) ||
+          t.name.toLowerCase().includes(q) ||
+          t.email.toLowerCase().includes(q)
+      )
+    }
+    return list
+  }, [tickets, activeTab, query])
+
+  if (user?.role !== 'admin') {
+    return (
+      <main>
+        <p className="text-sm text-muted-foreground">Unauthorized</p>
+      </main>
+    )
+  }
 
   return (
-    <div className="min-h-screen bg-white p-6 lg:p-10">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <main className="flex flex-col gap-6">
+      {/* Page header */}
+      <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-1">
+          <h1 className="text-2xl font-semibold tracking-tight">Support tickets</h1>
+          <p className="text-sm text-muted-foreground">
+            Triage customer messages, track open conversations, and close out resolved ones.
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          onClick={() => loadTickets()}
+          disabled={refreshing}
+          className="gap-1.5 self-start sm:self-auto"
+        >
+          <RefreshCw
+            className={cn('h-4 w-4', refreshing && 'animate-spin')}
+          />
+          Refresh
+        </Button>
+      </header>
 
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Support</h1>
-            <p className="text-sm text-gray-500 mt-1">Overview of recent tickets</p>
+      {/* Stats */}
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard
+          icon={LifeBuoy}
+          label="Total"
+          value={counts.total}
+          tone="default"
+        />
+        <StatCard
+          icon={CircleDot}
+          label="Open"
+          value={counts.open}
+          tone="destructive"
+          hint="Needs attention"
+        />
+        <StatCard
+          icon={Clock}
+          label="Pending"
+          value={counts.pending}
+          tone="warning"
+          hint="Awaiting reply"
+        />
+        <StatCard
+          icon={CheckCircle2}
+          label="Closed"
+          value={counts.closed}
+          tone="muted"
+        />
+      </div>
+
+      <Card className="shadow-sm">
+        <CardHeader className="gap-4 p-4 sm:p-6">
+          <div className="flex flex-col gap-1">
+            <CardTitle>Tickets</CardTitle>
+            <CardDescription>
+              {displayTickets.length}{' '}
+              {displayTickets.length === 1 ? 'ticket' : 'tickets'} shown.
+            </CardDescription>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="relative group">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-black transition-colors" />
-              <input
-                type="text"
-                placeholder="Search..."
-                className="pl-9 pr-4 py-2 bg-gray-50 border-none rounded-lg text-sm focus:ring-1 focus:ring-black transition-all w-64 placeholder-gray-400"
+
+          {/* Top tabs + search */}
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <nav
+              aria-label="Filter tickets by status"
+              className="flex w-full gap-1 overflow-x-auto rounded-md border bg-muted/40 p-1 lg:w-auto"
+            >
+              {tabs.map((t) => {
+                const isActive = activeTab === t.key
+                const Icon = t.icon
+                const count =
+                  t.key === 'all'
+                    ? counts.total
+                    : t.key === 'open'
+                    ? counts.open
+                    : t.key === 'pending'
+                    ? counts.pending
+                    : counts.closed
+                return (
+                  <button
+                    key={t.key}
+                    type="button"
+                    onClick={() => setActiveTab(t.key)}
+                    aria-pressed={isActive}
+                    className={cn(
+                      'inline-flex flex-1 shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded px-3 py-1.5 text-sm font-medium transition-colors lg:flex-none',
+                      isActive
+                        ? 'bg-background text-foreground shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground'
+                    )}
+                  >
+                    <Icon className="h-4 w-4" />
+                    <span>{t.label}</span>
+                    <Badge
+                      variant="secondary"
+                      className={cn(
+                        'h-5 px-1.5 text-[11px]',
+                        isActive && 'bg-secondary/80'
+                      )}
+                    >
+                      {count}
+                    </Badge>
+                  </button>
+                )
+              })}
+            </nav>
+
+            <div className="relative w-full lg:w-72">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search subject, name or email"
+                className="pl-9"
+                aria-label="Search tickets"
               />
             </div>
-            <button className="p-2 bg-gray-50 rounded-lg hover:bg-gray-100 text-gray-900 transition-colors">
-              <Filter className="w-4 h-4" />
-            </button>
           </div>
-        </div>
+        </CardHeader>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="p-6 rounded-2xl border border-gray-100 bg-gray-50/50">
-            <div className="text-xs font-medium text-gray-500 uppercase tracking-wider">Total</div>
-            <div className="text-3xl font-bold text-gray-900 mt-2">{tickets.length}</div>
-          </div>
-          <div className="p-6 rounded-2xl border border-gray-100 bg-gray-50/50">
-            <div className="text-xs font-medium text-gray-500 uppercase tracking-wider">Open</div>
-            <div className="text-3xl font-bold text-gray-900 mt-2">
-              {tickets.filter(t => t.status.toLowerCase() === 'open').length}
-            </div>
-          </div>
-          <div className="p-6 rounded-2xl border border-gray-100 bg-gray-50/50">
-            <div className="text-xs font-medium text-gray-500 uppercase tracking-wider">Pending</div>
-            <div className="text-3xl font-bold text-gray-900 mt-2">
-              {tickets.filter(t => t.status.toLowerCase() === 'pending').length}
-            </div>
-          </div>
-        </div>
-
-        {/* Ticket List */}
-        <div className="border-t border-gray-100">
-          {tickets.length > 0 ? (
-            <div className="divide-y divide-gray-100">
-              {tickets.map((ticket) => (
-                <Link
-                  key={ticket.id}
-                  href={`/dashboard/admin/support/${ticket.id}`}
-                  className="group block py-6 hover:bg-gray-50/50 transition-colors -mx-4 px-4 rounded-xl"
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-3 mb-2">
-                        {getStatusBadge(ticket.status)}
-                        <span className="text-xs text-gray-400">
-                          {new Date(ticket.createdAt).toLocaleDateString('en-US', {
-                            month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric'
-                          })}
-                        </span>
+        <CardContent className="p-0">
+          <div className="border-t">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/30 hover:bg-muted/30">
+                  <TableHead className="px-4">Customer</TableHead>
+                  <TableHead className="px-4">Subject</TableHead>
+                  <TableHead className="px-4">Status</TableHead>
+                  <TableHead className="px-4">Created</TableHead>
+                  <TableHead className="px-4 text-right">Action</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {loading ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={5}
+                      className="px-4 py-10 text-center text-sm text-muted-foreground"
+                    >
+                      Loading tickets…
+                    </TableCell>
+                  </TableRow>
+                ) : error ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={5}
+                      className="px-4 py-10 text-center text-sm text-destructive"
+                    >
+                      {error}
+                    </TableCell>
+                  </TableRow>
+                ) : displayTickets.length === 0 ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={5}
+                      className="px-4 py-12 text-center"
+                    >
+                      <div className="mx-auto flex max-w-xs flex-col items-center gap-2 text-muted-foreground">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
+                          <Mail className="h-4 w-4" />
+                        </div>
+                        <p className="text-sm font-medium text-foreground">
+                          No tickets here
+                        </p>
+                        <p className="text-xs">
+                          {activeTab === 'all'
+                            ? 'Everything is caught up.'
+                            : `No ${activeTab} tickets right now.`}
+                        </p>
                       </div>
-                      <h3 className="text-lg font-semibold text-gray-900 truncate group-hover:underline decoration-1 underline-offset-4">
-                        {ticket.subject}
-                      </h3>
-                      <div className="mt-2 flex items-center gap-4 text-sm text-gray-500">
-                        <span className="truncate font-medium text-gray-900">{ticket.name}</span>
-                        <span className="truncate text-gray-400">{ticket.email}</span>
-                      </div>
-                    </div>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  displayTickets.map((t) => (
+                    <TableRow key={t.id} className="align-middle">
+                      <TableCell className="px-4 py-3">
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-9 w-9 border">
+                            <AvatarFallback className="bg-secondary text-xs font-medium text-foreground">
+                              {initialsOf(t.name)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex min-w-0 flex-col">
+                            <span className="truncate text-sm font-medium text-foreground">
+                              {t.name}
+                            </span>
+                            <span className="truncate text-xs text-muted-foreground">
+                              {t.email}
+                            </span>
+                          </div>
+                        </div>
+                      </TableCell>
 
-                    <div className="flex items-center self-center text-gray-300 group-hover:text-black transition-colors">
-                      <ArrowRight className="w-5 h-5" />
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center py-24 text-center">
-              <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mb-4">
-                <Mail className="w-5 h-5 text-gray-400" />
-              </div>
-              <h3 className="text-base font-medium text-gray-900">No tickets</h3>
-              <p className="text-sm text-gray-500 mt-1">
-                Everything is caught up.
-              </p>
-            </div>
+                      <TableCell className="px-4 py-3">
+                        <Link
+                          href={`/dashboard/admin/support/${t.id}`}
+                          className="block max-w-xl truncate text-sm font-medium text-foreground hover:underline"
+                        >
+                          {t.subject}
+                        </Link>
+                      </TableCell>
+
+                      <TableCell className="px-4 py-3">
+                        <StatusBadge status={t.status} />
+                      </TableCell>
+
+                      <TableCell className="px-4 py-3 text-sm text-muted-foreground">
+                        {formatRelative(t.createdAt)}
+                      </TableCell>
+
+                      <TableCell className="px-4 py-3">
+                        <div className="flex items-center justify-end">
+                          <Button
+                            asChild
+                            variant="outline"
+                            size="sm"
+                            className="gap-1.5"
+                          >
+                            <Link
+                              href={`/dashboard/admin/support/${t.id}`}
+                              aria-label={`Open ticket ${t.subject}`}
+                            >
+                              View
+                              <ArrowRight className="h-3.5 w-3.5" />
+                            </Link>
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+    </main>
+  )
+}
+
+function StatusBadge({ status }: { status: string }) {
+  const normalized = status.toLowerCase()
+  if (normalized === 'open') {
+    return (
+      <Badge className="gap-1 bg-destructive/10 text-destructive hover:bg-destructive/15 dark:bg-destructive/20">
+        <CircleDot className="h-3 w-3" />
+        Open
+      </Badge>
+    )
+  }
+  if (normalized === 'pending') {
+    return (
+      <Badge className="gap-1 bg-amber-500/10 text-amber-600 hover:bg-amber-500/15 dark:text-amber-500">
+        <Clock className="h-3 w-3" />
+        Pending
+      </Badge>
+    )
+  }
+  if (normalized === 'closed') {
+    return (
+      <Badge variant="secondary" className="gap-1">
+        <CheckCircle2 className="h-3 w-3" />
+        Closed
+      </Badge>
+    )
+  }
+  return <Badge variant="outline">{status}</Badge>
+}
+
+function StatCard({
+  icon: Icon,
+  label,
+  value,
+  tone,
+  hint,
+}: {
+  icon: typeof Inbox
+  label: string
+  value: number
+  tone: 'default' | 'warning' | 'destructive' | 'muted'
+  hint?: string
+}) {
+  const toneStyles =
+    tone === 'destructive'
+      ? 'bg-destructive/10 text-destructive'
+      : tone === 'warning'
+      ? 'bg-amber-500/10 text-amber-600 dark:text-amber-500'
+      : tone === 'muted'
+      ? 'bg-muted text-muted-foreground'
+      : 'bg-muted/50 text-foreground border'
+
+  return (
+    <Card className="shadow-sm">
+      <CardContent className="flex items-center gap-4 p-4">
+        <span
+          className={cn(
+            'flex h-10 w-10 items-center justify-center rounded-md',
+            toneStyles
           )}
+        >
+          <Icon className="h-5 w-5" />
+        </span>
+        <div className="flex min-w-0 flex-col">
+          <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            {label}
+          </span>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-xl font-semibold tracking-tight text-foreground">
+              {value.toLocaleString()}
+            </span>
+            {hint && (
+              <span className="text-[11px] text-muted-foreground">{hint}</span>
+            )}
+          </div>
         </div>
-      </div>
-    </div>
-  );
+      </CardContent>
+    </Card>
+  )
 }
