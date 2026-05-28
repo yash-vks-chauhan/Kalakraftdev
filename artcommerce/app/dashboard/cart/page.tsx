@@ -194,7 +194,7 @@ export default function DashboardCartPage() {
       <CartHeader itemCount={itemCount} />
 
       {/* Summary stat strip */}
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatTile icon={ShoppingBag} label="Items" value={itemCount.toString()} />
         <StatTile icon={ReceiptText} label="Subtotal" value={formatCurrency(subtotal)} />
         <StatTile
@@ -240,14 +240,14 @@ export default function DashboardCartPage() {
                   <li
                     key={item.id}
                     className={cn(
-                      "group/item flex flex-col gap-4 p-4 transition-[opacity,transform,background-color] duration-200 ease-out sm:flex-row sm:items-start sm:p-6",
+                      "group/item flex gap-3 p-3 transition-[opacity,transform,background-color] duration-200 ease-out sm:gap-4 sm:p-4 lg:p-6",
                       "hover:bg-muted/30",
                       isRemoving && "pointer-events-none scale-[0.99] opacity-50"
                     )}
                   >
                     <Link
                       href={`/products/${item.product.id}`}
-                      className="group relative h-24 w-24 shrink-0 overflow-hidden rounded-md border bg-muted/40 transition-shadow duration-200 hover:shadow-sm sm:h-28 sm:w-28"
+                      className="group relative h-20 w-20 shrink-0 overflow-hidden rounded-md border bg-muted/40 transition-shadow duration-200 hover:shadow-sm sm:h-24 sm:w-24 lg:h-28 lg:w-28"
                     >
                       {imageUrl ? (
                         // eslint-disable-next-line @next/next/no-img-element
@@ -264,27 +264,27 @@ export default function DashboardCartPage() {
                       )}
                     </Link>
 
-                    <div className="flex min-w-0 flex-1 flex-col gap-3">
-                      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                        <div className="flex min-w-0 flex-col gap-1">
+                    <div className="flex min-w-0 flex-1 flex-col gap-2 sm:gap-3">
+                      <div className="flex items-start justify-between gap-2 sm:gap-3">
+                        <div className="flex min-w-0 flex-1 flex-col gap-1">
                           <Link
                             href={`/products/${item.product.id}`}
                             className="line-clamp-2 text-sm font-medium text-foreground hover:underline sm:text-base"
                           >
                             {item.product.name}
                           </Link>
-                          <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                            <span>{formatCurrency(item.product.price)} each</span>
+                          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+                            <span className="tabular-nums">{formatCurrency(item.product.price)}</span>
                             <span className="text-border">•</span>
                             <StockBadge isOut={isOut} stock={stock} />
                           </div>
                         </div>
-                        <div className="text-sm font-semibold tabular-nums text-foreground transition-colors sm:text-base">
+                        <div className="shrink-0 text-right text-sm font-semibold tabular-nums text-foreground transition-colors sm:text-base">
                           {formatCurrency(lineTotal)}
                         </div>
                       </div>
 
-                      <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div className="flex items-center justify-between gap-2">
                         <QuantityStepper
                           value={item.quantity}
                           max={max}
@@ -298,14 +298,15 @@ export default function DashboardCartPage() {
                           size="sm"
                           onClick={() => handleRemove(item)}
                           disabled={isRemoving}
-                          className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                          aria-label="Remove item"
+                          className="shrink-0 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                         >
                           {isRemoving ? (
                             <Loader2 className="h-3.5 w-3.5 animate-spin" />
                           ) : (
                             <Trash2 className="h-3.5 w-3.5" />
                           )}
-                          Remove
+                          <span className="hidden sm:inline">Remove</span>
                         </Button>
                       </div>
                     </div>
@@ -385,10 +386,6 @@ export default function DashboardCartPage() {
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
-
-              <Button asChild variant="ghost" size="sm" className="w-full text-muted-foreground">
-                <Link href="/products">Continue shopping</Link>
-              </Button>
             </CardContent>
           </Card>
 
@@ -465,10 +462,10 @@ export default function DashboardCartPage() {
 
 function CartHeader({ itemCount, loading }: { itemCount: number; loading?: boolean }) {
   return (
-    <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-      <div className="flex flex-col gap-1">
-        <p className="text-sm text-muted-foreground">Shopping</p>
-        <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+    <header className="flex items-end justify-between gap-3">
+      <div className="flex min-w-0 flex-col gap-1">
+        <p className="text-xs text-muted-foreground sm:text-sm">Shopping</p>
+        <h1 className="flex flex-wrap items-center gap-2 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
           Your cart
           {!loading && itemCount > 0 && (
             <Badge variant="secondary" className="rounded-full">
@@ -480,10 +477,15 @@ function CartHeader({ itemCount, loading }: { itemCount: number; loading?: boole
           Review your selection, apply a promo, and continue to checkout.
         </p>
       </div>
-      <Button asChild variant="outline" size="sm" className="gap-1.5 self-start sm:self-auto">
-        <Link href="/products">
+      <Button
+        asChild
+        variant="outline"
+        size="sm"
+        className="shrink-0 gap-1.5"
+      >
+        <Link href="/products" aria-label="Continue shopping">
           <ShoppingBag className="h-4 w-4" />
-          Continue shopping
+          <span className="hidden sm:inline">Continue shopping</span>
         </Link>
       </Button>
     </header>
@@ -512,20 +514,20 @@ function StatTile({
 
   return (
     <Card className="shadow-sm transition-shadow duration-200 hover:shadow-md">
-      <CardContent className="flex items-center gap-4 p-4">
+      <CardContent className="flex items-center gap-3 p-3 sm:gap-4 sm:p-4">
         <span
           className={cn(
-            "flex h-10 w-10 items-center justify-center rounded-md transition-colors duration-200",
+            "flex h-9 w-9 shrink-0 items-center justify-center rounded-md transition-colors duration-200 sm:h-10 sm:w-10",
             toneStyles
           )}
         >
-          <Icon className="h-5 w-5" />
+          <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
         </span>
         <div className="flex min-w-0 flex-col">
-          <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          <span className="truncate text-[10px] font-medium uppercase tracking-wide text-muted-foreground sm:text-xs">
             {label}
           </span>
-          <span className="truncate text-lg font-semibold tabular-nums tracking-tight text-foreground transition-colors">
+          <span className="truncate text-base font-semibold tabular-nums tracking-tight text-foreground transition-colors sm:text-lg">
             {value}
           </span>
         </div>

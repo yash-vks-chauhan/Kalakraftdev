@@ -1,234 +1,519 @@
-// File: app/dashboard/wishlist/page.tsx
-'use client'
+"use client"
 
-import React, { useEffect, useState } from 'react'
-import { useWishlist } from '../../contexts/WishlistContext'
-import { useAuth } from '../../contexts/AuthContext'
-import { useCart } from '../../contexts/CartContext'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-import Image from 'next/image'
-import styles from './wishlist.module.css'
-import { Heart, Trash2 } from 'lucide-react'
-import LoadingSpinner from '../../components/LoadingSpinner'
-import DeleteButton from '../../components/DeleteButton'
+import { useEffect, useMemo, useState } from "react"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import {
+  ArrowRight,
+  Check,
+  Heart,
+  HeartCrack,
+  Loader2,
+  PackageX,
+  ShoppingBag,
+  ShoppingCart,
+  Sparkles,
+  Trash2,
+  X,
+} from "lucide-react"
 
-// Wishlist Skeleton Component
-const WishlistSkeleton = () => (
-  <main className={styles.container}>
-    <div className={styles.header}>
-      <div className={`${styles.skeletonTitle} ${styles.skeletonShimmer}`}></div>
-      <div className={`${styles.skeletonCount} ${styles.skeletonShimmer}`}></div>
-    </div>
-    
-    <div className={styles.grid}>
-      {[1, 2, 3, 4, 5, 6].map((index) => (
-        <div key={index} className={styles.card}>
-          <div className={styles.imageWrapper}>
-            <div className={`${styles.skeletonImage} ${styles.skeletonShimmer}`}></div>
-          </div>
-          <div className={styles.cardContent}>
-            <div className={styles.productHeader}>
-              <div className={`${styles.skeletonProductName} ${styles.skeletonShimmer}`}></div>
-              <div className={`${styles.skeletonRemoveButton} ${styles.skeletonShimmer}`}></div>
-            </div>
-            <div className={`${styles.skeletonProductPrice} ${styles.skeletonShimmer}`}></div>
-            <div className={styles.actions}>
-              <div className={`${styles.skeletonButton} ${styles.skeletonShimmer}`}></div>
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  </main>
-);
+import { useAuth } from "../../contexts/AuthContext"
+import { useCart } from "../../contexts/CartContext"
+import { useWishlist, type WishlistItem } from "../../contexts/WishlistContext"
+import { cn } from "@/lib/utils"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 
-type AnimationType = 'removing' | 'moving';
+function formatCurrency(value: number) {
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 2,
+  }).format(value)
+}
+
+type ItemBusy = "moving" | "added" | "removing" | null
 
 export default function DashboardWishlistPage() {
+  const router = useRouter()
   const { user, loading: authLoading } = useAuth()
   const { wishlistItems, removeFromWishlist, loading: wishlistLoading } = useWishlist()
   const { addToCart } = useCart()
-  const router = useRouter()
-  const [isAddingToCart, setIsAddingToCart] = useState<{[key: number]: boolean}>({})
-  const [stockInfo, setStockInfo] = useState<{[key: number]: number}>({})
-  const [animatingItems, setAnimatingItems] = useState<{[id: number]: AnimationType}>({})
+
+  const [busy, setBusy] = useState<Record<number, ItemBusy>>({})
+  const [stockInfo, setStockInfo] = useState<Record<number, number>>({})
+  const [announcement, setAnnouncement] = useState<string>("")
 
   useEffect(() => {
-    if (!authLoading && !user) {
-      router.replace('/auth/login')
-    }
+    if (!authLoading && !user) router.replace("/auth/login")
   }, [user, authLoading, router])
 
   useEffect(() => {
-    async function fetchStockInfo() {
-      if (wishlistItems.length === 0) return
-      
-      const stockData: {[key: number]: number} = {}
-      for (const item of wishlistItems) {
-        try {
-          const res = await fetch(`/api/products/${item.productId}`)
-          if (res.ok) {
-            const data = await res.json()
-            stockData[item.productId] = data.product?.stockQuantity ?? 0
+    if (wishlistItems.length === 0) return
+    let cancelled = false
+    async function fetchStock() {
+      const next: Record<number, number> = {}
+      await Promise.all(
+        wishlistItems.map(async (item) => {
+          try {
+            const res = await fetch(`/api/products/${item.productId}`)
+            if (res.ok) {
+              const data = await res.json()
+              next[item.productId] = data.product?.stockQuantity ?? 0
+            } else {
+              next[item.productId] = 0
+            }
+          } catch {
+            next[item.productId] = 0
           }
-        } catch (error) {
-          console.error(`Error fetching stock for product ${item.productId}:`, error)
-          stockData[item.productId] = 0
-        }
-      }
-      setStockInfo(stockData)
+        })
+      )
+      if (!cancelled) setStockInfo(next)
     }
-    
-    fetchStockInfo()
+    fetchStock()
+    return () => {
+      cancelled = true
+    }
   }, [wishlistItems])
 
-  const handleAddToCart = (itemId: number, productId: number) => {
-    // Immediately set visual state for animation and button loading
-    setIsAddingToCart(prev => ({ ...prev, [productId]: true }));
-    setAnimatingItems(prev => ({ ...prev, [itemId]: 'moving' }));
+  const inStockCount = useMemo(
+    () =>
+      wishlistItems.reduce((sum, item) => {
+        const stock = stockInfo[item.productId]
+        return stock === undefined || stock > 0 ? sum + 1 : sum
+      }, 0),
+    [wishlistItems, stockInfo]
+  )
 
-    // After animation, perform the actual logic
-    setTimeout(async () => {
-      const success = await addToCart(productId, 1);
-      if (success) {
-        // This will update the context, re-render the list, and the item will be gone.
-        await removeFromWishlist(productId);
+  function setItemBusy(id: number, state: ItemBusy) {
+    setBusy((prev) => {
+      const next = { ...prev }
+      if (state === null) delete next[id]
+      else next[id] = state
+      return next
+    })
+  }
+
+  async function handleAddToCart(item: WishlistItem) {
+    setItemBusy(item.id, "moving")
+    try {
+      const ok = await addToCart(item.productId, 1)
+      if (ok) {
+        setItemBusy(item.id, "added")
+        setAnnouncement(`${item.product.name} added to cart`)
+        await new Promise((resolve) => setTimeout(resolve, 550))
+        await removeFromWishlist(item.productId)
       } else {
-        // If it fails, revert the visual state by removing the animation class
-        setAnimatingItems(prev => {
-          const newState = { ...prev };
-          delete newState[itemId];
-          return newState;
-        });
+        setItemBusy(item.id, null)
       }
-      // Always clean up the "adding to cart" status for the button
-      setIsAddingToCart(prev => ({ ...prev, [productId]: false }));
-    }, 700); // Duration matches the 'moving' animation
-  };
-
-  const handleRemoveFromWishlist = (itemId: number, productId: number) => {
-    // Start the exit animation
-    setAnimatingItems(prev => ({ ...prev, [itemId]: 'removing' }));
-
-    // After animation, call the removal function from the context
-    setTimeout(() => {
-      removeFromWishlist(productId);
-      // No need to clean up animatingItems state, as the component will be unmounted
-    }, 500); // Duration matches the 'removing' animation
-  };
-
-  const getStockStatus = (productId: number) => {
-    const stock = stockInfo[productId]
-    if (stock === undefined) return null 
-
-    if (stock <= 0) {
-      return <span className={`${styles.stockStatus} ${styles.stockOut}`}>Out of stock</span>
-    } else if (stock < 5) {
-      return <span className={`${styles.stockStatus} ${styles.stockLow}`}>Low stock: {stock} left</span>
-    } else {
-      return <span className={`${styles.stockStatus} ${styles.stockIn}`}>In stock</span>
+    } catch {
+      setItemBusy(item.id, null)
     }
   }
 
-  if (authLoading || wishlistLoading) {
-    return <LoadingSpinner overlay={true} message="Loading your wishlist..." />
+  async function handleRemove(item: WishlistItem) {
+    setItemBusy(item.id, "removing")
+    setAnnouncement(`${item.product.name} removed from wishlist`)
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 240))
+      await removeFromWishlist(item.productId)
+    } finally {
+      setItemBusy(item.id, null)
+    }
   }
-  
-  if (!user) {
-      return null
+
+  if (!user || authLoading || wishlistLoading) {
+    return (
+      <main className="flex flex-col gap-6">
+        <WishlistHeader savedCount={0} loading />
+        <SkeletonGrid />
+      </main>
+    )
   }
 
   if (wishlistItems.length === 0) {
     return (
-      <main className={styles.container}>
-        <div className={styles.emptyState}>
-          <h2 className={styles.emptyTitle}>Your Wishlist is a Blank Canvas</h2>
-          <p className={styles.emptyText}>
-            Fill it with beautiful items you love. Start exploring our collections and add your favorites here.
-          </p>
-          <Link href="/products" className={styles.browseLink}>
-            Find Your Favorites
-          </Link>
-        </div>
+      <main className="flex flex-col gap-6">
+        <WishlistHeader savedCount={0} />
+        <Card className="shadow-sm">
+          <CardContent className="flex flex-col items-center gap-5 p-10 text-center sm:p-16">
+            <span className="relative flex h-16 w-16 items-center justify-center rounded-full bg-muted text-muted-foreground">
+              <span
+                aria-hidden
+                className="absolute inset-0 rounded-full ring-1 ring-border"
+              />
+              <span
+                aria-hidden
+                className="absolute -inset-2 rounded-full ring-1 ring-border/40"
+              />
+              <Heart className="h-6 w-6" />
+              <Sparkles
+                aria-hidden
+                className="absolute -right-1 -top-1 h-4 w-4 text-amber-500"
+              />
+            </span>
+            <div className="flex max-w-sm flex-col gap-1.5">
+              <p className="text-base font-semibold text-foreground sm:text-lg">
+                Your wishlist is a blank canvas
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Save the pieces that catch your eye and come back when you’re ready to buy them.
+              </p>
+            </div>
+            <Button asChild size="sm" className="group/cta gap-1.5">
+              <Link href="/products">
+                <ShoppingBag className="h-4 w-4" />
+                Find your favourites
+                <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover/cta:translate-x-0.5" />
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
       </main>
     )
   }
 
   return (
-    <main className={styles.container}>
-      <div className={styles.header}>
-        <h1 className={styles.title}>Your Wishlist</h1>
-        <span className={styles.itemCount}>
-          {wishlistItems.length} {wishlistItems.length === 1 ? 'item' : 'items'}
-        </span>
+    <main className="flex flex-col gap-6">
+      <span aria-live="polite" className="sr-only">
+        {announcement}
+      </span>
+      <WishlistHeader savedCount={wishlistItems.length} />
+
+      {/* Stat strip */}
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
+        <StatTile icon={Heart} label="Saved" value={wishlistItems.length.toString()} />
+        <StatTile
+          icon={ShoppingCart}
+          label="Ready to order"
+          value={inStockCount.toString()}
+          tone={inStockCount > 0 ? "success" : "muted"}
+        />
+        <StatTile
+          icon={HeartCrack}
+          label="Out of stock"
+          value={(wishlistItems.length - inStockCount).toString()}
+          tone={wishlistItems.length - inStockCount > 0 ? "destructive" : "muted"}
+          className="col-span-2 lg:col-span-1"
+        />
       </div>
 
-      <div className={styles.grid}>
-        {wishlistItems.map((item) => {
-            const stock = stockInfo[item.productId]
-            const isOutOfStock = stock !== undefined && stock <= 0
-            const adding = isAddingToCart[item.productId]
-            const animationType = animatingItems[item.id]
+      <Card className="shadow-sm">
+        <CardHeader className="gap-1 p-4 sm:p-6">
+          <CardTitle>Your saved items</CardTitle>
+          <CardDescription>
+            Move favourites to your cart, or remove what you no longer need.
+          </CardDescription>
+        </CardHeader>
 
-            const getAnimationClass = () => {
-                if (!animationType) return '';
-                return animationType === 'moving' ? styles.cardMovingToCart : styles.cardRemoving;
-            }
+        <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
+          <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5">
+            {wishlistItems.map((item) => {
+              const stock = stockInfo[item.productId]
+              const stockKnown = typeof stock === "number"
+              const isOut = stockKnown && stock <= 0
+              const itemBusy = busy[item.id]
+              const isAdding = itemBusy === "moving"
+              const isAdded = itemBusy === "added"
+              const isRemoving = itemBusy === "removing"
+              const isBusy = isAdding || isAdded || isRemoving
+              const imageUrl = item.product.imageUrls?.[0]
 
-            return (
-                <div 
-                    key={item.id} 
-                    className={`${styles.card} ${getAnimationClass()}`}
+              const buttonLabel = isAdded
+                ? "Added"
+                : isAdding
+                ? "Adding…"
+                : isOut
+                ? "Sold out"
+                : "Add to cart"
+
+              return (
+                <li
+                  key={item.id}
+                  className={cn(
+                    "group/card flex flex-col overflow-hidden rounded-lg border border-border bg-card transition-[opacity,transform,box-shadow,border-color] duration-300 ease-out",
+                    "hover:-translate-y-0.5 hover:border-foreground/20 hover:shadow-md",
+                    "focus-within:border-foreground/20 focus-within:shadow-md",
+                    isAdded && "border-emerald-500/40 shadow-md ring-1 ring-emerald-500/15",
+                    isRemoving && "pointer-events-none scale-[0.96] opacity-0",
+                    isAdding && !isAdded && "pointer-events-none"
+                  )}
                 >
-                    <div className={styles.imageWrapper}>
-                        <Image
-                        src={item.product.imageUrls[0] || '/placeholder.png'}
+                  <Link
+                    href={`/products/${item.product.id}`}
+                    className="relative block aspect-square w-full overflow-hidden bg-muted/40"
+                  >
+                    {imageUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={imageUrl}
                         alt={item.product.name}
-                        fill
-                        className={styles.image}
-                        />
-                    </div>
-                    <div className={styles.cardContent}>
-                        <div className={styles.productHeader}>
-                            <h3 className={styles.productName}>{item.product.name}</h3>
-                            <div className={styles.removeBtn}>
-                                <DeleteButton
-                                    onClick={() => handleRemoveFromWishlist(item.id, item.productId)}
-                                    disabled={!!animationType}
-                                    size="small"
-                                    ariaLabel="Remove from wishlist"
-                                />
-                            </div>
-                        </div>
-                        <p className={styles.productPrice}>₹{item.product.price.toFixed(2)}</p>
-                        {getStockStatus(item.productId)}
-                        <div className={styles.actions}>
-                        <button
-                            onClick={() => handleAddToCart(item.id, item.productId)}
-                            disabled={adding || isOutOfStock || !!animationType}
-                            className={`${styles.addToCartBtn} ${isOutOfStock ? styles.disabled : styles.primary}`}
-                        >
-                            {adding ? (
-                                <>
-                                    <div className={styles.spinner}></div>
-                                    <span>Adding...</span>
-                                </>
-                            ) : isOutOfStock ? 'Out of Stock' : 'Add to Cart'
-                            }
-                        </button>
-                        </div>
-                    </div>
-                </div>
-            )
-        })}
-      </div>
+                        loading="lazy"
+                        className={cn(
+                          "h-full w-full object-cover transition-transform duration-500 ease-out",
+                          "group-hover/card:scale-[1.04]",
+                          isAdded && "scale-[1.06]"
+                        )}
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+                        <PackageX className="h-6 w-6" />
+                      </div>
+                    )}
 
-      <div className={styles.browseMoreContainer}>
-        <Link href="/products" className={styles.browseLink}>
-          Explore More Products
-        </Link>
-      </div>
+                    {/* Subtle top gradient for badge legibility */}
+                    <div
+                      aria-hidden
+                      className="pointer-events-none absolute inset-x-0 top-0 h-14 bg-gradient-to-b from-black/15 to-transparent"
+                    />
+
+                    {/* Subtle bottom gradient on hover for action feedback */}
+                    <div
+                      aria-hidden
+                      className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/20 to-transparent opacity-0 transition-opacity duration-300 group-hover/card:opacity-100"
+                    />
+
+                    {/* Top-right remove */}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        handleRemove(item)
+                      }}
+                      aria-label="Remove from wishlist"
+                      disabled={isBusy}
+                      className={cn(
+                        "absolute right-2 top-2 inline-flex h-8 w-8 items-center justify-center rounded-full border bg-background/90 text-muted-foreground shadow-sm backdrop-blur",
+                        "transition-all duration-200",
+                        "opacity-90 hover:scale-105 hover:bg-background hover:text-destructive hover:opacity-100",
+                        "focus-visible:outline-none focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ring/40",
+                        "disabled:opacity-50"
+                      )}
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+
+                    {/* Stock badge overlay */}
+                    {stockKnown && (
+                      <div className="absolute left-2 top-2">
+                        <StockBadge stock={stock} />
+                      </div>
+                    )}
+
+                    {/* Success overlay */}
+                    {isAdded && (
+                      <div
+                        aria-hidden
+                        className="absolute inset-0 flex items-center justify-center bg-emerald-500/15 backdrop-blur-[2px] transition-opacity duration-200"
+                      >
+                        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg">
+                          <Check className="h-6 w-6" strokeWidth={3} />
+                        </span>
+                      </div>
+                    )}
+                  </Link>
+
+                  <div className="flex flex-1 flex-col gap-2 p-3 sm:p-4">
+                    <div className="flex flex-col gap-1">
+                      <Link
+                        href={`/products/${item.product.id}`}
+                        className="line-clamp-2 text-sm font-medium leading-snug text-foreground transition-colors hover:text-foreground hover:underline"
+                      >
+                        {item.product.name}
+                      </Link>
+                      {item.product.category?.name && (
+                        <p className="truncate text-[11px] uppercase tracking-wide text-muted-foreground">
+                          {item.product.category.name}
+                        </p>
+                      )}
+                    </div>
+
+                    <p className="mt-auto text-sm font-semibold tabular-nums text-foreground sm:text-base">
+                      {formatCurrency(item.product.price)}
+                    </p>
+
+                    <div className="flex items-center gap-1.5">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant={isOut ? "secondary" : isAdded ? "secondary" : "default"}
+                        disabled={isOut || isBusy}
+                        onClick={() => handleAddToCart(item)}
+                        className={cn(
+                          "flex-1 gap-1.5 transition-colors",
+                          isAdded &&
+                            "bg-emerald-500/10 text-emerald-700 hover:bg-emerald-500/15 dark:text-emerald-400"
+                        )}
+                      >
+                        {isAdding ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : isAdded ? (
+                          <Check className="h-3.5 w-3.5" />
+                        ) : (
+                          <ShoppingCart className="h-3.5 w-3.5" />
+                        )}
+                        <span className="truncate">{buttonLabel}</span>
+                      </Button>
+                      <Button
+                        type="button"
+                        size="icon-sm"
+                        variant="ghost"
+                        onClick={() => handleRemove(item)}
+                        disabled={isBusy}
+                        aria-label="Remove from wishlist"
+                        className="text-muted-foreground transition-all hover:bg-destructive/10 hover:text-destructive active:scale-90"
+                      >
+                        {isRemoving ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <Trash2 className="h-3.5 w-3.5" />
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                </li>
+              )
+            })}
+          </ul>
+        </CardContent>
+      </Card>
     </main>
+  )
+}
+
+function WishlistHeader({
+  savedCount,
+  loading,
+}: {
+  savedCount: number
+  loading?: boolean
+}) {
+  return (
+    <header className="flex items-end justify-between gap-3">
+      <div className="flex min-w-0 flex-col gap-1">
+        <p className="text-xs text-muted-foreground sm:text-sm">Saved</p>
+        <h1 className="flex flex-wrap items-center gap-2 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+          Your wishlist
+          {!loading && savedCount > 0 && (
+            <Badge variant="secondary" className="rounded-full">
+              {savedCount} item{savedCount === 1 ? "" : "s"}
+            </Badge>
+          )}
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          Pieces you’ve saved for later. Move them into your cart whenever you’re ready.
+        </p>
+      </div>
+      <Button asChild variant="outline" size="sm" className="shrink-0 gap-1.5">
+        <Link href="/products" aria-label="Browse products">
+          <ShoppingBag className="h-4 w-4" />
+          <span className="hidden sm:inline">Browse products</span>
+        </Link>
+      </Button>
+    </header>
+  )
+}
+
+function StatTile({
+  icon: Icon,
+  label,
+  value,
+  tone = "default",
+  className,
+}: {
+  icon: typeof Heart
+  label: string
+  value: string
+  tone?: "default" | "success" | "destructive" | "muted"
+  className?: string
+}) {
+  const toneStyles =
+    tone === "destructive"
+      ? "bg-destructive/10 text-destructive"
+      : tone === "success"
+      ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+      : tone === "muted"
+      ? "bg-muted text-muted-foreground"
+      : "bg-muted/50 text-foreground border"
+
+  return (
+    <Card className={cn("shadow-sm transition-shadow duration-200 hover:shadow-md", className)}>
+      <CardContent className="flex items-center gap-3 p-3 sm:gap-4 sm:p-4">
+        <span
+          className={cn(
+            "flex h-9 w-9 shrink-0 items-center justify-center rounded-md transition-colors duration-200 sm:h-10 sm:w-10",
+            toneStyles
+          )}
+        >
+          <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
+        </span>
+        <div className="flex min-w-0 flex-col">
+          <span className="truncate text-[10px] font-medium uppercase tracking-wide text-muted-foreground sm:text-xs">
+            {label}
+          </span>
+          <span className="truncate text-base font-semibold tabular-nums tracking-tight text-foreground sm:text-lg">
+            {value}
+          </span>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+function StockBadge({ stock }: { stock: number }) {
+  if (stock <= 0) {
+    return (
+      <Badge className="gap-1 border-transparent bg-destructive/85 text-white shadow-sm backdrop-blur hover:bg-destructive/90">
+        Out of stock
+      </Badge>
+    )
+  }
+  if (stock > 0 && stock <= 5) {
+    return (
+      <Badge className="gap-1 border-transparent bg-amber-500/90 text-white shadow-sm backdrop-blur hover:bg-amber-500">
+        Only {stock} left
+      </Badge>
+    )
+  }
+  return (
+    <Badge className="gap-1 border-transparent bg-background/90 text-foreground shadow-sm backdrop-blur hover:bg-background">
+      In stock
+    </Badge>
+  )
+}
+
+function SkeletonGrid() {
+  return (
+    <Card className="shadow-sm">
+      <CardHeader className="gap-1 p-4 sm:p-6">
+        <CardTitle>Your saved items</CardTitle>
+        <CardDescription>Loading your wishlist…</CardDescription>
+      </CardHeader>
+      <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
+        <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <li
+              key={i}
+              className="flex flex-col overflow-hidden rounded-lg border bg-card"
+            >
+              <div className="aspect-square w-full animate-pulse bg-muted/60" />
+              <div className="flex flex-col gap-2 p-3 sm:p-4">
+                <div className="h-3.5 w-3/4 animate-pulse rounded bg-muted/70" />
+                <div className="h-3 w-1/2 animate-pulse rounded bg-muted/60" />
+                <div className="mt-2 h-8 w-full animate-pulse rounded bg-muted/60" />
+              </div>
+            </li>
+          ))}
+        </ul>
+      </CardContent>
+    </Card>
   )
 }

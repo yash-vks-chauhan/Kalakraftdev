@@ -1,16 +1,13 @@
-// File: app/checkout/page.tsx
+import { Suspense } from "react"
+import { Loader2 } from "lucide-react"
 
-import { Suspense } from 'react'
-import CheckoutClient from './CheckoutClient'
-import styles from './checkout.module.css'
+import CheckoutClient from "./CheckoutClient"
 
 function CheckoutFallback() {
   return (
-    <main className={styles.centeredContainer}>
-      <p className={styles.loadingText}>
-        <span className={styles.loadingSpinner}></span>
-        Loading checkout...
-      </p>
+    <main className="mx-auto flex min-h-[60vh] max-w-md flex-col items-center justify-center gap-3 px-4 text-sm text-muted-foreground">
+      <Loader2 className="h-5 w-5 animate-spin" />
+      Loading checkout…
     </main>
   )
 }

@@ -23,15 +23,25 @@ import { LucideIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
 import type { User as AuthUser } from "../../contexts/AuthContext"
+import { useCart } from "../../contexts/CartContext"
+import { useWishlist } from "../../contexts/WishlistContext"
 
-type NavItem = { href: string; label: string; icon: LucideIcon; exact?: boolean }
+type NavKey = "cart" | "wishlist"
+type NavItem = {
+  href: string
+  label: string
+  icon: LucideIcon
+  exact?: boolean
+  countKey?: NavKey
+}
 
 const userNav: NavItem[] = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard, exact: true },
   { href: "/dashboard/orders", label: "Orders", icon: Package },
-  { href: "/dashboard/wishlist", label: "Wishlist", icon: Heart },
-  { href: "/dashboard/cart", label: "Cart", icon: ShoppingCart },
+  { href: "/dashboard/wishlist", label: "Wishlist", icon: Heart, countKey: "wishlist" },
+  { href: "/dashboard/cart", label: "Cart", icon: ShoppingCart, countKey: "cart" },
   { href: "/dashboard/support", label: "Support", icon: LifeBuoy },
   { href: "/dashboard/profile", label: "Profile", icon: User },
 ]
@@ -68,12 +78,18 @@ function isActive(pathname: string, href: string, exact?: boolean) {
   return pathname === href || pathname.startsWith(href + "/")
 }
 
-function NavGroup({ label, items, pathname, onNavigate, collapsed }: {
+function formatBadgeCount(count: number) {
+  if (count <= 0) return null
+  return count > 99 ? "99+" : count.toString()
+}
+
+function NavGroup({ label, items, pathname, onNavigate, collapsed, counts }: {
   label?: string
   items: NavItem[]
   pathname: string
   onNavigate?: () => void
   collapsed?: boolean
+  counts?: Partial<Record<NavKey, number>>
 }) {
   return (
     <div className="flex flex-col gap-0.5">
@@ -102,13 +118,23 @@ function NavGroup({ label, items, pathname, onNavigate, collapsed }: {
       {items.map((item) => {
         const active = isActive(pathname, item.href, item.exact)
         const Icon = item.icon
+        const rawCount = item.countKey ? counts?.[item.countKey] ?? 0 : 0
+        const countLabel = formatBadgeCount(rawCount)
+        const titleWithCount =
+          countLabel && collapsed ? `${item.label} (${rawCount})` : item.label
         return (
           <Link
             key={item.href}
             href={item.href}
             onClick={onNavigate}
-            title={collapsed ? item.label : undefined}
-            aria-label={collapsed ? item.label : undefined}
+            title={collapsed ? titleWithCount : undefined}
+            aria-label={
+              collapsed && countLabel
+                ? `${item.label}, ${rawCount} ${rawCount === 1 ? "item" : "items"}`
+                : collapsed
+                ? item.label
+                : undefined
+            }
             className={cn(
               "group relative flex h-10 items-center overflow-hidden rounded-md whitespace-nowrap transition-colors duration-150",
               active
@@ -116,13 +142,27 @@ function NavGroup({ label, items, pathname, onNavigate, collapsed }: {
                 : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
             )}
           >
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center">
+            <span className="relative flex h-10 w-10 shrink-0 items-center justify-center">
               <Icon
                 className={cn(
-                  "h-[18px] w-[18px]",
+                  "h-[18px] w-[18px] transition-colors",
                   active ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"
                 )}
               />
+              {countLabel && (
+                <span
+                  aria-hidden
+                  className={cn(
+                    "pointer-events-none absolute right-1 top-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full border border-background bg-foreground px-1 text-[9px] font-semibold leading-none tabular-nums text-background shadow-sm",
+                    "transition-[opacity,transform] duration-[200ms] ease-[cubic-bezier(0.32,0.72,0,1)]",
+                    collapsed
+                      ? "opacity-100 scale-100"
+                      : "opacity-0 scale-75"
+                  )}
+                >
+                  {countLabel}
+                </span>
+              )}
             </span>
             <span
               className={cn(
@@ -133,6 +173,19 @@ function NavGroup({ label, items, pathname, onNavigate, collapsed }: {
             >
               {item.label}
             </span>
+            {countLabel && (
+              <Badge
+                variant={active ? "default" : "secondary"}
+                aria-hidden
+                className={cn(
+                  "mr-2 h-5 min-w-[20px] justify-center rounded-full px-1.5 text-[10px] font-medium tabular-nums",
+                  LABEL_FADE,
+                  collapsed ? LABEL_HIDDEN : LABEL_VISIBLE
+                )}
+              >
+                {countLabel}
+              </Badge>
+            )}
           </Link>
         )
       })}
@@ -157,6 +210,12 @@ export function SidebarNav({
 }: SidebarNavProps) {
   const pathname = usePathname() ?? "/dashboard"
   const isAdmin = user.role === "admin"
+  const { cartItems } = useCart()
+  const { wishlistItems } = useWishlist()
+  const userCounts: Partial<Record<NavKey, number>> = {
+    cart: cartItems.reduce((sum, item) => sum + item.quantity, 0),
+    wishlist: wishlistItems.length,
+  }
 
   return (
     <div className="flex h-full flex-col">
@@ -205,6 +264,7 @@ export function SidebarNav({
           pathname={pathname}
           onNavigate={onNavigate}
           collapsed={collapsed}
+          counts={userCounts}
         />
         {isAdmin && (
           <NavGroup
