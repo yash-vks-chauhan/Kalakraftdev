@@ -209,30 +209,10 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
     const provider = buildGoogleProvider()
 
     try {
-      let result: UserCredential
-      try {
-        result = await signInWithPopup(auth, provider)
-      } catch (popupError: any) {
-        if (shouldFallbackToRedirect(popupError)) {
-          try {
-            await signInWithRedirect(auth, provider)
-            return undefined
-          } catch (redirectError: any) {
-            const friendly = getFriendlyAuthError(redirectError)
-            setError(friendly)
-            throw redirectError
-          }
-        }
-
-        const friendly = getFriendlyAuthError(popupError)
-        setError(friendly)
-        throw popupError
-      }
-
-      await completeServerLogin(result.user)
-      return result
-    } catch (serverError: any) {
-      const friendly = getFriendlyServerAuthError(serverError)
+      await signInWithRedirect(auth, provider)
+      return undefined
+    } catch (redirectError: any) {
+      const friendly = getFriendlyAuthError(redirectError)
       setError(friendly)
       await signOutAfterServerLoginFailure()
       throw new Error(friendly)
