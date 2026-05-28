@@ -29,7 +29,10 @@ function shouldSkipSecurityMiddleware(pathname: string): boolean {
 function applySharedHeaders(response: NextResponse, request: NextRequest) {
   const pathname = request.nextUrl.pathname
 
-  response.headers.set('Cross-Origin-Opener-Policy', 'same-origin-allow-popups')
+  response.headers.set(
+    'Cross-Origin-Opener-Policy',
+    pathname.startsWith('/auth') ? 'unsafe-none' : 'same-origin-allow-popups'
+  )
   response.headers.set('Cross-Origin-Resource-Policy', 'same-site')
   response.headers.set('Origin-Agent-Cluster', '?1')
   response.headers.set('X-DNS-Prefetch-Control', 'off')
