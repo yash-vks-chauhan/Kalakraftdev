@@ -1,4 +1,24 @@
-// File: app/dashboard/profile/page.tsx
+"use client"
+
+import { useState, FormEvent, useEffect, useCallback } from "react"
+import { useRouter } from "next/navigation"
+import {
+  CheckCircle2,
+  AlertCircle,
+  Upload,
+  Plus,
+  Trash2,
+  Loader2,
+  Check,
+  Pencil,
+} from "lucide-react"
+
+import { useAuth } from "../../contexts/AuthContext"
+import { cn } from "@/lib/utils"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 
 interface Address {
   id: number
@@ -11,155 +31,107 @@ interface Address {
   createdAt: string
 }
 
-'use client'
+const presetAvatars = [
+  { name: "Robot", path: "/avatars/robot.svg" },
+  { name: "Fox", path: "/avatars/fox.svg" },
+  { name: "Owl", path: "/avatars/owl.svg" },
+]
 
-import { useState, FormEvent, useEffect, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-import { useAuth } from '../../contexts/AuthContext'
-import { useIsMobile } from '../../../lib/utils'
-import styles from './profile.module.css'
-import MobileProfileSettings from './MobileProfileSettings'
+function initialsOf(name?: string) {
+  if (!name) return "?"
+  return name
+    .split(" ")
+    .map((p) => p[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join("")
+    .toUpperCase()
+}
 
-// Profile Skeleton Component
-const ProfileSkeleton = () => (
-  <main className={styles.profileContainer}>
-    {/* Profile Header Skeleton */}
-    <div className={styles.profileHeader}>
-      <div className={styles.avatarSection}>
-        <div className={`${styles.skeletonAvatar} ${styles.skeletonShimmer}`}></div>
-        <div className={styles.userInfo}>
-          <div className={`${styles.skeletonUserName} ${styles.skeletonShimmer}`}></div>
-          <div className={`${styles.skeletonUserEmail} ${styles.skeletonShimmer}`}></div>
-          <div className={`${styles.skeletonUserRole} ${styles.skeletonShimmer}`}></div>
-        </div>
-      </div>
+function formatTime(seconds: number) {
+  const minutes = Math.floor(seconds / 60)
+  const remaining = seconds % 60
+  return `${minutes}:${remaining.toString().padStart(2, "0")}`
+}
+
+function SectionHeader({ title, description }: { title: string; description?: string }) {
+  return (
+    <div className="flex flex-col gap-1">
+      <h2 className="text-base font-semibold text-foreground">{title}</h2>
+      {description && <p className="text-sm text-muted-foreground">{description}</p>}
     </div>
+  )
+}
 
-    {/* Profile Form Skeleton */}
-    <div className={styles.profileContent}>
-      <div className={styles.profileSection}>
-        <div className={`${styles.skeletonSectionTitle} ${styles.skeletonShimmer}`}></div>
-        
-        {/* Basic Info Form Skeleton */}
-        <div className={styles.formGrid}>
-          <div className={styles.inputGroup}>
-            <div className={`${styles.skeletonLabel} ${styles.skeletonShimmer}`}></div>
-            <div className={`${styles.skeletonInput} ${styles.skeletonShimmer}`}></div>
-          </div>
-          <div className={styles.inputGroup}>
-            <div className={`${styles.skeletonLabel} ${styles.skeletonShimmer}`}></div>
-            <div className={`${styles.skeletonInput} ${styles.skeletonShimmer}`}></div>
-          </div>
-          <div className={styles.inputGroup}>
-            <div className={`${styles.skeletonLabel} ${styles.skeletonShimmer}`}></div>
-            <div className={`${styles.skeletonInput} ${styles.skeletonShimmer}`}></div>
-          </div>
-        </div>
-        
-        {/* Avatar Selection Skeleton */}
-        <div className={styles.avatarSelection}>
-          <div className={`${styles.skeletonLabel} ${styles.skeletonShimmer}`}></div>
-          <div className={styles.avatarGrid}>
-            {[1, 2, 3, 4, 5, 6].map((index) => (
-              <div key={index} className={`${styles.skeletonAvatarOption} ${styles.skeletonShimmer}`}></div>
-            ))}
-          </div>
-        </div>
-        
-        {/* Save Button Skeleton */}
-        <div className={`${styles.skeletonButton} ${styles.skeletonShimmer}`}></div>
-      </div>
-
-      {/* Addresses Section Skeleton */}
-      <div className={styles.profileSection}>
-        <div className={`${styles.skeletonSectionTitle} ${styles.skeletonShimmer}`}></div>
-        
-        <div className={styles.addressesList}>
-          {[1, 2].map((index) => (
-            <div key={index} className={styles.addressCard}>
-              <div className={`${styles.skeletonAddressText} ${styles.skeletonShimmer}`}></div>
-              <div className={`${styles.skeletonAddressText} ${styles.skeletonShimmer}`}></div>
-              <div className={styles.addressActions}>
-                <div className={`${styles.skeletonAddressButton} ${styles.skeletonShimmer}`}></div>
-                <div className={`${styles.skeletonAddressButton} ${styles.skeletonShimmer}`}></div>
-              </div>
-            </div>
-          ))}
-        </div>
-        
-        <div className={`${styles.skeletonButton} ${styles.skeletonShimmer}`}></div>
-      </div>
+function Banner({ kind, message }: { kind: "success" | "error"; message: string }) {
+  const Icon = kind === "success" ? CheckCircle2 : AlertCircle
+  return (
+    <div
+      role={kind === "error" ? "alert" : "status"}
+      className={cn(
+        "flex items-start gap-3 rounded-lg border p-3 text-sm",
+        kind === "success"
+          ? "border-emerald-200 bg-emerald-50 text-emerald-900"
+          : "border-destructive/30 bg-destructive/10 text-destructive"
+      )}
+    >
+      <Icon className="mt-0.5 h-4 w-4 shrink-0" />
+      <p className="leading-snug">{message}</p>
     </div>
-  </main>
-);
-import Image from 'next/image'
+  )
+}
 
 export default function ProfilePage() {
   const router = useRouter()
-  const { user, token, logout, fetchProfile, loading: authLoading } = useAuth()
-  
-  const isMobile = useIsMobile()
-  const [forceDesktopView, setForceDesktopView] = useState(false)
-  const [isMounted, setIsMounted] = useState(false)
+  const { user, token, fetchProfile, loading: authLoading } = useAuth()
 
-  // Core form state - MUST be declared before any conditional returns
-  const [fullName, setFullName] = useState<string>('')
-  const [avatarUrl, setAvatarUrl] = useState<string>('')
+  const [fullName, setFullName] = useState("")
+  const [avatarUrl, setAvatarUrl] = useState("")
+  const [savingProfile, setSavingProfile] = useState(false)
 
-  // Email‐change state
-  const [newEmail, setNewEmail] = useState<string>('')
-  const [emailOtp, setEmailOtp] = useState<string>('')
-  const [otpSent, setOtpSent] = useState<boolean>(false)
-  const [confirming, setConfirming] = useState<boolean>(false)
+  const [newEmail, setNewEmail] = useState("")
+  const [emailOtp, setEmailOtp] = useState("")
+  const [otpSent, setOtpSent] = useState(false)
+  const [confirming, setConfirming] = useState(false)
+  const [emailFormOpen, setEmailFormOpen] = useState(false)
 
   const [message, setMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  // ── Address book state ──
   const [addresses, setAddresses] = useState<Address[]>([])
-  const [addrLoading, setAddrLoading] = useState<boolean>(true)
-  const [addrError, setAddrError] = useState<string|null>(null)
-
-  // Fields for "Add new" form:
+  const [addrLoading, setAddrLoading] = useState(true)
+  const [addrError, setAddrError] = useState<string | null>(null)
   const [newAddr, setNewAddr] = useState({
-    label:       '',
-    line1:       '',
-    line2:       '',
-    city:        '',
-    postalCode:  '',
-    country:     '',
+    label: "",
+    line1: "",
+    line2: "",
+    city: "",
+    postalCode: "",
+    country: "",
   })
+  const [savingAddress, setSavingAddress] = useState(false)
+  const [addAddressOpen, setAddAddressOpen] = useState(false)
 
-  // OTP timers (in seconds)
   const [emailOtpExpiresAt, setEmailOtpExpiresAt] = useState<number | null>(null)
-  const [emailRemaining, setEmailRemaining] = useState<number>(0)
-  const [passwordOtpExpiresAt, setPasswordOtpExpiresAt] = useState<number | null>(null);
-  const [passwordRemaining, setPasswordRemaining] = useState<number>(0);
+  const [emailRemaining, setEmailRemaining] = useState(0)
+  const [passwordOtpExpiresAt, setPasswordOtpExpiresAt] = useState<number | null>(null)
+  const [passwordRemaining, setPasswordRemaining] = useState(0)
 
-  // Change password state
-  const [step, setStep] = useState<'send' | 'verify'>('send')
-  const [loading, setLoading] = useState<boolean>(false)
-  const [otp, setOtp] = useState<string>('')
-  const [newPassword, setNewPassword] = useState<string>('')
-  const [confirmPassword, setConfirmPassword] = useState<string>('')
+  const [step, setStep] = useState<"send" | "verify">("send")
+  const [loading, setLoading] = useState(false)
+  const [otp, setOtp] = useState("")
+  const [newPassword, setNewPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const [pwOpen, setPwOpen] = useState(false)
 
-  // Add state for visible orders
-  const [visibleOrderCount, setVisibleOrderCount] = useState(5);
-  const [showMoreLoading, setShowMoreLoading] = useState(false);
-
-  // Add a loading state
-  const [isLoading, setIsLoading] = useState<boolean>(true)
-
-  // Memoized function to load addresses - MUST be before conditional returns
   const loadAddresses = useCallback(async () => {
-    if (!token) return;
+    if (!token) return
     try {
-      const res = await fetch('/api/addresses', {
-        headers: { Authorization: `Bearer ${token}` }
+      const res = await fetch("/api/addresses", {
+        headers: { Authorization: `Bearer ${token}` },
       })
       const json = await res.json()
-      if (!res.ok) throw new Error(json.error || 'Failed to load addresses')
+      if (!res.ok) throw new Error(json.error || "Failed to load addresses")
       setAddresses(json.addresses)
     } catch (err: any) {
       setAddrError(err.message)
@@ -168,46 +140,91 @@ export default function ProfilePage() {
     }
   }, [token])
 
-  // Format time helper function
-  const formatTime = (seconds: number): string => {
-    const minutes = Math.floor(seconds / 60)
-    const remainingSeconds = seconds % 60
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
+  useEffect(() => {
+    if (authLoading) return
+    if (!token) {
+      router.replace("/auth/login")
+      return
+    }
+    loadAddresses()
+  }, [authLoading, token, loadAddresses, router])
+
+  useEffect(() => {
+    if (!user) return
+    setFullName(user.fullName)
+    setAvatarUrl(user.avatarUrl || "")
+  }, [user])
+
+  useEffect(() => {
+    if (!emailOtpExpiresAt) return
+    const interval = setInterval(() => {
+      const remaining = Math.max(0, Math.floor((emailOtpExpiresAt - Date.now()) / 1000))
+      setEmailRemaining(remaining)
+      if (remaining === 0) {
+        setOtpSent(false)
+        setEmailOtpExpiresAt(null)
+        setEmailOtp("")
+      }
+    }, 1000)
+    return () => clearInterval(interval)
+  }, [emailOtpExpiresAt])
+
+  useEffect(() => {
+    if (!passwordOtpExpiresAt) return
+    const interval = setInterval(() => {
+      const remaining = Math.max(0, Math.floor((passwordOtpExpiresAt - Date.now()) / 1000))
+      setPasswordRemaining(remaining)
+      if (remaining === 0) {
+        setStep("send")
+        setPasswordOtpExpiresAt(null)
+        setOtp("")
+        setError("OTP for password change has expired. Please request a new one.")
+      }
+    }, 1000)
+    return () => clearInterval(interval)
+  }, [passwordOtpExpiresAt])
+
+  const clearStatus = () => {
+    setMessage(null)
+    setError(null)
   }
 
-  // Memoize handlers to prevent unnecessary re-renders
-  const handleProfileSubmit = useCallback(async (e: FormEvent) => {
-    e.preventDefault()
-    setError(null)
-    setMessage(null)
-    try {
-      const res = await fetch('/api/auth/update-profile', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ fullName, avatarUrl }),
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error)
-      setMessage('Profile updated successfully')
-      setFullName(data.user.fullName)
-      setAvatarUrl(data.user.avatarUrl || '')
-      await fetchProfile()
-    } catch (err: any) {
-      setError(err.message)
-    }
-  }, [token, fullName, avatarUrl, fetchProfile])
+  const handleProfileSubmit = useCallback(
+    async (e: FormEvent) => {
+      e.preventDefault()
+      clearStatus()
+      setSavingProfile(true)
+      try {
+        const res = await fetch("/api/auth/update-profile", {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ fullName, avatarUrl }),
+        })
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.error)
+        setMessage("Profile updated successfully.")
+        setFullName(data.user.fullName)
+        setAvatarUrl(data.user.avatarUrl || "")
+        await fetchProfile()
+      } catch (err: any) {
+        setError(err.message)
+      } finally {
+        setSavingProfile(false)
+      }
+    },
+    [token, fullName, avatarUrl, fetchProfile]
+  )
 
   const handleRequestEmailOtp = useCallback(async () => {
-    setError(null)
-    setMessage(null)
+    clearStatus()
     try {
-      const res = await fetch('/api/auth/request-email-change', {
-        method: 'POST',
+      const res = await fetch("/api/auth/request-email-change", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ newEmail }),
@@ -215,39 +232,35 @@ export default function ProfilePage() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
       setOtpSent(true)
-      const expires = Date.now() + 5 * 60 * 1000 // 5 minutes
-      setEmailOtpExpiresAt(expires)
-      setEmailRemaining(300) // 5 minutes in seconds
-      setMessage('OTP sent to your current email address')
+      setEmailOtpExpiresAt(Date.now() + 5 * 60 * 1000)
+      setEmailRemaining(300)
+      setMessage("OTP sent to your current email address.")
     } catch (err: any) {
       setError(err.message)
     }
   }, [token, newEmail])
 
   const handleConfirmEmailChange = useCallback(async () => {
-    setError(null)
-    setMessage(null)
+    clearStatus()
     setConfirming(true)
     try {
-      const res = await fetch('/api/auth/confirm-email-change', {
-        method: 'POST',
+      const res = await fetch("/api/auth/confirm-email-change", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          Authorization: token ? `Bearer ${token}` : '',
+          "Content-Type": "application/json",
+          Authorization: token ? `Bearer ${token}` : "",
         },
         body: JSON.stringify({ newEmail, otp: emailOtp }),
       })
       const data = await res.json()
-      setConfirming(false)
-      if (!res.ok) {
-        throw new Error(data.error || 'Failed to change email')
-      }
-      setMessage(`Email changed successfully to ${data.user.email}`)
-      setNewEmail('')
-      setEmailOtp('')
+      if (!res.ok) throw new Error(data.error || "Failed to change email")
+      setMessage(`Email changed to ${data.user.email}.`)
+      setNewEmail("")
+      setEmailOtp("")
       setOtpSent(false)
       setEmailOtpExpiresAt(null)
       setEmailRemaining(0)
+      setEmailFormOpen(false)
       await fetchProfile()
     } catch (err: any) {
       setError(err.message)
@@ -256,26 +269,23 @@ export default function ProfilePage() {
     }
   }, [token, newEmail, emailOtp, fetchProfile])
 
-  // Change password handlers - MUST be before conditional returns
-  const sendOtp = useCallback(async () => {
-    setError(null)
-    setMessage(null)
+  const sendPasswordOtp = useCallback(async () => {
+    clearStatus()
     setLoading(true)
     try {
-      const res = await fetch('/api/auth/request-password-change', {
-        method: 'POST',
+      const res = await fetch("/api/auth/request-password-change", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
-      setStep('verify')
-      const expires = Date.now() + 5 * 60 * 1000 // 5 minutes
-      setPasswordOtpExpiresAt(expires)
-      setPasswordRemaining(300) // 5 minutes in seconds
-      setMessage('OTP sent to your email')
+      setStep("verify")
+      setPasswordOtpExpiresAt(Date.now() + 5 * 60 * 1000)
+      setPasswordRemaining(300)
+      setMessage("OTP sent to your email.")
     } catch (err: any) {
       setError(err.message)
     } finally {
@@ -283,504 +293,561 @@ export default function ProfilePage() {
     }
   }, [token])
 
-  const handleVerify = useCallback(async (e: FormEvent) => {
+  const handleVerifyPassword = useCallback(
+    async (e: FormEvent) => {
+      e.preventDefault()
+      clearStatus()
+      setLoading(true)
+      try {
+        const res = await fetch("/api/auth/confirm-password-change", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ otp, newPassword, confirmPassword }),
+        })
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.error)
+        setMessage("Password updated successfully.")
+        setNewPassword("")
+        setConfirmPassword("")
+        setOtp("")
+        setStep("send")
+        setPwOpen(false)
+        await fetchProfile()
+      } catch (err: any) {
+        setError(err.message)
+      } finally {
+        setLoading(false)
+      }
+    },
+    [token, otp, newPassword, confirmPassword, fetchProfile]
+  )
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (!token) {
+      setError("You need to be logged in to upload an avatar.")
+      return
+    }
+    const form = new FormData()
+    form.append("file", file)
+    const res = await fetch("/api/uploads", {
+      method: "POST",
+      body: form,
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    const json = await res.json()
+    if (!res.ok) {
+      setError(json.error || "Failed to upload avatar")
+      return
+    }
+    setAvatarUrl(json.url)
+  }
+
+  const handleAddAddress = async (e: FormEvent) => {
     e.preventDefault()
-    setError(null)
-    setMessage(null)
-    setLoading(true)
+    setSavingAddress(true)
     try {
-      const res = await fetch('/api/auth/confirm-password-change', {
-        method: 'POST',
+      const res = await fetch("/api/addresses", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ otp, newPassword, confirmPassword }),
+        body: JSON.stringify(newAddr),
       })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error)
-      setMessage('Password updated successfully')
-      setNewPassword('')
-      setConfirmPassword('')
-      setOtp('')
-      setStep('send')
-      await fetchProfile()
+      const json = await res.json()
+      if (!res.ok) throw new Error(json.error || "Failed to save address")
+      setAddresses([json.address, ...addresses])
+      setNewAddr({ label: "", line1: "", line2: "", city: "", postalCode: "", country: "" })
+      setAddAddressOpen(false)
+      setMessage("Address saved.")
     } catch (err: any) {
       setError(err.message)
     } finally {
-      setLoading(false)
+      setSavingAddress(false)
     }
-  }, [token, otp, newPassword, confirmPassword, fetchProfile])
-
-  useEffect(() => {
-    setIsMounted(true)
-    if (typeof window !== 'undefined') {
-      const pref = localStorage.getItem('viewPreference')
-      if (pref === 'desktop') setForceDesktopView(true)
-    }
-  }, [])
-
-  // Single initialization effect with cleanup
-  useEffect(() => {
-    // Wait for AuthContext to finish loading before taking any action.
-    if (authLoading) return;
-
-    // Once auth is resolved, redirect if unauthenticated.
-    if (!token) {
-      router.replace('/auth/login');
-      return;
-    }
-
-    // Auth is ready and the user is authenticated – fetch addresses once.
-    (async () => {
-      setIsLoading(true);
-      try {
-        await loadAddresses();
-      } catch (error) {
-        console.error('Failed to load addresses:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    })();
-    // We intentionally exclude fetchProfile here to avoid an endless loop caused by toggling the auth loading state.
-  }, [authLoading, token, loadAddresses]);
-
-  // Timer effect for email OTP with cleanup
-  useEffect(() => {
-    if (!emailOtpExpiresAt) return;
-    
-    let mounted = true;
-    const interval = setInterval(() => {
-      if (!mounted) return;
-      
-      const now = Date.now()
-      const remaining = Math.max(0, Math.floor((emailOtpExpiresAt - now) / 1000))
-      setEmailRemaining(remaining)
-      
-      if (remaining === 0) {
-        setOtpSent(false)
-        setEmailOtpExpiresAt(null)
-        setEmailOtp('')
-      }
-    }, 1000)
-
-    return () => {
-      mounted = false;
-      clearInterval(interval)
-    }
-  }, [emailOtpExpiresAt])
-
-  // Timer effect for password OTP with cleanup
-  useEffect(() => {
-    if (!passwordOtpExpiresAt) return;
-    
-    let mounted = true;
-    const interval = setInterval(() => {
-      if (!mounted) return;
-      
-      const now = Date.now()
-      const remaining = Math.max(0, Math.floor((passwordOtpExpiresAt - now) / 1000))
-      setPasswordRemaining(remaining)
-      
-      if (remaining === 0) {
-        setStep('send')
-        setPasswordOtpExpiresAt(null)
-        setOtp('')
-        setError('OTP for password change has expired. Please request a new one.')
-      }
-    }, 1000)
-
-    return () => {
-      mounted = false;
-      clearInterval(interval)
-    }
-  }, [passwordOtpExpiresAt])
-
-  // Sync form data with user data - only when user changes
-  useEffect(() => {
-    if (!user || isLoading) return;
-    
-    setFullName(user.fullName)
-    setAvatarUrl(user.avatarUrl || '')
-  }, [user, isLoading])
-
-  // Prevent hydration mismatch by not rendering until mounted
-  if (!isMounted) {
-    return <ProfileSkeleton />
   }
 
-  const mobileView = isMobile && !forceDesktopView
-
-  // Return mobile version if in mobile view
-  if (mobileView) {
-    return <MobileProfileSettings />
+  const handleSetDefault = async (id: number) => {
+    await fetch("/api/auth/set-default-address", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ addressId: id }),
+    })
+    fetchProfile()
   }
 
-  if (isLoading) {
-    return <ProfileSkeleton />
+  const handleDeleteAddress = async (id: number) => {
+    if (!confirm("Delete this address?")) return
+    await fetch(`/api/addresses/${id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    setAddresses(addresses.filter((x) => x.id !== id))
   }
 
   if (!user) return null
 
   return (
-    <>
-      <div className={`${styles.loadingContainer} ${!isLoading ? styles.hidden : ''}`}>
-        <div className={styles.loader}>
-          <Image 
-            src="/images/loading.png" 
-            alt="Loading..."
-            width={60}
-            height={60}
-            priority
-          />
+    <div className="flex flex-col gap-10">
+      {/* Header */}
+      <header className="flex flex-col gap-2">
+        <p className="text-sm text-muted-foreground">Settings</p>
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+          Profile
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          Manage your personal details, security, and saved addresses.
+        </p>
+      </header>
+
+      {/* Status banners */}
+      {(message || error) && (
+        <div className="flex flex-col gap-2">
+          {message && <Banner kind="success" message={message} />}
+          {error && <Banner kind="error" message={error} />}
         </div>
-      </div>
-      
-      <main className={`${styles.profileContainer} ${!isLoading ? styles.visible : ''}`}>
-        <h1 className={styles.title}>Profile Settings</h1>
+      )}
 
-        {message && <p className={`${styles.message} ${styles.success}`}>{message}</p>}
-        {error && <p className={`${styles.message} ${styles.error}`}>{error}</p>}
+      {/* Identity */}
+      <section className="flex flex-col gap-5">
+        <SectionHeader
+          title="Identity"
+          description="Your name and avatar appear across the store."
+        />
 
-        {/* ===== Name & Avatar ===== */}
-        <section className={styles.section}>
-          <form onSubmit={handleProfileSubmit}>
-            <div className={styles.formGroup}>
-              <label htmlFor="fullName" className={styles.label}>Full Name</label>
-              <input 
-                id="fullName" 
-                type="text" 
-                value={fullName} 
-                onChange={e => setFullName(e.target.value)} 
-                className={styles.input}
-              />
-            </div>
+        <form onSubmit={handleProfileSubmit} className="flex flex-col gap-6 rounded-lg border bg-card p-6">
+          {/* Avatar block */}
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+            <Avatar className="h-20 w-20 border">
+              {avatarUrl && <AvatarImage src={avatarUrl} alt={fullName} />}
+              <AvatarFallback className="bg-secondary text-base font-medium text-foreground">
+                {initialsOf(fullName)}
+              </AvatarFallback>
+            </Avatar>
 
-            <div className={styles.avatarContainer}>
-              <p className={styles.label}>Avatar</p>
-              <img 
-                src={avatarUrl || '/avatars/robot.svg'} 
-                alt="Profile avatar" 
-                className={styles.avatar}
-              />
-            </div>
-
-            {/* Preset Avatar Options */}
-            <div className={styles.avatarOptions}>
-              {[
-                { name: 'Robot', path: '/avatars/robot.svg' },
-                { name: 'Fox', path: '/avatars/fox.svg' },
-                { name: 'Owl', path: '/avatars/owl.svg' }
-              ].map(avatar => (
-                <button
-                  key={avatar.name}
-                  type="button"
-                  onClick={() => setAvatarUrl(avatar.path)}
-                  className={`${styles.avatarOption} ${avatarUrl === avatar.path ? styles.selected : ''}`}
-                  title={`Select ${avatar.name} avatar`}
-                >
-                  <img src={avatar.path} alt={avatar.name} loading="lazy" />
-                </button>
-              ))}
-            </div>
-
-            {/* Custom Upload Option */}
-            <div>
-              <p className={styles.label}>Or upload custom:</p>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={async e => {
-                  const file = e.target.files?.[0]
-                  if (!file) return
-                  if (!token) {
-                    setError('You need to be logged in to upload an avatar.')
-                    return
-                  }
-                  const form = new FormData()
-                  form.append('file', file)
-                  const res = await fetch('/api/uploads', {
-                    method: 'POST',
-                    body: form,
-                    headers: { Authorization: `Bearer ${token}` },
-                  })
-                  const json = await res.json()
-                  if (!res.ok) {
-                    setError(json.error || 'Failed to upload avatar')
-                    return
-                  }
-                  setAvatarUrl(json.url)
-                }}
-                className={styles.input}
-              />
-            </div>
-
-            {/* ===== Email display & change ===== */}
-            <div className={styles.formGroup}>
-              <label htmlFor="email" className={styles.label}>Email</label>
-              <input 
-                id="email" 
-                type="email" 
-                value={user.email} 
-                readOnly 
-                className={`${styles.input} ${styles.disabled}`}
-              />
-            </div>
-
-            <details className={styles.section}>
-              <summary className={`${styles.label} ${styles.summaryWithArrow}`}>Change Email Address</summary>
-              <div className={styles.formGroup}>
-                <input 
-                  type="email" 
-                  placeholder="New email address" 
-                  value={newEmail} 
-                  onChange={e => setNewEmail(e.target.value)} 
-                  className={styles.input}
-                />
-                <div className={styles.formGroup}>
-                  <button 
-                    type="button" 
-                    onClick={handleRequestEmailOtp} 
-                    disabled={otpSent} 
-                    className={styles.button}
+            <div className="flex flex-col gap-3">
+              <p className="text-sm font-medium text-foreground">Avatar</p>
+              <div className="flex flex-wrap items-center gap-2">
+                {presetAvatars.map((avatar) => (
+                  <button
+                    key={avatar.name}
+                    type="button"
+                    onClick={() => setAvatarUrl(avatar.path)}
+                    aria-label={`Use ${avatar.name} avatar`}
+                    className={cn(
+                      "relative flex h-12 w-12 items-center justify-center rounded-md border bg-background transition-colors hover:border-foreground/30",
+                      avatarUrl === avatar.path && "border-foreground ring-2 ring-foreground/10"
+                    )}
                   >
-                    {otpSent ? 'OTP Sent' : 'Send OTP to Current Email'}
+                    <img src={avatar.path} alt="" className="h-8 w-8" loading="lazy" />
+                    {avatarUrl === avatar.path && (
+                      <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-foreground text-background">
+                        <Check className="h-2.5 w-2.5" />
+                      </span>
+                    )}
                   </button>
-                  {otpSent && emailRemaining > 0 && (
-                    <span className={styles.label}>
-                      Expires in: {formatTime(emailRemaining)}
-                    </span>
+                ))}
+
+                <label
+                  className={cn(
+                    "inline-flex h-12 cursor-pointer items-center gap-2 rounded-md border border-dashed border-input bg-background px-3 text-xs font-medium text-muted-foreground transition-colors",
+                    "hover:border-foreground/40 hover:text-foreground"
                   )}
-                </div>
-              </div>
-              {otpSent && (
-                <div className={styles.formGroup}>
-                  <input 
-                    type="text" 
-                    placeholder="Enter OTP" 
-                    value={emailOtp} 
-                    onChange={e => setEmailOtp(e.target.value)} 
-                    className={styles.input}
+                >
+                  <Upload className="h-3.5 w-3.5" />
+                  Upload
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarUpload}
+                    className="sr-only"
                   />
-                  <button 
-                    type="button" 
-                    onClick={handleConfirmEmailChange} 
-                    disabled={confirming} 
-                    className={styles.button}
+                </label>
+              </div>
+            </div>
+          </div>
+
+          {/* Name + email */}
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-1.5">
+              <Label htmlFor="fullName">Full name</Label>
+              <Input
+                id="fullName"
+                type="text"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+              />
+            </div>
+
+            <div className="grid gap-1.5">
+              <Label htmlFor="email">Email</Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  id="email"
+                  type="email"
+                  value={user.email}
+                  readOnly
+                  className="cursor-not-allowed bg-secondary/40 text-muted-foreground"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setEmailFormOpen((v) => !v)}
+                >
+                  <Pencil className="h-3.5 w-3.5" />
+                  {emailFormOpen ? "Cancel" : "Change"}
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Email change collapsible */}
+          {emailFormOpen && (
+            <div className="flex flex-col gap-3 rounded-md border border-dashed bg-background p-4">
+              <p className="text-sm font-medium text-foreground">Change email</p>
+              <div className="grid gap-1.5">
+                <Label htmlFor="newEmail">New email address</Label>
+                <Input
+                  id="newEmail"
+                  type="email"
+                  placeholder="you@example.com"
+                  value={newEmail}
+                  onChange={(e) => setNewEmail(e.target.value)}
+                />
+              </div>
+
+              {!otpSent ? (
+                <div>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    onClick={handleRequestEmailOtp}
+                    disabled={!newEmail}
                   >
-                    {confirming ? 'Verifying…' : 'Confirm Email Change'}
-                  </button>
+                    Send OTP to current email
+                  </Button>
+                </div>
+              ) : (
+                <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
+                  <div className="grid gap-1.5">
+                    <Label htmlFor="emailOtp">Enter OTP</Label>
+                    <Input
+                      id="emailOtp"
+                      placeholder="6-digit code"
+                      value={emailOtp}
+                      onChange={(e) => setEmailOtp(e.target.value)}
+                    />
+                    {emailRemaining > 0 && (
+                      <p className="text-xs text-muted-foreground">
+                        Expires in {formatTime(emailRemaining)}
+                      </p>
+                    )}
+                  </div>
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={handleConfirmEmailChange}
+                    disabled={confirming || !emailOtp}
+                  >
+                    {confirming && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                    Confirm change
+                  </Button>
                 </div>
               )}
-            </details>
+            </div>
+          )}
 
-            <button type="submit" className={styles.button}>Update Profile</button>
-          </form>
-        </section>
+          <div className="flex justify-end">
+            <Button type="submit" disabled={savingProfile} size="sm">
+              {savingProfile && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+              Save changes
+            </Button>
+          </div>
+        </form>
+      </section>
 
-        {/* ===== Change Password ===== */}
-        <section className={styles.section}>
-          <h2 className={styles.title}>Change Password</h2>
-          {step === 'send' ? (
-            <button
-              onClick={sendOtp}
-              disabled={loading}
-              className={styles.button}
-            >
-              {loading ? 'Sending OTP…' : 'Send OTP to my email'}
-            </button>
-          ) : (
-            <form onSubmit={handleVerify}>
-              <div className={styles.formGroup}>
-                <label className={styles.label}>
-                  OTP Code
-                  <input
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value.toUpperCase())}
-                    required
-                    className={styles.input}
-                  />
-                </label>
-                {passwordRemaining > 0 && (
-                  <span className={styles.label}>
-                    Expires in: {formatTime(passwordRemaining)}
-                  </span>
-                )}
+      {/* Security */}
+      <section className="flex flex-col gap-5">
+        <SectionHeader
+          title="Security"
+          description="Update your password using one-time verification."
+        />
+
+        <div className="rounded-lg border bg-card p-6">
+          {!pwOpen ? (
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm font-medium text-foreground">Password</p>
+                <p className="text-sm text-muted-foreground">
+                  We&apos;ll send a one-time code to your email to confirm changes.
+                </p>
               </div>
-              <div className={styles.formGroup}>
-                <label className={styles.label}>
-                  New Password
-                  <input
-                    type="password"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    required
-                    className={styles.input}
-                  />
-                </label>
-              </div>
-              <div className={styles.formGroup}>
-                <label className={styles.label}>
-                  Confirm Password
-                  <input
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    required
-                    className={styles.input}
-                  />
-                </label>
-              </div>
-              <button
-                type="submit"
-                disabled={loading}
-                className={styles.button}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setPwOpen(true)}
               >
-                {loading ? 'Updating…' : 'Update Password'}
-              </button>
-            </form>
-          )}
-        </section>
-
-        {/* ===== Order History ===== */}
-        <section className={styles.section}>
-          <h2 className={styles.title}>Your Order History</h2>
-          {user.orders && user.orders.length > 0 ? (
-            <ul className={styles.orderList}>
-              {user.orders.slice(0, visibleOrderCount).map(o => (
-                <li key={o.id} className={styles.orderItem}>
-                  <span>Order #{o.id}</span>
-                  <span>{new Date(o.createdAt).toLocaleDateString()}</span>
-                  <div className={styles.amountStatusRow}>
-                    <span>₹{(o.totalAmount).toFixed(2)}</span>
-                    <span className={`${styles.orderStatus} ${styles[`orderStatus${o.status.charAt(0).toUpperCase() + o.status.slice(1)}`]}`}>
-                      {o.status}
-                    </span>
-                  </div>
-                  <Link href={`/dashboard/orders/${o.id}`} className={styles.link}>View</Link>
-                </li>
-              ))}
-            </ul>
+                Change password
+              </Button>
+            </div>
           ) : (
-            <p className={styles.emptyText}>You haven&apos;t placed any orders yet.</p>
-          )}
-          {(user.orders && user.orders.length > visibleOrderCount) && (
-            <button 
-              onClick={() => {
-                setShowMoreLoading(true);
-                setTimeout(() => {
-                  setVisibleOrderCount(prev => prev + 5);
-                  setShowMoreLoading(false);
-                }, 500); // Simulate loading time
-              }}
-              className={`${styles.button} ${showMoreLoading ? styles.buttonLoading : ''}`}
-              disabled={showMoreLoading}
-            >
-              {showMoreLoading && <span className={styles.spinner} />}
-              {showMoreLoading ? 'Loading...' : 'Show More Orders'}
-            </button>
-          )}
-        </section>
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium text-foreground">Change password</p>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setPwOpen(false)
+                    setStep("send")
+                    setOtp("")
+                    setNewPassword("")
+                    setConfirmPassword("")
+                  }}
+                >
+                  Cancel
+                </Button>
+              </div>
 
-        {/* ===== Saved Addresses ===== */}
-        <section className={styles.section}>
-          <h2 className={styles.title}>Saved Addresses</h2>
-
-          {addrLoading && <p className={styles.loadingText}>Loading addresses…</p>}
-          {addrError && <p className={`${styles.message} ${styles.error}`}>{addrError}</p>}
-
-          {!addrLoading && addresses.length > 0 && (
-            <ul className={styles.addressList}>
-              {addresses.map(a => (
-                <li key={a.id} className={styles.addressItem}>
-                  <div>
-                    <strong>{a.label}</strong><br/>
-                    {a.line1}{a.line2 && `, ${a.line2}`}<br/>
-                    {a.city}, {a.postalCode}<br/>
-                    {a.country}
-                  </div>
-                  <div className={styles.addressActions}>
-                    {user.defaultAddressId === a.id ? (
-                      <span className={styles.defaultBadge}>Default</span>
-                    ) : (
-                      <button
-                        className={styles.button}
-                        onClick={async () => {
-                          await fetch('/api/auth/set-default-address', {
-                            method: 'POST',
-                            headers: {
-                              'Content-Type': 'application/json',
-                              Authorization: `Bearer ${token}`
-                            },
-                            body: JSON.stringify({ addressId: a.id }),
-                          })
-                          fetchProfile()
-                          setAddresses(addresses.map(x =>
-                            x.id === a.id ? { ...x } : x
-                          ))
-                        }}
-                      >
-                        Make Default
-                      </button>
+              {step === "send" ? (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="secondary"
+                  onClick={sendPasswordOtp}
+                  disabled={loading}
+                  className="self-start"
+                >
+                  {loading && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                  Send OTP to my email
+                </Button>
+              ) : (
+                <form onSubmit={handleVerifyPassword} className="flex flex-col gap-4">
+                  <div className="grid gap-1.5">
+                    <Label htmlFor="pwOtp">OTP code</Label>
+                    <Input
+                      id="pwOtp"
+                      value={otp}
+                      onChange={(e) => setOtp(e.target.value.toUpperCase())}
+                      required
+                    />
+                    {passwordRemaining > 0 && (
+                      <p className="text-xs text-muted-foreground">
+                        Expires in {formatTime(passwordRemaining)}
+                      </p>
                     )}
-                    <button
-                      onClick={async () => {
-                        if (!confirm('Delete this address?')) return
-                        await fetch(`/api/addresses/${a.id}`, {
-                          method: 'DELETE',
-                          headers: { Authorization: `Bearer ${token}` },
-                        })
-                        setAddresses(addresses.filter(x => x.id !== a.id))
-                      }}
-                      className={`${styles.button} ${styles.deleteButton}`}
-                    >
-                      Delete
-                    </button>
                   </div>
-                </li>
-              ))}
-            </ul>
-          )}
 
-          {/* ===== Add New Address ===== */}
-          <form
-            onSubmit={async e => {
-              e.preventDefault()
-              const res = await fetch('/api/addresses', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify(newAddr),
-              })
-              const json = await res.json()
-              if (!res.ok) {
-                alert(json.error)
-              } else {
-                setAddresses([json.address, ...addresses])
-                setNewAddr({ label:'', line1:'', line2:'', city:'', postalCode:'', country:'' })
-              }
-            }}
-            className={styles.addressForm}
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="grid gap-1.5">
+                      <Label htmlFor="newPassword">New password</Label>
+                      <Input
+                        id="newPassword"
+                        type="password"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="grid gap-1.5">
+                      <Label htmlFor="confirmPassword">Confirm new password</Label>
+                      <Input
+                        id="confirmPassword"
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end">
+                    <Button type="submit" size="sm" disabled={loading}>
+                      {loading && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                      Update password
+                    </Button>
+                  </div>
+                </form>
+              )}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Addresses */}
+      <section className="flex flex-col gap-5">
+        <div className="flex items-end justify-between gap-4">
+          <SectionHeader
+            title="Addresses"
+            description="Saved delivery locations for faster checkout."
+          />
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() => setAddAddressOpen((v) => !v)}
           >
-            <h3 className={styles.title}>Add New Address</h3>
-            {['label','line1','line2','city','postalCode','country'].map((field) => (
-              <input
-                key={field}
-                type="text"
-                placeholder={field[0].toUpperCase() + field.slice(1)}
-                value={(newAddr as any)[field]}
-                onChange={e => setNewAddr({ ...newAddr, [field]: e.target.value })}
-                className={styles.input}
-              />
-            ))}
-            <button type="submit" className={styles.button}>
-              Save Address
-            </button>
+            <Plus className="h-3.5 w-3.5" />
+            {addAddressOpen ? "Close" : "Add address"}
+          </Button>
+        </div>
+
+        {addrError && <Banner kind="error" message={addrError} />}
+
+        {addrLoading ? (
+          <p className="text-sm text-muted-foreground">Loading addresses…</p>
+        ) : addresses.length === 0 ? (
+          <div className="rounded-lg border border-dashed bg-card p-8 text-center">
+            <p className="text-sm font-medium text-foreground">No saved addresses yet</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Add an address to speed up your next checkout.
+            </p>
+          </div>
+        ) : (
+          <div className="grid gap-3 sm:grid-cols-2">
+            {addresses.map((a) => {
+              const isDefault = user.defaultAddressId === a.id
+              return (
+                <div
+                  key={a.id}
+                  className="flex flex-col gap-3 rounded-lg border bg-card p-4"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium text-foreground">{a.label}</p>
+                      <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                        {a.line1}
+                        {a.line2 && <>, {a.line2}</>}
+                        <br />
+                        {a.city}, {a.postalCode}
+                        <br />
+                        {a.country}
+                      </p>
+                    </div>
+                    {isDefault && (
+                      <span className="inline-flex shrink-0 items-center rounded-full border bg-secondary px-2 py-0.5 text-[11px] font-medium text-foreground">
+                        Default
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex items-center justify-between gap-2 pt-2 border-t">
+                    {!isDefault ? (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleSetDefault(a.id)}
+                      >
+                        Make default
+                      </Button>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">In use at checkout</span>
+                    )}
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDeleteAddress(a.id)}
+                      className="text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                      Delete
+                    </Button>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+
+        {addAddressOpen && (
+          <form
+            onSubmit={handleAddAddress}
+            className="flex flex-col gap-4 rounded-lg border bg-card p-6"
+          >
+            <p className="text-sm font-medium text-foreground">New address</p>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-1.5">
+                <Label htmlFor="addr-label">Label</Label>
+                <Input
+                  id="addr-label"
+                  placeholder="Home, Office, etc."
+                  value={newAddr.label}
+                  onChange={(e) => setNewAddr({ ...newAddr, label: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="grid gap-1.5">
+                <Label htmlFor="addr-line1">Address line 1</Label>
+                <Input
+                  id="addr-line1"
+                  placeholder="Street and number"
+                  value={newAddr.line1}
+                  onChange={(e) => setNewAddr({ ...newAddr, line1: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="grid gap-1.5 sm:col-span-2">
+                <Label htmlFor="addr-line2">Address line 2</Label>
+                <Input
+                  id="addr-line2"
+                  placeholder="Apartment, suite, landmark (optional)"
+                  value={newAddr.line2}
+                  onChange={(e) => setNewAddr({ ...newAddr, line2: e.target.value })}
+                />
+              </div>
+              <div className="grid gap-1.5">
+                <Label htmlFor="addr-city">City</Label>
+                <Input
+                  id="addr-city"
+                  value={newAddr.city}
+                  onChange={(e) => setNewAddr({ ...newAddr, city: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="grid gap-1.5">
+                <Label htmlFor="addr-postal">Postal code</Label>
+                <Input
+                  id="addr-postal"
+                  value={newAddr.postalCode}
+                  onChange={(e) => setNewAddr({ ...newAddr, postalCode: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="grid gap-1.5 sm:col-span-2">
+                <Label htmlFor="addr-country">Country</Label>
+                <Input
+                  id="addr-country"
+                  value={newAddr.country}
+                  onChange={(e) => setNewAddr({ ...newAddr, country: e.target.value })}
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end">
+              <Button type="submit" size="sm" disabled={savingAddress}>
+                {savingAddress && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                Save address
+              </Button>
+            </div>
           </form>
-        </section>
-      </main>
-    </>
+        )}
+      </section>
+    </div>
   )
 }

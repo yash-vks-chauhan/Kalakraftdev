@@ -15,12 +15,12 @@ import {
   Star,
   AlertTriangle,
   Boxes,
+  LogOut,
 } from "lucide-react"
 import { LucideIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Separator } from "@/components/ui/separator"
 import type { User as AuthUser } from "../../contexts/AuthContext"
 
 type NavItem = { href: string; label: string; icon: LucideIcon; exact?: boolean }
@@ -68,9 +68,9 @@ function NavGroup({ label, items, pathname, onNavigate }: {
   onNavigate?: () => void
 }) {
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-0.5">
       {label && (
-        <p className="px-3 pb-1 pt-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+        <p className="px-3 pb-2 pt-4 text-xs font-medium text-muted-foreground/80">
           {label}
         </p>
       )}
@@ -83,7 +83,7 @@ function NavGroup({ label, items, pathname, onNavigate }: {
             href={item.href}
             onClick={onNavigate}
             className={cn(
-              "group flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
+              "group relative flex items-center gap-3 rounded-md px-3 py-2.5 text-sm transition-colors",
               active
                 ? "bg-secondary text-foreground font-medium"
                 : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
@@ -91,7 +91,7 @@ function NavGroup({ label, items, pathname, onNavigate }: {
           >
             <Icon
               className={cn(
-                "h-4 w-4 shrink-0",
+                "h-[18px] w-[18px] shrink-0",
                 active ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"
               )}
             />
@@ -116,15 +116,18 @@ export function SidebarNav({ user, onLogout, onNavigate }: SidebarNavProps) {
   return (
     <div className="flex h-full flex-col">
       {/* Brand */}
-      <div className="flex h-14 items-center px-5">
-        <Link href="/" onClick={onNavigate} className="text-sm font-semibold tracking-tight text-foreground">
-          Artcommerce
+      <div className="flex h-16 items-center px-5">
+        <Link
+          href="/"
+          onClick={onNavigate}
+          className="text-base font-semibold tracking-tight text-foreground"
+        >
+          Kalakraft
         </Link>
       </div>
-      <Separator />
 
       {/* Nav */}
-      <nav className="flex-1 overflow-y-auto px-3 py-4">
+      <nav className="flex-1 overflow-y-auto px-3 pb-4">
         <NavGroup items={userNav} pathname={pathname} onNavigate={onNavigate} />
         {isAdmin && (
           <NavGroup
@@ -136,10 +139,8 @@ export function SidebarNav({ user, onLogout, onNavigate }: SidebarNavProps) {
         )}
       </nav>
 
-      <Separator />
-
       {/* User footer */}
-      <div className="flex items-center gap-3 p-3">
+      <div className="flex items-center gap-3 border-t px-4 py-4">
         <Avatar className="h-9 w-9 border">
           {user.avatarUrl && <AvatarImage src={user.avatarUrl} alt={user.fullName} />}
           <AvatarFallback className="bg-secondary text-xs font-medium text-foreground">
@@ -153,9 +154,10 @@ export function SidebarNav({ user, onLogout, onNavigate }: SidebarNavProps) {
         <button
           type="button"
           onClick={onLogout}
-          className="rounded-md px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+          aria-label="Log out"
+          className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
         >
-          Log out
+          <LogOut className="h-4 w-4" />
         </button>
       </div>
     </div>

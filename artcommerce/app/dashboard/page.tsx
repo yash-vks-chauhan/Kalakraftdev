@@ -90,7 +90,7 @@ function MetricTile({
 }) {
   return (
     <div className="rounded-lg border bg-card p-5">
-      <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{label}</p>
+      <p className="text-xs font-medium text-muted-foreground">{label}</p>
       <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">{value}</p>
       {hint && <p className="mt-1 text-xs text-muted-foreground">{hint}</p>}
     </div>
@@ -166,7 +166,7 @@ export default function DashboardHomePage() {
       {isAdmin && (
         <section className="flex flex-col gap-4">
           <div className="flex items-center justify-between gap-4">
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            <h2 className="text-sm font-semibold text-foreground">
               Overview
             </h2>
             <Select value={period} onValueChange={(v) => setPeriod(v as Period)}>
