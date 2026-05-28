@@ -4,6 +4,7 @@ import {
   isFirebaseAdminConfigured,
 } from '../../../../lib/firebase-admin'
 import prisma from '../../../../lib/prisma'
+import jwt from 'jsonwebtoken'
 import { consumeRateLimit, getClientIp } from '../../../../lib/rateLimit'
 import {
   createRefreshSession,
@@ -19,6 +20,23 @@ const allowedDomains = (process.env.AUTH_EMAIL_ALLOWLIST_DOMAINS || '')
   .split(',')
   .map((d) => d.trim().toLowerCase())
   .filter(Boolean)
+const FIREBASE_CERTS_URL =
+  'https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com'
+
+type VerifiedFirebaseToken = {
+  uid: string
+  email?: string
+  email_verified?: boolean
+  name?: string
+  picture?: string
+}
+
+let firebaseCertCache:
+  | {
+      certs: Record<string, string>
+      expiresAt: number
+    }
+  | null = null
 
 function isEmailDomainAllowed(email: string): boolean {
   if (!allowedDomains.length) return true
@@ -36,6 +54,105 @@ function getErrorCode(error: unknown): string | undefined {
     return String((error as { code?: unknown }).code || '')
   }
   return undefined
+}
+
+function getExpectedFirebaseProjectId(): string {
+  return (
+    process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ||
+    process.env.FIREBASE_PROJECT_ID ||
+    ''
+  ).trim()
+}
+
+function getCertCacheMaxAge(cacheControl: string | null): number {
+  const match = cacheControl?.match(/max-age=(\d+)/i)
+  if (!match) return 60 * 60 * 1000
+  return Number(match[1]) * 1000
+}
+
+async function getFirebasePublicCerts(): Promise<Record<string, string>> {
+  if (firebaseCertCache && firebaseCertCache.expiresAt > Date.now()) {
+    return firebaseCertCache.certs
+  }
+
+  const response = await fetch(FIREBASE_CERTS_URL, {
+    cache: 'no-store',
+  })
+  if (!response.ok) {
+    throw new Error(`Could not load Firebase public certificates: ${response.status}`)
+  }
+
+  const certs = (await response.json()) as Record<string, string>
+  firebaseCertCache = {
+    certs,
+    expiresAt: Date.now() + getCertCacheMaxAge(response.headers.get('cache-control')),
+  }
+  return certs
+}
+
+async function verifyFirebaseIdTokenWithPublicCerts(
+  idToken: string
+): Promise<VerifiedFirebaseToken> {
+  const projectId = getExpectedFirebaseProjectId()
+  if (!projectId) {
+    throw new Error('NEXT_PUBLIC_FIREBASE_PROJECT_ID is not set')
+  }
+
+  const decoded = jwt.decode(idToken, { complete: true })
+  const kid = decoded && typeof decoded === 'object' ? decoded.header?.kid : undefined
+  const alg = decoded && typeof decoded === 'object' ? decoded.header?.alg : undefined
+
+  if (!kid || alg !== 'RS256') {
+    throw new Error('Firebase token header is invalid')
+  }
+
+  const certs = await getFirebasePublicCerts()
+  const cert = certs[kid]
+  if (!cert) {
+    firebaseCertCache = null
+    throw new Error('Firebase token certificate was not found')
+  }
+
+  const payload = jwt.verify(idToken, cert, {
+    algorithms: ['RS256'],
+    audience: projectId,
+    issuer: `https://securetoken.google.com/${projectId}`,
+  }) as jwt.JwtPayload
+
+  const uid = String(payload.sub || '')
+  if (!uid || uid.length > 128) {
+    throw new Error('Firebase token subject is invalid')
+  }
+
+  return {
+    uid,
+    email: typeof payload.email === 'string' ? payload.email : undefined,
+    email_verified: payload.email_verified === true,
+    name: typeof payload.name === 'string' ? payload.name : undefined,
+    picture: typeof payload.picture === 'string' ? payload.picture : undefined,
+  }
+}
+
+async function verifyFirebaseIdToken(idToken: string): Promise<VerifiedFirebaseToken> {
+  if (isFirebaseAdminConfigured) {
+    try {
+      const decoded = await adminAuth.verifyIdToken(idToken)
+      return {
+        uid: decoded.uid,
+        email: decoded.email,
+        email_verified: decoded.email_verified,
+        name: decoded.name,
+        picture: decoded.picture,
+      }
+    } catch (verifyError) {
+      console.error('Firebase Admin ID token verification failed:', {
+        code: getErrorCode(verifyError),
+        message: getErrorMessage(verifyError),
+      })
+    }
+  }
+
+  return verifyFirebaseIdTokenWithPublicCerts(idToken)
 }
 
 function getServerLoginError(error: unknown): string {
@@ -73,16 +190,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'ID token is required' }, { status: 400 })
     }
 
-    if (!isFirebaseAdminConfigured) {
-      return NextResponse.json(
-        { error: 'Google sign-in is not configured on the server.' },
-        { status: 500 }
-      )
-    }
-
-    let decodedToken
+    let decodedToken: VerifiedFirebaseToken
     try {
-      decodedToken = await adminAuth.verifyIdToken(idToken)
+      decodedToken = await verifyFirebaseIdToken(idToken)
     } catch (verifyError) {
       console.error('Firebase ID token verification failed:', {
         code: getErrorCode(verifyError),
