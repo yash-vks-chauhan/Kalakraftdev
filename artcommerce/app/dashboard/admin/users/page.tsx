@@ -18,6 +18,7 @@ import {
 
 import { useAuth } from '../../../contexts/AuthContext'
 import ConfirmDialog from '../../../components/ConfirmDialog'
+import { SegmentedControl, SegmentedControlItem } from '../../_components/SegmentedControl'
 import { cn } from '@/lib/utils'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
@@ -239,47 +240,22 @@ export default function AdminUsersPage() {
 
           {/* Top tabs + search */}
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            <nav
-              aria-label="Filter users by role"
-              className="flex w-full gap-1 overflow-x-auto rounded-md border bg-muted/40 p-1 lg:w-auto"
-            >
-              {tabs.map((t) => {
-                const isActive = activeTab === t.key
-                const Icon = t.icon
-                const count =
+            <SegmentedControl<TabKey>
+              ariaLabel="Filter users by role"
+              value={activeTab}
+              onChange={setTab}
+              items={tabs.map<SegmentedControlItem<TabKey>>((t) => ({
+                key: t.key,
+                label: t.label,
+                icon: t.icon,
+                count:
                   t.key === 'all'
                     ? counts.total
                     : t.key === 'admin'
                     ? counts.admins
-                    : counts.customers
-                return (
-                  <button
-                    key={t.key}
-                    type="button"
-                    onClick={() => setTab(t.key)}
-                    aria-pressed={isActive}
-                    className={cn(
-                      'inline-flex flex-1 shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded px-3 py-1.5 text-sm font-medium transition-colors lg:flex-none',
-                      isActive
-                        ? 'bg-background text-foreground shadow-sm'
-                        : 'text-muted-foreground hover:text-foreground'
-                    )}
-                  >
-                    <Icon className="h-4 w-4" />
-                    <span>{t.label}</span>
-                    <Badge
-                      variant="secondary"
-                      className={cn(
-                        'h-5 px-1.5 text-[11px]',
-                        isActive && 'bg-secondary/80'
-                      )}
-                    >
-                      {count}
-                    </Badge>
-                  </button>
-                )
-              })}
-            </nav>
+                    : counts.customers,
+              }))}
+            />
 
             <div className="relative w-full lg:w-72">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
