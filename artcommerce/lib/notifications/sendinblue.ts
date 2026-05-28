@@ -1,5 +1,6 @@
 // src/lib/notifications/sendinblue.ts
 import type { Order } from '@/types'
+import { cleanEmailHeader, escapeHtml } from '../emailContent'
 
 export async function sendOrderNotificationEmail(order: Order) {
   // 1. Build the HTML body
@@ -7,7 +8,7 @@ export async function sendOrderNotificationEmail(order: Order) {
     .map(
       (it) => `
     <li>
-      <strong>${it.productName}</strong> × ${it.quantity}
+      <strong>${escapeHtml(it.productName)}</strong> × ${it.quantity}
       @ ₹${it.unitPrice.toFixed(2)} = ₹${(it.quantity * it.unitPrice).toFixed(2)}
     </li>`
     )
@@ -15,10 +16,10 @@ export async function sendOrderNotificationEmail(order: Order) {
 
   const htmlContent = `
     <h2>🛒 New Order #${order.id}</h2>
-    <p><strong>Customer:</strong> ${order.customer.name} (${order.customer.email})</p>
+    <p><strong>Customer:</strong> ${escapeHtml(order.customer.name)} (${escapeHtml(order.customer.email)})</p>
     <p><strong>Shipping Address:</strong><br/>
-      ${order.customer.address.street}<br/>
-      ${order.customer.address.city}, ${order.customer.address.state} ${order.customer.address.zip}
+      ${escapeHtml(order.customer.address.street)}<br/>
+      ${escapeHtml(order.customer.address.city)}, ${escapeHtml(order.customer.address.state)} ${escapeHtml(order.customer.address.zip)}
     </p>
     <h3>Items:</h3>
     <ul>${itemsHtml}</ul>
@@ -46,7 +47,7 @@ export async function sendOrderNotificationEmail(order: Order) {
         email: process.env.SENDINBLUE_FROM_EMAIL!,
       },
       to: [{ email: process.env.ADMIN_EMAIL! }],
-      subject: `New Order #${order.id} — ₹${order.total.toFixed(2)}`,
+      subject: cleanEmailHeader(`New Order #${order.id} — ₹${order.total.toFixed(2)}`),
       htmlContent,
     }),
   })

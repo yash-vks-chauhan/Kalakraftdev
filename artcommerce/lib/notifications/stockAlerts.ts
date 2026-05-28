@@ -1,4 +1,5 @@
 // src/lib/notifications/stockAlerts.ts
+import { cleanEmailHeader, escapeHtml } from '../emailContent'
 
 export async function sendOutOfStockEmail({
     productId,
@@ -8,7 +9,7 @@ export async function sendOutOfStockEmail({
     productName: string
   }) {
     const html = `
-      <h2>❌ Out of Stock: ${productName}</h2>
+      <h2>❌ Out of Stock: ${escapeHtml(productName)}</h2>
       <p>This product is now completely sold out.</p>
       <p>
         <a href="${process.env.APP_URL}/dashboard/admin/products/${productId}">
@@ -25,7 +26,7 @@ export async function sendOutOfStockEmail({
       body: JSON.stringify({
         sender:      { email: process.env.SENDINBLUE_FROM_EMAIL!, name: 'ArtCommerce Support' },
         to:          [{ email: process.env.ADMIN_EMAIL! }],
-        subject:     `Out of Stock: ${productName}`,
+        subject:     cleanEmailHeader(`Out of Stock: ${productName}`),
         htmlContent: html,
       }),
     })

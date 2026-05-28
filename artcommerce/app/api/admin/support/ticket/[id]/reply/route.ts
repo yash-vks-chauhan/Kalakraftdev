@@ -6,6 +6,7 @@ import { randomUUID } from 'crypto';
 import { requireAdminUser } from "../../../../../../../lib/session-auth";
 import { isAllowedOrigin } from "@/lib/security";
 import { sanitizeSupportAttachments, validateSupportAttachments } from "@/lib/supportAttachments";
+import { cleanEmailHeader, escapeHtml } from "@/lib/emailContent";
 
 const ALLOWED_STATUSES = ['open', 'pending', 'resolved', 'closed'];
 const MAX_REPLY_LENGTH = 5000;
@@ -107,8 +108,8 @@ export async function POST(
           email: process.env.SENDINBLUE_FROM_EMAIL!,
         },
         to: [{ email: ticket.email }],
-        subject: `Re: ${ticket.subject}`,
-        htmlContent: `<p>${trimmedReply}</p><p>Your ticket status is now <strong>${normalizedStatus}</strong>.</p>`,
+        subject: cleanEmailHeader(`Re: ${ticket.subject}`),
+        htmlContent: `<p>${escapeHtml(trimmedReply).replace(/\n/g, '<br/>')}</p><p>Your ticket status is now <strong>${escapeHtml(normalizedStatus)}</strong>.</p>`,
       }),
     });
     if (!resp.ok) {

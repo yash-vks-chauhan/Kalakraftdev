@@ -37,7 +37,7 @@ function getAllowedOriginHosts(): string[] {
  * Allows:
  *   - Same host as the request URL
  *   - Hosts that match NEXT_PUBLIC_APP_URL or APP_URL (if set)
- *   - Non-browser clients that omit Origin / Referer / Sec-Fetch-Site
+ *   - Non-browser clients without cookies that omit Origin / Referer / Sec-Fetch-Site
  */
 export function isAllowedOrigin(request: Request): boolean {
   const requestHost = new URL(request.url).host
@@ -45,7 +45,9 @@ export function isAllowedOrigin(request: Request): boolean {
   const fetchSite = (request.headers.get('sec-fetch-site') || '').toLowerCase()
 
   if (!originHeader) {
-    return fetchSite === '' || fetchSite === 'same-origin' || fetchSite === 'same-site' || fetchSite === 'none'
+    const allowedFetchMetadata = fetchSite === 'same-origin' || fetchSite === 'same-site' || fetchSite === 'none'
+    if (request.headers.get('cookie')) return allowedFetchMetadata
+    return fetchSite === '' || allowedFetchMetadata
   }
 
   let originHost: string

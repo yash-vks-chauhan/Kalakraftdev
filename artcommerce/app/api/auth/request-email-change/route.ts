@@ -1,5 +1,6 @@
 import { customAlphabet } from 'nanoid'
 import { NextResponse } from 'next/server'
+import { escapeHtml } from '../../../../lib/emailContent'
 import { getSecureMailer } from '../../../../lib/mailer'
 import { getOtpSecretValidationError, hashOtpForScope } from '../../../../lib/otp-security'
 import prisma from '../../../../lib/prisma'
@@ -94,8 +95,8 @@ export async function POST(request: Request) {
       to: user.email,
       subject: 'Your OTP to change your Artcommerce email',
       html: `
-        <p>Hi ${user.fullName},</p>
-        <p>Your OTP to change your email to <strong>${newEmail}</strong> is:</p>
+        <p>Hi ${escapeHtml(user.fullName)},</p>
+        <p>Your OTP to change your email to <strong>${escapeHtml(newEmail)}</strong> is:</p>
         <h2 style="letter-spacing:4px;">${code}</h2>
         <p>This code expires in 5 minutes.</p>
         <p>If you didn’t request this, ignore this email.</p>

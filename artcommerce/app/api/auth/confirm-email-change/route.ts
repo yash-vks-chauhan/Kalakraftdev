@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { escapeHtml } from '../../../../lib/emailContent'
 import { getSecureMailer } from '../../../../lib/mailer'
 import { getOtpSecretValidationError, hashOtpForScope } from '../../../../lib/otp-security'
 import prisma from '../../../../lib/prisma'
@@ -99,8 +100,8 @@ export async function POST(request: Request) {
       to: updatedUser.email,
       subject: 'Your Artcommerce email has been changed',
       html: `
-        <p>Hi ${updatedUser.fullName},</p>
-        <p>Your account email has been successfully updated to <strong>${updatedUser.email}</strong>.</p>
+        <p>Hi ${escapeHtml(updatedUser.fullName)},</p>
+        <p>Your account email has been successfully updated to <strong>${escapeHtml(updatedUser.email)}</strong>.</p>
         <p>If you did not make this change, please contact support immediately.</p>
       `,
     })

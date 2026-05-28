@@ -1,6 +1,7 @@
 // File: app/api/admin/users/[id]/route.ts
 
 import { NextResponse } from 'next/server'
+import { escapeHtml } from '../../../../../lib/emailContent'
 import { getSecureMailer } from '../../../../../lib/mailer'
 import prisma from '../../../../../lib/prisma'
 import { requireAdminUser } from '../../../../../lib/session-auth'
@@ -28,38 +29,43 @@ export async function DELETE(
 
   try {
     // 2️⃣ Cascade‐delete related data
-    await prisma.cartItem.deleteMany({ where: { userId } })
-    await prisma.wishlistItem.deleteMany({ where: { userId } })
-    await prisma.address.deleteMany({ where: { userId } })
+    await prisma.$transaction(async (tx) => {
+      await tx.cartItem.deleteMany({ where: { userId } })
+      await tx.wishlistItem.deleteMany({ where: { userId } })
+      await tx.address.deleteMany({ where: { userId } })
 
-    const orders = await prisma.order.findMany({
-      where: { userId },
-      select: { id: true }
+      const orders = await tx.order.findMany({
+        where: { userId },
+        select: { id: true }
+      })
+      for (const o of orders) {
+        await tx.orderItem.deleteMany({ where: { orderId: o.id } })
+        await tx.orderNote.deleteMany({ where: { orderId: o.id } })
+        await tx.order.delete({ where: { id: o.id } })
+      }
+
+      // 3️⃣ Delete the user
+      await tx.user.delete({ where: { id: userId } })
     })
-    for (const o of orders) {
-      await prisma.orderItem.deleteMany({ where: { orderId: o.id } })
-      await prisma.orderNote.deleteMany({ where: { orderId: o.id } })
-      await prisma.order.delete({ where: { id: o.id } })
-    }
-
-    // 3️⃣ Delete the user
-    await prisma.user.delete({ where: { id: userId } })
-
-    // 4️⃣ Send notification email
-    const { transporter, smtpUser } = getSecureMailer()
 
     if (target.email) {
-      await transporter.sendMail({
-        from: `"Artcommerce Support" <${smtpUser}>`,
-        to: target.email,
-        subject: 'Your Artcommerce Account Has Been Deleted',
-        html: `
-          <p>Hi ${target.fullName},</p>
-          <p>We're writing to let you know that your Artcommerce account has been deleted by an administrator.</p>
-          <p>If you believe this was in error, please contact support@example.com.</p>
-          <p>Regards,<br/>The Artcommerce Team</p>
-        `,
-      })
+      try {
+        const { transporter, smtpUser } = getSecureMailer()
+
+        await transporter.sendMail({
+          from: `"Artcommerce Support" <${smtpUser}>`,
+          to: target.email,
+          subject: 'Your Artcommerce Account Has Been Deleted',
+          html: `
+            <p>Hi ${escapeHtml(target.fullName)},</p>
+            <p>We're writing to let you know that your Artcommerce account has been deleted by an administrator.</p>
+            <p>If you believe this was in error, please contact support@example.com.</p>
+            <p>Regards,<br/>The Artcommerce Team</p>
+          `,
+        })
+      } catch (mailErr) {
+        console.error('❌ delete-user notification email failed:', mailErr)
+      }
     }
 
     return NextResponse.json({ ok: true })

@@ -1,5 +1,6 @@
 // app/api/admin/users/[id]/remind-cart/route.ts
 import { NextResponse } from 'next/server'
+import { escapeHtml } from '../../../../../../lib/emailContent'
 import prisma from '../../../../../../lib/prisma'
 import { getSecureMailer } from '../../../../../../lib/mailer'
 import { consumeRateLimit, getClientIp } from '../../../../../../lib/rateLimit'
@@ -56,10 +57,10 @@ export async function POST(
       to:      user.email,
       subject: 'You left items in your cart!',
       html: `
-        <p>Hi ${user.fullName},</p>
+        <p>Hi ${escapeHtml(user.fullName)},</p>
         <p>We noticed you left these items in your cart:</p>
         <ul>
-          ${items.map(i => `<li>${i.product.name} (qty: ${i.quantity})</li>`).join('')}
+          ${items.map(i => `<li>${escapeHtml(i.product.name)} (qty: ${i.quantity})</li>`).join('')}
         </ul>
         <p><a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://kalakraftdev.vercel.app'}/cart">Return to your cart & checkout</a></p>
       `,

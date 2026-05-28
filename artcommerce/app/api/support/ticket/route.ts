@@ -8,6 +8,7 @@ import { validateSupportAttachments } from '@/lib/supportAttachments';
 import { storeSupportAttachment } from '@/lib/supportUploadStorage';
 import { consumeRateLimit, getClientIp } from '@/lib/rateLimit';
 import { validateUploadBuffer } from '@/lib/uploadGuard';
+import { cleanEmailHeader, escapeHtml } from '@/lib/emailContent';
 
 const TICKET_WINDOW_MS = 15 * 60 * 1000;
 const MAX_TICKETS_PER_WINDOW = 5;
@@ -141,12 +142,13 @@ export async function POST(request: Request) {
 
   // 2) Create the support ticket in the database (store category/product info as part of subject for now)
   const fullSubject = issueCategory ? `[${issueCategory}] ${trimmedSubject}` : trimmedSubject;
+  const safeFullSubject = cleanEmailHeader(fullSubject);
   const ticket = await prisma.supportTicket.create({
     data: { 
       id: randomUUID(),
       name: authenticatedName || name || 'Customer', 
       email: authenticatedEmail, 
-      subject: fullSubject, 
+      subject: safeFullSubject,
       message: trimmedMessage,
     },
   });
@@ -179,9 +181,9 @@ export async function POST(request: Request) {
           email: process.env.SENDINBLUE_FROM_EMAIL!,
         },
         to: [{ email: authenticatedEmail }],
-        subject: `We received your request: ${fullSubject}`,
-        htmlContent: `<p>Hi ${authenticatedName || name || 'there'},</p>
-          <p>Thanks for contacting our support team! Your ticket ID is <strong>${ticket.id}</strong>. We will get back to you shortly.</p>`,
+        subject: cleanEmailHeader(`We received your request: ${safeFullSubject}`),
+        htmlContent: `<p>Hi ${escapeHtml(authenticatedName || name || 'there')},</p>
+          <p>Thanks for contacting our support team! Your ticket ID is <strong>${escapeHtml(ticket.id)}</strong>. We will get back to you shortly.</p>`,
       }),
     });
 

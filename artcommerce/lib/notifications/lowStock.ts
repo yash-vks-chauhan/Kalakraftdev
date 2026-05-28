@@ -1,5 +1,6 @@
 // src/lib/notifications/lowStock.ts
 import { getSecureMailer } from '../mailer'
+import { cleanEmailHeader, escapeHtml } from '../emailContent'
 
 interface LowStockEmailParams {
   productId: number
@@ -23,7 +24,7 @@ export async function sendLowStockEmail({
       <h2>⚠️ Low Stock Alert</h2>
       <p>The following product is running low on stock:</p>
       <div style="background: #f5f5f5; padding: 15px; border-radius: 5px; margin: 15px 0;">
-        <h3 style="margin-top: 0;">${productName}</h3>
+        <h3 style="margin-top: 0;">${escapeHtml(productName)}</h3>
         <p><strong>Product ID:</strong> ${productId}</p>
         <p><strong>Remaining Stock:</strong> ${remaining} units</p>
         <p><strong>Threshold:</strong> ${threshold} units</p>
@@ -45,7 +46,7 @@ export async function sendLowStockEmail({
   await transporter.sendMail({
     from: `"Artcommerce" <${smtpUser}>`,
     to: process.env.ADMIN_EMAIL!,
-    subject: `Low Stock Alert: ${productName}`,
+    subject: cleanEmailHeader(`Low Stock Alert: ${productName}`),
     html: htmlContent,
   })
 }

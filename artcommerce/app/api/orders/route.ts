@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { NextResponse } from 'next/server'
+import { cleanEmailHeader, escapeHtml } from '../../../lib/emailContent'
 import { getSecureMailer } from '../../../lib/mailer'
 import prisma from '../../../lib/prisma'
 import { orderEvents } from '../../../lib/orderEvents'
@@ -9,8 +10,11 @@ import pusher from '../../../lib/pusher'
 import { sendLowStockEmail } from '../../../lib/notifications/lowStock'
 import { sendOutOfStockEmail } from '../../../lib/notifications/outOfStock'
 import { getAuthenticatedUser } from '../../../lib/session-auth'
+import { consumeRateLimit, getClientIp } from '../../../lib/rateLimit'
 
 const OUT_OF_STOCK_ERROR_PREFIX = 'INSUFFICIENT_STOCK:'
+const ORDER_WINDOW_MS = 10 * 60 * 1000
+const MAX_ORDERS_PER_WINDOW = 5
 
 export async function GET(request: Request) {
   try {
@@ -71,6 +75,17 @@ export async function POST(request: Request) {
   const payload = await getAuthenticatedUser(request)
   if (!payload) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const userId = payload.id
+  const clientIp = getClientIp(request)
+  const limit = consumeRateLimit(`orders:create:${userId}:ip:${clientIp}`, {
+    windowMs: ORDER_WINDOW_MS,
+    max: MAX_ORDERS_PER_WINDOW,
+  })
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { error: 'Too many order attempts. Please try again later.' },
+      { status: 429 }
+    )
+  }
 
   // 2️⃣ Parse body
   let body: any
@@ -359,10 +374,10 @@ export async function POST(request: Request) {
         const line = (item.quantity * item.priceAtPurchase).toFixed(2)
         return `
           <tr>
-            <td style="padding:8px;border:1px solid #ddd;">${item.product.name}</td>
+            <td style="padding:8px;border:1px solid #ddd;">${escapeHtml(item.product.name)}</td>
             <td style="padding:8px;border:1px solid #ddd;text-align:center;">${item.quantity}</td>
-            <td style="padding:8px;border:1px solid #ddd;text-align:right;">${item.product.currency} ${unit}</td>
-            <td style="padding:8px;border:1px solid #ddd;text-align:right;">${item.product.currency} ${line}</td>
+            <td style="padding:8px;border:1px solid #ddd;text-align:right;">${escapeHtml(item.product.currency)} ${unit}</td>
+            <td style="padding:8px;border:1px solid #ddd;text-align:right;">${escapeHtml(item.product.currency)} ${line}</td>
           </tr>
         `
       }).join('')
@@ -370,7 +385,7 @@ export async function POST(request: Request) {
       const htmlBody = `
         <div style="font-family:Arial,sans-serif;color:#333;">
           <h2>Thank you for your order!</h2>
-          <p>Order Number: <b>${createdOrder.orderNumber}</b></p>
+          <p>Order Number: <b>${escapeHtml(createdOrder.orderNumber)}</b></p>
           <h3>Order Summary</h3>
           <table style="width:100%;border-collapse:collapse;">
             <thead><tr style="background:#f5f5f5;">
@@ -382,22 +397,22 @@ export async function POST(request: Request) {
             <tbody>${itemsRows}</tbody>
             <tfoot>
               <tr><td colspan="3" style="padding:8px;border:1px solid #ddd;text-align:right;font-weight:bold;">Subtotal:</td>
-                <td style="padding:8px;border:1px solid #ddd;text-align:right;">${createdOrder.orderItems[0].product.currency} ${createdOrder.subtotal.toFixed(2)}</td>
+                <td style="padding:8px;border:1px solid #ddd;text-align:right;">${escapeHtml(createdOrder.orderItems[0].product.currency)} ${createdOrder.subtotal.toFixed(2)}</td>
               </tr>
               <tr><td colspan="3" style="padding:8px;border:1px solid #ddd;text-align:right;font-weight:bold;">Tax (5%):</td>
-                <td style="padding:8px;border:1px solid #ddd;text-align:right;">${createdOrder.orderItems[0].product.currency} ${createdOrder.tax.toFixed(2)}</td>
+                <td style="padding:8px;border:1px solid #ddd;text-align:right;">${escapeHtml(createdOrder.orderItems[0].product.currency)} ${createdOrder.tax.toFixed(2)}</td>
               </tr>
               <tr><td colspan="3" style="padding:8px;border:1px solid #ddd;text-align:right;font-weight:bold;">Shipping Fee:</td>
-                <td style="padding:8px;border:1px solid #ddd;text-align:right;">${createdOrder.orderItems[0].product.currency} ${createdOrder.shippingFee.toFixed(2)}</td>
+                <td style="padding:8px;border:1px solid #ddd;text-align:right;">${escapeHtml(createdOrder.orderItems[0].product.currency)} ${createdOrder.shippingFee.toFixed(2)}</td>
               </tr>
               ${(createdOrder.discountAmount ?? 0) > 0 ? `
               <tr><td colspan="3" style="padding:8px;border:1px solid #ddd;text-align:right;font-weight:bold;">Discount:</td>
-                <td style="padding:8px;border:1px solid #ddd;text-align:right;">${createdOrder.orderItems[0].product.currency} ${(createdOrder.discountAmount ?? 0).toFixed(2)}</td>
+                <td style="padding:8px;border:1px solid #ddd;text-align:right;">${escapeHtml(createdOrder.orderItems[0].product.currency)} ${(createdOrder.discountAmount ?? 0).toFixed(2)}</td>
               </tr>
               ` : ''}
               <tr style="background:#f5f5f5;">
                 <td colspan="3" style="padding:12px;border:1px solid #ddd;text-align:right;font-weight:bold;">Total:</td>
-                <td style="padding:12px;border:1px solid #ddd;text-align:right;font-size:1.1em;font-weight:bold;">${createdOrder.orderItems[0].product.currency} ${(createdOrder.discountedTotal ?? createdOrder.totalAmount).toFixed(2)}</td>
+                <td style="padding:12px;border:1px solid #ddd;text-align:right;font-size:1.1em;font-weight:bold;">${escapeHtml(createdOrder.orderItems[0].product.currency)} ${(createdOrder.discountedTotal ?? createdOrder.totalAmount).toFixed(2)}</td>
               </tr>
             </tfoot>
           </table>
@@ -408,7 +423,7 @@ export async function POST(request: Request) {
       await transporter.sendMail({
         from:    `"Artcommerce" <${smtpUser}>`,
         to:      toEmail,
-        subject: `Order Confirmation (#${createdOrder.orderNumber})`,
+        subject: cleanEmailHeader(`Order Confirmation (#${createdOrder.orderNumber})`),
         html:    htmlBody,
       })
     } catch (emailErr) {

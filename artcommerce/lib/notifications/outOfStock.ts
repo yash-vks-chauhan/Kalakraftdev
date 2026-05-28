@@ -1,4 +1,5 @@
 import { getSecureMailer } from '../mailer'
+import { cleanEmailHeader, escapeHtml } from '../emailContent'
 
 interface OutOfStockEmailParams {
   productId: number
@@ -18,7 +19,7 @@ export async function sendOutOfStockEmail({
       <h2>⚠️ Out of Stock Alert</h2>
       <p>The following product is now out of stock:</p>
       <div style="background: #f5f5f5; padding: 15px; border-radius: 5px; margin: 15px 0;">
-        <h3 style="margin-top: 0;">${productName}</h3>
+        <h3 style="margin-top: 0;">${escapeHtml(productName)}</h3>
         <p><strong>Product ID:</strong> ${productId}</p>
       </div>
       <p>
@@ -38,7 +39,7 @@ export async function sendOutOfStockEmail({
   await transporter.sendMail({
     from: `"Artcommerce" <${smtpUser}>`,
     to: process.env.ADMIN_EMAIL!,
-    subject: `Out of Stock Alert: ${productName}`,
+    subject: cleanEmailHeader(`Out of Stock Alert: ${productName}`),
     html: htmlContent,
   })
-} 
+}

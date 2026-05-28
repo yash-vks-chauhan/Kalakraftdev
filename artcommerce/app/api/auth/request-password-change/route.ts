@@ -3,6 +3,7 @@
 import { customAlphabet } from 'nanoid'
 import { NextResponse } from 'next/server'
 import { getAuthContext } from '../../../../lib/auth'
+import { escapeHtml } from '../../../../lib/emailContent'
 import { getSecureMailer } from '../../../../lib/mailer'
 import { getOtpSecretValidationError, hashOtpForScope } from '../../../../lib/otp-security'
 import prisma from '../../../../lib/prisma'
@@ -76,10 +77,8 @@ export async function POST(request: Request) {
     },
   })
 
-  const { transporter, smtpUser } = getSecureMailer()
-
   const html = `
-    <p>Hi ${user.fullName || ''},</p>
+    <p>Hi ${escapeHtml(user.fullName || '')},</p>
     <p>Your one-time code to reset your password is:</p>
     <h2 style="letter-spacing:4px;">${code}</h2>
     <p>This code expires in 5 minutes.</p>
@@ -87,6 +86,8 @@ export async function POST(request: Request) {
   `
 
   try {
+    const { transporter, smtpUser } = getSecureMailer()
+
     await transporter.sendMail({
       from: `"Artcommerce Support" <${smtpUser}>`,
       to: user.email as string,
@@ -95,6 +96,13 @@ export async function POST(request: Request) {
     })
   } catch (err) {
     console.error('❌ Error sending OTP email:', err)
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        passwordChangeOtp: null,
+        passwordChangeExpires: null,
+      },
+    }).catch(() => undefined)
   }
 
   return NextResponse.json({ ok: true })

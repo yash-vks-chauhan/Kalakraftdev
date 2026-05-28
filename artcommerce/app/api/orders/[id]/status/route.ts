@@ -1,6 +1,7 @@
 // File: app/api/orders/[id]/status/route.ts
 
 import { NextResponse } from 'next/server'
+import { cleanEmailHeader, escapeHtml } from '../../../../../lib/emailContent'
 import { getSecureMailer } from '../../../../../lib/mailer'
 import prisma from '../../../../../lib/prisma'
 import { orderEvents } from '../../../../../lib/orderEvents'
@@ -39,10 +40,10 @@ export async function PATCH(
     await transporter.sendMail({
       from:    `"Artcommerce" <${smtpUser}>`,
       to:      order.user.email,
-      subject: `Your order #${order.orderNumber} is now ${status}`,
+      subject: cleanEmailHeader(`Your order #${order.orderNumber} is now ${status}`),
       html: `
-        <p>Hi ${order.user.fullName},</p>
-        <p>Your order <strong>${order.orderNumber}</strong> status has changed to <strong>${status}</strong>.</p>
+        <p>Hi ${escapeHtml(order.user.fullName)},</p>
+        <p>Your order <strong>${escapeHtml(order.orderNumber)}</strong> status has changed to <strong>${escapeHtml(status)}</strong>.</p>
         <p>Thanks for shopping with us!</p>
       `,
     })
