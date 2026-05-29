@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { redirect } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { Menu, Search, Heart, ShoppingCart, ArrowUpRight } from "lucide-react"
 
 import { useAuth } from "../contexts/AuthContext"
@@ -20,6 +20,7 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   const { user, loading, logout } = useAuth()
+  const router = useRouter()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
@@ -58,6 +59,12 @@ export default function DashboardLayout({
     return () => window.removeEventListener("keydown", onKey)
   }, [])
 
+  useEffect(() => {
+    if (!loading && !user) {
+      router.replace("/auth/login")
+    }
+  }, [loading, user, router])
+
   if (loading) {
     return (
       <div className="dashboard-shell flex min-h-dvh items-center justify-center">
@@ -67,7 +74,11 @@ export default function DashboardLayout({
   }
 
   if (!user) {
-    redirect("/auth/login")
+    return (
+      <div className="dashboard-shell flex min-h-dvh items-center justify-center">
+        <LoadingSpinner message="Redirecting..." />
+      </div>
+    )
   }
 
   const handleLogout = () => {

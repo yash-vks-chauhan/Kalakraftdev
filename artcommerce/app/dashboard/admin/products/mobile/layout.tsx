@@ -1,10 +1,9 @@
 'use client'
 
 import { useAuth } from '../../../../contexts/AuthContext'
-import { redirect } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import LoadingSpinner from '../../../../components/LoadingSpinner'
 import { useEffect, useState } from 'react'
-import { isMobileDevice } from '../../../../../lib/utils'
 
 export default function MobileProductsLayout({
   children,
@@ -12,15 +11,25 @@ export default function MobileProductsLayout({
   children: React.ReactNode
 }) {
   const { user, loading } = useAuth()
-  const [isMobile, setIsMobile] = useState(false)
+  const router = useRouter()
+  const [redirecting, setRedirecting] = useState(false)
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setIsMobile(isMobileDevice())
-    }
-  }, [])
+    if (loading) return
 
-  if (loading) {
+    if (!user) {
+      setRedirecting(true)
+      router.replace('/auth/login')
+      return
+    }
+
+    if (user.role !== 'admin') {
+      setRedirecting(true)
+      router.replace('/dashboard')
+    }
+  }, [loading, user, router])
+
+  if (loading || redirecting || !user || user.role !== 'admin') {
     return (
       <div style={{ 
         position: 'relative', 
@@ -30,17 +39,9 @@ export default function MobileProductsLayout({
         alignItems: 'center',
         justifyContent: 'center'
       }}>
-        <LoadingSpinner message="Loading dashboard..." />
+        <LoadingSpinner message={loading ? "Loading dashboard..." : "Redirecting..."} />
       </div>
     )
-  }
-
-  if (!user) {
-    redirect('/auth/login')
-  }
-
-  if (user.role !== 'admin') {
-    redirect('/dashboard')
   }
 
   // Always render mobile view for this specific page

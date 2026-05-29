@@ -1,5 +1,12 @@
 import * as admin from 'firebase-admin'
 
+function normalizePrivateKey(value?: string) {
+  return (value || '')
+    .trim()
+    .replace(/^"+|"+$/g, '')
+    .replace(/\\n/g, '\n')
+}
+
 function loadServiceAccountConfig() {
   const raw = process.env.FIREBASE_SERVICE_ACCOUNT_KEY
   if (raw) {
@@ -8,7 +15,7 @@ function loadServiceAccountConfig() {
       return {
         projectId: parsed.project_id || parsed.projectId,
         clientEmail: parsed.client_email || parsed.clientEmail,
-        privateKey: (parsed.private_key || parsed.privateKey || '').replace(/\\n/g, '\n'),
+        privateKey: normalizePrivateKey(parsed.private_key || parsed.privateKey),
       }
     } catch (error) {
       console.error('Invalid FIREBASE_SERVICE_ACCOUNT_KEY JSON:', error)
@@ -18,7 +25,7 @@ function loadServiceAccountConfig() {
   return {
     projectId: process.env.FIREBASE_PROJECT_ID,
     clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-    privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+    privateKey: normalizePrivateKey(process.env.FIREBASE_PRIVATE_KEY),
   }
 }
 
