@@ -21,6 +21,30 @@ const STATIC_PATH_PREFIXES = [
 const STATIC_FILE_PATTERN =
   /\.(?:avif|css|gif|ico|jpeg|jpg|js|map|mp3|mp4|png|svg|txt|webm|webp|woff2?)$/i
 
+function getCanonicalOrigin(): string | null {
+  const configuredUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL
+  if (!configuredUrl) return null
+
+  try {
+    return new URL(configuredUrl).origin
+  } catch {
+    return null
+  }
+}
+
+function shouldRedirectToCanonicalHost(request: NextRequest): boolean {
+  if (process.env.VERCEL_ENV !== 'production') return false
+
+  const canonicalOrigin = getCanonicalOrigin()
+  if (!canonicalOrigin) return false
+
+  const canonicalHost = new URL(canonicalOrigin).host
+  const requestHost = request.nextUrl.host
+  if (requestHost === canonicalHost) return false
+
+  return requestHost.endsWith('.vercel.app')
+}
+
 function shouldSkipSecurityMiddleware(pathname: string): boolean {
   if (STATIC_PATH_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`))) {
     return true
@@ -98,6 +122,11 @@ function applySharedHeaders(response: NextResponse, request: NextRequest) {
 
 export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname
+
+  if (shouldRedirectToCanonicalHost(request)) {
+    const redirectUrl = new URL(request.nextUrl.pathname + request.nextUrl.search, getCanonicalOrigin()!)
+    return NextResponse.redirect(redirectUrl, 308)
+  }
 
   if (shouldSkipSecurityMiddleware(pathname)) {
     return NextResponse.next()
