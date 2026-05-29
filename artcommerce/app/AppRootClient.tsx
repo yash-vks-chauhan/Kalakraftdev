@@ -30,10 +30,15 @@ export default function AppRootClient({ children }: { children: React.ReactNode 
   // All /dashboard routes own their shell now, so bypass the entire subtree.
   // /checkout has its own shadcn shell and shouldn't be wrapped in store chrome.
   // /auth has its own split-screen shell.
+  // /about, /contact, /privacy, /faq use the lighter MarketingShell.
   const bypassMobileLayoutRoutes = [
     '/dashboard',
     '/checkout',
     '/auth',
+    '/about',
+    '/contact',
+    '/privacy',
+    '/faq',
   ];
   const shouldBypassMobileLayout = bypassMobileLayoutRoutes.some(
     (route) => pathname === route || pathname.startsWith(route + '/')
@@ -126,7 +131,12 @@ export default function AppRootClient({ children }: { children: React.ReactNode 
   const isDashboardRoute = pathname === '/dashboard' || pathname.startsWith('/dashboard/');
   const isCheckoutRoute = pathname === '/checkout' || pathname.startsWith('/checkout/');
   const isAuthRoute = pathname === '/auth' || pathname.startsWith('/auth/');
-  const ownsShell = isDashboardRoute || isCheckoutRoute || isAuthRoute;
+  const isMarketingRoute =
+    pathname === '/about' || pathname.startsWith('/about/') ||
+    pathname === '/contact' || pathname.startsWith('/contact/') ||
+    pathname === '/privacy' || pathname.startsWith('/privacy/') ||
+    pathname === '/faq' || pathname.startsWith('/faq/');
+  const ownsShell = isDashboardRoute || isCheckoutRoute || isAuthRoute || isMarketingRoute;
 
   // Always use standard layout pipeline; mobile-only routes are handled via showDesktopView and MobileLayout
 

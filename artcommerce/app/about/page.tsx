@@ -16,6 +16,7 @@ import {
   Users,
 } from "lucide-react"
 
+import MarketingShell from "../components/MarketingShell"
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -83,7 +84,8 @@ const MILESTONES = [
 
 export default function AboutPage() {
   return (
-    <main className="flex flex-col">
+    <MarketingShell>
+      <main className="flex flex-col">
       {/* ───────────────────── Hero ───────────────────── */}
       <section className="relative overflow-hidden border-b bg-gradient-to-br from-zinc-50 via-background to-zinc-50 dark:from-zinc-950 dark:via-background dark:to-zinc-950">
         <div
@@ -304,6 +306,7 @@ export default function AboutPage() {
           </div>
         </div>
       </section>
-    </main>
+      </main>
+    </MarketingShell>
   )
 }

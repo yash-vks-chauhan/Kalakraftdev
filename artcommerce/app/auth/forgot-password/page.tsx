@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ArrowRight, Loader2, Mail, ShieldCheck } from 'lucide-react'
+import { ArrowRight, Loader2, Mail } from 'lucide-react'
 
 import AuthShell from '../AuthShell'
 import { Banner } from '../_components/AuthBits'
@@ -102,7 +102,7 @@ export default function ForgotPasswordRequestPage() {
         </>
       }
     >
-      <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-4">
         {error && <Banner tone="error">{error}</Banner>}
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
@@ -125,9 +125,6 @@ export default function ForgotPasswordRequestPage() {
                 className="pl-9"
               />
             </div>
-            <p className="text-[11px] text-muted-foreground">
-              We&apos;ll only ever send the code to this address.
-            </p>
           </div>
 
           <Button
@@ -149,20 +146,9 @@ export default function ForgotPasswordRequestPage() {
           </Button>
         </form>
 
-        <div className="flex items-start gap-3 rounded-xl border bg-muted/30 p-4">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-background text-foreground ring-1 ring-border">
-            <ShieldCheck className="h-4 w-4" />
-          </span>
-          <div className="flex min-w-0 flex-col gap-0.5">
-            <p className="text-sm font-medium text-foreground">
-              What happens next
-            </p>
-            <p className="text-xs leading-relaxed text-muted-foreground">
-              A six-character code lands in your inbox. Enter it, choose a new
-              password, and you&apos;re back in.
-            </p>
-          </div>
-        </div>
+        <p className="text-center text-[11px] text-muted-foreground">
+          Codes expire in 5 minutes. Sent only to the address above.
+        </p>
       </div>
     </AuthShell>
   )
