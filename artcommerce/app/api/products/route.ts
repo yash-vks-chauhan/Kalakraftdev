@@ -1,9 +1,12 @@
 // File: app/api/products/route.ts
 
 import { NextResponse } from 'next/server'
+import { Prisma } from '@prisma/client'
 import prisma from '../../../lib/prisma'
+import { getBoundedString } from '../../../lib/inputValidation'
 
 const LOW_STOCK_THRESHOLD = 5
+const MAX_SEARCH_LENGTH = 120
 
 const SYNONYMS: Record<string, string[]> = {
   plate:    ['tray'],
@@ -17,7 +20,11 @@ export async function GET(request: Request) {
   try {
     const url = new URL(request.url)
     const categorySlug = url.searchParams.get('category')?.trim() || undefined
-    let rawSearch = url.searchParams.get('search')?.trim()   || undefined
+    const searchValue = getBoundedString(url.searchParams.get('search'), 'search', MAX_SEARCH_LENGTH)
+    if (!searchValue.ok) {
+      return NextResponse.json({ error: searchValue.error }, { status: 400 })
+    }
+    let rawSearch = searchValue.value || undefined
     const lowStock = url.searchParams.get('lowStock') === 'true'
     const usageTagParam = url.searchParams.get('usageTag')?.trim() || undefined
     const priceMin = url.searchParams.get('priceMin')
@@ -52,8 +59,14 @@ export async function GET(request: Request) {
     }
     if (priceMin || priceMax) {
       whereClause.price = {}
-      if (priceMin) (whereClause.price as any).gte = parseFloat(priceMin)
-      if (priceMax) (whereClause.price as any).lte = parseFloat(priceMax)
+      if (priceMin) {
+        const parsedMin = Number(priceMin)
+        if (Number.isFinite(parsedMin) && parsedMin >= 0) (whereClause.price as any).gte = parsedMin
+      }
+      if (priceMax) {
+        const parsedMax = Number(priceMax)
+        if (Number.isFinite(parsedMax) && parsedMax >= 0) (whereClause.price as any).lte = parsedMax
+      }
     }
 
     // 4) Query Prisma with whereClause and dynamic orderBy
@@ -106,18 +119,21 @@ export async function GET(request: Request) {
     // Handle best sellers sorting
     if (sortParam === 'best_sellers') {
       // Get sales data for all products
-      const salesData = await prisma.$queryRaw<any[]>`
-        SELECT 
-          p.id,
-          COALESCE(SUM(oi.quantity), 0) as "totalSold"
-        FROM "Product" p
-        LEFT JOIN "OrderItem" oi ON oi."productId" = p.id
-        LEFT JOIN "Order" o ON o.id = oi."orderId" 
-          AND o.status IN ('completed', 'shipped', 'delivered')
-          AND o."paymentStatus" = 'paid'
-        WHERE p.id IN (${filteredProducts.map(p => p.id).join(',')})
-        GROUP BY p.id
-      `
+      const filteredProductIds = filteredProducts.map(p => p.id)
+      const salesData = filteredProductIds.length
+        ? await prisma.$queryRaw<any[]>(Prisma.sql`
+            SELECT
+              p.id,
+              COALESCE(SUM(oi.quantity), 0) as "totalSold"
+            FROM "Product" p
+            LEFT JOIN "OrderItem" oi ON oi."productId" = p.id
+            LEFT JOIN "Order" o ON o.id = oi."orderId"
+              AND o.status IN ('completed', 'shipped', 'delivered')
+              AND o."paymentStatus" = 'paid'
+            WHERE p.id IN (${Prisma.join(filteredProductIds)})
+            GROUP BY p.id
+          `)
+        : []
       
       // Create a map of product ID to total sold
       const salesMap = new Map()

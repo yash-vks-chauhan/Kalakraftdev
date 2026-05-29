@@ -26,6 +26,7 @@ export type AccessTokenPayload = {
   userId: string
   email?: string | null
   role?: string | null
+  tokenVersion?: number | null
   tokenType?: 'access'
 }
 
@@ -33,6 +34,7 @@ type UserForToken = {
   id: string
   email?: string | null
   role?: string | null
+  tokenVersion?: number | null
 }
 
 function ensureJwtSecret(): string {
@@ -88,6 +90,7 @@ export function signAccessToken(user: UserForToken): string {
       userId: user.id,
       email: user.email || undefined,
       role: user.role || undefined,
+      tokenVersion: user.tokenVersion ?? 0,
       tokenType: 'access',
     },
     secret,
@@ -232,7 +235,7 @@ export async function rotateRefreshSession(rawRefreshToken: string): Promise<{
     where: { sessionToken: currentHash },
     include: {
       user: {
-        select: { id: true, email: true, role: true },
+        select: { id: true, email: true, role: true, tokenVersion: true },
       },
     },
   })
@@ -331,9 +334,11 @@ export async function getAuthenticatedUser(request: Request): Promise<UserForTok
 
   const user = await prisma.user.findUnique({
     where: { id: String(payload.userId) },
-    select: { id: true, email: true, role: true },
+    select: { id: true, email: true, role: true, tokenVersion: true },
   })
-  return user || null
+  if (!user) return null
+  if (payload.tokenVersion !== user.tokenVersion) return null
+  return user
 }
 
 export async function requireAdminUser(request: Request): Promise<UserForToken | null> {

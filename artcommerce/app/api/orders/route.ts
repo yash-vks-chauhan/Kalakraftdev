@@ -11,10 +11,14 @@ import { sendLowStockEmail } from '../../../lib/notifications/lowStock'
 import { sendOutOfStockEmail } from '../../../lib/notifications/outOfStock'
 import { getAuthenticatedUser } from '../../../lib/session-auth'
 import { consumeRateLimit, getClientIp } from '../../../lib/rateLimit'
+import { getBoundedString, parsePositiveInteger } from '../../../lib/inputValidation'
 
 const OUT_OF_STOCK_ERROR_PREFIX = 'INSUFFICIENT_STOCK:'
 const ORDER_WINDOW_MS = 10 * 60 * 1000
 const MAX_ORDERS_PER_WINDOW = 5
+const MAX_CART_QUANTITY = 99
+const MAX_COUPON_CODE_LENGTH = 64
+const ALLOWED_PAYMENT_METHODS = new Set(['Credit Card', 'PayPal', 'Cash on Delivery'])
 
 export async function GET(request: Request) {
   try {
@@ -94,11 +98,35 @@ export async function POST(request: Request) {
   } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
-  const { addressId, billingAddressId, paymentMethod } = body
-  const couponCode = typeof body.couponCode === 'string'
-    ? body.couponCode.trim().toUpperCase()
-    : ''
-  if (!addressId) return NextResponse.json({ error: 'Missing addressId' }, { status: 400 })
+  const addressIdResult = parsePositiveInteger(body.addressId, 'addressId')
+  if (!addressIdResult.ok) {
+    return NextResponse.json({ error: addressIdResult.error }, { status: 400 })
+  }
+  const addressId = addressIdResult.value
+
+  let billingAddressId: number | null = null
+  if (body.billingAddressId != null && body.billingAddressId !== '') {
+    const billingAddressIdResult = parsePositiveInteger(body.billingAddressId, 'billingAddressId')
+    if (!billingAddressIdResult.ok) {
+      return NextResponse.json({ error: billingAddressIdResult.error }, { status: 400 })
+    }
+    billingAddressId = billingAddressIdResult.value
+  }
+
+  const paymentMethodResult = getBoundedString(body.paymentMethod, 'paymentMethod', 30, { required: true })
+  if (!paymentMethodResult.ok) {
+    return NextResponse.json({ error: paymentMethodResult.error }, { status: 400 })
+  }
+  const paymentMethod = paymentMethodResult.value || ''
+  if (!ALLOWED_PAYMENT_METHODS.has(paymentMethod)) {
+    return NextResponse.json({ error: 'Invalid payment method' }, { status: 400 })
+  }
+
+  const couponCodeRaw = typeof body.couponCode === 'string' ? body.couponCode.trim().toUpperCase() : ''
+  if (couponCodeRaw.length > MAX_COUPON_CODE_LENGTH) {
+    return NextResponse.json({ error: 'Invalid coupon code' }, { status: 400 })
+  }
+  const couponCode = couponCodeRaw
 
   // 3️⃣ Load shipping & billing addresses
   const shippingAddr = await prisma.address.findFirst({ where: { id: addressId, userId } })
@@ -117,6 +145,29 @@ export async function POST(request: Request) {
     include: { product: true },
   })
   if (cartItems.length === 0) return NextResponse.json({ error: 'Cart is empty' }, { status: 400 })
+
+  const invalidCartItem = cartItems.find(
+    (item) =>
+      !Number.isSafeInteger(item.quantity) ||
+      item.quantity < 1 ||
+      item.quantity > MAX_CART_QUANTITY ||
+      !item.product.isActive,
+  )
+  if (invalidCartItem) {
+    return NextResponse.json(
+      { error: 'Cart contains an unavailable item or invalid quantity. Please refresh your cart.' },
+      { status: 400 },
+    )
+  }
+
+  const unavailableItem = cartItems.find((item) => item.product.stockQuantity < item.quantity)
+  if (unavailableItem) {
+    return NextResponse.json(
+      { error: `${unavailableItem.product.name} is no longer available in the requested quantity` },
+      { status: 409 },
+    )
+  }
+
   const productById = new Map(cartItems.map((item) => [item.productId, item.product]))
 
   // 5️⃣ Compute totals

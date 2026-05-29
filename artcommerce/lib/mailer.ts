@@ -86,8 +86,7 @@ async function sendViaBrevo({ to, subject, html, fromName = 'Artcommerce Support
   })
 
   if (!response.ok) {
-    const body = await response.text().catch(() => '')
-    throw new Error(`Brevo email failed with status ${response.status}: ${body.slice(0, 300)}`)
+    throw new Error(`Brevo email failed with status ${response.status}`)
   }
 }
 

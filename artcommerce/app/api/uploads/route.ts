@@ -1,18 +1,22 @@
 // File: app/api/uploads/route.ts
 import { NextResponse } from 'next/server'
 import { put } from '@vercel/blob'
+import sharp from 'sharp'
 import {
   guardUploadRequest,
-  MAX_UPLOAD_SIZE_BYTES,
   sanitizeFilename,
 } from '@/lib/uploadGuard'
 
 export const runtime = 'nodejs'
 
+const MAX_AVATAR_UPLOAD_SIZE_BYTES = 3 * 1024 * 1024
+const AVATAR_ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp']
+
 export async function POST(request: Request): Promise<NextResponse> {
   const guarded = await guardUploadRequest(request, {
-    routeKey: 'uploads:blob',
-    maxSizeBytes: MAX_UPLOAD_SIZE_BYTES,
+    routeKey: 'uploads:avatar',
+    maxSizeBytes: MAX_AVATAR_UPLOAD_SIZE_BYTES,
+    allowedMimeTypes: AVATAR_ALLOWED_MIME_TYPES,
   })
 
   if ('response' in guarded) return guarded.response
@@ -20,20 +24,28 @@ export async function POST(request: Request): Promise<NextResponse> {
   const { auth, upload } = guarded
 
   try {
+    const processedBuffer = await sharp(upload.buffer)
+      .rotate()
+      .resize(512, 512, { fit: 'inside', withoutEnlargement: true })
+      .webp({ quality: 85 })
+      .toBuffer()
+
     const access = 'public' as const
     const ownerSegment = sanitizeFilename(auth.userId)
-    const uniqueFilename = `${ownerSegment}/${Date.now()}-${upload.filename}`
+    const baseName = sanitizeFilename(upload.filename.replace(/\.[^/.]+$/, ''))
+    const uniqueFilename = `${ownerSegment}/avatars/${Date.now()}-${baseName}.webp`
 
-    const blob = await put(uniqueFilename, upload.buffer, {
+    const blob = await put(uniqueFilename, processedBuffer, {
       access,
-      contentType: upload.mimeType,
+      contentType: 'image/webp',
     })
 
     return NextResponse.json({
       url: blob.url,
       pathname: blob.pathname,
-      size: upload.size,
-      mimeType: upload.mimeType,
+      size: processedBuffer.byteLength,
+      originalSize: upload.size,
+      mimeType: 'image/webp',
       access,
     })
   } catch (error) {

@@ -23,6 +23,7 @@ const blockedPatterns = [
   { label: 'environment file', test: (file) => /(^|\/)\.env($|\.)/.test(file) && !/\.env\.example$/.test(file) },
   { label: 'private key / certificate', test: (file) => /\.(pem|key|p12|crt)$/i.test(file) },
   { label: 'Next.js build output', test: (file) => /(^|\/)\.next\//.test(file) },
+  { label: 'backup source file', test: (file) => /\.(bak|backup)$|~$/i.test(file) },
 ]
 
 const pathViolations = candidateFiles.flatMap((file) =>

@@ -5,6 +5,7 @@ import pusher from "../../../../../lib/pusher";
 import { randomUUID } from 'crypto';
 import { isAllowedOrigin } from "@/lib/security";
 import { sanitizeSupportAttachments, validateSupportAttachments } from "@/lib/supportAttachments";
+import { getBoundedString } from "@/lib/inputValidation";
 import { consumeRateLimit, getClientIp } from "../../../../../lib/rateLimit";
 import { getAuthenticatedUser } from "../../../../../lib/session-auth";
 
@@ -21,17 +22,6 @@ export async function GET(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const userEmail =
-    auth.email ||
-    (await prisma.user.findUnique({
-      where: { id: auth.id },
-      select: { email: true },
-    }))?.email;
-
-  if (!userEmail) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
   const { id } = await params;
   const ticket = await prisma.supportTicket.findUnique({
     where: { id },
@@ -40,7 +30,7 @@ export async function GET(
   if (!ticket) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
-  if (auth.role !== 'admin' && ticket.email !== userEmail) {
+  if (auth.role !== 'admin' && ticket.userId !== auth.id) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
   const safeMessages = ticket.messages.map((msg: any) => ({
@@ -68,27 +58,16 @@ export async function POST(
     );
   }
 
-  const userEmail =
-    auth.email ||
-    (await prisma.user.findUnique({
-      where: { id: auth.id },
-      select: { email: true },
-    }))?.email;
-
-  if (!userEmail) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
   const { id: ticketId } = await params;
 
   const ticket = await prisma.supportTicket.findUnique({
     where: { id: ticketId },
-    select: { email: true },
+    select: { userId: true },
   });
   if (!ticket) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
-  if (auth.role !== 'admin' && ticket.email !== userEmail) {
+  if (auth.role !== 'admin' && ticket.userId !== auth.id) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
   const clientIp = getClientIp(request);
@@ -104,23 +83,30 @@ export async function POST(
   }
 
   // parse JSON body { content: string, attachments?: any[] }
-  const { content, attachments = [] } = (await request.json()) as {
+  const body = await request.json().catch(() => null) as
+    | { content?: unknown; attachments?: unknown[] }
+    | null
+  if (!body || typeof body !== 'object') {
+    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
+  }
+
+  const { content, attachments = [] } = body as {
     content: string;
     attachments?: any[];
   };
+  if (!Array.isArray(attachments)) {
+    return NextResponse.json({ error: 'Attachments must be an array' }, { status: 400 });
+  }
 
-  if (!content?.trim() && attachments.length === 0) {
+  const parsedContent = getBoundedString(content, 'content', MAX_MESSAGE_LENGTH);
+  if (!parsedContent.ok) return NextResponse.json({ error: parsedContent.error }, { status: 400 });
+
+  const trimmedContent = parsedContent.value || '';
+  if (!trimmedContent && attachments.length === 0) {
     return NextResponse.json({ error: "Message or attachment is required" }, { status: 400 });
   }
-  const trimmedContent = typeof content === 'string' ? content.trim() : '';
-  if (trimmedContent.length > MAX_MESSAGE_LENGTH) {
-    return NextResponse.json(
-      { error: `Message must be ${MAX_MESSAGE_LENGTH} characters or fewer` },
-      { status: 400 },
-    );
-  }
 
-  const validatedAttachments = validateSupportAttachments(attachments);
+  const validatedAttachments = validateSupportAttachments(attachments, auth.id);
   if (!validatedAttachments.ok) {
     return NextResponse.json(
       { error: 'error' in validatedAttachments ? validatedAttachments.error : 'Invalid attachment payload' },

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { getBoundedString, isSafeRelativeOrHttpsUrl } from '../../../../lib/inputValidation'
 import prisma from '../../../../lib/prisma'
 import { getAuthenticatedUser } from '../../../../lib/session-auth'
 
@@ -12,17 +13,23 @@ export async function PATCH(request: Request) {
     }
 
     const body = await request.json().catch(() => ({}))
-    const fullName = String(body.fullName || '').trim()
-    const avatarUrl = typeof body.avatarUrl === 'string' ? body.avatarUrl.trim() : undefined
+    const fullName = getBoundedString(body.fullName, 'fullName', 120, { required: true })
+    if (!fullName.ok) {
+      return NextResponse.json({ error: fullName.error }, { status: 400 })
+    }
 
-    if (!fullName) {
-      return NextResponse.json({ error: 'fullName is required' }, { status: 400 })
+    const avatarUrl =
+      typeof body.avatarUrl === 'string' && body.avatarUrl.trim()
+        ? body.avatarUrl.trim()
+        : undefined
+    if (avatarUrl && (avatarUrl.length > 2048 || !isSafeRelativeOrHttpsUrl(avatarUrl))) {
+      return NextResponse.json({ error: 'Invalid avatarUrl' }, { status: 400 })
     }
 
     const updatedUser = await prisma.user.update({
       where: { id: authUser.id },
       data: {
-        fullName,
+        fullName: fullName.value!,
         avatarUrl,
       },
       select: { id: true, fullName: true, email: true, avatarUrl: true },

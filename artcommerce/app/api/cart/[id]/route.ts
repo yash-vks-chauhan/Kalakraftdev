@@ -1,7 +1,10 @@
 // File: app/api/cart/[id]/route.ts
 import { NextResponse } from 'next/server'
 import prisma from '../../../../lib/prisma'
+import { parsePositiveInteger } from '../../../../lib/inputValidation'
 import { getAuthenticatedUser } from '../../../../lib/session-auth'
+
+const MAX_CART_QUANTITY = 99
 
 // PUT /api/cart/[id] (id is cartItemId)
 export async function PUT(
@@ -14,23 +17,21 @@ export async function PUT(
   }
 
   const { id } = await params
-  const cartItemId = parseInt(id, 10)
-  if (isNaN(cartItemId)) {
-    return NextResponse.json({ error: 'Invalid cart item ID' }, { status: 400 })
-  }
+  const cartItemIdResult = parsePositiveInteger(id, 'cartItemId')
+  if (!cartItemIdResult.ok) return NextResponse.json({ error: cartItemIdResult.error }, { status: 400 })
+  const cartItemId = cartItemIdResult.value
 
   // Parse request body
-  let requestData;
+  let requestData: any;
   try {
     requestData = await request.json();
   } catch (e) {
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
   }
 
-  const { quantity } = requestData;
-  if (typeof quantity !== 'number' || quantity < 1) {
-    return NextResponse.json({ error: 'Quantity must be a positive number' }, { status: 400 })
-  }
+  const quantityResult = parsePositiveInteger(requestData.quantity, 'quantity', { max: MAX_CART_QUANTITY })
+  if (!quantityResult.ok) return NextResponse.json({ error: quantityResult.error }, { status: 400 })
+  const quantity = quantityResult.value
 
   // Verify that this cartItem belongs to the user before updating
   const existing = await prisma.cartItem.findUnique({
@@ -42,6 +43,9 @@ export async function PUT(
   
   if (!existing || existing.userId !== authUser.id) {
     return NextResponse.json({ error: 'Not Found' }, { status: 404 })
+  }
+  if (!existing.product.isActive) {
+    return NextResponse.json({ error: 'Product is no longer available' }, { status: 400 })
   }
   
   // Check if the requested quantity exceeds available stock
@@ -84,11 +88,9 @@ export async function DELETE(
   }
 
   const { id } = await params
-  const cartItemId = parseInt(id, 10)
-
-  if (isNaN(cartItemId)) {
-    return NextResponse.json({ error: 'Invalid cart item ID' }, { status: 400 })
-  }
+  const cartItemIdResult = parsePositiveInteger(id, 'cartItemId')
+  if (!cartItemIdResult.ok) return NextResponse.json({ error: cartItemIdResult.error }, { status: 400 })
+  const cartItemId = cartItemIdResult.value
 
   // Verify that this cartItem belongs to the user before deleting
   const existing = await prisma.cartItem.findUnique({

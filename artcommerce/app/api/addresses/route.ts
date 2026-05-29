@@ -2,7 +2,17 @@
 
 import { NextResponse } from 'next/server'
 import prisma from '../../../lib/prisma'
+import { getBoundedString } from '../../../lib/inputValidation'
 import { getAuthenticatedUser } from '../../../lib/session-auth'
+
+const ADDRESS_LIMITS = {
+  label: 40,
+  line1: 160,
+  line2: 160,
+  city: 80,
+  postalCode: 24,
+  country: 80,
+}
 
 // GET /api/addresses → list all addresses for the current user
 export async function GET(request: Request) {
@@ -23,26 +33,29 @@ export async function POST(request: Request) {
   if (!authUser) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
-  const body = await request.json()
-  const { label, line1, line2, city, postalCode, country } = body
+  const body = await request.json().catch(() => ({}))
+  const label = getBoundedString(body.label, 'label', ADDRESS_LIMITS.label, { required: true })
+  const line1 = getBoundedString(body.line1, 'line1', ADDRESS_LIMITS.line1, { required: true })
+  const line2 = getBoundedString(body.line2, 'line2', ADDRESS_LIMITS.line2)
+  const city = getBoundedString(body.city, 'city', ADDRESS_LIMITS.city, { required: true })
+  const postalCode = getBoundedString(body.postalCode, 'postalCode', ADDRESS_LIMITS.postalCode, { required: true })
+  const country = getBoundedString(body.country, 'country', ADDRESS_LIMITS.country, { required: true })
 
-  // Basic validation
-  if (!label || !line1 || !city || !postalCode || !country) {
-    return NextResponse.json(
-      { error: 'Missing required address fields' },
-      { status: 400 }
-    )
+  for (const result of [label, line1, line2, city, postalCode, country]) {
+    if (!result.ok) {
+      return NextResponse.json({ error: result.error }, { status: 400 })
+    }
   }
 
   const address = await prisma.address.create({
     data: {
       userId: authUser.id,
-      label,
-      line1,
-      line2: line2 || null,
-      city,
-      postalCode,
-      country,
+      label: label.value!,
+      line1: line1.value!,
+      line2: line2.value,
+      city: city.value!,
+      postalCode: postalCode.value!,
+      country: country.value!,
     },
   })
 

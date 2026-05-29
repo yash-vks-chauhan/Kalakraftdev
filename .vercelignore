@@ -1,0 +1,13 @@
+.git
+.next
+.npm-cache
+.playwright-cli
+.vercel
+.env*
+node_modules
+tmp
+*.tsbuildinfo
+artcommerce/.next
+artcommerce/.vercel
+artcommerce/.env*
+artcommerce/node_modules

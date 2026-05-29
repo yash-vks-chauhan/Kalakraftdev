@@ -20,6 +20,7 @@ export async function GET(request: Request) {
       price: true,
       currency: true,
       imageUrls: true,
+      isActive: true,
     },
     orderBy: { stockQuantity: 'asc' }
   })

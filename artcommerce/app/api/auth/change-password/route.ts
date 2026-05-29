@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 import { PASSWORD_POLICY_MESSAGE, isStrongPassword } from '../../../../lib/password-policy'
 import prisma from '../../../../lib/prisma'
 import { consumeRateLimit, getClientIp } from '../../../../lib/rateLimit'
-import { getAuthenticatedUser } from '../../../../lib/session-auth'
+import { clearAuthCookies, getAuthenticatedUser } from '../../../../lib/session-auth'
 
 const CHANGE_WINDOW_MS = 15 * 60 * 1000
 const CHANGE_MAX_ATTEMPTS = 10
@@ -55,14 +55,19 @@ export async function POST(request: Request) {
     await prisma.$transaction([
       prisma.user.update({
         where: { id: authUser.id },
-        data: { passwordHash: newHash },
+        data: {
+          passwordHash: newHash,
+          tokenVersion: { increment: 1 },
+        },
       }),
       prisma.session.deleteMany({
         where: { userId: authUser.id },
       }),
     ])
 
-    return NextResponse.json({ message: 'Password updated' })
+    const response = NextResponse.json({ message: 'Password updated' })
+    clearAuthCookies(response)
+    return response
   } catch (error: any) {
     console.error('Change password error:', error)
     return NextResponse.json({ error: 'Server error' }, { status: 500 })

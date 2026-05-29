@@ -485,7 +485,8 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
     const videoUrl = process.env.NEXT_PUBLIC_INSTAGRAM_VIDEO_URL || "https://res.cloudinary.com/downe8107/video/upload/v1752756632/Goal_make_the_202507170106_9lp5g_rosxzs.mp4";
     
     useEffect(() => {
-      if (!videoContainerRef.current || !videoRef.current) return;
+      const videoContainer = videoContainerRef.current;
+      if (!videoContainer || !videoRef.current) return;
       
       const observer = new IntersectionObserver(
         (entries) => {
@@ -501,12 +502,10 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
         { threshold: 0.3 }
       );
       
-      observer.observe(videoContainerRef.current);
+      observer.observe(videoContainer);
       
       return () => {
-        if (videoContainerRef.current) {
-          observer.unobserve(videoContainerRef.current);
-        }
+        observer.unobserve(videoContainer);
       };
     }, []);
     

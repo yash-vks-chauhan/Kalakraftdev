@@ -1,4 +1,5 @@
 import { resolveSupportAttachmentUrl, type SupportAttachmentStorageProvider } from './supportUploadStorage'
+import { verifySupportAttachmentToken } from './supportAttachmentTokens'
 
 export type SupportAttachment = {
   url: string
@@ -10,6 +11,7 @@ export type SupportAttachment = {
   name?: string
   storageProvider?: SupportAttachmentStorageProvider
   storageKey?: string
+  storageToken?: string
 }
 
 export const MAX_SUPPORT_ATTACHMENTS = 4
@@ -103,7 +105,10 @@ function isLocalSignedAttachmentUrl(value: string): boolean {
   }
 }
 
-export function sanitizeSupportAttachments(raw: any): SupportAttachment[] {
+export function sanitizeSupportAttachments(
+  raw: any,
+  options: { includeStorageKey?: boolean } = {},
+): SupportAttachment[] {
   if (!Array.isArray(raw)) return []
 
   return raw
@@ -143,7 +148,7 @@ export function sanitizeSupportAttachments(raw: any): SupportAttachment[] {
         height: typeof att.height === 'number' ? att.height : undefined,
         name: typeof att.name === 'string' ? att.name : undefined,
         storageProvider,
-        storageKey,
+        ...(options.includeStorageKey ? { storageKey } : {}),
       }
     })
     .filter(Boolean) as SupportAttachment[]
@@ -151,6 +156,7 @@ export function sanitizeSupportAttachments(raw: any): SupportAttachment[] {
 
 export function validateSupportAttachments(
   raw: any,
+  ownerUserId?: string,
 ): { ok: true; attachments: SupportAttachment[] } | { ok: false; error: string } {
   if (!Array.isArray(raw)) {
     return { ok: false, error: 'Attachments must be an array' }
@@ -175,7 +181,15 @@ export function validateSupportAttachments(
     const hasManagedStorage =
       (att.storageProvider === 'cloudinary' || att.storageProvider === 'imagekit') &&
       typeof att.storageKey === 'string' &&
-      hasTrustedManagedStorage(att.storageProvider, att.storageKey)
+      hasTrustedManagedStorage(att.storageProvider, att.storageKey) &&
+      (!ownerUserId ||
+        (typeof att.storageToken === 'string' &&
+          verifySupportAttachmentToken({
+            provider: att.storageProvider,
+            storageKey: att.storageKey,
+            userId: ownerUserId,
+            token: att.storageToken,
+          })))
     const hasLocalSignedUrl = typeof att.url === 'string' && isLocalSignedAttachmentUrl(att.url)
 
     if (!hasManagedStorage && !hasLocalSignedUrl) {
@@ -183,7 +197,7 @@ export function validateSupportAttachments(
     }
   }
 
-  const attachments = sanitizeSupportAttachments(raw)
+  const attachments = sanitizeSupportAttachments(raw, { includeStorageKey: true })
   if (attachments.length !== raw.length) {
     return { ok: false, error: 'Invalid or untrusted attachment payload' }
   }

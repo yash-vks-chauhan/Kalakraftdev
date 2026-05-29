@@ -43,6 +43,7 @@ export async function POST(request: Request) {
       id: rotated.user.id,
       email: rotated.user.email,
       role: rotated.user.role,
+      tokenVersion: rotated.user.tokenVersion,
     })
 
     const response = NextResponse.json({ authenticated: true })

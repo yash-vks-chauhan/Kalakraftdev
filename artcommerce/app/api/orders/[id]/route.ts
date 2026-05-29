@@ -47,17 +47,6 @@ export async function GET(
           id: true,
           fullName: true,
           email: true,
-          addresses: {
-            select: {
-              id: true,
-              label: true,
-              line1: true,
-              line2: true,
-              city: true,
-              postalCode: true,
-              country: true
-            }
-          }
         }
       },
       orderItems: {

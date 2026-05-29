@@ -2,6 +2,9 @@
 
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { Loader2 } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 interface ConfirmDialogProps {
   open: boolean
@@ -10,6 +13,16 @@ interface ConfirmDialogProps {
   confirmLabel?: string
   cancelLabel?: string
   isProcessing?: boolean
+  processingLabel?: string
+  /**
+   * Visual tone of the confirm button.
+   * Defaults to "destructive" so existing delete confirmations stay red.
+   */
+  variant?: 'default' | 'destructive'
+  /**
+   * Optional icon shown in the dialog header.
+   */
+  icon?: React.ReactNode
   onConfirm: () => void
   onClose: () => void
 }
@@ -21,6 +34,9 @@ export default function ConfirmDialog({
   confirmLabel = 'Confirm',
   cancelLabel = 'Cancel',
   isProcessing = false,
+  processingLabel,
+  variant = 'destructive',
+  icon,
   onConfirm,
   onClose,
 }: ConfirmDialogProps) {
@@ -54,40 +70,64 @@ export default function ConfirmDialog({
     return null
   }
 
+  const confirmText = isProcessing ? processingLabel ?? confirmLabel : confirmLabel
+
   return createPortal(
     <div
-      className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/55 px-4 backdrop-blur-sm"
+      className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/55 px-4 backdrop-blur-sm animate-in fade-in duration-150"
       onClick={isProcessing ? undefined : onClose}
     >
       <div
-        role="dialog"
+        role="alertdialog"
         aria-modal="true"
         aria-labelledby="confirm-dialog-title"
-        className="w-full max-w-md rounded-2xl border border-black/10 bg-white p-6 shadow-2xl"
+        aria-describedby="confirm-dialog-description"
+        className={cn(
+          'w-full max-w-md rounded-xl border bg-background p-6 shadow-2xl',
+          'animate-in zoom-in-95 fade-in duration-200',
+        )}
         onClick={(event) => event.stopPropagation()}
       >
-        <h2 id="confirm-dialog-title" className="text-xl font-semibold text-gray-900">
+        {icon && (
+          <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-muted text-foreground">
+            {icon}
+          </div>
+        )}
+        <h2
+          id="confirm-dialog-title"
+          className="text-base font-semibold tracking-tight text-foreground sm:text-lg"
+        >
           {title}
         </h2>
-        <p className="mt-3 text-sm leading-6 text-gray-600">{description}</p>
+        <p
+          id="confirm-dialog-description"
+          className="mt-2 text-sm leading-6 text-muted-foreground"
+        >
+          {description}
+        </p>
 
-        <div className="mt-6 flex items-center justify-end gap-3">
-          <button
+        <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <Button
             type="button"
+            variant="outline"
+            size="sm"
             onClick={onClose}
             disabled={isProcessing}
-            className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
+            className="w-full sm:w-auto"
           >
             {cancelLabel}
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            variant={variant === 'destructive' ? 'destructive' : 'default'}
+            size="sm"
             onClick={onConfirm}
             disabled={isProcessing}
-            className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+            className="w-full gap-1.5 sm:w-auto"
           >
-            {isProcessing ? 'Deleting...' : confirmLabel}
-          </button>
+            {isProcessing && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+            {confirmText}
+          </Button>
         </div>
       </div>
     </div>,

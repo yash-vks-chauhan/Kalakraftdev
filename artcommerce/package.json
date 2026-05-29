@@ -36,7 +36,7 @@
     "cloudinary": "2.10.0",
     "clsx": "2.1.1",
     "firebase": "12.9.0",
-    "firebase-admin": "13.6.1",
+    "firebase-admin": "13.7.0",
     "framer-motion": "12.18.1",
     "fs-extra": "11.2.0",
     "fuse.js": "^6.6.2",
@@ -47,7 +47,6 @@
     "jwt-decode": "4.0.0",
     "lucide-react": "0.514.0",
     "next": "15.5.18",
-    "next-auth": "4.24.13",
     "nodemailer": "8.0.9",
     "pusher": "5.2.0",
     "pusher-js": "8.4.0",
@@ -59,8 +58,7 @@
     "recharts": "2.15.3",
     "sharp": "0.34.2",
     "tailwind-merge": "1.14.0",
-    "three": "0.177.0",
-    "uuid": "9.0.1"
+    "three": "0.177.0"
   },
   "devDependencies": {
     "@types/aos": "3.0.7",
@@ -70,20 +68,24 @@
     "@types/react": "18.2.61",
     "@types/react-dom": "18.2.19",
     "@types/three": "0.177.0",
-    "@typescript-eslint/eslint-plugin": "7.2.0",
-    "@typescript-eslint/parser": "7.2.0",
+    "@typescript-eslint/eslint-plugin": "7.18.0",
+    "@typescript-eslint/parser": "7.18.0",
     "autoprefixer": "10.4.16",
     "eslint": "8.57.0",
     "eslint-config-next": "15.5.18",
-    "postcss": "8.4.35",
+    "minimatch": "9.0.9",
+    "postcss": "8.5.15",
     "prisma": "^5.15.0",
-    "rimraf": "5.0.5",
     "tailwindcss": "3.4.4",
     "typescript": "5.3.3"
   },
   "overrides": {
-    "fast-xml-parser": "4.5.4",
-    "rimraf": "5.0.5",
-    "uuid": "9.0.1"
+    "fast-xml-parser": "5.8.0",
+    "glob": {
+      ".": "10.5.0",
+      "minimatch": "9.0.9"
+    },
+    "postcss": "8.5.15",
+    "uuid": "11.1.1"
   }
 }

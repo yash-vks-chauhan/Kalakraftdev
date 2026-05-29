@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
-import { AuthContext, getAuthContext } from './auth'
+import { AuthContext } from './auth'
 import { getClientIp } from './rateLimit'
-import { requireAdminUser } from './session-auth'
+import { getAuthenticatedUser } from './session-auth'
 
 type RateBucket = {
   count: number
@@ -178,9 +178,10 @@ export function validateUploadBuffer(
   }: UploadValidationOptions,
 ): { ok: true; upload: ValidatedUpload } | GuardFailure {
   const detectedMime = detectMimeFromBuffer(buffer)
-  const mimeType = (detectedMime || mimeFromHeader || '').toLowerCase()
+  const headerMime = (mimeFromHeader || '').toLowerCase()
+  const mimeType = (detectedMime || '').toLowerCase()
 
-  if (!mimeType || !allowedMimeTypes.includes(mimeType)) {
+  if (!detectedMime || !allowedMimeTypes.includes(mimeType)) {
     return {
       ok: false,
       response: NextResponse.json(
@@ -194,10 +195,24 @@ export function validateUploadBuffer(
     }
   }
 
+  if (headerMime && allowedMimeTypes.includes(headerMime) && headerMime !== mimeType) {
+    return {
+      ok: false,
+      response: NextResponse.json(
+        {
+          error: 'File type does not match uploaded content.',
+          detected: mimeType,
+        },
+        { status: 415 },
+      ),
+    }
+  }
+
   if (!filename) filename = `upload.${MIME_EXTENSION_MAP[mimeType] || 'bin'}`
   filename = sanitizeFilename(filename)
-  const hasExtension = /\.[A-Za-z0-9]+$/.test(filename)
-  if (!hasExtension) filename = `${filename}.${MIME_EXTENSION_MAP[mimeType] || 'bin'}`
+  const expectedExtension = MIME_EXTENSION_MAP[mimeType] || 'bin'
+  const base = filename.replace(/\.[A-Za-z0-9]+$/, '')
+  filename = `${base || 'upload'}.${expectedExtension}`
 
   if (buffer.byteLength > maxSizeBytes) {
     return {
@@ -256,17 +271,19 @@ export async function guardUploadRequest(
     rateWindowMs?: number
   },
 ): Promise<GuardSuccess | GuardFailure> {
-  const auth = getAuthContext(request)
-  if (!auth?.userId) {
+  const user = await getAuthenticatedUser(request)
+  if (!user?.id) {
     return { ok: false, response: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) }
   }
 
-  if (requireAdmin) {
-    const admin = await requireAdminUser(request)
-    if (!admin) {
-      return { ok: false, response: NextResponse.json({ error: 'Admin access required' }, { status: 403 }) }
-    }
-    auth.role = admin.role || auth.role
+  const auth: AuthContext = {
+    userId: user.id,
+    email: user.email || undefined,
+    role: user.role || undefined,
+  }
+
+  if (requireAdmin && user.role !== 'admin') {
+    return { ok: false, response: NextResponse.json({ error: 'Admin access required' }, { status: 403 }) }
   }
 
   const rateKey = `${routeKey}:${getClientIdentifier(request, auth)}`

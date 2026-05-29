@@ -132,7 +132,8 @@ export default function ProductsClient() {
 
   // Infinite scroll observer for desktop
   useEffect(() => {
-    if (isMobileView || !loadMoreTriggerRef.current) return
+    const trigger = loadMoreTriggerRef.current
+    if (isMobileView || !trigger) return
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -155,12 +156,10 @@ export default function ProductsClient() {
       }
     )
 
-    observer.observe(loadMoreTriggerRef.current)
+    observer.observe(trigger)
 
     return () => {
-      if (loadMoreTriggerRef.current) {
-        observer.unobserve(loadMoreTriggerRef.current)
-      }
+      observer.unobserve(trigger)
     }
   }, [isMobileView, displayedProducts.length, allProducts.length, displayCount, loadingMore])
 

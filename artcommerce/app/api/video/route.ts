@@ -23,10 +23,44 @@ export async function GET(request: NextRequest) {
     const range = request.headers.get('range');
     
     if (range) {
-      // Parse the range header
-      const parts = range.replace(/bytes=/, '').split('-');
-      const start = parseInt(parts[0], 10);
-      const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+      const invalidRange = () =>
+        new NextResponse(null, {
+          status: 416,
+          headers: {
+            'Content-Range': `bytes */${fileSize}`,
+            'Accept-Ranges': 'bytes',
+          },
+        });
+
+      const match = range.match(/^bytes=(\d*)-(\d*)$/);
+      if (!match) return invalidRange();
+
+      let start: number;
+      let end: number;
+
+      if (match[1] === '' && match[2] === '') return invalidRange();
+
+      if (match[1] === '') {
+        const suffixLength = Number(match[2]);
+        if (!Number.isSafeInteger(suffixLength) || suffixLength <= 0) return invalidRange();
+        start = Math.max(0, fileSize - suffixLength);
+        end = fileSize - 1;
+      } else {
+        start = Number(match[1]);
+        end = match[2] ? Number(match[2]) : fileSize - 1;
+      }
+
+      if (
+        !Number.isSafeInteger(start) ||
+        !Number.isSafeInteger(end) ||
+        start < 0 ||
+        end < start ||
+        start >= fileSize
+      ) {
+        return invalidRange();
+      }
+
+      end = Math.min(end, fileSize - 1);
       
       // Calculate the chunk size
       const chunkSize = end - start + 1;
@@ -68,4 +102,4 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-} 
+}

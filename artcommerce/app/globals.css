@@ -8,15 +8,16 @@
   --background-rgb: 255, 255, 255;
   --primary-color: #2d3748;
   --secondary-color: #4a5568;
-}
 
-/*
- * Shadcn design tokens — scoped to the dashboard shell so the rest of the
- * site (home, products, navbar) keeps its existing look. Any element that
- * lives under `.dashboard-shell` can use bg-background, text-foreground,
- * border-border, etc.
- */
-.dashboard-shell {
+  /*
+   * Shadcn design tokens — defined at :root so they're available globally,
+   * including inside Radix Portals (Select, Dropdown, Popover, Tooltip),
+   * which mount at document.body and would otherwise miss tokens scoped
+   * to .dashboard-shell. The dashboard-shell block below still owns the
+   * page-level surface styles (bg-background, text-foreground, font).
+   * The rest of the site keeps its existing look because it never uses
+   * shadcn utility classes like bg-popover or text-foreground directly.
+   */
   --background: 0 0% 100%;
   --foreground: 222.2 47.4% 11.2%;
   --card: 0 0% 100%;
@@ -37,7 +38,9 @@
   --input: 214.3 31.8% 91.4%;
   --ring: 222.2 84% 4.9%;
   --radius: 0.625rem;
+}
 
+.dashboard-shell {
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
   font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
@@ -331,4 +334,40 @@ body:has(.mobileDashboardContainer) * {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+/* Shimmer skeleton — overlay a moving highlight on top of the muted base. */
+.skeleton-shimmer {
+  position: relative;
+  overflow: hidden;
+  background-color: hsl(var(--muted));
+}
+
+.skeleton-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    hsl(var(--foreground) / 0.06) 45%,
+    hsl(var(--foreground) / 0.1) 50%,
+    hsl(var(--foreground) / 0.06) 55%,
+    transparent 100%
+  );
+  animation: skeleton-shimmer 1.6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes skeleton-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-shimmer::after {
+    animation: none;
+  }
 }

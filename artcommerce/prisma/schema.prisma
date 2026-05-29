@@ -26,6 +26,7 @@ model User {
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
   role             String    @default("user")
+  tokenVersion     Int       @default(0)
   addresses        Address[]
   defaultAddressId Int?      @unique
   defaultAddress   Address?  @relation("DefaultAddress", fields: [defaultAddressId], references: [id], onDelete: NoAction, onUpdate: Cascade)
@@ -45,6 +46,7 @@ model User {
 
   authoredNotes OrderNote[] @relation("AuthorNotes")
   notifications Notification[]
+  supportTickets SupportTicket[]
 }
 
 model Account {
@@ -254,6 +256,8 @@ model FlashSale {
 
 model SupportTicket {
   id          String    @id
+  userId      String?
+  user        User?     @relation(fields: [userId], references: [id], onDelete: SetNull, onUpdate: Cascade)
   name        String
   email       String
   subject     String
@@ -262,6 +266,8 @@ model SupportTicket {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   messages    SupportMessage[]
+
+  @@index([userId])
 }
 
 model SupportMessage {

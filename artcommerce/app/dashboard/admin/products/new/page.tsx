@@ -3,776 +3,945 @@
 'use client'
 
 import { useState, FormEvent, useEffect, useCallback } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '../../../../contexts/AuthContext'
-import styles from './new-product.module.css'
-import { FiBox, FiDollarSign, FiImage, FiSave, FiX, FiArrowRight, FiCheck, FiAlertCircle, FiUpload } from 'react-icons/fi'
-import LoadingSpinner from '../../../../components/LoadingSpinner'
 import { useDropzone } from 'react-dropzone'
+import {
+  ArrowLeft,
+  CheckCircle2,
+  AlertCircle,
+  UploadCloud,
+  X,
+  GripVertical,
+  Loader2,
+  ImagePlus,
+  Plus,
+  Save,
+} from 'lucide-react'
+
+import { useAuth } from '../../../../contexts/AuthContext'
+import { cn } from '@/lib/utils'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Separator } from '@/components/ui/separator'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Switch } from '@/components/ui/switch'
+import { Textarea } from '@/components/ui/textarea'
+
+const MAX_IMAGES = 5
+const MAX_FILE_BYTES = 20 * 1024 * 1024
+
+interface Category {
+  id: number
+  name: string
+}
+
+interface StylingIdea {
+  url: string
+  text: string
+}
 
 export default function NewProductPage() {
-  const { token, user } = useAuth()
+  const { token, user, loading: authLoading } = useAuth()
   const router = useRouter()
-  const [showNotification, setShowNotification] = useState(false)
-  const [notificationMessage, setNotificationMessage] = useState('')
-  const [notificationType, setNotificationType] = useState<'success' | 'error'>('success')
-  const [isLoading, setIsLoading] = useState(false)
-  const [submitting, setSubmitting] = useState(false)
-  const [isSaving, setIsSaving] = useState(false)
 
-  // Form state
+  const [bootstrapping, setBootstrapping] = useState(true)
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [notice, setNotice] = useState<{ tone: 'success' | 'error'; text: string } | null>(null)
+
   const [name, setName] = useState('')
   const [slug, setSlug] = useState('')
+  const [slugTouched, setSlugTouched] = useState(false)
   const [shortDesc, setShortDesc] = useState('')
   const [description, setDescription] = useState('')
   const [specifications, setSpecifications] = useState('')
   const [careInstructions, setCareInstructions] = useState('')
-  const [stylingIdeas, setStylingIdeas] = useState<{ url: string; text: string }[]>([])
-  const [price, setPrice] = useState<number>(0)
+  const [price, setPrice] = useState<string>('')
   const [currency, setCurrency] = useState('INR')
-  const [stockQuantity, setStockQuantity] = useState<number>(0)
+  const [stockQuantity, setStockQuantity] = useState<string>('')
   const [isActive, setIsActive] = useState(true)
-  const [categoryId, setCategoryId] = useState<number | ''>('')
+  const [categoryId, setCategoryId] = useState<string>('')
+
   const [imageUrls, setImageUrls] = useState<string[]>([])
-  const [fileInputs, setFileInputs] = useState<number[]>([0])
-  const [stylingFileInputs, setStylingFileInputs] = useState<number[]>([0])
-  const [categories, setCategories] = useState<{ id: number; name: string }[]>([])
-  const [error, setError] = useState<string | null>(null)
-  const [uploadingFiles, setUploadingFiles] = useState<{ [key: string]: boolean }>({})
-  const [uploadProgress, setUploadProgress] = useState<{ [key: string]: number }>({})
-  const [uploadErrors, setUploadErrors] = useState<{ [key: string]: string }>({})
-  const [usageTags, setUsageTags] = useState<string[]>([])
+  const [stylingIdeas, setStylingIdeas] = useState<StylingIdea[]>([])
+  const [uploadingProduct, setUploadingProduct] = useState<Record<string, number>>({})
+  const [uploadingStyling, setUploadingStyling] = useState<Record<string, number>>({})
+
+  const [categories, setCategories] = useState<Category[]>([])
   const [availableTags, setAvailableTags] = useState<string[]>([])
+  const [usageTags, setUsageTags] = useState<string[]>([])
   const [newTagInput, setNewTagInput] = useState('')
 
-  // ImageKit uploads are handled via the backend route – no client-side config needed.
-
-  // State for drag-and-drop reordering
-  const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
-
-  // Function to reorder images array
-  const reorderImages = (fromIndex: number, toIndex: number) => {
-    setImageUrls(prev => {
-      const updated = [...prev];
-      const [moved] = updated.splice(fromIndex, 1);
-      updated.splice(toIndex, 0, moved);
-      return updated;
-    });
-  };
+  const [draggingIndex, setDraggingIndex] = useState<number | null>(null)
 
   useEffect(() => {
-    if (user?.role !== 'admin') {
-      setError('Unauthorized')
+    if (authLoading) return
+    if (!user) {
+      router.replace('/auth/login')
       return
     }
-    fetch('/api/categories')
-      .then(r => r.json())
-      .then(json => setCategories(json.categories))
-    // Fetch existing tags for suggestions
-    fetch('/api/products/usage-tags')
-      .then(r => r.json())
-      .then(json => {
-        if (Array.isArray(json.tags)) setAvailableTags(json.tags)
+    if (user.role !== 'admin') {
+      setError('You are not authorized to access this page.')
+      setBootstrapping(false)
+      return
+    }
+    Promise.all([
+      fetch('/api/categories').then((r) => r.json()),
+      fetch('/api/products/usage-tags').then((r) => r.json()),
+    ])
+      .then(([catJson, tagJson]) => {
+        setCategories(catJson?.categories ?? [])
+        if (Array.isArray(tagJson?.tags)) setAvailableTags(tagJson.tags)
       })
-      .catch(console.error)
-  }, [user])
+      .catch(() => setError('Failed to load categories.'))
+      .finally(() => setBootstrapping(false))
+  }, [authLoading, user, router])
 
-  const handleRemoveImage = (indexToRemove: number) => {
-    setImageUrls(prev => prev.filter((_, index) => index !== indexToRemove))
-    setFileInputs(prev => prev.filter(idx => idx !== indexToRemove))
-  }
-
-  const handleRemoveStylingImage = (indexToRemove: number) => {
-    setStylingIdeas(prev => prev.filter((_, index) => index !== indexToRemove))
-  }
-
-  const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    // Check if adding these files would exceed the maximum of 5 images
-    if (imageUrls.length + acceptedFiles.length > 5) {
-      const overLimit = imageUrls.length + acceptedFiles.length - 5;
-      setUploadErrors(prev => ({
-        ...prev,
-        'image-limit': `Cannot upload ${acceptedFiles.length} images. Maximum limit is 5 images (${overLimit} too many)`
-      }));
-      
-      // Show error notification
-      setNotificationMessage(`Cannot upload ${acceptedFiles.length} images. Maximum limit is 5 images (${overLimit} too many)`);
-      setNotificationType('error');
-      setShowNotification(true);
-      
-      // Auto-hide notification after 5 seconds
-      setTimeout(() => {
-        setShowNotification(false);
-      }, 5000);
-      
-      return;
-    }
-    
-    for (const file of acceptedFiles) {
-      // Check file size - 20MB limit
-      if (file.size > 20 * 1024 * 1024) {
-        const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
-        setUploadErrors(prev => ({
-          ...prev,
-          [`${file.name}-size`]: `File ${file.name} exceeds the 20MB size limit (size: ${fileSizeMB}MB)`
-        }));
-        
-        // Show error notification
-        setNotificationMessage(`File ${file.name} exceeds the 20MB size limit (size: ${fileSizeMB}MB)`);
-        setNotificationType('error');
-        setShowNotification(true);
-        
-        // Auto-hide notification after 5 seconds
-        setTimeout(() => {
-          setShowNotification(false);
-        }, 5000);
-        
-        continue;
-      }
-      
-      const uploadId = file.name + Date.now()
-      setUploadingFiles(prev => ({ ...prev, [uploadId]: true }))
-      setUploadProgress(prev => ({ ...prev, [uploadId]: 0 }))
-      
-      try {
-        // Upload directly to ImageKit via the backend route
-        const xhr = new XMLHttpRequest()
-        xhr.upload.onprogress = (event) => {
-          if (event.lengthComputable) {
-            const progress = Math.round((event.loaded * 100) / event.total)
-            setUploadProgress(prev => ({ ...prev, [uploadId]: progress }))
-          }
-        }
-        const uploadPromise = new Promise<{ url: string }>((resolve, reject) => {
-          xhr.open('POST', `/api/uploads/imagekit?filename=${encodeURIComponent(file.name)}&folder=products`, true)
-          if (token) {
-            xhr.setRequestHeader('Authorization', `Bearer ${token}`)
-          }
-
-          xhr.onload = () => {
-            if (xhr.status >= 200 && xhr.status < 300) {
-              try {
-                resolve(JSON.parse(xhr.responseText))
-              } catch {
-                reject(new Error('Invalid response format'))
-              }
-            } else {
-              reject(new Error(`Upload failed with status ${xhr.status}`))
-            }
-          }
-          xhr.onerror = () => reject(new Error('Network error during upload'))
-          xhr.ontimeout = () => reject(new Error('Upload timed out'))
-          xhr.send(file)
-        })
-        const result = await uploadPromise
-        setImageUrls(prev => [...prev, result.url])
-        
-        // Remove from uploading files
-        setUploadingFiles(prev => {
-          const newState = { ...prev }
-          delete newState[uploadId]
-          return newState
-        })
-        
-        // Show success notification
-        setNotificationMessage(`Image ${file.name} uploaded successfully`);
-        setNotificationType('success');
-        setShowNotification(true);
-        
-        // Auto-hide notification after 3 seconds
-        setTimeout(() => {
-          setShowNotification(false);
-        }, 3000);
-      } catch (error: any) {
-        console.error('Upload failed:', error)
-        
-        // Remove from uploading files
-        setUploadingFiles(prev => {
-          const newState = { ...prev }
-          delete newState[uploadId]
-          return newState
-        })
-        
-        // Add to upload errors
-        setUploadErrors(prev => ({
-          ...prev,
-          [uploadId]: `Failed to upload ${file.name}: ${error.message}`
-        }))
-        
-        // Show error notification
-        setNotificationMessage(`Failed to upload ${file.name}: ${error.message}`);
-        setNotificationType('error');
-        setShowNotification(true);
-        
-        // Auto-hide notification after 5 seconds
-        setTimeout(() => {
-          setShowNotification(false);
-        }, 5000);
-      }
-    }
-  }, [imageUrls.length, setNotificationMessage, setNotificationType, setShowNotification, token]);
-
-  const onDropStyling = useCallback(async (acceptedFiles: File[]) => {
-    for (const file of acceptedFiles) {
-      // Check file size - 20MB limit
-      if (file.size > 20 * 1024 * 1024) {
-        const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
-        setNotificationMessage(`File ${file.name} exceeds the 20MB size limit (size: ${fileSizeMB}MB)`);
-        setNotificationType('error');
-        setShowNotification(true);
-        
-        // Auto-hide notification after 5 seconds
-        setTimeout(() => {
-          setShowNotification(false);
-        }, 5000);
-        continue;
-      }
-      
-      const uploadId = `styling-${file.name}-${Date.now()}`;
-      
-      // Show uploading notification
-      setNotificationMessage(`Uploading ${file.name}...`);
-      setNotificationType('success');
-      setShowNotification(true);
-      
-      try {
-        // Upload directly to ImageKit via the backend route
-        const xhr = new XMLHttpRequest()
-        xhr.upload.onprogress = (event) => {
-          if (event.lengthComputable) {
-            const progress = Math.round((event.loaded * 100) / event.total)
-            setUploadProgress(prev => ({ ...prev, [uploadId]: progress }))
-          }
-        }
-        const uploadPromise = new Promise<{ url: string }>((resolve, reject) => {
-          xhr.open('POST', `/api/uploads/imagekit?filename=${encodeURIComponent(file.name)}&folder=styling`, true)
-          if (token) {
-            xhr.setRequestHeader('Authorization', `Bearer ${token}`)
-          }
-
-          xhr.onload = () => {
-            if (xhr.status >= 200 && xhr.status < 300) {
-              try {
-                resolve(JSON.parse(xhr.responseText))
-              } catch {
-                reject(new Error('Invalid response format'))
-              }
-            } else {
-              reject(new Error(`Upload failed with status ${xhr.status}`))
-            }
-          }
-          xhr.onerror = () => reject(new Error('Network error during upload'))
-          xhr.ontimeout = () => reject(new Error('Upload timed out'))
-          xhr.send(file)
-        })
-        const result = await uploadPromise
-        setStylingIdeas(prev => [...prev, { url: result.url, text: '' }]);
-        
-        // Show success notification
-        setNotificationMessage(`Styling image ${file.name} uploaded successfully`);
-        setNotificationType('success');
-        setShowNotification(true);
-        
-        // Auto-hide notification after 3 seconds
-        setTimeout(() => {
-          setShowNotification(false);
-        }, 3000);
-      } catch (error: any) {
-        console.error('Styling image upload failed:', error);
-        
-        // Show error notification
-        setNotificationMessage(`Failed to upload styling image: ${error.message || 'Unknown error'}`);
-        setNotificationType('error');
-        setShowNotification(true);
-        
-        // Auto-hide notification after 5 seconds
-        setTimeout(() => {
-          setShowNotification(false);
-        }, 5000);
-      }
-    }
-  }, [setNotificationMessage, setNotificationType, setShowNotification, token]);
-
-  const { getRootProps, getInputProps, isDragActive, fileRejections } = useDropzone({
-    onDrop,
-    accept: {
-      'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.webp']
-    },
-    maxFiles: 5 - imageUrls.length,
-    maxSize: 20 * 1024 * 1024, // 20MB in bytes
-    multiple: true,
-  })
-
-  const { getRootProps: getStylingRootProps, getInputProps: getStylingInputProps, isDragActive: isStylingDrag } = useDropzone({
-    onDrop: onDropStyling,
-    accept: {
-      'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.webp']
-    },
-    maxSize: 20 * 1024 * 1024, // 20MB in bytes
-    multiple: true,
-  })
-
-  // Handle file rejections from dropzone
   useEffect(() => {
-    if (fileRejections.length > 0) {
-      fileRejections.forEach(({ file, errors }) => {
-        errors.forEach(error => {
-          if (error.code === 'file-too-large') {
-            const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
-            setNotificationMessage(`File ${file.name} exceeds the 20MB size limit (size: ${fileSizeMB}MB)`);
-            setNotificationType('error');
-            setShowNotification(true);
-          } else if (error.code === 'too-many-files') {
-            setNotificationMessage(`Too many files selected. You can upload a maximum of ${5 - imageUrls.length} more images.`);
-            setNotificationType('error');
-            setShowNotification(true);
-          } else {
-            setNotificationMessage(`Error with file ${file.name}: ${error.message}`);
-            setNotificationType('error');
-            setShowNotification(true);
+    if (slugTouched) return
+    const auto = name
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/\s+/g, '-')
+    setSlug(auto)
+  }, [name, slugTouched])
+
+  useEffect(() => {
+    if (!notice) return
+    const t = window.setTimeout(() => setNotice(null), 4000)
+    return () => window.clearTimeout(t)
+  }, [notice])
+
+  const showNotice = useCallback((tone: 'success' | 'error', text: string) => {
+    setNotice({ tone, text })
+  }, [])
+
+  const reorderImages = (from: number, to: number) => {
+    setImageUrls((prev) => {
+      const next = [...prev]
+      const [moved] = next.splice(from, 1)
+      next.splice(to, 0, moved)
+      return next
+    })
+  }
+
+  const uploadFile = useCallback(
+    async (
+      file: File,
+      folder: 'products' | 'styling',
+      setProgress: React.Dispatch<React.SetStateAction<Record<string, number>>>
+    ): Promise<{ url: string }> => {
+      const uploadId = `${folder}-${file.name}-${Date.now()}`
+      setProgress((prev) => ({ ...prev, [uploadId]: 0 }))
+      try {
+        const result = await new Promise<{ url: string }>((resolve, reject) => {
+          const xhr = new XMLHttpRequest()
+          xhr.upload.onprogress = (e) => {
+            if (e.lengthComputable) {
+              setProgress((prev) => ({
+                ...prev,
+                [uploadId]: Math.round((e.loaded * 100) / e.total),
+              }))
+            }
           }
-        });
-      });
-      
-      // Auto-hide notification after 5 seconds
-      setTimeout(() => {
-        setShowNotification(false);
-      }, 5000);
-    }
-  }, [fileRejections, imageUrls.length, setNotificationMessage, setNotificationType, setShowNotification]);
+          xhr.open(
+            'POST',
+            `/api/uploads/imagekit?filename=${encodeURIComponent(file.name)}&folder=${folder}`,
+            true
+          )
+          if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`)
+          xhr.onload = () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              try {
+                resolve(JSON.parse(xhr.responseText))
+              } catch {
+                reject(new Error('Invalid upload response'))
+              }
+            } else {
+              reject(new Error(`Upload failed (${xhr.status})`))
+            }
+          }
+          xhr.onerror = () => reject(new Error('Network error during upload'))
+          xhr.ontimeout = () => reject(new Error('Upload timed out'))
+          xhr.send(file)
+        })
+        return result
+      } finally {
+        setProgress((prev) => {
+          const next = { ...prev }
+          delete next[uploadId]
+          return next
+        })
+      }
+    },
+    [token]
+  )
+
+  const onDropProduct = useCallback(
+    async (accepted: File[]) => {
+      const slotsLeft = MAX_IMAGES - imageUrls.length
+      if (accepted.length > slotsLeft) {
+        showNotice('error', `You can only add ${slotsLeft} more image${slotsLeft === 1 ? '' : 's'}.`)
+        return
+      }
+      for (const file of accepted) {
+        if (file.size > MAX_FILE_BYTES) {
+          showNotice('error', `${file.name} exceeds the 20MB limit.`)
+          continue
+        }
+        try {
+          const { url } = await uploadFile(file, 'products', setUploadingProduct)
+          setImageUrls((prev) => [...prev, url])
+        } catch (err: any) {
+          showNotice('error', `Failed to upload ${file.name}: ${err.message}`)
+        }
+      }
+    },
+    [imageUrls.length, showNotice, uploadFile]
+  )
+
+  const onDropStyling = useCallback(
+    async (accepted: File[]) => {
+      for (const file of accepted) {
+        if (file.size > MAX_FILE_BYTES) {
+          showNotice('error', `${file.name} exceeds the 20MB limit.`)
+          continue
+        }
+        try {
+          const { url } = await uploadFile(file, 'styling', setUploadingStyling)
+          setStylingIdeas((prev) => [...prev, { url, text: '' }])
+        } catch (err: any) {
+          showNotice('error', `Failed to upload ${file.name}: ${err.message}`)
+        }
+      }
+    },
+    [showNotice, uploadFile]
+  )
+
+  const {
+    getRootProps: getProductRootProps,
+    getInputProps: getProductInputProps,
+    isDragActive: isProductDrag,
+  } = useDropzone({
+    onDrop: onDropProduct,
+    accept: { 'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.webp'] },
+    maxFiles: MAX_IMAGES - imageUrls.length,
+    maxSize: MAX_FILE_BYTES,
+    multiple: true,
+    disabled: imageUrls.length >= MAX_IMAGES,
+  })
+
+  const {
+    getRootProps: getStylingRootProps,
+    getInputProps: getStylingInputProps,
+    isDragActive: isStylingDrag,
+  } = useDropzone({
+    onDrop: onDropStyling,
+    accept: { 'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.webp'] },
+    maxSize: MAX_FILE_BYTES,
+    multiple: true,
+  })
+
+  function addTag(raw: string) {
+    const val = raw.trim()
+    if (!val) return
+    setUsageTags((prev) => (prev.includes(val) ? prev : [...prev, val]))
+    setAvailableTags((prev) => (prev.includes(val) ? prev : [...prev, val]))
+    setNewTagInput('')
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     setError(null)
+    if (!name.trim() || !slug.trim()) {
+      showNotice('error', 'Name and slug are required.')
+      return
+    }
     setSubmitting(true)
     try {
-      if (!name || !slug) throw new Error('Name and slug are required')
       const res = await fetch('/api/admin/products', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          name,
-          slug,
+          name: name.trim(),
+          slug: slug.trim(),
           shortDesc,
           description,
           specifications,
           careInstructions,
           stylingIdeaImages: stylingIdeas,
-          price,
+          price: price ? parseFloat(price) : 0,
           currency,
-          stockQuantity,
+          stockQuantity: stockQuantity ? parseInt(stockQuantity, 10) : 0,
           isActive,
           categoryId: categoryId ? Number(categoryId) : null,
           imageUrls,
           usageTags,
-        })
+        }),
       })
       if (!res.ok) {
         const data = await res.json()
-        throw new Error(data.error || 'Failed to create')
+        throw new Error(data.error || 'Failed to create product')
       }
-      setNotificationType('success')
-      setNotificationMessage('Product created successfully')
-      setShowNotification(true)
-      setTimeout(() => {
-        setIsSaving(true) // Show loading spinner for transition
-        router.push('/dashboard/admin/products')
-      }, 1500)
+      showNotice('success', 'Product created successfully.')
+      setTimeout(() => router.push('/dashboard/admin/products'), 900)
     } catch (err: any) {
-      setNotificationType('error')
-      setNotificationMessage(err.message)
-      setShowNotification(true)
-    } finally {
+      showNotice('error', err.message)
       setSubmitting(false)
     }
   }
 
-  function handleCancelClick(e: React.MouseEvent) {
-    e.preventDefault()
-    setIsSaving(true)
-    router.push('/dashboard/admin/products')
+  if (bootstrapping) {
+    return <NewProductSkeleton />
   }
 
-  if (isLoading || isSaving) return <LoadingSpinner overlay={true} message={isSaving ? "Saving product..." : "Loading..."} />
-  if (error) return <div className={styles.error}>{error}</div>
+  if (error) {
+    return (
+      <main className="flex flex-col gap-4">
+        <PageHeader />
+        <Card className="shadow-sm">
+          <CardContent className="flex flex-col items-center gap-3 p-10 text-center">
+            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 text-destructive">
+              <AlertCircle className="h-5 w-5" />
+            </span>
+            <p className="text-sm font-medium text-foreground">Unable to open this page</p>
+            <p className="text-xs text-muted-foreground">{error}</p>
+            <Button asChild size="sm" variant="outline">
+              <Link href="/dashboard/admin/products">Back to products</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </main>
+    )
+  }
+
+  const productUploadIds = Object.keys(uploadingProduct)
+  const stylingUploadIds = Object.keys(uploadingStyling)
 
   return (
-    <main className={styles.container}>
-      {showNotification && (
-        <div className={`${styles.notification} ${styles[notificationType]}`}>
-          {notificationType === 'success' ? (
-            <FiCheck className={styles.notificationIcon} />
-          ) : (
-            <FiAlertCircle className={styles.notificationIcon} />
+    <main className="flex flex-col gap-6 pb-10">
+      {notice && (
+        <div
+          role="status"
+          className={cn(
+            'fixed right-4 top-4 z-50 flex items-center gap-2 rounded-md border px-3.5 py-2.5 text-sm shadow-md transition-all sm:right-6 sm:top-6',
+            notice.tone === 'success'
+              ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
+              : 'border-destructive/20 bg-destructive/10 text-destructive'
           )}
-          {notificationMessage}
+        >
+          {notice.tone === 'success' ? (
+            <CheckCircle2 className="h-4 w-4" />
+          ) : (
+            <AlertCircle className="h-4 w-4" />
+          )}
+          <span>{notice.text}</span>
         </div>
       )}
 
-      <div className={styles.header}>
-        <h1 className={styles.title}>Create New Product</h1>
-        <p className={styles.subtitle}>Add product information, pricing, inventory and images</p>
-      </div>
-
-      <form id="product-form" onSubmit={handleSubmit}>
-        <div className={styles.card}>
-          <h2 className={styles.sectionTitle}>
-            <FiBox className={styles.sectionIcon} />
-            Basic Information
-          </h2>
-          <div className={styles.formGroup}>
-            <label className={styles.label}>Product Name</label>
-            <input
-              type="text"
-              value={name}
-              onChange={e => setName(e.target.value)}
-              className={styles.input}
-              placeholder="Enter product name"
-              required
-            />
-          </div>
-
-          <div className={styles.formGroup}>
-            <label className={styles.label}>Slug</label>
-            <input
-              type="text"
-              value={slug}
-              onChange={e => setSlug(e.target.value)}
-              className={styles.input}
-              placeholder="product-url-slug"
-              required
-            />
-          </div>
-
-          <div className={styles.formGroup}>
-            <label className={styles.label}>Short Description</label>
-            <input
-              type="text"
-              value={shortDesc}
-              onChange={e => setShortDesc(e.target.value)}
-              className={styles.input}
-              placeholder="Brief description for product listings"
-            />
-          </div>
-
-          <div className={styles.formGroup}>
-            <label className={styles.label}>Full Description</label>
-            <textarea
-              value={description}
-              onChange={e => setDescription(e.target.value)}
-              className={styles.textarea}
-              placeholder="Detailed product description"
-            />
-          </div>
-
-          <div className={styles.formGroup}>
-            <label className={styles.label}>Specifications</label>
-            <textarea
-              value={specifications}
-              onChange={e => setSpecifications(e.target.value)}
-              className={styles.textarea}
-              placeholder="Add specifications (e.g., material, dimensions)"
-            />
-          </div>
-
-          <div className={styles.formGroup}>
-            <label className={styles.label}>Care & Maintenance</label>
-            <textarea
-              value={careInstructions}
-              onChange={e => setCareInstructions(e.target.value)}
-              className={styles.textarea}
-              placeholder="Care and maintenance instructions"
-            />
-          </div>
-
-          <div className={styles.formGroup}>
-            <label className={styles.label}>Purpose / Mood Tags</label>
-            <div className={styles.tagOptions} style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-              {availableTags.map(tag => (
-                <label key={tag} style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                  <input
-                    type="checkbox"
-                    checked={usageTags.includes(tag)}
-                    onChange={e => {
-                      setUsageTags(prev => e.target.checked ? [...prev, tag] : prev.filter(t => t !== tag))
-                    }}
-                  />
-                  {tag}
-                </label>
-              ))}
-            </div>
-            <input
-              type="text"
-              value={newTagInput}
-              onChange={e => setNewTagInput(e.target.value)}
-              onKeyDown={e => {
-                if (e.key === 'Enter') {
-                  e.preventDefault()
-                  const val = newTagInput.trim()
-                  if (val && !usageTags.includes(val)) {
-                    setUsageTags(prev => [...prev, val])
-                  }
-                  if (val && !availableTags.includes(val)) {
-                    setAvailableTags(prev => [...prev, val])
-                  }
-                  setNewTagInput('')
-                }
-              }}
-              className={styles.input}
-              placeholder="Add new tag and press Enter"
-            />
-            {usageTags.length > 0 && (
-              <div style={{ marginTop: '0.5rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                {usageTags.map(tag => (
-                  <span key={tag} style={{ background: '#eee', padding: '2px 6px', borderRadius: '4px', cursor: 'pointer' }} onClick={() => setUsageTags(prev => prev.filter(t => t !== tag))}>
-                    {tag} ✕
-                  </span>
-                ))}
-              </div>
+      <PageHeader>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => router.push('/dashboard/admin/products')}
+            disabled={submitting}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            form="new-product-form"
+            size="sm"
+            disabled={submitting}
+            className="gap-1.5"
+          >
+            {submitting ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Save className="h-4 w-4" />
             )}
-          </div>
+            {submitting ? 'Creating…' : 'Create product'}
+          </Button>
         </div>
+      </PageHeader>
 
-        <div className={styles.card}>
-          <h2 className={styles.sectionTitle}>
-            <FiDollarSign className={styles.sectionIcon} />
-            Pricing & Inventory
-          </h2>
-          <div className={styles.formGroup}>
-            <label className={styles.label}>Category</label>
-            <select
-              value={categoryId}
-              onChange={e => setCategoryId(e.target.value ? Number(e.target.value) : '')}
-              className={styles.select}
-              required
-            >
-              <option value="">Select a category</option>
-              {categories.map(c => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </select>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-            <div className={styles.formGroup}>
-              <label className={styles.label}>Price</label>
-              <input
-                type="number"
-                value={price}
-                onChange={e => setPrice(parseFloat(e.target.value))}
-                className={styles.input}
-                min="0"
-                step="0.01"
-                placeholder="0.00"
-                required
-              />
-            </div>
-
-            <div className={styles.formGroup}>
-              <label className={styles.label}>Currency</label>
-              <select
-                value={currency}
-                onChange={e => setCurrency(e.target.value)}
-                className={styles.select}
-                required
-              >
-                <option value="INR">INR - Indian Rupee</option>
-                <option value="USD">USD - US Dollar</option>
-                <option value="EUR">EUR - Euro</option>
-              </select>
-            </div>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-            <div className={styles.formGroup}>
-              <label className={styles.label}>Stock Quantity</label>
-              <input
-                type="number"
-                value={stockQuantity}
-                onChange={e => setStockQuantity(parseInt(e.target.value))}
-                className={styles.input}
-                min="0"
-                placeholder="Available quantity"
-              />
-            </div>
-
-            <div className={styles.formGroup}>
-              <label className={styles.checkbox}>
-                <input
-                  type="checkbox"
-                  checked={isActive}
-                  onChange={e => setIsActive(e.target.checked)}
-                  className={styles.checkboxInput}
+      <form
+        id="new-product-form"
+        onSubmit={handleSubmit}
+        className="grid grid-cols-1 gap-6 lg:grid-cols-3"
+      >
+        {/* Main column */}
+        <div className="flex flex-col gap-6 lg:col-span-2">
+          <Card className="shadow-sm">
+            <CardHeader>
+              <CardTitle>Product details</CardTitle>
+              <CardDescription>
+                Core information shown across the storefront and listing pages.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-5">
+              <div className="grid gap-1.5">
+                <Label htmlFor="np-name">Name</Label>
+                <Input
+                  id="np-name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Hand-painted ceramic vase"
+                  required
                 />
-                <span className={styles.checkboxLabel}>Product Active</span>
-              </label>
-            </div>
-          </div>
-        </div>
+              </div>
 
-        <div className={styles.card}>
-          <h2 className={styles.sectionTitle}>
-            <FiImage className={styles.sectionIcon} />
-            Product Images
-          </h2>
-          <div className={styles.formGroup}>
-            <label className={styles.label}>Product Images</label>
-            
-            <div {...getRootProps()} className={`${styles.dropzone} ${isDragActive ? styles.dropzoneDragActive : ''}`}>
-              <input {...getInputProps()} />
-              <FiUpload className={styles.dropzoneIcon} />
-              <p className={styles.dropzoneText}>
-                {isDragActive
-                  ? 'Drop the images here...'
-                  : 'Drag & drop product images here, or click to select files'}
-              </p>
-              <p className={styles.dropzoneText}>
-                {imageUrls.length === 5 
-                  ? 'Maximum number of images reached'
-                  : `${5 - imageUrls.length} images remaining (max 20MB per image)`}
-              </p>
-            </div>
-
-            <div className={styles.imageGrid}>
-              {imageUrls.map((url, i) => (
-                <div
-                  key={i}
-                  className={styles.imagePreviewContainer}
-                  draggable
-                  onDragStart={() => setDraggingIndex(i)}
-                  onDragOver={e => e.preventDefault()}
-                  onDragEnd={() => setDraggingIndex(null)}
-                  onDrop={() => {
-                    if (draggingIndex !== null) {
-                      reorderImages(draggingIndex, i);
-                    }
-                    setDraggingIndex(null);
+              <div className="grid gap-1.5">
+                <Label htmlFor="np-slug">URL slug</Label>
+                <Input
+                  id="np-slug"
+                  value={slug}
+                  onChange={(e) => {
+                    setSlugTouched(true)
+                    setSlug(e.target.value)
                   }}
-                >
-                  <img
-                    src={url}
-                    alt={`Product preview ${i + 1}`}
-                    className={styles.imagePreview}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveImage(i)}
-                    className={styles.removeImageButton}
-                    title="Remove image"
-                  >
-                    <FiX />
-                  </button>
+                  placeholder="hand-painted-ceramic-vase"
+                  required
+                />
+                <p className="text-xs text-muted-foreground">
+                  Auto-generated from the name. Edit to override.
+                </p>
+              </div>
+
+              <div className="grid gap-1.5">
+                <Label htmlFor="np-short">Short description</Label>
+                <Input
+                  id="np-short"
+                  value={shortDesc}
+                  onChange={(e) => setShortDesc(e.target.value)}
+                  placeholder="One-line summary used in product cards"
+                />
+              </div>
+
+              <Separator />
+
+              <div className="grid gap-1.5">
+                <Label htmlFor="np-desc">Full description</Label>
+                <Textarea
+                  id="np-desc"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Tell the story behind this piece…"
+                  className="min-h-[120px]"
+                />
+              </div>
+
+              <div className="grid gap-1.5">
+                <Label htmlFor="np-spec">Specifications</Label>
+                <Textarea
+                  id="np-spec"
+                  value={specifications}
+                  onChange={(e) => setSpecifications(e.target.value)}
+                  placeholder="Material, dimensions, weight…"
+                  className="min-h-[96px]"
+                />
+              </div>
+
+              <div className="grid gap-1.5">
+                <Label htmlFor="np-care">Care &amp; maintenance</Label>
+                <Textarea
+                  id="np-care"
+                  value={careInstructions}
+                  onChange={(e) => setCareInstructions(e.target.value)}
+                  placeholder="How to keep it looking its best"
+                  className="min-h-[80px]"
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-sm">
+            <CardHeader>
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <CardTitle>Product images</CardTitle>
+                  <CardDescription>
+                    Up to {MAX_IMAGES} images. Drag to reorder; the first image is the cover.
+                  </CardDescription>
                 </div>
-              ))}
-              
-              {/* Show uploading files with progress */}
-              {Object.entries(uploadingFiles).map(([uploadId, isUploading]) => (
-                <div key={uploadId} className={styles.imagePreviewContainer}>
-                  <div className={styles.uploadingOverlay}>
-                    <FiUpload className={styles.uploadingIcon} />
-                    <div className={styles.uploadProgress}>
-                      <div 
-                        className={styles.uploadProgressBar} 
-                        style={{ width: `${uploadProgress[uploadId] || 0}%` }}
+                <Badge variant="secondary" className="rounded-full">
+                  {imageUrls.length}/{MAX_IMAGES}
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-4">
+              <div
+                {...getProductRootProps()}
+                className={cn(
+                  'flex cursor-pointer flex-col items-center justify-center gap-2 rounded-md border border-dashed bg-muted/30 px-4 py-10 text-center transition-colors',
+                  isProductDrag && 'border-primary bg-primary/5',
+                  imageUrls.length >= MAX_IMAGES && 'cursor-not-allowed opacity-60'
+                )}
+              >
+                <input {...getProductInputProps()} />
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-background text-muted-foreground shadow-sm">
+                  <UploadCloud className="h-5 w-5" />
+                </span>
+                <p className="text-sm font-medium text-foreground">
+                  {imageUrls.length >= MAX_IMAGES
+                    ? 'Image limit reached'
+                    : isProductDrag
+                    ? 'Drop images to upload'
+                    : 'Drag images here, or click to browse'}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  JPG, PNG, WEBP &middot; up to 20MB each
+                </p>
+              </div>
+
+              {(imageUrls.length > 0 || productUploadIds.length > 0) && (
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                  {imageUrls.map((url, i) => (
+                    <div
+                      key={url}
+                      draggable
+                      onDragStart={() => setDraggingIndex(i)}
+                      onDragOver={(e) => e.preventDefault()}
+                      onDragEnd={() => setDraggingIndex(null)}
+                      onDrop={() => {
+                        if (draggingIndex !== null && draggingIndex !== i) {
+                          reorderImages(draggingIndex, i)
+                        }
+                        setDraggingIndex(null)
+                      }}
+                      className={cn(
+                        'group relative aspect-square overflow-hidden rounded-md border bg-muted',
+                        draggingIndex === i && 'opacity-60'
+                      )}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={url}
+                        alt={`Product image ${i + 1}`}
+                        className="h-full w-full object-cover"
+                      />
+                      {i === 0 && (
+                        <Badge className="absolute left-1.5 top-1.5 h-5 rounded-full px-1.5 text-[10px]">
+                          Cover
+                        </Badge>
+                      )}
+                      <span
+                        aria-hidden
+                        className="pointer-events-none absolute bottom-1.5 left-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-background/90 text-muted-foreground opacity-0 shadow-sm transition-opacity group-hover:opacity-100"
+                      >
+                        <GripVertical className="h-3.5 w-3.5" />
+                      </span>
+                      <button
+                        type="button"
+                        aria-label="Remove image"
+                        onClick={() => setImageUrls((prev) => prev.filter((_, idx) => idx !== i))}
+                        className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-background/90 text-destructive opacity-0 shadow-sm transition-opacity group-hover:opacity-100 hover:bg-destructive hover:text-destructive-foreground focus:opacity-100"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                  {productUploadIds.map((id) => (
+                    <UploadingTile key={id} progress={uploadingProduct[id] ?? 0} />
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-sm">
+            <CardHeader>
+              <CardTitle>Styling ideas</CardTitle>
+              <CardDescription>
+                Optional inspiration imagery shown alongside the product detail page.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-4">
+              <div
+                {...getStylingRootProps()}
+                className={cn(
+                  'flex cursor-pointer flex-col items-center justify-center gap-2 rounded-md border border-dashed bg-muted/30 px-4 py-8 text-center transition-colors',
+                  isStylingDrag && 'border-primary bg-primary/5'
+                )}
+              >
+                <input {...getStylingInputProps()} />
+                <ImagePlus className="h-5 w-5 text-muted-foreground" />
+                <p className="text-sm font-medium text-foreground">
+                  {isStylingDrag ? 'Drop styling images' : 'Add styling inspiration images'}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Up to 20MB each &middot; add a caption per image
+                </p>
+              </div>
+
+              {(stylingIdeas.length > 0 || stylingUploadIds.length > 0) && (
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {stylingIdeas.map((idea, idx) => (
+                    <div
+                      key={idea.url}
+                      className="flex flex-col gap-2 rounded-md border bg-card p-2"
+                    >
+                      <div className="relative aspect-square overflow-hidden rounded-sm bg-muted">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={idea.url}
+                          alt="Styling idea"
+                          className="h-full w-full object-cover"
+                          loading="lazy"
+                        />
+                        <button
+                          type="button"
+                          aria-label="Remove styling image"
+                          onClick={() =>
+                            setStylingIdeas((prev) => prev.filter((_, i) => i !== idx))
+                          }
+                          className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-background/90 text-destructive shadow-sm hover:bg-destructive hover:text-destructive-foreground"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                      <Input
+                        value={idea.text}
+                        onChange={(e) => {
+                          const v = e.target.value
+                          setStylingIdeas((prev) =>
+                            prev.map((it, i) => (i === idx ? { ...it, text: v } : it))
+                          )
+                        }}
+                        placeholder="Caption"
+                        className="h-8"
                       />
                     </div>
-                    <div className={styles.uploadProgressText}>
-                      {uploadProgress[uploadId] || 0}%
-                    </div>
+                  ))}
+                  {stylingUploadIds.map((id) => (
+                    <UploadingTile key={id} progress={uploadingStyling[id] ?? 0} />
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Sidebar column */}
+        <div className="flex flex-col gap-6">
+          <Card className="shadow-sm">
+            <CardHeader>
+              <CardTitle>Pricing &amp; inventory</CardTitle>
+              <CardDescription>How this product is sold and stocked.</CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-4">
+              <div className="grid grid-cols-3 gap-3">
+                <div className="col-span-2 grid gap-1.5">
+                  <Label htmlFor="np-price">Price</Label>
+                  <Input
+                    id="np-price"
+                    type="number"
+                    inputMode="decimal"
+                    min="0"
+                    step="0.01"
+                    value={price}
+                    onChange={(e) => setPrice(e.target.value)}
+                    placeholder="0.00"
+                    required
+                  />
+                </div>
+                <div className="grid gap-1.5">
+                  <Label htmlFor="np-currency">Currency</Label>
+                  <Select value={currency} onValueChange={setCurrency}>
+                    <SelectTrigger id="np-currency" className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="INR">INR</SelectItem>
+                      <SelectItem value="USD">USD</SelectItem>
+                      <SelectItem value="EUR">EUR</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="grid gap-1.5">
+                <Label htmlFor="np-stock">Stock quantity</Label>
+                <Input
+                  id="np-stock"
+                  type="number"
+                  inputMode="numeric"
+                  min="0"
+                  value={stockQuantity}
+                  onChange={(e) => setStockQuantity(e.target.value)}
+                  placeholder="0"
+                />
+              </div>
+
+              <div className="grid gap-1.5">
+                <Label htmlFor="np-category">Category</Label>
+                <Select value={categoryId} onValueChange={setCategoryId}>
+                  <SelectTrigger id="np-category" className="w-full">
+                    <SelectValue placeholder="Select a category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((c) => (
+                      <SelectItem key={c.id} value={String(c.id)}>
+                        {c.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <Separator />
+
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex flex-col">
+                  <Label htmlFor="np-active" className="text-sm">
+                    Visible to shoppers
+                  </Label>
+                  <span className="text-xs text-muted-foreground">
+                    Toggle off to save as a draft.
+                  </span>
+                </div>
+                <Switch
+                  id="np-active"
+                  checked={isActive}
+                  onCheckedChange={setIsActive}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-sm">
+            <CardHeader>
+              <CardTitle>Purpose &amp; mood tags</CardTitle>
+              <CardDescription>Help shoppers discover this piece by occasion.</CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-4">
+              {usageTags.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {usageTags.map((tag) => (
+                    <Badge
+                      key={tag}
+                      variant="secondary"
+                      className="gap-1 rounded-full pl-2.5 pr-1"
+                    >
+                      {tag}
+                      <button
+                        type="button"
+                        aria-label={`Remove ${tag}`}
+                        onClick={() => setUsageTags((prev) => prev.filter((t) => t !== tag))}
+                        className="flex h-4 w-4 items-center justify-center rounded-full hover:bg-foreground/10"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+              )}
+
+              <div className="flex gap-2">
+                <Input
+                  value={newTagInput}
+                  onChange={(e) => setNewTagInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      addTag(newTagInput)
+                    }
+                  }}
+                  placeholder="Add a tag and press Enter"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => addTag(newTagInput)}
+                  disabled={!newTagInput.trim()}
+                  aria-label="Add tag"
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+
+              {availableTags.filter((t) => !usageTags.includes(t)).length > 0 && (
+                <div className="flex flex-col gap-2">
+                  <span className="text-xs font-medium text-muted-foreground">
+                    Suggestions
+                  </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {availableTags
+                      .filter((t) => !usageTags.includes(t))
+                      .map((tag) => (
+                        <button
+                          key={tag}
+                          type="button"
+                          onClick={() => setUsageTags((prev) => [...prev, tag])}
+                          className="rounded-full border border-dashed border-border bg-background px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:border-foreground/40 hover:text-foreground"
+                        >
+                          + {tag}
+                        </button>
+                      ))}
                   </div>
                 </div>
-              ))}
-            </div>
-
-            {Object.entries(uploadErrors).map(([uploadId, error]) => (
-              <p key={uploadId} className={styles.uploadError}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <line x1="12" y1="8" x2="12" y2="12"></line>
-                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                </svg>
-                {error}
-              </p>
-            ))}
-          </div>
-        </div>
-
-        <div className={styles.card}>
-          <h2 className={styles.sectionTitle}>
-            <FiImage className={styles.sectionIcon} />
-            Artful Styling Ideas Images
-          </h2>
-          <div className={styles.formGroup}>
-            <label className={styles.label}>Styling Inspiration Images</label>
-            
-            <div {...getStylingRootProps()} className={`${styles.dropzone} ${isStylingDrag ? styles.dropzoneDragActive : ''}`}>
-              <input {...getStylingInputProps()} />
-              <FiUpload className={styles.dropzoneIcon} />
-              <p className={styles.dropzoneText}>
-                {isStylingDrag
-                  ? 'Drop the images here...'
-                  : 'Drag & drop styling inspiration images here, or click to select files (max 20MB per image)'}
-              </p>
-              <button type="button" className={styles.browseButton}>
-                <FiUpload />
-                Browse Files
-              </button>
-            </div>
-
-            {stylingIdeas.length > 0 && (
-              <div className={styles.imagePreviewGrid}>
-                {stylingIdeas.map((idea, idx) => (
-                  <div key={idea.url} className={styles.previewItem}>
-                    <img src={idea.url} alt="styling idea" className={styles.previewImg} loading="lazy" />
-                    <input
-                      type="text"
-                      value={idea.text}
-                      onChange={e => {
-                        const val = e.target.value
-                        setStylingIdeas(prev => prev.map((it,i)=> i===idx ? { ...it, text: val } : it))
-                      }}
-                      placeholder="Add a caption for this styling idea"
-                      className={styles.stylingCaptionInput}
-                    />
-                    <button 
-                      type="button" 
-                      onClick={() => handleRemoveStylingImage(idx)} 
-                      className={styles.removeBtn}
-                    >
-                      <FiX />
-                      Remove Image
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className={styles.buttonGroup}>
-          <button 
-            type="submit" 
-            className={styles.saveButton}
-            disabled={submitting}
-          >
-            <FiSave />
-            {submitting ? 'Creating...' : 'Create Product'}
-            <FiArrowRight className={styles.arrowIcon} />
-          </button>
-          <button 
-            onClick={handleCancelClick} 
-            className={styles.cancelButton}
-            disabled={submitting}
-          >
-            <FiX />
-            Cancel
-            <FiArrowRight className={styles.arrowIcon} />
-          </button>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </form>
+    </main>
+  )
+}
+
+function PageHeader({ children }: { children?: React.ReactNode }) {
+  return (
+    <header className="flex flex-wrap items-end justify-between gap-3">
+      <div className="flex min-w-0 flex-col gap-1">
+        <Link
+          href="/dashboard/admin/products"
+          className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          Back to products
+        </Link>
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+          Create new product
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          Fill in the essentials, upload imagery, and publish when ready.
+        </p>
+      </div>
+      {children}
+    </header>
+  )
+}
+
+function UploadingTile({ progress }: { progress: number }) {
+  return (
+    <div className="flex aspect-square flex-col items-center justify-center gap-2 rounded-md border border-dashed bg-muted/40 p-3 text-center">
+      <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+      <div className="h-1.5 w-full overflow-hidden rounded-full bg-background">
+        <div
+          className="h-full bg-primary transition-all"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+      <span className="text-xs text-muted-foreground">{progress}%</span>
+    </div>
+  )
+}
+
+function NewProductSkeleton() {
+  return (
+    <main className="flex flex-col gap-6 pb-10">
+      <header className="flex flex-wrap items-end justify-between gap-3">
+        <div className="flex flex-col gap-2">
+          <Skeleton className="h-3 w-28" />
+          <Skeleton className="h-8 w-64" />
+          <Skeleton className="h-4 w-80" />
+        </div>
+        <div className="flex gap-2">
+          <Skeleton className="h-8 w-20" />
+          <Skeleton className="h-8 w-32" />
+        </div>
+      </header>
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="flex flex-col gap-6 lg:col-span-2">
+          <Card className="shadow-sm">
+            <CardHeader>
+              <Skeleton className="h-5 w-40" />
+              <Skeleton className="mt-1.5 h-4 w-64" />
+            </CardHeader>
+            <CardContent className="flex flex-col gap-5">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="grid gap-1.5">
+                  <Skeleton className="h-3.5 w-24" />
+                  <Skeleton className="h-9 w-full" />
+                </div>
+              ))}
+              <Separator />
+              {Array.from({ length: 2 }).map((_, i) => (
+                <div key={i} className="grid gap-1.5">
+                  <Skeleton className="h-3.5 w-32" />
+                  <Skeleton className="h-24 w-full" />
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-sm">
+            <CardHeader>
+              <Skeleton className="h-5 w-36" />
+              <Skeleton className="mt-1.5 h-4 w-72" />
+            </CardHeader>
+            <CardContent className="flex flex-col gap-4">
+              <Skeleton className="h-32 w-full" />
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <Skeleton key={i} className="aspect-square w-full" />
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="flex flex-col gap-6">
+          <Card className="shadow-sm">
+            <CardHeader>
+              <Skeleton className="h-5 w-36" />
+              <Skeleton className="mt-1.5 h-4 w-48" />
+            </CardHeader>
+            <CardContent className="flex flex-col gap-4">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="grid gap-1.5">
+                  <Skeleton className="h-3.5 w-20" />
+                  <Skeleton className="h-9 w-full" />
+                </div>
+              ))}
+              <Separator />
+              <div className="flex items-center justify-between">
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-5 w-9 rounded-full" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-sm">
+            <CardHeader>
+              <Skeleton className="h-5 w-32" />
+              <Skeleton className="mt-1.5 h-4 w-56" />
+            </CardHeader>
+            <CardContent className="flex flex-col gap-3">
+              <Skeleton className="h-9 w-full" />
+              <div className="flex flex-wrap gap-1.5">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <Skeleton key={i} className="h-6 w-16 rounded-full" />
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </main>
   )
 }

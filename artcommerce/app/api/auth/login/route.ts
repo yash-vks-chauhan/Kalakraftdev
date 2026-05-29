@@ -77,6 +77,7 @@ export async function POST(request: Request) {
         email: true,
         avatarUrl: true,
         role: true,
+        tokenVersion: true,
         passwordHash: true,
       },
     });
@@ -93,6 +94,7 @@ export async function POST(request: Request) {
       id: user.id,
       email: user.email,
       role: user.role,
+      tokenVersion: user.tokenVersion,
     })
     const refresh = await createRefreshSession(user.id)
 

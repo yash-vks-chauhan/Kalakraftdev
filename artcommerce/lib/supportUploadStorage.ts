@@ -2,6 +2,7 @@ import { Readable } from 'stream'
 import sharp from 'sharp'
 import cloudinary from './cloudinary'
 import { getImageKitClient, isImageKitConfigured } from './imagekit'
+import { signSupportAttachment } from './supportAttachmentTokens'
 import { sanitizeFilename } from './uploadGuard'
 
 export type SupportAttachmentStorageProvider = 'cloudinary' | 'imagekit'
@@ -16,6 +17,7 @@ export type StoredSupportAttachment = {
   name: string
   storageProvider: SupportAttachmentStorageProvider
   storageKey: string
+  storageToken: string
 }
 
 export const MAX_SUPPORT_ATTACHMENT_DIMENSION = 1080
@@ -102,6 +104,9 @@ export async function storeSupportAttachment({
   const imageMeta = (await sharp(buffer).metadata().catch(() => null)) as
     | { width?: number; height?: number }
     | null
+  if (!imageMeta?.width || !imageMeta?.height) {
+    throw new Error('Image could not be processed')
+  }
   const width = typeof imageMeta?.width === 'number' ? imageMeta.width : undefined
   const height = typeof imageMeta?.height === 'number' ? imageMeta.height : undefined
   if (
@@ -142,6 +147,7 @@ export async function storeSupportAttachment({
       name: safeName,
       storageProvider: 'cloudinary',
       storageKey: uploadResult.public_id,
+      storageToken: signSupportAttachment('cloudinary', uploadResult.public_id, userId),
     }
   }
 
@@ -170,6 +176,7 @@ export async function storeSupportAttachment({
       name: safeName,
       storageProvider: 'imagekit',
       storageKey: uploadResult.filePath,
+      storageToken: signSupportAttachment('imagekit', uploadResult.filePath, userId),
     }
   }
 

@@ -6,6 +6,7 @@ import { getAuthContext } from '../../../../lib/auth'
 import { getOtpSecretValidationError, hashOtpForScope } from '../../../../lib/otp-security'
 import prisma from '../../../../lib/prisma'
 import { clearRateLimit, consumeRateLimit, getClientIp } from '../../../../lib/rateLimit'
+import { clearAuthCookies } from '../../../../lib/session-auth'
 
 export const runtime = 'nodejs'
 
@@ -107,6 +108,7 @@ export async function POST(request: Request) {
       passwordHash: hash,
       passwordChangeOtp: null,
       passwordChangeExpires: null,
+      tokenVersion: { increment: 1 },
     },
   })
 
@@ -115,5 +117,7 @@ export async function POST(request: Request) {
     where: { userId: user.id },
   })
 
-  return NextResponse.json({ ok: true })
+  const response = NextResponse.json({ ok: true })
+  clearAuthCookies(response)
+  return response
 }

@@ -1,6 +1,14 @@
 const allowedOriginEnvs = [process.env.NEXT_PUBLIC_APP_URL, process.env.APP_URL].filter(Boolean) as string[]
 
 const MUTATION_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE'])
+const CORS_METHODS = new Set(['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'])
+const CORS_HEADERS = new Set([
+  'accept',
+  'authorization',
+  'content-type',
+  'x-requested-with',
+  'x-pusher-socket-id',
+])
 
 const SENSITIVE_API_PREFIXES = [
   '/api/admin',
@@ -26,6 +34,16 @@ function getAllowedOriginHosts(): string[] {
   return allowedOriginEnvs.flatMap((allowed) => {
     try {
       return [new URL(allowed).host]
+    } catch {
+      return []
+    }
+  })
+}
+
+function getAllowedOrigins(): string[] {
+  return allowedOriginEnvs.flatMap((allowed) => {
+    try {
+      return [new URL(allowed).origin]
     } catch {
       return []
     }
@@ -60,6 +78,39 @@ export function isAllowedOrigin(request: Request): boolean {
   if (originHost === requestHost) return true
 
   return getAllowedOriginHosts().includes(originHost)
+}
+
+export function getAllowedCorsOrigin(request: Request): string | null {
+  const originHeader = request.headers.get('origin')
+  if (!originHeader) return null
+
+  let originUrl: URL
+  let requestUrl: URL
+  try {
+    originUrl = new URL(originHeader)
+    requestUrl = new URL(request.url)
+  } catch {
+    return null
+  }
+
+  if (originUrl.origin === requestUrl.origin) return originUrl.origin
+
+  return getAllowedOrigins().includes(originUrl.origin) ? originUrl.origin : null
+}
+
+export function isAllowedCorsMethod(method: string | null): boolean {
+  if (!method) return true
+  return CORS_METHODS.has(method.toUpperCase())
+}
+
+export function areAllowedCorsHeaders(headers: string | null): boolean {
+  if (!headers) return true
+
+  return headers
+    .split(',')
+    .map((header) => header.trim().toLowerCase())
+    .filter(Boolean)
+    .every((header) => CORS_HEADERS.has(header))
 }
 
 export function isMutationMethod(method: string): boolean {

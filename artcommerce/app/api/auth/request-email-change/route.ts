@@ -89,14 +89,14 @@ export async function POST(request: Request) {
 
   try {
     await sendSecureMail({
-      to: user.email,
-      subject: 'Your OTP to change your Artcommerce email',
+      to: newEmail,
+      subject: 'Verify your new Artcommerce email',
       html: `
         <p>Hi ${escapeHtml(user.fullName)},</p>
-        <p>Your OTP to change your email to <strong>${escapeHtml(newEmail)}</strong> is:</p>
+        <p>Your OTP to verify this new Artcommerce account email is:</p>
         <h2 style="letter-spacing:4px;">${code}</h2>
         <p>This code expires in 5 minutes.</p>
-        <p>If you didn’t request this, ignore this email.</p>
+        <p>If you didn’t request this, ignore this email. Your account email will not change without this code.</p>
       `,
     })
   } catch (error) {

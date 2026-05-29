@@ -66,7 +66,7 @@ const nextConfig: NextConfig = {
   distDir: '.next',
   images: {
     domains: [
-      'localhost',
+      ...(!isProduction ? ['localhost'] : []),
       'firebasestorage.googleapis.com',
       'lh3.googleusercontent.com',
       'res.cloudinary.com',

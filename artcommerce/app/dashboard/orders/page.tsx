@@ -35,6 +35,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
+import { Skeleton } from "@/components/ui/skeleton"
 
 interface OrderItem {
   id: number
@@ -550,52 +551,79 @@ function StatTile({
 function OrdersSkeleton() {
   return (
     <>
+      {/* Stats strip — mirrors the real 3-tile summary */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <Card key={i} className="shadow-sm">
-            <CardContent className="flex items-center gap-3 p-4">
-              <div className="h-10 w-10 animate-pulse rounded-md bg-muted" />
-              <div className="flex flex-1 flex-col gap-1.5">
-                <div className="h-3 w-1/2 animate-pulse rounded bg-muted" />
-                <div className="h-4 w-2/3 animate-pulse rounded bg-muted" />
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+        <StatTileSkeleton />
+        <StatTileSkeleton />
+        <StatTileSkeleton className="col-span-2 lg:col-span-1" />
       </div>
+
+      {/* Filter row */}
+      <div className="flex items-center justify-between gap-3">
+        <Skeleton className="h-4 w-32" />
+        <Skeleton className="h-9 w-[160px]" />
+      </div>
+
+      {/* Order list */}
       <ul className="flex flex-col gap-3">
         {Array.from({ length: 3 }).map((_, i) => (
           <li key={i}>
-            <Card className="shadow-sm">
-              <CardContent className="flex flex-col gap-4 p-4 sm:p-5">
-                <div className="flex justify-between gap-3">
-                  <div className="flex flex-col gap-1.5">
-                    <div className="h-4 w-32 animate-pulse rounded bg-muted" />
-                    <div className="h-3 w-40 animate-pulse rounded bg-muted" />
-                  </div>
-                  <div className="h-6 w-20 animate-pulse rounded-full bg-muted" />
-                </div>
-                <div className="flex gap-2">
-                  {Array.from({ length: 3 }).map((_, j) => (
-                    <div
-                      key={j}
-                      className="h-12 w-12 animate-pulse rounded-md bg-muted sm:h-14 sm:w-14"
-                    />
-                  ))}
-                </div>
-                <Separator />
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex flex-col gap-1.5">
-                    <div className="h-3 w-16 animate-pulse rounded bg-muted" />
-                    <div className="h-5 w-24 animate-pulse rounded bg-muted" />
-                  </div>
-                  <div className="h-8 w-28 animate-pulse rounded bg-muted" />
-                </div>
-              </CardContent>
-            </Card>
+            <OrderRowSkeleton itemRows={i === 0 ? 2 : i === 1 ? 1 : 2} />
           </li>
         ))}
       </ul>
     </>
+  )
+}
+
+function StatTileSkeleton({ className }: { className?: string }) {
+  return (
+    <Card className={cn("shadow-sm", className)}>
+      <CardContent className="flex items-center gap-3 p-3 sm:gap-4 sm:p-4">
+        <Skeleton className="h-9 w-9 rounded-md sm:h-10 sm:w-10" />
+        <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+          <Skeleton className="h-2.5 w-16" />
+          <Skeleton className="h-5 w-24" />
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+function OrderRowSkeleton({ itemRows = 2 }: { itemRows?: number }) {
+  return (
+    <Card className="shadow-sm">
+      <CardContent className="flex flex-col gap-4 p-4 sm:p-5">
+        {/* Header: order # + meta line, status badge */}
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex min-w-0 flex-col gap-1.5">
+            <Skeleton className="h-4 w-32 sm:h-5 sm:w-36" />
+            <Skeleton className="h-3 w-56 max-w-full" />
+          </div>
+          <Skeleton className="h-6 w-24 rounded-full" />
+        </div>
+
+        {/* Item mini-list */}
+        <ul className="flex flex-col gap-2.5">
+          {Array.from({ length: itemRows }).map((_, i) => (
+            <li key={i} className="flex items-center gap-3">
+              <Skeleton className="h-12 w-12 shrink-0 rounded-md" />
+              <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                <Skeleton className="h-3.5 w-3/4 max-w-[16rem]" />
+                <Skeleton className="h-2.5 w-20" />
+              </div>
+              <Skeleton className="h-4 w-16" />
+            </li>
+          ))}
+        </ul>
+
+        <Separator />
+
+        {/* Actions row — right-aligned, matches View details button */}
+        <div className="flex justify-end">
+          <Skeleton className="h-8 w-28" />
+        </div>
+      </CardContent>
+    </Card>
   )
 }

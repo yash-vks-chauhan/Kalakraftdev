@@ -17,14 +17,23 @@ export async function DELETE(
 
   const { id } = await context.params
   const userId = id // userId is a string (cuid)
+  if (userId === admin.id) {
+    return NextResponse.json({ error: 'Admins cannot delete their own account' }, { status: 400 })
+  }
 
   // 1️⃣ Fetch the user before deleting
   const target = await prisma.user.findUnique({
     where: { id: userId },
-    select: { fullName: true, email: true }
+    select: { fullName: true, email: true, role: true }
   })
   if (!target) {
     return NextResponse.json({ error: 'User not found' }, { status: 404 })
+  }
+  if (target.role === 'admin') {
+    const adminCount = await prisma.user.count({ where: { role: 'admin' } })
+    if (adminCount <= 1) {
+      return NextResponse.json({ error: 'Cannot delete the last admin' }, { status: 400 })
+    }
   }
 
   try {

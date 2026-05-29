@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
@@ -24,6 +25,7 @@ import { LucideIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
+import ConfirmDialog from "../../components/ConfirmDialog"
 import type { User as AuthUser } from "../../contexts/AuthContext"
 import { useCart } from "../../contexts/CartContext"
 import { useWishlist } from "../../contexts/WishlistContext"
@@ -57,7 +59,8 @@ const adminNav: NavItem[] = [
 ]
 
 // Apple-like spring easing + staggered fades so labels disappear before the
-// sidebar width shrinks and reappear after it has opened.
+// sidebar width shrinks and reappear after it has opened. (Used only for
+// the collapse/expand state change — hover stays on shadcn's quick fade.)
 const LABEL_FADE = "transition-[opacity,transform] ease-[cubic-bezier(0.32,0.72,0,1)] will-change-[opacity,transform]"
 const LABEL_HIDDEN = "duration-[140ms] opacity-0 -translate-x-1 pointer-events-none"
 const LABEL_VISIBLE = "duration-[220ms] delay-[140ms] opacity-100 translate-x-0"
@@ -217,6 +220,20 @@ export function SidebarNav({
     wishlist: wishlistItems.length,
   }
 
+  const [logoutOpen, setLogoutOpen] = useState(false)
+  const [loggingOut, setLoggingOut] = useState(false)
+
+  async function handleConfirmLogout() {
+    setLoggingOut(true)
+    try {
+      await onLogout()
+    } finally {
+      // Component will likely unmount on logout; reset just in case.
+      setLoggingOut(false)
+      setLogoutOpen(false)
+    }
+  }
+
   return (
     <div className="flex h-full flex-col">
       {/* Brand + collapse toggle */}
@@ -302,11 +319,12 @@ export function SidebarNav({
         </div>
         <button
           type="button"
-          onClick={onLogout}
-          aria-label="Log out"
+          onClick={() => setLogoutOpen(true)}
+          aria-label="Sign out"
+          title="Sign out"
           tabIndex={collapsed ? -1 : 0}
           className={cn(
-            "mr-3 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors duration-150 hover:bg-secondary hover:text-foreground",
+            "mr-3 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors duration-150 hover:bg-destructive/10 hover:text-destructive",
             LABEL_FADE,
             collapsed ? LABEL_HIDDEN : LABEL_VISIBLE
           )}
@@ -314,6 +332,22 @@ export function SidebarNav({
           <LogOut className="h-4 w-4" />
         </button>
       </div>
+
+      <ConfirmDialog
+        open={logoutOpen}
+        title="Sign out?"
+        description={`You'll be signed out of ${user.fullName?.split(" ")[0] || "your account"} on this device. You can sign back in anytime.`}
+        confirmLabel="Sign out"
+        processingLabel="Signing out…"
+        cancelLabel="Stay signed in"
+        variant="destructive"
+        icon={<LogOut className="h-4 w-4" />}
+        isProcessing={loggingOut}
+        onConfirm={handleConfirmLogout}
+        onClose={() => {
+          if (!loggingOut) setLogoutOpen(false)
+        }}
+      />
     </div>
   )
 }

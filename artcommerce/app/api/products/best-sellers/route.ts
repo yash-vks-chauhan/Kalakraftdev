@@ -1,12 +1,15 @@
 // File: app/api/products/best-sellers/route.ts
 
 import { NextResponse } from 'next/server'
+import { clampInteger } from '../../../../lib/inputValidation'
 import prisma from '../../../../lib/prisma'
+
+const MAX_BEST_SELLERS_LIMIT = 50
 
 export async function GET(request: Request) {
   try {
     const url = new URL(request.url)
-    const limit = parseInt(url.searchParams.get('limit') || '5')
+    const limit = clampInteger(url.searchParams.get('limit'), 5, 1, MAX_BEST_SELLERS_LIMIT)
 
     // Query to get best-selling products based on total quantity sold
     // We'll join OrderItem with Product and sum the quantities, only including completed/paid orders

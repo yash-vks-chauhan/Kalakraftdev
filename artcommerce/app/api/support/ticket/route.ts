@@ -2,12 +2,13 @@
 import { NextResponse } from 'next/server';
 import prisma from '../../../../lib/prisma';
 import { randomUUID } from 'crypto';
-import { getAuthContext } from '../../../../lib/auth';
+import { getAuthenticatedUser } from '../../../../lib/session-auth';
 import { isAllowedOrigin } from '@/lib/security';
 import { validateSupportAttachments } from '@/lib/supportAttachments';
 import { storeSupportAttachment } from '@/lib/supportUploadStorage';
 import { consumeRateLimit, getClientIp } from '@/lib/rateLimit';
 import { validateUploadBuffer } from '@/lib/uploadGuard';
+import { getBoundedString } from '@/lib/inputValidation';
 import { cleanEmailHeader, escapeHtml } from '@/lib/emailContent';
 
 const TICKET_WINDOW_MS = 15 * 60 * 1000;
@@ -16,7 +17,7 @@ const MAX_SUBJECT_LENGTH = 200;
 const MAX_MESSAGE_LENGTH = 5000;
 
 export async function POST(request: Request) {
-  const auth = getAuthContext(request);
+  const auth = await getAuthenticatedUser(request);
   if (!auth) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
@@ -25,7 +26,7 @@ export async function POST(request: Request) {
   }
 
   const user = await prisma.user.findUnique({
-    where: { id: auth.userId },
+    where: { id: auth.id },
     select: { fullName: true, email: true },
   });
   const authenticatedEmail = user?.email || auth.email;
@@ -34,7 +35,7 @@ export async function POST(request: Request) {
   }
   const authenticatedName = user?.fullName;
   const clientIp = getClientIp(request);
-  const limit = consumeRateLimit(`support:ticket:create:${auth.userId}:ip:${clientIp}`, {
+  const limit = consumeRateLimit(`support:ticket:create:${auth.id}:ip:${clientIp}`, {
     windowMs: TICKET_WINDOW_MS,
     max: MAX_TICKETS_PER_WINDOW,
   });
@@ -81,7 +82,7 @@ export async function POST(request: Request) {
             buffer: validated.upload.buffer,
             filename: validated.upload.filename,
             mimeType: validated.upload.mimeType,
-            userId: auth.userId,
+            userId: auth.id,
           }),
         );
       } catch (err) {
@@ -106,32 +107,30 @@ export async function POST(request: Request) {
     }
   } else {
     // Fallback to raw JSON body
-    const body = await request.json();
+    const body = await request.json().catch(() => null);
+    if (!body || typeof body !== 'object') {
+      return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
+    }
     ({ name, subject, message, attachments = [], issueCategory = null, productId = null } = body);
   }
 
-  if (!subject.trim()) {
-    return NextResponse.json({ error: 'Subject is required' }, { status: 400 });
-  }
-  if (!message.trim()) {
-    return NextResponse.json({ error: 'Message is required' }, { status: 400 });
-  }
-  const trimmedSubject = subject.trim();
-  const trimmedMessage = message.trim();
-  if (trimmedSubject.length > MAX_SUBJECT_LENGTH) {
-    return NextResponse.json(
-      { error: `Subject must be ${MAX_SUBJECT_LENGTH} characters or fewer` },
-      { status: 400 },
-    );
-  }
-  if (trimmedMessage.length > MAX_MESSAGE_LENGTH) {
-    return NextResponse.json(
-      { error: `Message must be ${MAX_MESSAGE_LENGTH} characters or fewer` },
-      { status: 400 },
-    );
+  const parsedSubject = getBoundedString(subject, 'subject', MAX_SUBJECT_LENGTH, { required: true });
+  if (!parsedSubject.ok) return NextResponse.json({ error: parsedSubject.error }, { status: 400 });
+  const parsedMessage = getBoundedString(message, 'message', MAX_MESSAGE_LENGTH, { required: true });
+  if (!parsedMessage.ok) return NextResponse.json({ error: parsedMessage.error }, { status: 400 });
+  const parsedName = getBoundedString(name, 'name', 120);
+  if (!parsedName.ok) return NextResponse.json({ error: parsedName.error }, { status: 400 });
+  const parsedIssueCategory = getBoundedString(issueCategory, 'issueCategory', 80);
+  if (!parsedIssueCategory.ok) {
+    return NextResponse.json({ error: parsedIssueCategory.error }, { status: 400 });
   }
 
-  const validatedAttachments = validateSupportAttachments(attachments);
+  const trimmedSubject = parsedSubject.value!;
+  const trimmedMessage = parsedMessage.value!;
+  const safeName = parsedName.value;
+  const safeIssueCategory = parsedIssueCategory.value;
+
+  const validatedAttachments = validateSupportAttachments(attachments, auth.id);
   if (!validatedAttachments.ok) {
     return NextResponse.json(
       { error: 'error' in validatedAttachments ? validatedAttachments.error : 'Invalid attachment payload' },
@@ -141,13 +140,14 @@ export async function POST(request: Request) {
   const safeAttachments = validatedAttachments.attachments;
 
   // 2) Create the support ticket in the database (store category/product info as part of subject for now)
-  const fullSubject = issueCategory ? `[${issueCategory}] ${trimmedSubject}` : trimmedSubject;
+  const fullSubject = safeIssueCategory ? `[${safeIssueCategory}] ${trimmedSubject}` : trimmedSubject;
   const safeFullSubject = cleanEmailHeader(fullSubject);
   const ticket = await prisma.supportTicket.create({
-    data: { 
+    data: {
       id: randomUUID(),
-      name: authenticatedName || name || 'Customer', 
-      email: authenticatedEmail, 
+      userId: auth.id,
+      name: authenticatedName || safeName || 'Customer',
+      email: authenticatedEmail,
       subject: safeFullSubject,
       message: trimmedMessage,
     },
@@ -182,14 +182,13 @@ export async function POST(request: Request) {
         },
         to: [{ email: authenticatedEmail }],
         subject: cleanEmailHeader(`We received your request: ${safeFullSubject}`),
-        htmlContent: `<p>Hi ${escapeHtml(authenticatedName || name || 'there')},</p>
+        htmlContent: `<p>Hi ${escapeHtml(authenticatedName || safeName || 'there')},</p>
           <p>Thanks for contacting our support team! Your ticket ID is <strong>${escapeHtml(ticket.id)}</strong>. We will get back to you shortly.</p>`,
       }),
     });
 
     if (!resp.ok) {
-      const errorText = await resp.text();
-      console.error('Sendinblue API error:', resp.status, errorText);
+      console.error('Sendinblue API error status:', resp.status);
     }
   } catch (err) {
     console.error('Sendinblue call failed', err);

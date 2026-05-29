@@ -33,6 +33,7 @@ import {
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
+import { Skeleton } from '@/components/ui/skeleton'
 import { Switch } from '@/components/ui/switch'
 import {
   Table,
@@ -208,8 +209,11 @@ export default function AdminProductsPage() {
     router.push(`/dashboard/admin/products/${id}`)
   }
 
-  if (loading || isTransitioning) {
+  if (isTransitioning) {
     return <LoadingSpinner overlay message="Loading products..." />
+  }
+  if (loading) {
+    return <ProductsSkeleton />
   }
   if (error) {
     return (
@@ -551,6 +555,140 @@ function CategoryButton({
         )}
       />
     </button>
+  )
+}
+
+function ProductsSkeleton() {
+  return (
+    <main className="flex flex-col gap-6">
+      {/* Page header */}
+      <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-2">
+          <Skeleton className="h-7 w-32 sm:h-8 sm:w-40" />
+          <Skeleton className="h-4 w-72 max-w-full" />
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Skeleton className="h-9 w-32 rounded-md" />
+          <Skeleton className="h-9 w-28 rounded-md" />
+        </div>
+      </header>
+
+      {/* Stats grid */}
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <StatCardSkeleton key={i} />
+        ))}
+      </div>
+
+      {/* Two-column: rail + table */}
+      <div className="grid gap-6 md:grid-cols-[220px_1fr]">
+        <aside>
+          <div className="flex gap-1 overflow-x-auto rounded-md border bg-card p-2 md:flex-col">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <CategoryButtonSkeleton key={i} />
+            ))}
+          </div>
+        </aside>
+
+        <div className="min-w-0">
+          <Card className="shadow-sm">
+            <CardHeader className="gap-4 p-4 sm:p-6">
+              <div className="flex flex-col gap-2">
+                <Skeleton className="h-5 w-28" />
+                <Skeleton className="h-3.5 w-32" />
+              </div>
+              <Skeleton className="h-9 w-full lg:max-w-sm" />
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="border-t">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-muted/30 hover:bg-muted/30">
+                      <TableHead className="px-4">Product</TableHead>
+                      <TableHead className="px-4">Price</TableHead>
+                      <TableHead className="px-4">Stock</TableHead>
+                      <TableHead className="px-4">Sold</TableHead>
+                      <TableHead className="px-4">Active</TableHead>
+                      <TableHead className="px-4 text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {Array.from({ length: 6 }).map((_, i) => (
+                      <ProductRowSkeleton key={i} />
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </main>
+  )
+}
+
+function StatCardSkeleton() {
+  return (
+    <Card className="shadow-sm">
+      <CardContent className="flex items-center gap-4 p-4">
+        <Skeleton className="h-10 w-10 rounded-md" />
+        <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+          <Skeleton className="h-3 w-20" />
+          <Skeleton className="h-6 w-14" />
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+function CategoryButtonSkeleton() {
+  return (
+    <div className="inline-flex shrink-0 items-center gap-2.5 rounded-md px-3 py-2 md:w-full">
+      <Skeleton className="h-4 w-4 rounded" />
+      <Skeleton className="h-3.5 flex-1 max-w-[120px]" />
+      <Skeleton className="h-5 w-6 rounded-full" />
+    </div>
+  )
+}
+
+function ProductRowSkeleton() {
+  return (
+    <TableRow className="align-middle">
+      <TableCell className="px-4 py-3">
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-11 w-11 shrink-0 rounded-md" />
+          <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+            <Skeleton className="h-3.5 w-40 max-w-full" />
+            <Skeleton className="h-2.5 w-24" />
+          </div>
+        </div>
+      </TableCell>
+      <TableCell className="px-4 py-3">
+        <Skeleton className="h-4 w-16" />
+      </TableCell>
+      <TableCell className="px-4 py-3">
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-2 w-2 rounded-full" />
+          <Skeleton className="h-3.5 w-24" />
+        </div>
+      </TableCell>
+      <TableCell className="px-4 py-3">
+        <Skeleton className="h-3.5 w-8" />
+      </TableCell>
+      <TableCell className="px-4 py-3">
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-5 w-9 rounded-full" />
+          <Skeleton className="h-5 w-14 rounded-md" />
+        </div>
+      </TableCell>
+      <TableCell className="px-4 py-3">
+        <div className="flex items-center justify-end gap-1.5">
+          <Skeleton className="h-8 w-16 rounded-md" />
+          <Skeleton className="h-6 w-px" />
+          <Skeleton className="h-8 w-8 rounded-md" />
+        </div>
+      </TableCell>
+    </TableRow>
   )
 }
 

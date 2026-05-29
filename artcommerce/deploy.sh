@@ -8,9 +8,9 @@ echo "🧹 Cleaning previous builds..."
 rm -rf .next
 rm -rf node_modules/.cache
 
-# Install dependencies with legacy peer deps
+# Install dependencies from the locked dependency graph
 echo "📦 Installing dependencies..."
-npm install --legacy-peer-deps
+npm ci
 
 # Generate Prisma client
 echo "🗄️ Generating Prisma client..."

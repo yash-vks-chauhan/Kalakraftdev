@@ -26,24 +26,13 @@ export async function POST(request: Request) {
 
   const ticket = await prisma.supportTicket.findUnique({
     where: { id: ticketId },
-    select: { email: true },
+    select: { userId: true },
   });
   if (!ticket) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const userEmail =
-    auth.email ||
-    (await prisma.user.findUnique({
-      where: { id: auth.id },
-      select: { email: true },
-    }))?.email;
-
-  if (!userEmail) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  if (auth.role !== "admin" && ticket.email !== userEmail) {
+  if (auth.role !== "admin" && ticket.userId !== auth.id) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

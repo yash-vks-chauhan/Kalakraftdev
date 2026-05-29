@@ -6,6 +6,7 @@ import { randomUUID } from 'crypto';
 import { requireAdminUser } from "../../../../../../../lib/session-auth";
 import { isAllowedOrigin } from "@/lib/security";
 import { sanitizeSupportAttachments, validateSupportAttachments } from "@/lib/supportAttachments";
+import { getBoundedString } from "@/lib/inputValidation";
 import { cleanEmailHeader, escapeHtml } from "@/lib/emailContent";
 
 const ALLOWED_STATUSES = ['open', 'pending', 'resolved', 'closed'];
@@ -27,29 +28,36 @@ export async function POST(
   const { id: ticketId } = await params;
 
   // 2) Parse JSON body instead of formData()
-  const { reply, status, attachments = [] } = (await request.json()) as {
+  const body = await request.json().catch(() => null) as
+    | { reply?: unknown; status?: unknown; attachments?: unknown[] }
+    | null
+  if (!body || typeof body !== 'object') {
+    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
+  }
+
+  const { reply, status, attachments = [] } = body as {
     reply: string;
     status: string;
     attachments?: any[];
   };
+  if (!Array.isArray(attachments)) {
+    return NextResponse.json({ error: 'Attachments must be an array' }, { status: 400 });
+  }
 
-  const normalizedStatus = status?.toLowerCase?.();
+  const normalizedStatus = typeof status === 'string' ? status.toLowerCase() : '';
   if (!ALLOWED_STATUSES.includes(normalizedStatus)) {
     return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
   }
 
-  if (!reply?.trim() && attachments.length === 0) {
+  const parsedReply = getBoundedString(reply, 'reply', MAX_REPLY_LENGTH);
+  if (!parsedReply.ok) return NextResponse.json({ error: parsedReply.error }, { status: 400 });
+  const trimmedReply = parsedReply.value || '';
+
+  if (!trimmedReply && attachments.length === 0) {
     return NextResponse.json({ error: 'Reply or attachment is required' }, { status: 400 });
   }
-  const trimmedReply = typeof reply === 'string' ? reply.trim() : '';
-  if (trimmedReply.length > MAX_REPLY_LENGTH) {
-    return NextResponse.json(
-      { error: `Reply must be ${MAX_REPLY_LENGTH} characters or fewer` },
-      { status: 400 },
-    );
-  }
 
-  const validatedAttachments = validateSupportAttachments(attachments);
+  const validatedAttachments = validateSupportAttachments(attachments, admin.id);
   if (!validatedAttachments.ok) {
     return NextResponse.json(
       { error: 'error' in validatedAttachments ? validatedAttachments.error : 'Invalid attachment payload' },
@@ -113,7 +121,7 @@ export async function POST(
       }),
     });
     if (!resp.ok) {
-      console.error("Sendinblue error", resp.status, await resp.text());
+      console.error("Sendinblue error status", resp.status);
     }
   } catch (err) {
     console.error("Email send failed:", err);

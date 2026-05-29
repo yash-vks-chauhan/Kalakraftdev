@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { getBoundedString } from '../../../../lib/inputValidation'
 import prisma from '../../../../lib/prisma'
 import { requireAdminUser } from '../../../../lib/session-auth'
 
@@ -46,9 +47,33 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const { userId, role } = await request.json()
-  if (!userId || !['user','admin'].includes(role)) {
+  const body = await request.json().catch(() => ({}))
+  const userIdResult = getBoundedString(body.userId, 'userId', 128, { required: true })
+  if (!userIdResult.ok) {
+    return NextResponse.json({ error: userIdResult.error }, { status: 400 })
+  }
+  const userId = userIdResult.value!
+  const role = body.role
+  if (!['user','admin'].includes(role)) {
     return NextResponse.json({ error: 'Invalid payload' }, { status: 400 })
+  }
+  if (userId === admin.id && role !== admin.role) {
+    return NextResponse.json({ error: 'Admins cannot change their own role' }, { status: 400 })
+  }
+
+  const target = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true, role: true },
+  })
+  if (!target) {
+    return NextResponse.json({ error: 'User not found' }, { status: 404 })
+  }
+
+  if (target.role === 'admin' && role !== 'admin') {
+    const adminCount = await prisma.user.count({ where: { role: 'admin' } })
+    if (adminCount <= 1) {
+      return NextResponse.json({ error: 'Cannot remove the last admin' }, { status: 400 })
+    }
   }
 
   const updated = await prisma.user.update({

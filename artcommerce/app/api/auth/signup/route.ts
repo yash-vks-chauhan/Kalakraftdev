@@ -61,17 +61,19 @@ export async function POST(request: Request) {
     const passwordHash = await bcrypt.hash(password, 10)
     const user = await prisma.user.create({
       data: { fullName, email, passwordHash, role: 'user' },
-      select: { id: true, fullName: true, email: true, avatarUrl: true, role: true }
+      select: { id: true, fullName: true, email: true, avatarUrl: true, role: true, tokenVersion: true }
     })
 
     const accessToken = signAccessToken({
       id: user.id,
       email: user.email,
       role: user.role,
+      tokenVersion: user.tokenVersion,
     })
     const refresh = await createRefreshSession(user.id)
 
-    const response = NextResponse.json({ user })
+    const { tokenVersion: _tokenVersion, ...safeUser } = user
+    const response = NextResponse.json({ user: safeUser })
 
     setAuthCookies(response, {
       accessToken,

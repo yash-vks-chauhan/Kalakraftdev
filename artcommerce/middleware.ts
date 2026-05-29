@@ -1,6 +1,9 @@
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 import {
+  areAllowedCorsHeaders,
+  getAllowedCorsOrigin,
+  isAllowedCorsMethod,
   isAllowedOrigin,
   isMutationMethod,
   isSensitiveApiPath,
@@ -24,6 +27,44 @@ function shouldSkipSecurityMiddleware(pathname: string): boolean {
   }
 
   return STATIC_FILE_PATTERN.test(pathname)
+}
+
+function appendVary(currentValue: string | null, value: string): string {
+  const values = new Set(
+    (currentValue || '')
+      .split(',')
+      .map((item) => item.trim())
+      .filter(Boolean)
+  )
+  values.add(value)
+  return Array.from(values).join(', ')
+}
+
+function applyCorsHeaders(response: NextResponse, request: NextRequest) {
+  if (!request.nextUrl.pathname.startsWith('/api')) {
+    response.headers.set('Access-Control-Allow-Origin', request.nextUrl.origin)
+    response.headers.set('Vary', appendVary(response.headers.get('Vary'), 'Origin'))
+    return
+  }
+
+  const allowedOrigin = getAllowedCorsOrigin(request)
+  response.headers.set('Vary', appendVary(response.headers.get('Vary'), 'Origin'))
+
+  if (!allowedOrigin) {
+    response.headers.delete('Access-Control-Allow-Origin')
+    response.headers.delete('Access-Control-Allow-Credentials')
+    response.headers.delete('Access-Control-Allow-Methods')
+    response.headers.delete('Access-Control-Allow-Headers')
+    return
+  }
+
+  response.headers.set('Access-Control-Allow-Origin', allowedOrigin)
+  response.headers.set('Access-Control-Allow-Credentials', 'true')
+  response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS')
+  response.headers.set(
+    'Access-Control-Allow-Headers',
+    'Accept, Authorization, Content-Type, X-Requested-With, X-Pusher-Socket-Id'
+  )
 }
 
 function applySharedHeaders(response: NextResponse, request: NextRequest) {
@@ -51,6 +92,8 @@ function applySharedHeaders(response: NextResponse, request: NextRequest) {
     response.headers.set('Pragma', 'no-cache')
     response.headers.set('Expires', '0')
   }
+
+  applyCorsHeaders(response, request)
 }
 
 export function middleware(request: NextRequest) {
@@ -58,6 +101,17 @@ export function middleware(request: NextRequest) {
 
   if (shouldSkipSecurityMiddleware(pathname)) {
     return NextResponse.next()
+  }
+
+  if (pathname.startsWith('/api') && request.method.toUpperCase() === 'OPTIONS') {
+    const isValidPreflight =
+      Boolean(getAllowedCorsOrigin(request)) &&
+      isAllowedCorsMethod(request.headers.get('access-control-request-method')) &&
+      areAllowedCorsHeaders(request.headers.get('access-control-request-headers'))
+
+    const response = new NextResponse(null, { status: isValidPreflight ? 204 : 403 })
+    applySharedHeaders(response, request)
+    return response
   }
 
   if (pathname.startsWith('/api') && isMutationMethod(request.method) && !isAllowedOrigin(request)) {

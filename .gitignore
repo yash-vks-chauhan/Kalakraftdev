@@ -22,3 +22,5 @@ node_modules
 node_modules/
 .DS_Store
 *.tsbuildinfo
+.vercel
+.env*.local

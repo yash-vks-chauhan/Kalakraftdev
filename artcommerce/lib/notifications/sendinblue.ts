@@ -53,8 +53,6 @@ export async function sendOrderNotificationEmail(order: Order) {
   })
 
   if (!resp.ok) {
-    const errorText = await resp.text()
-    console.error('Sendinblue API error response:', errorText)
     console.error('Sendinblue API error status:', resp.status)
     throw new Error('Failed to send order notification email')
   }

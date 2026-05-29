@@ -32,6 +32,7 @@ import {
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
+import { Skeleton } from '@/components/ui/skeleton'
 import {
   Table,
   TableBody,
@@ -209,24 +210,19 @@ export default function AdminUsersPage() {
 
       {/* Stats */}
       <div className="grid gap-3 sm:grid-cols-3">
-        <StatCard
-          icon={Users}
-          label="Total users"
-          value={counts.total}
-          loading={loading}
-        />
-        <StatCard
-          icon={ShieldCheck}
-          label="Admins"
-          value={counts.admins}
-          loading={loading}
-        />
-        <StatCard
-          icon={UserRound}
-          label="Customers"
-          value={counts.customers}
-          loading={loading}
-        />
+        {loading ? (
+          <>
+            <StatCardSkeleton />
+            <StatCardSkeleton />
+            <StatCardSkeleton />
+          </>
+        ) : (
+          <>
+            <StatCard icon={Users} label="Total users" value={counts.total} loading={false} />
+            <StatCard icon={ShieldCheck} label="Admins" value={counts.admins} loading={false} />
+            <StatCard icon={UserRound} label="Customers" value={counts.customers} loading={false} />
+          </>
+        )}
       </div>
 
       <Card className="shadow-sm">
@@ -284,14 +280,9 @@ export default function AdminUsersPage() {
               </TableHeader>
               <TableBody>
                 {loading ? (
-                  <TableRow>
-                    <TableCell
-                      colSpan={5}
-                      className="px-4 py-10 text-center text-sm text-muted-foreground"
-                    >
-                      Loading users…
-                    </TableCell>
-                  </TableRow>
+                  Array.from({ length: 6 }).map((_, i) => (
+                    <UserRowSkeleton key={i} />
+                  ))
                 ) : displayUsers.length === 0 ? (
                   <TableRow>
                     <TableCell
@@ -500,5 +491,56 @@ function StatCard({
         </div>
       </CardContent>
     </Card>
+  )
+}
+
+function StatCardSkeleton() {
+  return (
+    <Card className="shadow-sm">
+      <CardContent className="flex items-center gap-4 p-4">
+        <Skeleton className="h-10 w-10 rounded-md" />
+        <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+          <Skeleton className="h-3 w-20" />
+          <Skeleton className="h-6 w-14" />
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+function UserRowSkeleton() {
+  return (
+    <TableRow className="align-middle">
+      <TableCell className="px-4 py-3">
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-9 w-9 shrink-0 rounded-full" />
+          <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+            <Skeleton className="h-3.5 w-32 max-w-full" />
+            <Skeleton className="h-2.5 w-44 max-w-full" />
+          </div>
+        </div>
+      </TableCell>
+      <TableCell className="px-4 py-3">
+        <Skeleton className="h-5 w-20 rounded-md" />
+      </TableCell>
+      <TableCell className="px-4 py-3">
+        <Skeleton className="h-3.5 w-20" />
+      </TableCell>
+      <TableCell className="px-4 py-3">
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-2 w-2 rounded-full" />
+          <Skeleton className="h-3.5 w-16" />
+        </div>
+      </TableCell>
+      <TableCell className="px-4 py-3">
+        <div className="flex items-center justify-end gap-1.5">
+          <Skeleton className="h-8 w-20 rounded-md" />
+          <Skeleton className="h-8 w-20 rounded-md" />
+          <Skeleton className="h-8 w-20 rounded-md" />
+          <Skeleton className="h-6 w-px" />
+          <Skeleton className="h-8 w-8 rounded-md" />
+        </div>
+      </TableCell>
+    </TableRow>
   )
 }

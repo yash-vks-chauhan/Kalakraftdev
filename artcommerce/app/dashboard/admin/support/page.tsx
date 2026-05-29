@@ -28,6 +28,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { Skeleton } from '@/components/ui/skeleton'
 import {
   Table,
   TableBody,
@@ -179,32 +180,43 @@ export default function AdminSupportPage() {
 
       {/* Stats */}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          icon={LifeBuoy}
-          label="Total"
-          value={counts.total}
-          tone="default"
-        />
-        <StatCard
-          icon={CircleDot}
-          label="Open"
-          value={counts.open}
-          tone="destructive"
-          hint="Needs attention"
-        />
-        <StatCard
-          icon={Clock}
-          label="Pending"
-          value={counts.pending}
-          tone="warning"
-          hint="Awaiting reply"
-        />
-        <StatCard
-          icon={CheckCircle2}
-          label="Closed"
-          value={counts.closed}
-          tone="muted"
-        />
+        {loading ? (
+          <>
+            <StatCardSkeleton />
+            <StatCardSkeleton />
+            <StatCardSkeleton />
+            <StatCardSkeleton />
+          </>
+        ) : (
+          <>
+            <StatCard
+              icon={LifeBuoy}
+              label="Total"
+              value={counts.total}
+              tone="default"
+            />
+            <StatCard
+              icon={CircleDot}
+              label="Open"
+              value={counts.open}
+              tone="destructive"
+              hint="Needs attention"
+            />
+            <StatCard
+              icon={Clock}
+              label="Pending"
+              value={counts.pending}
+              tone="warning"
+              hint="Awaiting reply"
+            />
+            <StatCard
+              icon={CheckCircle2}
+              label="Closed"
+              value={counts.closed}
+              tone="muted"
+            />
+          </>
+        )}
       </div>
 
       <Card className="shadow-sm">
@@ -265,14 +277,9 @@ export default function AdminSupportPage() {
               </TableHeader>
               <TableBody>
                 {loading ? (
-                  <TableRow>
-                    <TableCell
-                      colSpan={5}
-                      className="px-4 py-10 text-center text-sm text-muted-foreground"
-                    >
-                      Loading tickets…
-                    </TableCell>
-                  </TableRow>
+                  Array.from({ length: 6 }).map((_, i) => (
+                    <TicketRowSkeleton key={i} />
+                  ))
                 ) : error ? (
                   <TableRow>
                     <TableCell
@@ -398,6 +405,50 @@ function StatusBadge({ status }: { status: string }) {
     )
   }
   return <Badge variant="outline">{status}</Badge>
+}
+
+function StatCardSkeleton() {
+  return (
+    <Card className="shadow-sm">
+      <CardContent className="flex items-center gap-4 p-4">
+        <Skeleton className="h-10 w-10 rounded-md" />
+        <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+          <Skeleton className="h-3 w-16" />
+          <Skeleton className="h-6 w-12" />
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+function TicketRowSkeleton() {
+  return (
+    <TableRow className="align-middle">
+      <TableCell className="px-4 py-3">
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-9 w-9 shrink-0 rounded-full" />
+          <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+            <Skeleton className="h-3.5 w-28 max-w-full" />
+            <Skeleton className="h-2.5 w-40 max-w-full" />
+          </div>
+        </div>
+      </TableCell>
+      <TableCell className="px-4 py-3">
+        <Skeleton className="h-3.5 w-64 max-w-full" />
+      </TableCell>
+      <TableCell className="px-4 py-3">
+        <Skeleton className="h-5 w-20 rounded-md" />
+      </TableCell>
+      <TableCell className="px-4 py-3">
+        <Skeleton className="h-3.5 w-16" />
+      </TableCell>
+      <TableCell className="px-4 py-3">
+        <div className="flex justify-end">
+          <Skeleton className="h-8 w-16 rounded-md" />
+        </div>
+      </TableCell>
+    </TableRow>
+  )
 }
 
 function StatCard({

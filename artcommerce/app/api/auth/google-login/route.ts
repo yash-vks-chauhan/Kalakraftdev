@@ -73,6 +73,7 @@ export async function POST(req: NextRequest) {
       id: userFromDb.id,
       email: userFromDb.email,
       role: userFromDb.role,
+      tokenVersion: userFromDb.tokenVersion,
     })
     const refresh = await createRefreshSession(userFromDb.id)
 
