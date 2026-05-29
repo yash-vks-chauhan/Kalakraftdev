@@ -60,7 +60,7 @@ export default function DashboardLayout({
 
   if (loading) {
     return (
-      <div className="dashboard-shell flex min-h-screen items-center justify-center">
+      <div className="dashboard-shell flex min-h-dvh items-center justify-center">
         <LoadingSpinner message="Loading dashboard..." />
       </div>
     )
@@ -76,7 +76,7 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="dashboard-shell min-h-screen bg-background text-foreground">
+    <div className="dashboard-shell min-h-dvh bg-background text-foreground">
       {/* Desktop sidebar */}
       <aside
         data-state={collapsed ? "collapsed" : "expanded"}

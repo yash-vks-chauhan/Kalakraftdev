@@ -53,23 +53,18 @@
   border-color: hsl(var(--border));
 }
 
-/* Disable the global scroll-snap section sizing inside the dashboard shell. */
-.dashboard-shell section {
-  scroll-snap-align: none;
-  min-height: 0;
-  position: static;
-  overflow: visible;
-}
-
-/* Add scroll snapping */
 html, body {
-  scroll-snap-type: y proximity;
   scroll-behavior: smooth;
 }
 
-section {
+/* Home page only: snap each full-screen section into view on scroll. */
+body:has(> div > main[data-page="home"]) {
+  scroll-snap-type: y proximity;
+}
+
+body:has(> div > main[data-page="home"]) section {
   scroll-snap-align: start;
-  min-height: 100vh;
+  min-height: 100dvh;
   position: relative;
   overflow: hidden;
 }
@@ -80,7 +75,7 @@ body {
   margin: 0;
   padding: 0;
   font-family: system-ui, -apple-system, sans-serif;
-  min-height: 100vh;
+  min-height: 100dvh;
   position: relative;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

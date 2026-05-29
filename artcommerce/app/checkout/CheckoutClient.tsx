@@ -234,33 +234,55 @@ export default function CheckoutClient() {
           y: (rect.top + rect.height / 2) / window.innerHeight,
         }
       : { x: 0.5, y: 0.6 }
-    const palette = ["#10b981", "#34d399", "#fbbf24", "#a855f7", "#3b82f6"]
+    const palette = ["#10b981", "#34d399", "#fbbf24", "#f97316", "#a855f7", "#3b82f6", "#ec4899"]
+
+    // Big initial pop from the button.
     confetti({
-      particleCount: 70,
-      spread: 70,
-      startVelocity: 38,
+      particleCount: 140,
+      spread: 90,
+      startVelocity: 50,
       origin,
       colors: palette,
-      scalar: 0.9,
-      ticks: 220,
+      scalar: 1,
+      ticks: 260,
       zIndex: 9999,
     })
+    // Two side cannons aimed inward for the "explosion" feel.
     confetti({
-      particleCount: 30,
+      particleCount: 70,
       angle: 60,
-      spread: 55,
-      origin,
-      colors: palette.slice(0, 3),
+      spread: 70,
+      startVelocity: 55,
+      origin: { x: Math.max(0, origin.x - 0.1), y: origin.y },
+      colors: palette.slice(0, 4),
+      scalar: 0.9,
       zIndex: 9999,
     })
     confetti({
-      particleCount: 30,
+      particleCount: 70,
       angle: 120,
-      spread: 55,
-      origin,
-      colors: palette.slice(2),
+      spread: 70,
+      startVelocity: 55,
+      origin: { x: Math.min(1, origin.x + 0.1), y: origin.y },
+      colors: palette.slice(3),
+      scalar: 0.9,
       zIndex: 9999,
     })
+    // A delayed second wave with slower, drifty pieces for a longer-lasting moment.
+    window.setTimeout(() => {
+      confetti({
+        particleCount: 80,
+        spread: 120,
+        startVelocity: 30,
+        gravity: 0.7,
+        decay: 0.94,
+        origin,
+        colors: palette,
+        scalar: 1.05,
+        ticks: 300,
+        zIndex: 9999,
+      })
+    }, 220)
   }
 
   async function applyCoupon() {
