@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { useEffect, useMemo, useState } from "react"
 import {
+  Activity,
   ArrowUpRight,
   Package,
   Heart,
@@ -15,6 +16,8 @@ import {
   Star,
   AlertTriangle,
   Boxes,
+  BarChart3,
+  Mountain,
   TrendingUp,
   ReceiptText,
   Clock,
@@ -48,6 +51,23 @@ import {
 } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from "@/components/ui/chart"
+import {
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Line,
+  LineChart,
+  XAxis,
+  YAxis,
+} from "recharts"
 
 type Period = "today" | "week" | "month" | "year" | "all"
 
@@ -150,9 +170,139 @@ function formatShortDate(value: string) {
   return d.toLocaleDateString("en-GB", { day: "numeric", month: "short" })
 }
 
-function formatDayLabel(iso: string) {
-  const d = new Date(iso)
-  return d.toLocaleDateString("en-GB", { weekday: "short" }).slice(0, 1)
+type ChartType = "bar" | "line" | "area"
+
+interface ChartBucket {
+  key: string
+  label: string
+  date: string
+  count: number
+}
+
+function bucketizeOrders(orders: OrderLite[], period: Period): ChartBucket[] {
+  const now = new Date()
+  const buckets: ChartBucket[] = []
+
+  if (period === "today") {
+    const startOfDay = new Date(now)
+    startOfDay.setHours(0, 0, 0, 0)
+    for (let h = 0; h < 24; h++) {
+      const d = new Date(startOfDay)
+      d.setHours(h)
+      buckets.push({
+        key: `${h}`,
+        label: h % 3 === 0 ? `${h}h` : "",
+        date: d.toISOString(),
+        count: 0,
+      })
+    }
+    orders.forEach((o) => {
+      const d = new Date(o.createdAt)
+      if (d >= startOfDay) buckets[d.getHours()].count++
+    })
+    return buckets
+  }
+
+  if (period === "week") {
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(now)
+      d.setDate(d.getDate() - i)
+      d.setHours(0, 0, 0, 0)
+      buckets.push({
+        key: d.toISOString().slice(0, 10),
+        label: d.toLocaleDateString("en-GB", { weekday: "short" }).slice(0, 3),
+        date: d.toISOString(),
+        count: 0,
+      })
+    }
+    const start = new Date(buckets[0].date)
+    orders.forEach((o) => {
+      const d = new Date(o.createdAt)
+      if (d >= start) {
+        const key = new Date(d.getFullYear(), d.getMonth(), d.getDate())
+          .toISOString()
+          .slice(0, 10)
+        const b = buckets.find((b) => b.key === key)
+        if (b) b.count++
+      }
+    })
+    return buckets
+  }
+
+  if (period === "month") {
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+    const daysInMonth = new Date(
+      now.getFullYear(),
+      now.getMonth() + 1,
+      0
+    ).getDate()
+    for (let day = 1; day <= daysInMonth; day++) {
+      const d = new Date(now.getFullYear(), now.getMonth(), day)
+      buckets.push({
+        key: d.toISOString().slice(0, 10),
+        label: day % 5 === 0 || day === 1 ? `${day}` : "",
+        date: d.toISOString(),
+        count: 0,
+      })
+    }
+    orders.forEach((o) => {
+      const d = new Date(o.createdAt)
+      if (
+        d >= startOfMonth &&
+        d.getMonth() === now.getMonth() &&
+        d.getFullYear() === now.getFullYear()
+      ) {
+        buckets[d.getDate() - 1].count++
+      }
+    })
+    return buckets
+  }
+
+  if (period === "year") {
+    for (let m = 0; m < 12; m++) {
+      const d = new Date(now.getFullYear(), m, 1)
+      buckets.push({
+        key: `${m}`,
+        label: d.toLocaleDateString("en-GB", { month: "short" }),
+        date: d.toISOString(),
+        count: 0,
+      })
+    }
+    orders.forEach((o) => {
+      const d = new Date(o.createdAt)
+      if (d.getFullYear() === now.getFullYear()) {
+        buckets[d.getMonth()].count++
+      }
+    })
+    return buckets
+  }
+
+  // all-time: monthly buckets from earliest order to now
+  if (orders.length === 0) return []
+  const earliest = orders.reduce((min, o) => {
+    const d = new Date(o.createdAt)
+    return d < min ? d : min
+  }, new Date())
+  const cursor = new Date(earliest.getFullYear(), earliest.getMonth(), 1)
+  while (cursor <= now) {
+    buckets.push({
+      key: `${cursor.getFullYear()}-${cursor.getMonth()}`,
+      label: cursor.toLocaleDateString("en-GB", {
+        month: "short",
+        year: "2-digit",
+      }),
+      date: cursor.toISOString(),
+      count: 0,
+    })
+    cursor.setMonth(cursor.getMonth() + 1)
+  }
+  orders.forEach((o) => {
+    const d = new Date(o.createdAt)
+    const key = `${d.getFullYear()}-${d.getMonth()}`
+    const b = buckets.find((b) => b.key === key)
+    if (b) b.count++
+  })
+  return buckets
 }
 
 export default function DashboardHomePage() {
@@ -387,9 +537,9 @@ function UserDesktop({
         )}
       </section>
 
-      {/* Desktop-only content sections */}
-      <section className="hidden gap-6 lg:grid lg:grid-cols-3">
-        {/* Recent orders (2 cols) */}
+      {/* Content sections (stack on mobile, side-by-side on desktop) */}
+      <section className="grid gap-6 lg:grid-cols-3">
+        {/* Recent orders (2 cols on desktop) */}
         <Card className="shadow-sm lg:col-span-2">
           <CardHeader className="flex flex-row items-center justify-between gap-2 p-5 pb-3">
             <div className="flex flex-col gap-1">
@@ -437,8 +587,8 @@ function UserDesktop({
         <SpendChartCard orders={orders} loading={ordersLoading} />
       </section>
 
-      {/* Wishlist + Cart side-by-side on desktop */}
-      <section className="hidden gap-6 lg:grid lg:grid-cols-2">
+      {/* Wishlist + Cart side-by-side on desktop, stacked on mobile */}
+      <section className="grid gap-6 sm:grid-cols-2">
         <WishlistPreviewCard loading={wishlistLoading} />
         <CartPreviewCard loading={cartLoading} />
       </section>
@@ -543,7 +693,6 @@ function SpendChartCard({
     return arr
   }, [orders])
 
-  const max = Math.max(1, ...months.map((m) => m.value))
   const total = months.reduce((s, m) => s + m.value, 0)
   const lastMonthValue = months[months.length - 1]?.value ?? 0
   const prevMonthValue = months[months.length - 2]?.value ?? 0
@@ -584,34 +733,58 @@ function SpendChartCard({
       </CardHeader>
       <CardContent className="p-5 pt-0">
         {loading ? (
-          <BarChartSkeleton bars={6} />
-        ) : (
-          <div className="flex h-32 items-end gap-2">
-            {months.map((m) => {
-              const h = max > 0 ? Math.max(2, (m.value / max) * 100) : 2
-              return (
-                <div
-                  key={m.key}
-                  className="group flex flex-1 flex-col items-center gap-1.5"
-                  title={`${m.label}: ${formatCurrency(m.value)}`}
-                >
-                  <div className="flex w-full flex-1 items-end">
-                    <div
-                      style={{ height: `${h}%` }}
-                      className="w-full rounded-sm bg-foreground/15 transition-colors group-hover:bg-foreground/30"
-                    />
-                  </div>
-                  <span className="text-[10px] text-muted-foreground">
-                    {m.label}
-                  </span>
-                </div>
-              )
-            })}
+          <ChartSkeleton bars={6} height="h-32" />
+        ) : total === 0 ? (
+          <div className="flex h-32 items-center justify-center text-xs text-muted-foreground">
+            No spend recorded in this window yet
           </div>
+        ) : (
+          <ChartContainer
+            config={SPEND_CONFIG}
+            className="aspect-auto h-32 w-full"
+          >
+            <BarChart
+              accessibilityLayer
+              data={months}
+              margin={{ left: 4, right: 4, top: 4, bottom: 0 }}
+            >
+              <CartesianGrid vertical={false} strokeDasharray="3 3" />
+              <XAxis
+                dataKey="label"
+                tickLine={false}
+                axisLine={false}
+                tickMargin={6}
+                fontSize={10}
+              />
+              <YAxis hide />
+              <ChartTooltip
+                cursor={{ fill: "hsl(var(--muted))", opacity: 0.4 }}
+                content={
+                  <ChartTooltipContent
+                    indicator="dot"
+                    formatter={(value) => formatCurrency(Number(value))}
+                  />
+                }
+              />
+              <Bar
+                dataKey="value"
+                name="Spend"
+                fill="var(--color-value)"
+                radius={[4, 4, 0, 0]}
+              />
+            </BarChart>
+          </ChartContainer>
         )}
       </CardContent>
     </Card>
   )
+}
+
+const SPEND_CONFIG: ChartConfig = {
+  value: {
+    label: "Spend",
+    color: "hsl(var(--foreground))",
+  },
 }
 
 function WishlistPreviewCard({ loading }: { loading: boolean }) {
@@ -876,6 +1049,12 @@ function AdminDesktop({
       ? Math.round((metrics.revenue ?? 0) / metrics.totalOrders)
       : 0
 
+  const [chartType, setChartType] = useState<ChartType>("bar")
+  const chartData = useMemo(
+    () => bucketizeOrders(orders, period),
+    [orders, period]
+  )
+
   return (
     <>
       {/* Period + stats */}
@@ -935,17 +1114,23 @@ function AdminDesktop({
         </div>
       </section>
 
-      {/* Charts row (desktop only) */}
-      <section className="hidden gap-6 lg:grid lg:grid-cols-3">
-        <OrdersBarChart points={metrics?.ordersPerDay ?? []} loading={metricsLoading} />
+      {/* Charts row */}
+      <section className="grid gap-6 lg:grid-cols-3">
+        <OrdersChart
+          data={chartData}
+          period={period}
+          type={chartType}
+          onTypeChange={setChartType}
+          loading={ordersLoading}
+        />
         <StatusBreakdown
           statusCounts={metrics?.statusCounts ?? []}
           loading={metricsLoading}
         />
       </section>
 
-      {/* Recent orders + Low stock (desktop only) */}
-      <section className="hidden gap-6 lg:grid lg:grid-cols-2">
+      {/* Recent orders + Low stock */}
+      <section className="grid gap-6 lg:grid-cols-2">
         <Card className="shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between gap-2 p-5 pb-3">
             <div className="flex flex-col gap-1">
@@ -1042,68 +1227,237 @@ function AdminDesktop({
   )
 }
 
-function OrdersBarChart({
-  points,
+function OrdersChart({
+  data,
+  period,
+  type,
+  onTypeChange,
   loading,
 }: {
-  points: DayPoint[]
+  data: ChartBucket[]
+  period: Period
+  type: ChartType
+  onTypeChange: (t: ChartType) => void
   loading: boolean
 }) {
-  const max = Math.max(1, ...points.map((p) => p.count))
-  const total = points.reduce((s, p) => s + p.count, 0)
+  const total = data.reduce((s, p) => s + p.count, 0)
 
   return (
     <Card className="shadow-sm lg:col-span-2">
       <CardHeader className="p-5 pb-3">
-        <div className="flex items-center justify-between gap-2">
-          <CardTitle className="text-base">Orders, last 7 days</CardTitle>
-          {loading ? (
-            <Skeleton className="h-4 w-16" />
-          ) : (
-            <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-              <TrendingUp className="h-3.5 w-3.5" />
-              {total} total
-            </span>
-          )}
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-col gap-1">
+            <CardTitle className="text-base">Order volume</CardTitle>
+            <CardDescription>
+              {periodDescription(period)}
+              {!loading && (
+                <span className="ml-2 inline-flex items-center gap-1 text-xs text-muted-foreground">
+                  <TrendingUp className="h-3.5 w-3.5" />
+                  {total} total
+                </span>
+              )}
+            </CardDescription>
+          </div>
+          <ChartTypeToggle value={type} onChange={onTypeChange} />
         </div>
-        <CardDescription>Daily order volume.</CardDescription>
       </CardHeader>
       <CardContent className="p-5 pt-0">
         {loading ? (
-          <BarChartSkeleton bars={7} />
-        ) : points.length === 0 ? (
+          <ChartSkeleton bars={7} height="h-40" />
+        ) : data.length === 0 || total === 0 ? (
           <div className="flex h-32 items-center justify-center text-xs text-muted-foreground">
-            No data yet
+            No orders {periodDescription(period).toLowerCase()}
           </div>
         ) : (
-          <div className="flex h-32 items-end gap-2">
-            {points.map((p) => {
-              const h = max > 0 ? Math.max(2, (p.count / max) * 100) : 2
-              return (
-                <div
-                  key={p.date}
-                  className="group flex flex-1 flex-col items-center gap-1.5"
-                  title={`${p.date}: ${p.count}`}
-                >
-                  <span className="text-[10px] font-medium text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100">
-                    {p.count}
-                  </span>
-                  <div className="flex w-full flex-1 items-end">
-                    <div
-                      style={{ height: `${h}%` }}
-                      className="w-full rounded-sm bg-foreground/15 transition-colors group-hover:bg-foreground/30"
+          <ChartContainer
+            config={ORDERS_CONFIG}
+            className="aspect-auto h-40 w-full"
+          >
+            {type === "bar" ? (
+              <BarChart
+                accessibilityLayer
+                data={data}
+                margin={{ left: 4, right: 4, top: 8, bottom: 0 }}
+              >
+                <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                <XAxis
+                  dataKey="label"
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={6}
+                  fontSize={10}
+                  interval="preserveStartEnd"
+                />
+                <YAxis hide />
+                <ChartTooltip
+                  cursor={{ fill: "hsl(var(--muted))", opacity: 0.4 }}
+                  content={
+                    <ChartTooltipContent
+                      indicator="dot"
+                      labelFormatter={chartLabelFormatter}
                     />
-                  </div>
-                  <span className="text-[10px] text-muted-foreground">
-                    {formatDayLabel(p.date)}
-                  </span>
-                </div>
-              )
-            })}
-          </div>
+                  }
+                />
+                <Bar
+                  dataKey="count"
+                  name="Orders"
+                  fill="var(--color-count)"
+                  radius={[4, 4, 0, 0]}
+                />
+              </BarChart>
+            ) : type === "line" ? (
+              <LineChart
+                accessibilityLayer
+                data={data}
+                margin={{ left: 4, right: 4, top: 8, bottom: 0 }}
+              >
+                <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                <XAxis
+                  dataKey="label"
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={6}
+                  fontSize={10}
+                  interval="preserveStartEnd"
+                />
+                <YAxis hide />
+                <ChartTooltip
+                  cursor={{ stroke: "hsl(var(--border))" }}
+                  content={
+                    <ChartTooltipContent
+                      indicator="dot"
+                      labelFormatter={chartLabelFormatter}
+                    />
+                  }
+                />
+                <Line
+                  type="monotone"
+                  dataKey="count"
+                  name="Orders"
+                  stroke="var(--color-count)"
+                  strokeWidth={2}
+                  dot={{ r: 3, fill: "var(--color-count)" }}
+                  activeDot={{ r: 5 }}
+                />
+              </LineChart>
+            ) : (
+              <AreaChart
+                accessibilityLayer
+                data={data}
+                margin={{ left: 4, right: 4, top: 8, bottom: 0 }}
+              >
+                <defs>
+                  <linearGradient id="ordersAreaFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop
+                      offset="0%"
+                      stopColor="var(--color-count)"
+                      stopOpacity={0.35}
+                    />
+                    <stop
+                      offset="100%"
+                      stopColor="var(--color-count)"
+                      stopOpacity={0}
+                    />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                <XAxis
+                  dataKey="label"
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={6}
+                  fontSize={10}
+                  interval="preserveStartEnd"
+                />
+                <YAxis hide />
+                <ChartTooltip
+                  cursor={{ stroke: "hsl(var(--border))" }}
+                  content={
+                    <ChartTooltipContent
+                      indicator="dot"
+                      labelFormatter={chartLabelFormatter}
+                    />
+                  }
+                />
+                <Area
+                  type="monotone"
+                  dataKey="count"
+                  name="Orders"
+                  stroke="var(--color-count)"
+                  strokeWidth={2}
+                  fill="url(#ordersAreaFill)"
+                />
+              </AreaChart>
+            )}
+          </ChartContainer>
         )}
       </CardContent>
     </Card>
+  )
+}
+
+const ORDERS_CONFIG: ChartConfig = {
+  count: {
+    label: "Orders",
+    color: "hsl(var(--foreground))",
+  },
+}
+
+function periodDescription(period: Period) {
+  if (period === "today") return "Orders by hour today"
+  if (period === "week") return "Orders by day, last 7 days"
+  if (period === "month") return "Orders by day, this month"
+  if (period === "year") return "Orders by month, this year"
+  return "Orders by month, all time"
+}
+
+function chartLabelFormatter(_: any, payload: any[]) {
+  const date = payload?.[0]?.payload?.date
+  if (!date) return ""
+  const d = new Date(date)
+  return d.toLocaleString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  })
+}
+
+function ChartTypeToggle({
+  value,
+  onChange,
+}: {
+  value: ChartType
+  onChange: (t: ChartType) => void
+}) {
+  const options: { type: ChartType; icon: LucideIcon; label: string }[] = [
+    { type: "bar", icon: BarChart3, label: "Bar" },
+    { type: "line", icon: Activity, label: "Line" },
+    { type: "area", icon: Mountain, label: "Area" },
+  ]
+  return (
+    <div className="inline-flex items-center rounded-md border bg-background p-0.5 shadow-xs">
+      {options.map(({ type, icon: Icon, label }) => {
+        const active = value === type
+        return (
+          <button
+            key={type}
+            type="button"
+            onClick={() => onChange(type)}
+            aria-label={`${label} chart`}
+            aria-pressed={active}
+            title={`${label} chart`}
+            className={cn(
+              "inline-flex h-7 w-7 items-center justify-center rounded transition-colors",
+              active
+                ? "bg-secondary text-foreground shadow-sm"
+                : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
+            )}
+          >
+            <Icon className="h-3.5 w-3.5" />
+          </button>
+        )
+      })}
+    </div>
   )
 }
 
@@ -1396,24 +1750,88 @@ function StatTileSkeleton() {
   )
 }
 
-function BarChartSkeleton({ bars = 7 }: { bars?: number }) {
+function ChartSkeleton({
+  bars = 7,
+  height = "h-40",
+}: {
+  bars?: number
+  height?: string
+}) {
+  const heightPattern = [42, 68, 54, 82, 48, 64, 46, 72, 58, 78, 44, 66]
+  const heights = Array.from({ length: bars }, (_, i) => heightPattern[i % heightPattern.length])
+
   return (
-    <div className="flex h-32 items-end gap-2">
-      {Array.from({ length: bars }).map((_, i) => {
-        const heights = [40, 70, 55, 85, 50, 65, 45]
-        const h = heights[i % heights.length]
-        return (
-          <div key={i} className="flex flex-1 flex-col items-center gap-1.5">
-            <div className="flex w-full flex-1 items-end">
-              <Skeleton
-                className="w-full rounded-sm"
-                style={{ height: `${h}%` }}
-              />
-            </div>
-            <Skeleton className="h-2 w-4" />
-          </div>
-        )
-      })}
+    <div className={cn("relative w-full overflow-hidden", height)}>
+      {/* Dashed gridlines mimic CartesianGrid */}
+      <div
+        aria-hidden
+        className="absolute inset-x-1 inset-y-2 flex flex-col justify-between pb-6"
+      >
+        {[0, 1, 2, 3].map((i) => (
+          <div
+            key={i}
+            className="h-px w-full opacity-60"
+            style={{
+              backgroundImage:
+                "repeating-linear-gradient(to right, hsl(var(--border)) 0 4px, transparent 4px 7px)",
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Bars + axis labels */}
+      <div className="relative flex h-full flex-col">
+        <div className="flex flex-1 items-end gap-2 px-1 pb-6">
+          {heights.map((h, i) => (
+            <div
+              key={i}
+              className="chartSkelBar relative flex-1 overflow-hidden rounded-sm bg-muted"
+              style={
+                {
+                  height: `${h}%`,
+                  "--shimmer-delay": `${(i % bars) * 90}ms`,
+                } as React.CSSProperties
+              }
+            />
+          ))}
+        </div>
+        <div className="absolute inset-x-1 bottom-0 flex items-center justify-between gap-2">
+          {heights.map((_, i) => (
+            <div
+              key={i}
+              className="h-2 w-3 rounded-sm bg-muted opacity-70"
+            />
+          ))}
+        </div>
+      </div>
+
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+            .chartSkelBar::after {
+              content: "";
+              position: absolute;
+              inset: 0;
+              transform: translateX(-120%);
+              background: linear-gradient(
+                90deg,
+                transparent 0%,
+                hsl(var(--foreground) / 0.08) 45%,
+                hsl(var(--foreground) / 0.12) 50%,
+                hsl(var(--foreground) / 0.08) 55%,
+                transparent 100%
+              );
+              animation: chartSkelShimmer 1.4s ease-in-out infinite;
+              animation-delay: var(--shimmer-delay, 0ms);
+            }
+            @keyframes chartSkelShimmer {
+              0% { transform: translateX(-120%); }
+              60% { transform: translateX(120%); }
+              100% { transform: translateX(120%); }
+            }
+          `,
+        }}
+      />
     </div>
   )
 }

@@ -8,9 +8,11 @@ import {
   ArrowRight,
   Banknote,
   Check,
+  CheckCircle2,
   CreditCard,
   Loader2,
   Lock,
+  Mail,
   MapPin,
   PackageX,
   Plus,
@@ -105,6 +107,7 @@ export default function CheckoutClient() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const [placingPhase, setPlacingPhase] = useState<"idle" | "placing" | "confirmed">("idle")
   const [paymentMethod, setPaymentMethod] = useState<string>("Credit Card")
 
   const [coupon, setCoupon] = useState("")
@@ -232,6 +235,7 @@ export default function CheckoutClient() {
       return
     }
     setSubmitting(true)
+    setPlacingPhase("placing")
     try {
       const payload = {
         addressId: selectedAddressId,
@@ -255,13 +259,22 @@ export default function CheckoutClient() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || "Order failed")
       localStorage.setItem("lastOrderNumber", data.order.orderNumber)
-      setTimeout(() => {
-        clearCart()
-        router.push("/checkout/success")
-      }, 600)
+      try {
+        localStorage.setItem("lastOrder", JSON.stringify(data.order))
+      } catch {
+        // ignore storage errors (quota, etc.)
+      }
+
+      // Show the success state for a moment before navigating so the user
+      // sees a confirmation rather than the empty-cart fallback flashing.
+      setPlacingPhase("confirmed")
+      await new Promise((resolve) => setTimeout(resolve, 1100))
+      clearCart()
+      router.push("/checkout/success")
     } catch (err: any) {
       setError(err.message)
       setSubmitting(false)
+      setPlacingPhase("idle")
     }
   }
 
@@ -304,7 +317,7 @@ export default function CheckoutClient() {
     )
   }
 
-  if (cartItems.length === 0) {
+  if (cartItems.length === 0 && placingPhase === "idle") {
     return (
       <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
         <CheckoutHeader itemCount={0} />
@@ -332,7 +345,15 @@ export default function CheckoutClient() {
   }
 
   return (
-    <main className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-8 sm:px-6 sm:py-10 lg:px-10">
+    <>
+      {placingPhase !== "idle" && <PlacingOrderOverlay phase={placingPhase} />}
+    <main
+      className={cn(
+        "mx-auto flex max-w-7xl flex-col gap-6 px-4 py-8 sm:px-6 sm:py-10 lg:px-10",
+        placingPhase !== "idle" && "pointer-events-none select-none blur-sm"
+      )}
+      aria-hidden={placingPhase !== "idle"}
+    >
       <CheckoutHeader itemCount={itemCount} />
 
       <form
@@ -788,6 +809,100 @@ export default function CheckoutClient() {
         </div>
       </form>
     </main>
+    </>
+  )
+}
+
+function PlacingOrderOverlay({
+  phase,
+}: {
+  phase: "placing" | "confirmed"
+}) {
+  return (
+    <div
+      role="alertdialog"
+      aria-modal="true"
+      aria-live="polite"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-background/70 p-4 backdrop-blur-sm animate-in fade-in duration-200"
+    >
+      <Card className="w-full max-w-md border-foreground/10 shadow-xl animate-in zoom-in-95 duration-200">
+        <CardContent className="flex flex-col items-center gap-6 p-8 text-center sm:p-10">
+          {phase === "placing" ? (
+            <>
+              <span className="relative flex h-16 w-16 items-center justify-center rounded-full bg-secondary">
+                <span
+                  aria-hidden
+                  className="absolute inset-0 rounded-full ring-1 ring-border"
+                />
+                <span
+                  aria-hidden
+                  className="absolute -inset-1.5 rounded-full ring-1 ring-border/40"
+                />
+                <Loader2 className="h-7 w-7 animate-spin text-foreground" />
+              </span>
+              <div className="flex flex-col gap-1.5">
+                <h2 className="text-lg font-semibold tracking-tight text-foreground">
+                  Placing your order
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  Hang tight while we confirm everything — this only takes a moment.
+                </p>
+              </div>
+              <PlacingSteps />
+            </>
+          ) : (
+            <>
+              <span className="relative flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500 text-white shadow-md animate-in zoom-in-50 duration-300">
+                <Check className="h-8 w-8" strokeWidth={3} />
+              </span>
+              <div className="flex flex-col gap-1.5">
+                <h2 className="text-lg font-semibold tracking-tight text-foreground">
+                  Order confirmed
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  Taking you to your confirmation page…
+                </p>
+              </div>
+            </>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+function PlacingSteps() {
+  const steps: { icon: typeof Loader2; label: string }[] = [
+    { icon: ShieldCheck, label: "Validating payment" },
+    { icon: ShoppingBag, label: "Reserving your items" },
+    { icon: Mail, label: "Preparing confirmation email" },
+  ]
+  return (
+    <ul className="flex w-full flex-col gap-2 text-left">
+      {steps.map((s, i) => {
+        const Icon = s.icon
+        return (
+          <li
+            key={s.label}
+            className="flex items-center gap-3 rounded-md border bg-muted/30 px-3 py-2 opacity-0 animate-in fade-in slide-in-from-bottom-2 fill-mode-forwards"
+            style={{
+              animationDelay: `${i * 280}ms`,
+              animationDuration: "320ms",
+            }}
+          >
+            <Icon className="h-4 w-4 text-muted-foreground" />
+            <span className="flex-1 text-sm text-foreground">{s.label}</span>
+            <CheckCircle2
+              className="h-4 w-4 text-emerald-500 opacity-0 animate-in fade-in zoom-in-50 fill-mode-forwards"
+              style={{
+                animationDelay: `${i * 280 + 220}ms`,
+                animationDuration: "220ms",
+              }}
+            />
+          </li>
+        )
+      })}
+    </ul>
   )
 }
 

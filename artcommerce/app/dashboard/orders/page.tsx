@@ -6,7 +6,6 @@ import { useRouter, useSearchParams } from "next/navigation"
 import {
   ChevronRight,
   Clock,
-  MapPin,
   Package,
   PackageX,
   ReceiptText,
@@ -347,15 +346,15 @@ function OrderRow({
 }) {
   const items = order.orderItems ?? []
   const totalItems = items.reduce((sum, i) => sum + i.quantity, 0)
-  const displayed = items.slice(0, 4)
-  const extra = items.length - displayed.length
+  const previewItems = items.slice(0, 2)
+  const extra = items.length - previewItems.length
   const finalTotal = order.discountedTotal ?? order.totalAmount
 
   return (
     <li>
       <Card className="shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-foreground/20 hover:shadow-md">
         <CardContent className="flex flex-col gap-4 p-4 sm:p-5">
-          {/* Top: meta + status */}
+          {/* Header */}
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="flex min-w-0 flex-col gap-1">
               <Link
@@ -364,7 +363,7 @@ function OrderRow({
               >
                 Order #{order.orderNumber}
               </Link>
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
                 <span className="inline-flex items-center gap-1">
                   <Clock className="h-3 w-3" />
                   {formatDate(order.createdAt)}
@@ -373,22 +372,34 @@ function OrderRow({
                 <span>
                   {totalItems} item{totalItems === 1 ? "" : "s"}
                 </span>
+                <span className="text-border">•</span>
+                <span className="font-medium tabular-nums text-foreground">
+                  {formatCurrency(finalTotal)}
+                </span>
+                {order.discountAmount && order.discountAmount > 0 ? (
+                  <>
+                    <span className="text-border">•</span>
+                    <span className="text-emerald-600 dark:text-emerald-400">
+                      saved {formatCurrency(order.discountAmount)}
+                    </span>
+                  </>
+                ) : null}
               </div>
             </div>
             <StatusBadge status={order.status} />
           </div>
 
-          {/* Middle: thumbnails + names */}
-          <div className="flex items-center gap-3">
-            <div className="flex -space-x-2">
-              {displayed.map((item) => {
-                const src = item.product.imageUrls?.[0]
-                return (
-                  <div
-                    key={item.id}
-                    className="h-12 w-12 shrink-0 overflow-hidden rounded-md border-2 border-background bg-muted/40 ring-1 ring-border sm:h-14 sm:w-14"
-                    title={item.product.name}
-                  >
+          {/* Item mini-list */}
+          <ul className="flex flex-col gap-2.5">
+            {previewItems.map((item) => {
+              const src = item.product.imageUrls?.[0]
+              const lineTotal = item.priceAtPurchase * item.quantity
+              return (
+                <li
+                  key={item.id}
+                  className="flex items-center gap-3"
+                >
+                  <div className="h-12 w-12 shrink-0 overflow-hidden rounded-md border bg-muted/40">
                     {src ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
@@ -403,65 +414,45 @@ function OrderRow({
                       </div>
                     )}
                   </div>
-                )
-              })}
-              {extra > 0 && (
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md border-2 border-background bg-muted text-xs font-medium text-muted-foreground ring-1 ring-border sm:h-14 sm:w-14">
-                  +{extra}
-                </div>
-              )}
-            </div>
-            <p className="hidden flex-1 truncate text-sm text-muted-foreground sm:block">
-              {items.map((i) => i.product.name).join(", ")}
-            </p>
-          </div>
+                  <div className="flex min-w-0 flex-1 flex-col">
+                    <p className="truncate text-sm font-medium text-foreground">
+                      {item.product.name}
+                    </p>
+                    <p className="text-xs text-muted-foreground tabular-nums">
+                      {formatCurrency(item.priceAtPurchase)} × {item.quantity}
+                    </p>
+                  </div>
+                  <p className="shrink-0 text-sm font-semibold tabular-nums text-foreground">
+                    {formatCurrency(lineTotal)}
+                  </p>
+                </li>
+              )
+            })}
+            {extra > 0 && (
+              <li className="pl-[60px] text-xs text-muted-foreground">
+                + {extra} more item{extra === 1 ? "" : "s"}
+              </li>
+            )}
+          </ul>
 
           <Separator />
 
-          {/* Bottom: total + action */}
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex flex-col">
-              <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
-                Total paid
-              </span>
-              <span className="text-base font-semibold tabular-nums text-foreground sm:text-lg">
-                {formatCurrency(finalTotal)}
-              </span>
-              {order.discountAmount && order.discountAmount > 0 ? (
-                <span className="text-[11px] text-emerald-600 dark:text-emerald-400">
-                  Saved {formatCurrency(order.discountAmount)} with{" "}
-                  <span className="font-mono">{order.couponCode}</span>
-                </span>
-              ) : null}
-            </div>
-            <div className="flex items-center gap-2">
-              {isAdmin && (
-                <Button asChild variant="outline" size="sm">
-                  <Link href={`/dashboard/orders/${order.id}/edit-status`}>
-                    Edit status
-                  </Link>
-                </Button>
-              )}
-              <Button asChild size="sm" className="gap-1.5">
-                <Link href={`/dashboard/orders/${order.id}`}>
-                  View details
-                  <ChevronRight className="h-3.5 w-3.5" />
+          {/* Actions */}
+          <div className="flex items-center justify-end gap-2">
+            {isAdmin && (
+              <Button asChild variant="outline" size="sm">
+                <Link href={`/dashboard/orders/${order.id}/edit-status`}>
+                  Edit status
                 </Link>
               </Button>
-            </div>
+            )}
+            <Button asChild size="sm" className="gap-1.5">
+              <Link href={`/dashboard/orders/${order.id}`}>
+                View details
+                <ChevronRight className="h-3.5 w-3.5" />
+              </Link>
+            </Button>
           </div>
-
-          {/* Shipping address: subtle footer */}
-          {order.shippingAddress && (
-            <div className="flex items-start gap-1.5 text-xs text-muted-foreground">
-              <MapPin className="mt-0.5 h-3 w-3 shrink-0" />
-              <span className="truncate">
-                {order.shippingAddress.line1}, {order.shippingAddress.city},{" "}
-                {order.shippingAddress.postalCode},{" "}
-                {order.shippingAddress.country}
-              </span>
-            </div>
-          )}
         </CardContent>
       </Card>
     </li>
