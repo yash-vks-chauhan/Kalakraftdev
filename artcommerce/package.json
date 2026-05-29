@@ -32,6 +32,7 @@
     "@vercel/blob": "2.3.1",
     "aos": "2.3.4",
     "bcryptjs": "3.0.2",
+    "canvas-confetti": "1.9.3",
     "class-variance-authority": "0.7.1",
     "cloudinary": "2.10.0",
     "clsx": "2.1.1",
@@ -63,6 +64,7 @@
   },
   "devDependencies": {
     "@types/aos": "3.0.7",
+    "@types/canvas-confetti": "1.9.0",
     "@types/js-cookie": "3.0.6",
     "@types/node": "20.11.24",
     "@types/nodemailer": "7.0.10",
