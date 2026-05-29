@@ -88,7 +88,7 @@ export default function ForgotPasswordRequestPage() {
     <AuthShell
       eyebrow="Forgot password"
       title="Reset your password"
-      subtitle="We'll send a short verification code so you can choose a new password securely."
+      subtitle="We'll email a short verification code so you can set a new password — under a minute, start to finish."
       steps={{ current: 1, items: RESET_STEPS }}
       footer={
         <>
@@ -125,6 +125,9 @@ export default function ForgotPasswordRequestPage() {
                 className="pl-9"
               />
             </div>
+            <p className="text-[11px] text-muted-foreground">
+              We&apos;ll only ever send the code to this address.
+            </p>
           </div>
 
           <Button
@@ -146,8 +149,8 @@ export default function ForgotPasswordRequestPage() {
           </Button>
         </form>
 
-        <div className="flex items-start gap-3 rounded-lg border bg-muted/30 p-4">
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-background text-foreground ring-1 ring-border">
+        <div className="flex items-start gap-3 rounded-xl border bg-muted/30 p-4">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-background text-foreground ring-1 ring-border">
             <ShieldCheck className="h-4 w-4" />
           </span>
           <div className="flex min-w-0 flex-col gap-0.5">
@@ -155,9 +158,8 @@ export default function ForgotPasswordRequestPage() {
               What happens next
             </p>
             <p className="text-xs leading-relaxed text-muted-foreground">
-              We email a six-character code to the address above. You confirm it,
-              choose a new password, and we send you back to sign in — all in
-              under a minute.
+              A six-character code lands in your inbox. Enter it, choose a new
+              password, and you&apos;re back in.
             </p>
           </div>
         </div>

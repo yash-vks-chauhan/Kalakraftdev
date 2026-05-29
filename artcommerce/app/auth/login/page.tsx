@@ -10,10 +10,17 @@ import AuthShell from '../AuthShell'
 import {
   Banner,
   DividerText,
+  OAuthSplash,
   PasswordInput,
   SocialButton,
   SuccessRedirect,
 } from '../_components/AuthBits'
+import {
+  beginOAuthFlow,
+  clearOAuthFlow,
+  readOAuthFlow,
+  type OAuthProvider,
+} from '../_components/oauthFlow'
 import { useAuth } from '../../contexts/AuthContext'
 import { useFirebaseAuth } from '../../contexts/FirebaseAuthContext'
 import { Button } from '@/components/ui/button'
@@ -38,6 +45,10 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [info, setInfo] = useState('')
   const [submission, setSubmission] = useState<Submission>('idle')
+  // OAuth flow that may have been started before a full-page redirect to
+  // Google/Facebook (mobile path). Restored from sessionStorage on mount so we
+  // can render the splash immediately rather than showing a stale-looking form.
+  const [pendingOAuth, setPendingOAuth] = useState<OAuthProvider | null>(null)
 
   useEffect(() => {
     if (authUser) {
@@ -49,6 +60,8 @@ export default function LoginPage() {
     if (firebaseError) {
       setError(firebaseError)
       setSubmission('idle')
+      setPendingOAuth(null)
+      clearOAuthFlow()
     }
   }, [firebaseError])
 
@@ -60,7 +73,32 @@ export default function LoginPage() {
     if (resetParam === '1') {
       setInfo('Password updated. Sign in with your new password.')
     }
+    // Restore any in-flight OAuth flow (post-redirect remount).
+    const restored = readOAuthFlow()
+    if (restored) setPendingOAuth(restored)
   }, [])
+
+  // Safety net: if firebase finishes loading without producing a user, the
+  // restored OAuth flow must have been abandoned — drop the splash so the user
+  // can try again instead of staring at a perpetual spinner.
+  useEffect(() => {
+    if (!pendingOAuth) return
+    if (firebaseLoading) return
+    if (authUser) return
+    const id = window.setTimeout(() => {
+      setPendingOAuth(null)
+      clearOAuthFlow()
+    }, 1500)
+    return () => window.clearTimeout(id)
+  }, [pendingOAuth, firebaseLoading, authUser])
+
+  // Clear the persisted flag once we have a user — about to redirect anyway.
+  useEffect(() => {
+    if (authUser && pendingOAuth) {
+      setPendingOAuth(null)
+      clearOAuthFlow()
+    }
+  }, [authUser, pendingOAuth])
 
   const busy = submission !== 'idle' || firebaseLoading
   const disabled = busy || authLoading
@@ -95,27 +133,37 @@ export default function LoginPage() {
   async function handleGoogle() {
     setError('')
     setSubmission('google')
+    setPendingOAuth('google')
+    beginOAuthFlow('google')
     try {
       const result = await loginWithGoogle()
       if (result?.user) {
         setSubmission('success')
+        clearOAuthFlow()
         router.replace('/')
       } else {
+        // No result: likely the redirect path — leave the splash up; the
+        // post-redirect remount will pick it back up via sessionStorage.
         setSubmission('idle')
       }
     } catch (err: any) {
       setError(err?.message || 'Google sign-in failed')
       setSubmission('idle')
+      setPendingOAuth(null)
+      clearOAuthFlow()
     }
   }
 
   async function handleFacebook() {
     setError('')
     setSubmission('facebook')
+    setPendingOAuth('facebook')
+    beginOAuthFlow('facebook')
     try {
       const result = await loginWithFacebook()
       if (result?.user) {
         setSubmission('success')
+        clearOAuthFlow()
         router.replace('/')
       } else {
         setSubmission('idle')
@@ -123,7 +171,15 @@ export default function LoginPage() {
     } catch (err: any) {
       setError(err?.message || 'Facebook sign-in failed')
       setSubmission('idle')
+      setPendingOAuth(null)
+      clearOAuthFlow()
     }
+  }
+
+  function cancelOAuth() {
+    setPendingOAuth(null)
+    setSubmission('idle')
+    clearOAuthFlow()
   }
 
   return (
@@ -145,6 +201,8 @@ export default function LoginPage() {
     >
       {submission === 'success' ? (
         <SuccessRedirect message="Welcome back. Taking you to your account…" />
+      ) : pendingOAuth ? (
+        <OAuthSplash provider={pendingOAuth} onCancel={cancelOAuth} />
       ) : (
         <div className="flex flex-col gap-5">
           {info && <Banner tone="success">{info}</Banner>}

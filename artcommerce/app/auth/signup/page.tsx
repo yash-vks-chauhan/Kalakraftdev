@@ -10,10 +10,17 @@ import AuthShell from '../AuthShell'
 import {
   Banner,
   DividerText,
+  OAuthSplash,
   PasswordInput,
   SocialButton,
   SuccessRedirect,
 } from '../_components/AuthBits'
+import {
+  beginOAuthFlow,
+  clearOAuthFlow,
+  readOAuthFlow,
+  type OAuthProvider,
+} from '../_components/oauthFlow'
 import { useAuth } from '../../contexts/AuthContext'
 import { useFirebaseAuth } from '../../contexts/FirebaseAuthContext'
 import { cn } from '@/lib/utils'
@@ -41,7 +48,12 @@ function scorePassword(pw: string): PasswordScore {
 export default function SignupPage() {
   const router = useRouter()
   const { user: authUser, signup, loading: authLoading } = useAuth()
-  const { loginWithGoogle, loginWithFacebook, loading: firebaseLoading } = useFirebaseAuth()
+  const {
+    loginWithGoogle,
+    loginWithFacebook,
+    loading: firebaseLoading,
+    error: firebaseError,
+  } = useFirebaseAuth()
 
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -51,6 +63,7 @@ export default function SignupPage() {
   const [showConfirm, setShowConfirm] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [submission, setSubmission] = useState<Submission>('idle')
+  const [pendingOAuth, setPendingOAuth] = useState<OAuthProvider | null>(null)
 
   useEffect(() => {
     if (!authLoading && authUser) router.replace('/')
@@ -60,7 +73,36 @@ export default function SignupPage() {
     const params = new URLSearchParams(window.location.search)
     const emailParam = params.get('email')
     if (emailParam) setEmail(emailParam)
+    const restored = readOAuthFlow()
+    if (restored) setPendingOAuth(restored)
   }, [])
+
+  useEffect(() => {
+    if (firebaseError) {
+      setError(firebaseError)
+      setSubmission('idle')
+      setPendingOAuth(null)
+      clearOAuthFlow()
+    }
+  }, [firebaseError])
+
+  useEffect(() => {
+    if (!pendingOAuth) return
+    if (firebaseLoading) return
+    if (authUser) return
+    const id = window.setTimeout(() => {
+      setPendingOAuth(null)
+      clearOAuthFlow()
+    }, 1500)
+    return () => window.clearTimeout(id)
+  }, [pendingOAuth, firebaseLoading, authUser])
+
+  useEffect(() => {
+    if (authUser && pendingOAuth) {
+      setPendingOAuth(null)
+      clearOAuthFlow()
+    }
+  }, [authUser, pendingOAuth])
 
   const passwordStrength = useMemo(() => scorePassword(password), [password])
   const passwordMatches =
@@ -96,10 +138,13 @@ export default function SignupPage() {
   async function handleGoogle() {
     setError(null)
     setSubmission('google')
+    setPendingOAuth('google')
+    beginOAuthFlow('google')
     try {
       const result = await loginWithGoogle()
       if (result?.user) {
         setSubmission('success')
+        clearOAuthFlow()
         router.replace('/')
       } else {
         setSubmission('idle')
@@ -107,16 +152,21 @@ export default function SignupPage() {
     } catch (err: any) {
       setError(err?.message || 'Google sign-in failed')
       setSubmission('idle')
+      setPendingOAuth(null)
+      clearOAuthFlow()
     }
   }
 
   async function handleFacebook() {
     setError(null)
     setSubmission('facebook')
+    setPendingOAuth('facebook')
+    beginOAuthFlow('facebook')
     try {
       const result = await loginWithFacebook()
       if (result?.user) {
         setSubmission('success')
+        clearOAuthFlow()
         router.replace('/')
       } else {
         setSubmission('idle')
@@ -124,7 +174,15 @@ export default function SignupPage() {
     } catch (err: any) {
       setError(err?.message || 'Facebook sign-in failed')
       setSubmission('idle')
+      setPendingOAuth(null)
+      clearOAuthFlow()
     }
+  }
+
+  function cancelOAuth() {
+    setPendingOAuth(null)
+    setSubmission('idle')
+    clearOAuthFlow()
   }
 
   return (
@@ -149,6 +207,8 @@ export default function SignupPage() {
           message="Account created. Setting up your shop…"
           hint="Almost there"
         />
+      ) : pendingOAuth ? (
+        <OAuthSplash provider={pendingOAuth} onCancel={cancelOAuth} />
       ) : (
         <div className="flex flex-col gap-5">
           {error && <Banner tone="error">{error}</Banner>}

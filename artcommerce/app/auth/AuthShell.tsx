@@ -1,7 +1,6 @@
 "use client"
 
 import { ReactNode, useEffect, useState } from "react"
-import Image from "next/image"
 import Link from "next/link"
 import {
   ArrowLeft,
@@ -22,6 +21,11 @@ interface HeroSlide {
 
 const HERO_SLIDES: HeroSlide[] = [
   {
+    src: "/images/featured3.JPG",
+    caption: "Resin Tray Set",
+    category: "Trays · Hand-poured",
+  },
+  {
     src: "/images/featured1.png",
     caption: "Handcrafted Resin Clock",
     category: "Clocks · Limited series",
@@ -30,11 +34,6 @@ const HERO_SLIDES: HeroSlide[] = [
     src: "/images/featured2.png",
     caption: "Decorative Wall Piece",
     category: "Wall décor · Made to order",
-  },
-  {
-    src: "/images/featured3.JPG",
-    caption: "Resin Tray Set",
-    category: "Trays · Hand-poured",
   },
 ]
 
@@ -69,7 +68,7 @@ export default function AuthShell({
   useEffect(() => {
     const id = window.setInterval(() => {
       setSlideIdx((i) => (i + 1) % HERO_SLIDES.length)
-    }, 6000)
+    }, 6500)
     return () => window.clearInterval(id)
   }, [])
 
@@ -77,35 +76,63 @@ export default function AuthShell({
 
   return (
     <div className="grid min-h-svh w-full bg-background lg:grid-cols-5">
-      {/* ───────── Brand panel (desktop only) ───────── */}
+      {/* ─────────────────────────── Brand panel ─────────────────────────── */}
       <aside className="relative hidden overflow-hidden bg-zinc-950 lg:col-span-3 lg:flex lg:flex-col">
-        {/* Background slides */}
+        {/* Rich atmospheric base — always visible, image-independent */}
+        <div
+          aria-hidden
+          className="absolute inset-0 bg-gradient-to-br from-zinc-900 via-zinc-950 to-black"
+        />
+        <div
+          aria-hidden
+          className="absolute inset-0 opacity-80"
+          style={{
+            backgroundImage: `
+              radial-gradient(circle at 18% 28%, hsl(262 83% 22% / 0.55), transparent 55%),
+              radial-gradient(circle at 82% 72%, hsl(28 90% 22% / 0.5), transparent 55%),
+              radial-gradient(circle at 50% 100%, hsl(220 60% 18% / 0.55), transparent 65%)
+            `,
+          }}
+        />
+        {/* Subtle grain */}
+        <div
+          aria-hidden
+          className="absolute inset-0 opacity-[0.045] mix-blend-overlay"
+          style={{
+            backgroundImage:
+              "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.85'/></svg>\")",
+          }}
+        />
+
+        {/* Hero slides via CSS background-image (no Next.js Image optimization
+            layer — works reliably even with very large source files). */}
         {HERO_SLIDES.map((s, i) => (
           <div
             key={s.src}
-            className={cn(
-              "absolute inset-0 transition-opacity duration-[1400ms] ease-out",
-              i === slideIdx ? "opacity-100" : "opacity-0"
-            )}
             aria-hidden={i !== slideIdx}
-          >
-            <Image
-              src={s.src}
-              alt={s.caption}
-              fill
-              priority={i === 0}
-              sizes="60vw"
-              className="object-cover"
-            />
-          </div>
+            className={cn(
+              "absolute inset-0 bg-cover bg-center transition-opacity duration-[1500ms] ease-out",
+              i === slideIdx ? "opacity-70" : "opacity-0"
+            )}
+            style={{ backgroundImage: `url('${s.src}')` }}
+          />
         ))}
 
-        {/* Atmospheric overlay */}
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-black/55 via-black/35 to-black/55" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/90 via-black/55 to-transparent" />
-        <div className="pointer-events-none absolute inset-y-0 left-0 w-2/3 bg-gradient-to-r from-black/40 to-transparent" />
+        {/* Atmospheric overlay layered on top of slides */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-gradient-to-br from-black/45 via-black/20 to-black/55"
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/90 via-black/55 to-transparent"
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-y-0 left-0 w-2/3 bg-gradient-to-r from-black/45 to-transparent"
+        />
 
-        {/* Top: brand mark + home link */}
+        {/* Top: brand mark + browse-shop link */}
         <div className="relative z-10 flex items-center justify-between p-8">
           <Link
             href="/"
@@ -113,12 +140,14 @@ export default function AuthShell({
             aria-label="Kalakraft home"
           >
             <span className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-lg bg-white/10 ring-1 ring-white/20 backdrop-blur">
-              <Image
+              {/* Plain img tag — guaranteed to render */}
+              <img
                 src="/images/logo.png"
                 alt=""
                 width={28}
                 height={28}
                 className="h-7 w-7 object-contain"
+                loading="eager"
               />
             </span>
             <span className="text-base font-semibold tracking-wide">
@@ -134,7 +163,7 @@ export default function AuthShell({
           </Link>
         </div>
 
-        {/* Center / bottom: copy + trust + slide info */}
+        {/* Bottom: copy + trust + slide info */}
         <div className="relative z-10 mt-auto flex flex-col gap-8 px-10 pb-10">
           <div className="flex max-w-xl flex-col gap-3">
             <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-[10px] font-medium uppercase tracking-[0.22em] text-white/85 ring-1 ring-white/15 backdrop-blur">
@@ -147,7 +176,8 @@ export default function AuthShell({
             </h2>
             <p className="max-w-md text-sm leading-relaxed text-white/75">
               Discover one-of-a-kind resin art, ceramics and décor from India&apos;s
-              most thoughtful makers — delivered to your door, anywhere in the world.
+              most thoughtful makers — delivered to your door, anywhere in the
+              world.
             </p>
           </div>
 
@@ -194,7 +224,9 @@ export default function AuthShell({
                   onClick={() => setSlideIdx(i)}
                   className={cn(
                     "h-1.5 rounded-full transition-all duration-300",
-                    i === slideIdx ? "w-8 bg-white" : "w-1.5 bg-white/30 hover:bg-white/55"
+                    i === slideIdx
+                      ? "w-8 bg-white"
+                      : "w-1.5 bg-white/30 hover:bg-white/55"
                   )}
                 />
               ))}
@@ -203,13 +235,13 @@ export default function AuthShell({
         </div>
       </aside>
 
-      {/* ───────── Form panel ───────── */}
+      {/* ─────────────────────────── Form panel ─────────────────────────── */}
       <section className="relative flex min-h-svh flex-col lg:col-span-2">
         {/* Mobile-only brand strip */}
         <div className="flex items-center justify-between border-b bg-card px-4 py-3 lg:hidden">
           <Link href="/" className="flex items-center gap-2">
             <span className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-md bg-foreground/5">
-              <Image
+              <img
                 src="/images/logo.png"
                 alt=""
                 width={20}
@@ -227,7 +259,7 @@ export default function AuthShell({
           </Link>
         </div>
 
-        {/* Desktop "back home" link, top-right of form pane */}
+        {/* Desktop back-to-shop link */}
         <div className="hidden items-center justify-end px-10 pt-6 lg:flex">
           <Link
             href="/"
@@ -288,6 +320,10 @@ export default function AuthShell({
   )
 }
 
+/* -------------------------------------------------------------- */
+/* StepIndicator                                                   */
+/* -------------------------------------------------------------- */
+
 function StepIndicator({
   current,
   items,
@@ -298,7 +334,7 @@ function StepIndicator({
   return (
     <ol
       aria-label="Progress"
-      className="flex items-stretch gap-2 rounded-lg border bg-muted/30 p-1.5"
+      className="flex items-stretch gap-1.5 rounded-xl border bg-card p-1.5"
     >
       {items.map((item, idx) => {
         const stepNumber = idx + 1
@@ -314,31 +350,45 @@ function StepIndicator({
             key={item.label}
             aria-current={state === "active" ? "step" : undefined}
             className={cn(
-              "flex flex-1 items-center gap-2 rounded-md px-2.5 py-2 transition-colors",
-              state === "active" && "bg-background shadow-sm ring-1 ring-border",
-              state === "complete" && "text-foreground/85",
+              "relative flex flex-1 items-center gap-2.5 rounded-lg px-3 py-2.5 transition-all",
+              state === "active" &&
+                "bg-foreground text-background shadow-sm",
+              state === "complete" && "bg-muted/40 text-foreground",
               state === "upcoming" && "text-muted-foreground"
             )}
           >
             <span
               className={cn(
-                "flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold tabular-nums",
-                state === "complete" && "bg-emerald-500 text-white",
-                state === "active" && "bg-foreground text-background",
-                state === "upcoming" && "bg-muted text-muted-foreground"
+                "flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold tabular-nums ring-1",
+                state === "active" &&
+                  "bg-background text-foreground ring-background/30",
+                state === "complete" &&
+                  "bg-emerald-500 text-white ring-emerald-500/30",
+                state === "upcoming" &&
+                  "bg-background text-muted-foreground ring-border"
               )}
             >
               {state === "complete" ? (
-                <Check className="h-3 w-3" />
+                <Check className="h-3 w-3" strokeWidth={3} />
               ) : (
                 String(stepNumber).padStart(2, "0")
               )}
             </span>
             <span className="flex min-w-0 flex-col leading-tight">
-              <span className="truncate text-[11px] font-semibold">
+              <span
+                className={cn(
+                  "truncate text-[11px] font-semibold",
+                  state === "active" && "text-background"
+                )}
+              >
                 {item.label}
               </span>
-              <span className="hidden truncate text-[10px] text-muted-foreground sm:inline">
+              <span
+                className={cn(
+                  "hidden truncate text-[10px] sm:inline",
+                  state === "active" ? "text-background/70" : "text-muted-foreground"
+                )}
+              >
                 {item.description}
               </span>
             </span>
