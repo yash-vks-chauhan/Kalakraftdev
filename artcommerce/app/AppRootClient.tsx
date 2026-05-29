@@ -28,8 +28,10 @@ export default function AppRootClient({ children }: { children: React.ReactNode 
 
   // Routes that should bypass MobileLayout (have their own navigation).
   // All /dashboard routes own their shell now, so bypass the entire subtree.
+  // /checkout has its own shadcn shell and shouldn't be wrapped in store chrome.
   const bypassMobileLayoutRoutes = [
     '/dashboard',
+    '/checkout',
   ];
   const shouldBypassMobileLayout = bypassMobileLayoutRoutes.some(
     (route) => pathname === route || pathname.startsWith(route + '/')
@@ -117,8 +119,11 @@ export default function AppRootClient({ children }: { children: React.ReactNode 
   // Show desktop view if forced or not mobile, but never on mobile-only routes
   const showDesktopView = (forceDesktopView || !isMobile) && !isMobileOnlyRoute;
 
-  // Dashboard routes own their own shell (sidebar) — suppress the global navbar
+  // Dashboard routes own their own shell (sidebar) — suppress the global navbar.
+  // Checkout has its own shadcn shell, so also suppress the global navbar there.
   const isDashboardRoute = pathname === '/dashboard' || pathname.startsWith('/dashboard/');
+  const isCheckoutRoute = pathname === '/checkout' || pathname.startsWith('/checkout/');
+  const ownsShell = isDashboardRoute || isCheckoutRoute;
 
   // Always use standard layout pipeline; mobile-only routes are handled via showDesktopView and MobileLayout
 
@@ -155,7 +160,7 @@ export default function AppRootClient({ children }: { children: React.ReactNode 
 
               {/* Main content wrapper */}
           <div className={isMobileMenuOpen ? styles.mainContentBlurred : ''}>
-            {!isDashboardRoute && <Navbar />}
+            {!ownsShell && <Navbar />}
             <UserNotifications />
             <AdminNotifications />
             {children}

@@ -220,7 +220,18 @@ export function SidebarNav({
   return (
     <div className="flex h-full flex-col">
       {/* Brand + collapse toggle */}
-      <div className="flex h-14 shrink-0 items-center overflow-hidden border-b pl-3">
+      <div className="flex h-14 shrink-0 items-center overflow-hidden border-b px-3">
+        <Link
+          href="/"
+          onClick={onNavigate}
+          className={cn(
+            "min-w-0 flex-1 truncate whitespace-nowrap text-base font-semibold tracking-tight text-foreground",
+            LABEL_FADE,
+            collapsed ? LABEL_HIDDEN : LABEL_VISIBLE
+          )}
+        >
+          Kalakraft
+        </Link>
         {onToggleCollapsed && (
           <button
             type="button"
@@ -243,18 +254,6 @@ export function SidebarNav({
             />
           </button>
         )}
-        <Link
-          href="/"
-          onClick={onNavigate}
-          className={cn(
-            "whitespace-nowrap text-base font-semibold tracking-tight text-foreground",
-            onToggleCollapsed ? "ml-2" : "ml-1",
-            LABEL_FADE,
-            collapsed ? LABEL_HIDDEN : LABEL_VISIBLE
-          )}
-        >
-          Kalakraft
-        </Link>
       </div>
 
       {/* Nav */}

@@ -1,13 +1,12 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import {
   ArrowRight,
   Check,
   Heart,
-  HeartCrack,
   Loader2,
   PackageX,
   ShoppingBag,
@@ -82,15 +81,6 @@ export default function DashboardWishlistPage() {
       cancelled = true
     }
   }, [wishlistItems])
-
-  const inStockCount = useMemo(
-    () =>
-      wishlistItems.reduce((sum, item) => {
-        const stock = stockInfo[item.productId]
-        return stock === undefined || stock > 0 ? sum + 1 : sum
-      }, 0),
-    [wishlistItems, stockInfo]
-  )
 
   function setItemBusy(id: number, state: ItemBusy) {
     setBusy((prev) => {
@@ -186,24 +176,6 @@ export default function DashboardWishlistPage() {
         {announcement}
       </span>
       <WishlistHeader savedCount={wishlistItems.length} />
-
-      {/* Stat strip */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
-        <StatTile icon={Heart} label="Saved" value={wishlistItems.length.toString()} />
-        <StatTile
-          icon={ShoppingCart}
-          label="Ready to order"
-          value={inStockCount.toString()}
-          tone={inStockCount > 0 ? "success" : "muted"}
-        />
-        <StatTile
-          icon={HeartCrack}
-          label="Out of stock"
-          value={(wishlistItems.length - inStockCount).toString()}
-          tone={wishlistItems.length - inStockCount > 0 ? "destructive" : "muted"}
-          className="col-span-2 lg:col-span-1"
-        />
-      </div>
 
       <Card className="shadow-sm">
         <CardHeader className="gap-1 p-4 sm:p-6">
@@ -419,52 +391,6 @@ function WishlistHeader({
         </Link>
       </Button>
     </header>
-  )
-}
-
-function StatTile({
-  icon: Icon,
-  label,
-  value,
-  tone = "default",
-  className,
-}: {
-  icon: typeof Heart
-  label: string
-  value: string
-  tone?: "default" | "success" | "destructive" | "muted"
-  className?: string
-}) {
-  const toneStyles =
-    tone === "destructive"
-      ? "bg-destructive/10 text-destructive"
-      : tone === "success"
-      ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-      : tone === "muted"
-      ? "bg-muted text-muted-foreground"
-      : "bg-muted/50 text-foreground border"
-
-  return (
-    <Card className={cn("shadow-sm transition-shadow duration-200 hover:shadow-md", className)}>
-      <CardContent className="flex items-center gap-3 p-3 sm:gap-4 sm:p-4">
-        <span
-          className={cn(
-            "flex h-9 w-9 shrink-0 items-center justify-center rounded-md transition-colors duration-200 sm:h-10 sm:w-10",
-            toneStyles
-          )}
-        >
-          <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
-        </span>
-        <div className="flex min-w-0 flex-col">
-          <span className="truncate text-[10px] font-medium uppercase tracking-wide text-muted-foreground sm:text-xs">
-            {label}
-          </span>
-          <span className="truncate text-base font-semibold tabular-nums tracking-tight text-foreground sm:text-lg">
-            {value}
-          </span>
-        </div>
-      </CardContent>
-    </Card>
   )
 }
 
