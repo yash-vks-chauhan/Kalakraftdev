@@ -5,21 +5,26 @@ import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import {
   ArrowRight,
-  Clock,
+  CalendarRange,
   CircleCheck,
+  CircleSlash,
   CircleX,
+  Clock,
   Download,
+  ListChecks,
   Loader2,
   Mail,
   Package,
   ReceiptText,
   Search,
+  SlidersHorizontal,
   Truck,
   Wallet,
   X,
 } from "lucide-react"
 
 import { useAuth } from "../../../contexts/AuthContext"
+import { SegmentedControl, SegmentedControlItem } from "../../_components/SegmentedControl"
 import { cn } from "@/lib/utils"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
@@ -40,6 +45,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Separator } from "@/components/ui/separator"
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   Table,
@@ -76,7 +91,17 @@ interface AdminOrder {
   orderItems?: OrderItem[]
 }
 
-const STATUS_FILTERS = ["all", "pending", "accepted", "shipped", "delivered", "cancelled"] as const
+type StatusKey = "all" | "pending" | "accepted" | "shipped" | "delivered" | "cancelled"
+
+const STATUS_TABS: { key: StatusKey; label: string; icon: typeof ListChecks }[] = [
+  { key: "all", label: "All", icon: ListChecks },
+  { key: "pending", label: "Pending", icon: Clock },
+  { key: "accepted", label: "Accepted", icon: CircleCheck },
+  { key: "shipped", label: "Shipped", icon: Truck },
+  { key: "delivered", label: "Delivered", icon: Package },
+  { key: "cancelled", label: "Cancelled", icon: CircleSlash },
+]
+
 const EDITABLE_STATUSES = ["accepted", "shipped", "delivered"] as const
 const PAYMENT_FILTERS = ["all", "unpaid", "paypal", "credit card", "cod"] as const
 
@@ -141,11 +166,12 @@ export default function AdminOrdersPage() {
   const [error, setError] = useState<string | null>(null)
 
   // Filters
-  const [filterStatus, setFilterStatus] = useState<string>("all")
+  const [filterStatus, setFilterStatus] = useState<StatusKey>("all")
   const [filterPayment, setFilterPayment] = useState<string>("all")
   const [fromDate, setFromDate] = useState<string>("")
   const [toDate, setToDate] = useState<string>("")
   const [searchText, setSearchText] = useState<string>("")
+  const [filtersOpen, setFiltersOpen] = useState(false)
 
   // Status change state per order
   const [statusState, setStatusState] = useState<Record<number, StatusState>>({})
@@ -221,6 +247,22 @@ export default function AdminOrdersPage() {
     return { total, pending, active, revenue }
   }, [orders])
 
+  const statusCounts = useMemo(() => {
+    const counts: Record<StatusKey, number> = {
+      all: orders.length,
+      pending: 0,
+      accepted: 0,
+      shipped: 0,
+      delivered: 0,
+      cancelled: 0,
+    }
+    for (const o of orders) {
+      const s = o.status.toLowerCase() as StatusKey
+      if (s in counts) counts[s] += 1
+    }
+    return counts
+  }, [orders])
+
   const displayed = useMemo(() => {
     let list = orders
     if (filterStatus !== "all") {
@@ -255,11 +297,11 @@ export default function AdminOrdersPage() {
     return list
   }, [orders, filterStatus, filterPayment, fromDate, toDate, searchText])
 
+  const advancedFilterCount =
+    (filterPayment !== "all" ? 1 : 0) + (fromDate ? 1 : 0) + (toDate ? 1 : 0)
   const anyFilterActive =
     filterStatus !== "all" ||
-    filterPayment !== "all" ||
-    fromDate !== "" ||
-    toDate !== "" ||
+    advancedFilterCount > 0 ||
     searchText.trim() !== ""
 
   function clearFilters() {
@@ -270,12 +312,17 @@ export default function AdminOrdersPage() {
     setSearchText("")
   }
 
+  function clearAdvancedFilters() {
+    setFilterPayment("all")
+    setFromDate("")
+    setToDate("")
+  }
+
   const handleStatusChange = useCallback(
     async (orderId: number, newStatus: string) => {
       const target = orders.find((o) => o.id === orderId)
       if (!target || target.status === newStatus) return
 
-      // Optimistic update + per-row pending state
       const previousStatus = target.status
       setOrders((prev) =>
         prev.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o))
@@ -308,7 +355,6 @@ export default function AdminOrdersPage() {
           })
         }, 1400)
       } catch (err) {
-        // Revert
         setOrders((prev) =>
           prev.map((o) =>
             o.id === orderId ? { ...o, status: previousStatus } : o
@@ -358,6 +404,15 @@ export default function AdminOrdersPage() {
     )
   }
 
+  const segmentItems: SegmentedControlItem<StatusKey>[] = STATUS_TABS.map(
+    (t) => ({
+      key: t.key,
+      label: t.label,
+      icon: t.icon,
+      count: statusCounts[t.key],
+    })
+  )
+
   return (
     <main className="flex flex-col gap-6">
       {/* Header */}
@@ -373,7 +428,7 @@ export default function AdminOrdersPage() {
             )}
           </h1>
           <p className="text-sm text-muted-foreground">
-            Manage and update order status in place. Changes are saved instantly and emailed to the customer.
+            Update status inline — customers are notified by email automatically.
           </p>
         </div>
         <Button
@@ -428,91 +483,139 @@ export default function AdminOrdersPage() {
         )}
       </div>
 
-      {/* Filters */}
+      {/* Unified orders panel */}
       <Card className="shadow-sm">
-        <CardContent className="grid gap-3 p-4 sm:p-5 md:grid-cols-2 lg:grid-cols-6">
-          <div className="flex flex-col gap-1.5 lg:col-span-2">
-            <Label htmlFor="order-search" className="text-xs text-muted-foreground">
-              Search
-            </Label>
-            <div className="relative">
+        <CardHeader className="gap-4 p-4 sm:p-6">
+          <div className="flex flex-col gap-1">
+            <CardTitle>Orders</CardTitle>
+            <CardDescription>
+              Switch tabs to filter by status, search to find a specific order, or use Filters for payment and date range.
+            </CardDescription>
+          </div>
+
+          {/* Top toolbar: search + filter trigger */}
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div className="relative w-full lg:max-w-sm">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                id="order-search"
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
-                placeholder="Order #, name or email"
+                placeholder="Search order #, name or email"
                 className="pl-9"
+                aria-label="Search orders"
               />
             </div>
+
+            <div className="flex items-center gap-2">
+              {anyFilterActive && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearFilters}
+                  className="gap-1.5 text-muted-foreground hover:text-foreground"
+                >
+                  <X className="h-3.5 w-3.5" />
+                  Clear
+                </Button>
+              )}
+              <Sheet open={filtersOpen} onOpenChange={setFiltersOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-1.5">
+                    <SlidersHorizontal className="h-3.5 w-3.5" />
+                    Filters
+                    {advancedFilterCount > 0 && (
+                      <Badge
+                        variant="secondary"
+                        className="ml-0.5 h-5 px-1.5 text-[11px]"
+                      >
+                        {advancedFilterCount}
+                      </Badge>
+                    )}
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-96 max-w-[92vw]">
+                  <SheetHeader>
+                    <SheetTitle>Filter orders</SheetTitle>
+                    <SheetDescription>
+                      Narrow the list by payment method and date range.
+                    </SheetDescription>
+                  </SheetHeader>
+
+                  <div className="flex flex-col gap-5 px-6">
+                    <FilterSelect
+                      label="Payment"
+                      value={filterPayment}
+                      onChange={setFilterPayment}
+                      options={PAYMENT_FILTERS}
+                    />
+
+                    <div className="flex flex-col gap-1.5">
+                      <Label className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <CalendarRange className="h-3.5 w-3.5" />
+                        Date range
+                      </Label>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Input
+                          id="from-date"
+                          type="date"
+                          value={fromDate}
+                          onChange={(e) => setFromDate(e.target.value)}
+                          aria-label="From date"
+                          className="h-9"
+                        />
+                        <Input
+                          id="to-date"
+                          type="date"
+                          value={toDate}
+                          onChange={(e) => setToDate(e.target.value)}
+                          aria-label="To date"
+                          className="h-9"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  <div className="flex items-center justify-between gap-2 px-6 pb-6">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={clearAdvancedFilters}
+                      disabled={advancedFilterCount === 0}
+                      className="gap-1.5 text-muted-foreground"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                      Reset
+                    </Button>
+                    <SheetClose asChild>
+                      <Button type="button" size="sm">
+                        Done
+                      </Button>
+                    </SheetClose>
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </div>
           </div>
 
-          <FilterSelect
-            label="Status"
+          {/* Status tab strip (primary filter) */}
+          <SegmentedControl<StatusKey>
+            ariaLabel="Filter orders by status"
             value={filterStatus}
             onChange={setFilterStatus}
-            options={STATUS_FILTERS}
-          />
-          <FilterSelect
-            label="Payment"
-            value={filterPayment}
-            onChange={setFilterPayment}
-            options={PAYMENT_FILTERS}
+            items={segmentItems}
           />
 
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="from-date" className="text-xs text-muted-foreground">
-              From
-            </Label>
-            <Input
-              id="from-date"
-              type="date"
-              value={fromDate}
-              onChange={(e) => setFromDate(e.target.value)}
-              className="h-9"
-            />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="to-date" className="text-xs text-muted-foreground">
-              To
-            </Label>
-            <Input
-              id="to-date"
-              type="date"
-              value={toDate}
-              onChange={(e) => setToDate(e.target.value)}
-              className="h-9"
-            />
-          </div>
-
-          {anyFilterActive && (
-            <div className="flex items-end md:col-span-2 lg:col-span-6">
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={clearFilters}
-                className="gap-1.5 text-muted-foreground hover:text-foreground"
-              >
-                <X className="h-3.5 w-3.5" />
-                Clear filters
-              </Button>
-              <span className="ml-auto text-xs text-muted-foreground">
-                {displayed.length} of {orders.length} shown
-              </span>
-            </div>
+          {anyFilterActive && !loading && (
+            <p className="text-xs text-muted-foreground">
+              Showing {displayed.length} of {orders.length} orders
+            </p>
           )}
-        </CardContent>
-      </Card>
-
-      {/* Orders table */}
-      <Card className="shadow-sm">
-        <CardHeader className="gap-1 p-5 pb-3">
-          <CardTitle className="text-base">Orders</CardTitle>
-          <CardDescription>
-            Click the status pill on any row to update it. The customer is notified by email.
-          </CardDescription>
         </CardHeader>
+
         <CardContent className="p-0">
           <div className="overflow-x-auto border-t">
             <Table>
@@ -543,10 +646,7 @@ export default function AdminOrdersPage() {
                   </TableRow>
                 ) : displayed.length === 0 ? (
                   <TableRow>
-                    <TableCell
-                      colSpan={7}
-                      className="px-4 py-12 text-center"
-                    >
+                    <TableCell colSpan={7} className="px-4 py-12 text-center">
                       <div className="mx-auto flex max-w-xs flex-col items-center gap-2 text-muted-foreground">
                         <span className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
                           <Package className="h-4 w-4" />
@@ -559,6 +659,18 @@ export default function AdminOrdersPage() {
                             ? "Try clearing filters to see all orders."
                             : "When customers place an order it will appear here."}
                         </p>
+                        {anyFilterActive && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={clearFilters}
+                            className="mt-2 gap-1.5"
+                          >
+                            <X className="h-3.5 w-3.5" />
+                            Clear filters
+                          </Button>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>
@@ -763,7 +875,6 @@ function StatusSelect({
           </span>
         </SelectTrigger>
         <SelectContent>
-          {/* Show current status as a non-actionable hint if not editable */}
           {(s === "pending" || s === "cancelled") && (
             <SelectItem value={s} disabled>
               {capitalize(s)} <span className="text-muted-foreground">(current)</span>
@@ -777,7 +888,6 @@ function StatusSelect({
         </SelectContent>
       </Select>
 
-      {/* Right-hand state indicator */}
       <div className="h-5 w-5 shrink-0">
         {isPending && (
           <Loader2
@@ -843,7 +953,6 @@ function statusTone(status: string): {
         dot: "bg-destructive",
       }
     default:
-      // pending
       return {
         bg: "bg-amber-500/10 hover:bg-amber-500/15",
         text: "text-amber-700 dark:text-amber-500",

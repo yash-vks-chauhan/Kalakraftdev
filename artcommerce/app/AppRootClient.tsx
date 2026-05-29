@@ -29,9 +29,11 @@ export default function AppRootClient({ children }: { children: React.ReactNode 
   // Routes that should bypass MobileLayout (have their own navigation).
   // All /dashboard routes own their shell now, so bypass the entire subtree.
   // /checkout has its own shadcn shell and shouldn't be wrapped in store chrome.
+  // /auth has its own split-screen shell.
   const bypassMobileLayoutRoutes = [
     '/dashboard',
     '/checkout',
+    '/auth',
   ];
   const shouldBypassMobileLayout = bypassMobileLayoutRoutes.some(
     (route) => pathname === route || pathname.startsWith(route + '/')
@@ -123,7 +125,8 @@ export default function AppRootClient({ children }: { children: React.ReactNode 
   // Checkout has its own shadcn shell, so also suppress the global navbar there.
   const isDashboardRoute = pathname === '/dashboard' || pathname.startsWith('/dashboard/');
   const isCheckoutRoute = pathname === '/checkout' || pathname.startsWith('/checkout/');
-  const ownsShell = isDashboardRoute || isCheckoutRoute;
+  const isAuthRoute = pathname === '/auth' || pathname.startsWith('/auth/');
+  const ownsShell = isDashboardRoute || isCheckoutRoute || isAuthRoute;
 
   // Always use standard layout pipeline; mobile-only routes are handled via showDesktopView and MobileLayout
 

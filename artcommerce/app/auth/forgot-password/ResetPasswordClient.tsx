@@ -3,18 +3,30 @@
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import ForgotPasswordShell from './ForgotPasswordShell'
-import styles from '../auth.module.css'
+import { ArrowRight, KeyRound, Loader2, Mail, RotateCcw, ShieldCheck } from 'lucide-react'
+
+import AuthShell from '../AuthShell'
+import { Banner, PasswordInput, SuccessRedirect } from '../_components/AuthBits'
+import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 
 type ResetPasswordClientProps = {
   initialCode?: string
   initialEmail?: string
 }
 
+const RESET_STEPS = [
+  { label: 'Request code', description: 'Start with your email' },
+  { label: 'Verify reset', description: 'Confirm and set new password' },
+  { label: 'Sign back in', description: 'Use the updated password' },
+]
+
 const LOADING_MESSAGES = [
-  'Verifying your reset code...',
-  'Updating your password securely...',
-  'Preparing sign in...',
+  'Verifying your reset code…',
+  'Updating your password securely…',
+  'Preparing sign-in…',
 ]
 
 export default function ResetPasswordClient({
@@ -26,8 +38,10 @@ export default function ResetPasswordClient({
   const [code, setCode] = useState(initialCode.toUpperCase())
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [showNew, setShowNew] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState<string | null>(null)
+  const [success, setSuccess] = useState(false)
   const [loading, setLoading] = useState(false)
   const [loadingIndex, setLoadingIndex] = useState(0)
 
@@ -36,49 +50,48 @@ export default function ResetPasswordClient({
       setLoadingIndex(0)
       return
     }
-
-    const intervalId = window.setInterval(() => {
-      setLoadingIndex((currentIndex) =>
-        currentIndex < LOADING_MESSAGES.length - 1 ? currentIndex + 1 : currentIndex
+    const id = window.setInterval(() => {
+      setLoadingIndex((i) =>
+        i < LOADING_MESSAGES.length - 1 ? i + 1 : i
       )
     }, 900)
-
-    return () => window.clearInterval(intervalId)
+    return () => window.clearInterval(id)
   }, [loading])
 
   const loginHref = useMemo(() => {
     const params = new URLSearchParams()
-    if (email.trim()) {
-      params.set('email', email.trim().toLowerCase())
-    }
+    if (email.trim()) params.set('email', email.trim().toLowerCase())
     params.set('reset', '1')
     return `/auth/login?${params.toString()}`
   }, [email])
 
+  const requestHref = useMemo(() => {
+    return `/auth/forgot-password${
+      email.trim() ? `?email=${encodeURIComponent(email.trim())}` : ''
+    }`
+  }, [email])
+
+  const passwordsMatch =
+    newPassword.length > 0 &&
+    confirmPassword.length > 0 &&
+    newPassword === confirmPassword
+  const passwordsMismatch =
+    newPassword.length > 0 &&
+    confirmPassword.length > 0 &&
+    newPassword !== confirmPassword
+
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setError(null)
-    setSuccess(null)
 
-    if (!email.trim()) {
-      setError('Please enter your email address.')
-      return
-    }
-
-    if (!code.trim()) {
-      setError('Please enter the reset code from your email.')
-      return
-    }
-
-    if (!newPassword.trim() || !confirmPassword.trim()) {
-      setError('Please complete both password fields.')
-      return
-    }
-
-    if (newPassword !== confirmPassword) {
-      setError('Passwords must match.')
-      return
-    }
+    if (!email.trim()) return setError('Please enter your email address.')
+    if (!code.trim()) return setError('Please enter the reset code from your email.')
+    if (!newPassword.trim() || !confirmPassword.trim())
+      return setError('Please complete both password fields.')
+    if (newPassword.length < 8)
+      return setError('Password must be at least 8 characters.')
+    if (newPassword !== confirmPassword)
+      return setError('Passwords must match.')
 
     setLoading(true)
 
@@ -99,144 +112,177 @@ export default function ResetPasswordClient({
         throw new Error(data.error || 'Failed to reset your password')
       }
 
-      setSuccess('Password updated. Taking you back to sign in...')
-
+      setSuccess(true)
       window.setTimeout(() => {
         router.replace(loginHref)
       }, 900)
     } catch (submitError: any) {
-      setError(submitError.message || 'Failed to reset your password')
+      setError(submitError?.message || 'Failed to reset your password')
       setLoading(false)
     }
   }
 
   return (
-    <ForgotPasswordShell
-      currentStep={success ? 3 : 2}
+    <AuthShell
+      eyebrow={success ? 'Done' : 'Verify reset'}
       title={success ? 'Password updated' : 'Finish your reset'}
       subtitle={
         success
-          ? 'Your account is ready for sign in again.'
-          : 'Enter the code from your inbox and choose a fresh password.'
+          ? 'Your account is ready for sign-in again.'
+          : 'Enter the code from your inbox and pick a new password.'
       }
+      steps={{ current: success ? 3 : 2, items: RESET_STEPS }}
       footer={
         <>
           Remembered it already?{' '}
-          <Link href="/auth/login" className={styles.authLink}>
+          <Link
+            href="/auth/login"
+            className="font-medium text-foreground underline-offset-4 hover:underline"
+          >
             Back to sign in
           </Link>
         </>
       }
     >
-      {error ? <div className={styles.errorMessage}>{error}</div> : null}
-      {success ? <div className={styles.successMessage}>{success}</div> : null}
+      {success ? (
+        <SuccessRedirect
+          message="Password updated. Taking you back to sign in…"
+        />
+      ) : (
+        <div className="flex flex-col gap-5">
+          {error && <Banner tone="error">{error}</Banner>}
 
-      {!success ? (
-        <>
-          <form onSubmit={handleSubmit} className={styles.form} noValidate>
-            <div className={styles.formGroup}>
-              <label htmlFor="reset-email" className={styles.formLabel}>
-                Email
-              </label>
-              <input
-                id="reset-email"
-                type="email"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                className={styles.formInput}
-                placeholder="Enter your account email"
-                autoComplete="email"
-                disabled={loading}
-              />
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
+            <div className="grid gap-1.5">
+              <Label htmlFor="reset-email">Email</Label>
+              <div className="relative">
+                <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  id="reset-email"
+                  type="email"
+                  value={email}
+                  onChange={(event) => {
+                    setEmail(event.target.value)
+                    if (error) setError(null)
+                  }}
+                  placeholder="you@example.com"
+                  autoComplete="email"
+                  disabled={loading}
+                  required
+                  className="pl-9"
+                />
+              </div>
             </div>
 
-            <div className={styles.formGroup}>
-              <label htmlFor="reset-code" className={styles.formLabel}>
-                Reset Code
-              </label>
-              <input
-                id="reset-code"
-                type="text"
-                value={code}
-                onChange={(event) => setCode(event.target.value.toUpperCase())}
-                className={`${styles.formInput} ${styles.codeInput}`}
-                placeholder="Enter the 6-character code"
-                autoComplete="one-time-code"
-                disabled={loading}
-              />
+            <div className="grid gap-1.5">
+              <Label htmlFor="reset-code">Reset code</Label>
+              <div className="relative">
+                <KeyRound className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  id="reset-code"
+                  type="text"
+                  value={code}
+                  onChange={(event) =>
+                    setCode(event.target.value.toUpperCase().replace(/\s/g, ''))
+                  }
+                  placeholder="ABC123"
+                  autoComplete="one-time-code"
+                  disabled={loading}
+                  maxLength={8}
+                  required
+                  className={cn(
+                    'pl-9 font-mono tracking-[0.32em] uppercase text-center'
+                  )}
+                />
+              </div>
             </div>
 
-            <div className={styles.formGroup}>
-              <label htmlFor="new-password" className={styles.formLabel}>
-                New Password
-              </label>
-              <input
+            <div className="grid gap-1.5">
+              <Label htmlFor="new-password">New password</Label>
+              <PasswordInput
                 id="new-password"
-                type="password"
                 value={newPassword}
-                onChange={(event) => setNewPassword(event.target.value)}
-                className={styles.formInput}
-                placeholder="Choose a new password"
+                onChange={(v) => {
+                  setNewPassword(v)
+                  if (error) setError(null)
+                }}
+                visible={showNew}
+                onToggle={() => setShowNew((v) => !v)}
+                placeholder="At least 8 characters"
                 autoComplete="new-password"
                 disabled={loading}
               />
             </div>
 
-            <div className={styles.formGroup}>
-              <label htmlFor="confirm-password" className={styles.formLabel}>
-                Confirm Password
-              </label>
-              <input
+            <div className="grid gap-1.5">
+              <Label htmlFor="confirm-password">Confirm new password</Label>
+              <PasswordInput
                 id="confirm-password"
-                type="password"
                 value={confirmPassword}
-                onChange={(event) => setConfirmPassword(event.target.value)}
-                className={styles.formInput}
+                onChange={(v) => {
+                  setConfirmPassword(v)
+                  if (error) setError(null)
+                }}
+                visible={showConfirm}
+                onToggle={() => setShowConfirm((v) => !v)}
                 placeholder="Repeat your new password"
                 autoComplete="new-password"
                 disabled={loading}
               />
+              {passwordsMatch && (
+                <p className="text-[11px] text-emerald-600 dark:text-emerald-400">
+                  Passwords match
+                </p>
+              )}
+              {passwordsMismatch && (
+                <p className="text-[11px] text-destructive">
+                  Passwords do not match
+                </p>
+              )}
             </div>
 
-            <button type="submit" disabled={loading} className={styles.submitButton}>
+            <Button
+              type="submit"
+              disabled={loading}
+              className="mt-1 h-10 w-full gap-2"
+            >
               {loading ? (
-                <span className={styles.buttonContent}>
-                  <span className={styles.spinner} />
-                  <span>{LOADING_MESSAGES[loadingIndex]}</span>
-                </span>
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  {LOADING_MESSAGES[loadingIndex]}
+                </>
               ) : (
-                'Reset password'
+                <>
+                  <ShieldCheck className="h-4 w-4" />
+                  Reset password
+                </>
               )}
-            </button>
+            </Button>
           </form>
 
-          <div className={styles.sequenceCard}>
-            <div className={styles.sequenceTitle}>Need another code?</div>
-            <p className={styles.sequenceText}>
-              Reset codes expire in five minutes. If yours has timed out, request a fresh one and
-              come right back here.
-            </p>
-            <div className={styles.inlineActions}>
-              <Link
-                href={`/auth/forgot-password${email.trim() ? `?email=${encodeURIComponent(email.trim())}` : ''}`}
-                className={styles.secondaryButtonLink}
-              >
-                Request a new code
-              </Link>
-              <Link href={loginHref} className={styles.ghostLink}>
-                Return to sign in
-              </Link>
+          <div className="flex flex-col gap-3 rounded-lg border bg-muted/30 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-2.5">
+              <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-background ring-1 ring-border">
+                <RotateCcw className="h-3 w-3 text-muted-foreground" />
+              </span>
+              <div className="flex flex-col leading-tight">
+                <span className="text-xs font-medium text-foreground">
+                  Code expired?
+                </span>
+                <span className="text-[11px] text-muted-foreground">
+                  Reset codes are valid for five minutes only.
+                </span>
+              </div>
             </div>
+            <Button asChild variant="outline" size="sm" className="gap-1.5">
+              <Link href={requestHref}>
+                Request a new code
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </Button>
           </div>
-        </>
-      ) : (
-        <div className={styles.sequenceCard}>
-          <div className={styles.sequenceTitle}>Next step</div>
-          <p className={styles.sequenceText}>
-            You will be redirected to the sign-in page with your email ready to go.
-          </p>
         </div>
       )}
-    </ForgotPasswordShell>
+    </AuthShell>
   )
 }

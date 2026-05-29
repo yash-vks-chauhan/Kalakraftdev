@@ -3,13 +3,24 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import ForgotPasswordShell from './ForgotPasswordShell'
-import styles from '../auth.module.css'
+import { ArrowRight, Loader2, Mail, ShieldCheck } from 'lucide-react'
+
+import AuthShell from '../AuthShell'
+import { Banner } from '../_components/AuthBits'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+
+const RESET_STEPS = [
+  { label: 'Request code', description: 'Start with your email' },
+  { label: 'Verify reset', description: 'Confirm and set new password' },
+  { label: 'Sign back in', description: 'Use the updated password' },
+]
 
 const LOADING_MESSAGES = [
-  'Checking your request...',
-  'Generating a secure reset code...',
-  'Preparing the next step...',
+  'Checking your request…',
+  'Generating a secure reset code…',
+  'Preparing the next step…',
 ]
 
 function isValidEmail(email: string): boolean {
@@ -25,9 +36,7 @@ export default function ForgotPasswordRequestPage() {
 
   useEffect(() => {
     const emailParam = new URLSearchParams(window.location.search).get('email')
-    if (emailParam) {
-      setEmail(emailParam)
-    }
+    if (emailParam) setEmail(emailParam)
   }, [])
 
   useEffect(() => {
@@ -35,14 +44,12 @@ export default function ForgotPasswordRequestPage() {
       setLoadingIndex(0)
       return
     }
-
-    const intervalId = window.setInterval(() => {
-      setLoadingIndex((currentIndex) =>
-        currentIndex < LOADING_MESSAGES.length - 1 ? currentIndex + 1 : currentIndex
+    const id = window.setInterval(() => {
+      setLoadingIndex((i) =>
+        i < LOADING_MESSAGES.length - 1 ? i + 1 : i
       )
     }, 900)
-
-    return () => window.clearInterval(intervalId)
+    return () => window.clearInterval(id)
   }, [loading])
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -56,7 +63,6 @@ export default function ForgotPasswordRequestPage() {
     }
 
     setLoading(true)
-
     try {
       const response = await fetch('/api/auth/request-password-change', {
         method: 'POST',
@@ -69,66 +75,93 @@ export default function ForgotPasswordRequestPage() {
         throw new Error(data.error || 'Unable to start password reset')
       }
 
-      router.push(`/auth/forgot-password/sent?email=${encodeURIComponent(normalizedEmail)}`)
+      router.push(
+        `/auth/forgot-password/sent?email=${encodeURIComponent(normalizedEmail)}`
+      )
     } catch (submitError: any) {
-      setError(submitError.message || 'Unable to start password reset')
+      setError(submitError?.message || 'Unable to start password reset')
       setLoading(false)
     }
   }
 
   return (
-    <ForgotPasswordShell
-      currentStep={1}
+    <AuthShell
+      eyebrow="Forgot password"
       title="Reset your password"
-      subtitle="We will send a short verification code so you can create a new password securely."
+      subtitle="We'll send a short verification code so you can choose a new password securely."
+      steps={{ current: 1, items: RESET_STEPS }}
       footer={
         <>
           Remember your password?{' '}
-          <Link href="/auth/login" className={styles.authLink}>
+          <Link
+            href="/auth/login"
+            className="font-medium text-foreground underline-offset-4 hover:underline"
+          >
             Back to sign in
           </Link>
         </>
       }
     >
-      {error ? <div className={styles.errorMessage}>{error}</div> : null}
+      <div className="flex flex-col gap-5">
+        {error && <Banner tone="error">{error}</Banner>}
 
-      <form onSubmit={handleSubmit} className={styles.form} noValidate>
-        <div className={styles.formGroup}>
-          <label htmlFor="forgot-email" className={styles.formLabel}>
-            Account Email
-          </label>
-          <input
-            id="forgot-email"
-            type="email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            className={styles.formInput}
-            placeholder="Enter your email"
-            autoComplete="email"
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
+          <div className="grid gap-1.5">
+            <Label htmlFor="forgot-email">Account email</Label>
+            <div className="relative">
+              <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                id="forgot-email"
+                type="email"
+                value={email}
+                onChange={(event) => {
+                  setEmail(event.target.value)
+                  if (error) setError(null)
+                }}
+                placeholder="you@example.com"
+                autoComplete="email"
+                disabled={loading}
+                required
+                className="pl-9"
+              />
+            </div>
+          </div>
+
+          <Button
+            type="submit"
             disabled={loading}
-          />
+            className="h-10 w-full gap-2"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                {LOADING_MESSAGES[loadingIndex]}
+              </>
+            ) : (
+              <>
+                Send reset code
+                <ArrowRight className="h-4 w-4" />
+              </>
+            )}
+          </Button>
+        </form>
+
+        <div className="flex items-start gap-3 rounded-lg border bg-muted/30 p-4">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-background text-foreground ring-1 ring-border">
+            <ShieldCheck className="h-4 w-4" />
+          </span>
+          <div className="flex min-w-0 flex-col gap-0.5">
+            <p className="text-sm font-medium text-foreground">
+              What happens next
+            </p>
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              We email a six-character code to the address above. You confirm it,
+              choose a new password, and we send you back to sign in — all in
+              under a minute.
+            </p>
+          </div>
         </div>
-
-        <button type="submit" disabled={loading} className={styles.submitButton}>
-          {loading ? (
-            <span className={styles.buttonContent}>
-              <span className={styles.spinner} />
-              <span>{LOADING_MESSAGES[loadingIndex]}</span>
-            </span>
-          ) : (
-            'Send reset code'
-          )}
-        </button>
-      </form>
-
-      <div className={styles.sequenceCard}>
-        <div className={styles.sequenceTitle}>What happens next</div>
-        <ol className={styles.sequenceList}>
-          <li>We send a six-character code to the email you entered.</li>
-          <li>You confirm the code and choose a new password.</li>
-          <li>You return to sign in with the updated password.</li>
-        </ol>
       </div>
-    </ForgotPasswordShell>
+    </AuthShell>
   )
 }
