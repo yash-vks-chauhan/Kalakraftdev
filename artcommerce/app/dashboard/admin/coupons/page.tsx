@@ -1,6 +1,7 @@
 'use client'
 
 import { FormEvent, useEffect, useMemo, useState } from 'react'
+import { toast } from 'sonner'
 import {
   AlertCircle,
   CalendarClock,
@@ -142,8 +143,6 @@ export default function CouponManager() {
   const [deleteTarget, setDeleteTarget] = useState<Coupon | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
 
-  const [notice, setNotice] = useState<{ tone: 'success' | 'error'; text: string } | null>(null)
-
   useEffect(() => {
     if (authLoading) return
     if (!user) return
@@ -160,12 +159,6 @@ export default function CouponManager() {
       .catch(() => setError('Failed to load coupons.'))
       .finally(() => setLoading(false))
   }, [authLoading, user, token])
-
-  useEffect(() => {
-    if (!notice) return
-    const t = window.setTimeout(() => setNotice(null), 3500)
-    return () => window.clearTimeout(t)
-  }, [notice])
 
   const stats = useMemo(() => {
     let active = 0
@@ -243,7 +236,7 @@ export default function CouponManager() {
         const j = await res.json()
         if (!res.ok) throw new Error(j.error || 'Failed to update coupon')
         setCoupons((prev) => prev.map((c) => (c.id === j.coupon.id ? j.coupon : c)))
-        setNotice({ tone: 'success', text: `Updated ${j.coupon.code}.` })
+        toast.success(`Updated ${j.coupon.code}.`)
       } else {
         const res = await fetch('/api/admin/coupons', {
           method: 'POST',
@@ -259,7 +252,7 @@ export default function CouponManager() {
         const j = await res.json()
         if (!res.ok) throw new Error(j.error || 'Failed to create coupon')
         setCoupons((prev) => [j.coupon, ...prev])
-        setNotice({ tone: 'success', text: `Created ${j.coupon.code}.` })
+        toast.success(`Created ${j.coupon.code}.`)
       }
       setSheetOpen(false)
     } catch (err: any) {
@@ -280,10 +273,10 @@ export default function CouponManager() {
       })
       if (!res.ok) throw new Error('Failed to delete coupon')
       setCoupons((prev) => prev.filter((c) => c.id !== deleteTarget.id))
-      setNotice({ tone: 'success', text: `Deleted ${deleteTarget.code}.` })
+      toast.success(`Deleted ${deleteTarget.code}.`)
       setDeleteTarget(null)
     } catch (err: any) {
-      setNotice({ tone: 'error', text: err.message || 'Failed to delete coupon' })
+      toast.error(err.message || 'Failed to delete coupon')
     } finally {
       setIsDeleting(false)
     }
@@ -312,25 +305,6 @@ export default function CouponManager() {
 
   return (
     <main className="flex flex-col gap-6 pb-10">
-      {notice && (
-        <div
-          role="status"
-          className={cn(
-            'fixed right-4 top-4 z-50 flex items-center gap-2 rounded-md border px-3.5 py-2.5 text-sm shadow-md sm:right-6 sm:top-6',
-            notice.tone === 'success'
-              ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
-              : 'border-destructive/20 bg-destructive/10 text-destructive'
-          )}
-        >
-          {notice.tone === 'success' ? (
-            <CheckCircle2 className="h-4 w-4" />
-          ) : (
-            <AlertCircle className="h-4 w-4" />
-          )}
-          <span>{notice.text}</span>
-        </div>
-      )}
-
       <PageHeader>
         <Button onClick={openCreate} className="gap-1.5">
           <Plus className="h-4 w-4" />
@@ -492,8 +466,11 @@ export default function CouponManager() {
       </Card>
 
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <SheetContent side="right" className="w-full sm:max-w-md">
-          <SheetHeader>
+        <SheetContent
+          side="bottom"
+          className="mx-auto max-h-[90vh] w-full sm:max-w-2xl sm:rounded-t-2xl"
+        >
+          <SheetHeader className="border-b px-6 pb-4">
             <SheetTitle>{editing ? 'Edit coupon' : 'New coupon'}</SheetTitle>
             <SheetDescription>
               {editing
@@ -504,7 +481,7 @@ export default function CouponManager() {
           <form
             id="coupon-form"
             onSubmit={handleSubmit}
-            className="flex flex-1 flex-col gap-4 overflow-y-auto px-6 pb-6"
+            className="flex flex-1 flex-col gap-4 overflow-y-auto px-6 pb-6 pt-4"
           >
             <div className="grid gap-1.5">
               <Label htmlFor="cp-code">Code</Label>
@@ -565,33 +542,34 @@ export default function CouponManager() {
               </div>
             </div>
 
-            <div className="grid gap-1.5">
-              <Label htmlFor="cp-expires">Expires on</Label>
-              <Input
-                id="cp-expires"
-                type="date"
-                value={form.expiresAt}
-                onChange={(e) => setForm({ ...form, expiresAt: e.target.value })}
-                required
-              />
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid gap-1.5">
+                <Label htmlFor="cp-expires">Expires on</Label>
+                <Input
+                  id="cp-expires"
+                  type="date"
+                  value={form.expiresAt}
+                  onChange={(e) => setForm({ ...form, expiresAt: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="grid gap-1.5">
+                <Label htmlFor="cp-limit">Usage limit</Label>
+                <Input
+                  id="cp-limit"
+                  type="number"
+                  inputMode="numeric"
+                  min="1"
+                  step="1"
+                  value={form.usageLimit}
+                  onChange={(e) => setForm({ ...form, usageLimit: e.target.value })}
+                  placeholder="Leave empty for unlimited"
+                />
+              </div>
             </div>
-
-            <div className="grid gap-1.5">
-              <Label htmlFor="cp-limit">Usage limit</Label>
-              <Input
-                id="cp-limit"
-                type="number"
-                inputMode="numeric"
-                min="1"
-                step="1"
-                value={form.usageLimit}
-                onChange={(e) => setForm({ ...form, usageLimit: e.target.value })}
-                placeholder="Leave empty for unlimited"
-              />
-              <p className="text-xs text-muted-foreground">
-                Maximum total redemptions across all customers.
-              </p>
-            </div>
+            <p className="-mt-2 text-xs text-muted-foreground">
+              Usage limit caps total redemptions across all customers.
+            </p>
 
             {editing && (
               <div className="rounded-md border bg-muted/30 p-3 text-xs text-muted-foreground">

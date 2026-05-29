@@ -2,11 +2,11 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
+import { toast } from 'sonner'
 import {
   AlertCircle,
   AlertTriangle,
   ArrowLeft,
-  CheckCircle2,
   ExternalLink,
   Loader2,
   Minus,
@@ -96,7 +96,6 @@ export default function LowStockPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [filter, setFilter] = useState<SeverityFilter>('all')
-  const [notice, setNotice] = useState<{ tone: 'success' | 'error'; text: string } | null>(null)
 
   useEffect(() => {
     if (authLoading) return
@@ -117,12 +116,6 @@ export default function LowStockPage() {
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false))
   }, [authLoading, user, token])
-
-  useEffect(() => {
-    if (!notice) return
-    const t = window.setTimeout(() => setNotice(null), 3500)
-    return () => window.clearTimeout(t)
-  }, [notice])
 
   const stats = useMemo(() => {
     let out = 0
@@ -184,12 +177,9 @@ export default function LowStockPage() {
         prev.map((it) => (it.id === p.id ? { ...it, stockQuantity: product.stockQuantity } : it))
       )
       clearDraft(p.id)
-      setNotice({
-        tone: 'success',
-        text: `${p.name} stock set to ${product.stockQuantity}.`,
-      })
+      toast.success(`${p.name} stock set to ${product.stockQuantity}.`)
     } catch (err: any) {
-      setNotice({ tone: 'error', text: err.message })
+      toast.error(err.message)
     } finally {
       setSavingIds((prev) => {
         const next = new Set(prev)
@@ -206,12 +196,9 @@ export default function LowStockPage() {
       setProducts((prev) =>
         prev.map((it) => (it.id === p.id ? { ...it, isActive: product.isActive } : it))
       )
-      setNotice({
-        tone: 'success',
-        text: `${p.name} is now ${product.isActive ? 'visible' : 'hidden'}.`,
-      })
+      toast.success(`${p.name} is now ${product.isActive ? 'visible' : 'hidden'}.`)
     } catch (err: any) {
-      setNotice({ tone: 'error', text: err.message })
+      toast.error(err.message)
     } finally {
       setTogglingIds((prev) => {
         const next = new Set(prev)
@@ -242,25 +229,6 @@ export default function LowStockPage() {
 
   return (
     <main className="flex flex-col gap-6 pb-10">
-      {notice && (
-        <div
-          role="status"
-          className={cn(
-            'fixed right-4 top-4 z-50 flex items-center gap-2 rounded-md border px-3.5 py-2.5 text-sm shadow-md sm:right-6 sm:top-6',
-            notice.tone === 'success'
-              ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
-              : 'border-destructive/20 bg-destructive/10 text-destructive'
-          )}
-        >
-          {notice.tone === 'success' ? (
-            <CheckCircle2 className="h-4 w-4" />
-          ) : (
-            <AlertCircle className="h-4 w-4" />
-          )}
-          <span>{notice.text}</span>
-        </div>
-      )}
-
       <PageHeader />
 
       {/* Severity tiles act as filter chips */}

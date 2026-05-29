@@ -30,6 +30,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet"
+import { Skeleton } from "@/components/ui/skeleton"
 
 interface Address {
   id: number
@@ -73,19 +74,6 @@ function formatTime(seconds: number) {
   return `${minutes}:${remaining.toString().padStart(2, "0")}`
 }
 
-function useMediaQuery(query: string) {
-  const [matches, setMatches] = useState(false)
-  useEffect(() => {
-    if (typeof window === "undefined") return
-    const mq = window.matchMedia(query)
-    setMatches(mq.matches)
-    const handler = (e: MediaQueryListEvent) => setMatches(e.matches)
-    mq.addEventListener("change", handler)
-    return () => mq.removeEventListener("change", handler)
-  }, [query])
-  return matches
-}
-
 function SectionHeader({ title, description }: { title: string; description?: string }) {
   return (
     <div className="flex flex-col gap-1">
@@ -116,7 +104,6 @@ function Banner({ kind, message }: { kind: "success" | "error"; message: string 
 export default function ProfilePage() {
   const router = useRouter()
   const { user, token, fetchProfile, loading: authLoading } = useAuth()
-  const isDesktop = useMediaQuery("(min-width: 768px)")
 
   const [active, setActive] = useState<SectionKey>("identity")
 
@@ -428,7 +415,7 @@ export default function ProfilePage() {
     setAddresses(addresses.filter((x) => x.id !== id))
   }
 
-  if (!user) return null
+  if (!user) return <ProfileSkeleton />
 
   return (
     <div className="flex flex-col gap-8">
@@ -778,7 +765,28 @@ export default function ProfilePage() {
               {addrError && <Banner kind="error" message={addrError} />}
 
               {addrLoading ? (
-                <p className="text-sm text-muted-foreground">Loading addresses…</p>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {Array.from({ length: 2 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="flex flex-col gap-3 rounded-lg border bg-card p-4"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex flex-1 flex-col gap-1.5">
+                          <Skeleton className="h-4 w-24" />
+                          <Skeleton className="h-3 w-3/4" />
+                          <Skeleton className="h-3 w-1/2" />
+                          <Skeleton className="h-3 w-1/3" />
+                        </div>
+                        <Skeleton className="h-5 w-16 rounded-full" />
+                      </div>
+                      <div className="flex items-center justify-between gap-2 border-t pt-2">
+                        <Skeleton className="h-7 w-24" />
+                        <Skeleton className="h-7 w-16" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
               ) : addresses.length === 0 ? (
                 <div className="rounded-lg border border-dashed bg-card p-8 text-center">
                   <p className="text-sm font-medium text-foreground">No saved addresses yet</p>
@@ -862,16 +870,13 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* Add-address sheet (right on desktop, bottom on mobile) */}
+      {/* Add-address bottom sheet */}
       <Sheet open={addressSheetOpen} onOpenChange={setAddressSheetOpen}>
         <SheetContent
-          side={isDesktop ? "right" : "bottom"}
-          className={cn(
-            "flex flex-col gap-0 p-0",
-            isDesktop ? "w-[480px] max-w-[90vw]" : "max-h-[90vh]"
-          )}
+          side="bottom"
+          className="mx-auto max-h-[90vh] w-full sm:max-w-2xl sm:rounded-t-2xl"
         >
-          <SheetHeader className="border-b">
+          <SheetHeader className="border-b px-6 pb-4">
             <SheetTitle>New address</SheetTitle>
             <SheetDescription>
               Add a delivery location to your saved addresses.
@@ -880,91 +885,140 @@ export default function ProfilePage() {
 
           <form
             onSubmit={handleAddAddress}
-            className="flex flex-1 flex-col gap-4 overflow-y-auto p-6"
+            className="flex flex-1 flex-col gap-4 overflow-y-auto px-6 pb-6 pt-4"
           >
-            <div className="grid gap-4">
+            <div className="grid gap-1.5">
+              <Label htmlFor="addr-label">Label</Label>
+              <Input
+                id="addr-label"
+                placeholder="Home, Office, etc."
+                value={newAddr.label}
+                onChange={(e) => setNewAddr({ ...newAddr, label: e.target.value })}
+                required
+              />
+            </div>
+            <div className="grid gap-1.5">
+              <Label htmlFor="addr-line1">Address line 1</Label>
+              <Input
+                id="addr-line1"
+                placeholder="Street and number"
+                value={newAddr.line1}
+                onChange={(e) => setNewAddr({ ...newAddr, line1: e.target.value })}
+                required
+              />
+            </div>
+            <div className="grid gap-1.5">
+              <Label htmlFor="addr-line2">Address line 2</Label>
+              <Input
+                id="addr-line2"
+                placeholder="Apartment, suite, landmark (optional)"
+                value={newAddr.line2}
+                onChange={(e) => setNewAddr({ ...newAddr, line2: e.target.value })}
+              />
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
               <div className="grid gap-1.5">
-                <Label htmlFor="addr-label">Label</Label>
+                <Label htmlFor="addr-city">City</Label>
                 <Input
-                  id="addr-label"
-                  placeholder="Home, Office, etc."
-                  value={newAddr.label}
-                  onChange={(e) => setNewAddr({ ...newAddr, label: e.target.value })}
+                  id="addr-city"
+                  value={newAddr.city}
+                  onChange={(e) => setNewAddr({ ...newAddr, city: e.target.value })}
                   required
                 />
               </div>
               <div className="grid gap-1.5">
-                <Label htmlFor="addr-line1">Address line 1</Label>
+                <Label htmlFor="addr-postal">Postal code</Label>
                 <Input
-                  id="addr-line1"
-                  placeholder="Street and number"
-                  value={newAddr.line1}
-                  onChange={(e) => setNewAddr({ ...newAddr, line1: e.target.value })}
-                  required
-                />
-              </div>
-              <div className="grid gap-1.5">
-                <Label htmlFor="addr-line2">Address line 2</Label>
-                <Input
-                  id="addr-line2"
-                  placeholder="Apartment, suite, landmark (optional)"
-                  value={newAddr.line2}
-                  onChange={(e) => setNewAddr({ ...newAddr, line2: e.target.value })}
-                />
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="grid gap-1.5">
-                  <Label htmlFor="addr-city">City</Label>
-                  <Input
-                    id="addr-city"
-                    value={newAddr.city}
-                    onChange={(e) => setNewAddr({ ...newAddr, city: e.target.value })}
-                    required
-                  />
-                </div>
-                <div className="grid gap-1.5">
-                  <Label htmlFor="addr-postal">Postal code</Label>
-                  <Input
-                    id="addr-postal"
-                    value={newAddr.postalCode}
-                    onChange={(e) => setNewAddr({ ...newAddr, postalCode: e.target.value })}
-                    required
-                  />
-                </div>
-              </div>
-              <div className="grid gap-1.5">
-                <Label htmlFor="addr-country">Country</Label>
-                <Input
-                  id="addr-country"
-                  value={newAddr.country}
-                  onChange={(e) => setNewAddr({ ...newAddr, country: e.target.value })}
+                  id="addr-postal"
+                  value={newAddr.postalCode}
+                  onChange={(e) => setNewAddr({ ...newAddr, postalCode: e.target.value })}
                   required
                 />
               </div>
             </div>
-          </form>
+            <div className="grid gap-1.5">
+              <Label htmlFor="addr-country">Country</Label>
+              <Input
+                id="addr-country"
+                value={newAddr.country}
+                onChange={(e) => setNewAddr({ ...newAddr, country: e.target.value })}
+                required
+              />
+            </div>
 
-          <div className="flex items-center justify-end gap-2 border-t bg-background p-4">
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => setAddressSheetOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              size="sm"
-              onClick={handleAddAddress}
-              disabled={savingAddress}
-            >
-              {savingAddress && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-              Save address
-            </Button>
-          </div>
+            <div className="mt-auto flex items-center justify-end gap-2 pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setAddressSheetOpen(false)}
+                disabled={savingAddress}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={savingAddress} className="gap-1.5">
+                {savingAddress && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                Save address
+              </Button>
+            </div>
+          </form>
         </SheetContent>
       </Sheet>
+    </div>
+  )
+}
+
+function ProfileSkeleton() {
+  return (
+    <div className="flex flex-col gap-8">
+      <header className="flex flex-col gap-2">
+        <Skeleton className="h-3 w-20" />
+        <Skeleton className="h-8 w-32" />
+      </header>
+
+      <div className="grid gap-8 md:grid-cols-[220px_1fr]">
+        {/* Sub-rail */}
+        <nav
+          aria-hidden
+          className="flex gap-1 overflow-x-auto md:sticky md:top-20 md:flex-col md:self-start md:overflow-visible"
+        >
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton
+              key={i}
+              className="h-11 w-full min-w-[140px] shrink-0 md:min-w-0"
+            />
+          ))}
+        </nav>
+
+        {/* Active section */}
+        <section className="flex flex-col gap-6">
+          <div className="flex flex-col gap-2">
+            <Skeleton className="h-6 w-40" />
+            <Skeleton className="h-4 w-72" />
+          </div>
+
+          {/* Avatar row */}
+          <div className="flex items-center gap-4 rounded-lg border bg-card p-4">
+            <Skeleton className="h-16 w-16 rounded-full" />
+            <div className="flex flex-1 flex-col gap-2">
+              <Skeleton className="h-4 w-44" />
+              <Skeleton className="h-3 w-60" />
+            </div>
+            <Skeleton className="h-9 w-28" />
+          </div>
+
+          {/* Field rows */}
+          {Array.from({ length: 2 }).map((_, i) => (
+            <div key={i} className="flex flex-col gap-2">
+              <Skeleton className="h-3.5 w-24" />
+              <Skeleton className="h-9 w-full" />
+            </div>
+          ))}
+
+          <div className="flex justify-end">
+            <Skeleton className="h-9 w-32" />
+          </div>
+        </section>
+      </div>
     </div>
   )
 }

@@ -2,6 +2,7 @@ import './globals.css'
 import { Inter } from 'next/font/google'
 import AppRootClient from './AppRootClient'
 import { MobileMenuProvider } from './contexts/MobileMenuContext'
+import { Toaster } from '@/components/ui/sonner'
 import { getImageUrl, getOptimizedImageUrl } from '../lib/cloudinaryImages'
 
 const inter = Inter({
@@ -72,6 +73,7 @@ export default function RootLayout({
         <MobileMenuProvider>
           <AppRootClient>{children}</AppRootClient>
         </MobileMenuProvider>
+        <Toaster />
       </body>
     </html>
   )

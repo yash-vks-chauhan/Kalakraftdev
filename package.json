@@ -1,6 +1,10 @@
 {
   "dependencies": {
+    "canvas-confetti": "^1.9.3",
     "framer-motion": "^12.23.12",
     "react": "^19.1.0"
+  },
+  "devDependencies": {
+    "@types/canvas-confetti": "^1.9.0"
   }
 }

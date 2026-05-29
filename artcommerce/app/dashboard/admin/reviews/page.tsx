@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
+import { toast } from 'sonner'
 import {
   Bar,
   BarChart,
@@ -138,7 +139,6 @@ export default function ReviewsDashboard() {
   const [replyDraft, setReplyDraft] = useState('')
   const [reactionDraft, setReactionDraft] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
-  const [notice, setNotice] = useState<{ tone: 'success' | 'error'; text: string } | null>(null)
 
   useEffect(() => {
     if (authLoading) return
@@ -163,12 +163,6 @@ export default function ReviewsDashboard() {
       .catch(() => setError('Failed to load reviews.'))
       .finally(() => setLoading(false))
   }, [authLoading, user, token])
-
-  useEffect(() => {
-    if (!notice) return
-    const t = window.setTimeout(() => setNotice(null), 3500)
-    return () => window.clearTimeout(t)
-  }, [notice])
 
   const stats = useMemo(() => {
     const total = reviews.length
@@ -267,10 +261,10 @@ export default function ReviewsDashboard() {
       if (!res.ok) throw new Error((await res.json()).error || 'Failed to save')
       const { review } = await res.json()
       setReviews((prev) => prev.map((r) => (r.id === review.id ? review : r)))
-      setNotice({ tone: 'success', text: 'Response saved.' })
+      toast.success('Response saved.')
       closeComposer()
     } catch (err: any) {
-      setNotice({ tone: 'error', text: err.message })
+      toast.error(err.message)
     } finally {
       setSaving(false)
     }
@@ -292,9 +286,9 @@ export default function ReviewsDashboard() {
       if (!res.ok) throw new Error('Failed')
       const { review: updated } = await res.json()
       setReviews((prev) => prev.map((r) => (r.id === updated.id ? updated : r)))
-      setNotice({ tone: 'success', text: 'Reaction added.' })
+      toast.success('Reaction added.')
     } catch (err: any) {
-      setNotice({ tone: 'error', text: err.message })
+      toast.error(err.message)
     }
   }
 
@@ -319,25 +313,6 @@ export default function ReviewsDashboard() {
 
   return (
     <main className="flex flex-col gap-6 pb-10">
-      {notice && (
-        <div
-          role="status"
-          className={cn(
-            'fixed right-4 top-4 z-50 flex items-center gap-2 rounded-md border px-3.5 py-2.5 text-sm shadow-md sm:right-6 sm:top-6',
-            notice.tone === 'success'
-              ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
-              : 'border-destructive/20 bg-destructive/10 text-destructive'
-          )}
-        >
-          {notice.tone === 'success' ? (
-            <CheckCircle2 className="h-4 w-4" />
-          ) : (
-            <AlertCircle className="h-4 w-4" />
-          )}
-          <span>{notice.text}</span>
-        </div>
-      )}
-
       <PageHeader />
 
       {/* Stat tiles */}

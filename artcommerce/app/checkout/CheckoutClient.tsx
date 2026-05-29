@@ -1,8 +1,11 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
+import confetti from "canvas-confetti"
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion"
+import { toast } from "sonner"
 import {
   ArrowLeft,
   ArrowRight,
@@ -19,6 +22,7 @@ import {
   ReceiptText,
   ShieldCheck,
   ShoppingBag,
+  Sparkles,
   Tag,
   Truck,
   X,
@@ -39,6 +43,13 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet"
 
 interface Address {
   id: number
@@ -83,6 +94,31 @@ function formatCurrency(value: number) {
   }).format(value)
 }
 
+function CountUp({ value, duration = 750 }: { value: number; duration?: number }) {
+  const [current, setCurrent] = useState(0)
+  const reducedMotion = useReducedMotion()
+
+  useEffect(() => {
+    if (reducedMotion) {
+      setCurrent(value)
+      return
+    }
+    const start = performance.now()
+    const from = 0
+    let raf = 0
+    function tick(now: number) {
+      const t = Math.min(1, (now - start) / duration)
+      const eased = 1 - Math.pow(1 - t, 3)
+      setCurrent(from + (value - from) * eased)
+      if (t < 1) raf = requestAnimationFrame(tick)
+    }
+    raf = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(raf)
+  }, [value, duration, reducedMotion])
+
+  return <>{formatCurrency(current)}</>
+}
+
 export default function CheckoutClient() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -113,9 +149,10 @@ export default function CheckoutClient() {
   const [coupon, setCoupon] = useState("")
   const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null)
   const [discount, setDiscount] = useState(0)
-  const [couponMessage, setCouponMessage] = useState<string | null>(null)
-  const [couponError, setCouponError] = useState<string | null>(null)
   const [couponLoading, setCouponLoading] = useState(false)
+  const [shakeKey, setShakeKey] = useState(0)
+  const couponBtnRef = useRef<HTMLButtonElement>(null)
+  const reducedMotion = useReducedMotion()
 
   const subtotal = useMemo(
     () => cartItems.reduce((sum, item) => sum + item.quantity * item.product.price, 0),
@@ -145,7 +182,6 @@ export default function CheckoutClient() {
           ? (subtotal + tax + shippingFee) * (amount / 100)
           : amount
       )
-      setCouponMessage(`Coupon “${urlCoupon}” applied.`)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams])
@@ -188,9 +224,46 @@ export default function CheckoutClient() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, token, router])
 
+  function celebrate() {
+    if (reducedMotion) return
+    const el = couponBtnRef.current
+    const rect = el?.getBoundingClientRect()
+    const origin = rect
+      ? {
+          x: (rect.left + rect.width / 2) / window.innerWidth,
+          y: (rect.top + rect.height / 2) / window.innerHeight,
+        }
+      : { x: 0.5, y: 0.6 }
+    const palette = ["#10b981", "#34d399", "#fbbf24", "#a855f7", "#3b82f6"]
+    confetti({
+      particleCount: 70,
+      spread: 70,
+      startVelocity: 38,
+      origin,
+      colors: palette,
+      scalar: 0.9,
+      ticks: 220,
+      zIndex: 9999,
+    })
+    confetti({
+      particleCount: 30,
+      angle: 60,
+      spread: 55,
+      origin,
+      colors: palette.slice(0, 3),
+      zIndex: 9999,
+    })
+    confetti({
+      particleCount: 30,
+      angle: 120,
+      spread: 55,
+      origin,
+      colors: palette.slice(2),
+      zIndex: 9999,
+    })
+  }
+
   async function applyCoupon() {
-    setCouponMessage(null)
-    setCouponError(null)
     setCouponLoading(true)
     try {
       const res = await fetch("/api/coupons/validate", {
@@ -202,18 +275,26 @@ export default function CheckoutClient() {
         body: JSON.stringify({ code: coupon.trim() }),
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error || "Failed to apply coupon")
+      if (!res.ok) throw new Error(data.error || "That code didn't work.")
+      const code = (data.code || coupon.trim()).toUpperCase()
       const amount =
         data.type === "percentage"
           ? (subtotal + tax + shippingFee) * (data.amount / 100)
           : data.amount
       setDiscount(amount)
-      setAppliedCoupon(data.code || coupon.trim().toUpperCase())
-      setCouponMessage(`Coupon applied.`)
+      setAppliedCoupon(code)
+      celebrate()
+      toast.success(`${code} applied`, {
+        description: `You saved ${formatCurrency(amount)} on this order.`,
+        duration: 3500,
+      })
     } catch (err: any) {
-      setCouponError(err.message || "Invalid code")
       setDiscount(0)
       setAppliedCoupon(null)
+      setShakeKey((k) => k + 1)
+      toast.error(err.message || "That code didn't work.", {
+        description: "Double-check the code and try again.",
+      })
     } finally {
       setCouponLoading(false)
     }
@@ -223,8 +304,6 @@ export default function CheckoutClient() {
     setCoupon("")
     setAppliedCoupon(null)
     setDiscount(0)
-    setCouponMessage(null)
-    setCouponError(null)
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -301,11 +380,25 @@ export default function CheckoutClient() {
       setSelectedAddressId(data.address.id)
       setShowAddForm(false)
       setNewAddr({ label: "", line1: "", line2: "", city: "", postalCode: "", country: "" })
+      toast.success("Address saved", {
+        description: "We'll ship this order here.",
+      })
     } catch (err: any) {
       setAddrError(err.message)
     } finally {
       setSavingAddress(false)
     }
+  }
+
+  function openAddressSheet() {
+    setAddrError(null)
+    setShowAddForm(true)
+  }
+
+  function closeAddressSheet() {
+    if (savingAddress) return
+    setAddrError(null)
+    setShowAddForm(false)
   }
 
   if (loading) {
@@ -376,11 +469,19 @@ export default function CheckoutClient() {
               </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-4 p-4 pt-0 sm:p-6 sm:pt-0">
-              {addrError && <FieldError message={addrError} />}
-
-              {addresses.length === 0 && !showAddForm ? (
-                <div className="rounded-md border border-dashed bg-muted/30 p-6 text-center text-sm text-muted-foreground">
-                  No saved addresses yet. Add one below to continue.
+              {addresses.length === 0 ? (
+                <div className="flex flex-col items-center gap-3 rounded-md border border-dashed bg-muted/30 p-6 text-center text-sm text-muted-foreground">
+                  <MapPin className="h-5 w-5" />
+                  No saved addresses yet. Add one to continue.
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={openAddressSheet}
+                    className="gap-1.5"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    Add an address
+                  </Button>
                 </div>
               ) : (
                 <div className="grid gap-3 sm:grid-cols-2">
@@ -432,102 +533,102 @@ export default function CheckoutClient() {
                 </div>
               )}
 
-              {!showAddForm ? (
+              {addresses.length > 0 && (
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => setShowAddForm(true)}
+                  onClick={openAddressSheet}
                   className="gap-1.5 self-start"
                 >
                   <Plus className="h-3.5 w-3.5" />
                   Add a new address
                 </Button>
-              ) : (
-                <div className="flex flex-col gap-3 rounded-md border border-dashed bg-background p-4">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium text-foreground">New address</p>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon-sm"
-                      onClick={() => setShowAddForm(false)}
-                      aria-label="Cancel new address"
-                      className="text-muted-foreground hover:text-foreground"
-                    >
-                      <X className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
-                  <div className="grid gap-3">
-                    <Field
-                      id="addr-label"
-                      label="Label"
-                      placeholder="Home, Office, etc."
-                      value={newAddr.label}
-                      onChange={(v) => setNewAddr({ ...newAddr, label: v })}
-                    />
-                    <Field
-                      id="addr-line1"
-                      label="Address line 1"
-                      placeholder="Street and number"
-                      value={newAddr.line1}
-                      onChange={(v) => setNewAddr({ ...newAddr, line1: v })}
-                      required
-                    />
-                    <Field
-                      id="addr-line2"
-                      label="Address line 2"
-                      placeholder="Apartment, suite, landmark"
-                      value={newAddr.line2}
-                      onChange={(v) => setNewAddr({ ...newAddr, line2: v })}
-                    />
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      <Field
-                        id="addr-city"
-                        label="City"
-                        value={newAddr.city}
-                        onChange={(v) => setNewAddr({ ...newAddr, city: v })}
-                        required
-                      />
-                      <Field
-                        id="addr-postal"
-                        label="Postal code"
-                        value={newAddr.postalCode}
-                        onChange={(v) => setNewAddr({ ...newAddr, postalCode: v })}
-                        required
-                      />
-                    </div>
-                    <Field
-                      id="addr-country"
-                      label="Country"
-                      value={newAddr.country}
-                      onChange={(v) => setNewAddr({ ...newAddr, country: v })}
-                      required
-                    />
-                  </div>
-                  <div className="flex justify-end gap-2">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setShowAddForm(false)}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      onClick={handleSaveNewAddress}
-                      disabled={savingAddress}
-                    >
-                      {savingAddress && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-                      Save address
-                    </Button>
-                  </div>
-                </div>
               )}
             </CardContent>
           </Card>
+
+          {/* Add-address bottom sheet */}
+          <Sheet open={showAddForm} onOpenChange={(o) => (o ? openAddressSheet() : closeAddressSheet())}>
+            <SheetContent
+              side="bottom"
+              className="mx-auto max-h-[90vh] w-full sm:max-w-2xl sm:rounded-t-2xl"
+            >
+              <SheetHeader className="border-b px-6 pb-4">
+                <SheetTitle>Add a new address</SheetTitle>
+                <SheetDescription>
+                  Saved to your account so you can reuse it for future orders.
+                </SheetDescription>
+              </SheetHeader>
+              <form
+                onSubmit={handleSaveNewAddress}
+                className="flex flex-1 flex-col gap-4 overflow-y-auto px-6 pb-6 pt-4"
+              >
+                {addrError && <FieldError message={addrError} />}
+
+                <Field
+                  id="addr-label"
+                  label="Label"
+                  placeholder="Home, Office, etc."
+                  value={newAddr.label}
+                  onChange={(v) => setNewAddr({ ...newAddr, label: v })}
+                />
+                <Field
+                  id="addr-line1"
+                  label="Address line 1"
+                  placeholder="Street and number"
+                  value={newAddr.line1}
+                  onChange={(v) => setNewAddr({ ...newAddr, line1: v })}
+                  required
+                />
+                <Field
+                  id="addr-line2"
+                  label="Address line 2"
+                  placeholder="Apartment, suite, landmark"
+                  value={newAddr.line2}
+                  onChange={(v) => setNewAddr({ ...newAddr, line2: v })}
+                />
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <Field
+                    id="addr-city"
+                    label="City"
+                    value={newAddr.city}
+                    onChange={(v) => setNewAddr({ ...newAddr, city: v })}
+                    required
+                  />
+                  <Field
+                    id="addr-postal"
+                    label="Postal code"
+                    value={newAddr.postalCode}
+                    onChange={(v) => setNewAddr({ ...newAddr, postalCode: v })}
+                    required
+                  />
+                </div>
+                <Field
+                  id="addr-country"
+                  label="Country"
+                  value={newAddr.country}
+                  onChange={(v) => setNewAddr({ ...newAddr, country: v })}
+                  required
+                />
+
+                <div className="mt-auto flex items-center justify-end gap-2 pt-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={closeAddressSheet}
+                    disabled={savingAddress}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={savingAddress} className="gap-1.5">
+                    {savingAddress && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                    Save address
+                  </Button>
+                </div>
+              </form>
+            </SheetContent>
+          </Sheet>
 
           {/* Payment method */}
           <Card className="shadow-sm">
@@ -608,64 +709,121 @@ export default function CheckoutClient() {
               <CardDescription>Have a code? Apply it to receive a discount.</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-3 p-4 pt-0 sm:p-6 sm:pt-0">
-              {appliedCoupon && discount > 0 ? (
-                <div className="flex items-center justify-between gap-2 rounded-md border bg-secondary/40 px-3 py-2">
-                  <div className="flex min-w-0 items-center gap-2">
-                    <Badge variant="secondary" className="font-mono">
-                      <Tag className="h-3 w-3" />
-                      {appliedCoupon}
-                    </Badge>
-                    <span className="truncate text-xs text-muted-foreground">
-                      Saving {formatCurrency(discount)}
-                    </span>
-                  </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon-sm"
-                    onClick={removeCoupon}
-                    aria-label="Remove promo code"
-                    className="text-muted-foreground hover:text-foreground"
+              <AnimatePresence mode="wait" initial={false}>
+                {appliedCoupon && discount > 0 ? (
+                  <motion.div
+                    key="applied"
+                    initial={{ opacity: 0, scale: 0.97, y: 6 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.97, y: 6 }}
+                    transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                    className="relative overflow-hidden rounded-md border border-emerald-500/30 bg-gradient-to-r from-emerald-500/10 via-emerald-500/5 to-transparent p-3"
                   >
-                    <X className="h-3.5 w-3.5" />
-                  </Button>
-                </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <Input
-                    value={coupon}
-                    onChange={(e) => {
-                      setCoupon(e.target.value.toUpperCase())
-                      if (couponError) setCouponError(null)
-                    }}
-                    placeholder="ENTER CODE"
-                    aria-label="Promo code"
-                    className="font-mono tracking-wider"
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault()
-                        if (coupon.trim() && !couponLoading) applyCoupon()
-                      }
-                    }}
-                  />
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={applyCoupon}
-                    disabled={!coupon.trim() || couponLoading}
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex min-w-0 items-center gap-3">
+                        <motion.span
+                          initial={{ rotate: -25, scale: 0 }}
+                          animate={{ rotate: 0, scale: 1 }}
+                          transition={{
+                            delay: 0.05,
+                            type: "spring",
+                            stiffness: 260,
+                            damping: 16,
+                          }}
+                          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
+                          aria-hidden
+                        >
+                          <Sparkles className="h-4 w-4" />
+                        </motion.span>
+                        <div className="flex min-w-0 flex-col gap-0.5">
+                          <div className="flex items-center gap-2">
+                            <span className="truncate font-mono text-sm font-semibold tracking-wider text-foreground">
+                              {appliedCoupon}
+                            </span>
+                            <Badge
+                              variant="outline"
+                              className="border-emerald-500/30 bg-emerald-500/10 px-1.5 text-[10px] text-emerald-700 dark:text-emerald-300"
+                            >
+                              <Check className="h-3 w-3" />
+                              Applied
+                            </Badge>
+                          </div>
+                          <span className="text-xs text-muted-foreground">
+                            You&rsquo;re saving{" "}
+                            <span className="font-semibold tabular-nums text-emerald-700 dark:text-emerald-300">
+                              <CountUp value={discount} />
+                            </span>{" "}
+                            on this order.
+                          </span>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={removeCoupon}
+                        aria-label="Remove promo code"
+                        className="gap-1 text-muted-foreground hover:text-foreground"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                        Remove
+                      </Button>
+                    </div>
+                    {!reducedMotion && (
+                      <motion.span
+                        aria-hidden
+                        initial={{ x: "-110%" }}
+                        animate={{ x: "120%" }}
+                        transition={{ duration: 1.1, ease: "easeOut", delay: 0.15 }}
+                        className="pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-transparent via-white/40 to-transparent dark:via-white/10"
+                      />
+                    )}
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key={`input-${shakeKey}`}
+                    initial={{ opacity: 0, y: -4 }}
+                    animate={
+                      shakeKey > 0
+                        ? { opacity: 1, y: 0, x: [0, -7, 6, -4, 3, -2, 0] }
+                        : { opacity: 1, y: 0, x: 0 }
+                    }
+                    exit={{ opacity: 0, y: -4 }}
+                    transition={{ duration: shakeKey > 0 ? 0.45 : 0.2, ease: "easeOut" }}
+                    className="flex items-center gap-2"
                   >
-                    {couponLoading && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-                    Apply
-                  </Button>
-                </div>
-              )}
-              {couponError && <p className="text-xs text-destructive">{couponError}</p>}
-              {!couponError && couponMessage && (
-                <p className="text-xs text-emerald-600 dark:text-emerald-400">
-                  {couponMessage}
-                </p>
-              )}
+                    <Input
+                      value={coupon}
+                      onChange={(e) => setCoupon(e.target.value.toUpperCase())}
+                      placeholder="ENTER CODE"
+                      aria-label="Promo code"
+                      className="font-mono tracking-wider"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault()
+                          if (coupon.trim() && !couponLoading) applyCoupon()
+                        }
+                      }}
+                    />
+                    <Button
+                      ref={couponBtnRef}
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={applyCoupon}
+                      disabled={!coupon.trim() || couponLoading}
+                      className="gap-1.5"
+                    >
+                      {couponLoading ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <Tag className="h-3.5 w-3.5" />
+                      )}
+                      Apply
+                    </Button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </CardContent>
           </Card>
         </div>
