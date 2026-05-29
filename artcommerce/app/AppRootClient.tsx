@@ -128,7 +128,7 @@ export default function AppRootClient({ children }: { children: React.ReactNode 
   // Always use standard layout pipeline; mobile-only routes are handled via showDesktopView and MobileLayout
 
   return (
-    <body suppressHydrationWarning>
+    <div suppressHydrationWarning>
       <Providers>
         {globalClientError && (
           <div style={{position:'fixed',top:0,left:0,right:0,zIndex:9999,background:'#fee2e2',color:'#991b1b',padding:'8px 12px',fontSize:12,borderBottom:'1px solid #ef4444'}}>
@@ -189,6 +189,6 @@ export default function AppRootClient({ children }: { children: React.ReactNode 
         {/* Performance Optimizer */}
         <PerformanceOptimizer />
       </Providers>
-    </body>
+    </div>
   );
-} 
+}
