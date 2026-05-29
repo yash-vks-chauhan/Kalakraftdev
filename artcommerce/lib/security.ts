@@ -1,4 +1,8 @@
-const allowedOriginEnvs = [process.env.NEXT_PUBLIC_APP_URL, process.env.APP_URL].filter(Boolean) as string[]
+function getConfiguredAppUrls(): string[] {
+  return [process.env.NEXT_PUBLIC_APP_URL, process.env.APP_URL]
+    .map((value) => value?.trim())
+    .filter(Boolean) as string[]
+}
 
 const MUTATION_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE'])
 const CORS_METHODS = new Set(['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'])
@@ -31,7 +35,7 @@ const SENSITIVE_PAGE_PREFIXES = [
 ]
 
 function getAllowedOriginHosts(): string[] {
-  return allowedOriginEnvs.flatMap((allowed) => {
+  return getConfiguredAppUrls().flatMap((allowed) => {
     try {
       return [new URL(allowed).host]
     } catch {
@@ -41,7 +45,7 @@ function getAllowedOriginHosts(): string[] {
 }
 
 function getAllowedOrigins(): string[] {
-  return allowedOriginEnvs.flatMap((allowed) => {
+  return getConfiguredAppUrls().flatMap((allowed) => {
     try {
       return [new URL(allowed).origin]
     } catch {

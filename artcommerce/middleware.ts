@@ -22,7 +22,7 @@ const STATIC_FILE_PATTERN =
   /\.(?:avif|css|gif|ico|jpeg|jpg|js|map|mp3|mp4|png|svg|txt|webm|webp|woff2?)$/i
 
 function getCanonicalOrigin(): string | null {
-  const configuredUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL
+  const configuredUrl = (process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL)?.trim()
   if (!configuredUrl) return null
 
   try {

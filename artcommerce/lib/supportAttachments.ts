@@ -24,9 +24,10 @@ function getAllowedHosts(): Set<string> {
   const hosts = new Set<string>()
 
   for (const candidate of [process.env.APP_URL, process.env.NEXT_PUBLIC_APP_URL, process.env.IMAGEKIT_URL_ENDPOINT]) {
-    if (!candidate) continue
+    const value = candidate?.trim()
+    if (!value) continue
     try {
-      hosts.add(new URL(candidate).host)
+      hosts.add(new URL(value).host)
     } catch {
       // Ignore malformed environment values.
     }
