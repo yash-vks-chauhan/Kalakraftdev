@@ -2,9 +2,10 @@
 import { NextResponse } from 'next/server'
 import { escapeHtml } from '../../../../../../lib/emailContent'
 import prisma from '../../../../../../lib/prisma'
-import { getSecureMailer } from '../../../../../../lib/mailer'
+import { sendSecureMail } from '../../../../../../lib/mailer'
 import { consumeRateLimit, getClientIp } from '../../../../../../lib/rateLimit'
 import { requireAdminUser } from '../../../../../../lib/session-auth'
+import { getPublicAppUrlForPath } from '../../../../../../lib/appUrl'
 
 const REMIND_WINDOW_MS = 60 * 60 * 1000
 const REMIND_MAX_PER_TARGET = 3
@@ -49,12 +50,13 @@ export async function POST(
   if (!user) {
     return NextResponse.json({ error: 'User not found' }, { status: 404 })
   }
+  if (!user.email) {
+    return NextResponse.json({ error: 'User does not have an email address' }, { status: 400 })
+  }
 
   try {
-    const { transporter, smtpUser } = getSecureMailer()
-    await transporter.sendMail({
-      from:    `"Artcommerce" <${smtpUser}>`,
-      to:      user.email,
+    await sendSecureMail({
+      to: user.email,
       subject: 'You left items in your cart!',
       html: `
         <p>Hi ${escapeHtml(user.fullName)},</p>
@@ -62,8 +64,9 @@ export async function POST(
         <ul>
           ${items.map(i => `<li>${escapeHtml(i.product.name)} (qty: ${i.quantity})</li>`).join('')}
         </ul>
-        <p><a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://kalakraftdev.vercel.app'}/cart">Return to your cart & checkout</a></p>
+        <p><a href="${getPublicAppUrlForPath('/cart')}">Return to your cart & checkout</a></p>
       `,
+      fromName: 'Kalakraft Support',
     })
   } catch (err) {
     console.error('❌ remind-cart error:', err)

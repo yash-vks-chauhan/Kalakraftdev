@@ -9,6 +9,7 @@
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate deploy",
     "security:check": "node scripts/check-sensitive-files.js",
+    "mail:check": "node scripts/check-mail-config.js",
     "start": "next start -p 3002",
     "lint": "next lint",
     "postinstall": "npm run db:generate"

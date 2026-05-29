@@ -2,7 +2,7 @@
 
 import { NextResponse } from 'next/server'
 import { escapeHtml } from '../../../../../lib/emailContent'
-import { getSecureMailer } from '../../../../../lib/mailer'
+import { sendSecureMail } from '../../../../../lib/mailer'
 import prisma from '../../../../../lib/prisma'
 import { requireAdminUser } from '../../../../../lib/session-auth'
 
@@ -59,18 +59,16 @@ export async function DELETE(
 
     if (target.email) {
       try {
-        const { transporter, smtpUser } = getSecureMailer()
-
-        await transporter.sendMail({
-          from: `"Artcommerce Support" <${smtpUser}>`,
+        await sendSecureMail({
           to: target.email,
           subject: 'Your Artcommerce Account Has Been Deleted',
           html: `
             <p>Hi ${escapeHtml(target.fullName)},</p>
             <p>We're writing to let you know that your Artcommerce account has been deleted by an administrator.</p>
-            <p>If you believe this was in error, please contact support@example.com.</p>
+            <p>If you believe this was in error, please contact support.</p>
             <p>Regards,<br/>The Artcommerce Team</p>
           `,
+          fromName: 'Kalakraft Support',
         })
       } catch (mailErr) {
         console.error('❌ delete-user notification email failed:', mailErr)

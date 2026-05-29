@@ -7,7 +7,8 @@ import { requireAdminUser } from "../../../../../../../lib/session-auth";
 import { isAllowedOrigin } from "@/lib/security";
 import { sanitizeSupportAttachments, validateSupportAttachments } from "@/lib/supportAttachments";
 import { getBoundedString } from "@/lib/inputValidation";
-import { cleanEmailHeader, escapeHtml } from "@/lib/emailContent";
+import { escapeHtml } from "@/lib/emailContent";
+import { sendSecureMail } from "@/lib/mailer";
 
 const ALLOWED_STATUSES = ['open', 'pending', 'resolved', 'closed'];
 const MAX_REPLY_LENGTH = 5000;
@@ -102,27 +103,14 @@ export async function POST(
     console.error("Pusher trigger failed: ", err);
   }
 
-  // 5) Send the e-mail inline
+  // 5) Send the e-mail through the shared transactional mailer
   try {
-    const resp = await fetch("https://api.sendinblue.com/v3/smtp/email", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "api-key": process.env.SENDINBLUE_API_KEY!,
-      },
-      body: JSON.stringify({
-        sender: {
-          name: "Artcommerce Support",
-          email: process.env.SENDINBLUE_FROM_EMAIL!,
-        },
-        to: [{ email: ticket.email }],
-        subject: cleanEmailHeader(`Re: ${ticket.subject}`),
-        htmlContent: `<p>${escapeHtml(trimmedReply).replace(/\n/g, '<br/>')}</p><p>Your ticket status is now <strong>${escapeHtml(normalizedStatus)}</strong>.</p>`,
-      }),
+    await sendSecureMail({
+      to: ticket.email,
+      subject: `Re: ${ticket.subject}`,
+      html: `<p>${escapeHtml(trimmedReply).replace(/\n/g, '<br/>')}</p><p>Your ticket status is now <strong>${escapeHtml(normalizedStatus)}</strong>.</p>`,
+      fromName: 'Kalakraft Support',
     });
-    if (!resp.ok) {
-      console.error("Sendinblue error status", resp.status);
-    }
   } catch (err) {
     console.error("Email send failed:", err);
   }

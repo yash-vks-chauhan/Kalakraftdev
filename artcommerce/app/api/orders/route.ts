@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { NextResponse } from 'next/server'
-import { cleanEmailHeader, escapeHtml } from '../../../lib/emailContent'
-import { getSecureMailer } from '../../../lib/mailer'
+import { escapeHtml } from '../../../lib/emailContent'
+import { sendSecureMail } from '../../../lib/mailer'
 import prisma from '../../../lib/prisma'
 import { orderEvents } from '../../../lib/orderEvents'
 import { PrismaClient, Order, OrderItem, Product, User } from '@prisma/client'
@@ -417,8 +417,6 @@ export async function POST(request: Request) {
 
   if (toEmail) {
     try {
-      const { transporter, smtpUser } = getSecureMailer()
-
       // build the HTML body
       const itemsRows = createdOrder.orderItems.map(item => {
         const unit = item.priceAtPurchase.toFixed(2)
@@ -471,11 +469,11 @@ export async function POST(request: Request) {
         </div>
       `
 
-      await transporter.sendMail({
-        from:    `"Artcommerce" <${smtpUser}>`,
-        to:      toEmail,
-        subject: cleanEmailHeader(`Order Confirmation (#${createdOrder.orderNumber})`),
-        html:    htmlBody,
+      await sendSecureMail({
+        to: toEmail,
+        subject: `Order Confirmation (#${createdOrder.orderNumber})`,
+        html: htmlBody,
+        fromName: 'Kalakraft Orders',
       })
     } catch (emailErr) {
       console.error('❌ [order route] Error sending confirmation email:', emailErr)

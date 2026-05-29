@@ -10,6 +10,7 @@ import { consumeRateLimit, getClientIp } from '@/lib/rateLimit';
 import { validateUploadBuffer } from '@/lib/uploadGuard';
 import { getBoundedString } from '@/lib/inputValidation';
 import { cleanEmailHeader, escapeHtml } from '@/lib/emailContent';
+import { sendSecureMail } from '@/lib/mailer';
 
 const TICKET_WINDOW_MS = 15 * 60 * 1000;
 const MAX_TICKETS_PER_WINDOW = 5;
@@ -167,31 +168,17 @@ export async function POST(request: Request) {
     });
   }
 
-  // 3) Send confirmation email via Sendinblue REST API (inline, no helper)
+  // 3) Send confirmation email through the shared transactional mailer
   try {
-    const resp = await fetch('https://api.sendinblue.com/v3/smtp/email', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'api-key': process.env.SENDINBLUE_API_KEY!,
-      },
-      body: JSON.stringify({
-        sender: {
-          name: 'Artcommerce Support',
-          email: process.env.SENDINBLUE_FROM_EMAIL!,
-        },
-        to: [{ email: authenticatedEmail }],
-        subject: cleanEmailHeader(`We received your request: ${safeFullSubject}`),
-        htmlContent: `<p>Hi ${escapeHtml(authenticatedName || safeName || 'there')},</p>
-          <p>Thanks for contacting our support team! Your ticket ID is <strong>${escapeHtml(ticket.id)}</strong>. We will get back to you shortly.</p>`,
-      }),
+    await sendSecureMail({
+      to: authenticatedEmail,
+      subject: `We received your request: ${safeFullSubject}`,
+      html: `<p>Hi ${escapeHtml(authenticatedName || safeName || 'there')},</p>
+        <p>Thanks for contacting our support team! Your ticket ID is <strong>${escapeHtml(ticket.id)}</strong>. We will get back to you shortly.</p>`,
+      fromName: 'Kalakraft Support',
     });
-
-    if (!resp.ok) {
-      console.error('Sendinblue API error status:', resp.status);
-    }
   } catch (err) {
-    console.error('Sendinblue call failed', err);
+    console.error('Support ticket confirmation email failed', err);
   }
 
   // 4) Return the created ticket JSON to the client

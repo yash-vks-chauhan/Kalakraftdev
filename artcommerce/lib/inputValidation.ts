@@ -62,6 +62,10 @@ export function getBoundedString(
   return { ok: true, value: trimmed || null }
 }
 
+export function isValidEmailAddress(value: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
+}
+
 export function isSafeRelativeOrHttpsUrl(value: string): boolean {
   if (value.startsWith('/')) {
     return !value.startsWith('//') && !value.includes('\\')

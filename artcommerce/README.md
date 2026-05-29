@@ -26,18 +26,27 @@ An e-commerce platform for art products.
    # Database URL
    DATABASE_URL="postgresql://username:password@hostname:port/database_name"
 
+   # Public app URLs
+   NEXT_PUBLIC_APP_URL=http://localhost:3002
+   NEXT_PUBLIC_BASE_URL=http://localhost:3002
+   APP_URL=http://localhost:3002
+
    # Pusher Configuration (for real-time features)
    PUSHER_APP_ID=your_pusher_app_id
    PUSHER_KEY=your_pusher_key
    PUSHER_SECRET=your_pusher_secret
    PUSHER_CLUSTER=your_pusher_cluster
 
-   # Email Configuration (for customer-facing emails)
-   EMAIL_SERVER=smtp://username:password@smtp.example.com:587
+   # Email Configuration
+   SMTP_HOST=smtp.example.com
+   SMTP_PORT=587
+   SMTP_USER=your_smtp_user
+   SMTP_PASS=your_smtp_password
    EMAIL_FROM=noreply@example.com
 
-   # Sendinblue Configuration (for admin notification emails)
+   # Brevo / Sendinblue Configuration
    SENDINBLUE_API_KEY=your_sendinblue_api_key
+   SENDINBLUE_FROM=Kalakraft
    SENDINBLUE_FROM_EMAIL=your_sender_email@example.com
    ADMIN_EMAIL=your_admin_email@example.com
    ```
@@ -45,6 +54,11 @@ An e-commerce platform for art products.
 4. Run the development server:
    ```bash
    npm run dev
+   ```
+
+5. Verify email provider credentials without sending a message:
+   ```bash
+   npm run mail:check
    ```
 
 ## Firebase Authentication Domain Configuration

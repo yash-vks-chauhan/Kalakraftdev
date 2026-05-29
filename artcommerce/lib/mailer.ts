@@ -1,5 +1,6 @@
 import nodemailer from 'nodemailer'
 import { cleanEmailHeader } from './emailContent'
+import { isValidEmailAddress } from './inputValidation'
 
 type SecureMailer = {
   transporter: nodemailer.Transporter
@@ -8,12 +9,14 @@ type SecureMailer = {
 
 let cachedMailer: SecureMailer | null = null
 
-type TransactionalEmail = {
-  to: string
+export type TransactionalEmail = {
+  to: string | string[]
   subject: string
   html: string
   fromName?: string
 }
+
+export type AdminEmail = Omit<TransactionalEmail, 'to'>
 
 function getRequiredEnv(name: string): string {
   const value = process.env[name]
@@ -58,14 +61,51 @@ export function getSecureMailer(): SecureMailer {
   return cachedMailer
 }
 
-async function sendViaBrevo({ to, subject, html, fromName = 'Artcommerce Support' }: TransactionalEmail) {
-  const apiKey = process.env.SENDINBLUE_API_KEY
-  const senderEmail = process.env.SENDINBLUE_FROM_EMAIL
-  const senderName = process.env.SENDINBLUE_FROM || fromName
+function normalizeRecipients(to: string | string[]): string[] {
+  const recipients = (Array.isArray(to) ? to : [to])
+    .map((recipient) => recipient.trim())
+    .filter(Boolean)
+
+  if (recipients.length === 0) {
+    throw new Error('Email must include at least one recipient')
+  }
+
+  for (const recipient of recipients) {
+    assertPlainEmailAddress(recipient, 'recipient')
+  }
+
+  return recipients
+}
+
+function assertPlainEmailAddress(value: string, label: string) {
+  if (/[\r\n]/.test(value) || !isValidEmailAddress(value)) {
+    throw new Error(`Invalid email ${label}`)
+  }
+}
+
+function getConfiguredSenderName(fromName?: string) {
+  const configuredName = process.env.SENDINBLUE_FROM?.trim()
+  const fallback = fromName || 'Kalakraft Support'
+
+  return cleanEmailHeader(configuredName && !configuredName.includes('@') ? configuredName : fallback)
+}
+
+function getConfiguredSenderEmail(fallback: string) {
+  const senderEmail = (process.env.EMAIL_FROM || fallback).trim()
+  assertPlainEmailAddress(senderEmail, 'sender')
+  return senderEmail
+}
+
+async function sendViaBrevo({ to, subject, html, fromName = 'Kalakraft Support' }: TransactionalEmail) {
+  const apiKey = process.env.SENDINBLUE_API_KEY?.trim()
+  const senderEmail = process.env.SENDINBLUE_FROM_EMAIL?.trim()
+  const senderName = getConfiguredSenderName(fromName)
+  const recipients = normalizeRecipients(to)
 
   if (!apiKey || !senderEmail) {
     throw new Error('Missing Brevo email configuration')
   }
+  assertPlainEmailAddress(senderEmail, 'sender')
 
   const response = await fetch('https://api.brevo.com/v3/smtp/email', {
     method: 'POST',
@@ -79,22 +119,26 @@ async function sendViaBrevo({ to, subject, html, fromName = 'Artcommerce Support
         name: senderName,
         email: senderEmail,
       },
-      to: [{ email: to }],
+      to: recipients.map((email) => ({ email })),
       subject: cleanEmailHeader(subject),
       htmlContent: html,
     }),
   })
 
   if (!response.ok) {
-    throw new Error(`Brevo email failed with status ${response.status}`)
+    const body = await response.text().catch(() => '')
+    throw new Error(`Brevo email failed with status ${response.status}${body ? `: ${body.slice(0, 300)}` : ''}`)
   }
 }
 
 async function sendViaSmtp(message: TransactionalEmail) {
   const { transporter, smtpUser } = getSecureMailer()
+  const fromName = getConfiguredSenderName(message.fromName)
+  const fromEmail = getConfiguredSenderEmail(smtpUser)
+  const recipients = normalizeRecipients(message.to)
   const info = await transporter.sendMail({
-    from: `"${message.fromName || 'Artcommerce Support'}" <${smtpUser}>`,
-    to: message.to,
+    from: { name: fromName, address: fromEmail },
+    to: recipients,
     subject: cleanEmailHeader(message.subject),
     html: message.html,
   })
@@ -104,7 +148,7 @@ async function sendViaSmtp(message: TransactionalEmail) {
 }
 
 function hasBrevoConfig() {
-  return Boolean(process.env.SENDINBLUE_API_KEY && process.env.SENDINBLUE_FROM_EMAIL)
+  return Boolean(process.env.SENDINBLUE_API_KEY?.trim() && process.env.SENDINBLUE_FROM_EMAIL?.trim())
 }
 
 export async function sendSecureMail(message: TransactionalEmail) {
@@ -118,4 +162,11 @@ export async function sendSecureMail(message: TransactionalEmail) {
   }
 
   await sendViaSmtp(message)
+}
+
+export async function sendAdminMail(message: AdminEmail) {
+  await sendSecureMail({
+    ...message,
+    to: getRequiredEnv('ADMIN_EMAIL'),
+  })
 }

@@ -6,6 +6,7 @@ import { getOtpSecretValidationError, hashOtpForScope } from '../../../../lib/ot
 import prisma from '../../../../lib/prisma'
 import { consumeRateLimit, getClientIp } from '../../../../lib/rateLimit'
 import { getAuthenticatedUser } from '../../../../lib/session-auth'
+import { isValidEmailAddress } from '../../../../lib/inputValidation'
 
 export const runtime = 'nodejs'
 
@@ -16,10 +17,6 @@ const OTP_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
 const OTP_LENGTH = 6
 
 const generateOtp = customAlphabet(OTP_ALPHABET, OTP_LENGTH)
-
-function isValidEmail(email: string): boolean {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
-}
 
 export async function POST(request: Request) {
   const otpSecretError = getOtpSecretValidationError()
@@ -50,7 +47,7 @@ export async function POST(request: Request) {
 
   const body = await request.json().catch(() => ({}))
   const newEmail = String(body?.newEmail || '').trim().toLowerCase()
-  if (!newEmail || !isValidEmail(newEmail)) {
+  if (!newEmail || !isValidEmailAddress(newEmail)) {
     return NextResponse.json({ error: 'Missing or invalid newEmail' }, { status: 400 })
   }
 

@@ -5,6 +5,7 @@ import prisma from '../../../../lib/prisma'
 import bcrypt from 'bcryptjs'
 import { PASSWORD_POLICY_MESSAGE, isStrongPassword } from '../../../../lib/password-policy'
 import { consumeRateLimit, getClientIp } from '../../../../lib/rateLimit'
+import { isValidEmailAddress } from '../../../../lib/inputValidation'
 import {
   createRefreshSession,
   setAuthCookies,
@@ -36,6 +37,9 @@ export async function POST(request: Request) {
 
     if (!fullName || !email || !password) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+    }
+    if (!isValidEmailAddress(email)) {
+      return NextResponse.json({ error: 'Invalid email address' }, { status: 400 })
     }
 
     const emailLimit = consumeRateLimit(`signup:email:${email}:ip:${clientIp}`, {

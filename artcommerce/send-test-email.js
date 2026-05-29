@@ -12,6 +12,7 @@ require('dotenv').config()  // ← loads from .env in the same folder
 console.log('Loaded SMTP_HOST:', process.env.SMTP_HOST)
 console.log('Loaded SMTP_PORT:', process.env.SMTP_PORT)
 console.log('Loaded SMTP_USER:', process.env.SMTP_USER)
+console.log('Loaded EMAIL_FROM:', process.env.EMAIL_FROM || '(fallback to SMTP_USER)')
 console.log(
   'Loaded SMTP_PASS:',
   process.env.SMTP_PASS ? '****(hidden)****' : process.env.SMTP_PASS
@@ -21,6 +22,7 @@ console.log(
   const host = process.env.SMTP_HOST
   const smtpUser = process.env.SMTP_USER
   const smtpPass = process.env.SMTP_PASS
+  const fromEmail = process.env.EMAIL_FROM || smtpUser
   const port = Number(process.env.SMTP_PORT)
 
   if (!host || !smtpUser || !smtpPass || !Number.isInteger(port) || port <= 0 || port > 65535) {
@@ -59,7 +61,7 @@ console.log(
   // Send a test email:
   try {
     const info = await transporter.sendMail({
-      from: `"Artcommerce Test" <${smtpUser}>`,
+      from: `"Kalakraft Test" <${fromEmail}>`,
       to: smtpUser,  // send to yourself
       subject: 'Test Email from Next.js App',
       text: 'If you see this, SMTP is working!',
