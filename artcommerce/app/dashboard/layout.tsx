@@ -138,7 +138,7 @@ export default function DashboardLayout({
             width={22}
             height={22}
             priority
-            className="h-[22px] w-[22px] object-contain transition-transform duration-200 group-hover:scale-110 dark:brightness-0 dark:invert"
+            className="h-[22px] w-[22px] object-contain transition-transform duration-200 group-hover:scale-110"
           />
           <span className="text-sm font-semibold tracking-tight text-foreground">
             Kalakraft

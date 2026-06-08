@@ -128,7 +128,7 @@ export default function MySupportTickets() {
           </p>
         </div>
         <Button asChild className="gap-1.5 self-start sm:self-auto">
-          <Link href="/support">
+          <Link href="/dashboard/support/new">
             <Plus className="h-4 w-4" />
             New ticket
           </Link>
@@ -268,7 +268,7 @@ function EmptyState({ activeTab }: { activeTab: TabKey }) {
       </div>
       {activeTab === "all" && (
         <Button asChild size="sm" className="mt-1 gap-1.5">
-          <Link href="/support">
+          <Link href="/dashboard/support/new">
             <Plus className="h-4 w-4" />
             Start a conversation
           </Link>

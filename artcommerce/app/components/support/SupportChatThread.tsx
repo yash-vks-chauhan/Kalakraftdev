@@ -13,7 +13,6 @@ import {
   Paperclip,
   Send,
   X,
-  Check,
   CheckCheck,
   Clock,
   Loader2,
@@ -85,12 +84,9 @@ function formatTime(value: string) {
   })
 }
 
-function sameDay(a: Date, b: Date) {
-  return (
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate()
-  )
+function dayKey(value: string) {
+  const d = new Date(value)
+  return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`
 }
 
 function dayLabel(value: string) {
@@ -98,8 +94,8 @@ function dayLabel(value: string) {
   const today = new Date()
   const yesterday = new Date()
   yesterday.setDate(today.getDate() - 1)
-  if (sameDay(date, today)) return "Today"
-  if (sameDay(date, yesterday)) return "Yesterday"
+  if (dayKey(value) === dayKey(today.toISOString())) return "Today"
+  if (dayKey(value) === dayKey(yesterday.toISOString())) return "Yesterday"
   return date.toLocaleDateString(undefined, {
     day: "numeric",
     month: "long",
@@ -107,12 +103,55 @@ function dayLabel(value: string) {
   })
 }
 
+type Row =
+  | { type: "day"; id: string; label: string }
+  | { type: "system"; id: string; content: string; createdAt: string }
+  | {
+      type: "message"
+      msg: ChatMessage
+      isFirst: boolean
+      isLast: boolean
+    }
+
+/** Build a flat render list: day dividers + system notes + grouped messages. */
+function buildRows(messages: ChatMessage[]): Row[] {
+  const rows: Row[] = []
+  let prevDay: string | null = null
+
+  messages.forEach((m, i) => {
+    const day = dayKey(m.createdAt)
+    if (day !== prevDay) {
+      rows.push({ type: "day", id: `day-${day}-${m.id}`, label: dayLabel(m.createdAt) })
+      prevDay = day
+    }
+    if (m.kind === "system") {
+      rows.push({ type: "system", id: m.id, content: m.content, createdAt: m.createdAt })
+      return
+    }
+    const prev = messages[i - 1]
+    const next = messages[i + 1]
+    const samePrev =
+      prev &&
+      prev.kind !== "system" &&
+      prev.side === m.side &&
+      dayKey(prev.createdAt) === day
+    const sameNext =
+      next &&
+      next.kind !== "system" &&
+      next.side === m.side &&
+      dayKey(next.createdAt) === day
+    rows.push({ type: "message", msg: m, isFirst: !samePrev, isLast: !sameNext })
+  })
+
+  return rows
+}
+
 function Attachments({ attachments }: { attachments?: ChatAttachment[] }) {
   const valid = (attachments || []).filter((att) => att?.url)
   if (valid.length === 0) return null
 
   return (
-    <div className="mt-2 flex flex-wrap gap-2">
+    <div className="mt-1.5 flex flex-wrap gap-1.5">
       {valid.map((att, idx) => {
         const isImage = (att.type || att.mimeType || "").startsWith("image")
         return isImage ? (
@@ -121,14 +160,14 @@ function Attachments({ attachments }: { attachments?: ChatAttachment[] }) {
             href={att.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="group/att block overflow-hidden rounded-lg border bg-background/40"
+            className="group/att block overflow-hidden rounded-xl border bg-background/40"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={att.url}
               alt={att.name || "Attachment"}
               loading="lazy"
-              className="h-32 w-32 object-cover transition-transform duration-200 group-hover/att:scale-[1.03] sm:h-36 sm:w-36"
+              className="h-36 w-36 object-cover transition-transform duration-200 group-hover/att:scale-[1.03] sm:h-40 sm:w-40"
             />
           </a>
         ) : (
@@ -136,7 +175,7 @@ function Attachments({ attachments }: { attachments?: ChatAttachment[] }) {
             key={idx}
             src={att.url}
             controls
-            className="h-32 w-44 rounded-lg border bg-background/40 object-cover"
+            className="h-36 w-48 rounded-xl border bg-background/40 object-cover"
           />
         )
       })}
@@ -183,26 +222,20 @@ export function SupportChatThread({
     setUnread(0)
   }
 
-  // First paint: jump straight to the latest message without animation.
   useLayoutEffect(() => {
     scrollToBottom("auto")
     prevCountRef.current = messages.length
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // New messages: follow if you're at the bottom or it's your own message,
-  // otherwise surface a "new message" pill instead of yanking you down.
   useEffect(() => {
     const added = messages.length - prevCountRef.current
     prevCountRef.current = messages.length
     if (added <= 0) return
     const last = messages[messages.length - 1]
     const mine = last?.kind !== "system" && last?.side === "me"
-    if (mine || atBottom) {
-      scrollToBottom()
-    } else {
-      setUnread((u) => u + added)
-    }
+    if (mine || atBottom) scrollToBottom()
+    else setUnread((u) => u + added)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messages.length])
 
@@ -240,17 +273,17 @@ export function SupportChatThread({
     !composer.loading &&
     (composer.value.trim().length > 0 || composer.files.length > 0)
 
-  // Index of the last outgoing message, for the "Seen" receipt.
-  const lastMeId = (() => {
-    for (let i = messages.length - 1; i >= 0; i--) {
-      const m = messages[i]
-      if (m.kind !== "system" && m.side === "me") return m.id
-    }
-    return null
-  })()
+  const rows = buildRows(messages)
 
-  let lastDay: string | null = null
-  let lastSide: "me" | "them" | null = null
+  // Last outgoing message, for the "Seen" receipt.
+  let lastMeId: string | null = null
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const m = messages[i]
+    if (m.kind !== "system" && m.side === "me") {
+      lastMeId = m.id
+      break
+    }
+  }
 
   return (
     <div className={cn("flex min-h-0 flex-1 flex-col", className)}>
@@ -259,149 +292,122 @@ export function SupportChatThread({
         <div
           ref={scrollRef}
           onScroll={handleScroll}
-          className="absolute inset-0 overflow-y-auto bg-muted/20 px-4 py-6 sm:px-6"
+          className="absolute inset-0 overflow-y-auto bg-muted/20 px-4 py-5 sm:px-6"
         >
-          <div className="mx-auto flex w-full max-w-3xl flex-col gap-1.5">
+          <div className="mx-auto flex w-full max-w-2xl flex-col">
             {startChip && (
-              <div className="mb-3 flex justify-center">
+              <div className="mb-4 flex justify-center">
                 <span className="rounded-full border bg-background px-3 py-1 text-xs font-medium text-muted-foreground shadow-sm">
                   {startChip}
                 </span>
               </div>
             )}
 
-            <AnimatePresence initial={false}>
-              {messages.map((msg) => {
-                const showDay = lastDay !== dayLabel(msg.createdAt)
-                const dayChip = showDay ? dayLabel(msg.createdAt) : null
-                lastDay = dayLabel(msg.createdAt)
-
-                if (msg.kind === "system") {
-                  lastSide = null
-                  return (
-                    <motion.div
-                      key={msg.id}
-                      initial={{ opacity: 0, y: 6 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="flex flex-col gap-1.5"
-                    >
-                      {dayChip && <DayDivider label={dayChip} />}
-                      <div className="my-1 flex justify-center">
-                        <span className="rounded-full bg-muted px-3 py-1 text-[11px] font-medium text-muted-foreground">
-                          {msg.content} · {formatTime(msg.createdAt)}
-                        </span>
-                      </div>
-                    </motion.div>
-                  )
-                }
-
-                const isMe = msg.side === "me"
-                const showMeta = lastSide !== msg.side
-                lastSide = msg.side ?? null
-                const showSeen = isMe && seen && msg.id === lastMeId && !msg.pending
-
+            {rows.map((row) => {
+              if (row.type === "day") {
+                return <DayDivider key={row.id} label={row.label} />
+              }
+              if (row.type === "system") {
                 return (
-                  <motion.div
-                    key={msg.id}
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.18, ease: "easeOut" }}
-                    className="flex flex-col gap-1.5"
+                  <div key={row.id} className="my-2 flex justify-center">
+                    <span className="rounded-full bg-muted px-3 py-1 text-[11px] font-medium text-muted-foreground">
+                      {row.content} · {formatTime(row.createdAt)}
+                    </span>
+                  </div>
+                )
+              }
+
+              const { msg, isFirst, isLast } = row
+              const isMe = msg.side === "me"
+              const showSeen = isMe && seen && msg.id === lastMeId && !msg.pending
+
+              return (
+                <motion.div
+                  key={msg.id}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.16, ease: "easeOut" }}
+                  className={cn(
+                    "flex w-full items-end gap-2",
+                    isMe ? "justify-end" : "justify-start",
+                    isFirst ? "mt-3" : "mt-[3px]"
+                  )}
+                >
+                  {!isMe && (
+                    <div className="w-7 shrink-0 self-end">
+                      {isLast && (
+                        <Avatar className="h-7 w-7 border">
+                          <AvatarFallback className="bg-secondary text-[10px] font-medium text-foreground">
+                            {theirInitials}
+                          </AvatarFallback>
+                        </Avatar>
+                      )}
+                    </div>
+                  )}
+
+                  <div
+                    className={cn(
+                      "flex max-w-[80%] flex-col sm:max-w-[66%]",
+                      isMe ? "items-end" : "items-start"
+                    )}
                   >
-                    {dayChip && <DayDivider label={dayChip} />}
                     <div
                       className={cn(
-                        "flex w-full items-end gap-2",
-                        isMe ? "justify-end" : "justify-start",
-                        showMeta ? "mt-2 first:mt-0" : "mt-0.5"
+                        "rounded-2xl px-3.5 py-2 text-sm leading-relaxed transition-opacity",
+                        isMe
+                          ? "bg-primary text-primary-foreground"
+                          : "border bg-card text-card-foreground",
+                        // Tail on the last bubble of a run for a grouped, chat feel.
+                        isLast && (isMe ? "rounded-br-md" : "rounded-bl-md"),
+                        msg.pending && "opacity-70"
                       )}
                     >
-                      {!isMe && (
-                        <div className="w-8 shrink-0">
-                          {showMeta && (
-                            <Avatar className="h-8 w-8 border">
-                              <AvatarFallback className="bg-secondary text-[11px] font-medium text-foreground">
-                                {theirInitials}
-                              </AvatarFallback>
-                            </Avatar>
-                          )}
-                        </div>
+                      {msg.content && (
+                        <p className="whitespace-pre-wrap break-words">{msg.content}</p>
                       )}
-
-                      <div
-                        className={cn(
-                          "flex max-w-[78%] flex-col gap-1 sm:max-w-[68%]",
-                          isMe ? "items-end" : "items-start"
-                        )}
-                      >
-                        {showMeta && !isMe && (
-                          <span className="px-1 text-xs font-medium text-muted-foreground">
-                            {theirName}
-                          </span>
-                        )}
-                        <div
-                          className={cn(
-                            "rounded-2xl px-4 py-2.5 text-sm leading-relaxed shadow-sm transition-opacity",
-                            isMe
-                              ? "rounded-br-md bg-primary text-primary-foreground"
-                              : "rounded-bl-md border bg-card text-card-foreground",
-                            msg.pending && "opacity-70"
-                          )}
-                        >
-                          {msg.content && (
-                            <p className="whitespace-pre-wrap break-words">{msg.content}</p>
-                          )}
-                          <Attachments attachments={msg.attachments} />
-                        </div>
-                        <div className="flex items-center gap-1 px-1 text-[10px] text-muted-foreground">
-                          <span>{formatTime(msg.createdAt)}</span>
-                          {isMe &&
-                            (msg.pending ? (
-                              <Clock className="h-3 w-3" />
-                            ) : msg.delivered ? (
-                              <CheckCheck className="h-3 w-3" />
-                            ) : (
-                              <Check className="h-3 w-3" />
-                            ))}
-                        </div>
-                        {showSeen && (
-                          <span className="px-1 text-[10px] font-medium text-muted-foreground">
-                            Seen
-                          </span>
-                        )}
-                      </div>
+                      <Attachments attachments={msg.attachments} />
                     </div>
-                  </motion.div>
-                )
-              })}
-            </AnimatePresence>
+
+                    {isLast && (
+                      <div className="mt-1 flex items-center gap-1 px-1 text-[10px] text-muted-foreground">
+                        <span>{formatTime(msg.createdAt)}</span>
+                        {isMe &&
+                          (msg.pending ? (
+                            <Clock className="h-3 w-3" />
+                          ) : (
+                            <CheckCheck
+                              className={cn("h-3 w-3", showSeen && "text-primary")}
+                            />
+                          ))}
+                        {showSeen && <span className="font-medium text-primary">Seen</span>}
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+              )
+            })}
 
             <AnimatePresence>
               {typing && (
                 <motion.div
-                  initial={{ opacity: 0, y: 8 }}
+                  initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 4 }}
-                  className="mt-2 flex items-end gap-2"
+                  className="mt-3 flex items-end gap-2"
                 >
-                  <Avatar className="h-8 w-8 border">
-                    <AvatarFallback className="bg-secondary text-[11px] font-medium text-foreground">
+                  <Avatar className="h-7 w-7 border">
+                    <AvatarFallback className="bg-secondary text-[10px] font-medium text-foreground">
                       {theirInitials}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="flex flex-col gap-1">
-                    <div className="rounded-2xl rounded-bl-md border bg-card px-4 py-3 shadow-sm">
-                      <TypingDots />
-                    </div>
-                    <span className="px-1 text-[10px] text-muted-foreground">
-                      {typingLabel || `${theirName} is typing…`}
-                    </span>
+                  <div className="rounded-2xl rounded-bl-md border bg-card px-4 py-3 shadow-sm">
+                    <TypingDots />
                   </div>
                 </motion.div>
               )}
             </AnimatePresence>
 
-            <div ref={endRef} />
+            <div ref={endRef} className="h-1" />
           </div>
         </div>
 
@@ -425,14 +431,16 @@ export function SupportChatThread({
 
       {/* Composer / closed notice */}
       {composer ? (
-        <div className="shrink-0 border-t bg-background px-4 py-3 sm:px-6">
-          <div className="mx-auto w-full max-w-3xl">
+        <div className="shrink-0 border-t bg-background px-3 py-3 sm:px-4">
+          <div className="mx-auto w-full max-w-2xl">
             {composer.error && (
-              <p className="mb-2 text-xs font-medium text-destructive">{composer.error}</p>
+              <p className="mb-2 px-1 text-xs font-medium text-destructive">
+                {composer.error}
+              </p>
             )}
 
             {composer.files.length > 0 && (
-              <div className="mb-2 flex flex-wrap gap-2">
+              <div className="mb-2 flex flex-wrap gap-2 px-1">
                 {composer.files.map((file, idx) => (
                   <div
                     key={idx}
@@ -462,66 +470,67 @@ export function SupportChatThread({
                 e.preventDefault()
                 if (canSend) composer.onSubmit()
               }}
-              className="flex items-end gap-2"
             >
-              <input
-                ref={fileInputRef}
-                type="file"
-                multiple
-                accept={composer.accept ?? "image/*"}
-                onChange={handleFileChange}
-                className="hidden"
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                aria-label="Attach images"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={composer.loading}
-                className="shrink-0 text-muted-foreground"
-              >
-                <Paperclip className="h-5 w-5" />
-              </Button>
+              {/* Single rounded input pill: attach · field · send */}
+              <div className="flex items-end gap-1 rounded-[22px] border bg-background py-1 pl-1 pr-1 shadow-sm transition-colors focus-within:border-ring/60 focus-within:ring-2 focus-within:ring-ring/30">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  accept={composer.accept ?? "image/*"}
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Attach images"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={composer.loading}
+                  className="h-9 w-9 shrink-0 rounded-full text-muted-foreground hover:text-foreground"
+                >
+                  <Paperclip className="h-[18px] w-[18px]" />
+                </Button>
 
-              <Textarea
-                value={composer.value}
-                onChange={(e) => {
-                  composer.onChange(e.target.value)
-                  composer.onTyping?.()
-                }}
-                onKeyDown={handleKeyDown}
-                placeholder={composer.placeholder ?? "Write a message…"}
-                rows={1}
-                disabled={composer.loading}
-                className="max-h-32 min-h-[44px] flex-1 resize-none rounded-2xl py-3"
-              />
+                <Textarea
+                  value={composer.value}
+                  onChange={(e) => {
+                    composer.onChange(e.target.value)
+                    composer.onTyping?.()
+                  }}
+                  onKeyDown={handleKeyDown}
+                  placeholder={composer.placeholder ?? "Write a message…"}
+                  rows={1}
+                  disabled={composer.loading}
+                  className="max-h-32 min-h-[36px] flex-1 resize-none border-0 bg-transparent px-1 py-2 text-sm shadow-none focus-visible:ring-0"
+                />
 
-              <Button
-                type="submit"
-                size="icon"
-                aria-label={composer.sendLabel ?? "Send message"}
-                disabled={!canSend}
-                className="h-11 w-11 shrink-0 rounded-full"
-              >
-                {composer.loading ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                ) : (
-                  <Send className="h-5 w-5" />
-                )}
-              </Button>
+                <Button
+                  type="submit"
+                  size="icon"
+                  aria-label={composer.sendLabel ?? "Send message"}
+                  disabled={!canSend}
+                  className="h-9 w-9 shrink-0 rounded-full transition-transform active:scale-95"
+                >
+                  {composer.loading ? (
+                    <Loader2 className="h-[18px] w-[18px] animate-spin" />
+                  ) : (
+                    <Send className="h-[18px] w-[18px]" />
+                  )}
+                </Button>
+              </div>
             </form>
 
-            <p className="mt-1.5 px-1 text-[11px] text-muted-foreground">
-              {composer.helperText ??
-                "Press Enter to send · Shift + Enter for a new line"}
+            <p className="mt-1.5 px-2 text-[11px] text-muted-foreground">
+              {composer.helperText ?? "Press Enter to send · Shift + Enter for a new line"}
             </p>
           </div>
         </div>
       ) : (
         closedNotice && (
           <div className="shrink-0 border-t bg-background px-4 py-4 sm:px-6">
-            <div className="mx-auto w-full max-w-3xl">{closedNotice}</div>
+            <div className="mx-auto w-full max-w-2xl">{closedNotice}</div>
           </div>
         )
       )}
@@ -531,7 +540,7 @@ export function SupportChatThread({
 
 function DayDivider({ label }: { label: string }) {
   return (
-    <div className="my-2 flex items-center gap-3">
+    <div className="my-3 flex items-center gap-3">
       <span className="h-px flex-1 bg-border" />
       <span className="text-[11px] font-medium text-muted-foreground">{label}</span>
       <span className="h-px flex-1 bg-border" />

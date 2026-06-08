@@ -255,7 +255,7 @@ export function SidebarNav({
               width={24}
               height={24}
               priority
-              className="h-6 w-6 object-contain transition-[opacity,transform] duration-200 group-hover:scale-90 group-hover:opacity-0 dark:brightness-0 dark:invert"
+              className="h-6 w-6 object-contain transition-[opacity,transform] duration-200 group-hover:scale-90 group-hover:opacity-0"
             />
             <PanelLeftOpen className="absolute h-4 w-4 text-muted-foreground opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
           </button>
@@ -273,7 +273,7 @@ export function SidebarNav({
                 width={24}
                 height={24}
                 priority
-                className="h-6 w-6 object-contain transition-transform duration-200 group-hover:scale-110 dark:brightness-0 dark:invert"
+                className="h-6 w-6 object-contain transition-transform duration-200 group-hover:scale-110"
               />
             </span>
             <span
