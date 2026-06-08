@@ -16,9 +16,9 @@ import {
 
 import { useAuth } from '../../../contexts/AuthContext'
 import { SegmentedControl, SegmentedControlItem } from '../../_components/SegmentedControl'
+import { SupportStatusBadge } from '../../../components/support/SupportStatusBadge'
 import { cn } from '@/lib/utils'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -341,7 +341,7 @@ export default function AdminSupportPage() {
                       </TableCell>
 
                       <TableCell className="px-4 py-3">
-                        <StatusBadge status={t.status} />
+                        <SupportStatusBadge status={t.status} />
                       </TableCell>
 
                       <TableCell className="px-4 py-3 text-sm text-muted-foreground">
@@ -376,35 +376,6 @@ export default function AdminSupportPage() {
       </Card>
     </main>
   )
-}
-
-function StatusBadge({ status }: { status: string }) {
-  const normalized = status.toLowerCase()
-  if (normalized === 'open') {
-    return (
-      <Badge className="gap-1 bg-destructive/10 text-destructive hover:bg-destructive/15 dark:bg-destructive/20">
-        <CircleDot className="h-3 w-3" />
-        Open
-      </Badge>
-    )
-  }
-  if (normalized === 'pending') {
-    return (
-      <Badge className="gap-1 bg-amber-500/10 text-amber-600 hover:bg-amber-500/15 dark:text-amber-500">
-        <Clock className="h-3 w-3" />
-        Pending
-      </Badge>
-    )
-  }
-  if (normalized === 'closed') {
-    return (
-      <Badge variant="secondary" className="gap-1">
-        <CheckCircle2 className="h-3 w-3" />
-        Closed
-      </Badge>
-    )
-  }
-  return <Badge variant="outline">{status}</Badge>
 }
 
 function StatCardSkeleton() {

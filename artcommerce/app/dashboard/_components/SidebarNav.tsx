@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname } from "next/navigation"
 import {
   LayoutDashboard,
@@ -23,6 +24,7 @@ import {
 import { LucideIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import { getImageUrl } from "@/lib/cloudinaryImages"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import ConfirmDialog from "../../components/ConfirmDialog"
@@ -237,38 +239,64 @@ export function SidebarNav({
   return (
     <div className="flex h-full flex-col">
       {/* Brand + collapse toggle */}
-      <div className="flex h-14 shrink-0 items-center overflow-hidden border-b px-3">
-        <Link
-          href="/"
-          onClick={onNavigate}
-          className={cn(
-            "min-w-0 flex-1 truncate whitespace-nowrap text-base font-semibold tracking-tight text-foreground",
-            LABEL_FADE,
-            collapsed ? LABEL_HIDDEN : LABEL_VISIBLE
-          )}
-        >
-          Kalakraft
-        </Link>
-        {onToggleCollapsed && (
+      <div className="flex h-14 shrink-0 items-center gap-1 overflow-hidden border-b px-3">
+        {collapsed && onToggleCollapsed ? (
+          // Collapsed: the logo itself becomes the expand control.
           <button
             type="button"
             onClick={onToggleCollapsed}
-            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-            title={collapsed ? "Expand sidebar (⌘B)" : "Collapse sidebar (⌘B)"}
-            className="relative inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors duration-150 hover:bg-secondary hover:text-foreground"
+            aria-label="Expand sidebar"
+            title="Expand sidebar (⌘B)"
+            className="group relative mx-auto flex h-10 w-10 shrink-0 items-center justify-center rounded-md transition-colors duration-150 hover:bg-secondary"
           >
-            <PanelLeftClose
-              className={cn(
-                "absolute h-4 w-4 transition-[opacity,transform] duration-[220ms] ease-[cubic-bezier(0.32,0.72,0,1)]",
-                collapsed ? "opacity-0 -rotate-90 scale-75" : "opacity-100 rotate-0 scale-100"
-              )}
+            <Image
+              src={getImageUrl("logo.png")}
+              alt="Kalakraft"
+              width={24}
+              height={24}
+              priority
+              className="h-6 w-6 object-contain transition-[opacity,transform] duration-200 group-hover:scale-90 group-hover:opacity-0 dark:brightness-0 dark:invert"
             />
-            <PanelLeftOpen
+            <PanelLeftOpen className="absolute h-4 w-4 text-muted-foreground opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
+          </button>
+        ) : (
+          <Link
+            href="/"
+            onClick={onNavigate}
+            aria-label="Kalakraft home"
+            className="group flex h-10 min-w-0 flex-1 items-center rounded-md pr-2 transition-colors duration-150 hover:bg-secondary/60"
+          >
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center">
+              <Image
+                src={getImageUrl("logo.png")}
+                alt="Kalakraft"
+                width={24}
+                height={24}
+                priority
+                className="h-6 w-6 object-contain transition-transform duration-200 group-hover:scale-110 dark:brightness-0 dark:invert"
+              />
+            </span>
+            <span
               className={cn(
-                "absolute h-4 w-4 transition-[opacity,transform] duration-[220ms] ease-[cubic-bezier(0.32,0.72,0,1)]",
-                collapsed ? "opacity-100 rotate-0 scale-100" : "opacity-0 rotate-90 scale-75"
+                "min-w-0 flex-1 truncate whitespace-nowrap text-[15px] font-semibold tracking-tight text-foreground",
+                LABEL_FADE,
+                collapsed ? LABEL_HIDDEN : LABEL_VISIBLE
               )}
-            />
+            >
+              Kalakraft
+            </span>
+          </Link>
+        )}
+
+        {!collapsed && onToggleCollapsed && (
+          <button
+            type="button"
+            onClick={onToggleCollapsed}
+            aria-label="Collapse sidebar"
+            title="Collapse sidebar (⌘B)"
+            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors duration-150 hover:bg-secondary hover:text-foreground"
+          >
+            <PanelLeftClose className="h-4 w-4" />
           </button>
         )}
       </div>
