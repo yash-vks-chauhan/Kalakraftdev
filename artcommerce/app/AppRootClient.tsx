@@ -136,7 +136,11 @@ export default function AppRootClient({ children }: { children: React.ReactNode 
     pathname === '/contact' || pathname.startsWith('/contact/') ||
     pathname === '/privacy' || pathname.startsWith('/privacy/') ||
     pathname === '/faq' || pathname.startsWith('/faq/');
-  const ownsShell = isDashboardRoute || isCheckoutRoute || isAuthRoute || isMarketingRoute;
+  // /products owns its own shell now: the listing page has a persistent
+  // filter sidebar + top bar, and the product detail page is a standalone
+  // editorial layout. Neither needs (or wants) the global morphing navbar.
+  const isProductsRoute = pathname === '/products' || pathname.startsWith('/products/') || pathname === '/shell-preview';
+  const ownsShell = isDashboardRoute || isCheckoutRoute || isAuthRoute || isMarketingRoute || isProductsRoute;
 
   // Always use standard layout pipeline; mobile-only routes are handled via showDesktopView and MobileLayout
 

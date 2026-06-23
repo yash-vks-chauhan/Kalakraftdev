@@ -5,12 +5,14 @@ import React, { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Image from 'next/image'
 import { useCart } from '../../contexts/CartContext'
+import { useAuth } from '../../contexts/AuthContext'
 import WishlistButton from '../../components/WishlistButton'
 import Link from 'next/link'
 import styles from './product_details.module.css'
 import MobileProductDetails from './MobileProductDetails'
 import ProductCardPro from '../ProductCardPro'
 import { useDeviceDetection } from '../../hooks/useDeviceDetection'
+import { getImageUrl } from '../../../lib/cloudinaryImages'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -27,6 +29,7 @@ import {
   ShieldCheck,
   Truck,
   Sparkles,
+  ShoppingCart,
 } from 'lucide-react'
 
 // SVG icons for navigation
@@ -82,7 +85,8 @@ export default function ProductDetailsPage() {
   const params = useParams()
   const id = params.id
 
-  const { addToCart } = useCart()
+  const { addToCart, cartItems } = useCart()
+  const { user } = useAuth()
 
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
@@ -371,17 +375,40 @@ export default function ProductDetailsPage() {
     'shadow-[0_6px_20px_-6px_rgba(0,0,0,0.18),inset_0_1px_1px_rgba(255,255,255,0.85)]'
 
   return (
-    <main className="mx-auto min-h-screen w-full max-w-[1240px] bg-white px-6 pb-24 pt-6 lg:px-10">
+    <main className="mx-auto min-h-screen w-full max-w-[1240px] bg-white px-6 pb-24 lg:px-10">
       <style>{`@keyframes pdpFade{from{opacity:0;transform:scale(0.995)}to{opacity:1;transform:scale(1)}}`}</style>
 
-      {/* Back link */}
-      <Link
-        href="/products"
-        className="group mb-7 inline-flex items-center gap-1.5 text-[13px] font-medium text-zinc-500 transition-colors hover:text-zinc-900"
-      >
-        <ArrowLeft className="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-0.5" />
-        Back to collection
-      </Link>
+      {/* Slim utility bar — stands in for the (removed) global navbar */}
+      <div className="sticky top-0 z-30 -mx-6 mb-8 flex h-14 items-center justify-between gap-4 border-b border-zinc-200/70 bg-white/75 px-6 backdrop-blur-xl lg:-mx-10 lg:px-10">
+        <Link
+          href="/products"
+          className="group inline-flex items-center gap-1.5 text-[13px] font-medium text-zinc-500 transition-colors hover:text-zinc-900"
+        >
+          <ArrowLeft className="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-0.5" />
+          Back to collection
+        </Link>
+
+        <Link href="/" className="flex items-center gap-2" aria-label="Kalakraft home">
+          <span className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-lg bg-zinc-900/[0.06]">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={getImageUrl('logo.png')} alt="" className="h-5 w-5 object-contain" />
+          </span>
+          <span className="text-[14px] font-semibold tracking-tight text-zinc-900">Kalakraft</span>
+        </Link>
+
+        <Link
+          href={user ? '/dashboard/cart' : '/auth/login'}
+          aria-label="Cart"
+          className="relative flex h-9 w-9 items-center justify-center rounded-full text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900"
+        >
+          <ShoppingCart className="h-[18px] w-[18px]" />
+          {user && cartItems.length > 0 && (
+            <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-zinc-900 px-1 text-[9.5px] font-semibold leading-none text-white">
+              {cartItems.length}
+            </span>
+          )}
+        </Link>
+      </div>
 
       {/* Added-to-cart confirmation */}
       {added && (
