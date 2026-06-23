@@ -1018,8 +1018,17 @@ export default function ProductsClient() {
                 )}
 
                 {showInitialLoading ? (
-                  <div className="flex min-h-[360px] items-center justify-center">
-                    <LoadingSpinner size="large" message="Loading products..." />
+                  <div className="grid grid-cols-2 gap-x-5 gap-y-10 lg:grid-cols-3 lg:gap-x-6 lg:gap-y-14 2xl:grid-cols-4">
+                    {Array.from({ length: 9 }).map((_, i) => (
+                      <div key={i} className="flex flex-col">
+                        <div className="aspect-[4/5] w-full animate-pulse rounded-[20px] bg-zinc-100" />
+                        <div className="mt-3.5 space-y-2.5">
+                          <div className="h-2.5 w-14 animate-pulse rounded bg-zinc-100" />
+                          <div className="h-3.5 w-3/4 animate-pulse rounded bg-zinc-100" />
+                          <div className="h-3.5 w-1/3 animate-pulse rounded bg-zinc-100" />
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 ) : products.length === 0 ? (
                   <div className="flex min-h-[360px] flex-col items-center justify-center gap-4 text-center">

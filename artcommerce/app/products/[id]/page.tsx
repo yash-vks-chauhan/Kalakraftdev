@@ -375,40 +375,44 @@ export default function ProductDetailsPage() {
     'shadow-[0_6px_20px_-6px_rgba(0,0,0,0.18),inset_0_1px_1px_rgba(255,255,255,0.85)]'
 
   return (
-    <main className="mx-auto min-h-screen w-full max-w-[1240px] bg-white px-6 pb-24 lg:px-10">
+    <>
       <style>{`@keyframes pdpFade{from{opacity:0;transform:scale(0.995)}to{opacity:1;transform:scale(1)}}`}</style>
 
-      {/* Slim utility bar — stands in for the (removed) global navbar */}
-      <div className="sticky top-0 z-30 -mx-6 mb-8 flex h-14 items-center justify-between gap-4 border-b border-zinc-200/70 bg-white/75 px-6 backdrop-blur-xl lg:-mx-10 lg:px-10">
-        <Link
-          href="/products"
-          className="group inline-flex items-center gap-1.5 text-[13px] font-medium text-zinc-500 transition-colors hover:text-zinc-900"
-        >
-          <ArrowLeft className="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-0.5" />
-          Back to collection
-        </Link>
+      {/* Full-width utility bar — stands in for the (removed) global navbar */}
+      <header className="sticky top-0 z-30 w-full border-b border-zinc-200/70 bg-white/75 backdrop-blur-xl">
+        <div className="mx-auto flex h-14 max-w-[1240px] items-center justify-between gap-4 px-6 lg:px-10">
+          <Link
+            href="/products"
+            className="group inline-flex items-center gap-1.5 text-[13px] font-medium text-zinc-500 transition-colors hover:text-zinc-900"
+          >
+            <ArrowLeft className="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-0.5" />
+            Back to collection
+          </Link>
 
-        <Link href="/" className="flex items-center gap-2" aria-label="Kalakraft home">
-          <span className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-lg bg-zinc-900/[0.06]">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={getImageUrl('logo.png')} alt="" className="h-5 w-5 object-contain" />
-          </span>
-          <span className="text-[14px] font-semibold tracking-tight text-zinc-900">Kalakraft</span>
-        </Link>
-
-        <Link
-          href={user ? '/dashboard/cart' : '/auth/login'}
-          aria-label="Cart"
-          className="relative flex h-9 w-9 items-center justify-center rounded-full text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900"
-        >
-          <ShoppingCart className="h-[18px] w-[18px]" />
-          {user && cartItems.length > 0 && (
-            <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-zinc-900 px-1 text-[9.5px] font-semibold leading-none text-white">
-              {cartItems.length}
+          <Link href="/" className="flex items-center gap-2" aria-label="Kalakraft home">
+            <span className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-lg bg-zinc-900/[0.06]">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={getImageUrl('logo.png')} alt="" className="h-5 w-5 object-contain" />
             </span>
-          )}
-        </Link>
-      </div>
+            <span className="text-[14px] font-semibold tracking-tight text-zinc-900">Kalakraft</span>
+          </Link>
+
+          <Link
+            href={user ? '/dashboard/cart' : '/auth/login'}
+            aria-label="Cart"
+            className="relative flex h-9 w-9 items-center justify-center rounded-full text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900"
+          >
+            <ShoppingCart className="h-[18px] w-[18px]" />
+            {user && cartItems.length > 0 && (
+              <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-zinc-900 px-1 text-[9.5px] font-semibold leading-none text-white">
+                {cartItems.length}
+              </span>
+            )}
+          </Link>
+        </div>
+      </header>
+
+      <main className="mx-auto min-h-screen w-full max-w-[1240px] bg-white px-6 pb-24 pt-8 lg:px-10">
 
       {/* Added-to-cart confirmation */}
       {added && (
@@ -894,6 +898,7 @@ export default function ProductDetailsPage() {
           </div>
         </section>
       )}
-    </main>
+      </main>
+    </>
   )
 }

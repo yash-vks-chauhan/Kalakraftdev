@@ -1,14 +1,14 @@
 import { Suspense } from 'react'
 import ProductsResponsiveClient from './ProductsResponsiveClient'
 import ErrorBoundary from '../components/ErrorBoundary'
-import MobileProductsSkeleton from './MobileProductsSkeleton'
+import ProductsSkeleton from './ProductsSkeleton'
 
 export default function Page() {
   return (
     <ErrorBoundary>
-      <Suspense fallback={<MobileProductsSkeleton />}>
+      <Suspense fallback={<ProductsSkeleton />}>
         <ProductsResponsiveClient />
       </Suspense>
     </ErrorBoundary>
   )
-} 
+}
