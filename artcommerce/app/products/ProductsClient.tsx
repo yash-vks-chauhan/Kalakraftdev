@@ -77,6 +77,54 @@ interface Product {
   ratingCount?: number
 }
 
+// Normalize raw product records (parse imageUrls/usageTags, prefix bare
+// filenames). Shared by the network fetch and the synchronous cache seed.
+function normalizeProducts(arr: any[]): Product[] {
+  return (Array.isArray(arr) ? arr : []).map((p: any) => {
+    let rawImgs: string[] = []
+    if (Array.isArray(p.imageUrls)) {
+      rawImgs = p.imageUrls
+    } else {
+      try {
+        const parsed = JSON.parse(p.imageUrls || '[]')
+        rawImgs = Array.isArray(parsed) ? parsed : []
+      } catch {
+        rawImgs = []
+      }
+    }
+    const imgs = rawImgs
+      .filter((img: string | null): img is string => typeof img === 'string' && img.length > 0)
+      .map((img: string) => (img.startsWith('http') || img.startsWith('/') ? img : `/uploads/${img}`))
+    const tagsArr = Array.isArray(p.usageTags)
+      ? p.usageTags
+      : (() => {
+          try {
+            const parsed = JSON.parse(p.usageTags || '[]')
+            return Array.isArray(parsed) ? parsed : []
+          } catch {
+            return []
+          }
+        })()
+    return { ...p, imageUrls: imgs, usageTags: tagsArr, avgRating: p.avgRating ?? 0, ratingCount: p.ratingCount ?? 0 }
+  })
+}
+
+// Synchronously seed from warm cache (memory or sessionStorage) so a return
+// visit paints products instantly instead of flashing the skeleton. Only used
+// when no filters are active (the cache holds the full, unfiltered catalogue).
+function getSeedProducts(searchParams: { get(name: string): string | null }): Product[] {
+  if (typeof window === 'undefined') return []
+  const filterKeys = ['category', 'usageTag', 'priceMin', 'priceMax', 'sort', 'lowStock', 'inStock', 'ratingMin']
+  if (filterKeys.some(k => searchParams.get(k))) return []
+  try {
+    const cached = DataCache.get('products')
+    if (cached && cached.length > 0) return normalizeProducts(cached)
+  } catch {
+    /* ignore */
+  }
+  return []
+}
+
 export default function ProductsClient() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -93,11 +141,20 @@ export default function ProductsClient() {
   const { wishlistItems } = useWishlist()
 
   // Remaining component state (reduced from 15+ to 6 variables)
-  const [allProducts, setAllProducts] = useState<Product[]>([])
-  const [products, setProducts] = useState<Product[]>([])
-  const [displayedProducts, setDisplayedProducts] = useState<Product[]>([])
+  // Seed synchronously from warm cache so return visits paint products
+  // immediately instead of getting stuck on the skeleton while the (sometimes
+  // slow) /api/products request is in flight. All three product states are
+  // seeded so the first frame is the real grid, not a flash of empty/skeleton.
+  const seedRef = useRef<Product[] | null>(null)
+  if (seedRef.current === null) seedRef.current = getSeedProducts(searchParams)
+  const seeded = seedRef.current
+  const [allProducts, setAllProducts] = useState<Product[]>(seeded)
+  const [products, setProducts] = useState<Product[]>(seeded)
+  const [displayedProducts, setDisplayedProducts] = useState<Product[]>(() => seeded.slice(0, 15))
   const [usageTags, setUsageTags] = useState<string[]>([])
-  const [loading, setLoading] = useState<boolean>(false)
+  // Start in the loading state on a cold load (no seed) so the very first
+  // frame is the skeleton — never a "No products found" flash.
+  const [loading, setLoading] = useState<boolean>(() => seeded.length === 0)
   const [loadingMore, setLoadingMore] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false)
@@ -273,38 +330,9 @@ export default function ProductsClient() {
           allProducts = data.products || []
         }
         
-        // Normalize imageUrls and prefix any bare filename with '/uploads/'
-        let filteredProducts = (Array.isArray(allProducts) ? allProducts : []).map((p: any) => {
-          let rawImgs: string[] = []
-          if (Array.isArray(p.imageUrls)) {
-            rawImgs = p.imageUrls
-          } else {
-            try {
-              const parsed = JSON.parse(p.imageUrls || '[]')
-              rawImgs = Array.isArray(parsed) ? parsed : []
-            } catch {
-              rawImgs = []
-            }
-          }
-          const imgs = rawImgs
-            .filter((img: string | null): img is string => typeof img === 'string' && img.length > 0)
-            .map((img: string) => {
-              // If already a URL or absolute path, leave it, otherwise prefix uploads
-              return img.startsWith('http') || img.startsWith('/')
-                ? img
-                : `/uploads/${img}`
-            })
-          const tagsArr = Array.isArray(p.usageTags) ? p.usageTags : (() => {
-            try {
-              const parsed = JSON.parse(p.usageTags || '[]')
-              return Array.isArray(parsed) ? parsed : []
-            } catch {
-              return []
-            }
-          })()
-          return { ...p, imageUrls: imgs, usageTags: tagsArr, avgRating: p.avgRating ?? 0, ratingCount: p.ratingCount ?? 0 }
-        })
-        
+        // Normalize imageUrls / usageTags (shared with the synchronous seed)
+        let filteredProducts = normalizeProducts(allProducts)
+
         // Client-side category filtering as backup
         if (currentCategory && filteredProducts.length > 0) {
           filteredProducts = filteredProducts.filter((product: Product) => {
