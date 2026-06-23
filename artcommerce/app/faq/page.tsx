@@ -1,9 +1,10 @@
 // File: app/faq/page.tsx
 'use client'
 
-import { ReactNode, useEffect, useMemo, useState } from "react"
+import { ReactNode, useEffect, useId, useMemo, useState } from "react"
 import Link from "next/link"
 import type { Route } from "next"
+import { AnimatePresence, motion } from "framer-motion"
 import {
   ArrowRight,
   ChevronDown,
@@ -28,6 +29,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
+import { Skeleton } from "@/components/ui/skeleton"
 
 interface FAQItem {
   q: string
@@ -431,6 +433,14 @@ function getPlainText(node: ReactNode): string {
 export default function FAQPage() {
   const [query, setQuery] = useState("")
   const [activeId, setActiveId] = useState<string>(SECTIONS[0].id)
+  const [loading, setLoading] = useState(true)
+
+  // Brief shimmer load so the page settles in smoothly, matching the
+  // skeleton pattern used across the dashboard.
+  useEffect(() => {
+    const t = setTimeout(() => setLoading(false), 650)
+    return () => clearTimeout(t)
+  }, [])
 
   // Filter sections based on search query
   const filteredSections = useMemo(() => {
@@ -453,7 +463,7 @@ export default function FAQPage() {
 
   // Active section detection via IntersectionObserver
   useEffect(() => {
-    if (query) return // skip while filtering
+    if (query || loading) return // skip while filtering or before content mounts
     const observer = new IntersectionObserver(
       (entries) => {
         const visible = entries
@@ -472,7 +482,7 @@ export default function FAQPage() {
       if (el) observer.observe(el)
     })
     return () => observer.disconnect()
-  }, [query])
+  }, [query, loading])
 
   return (
     <MarketingShell>
@@ -529,7 +539,25 @@ export default function FAQPage() {
 
         {/* ───────────────────── Body ───────────────────── */}
         <section className="container mx-auto max-w-5xl px-4 py-12 sm:py-16">
-          <div className="grid gap-10 lg:grid-cols-[220px_1fr] lg:gap-12">
+          <AnimatePresence mode="wait" initial={false}>
+            {loading ? (
+              <motion.div
+                key="faq-skeleton"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.25, ease: "easeInOut" }}
+              >
+                <FAQBodySkeleton />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="faq-content"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
+                className="grid gap-10 lg:grid-cols-[220px_1fr] lg:gap-12"
+              >
             {/* Sticky TOC */}
             <aside className="lg:sticky lg:top-24 lg:self-start">
               <Card className="shadow-sm">
@@ -620,9 +648,9 @@ export default function FAQPage() {
                     </div>
 
                     <div className="flex flex-col gap-2 pl-12">
-                      {s.items.map((item, idx) => (
+                      {s.items.map((item) => (
                         <FAQEntry
-                          key={`${s.id}-${idx}`}
+                          key={item.q}
                           question={item.q}
                           answer={item.a}
                           highlight={query}
@@ -637,7 +665,9 @@ export default function FAQPage() {
                 ))
               )}
             </article>
-          </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </section>
 
         {/* ───────────────────── End CTA ───────────────────── */}
@@ -745,28 +775,105 @@ function FAQEntry({
   answer: ReactNode
   highlight: string
 }) {
+  const [open, setOpen] = useState(false)
+  const panelId = useId()
+
   return (
-    <details className="group rounded-lg border bg-card transition-colors open:border-foreground/30 open:bg-card hover:border-foreground/20">
-      <summary
-        className={cn(
-          "flex cursor-pointer items-center justify-between gap-3 px-4 py-3.5 text-sm font-medium text-foreground",
-          "list-none [&::-webkit-details-marker]:hidden"
-        )}
+    <div
+      className={cn(
+        "group overflow-hidden rounded-lg border bg-card transition-colors duration-200",
+        open ? "border-foreground/30 shadow-sm" : "hover:border-foreground/20"
+      )}
+    >
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        aria-controls={panelId}
+        className="flex w-full cursor-pointer items-center justify-between gap-3 px-4 py-3.5 text-left text-sm font-medium text-foreground"
       >
         <span className="flex-1">
           <HighlightedText text={question} highlight={highlight} />
         </span>
         <ChevronDown
           className={cn(
-            "h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200",
-            "group-open:rotate-180 group-open:text-foreground"
+            "h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-300 ease-out",
+            open && "rotate-180 text-foreground"
           )}
         />
-      </summary>
-      <div className="border-t px-4 pb-4 pt-3 text-sm leading-relaxed text-muted-foreground">
-        {answer}
+      </button>
+
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            key="content"
+            id={panelId}
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{
+              height: { duration: 0.3, ease: [0.04, 0.62, 0.23, 0.98] },
+              opacity: { duration: 0.22, ease: "easeInOut" },
+            }}
+            className="overflow-hidden"
+          >
+            <div className="border-t px-4 pb-4 pt-3 text-sm leading-relaxed text-muted-foreground">
+              {answer}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
+/* -------------------------------------------------------------- */
+/* FAQBodySkeleton — shimmer placeholder shown during initial load */
+/* -------------------------------------------------------------- */
+
+function FAQBodySkeleton() {
+  return (
+    <div className="grid gap-10 lg:grid-cols-[220px_1fr] lg:gap-12">
+      {/* TOC skeleton */}
+      <aside className="hidden lg:sticky lg:top-24 lg:block lg:self-start">
+        <Card className="shadow-sm">
+          <CardContent className="flex flex-col gap-1.5 p-3">
+            <Skeleton className="mb-1 ml-1.5 h-3 w-16" />
+            {Array.from({ length: 6 }).map((_, i) => (
+              <Skeleton key={i} className="h-7 w-full rounded-md" />
+            ))}
+          </CardContent>
+        </Card>
+        <Card className="mt-4 shadow-sm">
+          <CardContent className="flex flex-col gap-2.5 p-4">
+            <Skeleton className="h-3 w-20" />
+            <Skeleton className="h-3 w-full" />
+            <Skeleton className="h-8 w-full rounded-md" />
+          </CardContent>
+        </Card>
+      </aside>
+
+      {/* Sections skeleton */}
+      <div className="flex min-w-0 flex-col gap-10">
+        {Array.from({ length: 2 }).map((_, s) => (
+          <div key={s} className="flex flex-col gap-4">
+            <div className="flex items-start gap-3">
+              <Skeleton className="h-9 w-9 shrink-0 rounded-lg" />
+              <div className="flex flex-col gap-2 pt-0.5">
+                <Skeleton className="h-3 w-28" />
+                <Skeleton className="h-6 w-44" />
+                <Skeleton className="h-3 w-64 max-w-[70vw]" />
+              </div>
+            </div>
+            <div className="flex flex-col gap-2 pl-12">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <Skeleton key={i} className="h-[3.25rem] w-full rounded-lg" />
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
-    </details>
+    </div>
   )
 }
 

@@ -95,42 +95,52 @@ export default function MarketingShell({
   return (
     <div className="flex min-h-svh flex-col bg-background">
       {/* ─────────────────────── Top nav ─────────────────────── */}
-      <header className="sticky top-0 z-30 border-b border-border/60 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/65">
+      <header className="sticky top-0 z-30 border-b border-border/60 bg-background/70 backdrop-blur-xl supports-[backdrop-filter]:bg-background/55">
         <div className="container mx-auto max-w-6xl px-4">
-          <div className="flex h-14 items-center justify-between gap-4">
+          <div className="flex h-16 items-center justify-between gap-4">
             {/* Brand */}
-            <Link href="/" className="flex items-center gap-2.5">
+            <Link
+              href="/"
+              className="group flex items-center gap-2.5 rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            >
               <BrandMark
                 logoSrc={logoSrc}
                 failed={logoFailed}
                 onError={() => setLogoFailed(true)}
               />
-              <span className="text-base font-semibold tracking-tight">
-                Kalakraft
+              <span className="flex flex-col leading-none">
+                <span className="text-[15px] font-semibold tracking-tight">
+                  Kalakraft
+                </span>
+                <span className="mt-1 text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
+                  Handcrafted
+                </span>
               </span>
             </Link>
 
-            {/* Center nav (md+) */}
-            <nav className="hidden items-center gap-1 md:flex">
-              {NAV_LINKS.map((l) => {
-                const isActive =
-                  pathname === l.href || pathname.startsWith(l.href + "/")
-                return (
-                  <Link
-                    key={l.href}
-                    href={l.href}
-                    aria-current={isActive ? "page" : undefined}
-                    className={cn(
-                      "rounded-full px-3.5 py-1.5 text-sm transition-colors",
-                      isActive
-                        ? "bg-foreground text-background"
-                        : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
-                    )}
-                  >
-                    {l.label}
-                  </Link>
-                )
-              })}
+            {/* Center nav — segmented control (md+) */}
+            <nav className="hidden md:block" aria-label="Primary">
+              <div className="flex items-center gap-1 rounded-full border border-border/70 bg-muted/40 p-1 shadow-sm">
+                {NAV_LINKS.map((l) => {
+                  const isActive =
+                    pathname === l.href || pathname.startsWith(l.href + "/")
+                  return (
+                    <Link
+                      key={l.href}
+                      href={l.href}
+                      aria-current={isActive ? "page" : undefined}
+                      className={cn(
+                        "rounded-full px-4 py-1.5 text-sm transition-all duration-200",
+                        isActive
+                          ? "bg-background text-foreground shadow-sm ring-1 ring-border/60"
+                          : "text-muted-foreground hover:bg-background/50 hover:text-foreground"
+                      )}
+                    >
+                      {l.label}
+                    </Link>
+                  )
+                })}
+              </div>
             </nav>
 
             {/* Right actions */}
@@ -139,11 +149,15 @@ export default function MarketingShell({
                 asChild
                 variant="ghost"
                 size="sm"
-                className="hidden text-xs sm:inline-flex"
+                className="hidden text-sm text-muted-foreground hover:text-foreground sm:inline-flex"
               >
                 <Link href="/auth/login">Sign in</Link>
               </Button>
-              <Button asChild size="sm" className="gap-1.5">
+              <Button
+                asChild
+                size="sm"
+                className="gap-1.5 rounded-full shadow-sm"
+              >
                 <Link href="/products">
                   <ShoppingBag className="h-3.5 w-3.5" />
                   Shop
@@ -153,34 +167,35 @@ export default function MarketingShell({
           </div>
         </div>
 
-        {/* Mobile inline nav */}
-        <nav className="border-t border-border/60 md:hidden">
-          <div className="container mx-auto max-w-6xl px-4">
-            <div className="flex gap-1 overflow-x-auto py-2 scrollbar-none">
-              {NAV_LINKS.map((l) => {
-                const isActive =
-                  pathname === l.href || pathname.startsWith(l.href + "/")
-                return (
-                  <Link
-                    key={l.href}
-                    href={l.href}
-                    aria-current={isActive ? "page" : undefined}
-                    className={cn(
-                      "whitespace-nowrap rounded-full px-3 py-1.5 text-xs transition-colors",
-                      isActive
-                        ? "bg-foreground text-background"
-                        : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
-                    )}
-                  >
-                    {l.label}
-                  </Link>
-                )
-              })}
-            </div>
+        {/* Mobile inline nav — segmented, horizontally scrollable */}
+        <nav
+          className="border-t border-border/60 px-4 pb-2.5 pt-2 md:hidden"
+          aria-label="Primary mobile"
+        >
+          <div className="flex items-center gap-1 overflow-x-auto rounded-full border border-border/70 bg-muted/40 p-1 scrollbar-none">
+            {NAV_LINKS.map((l) => {
+              const isActive =
+                pathname === l.href || pathname.startsWith(l.href + "/")
+              return (
+                <Link
+                  key={l.href}
+                  href={l.href}
+                  aria-current={isActive ? "page" : undefined}
+                  className={cn(
+                    "whitespace-nowrap rounded-full px-3.5 py-1.5 text-xs transition-all",
+                    isActive
+                      ? "bg-background text-foreground shadow-sm ring-1 ring-border/60"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  {l.label}
+                </Link>
+              )
+            })}
           </div>
         </nav>
 
-        {/* Scroll-progress hairline (optional, used on /privacy) */}
+        {/* Scroll-progress hairline (optional, used on /privacy & /terms) */}
         {showReadingProgress && (
           <div
             aria-hidden

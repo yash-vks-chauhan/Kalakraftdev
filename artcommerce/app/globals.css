@@ -57,6 +57,18 @@ html, body {
   scroll-behavior: smooth;
 }
 
+/* Home splash gate — set synchronously by a head script before first paint.
+   Holds a clean white frame and hides the (dark) app underneath until React
+   mounts the animated splash and later removes this flag. Prevents the home
+   page from flashing in before the loading screen. */
+html[data-kksplash],
+html[data-kksplash] body {
+  background: #ffffff !important;
+}
+html[data-kksplash] [data-app-root] {
+  visibility: hidden;
+}
+
 /* Home page only: snap each full-screen section into view on scroll. */
 body:has(> div > main[data-page="home"]) {
   scroll-snap-type: y proximity;

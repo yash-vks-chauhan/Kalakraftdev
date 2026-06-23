@@ -18,6 +18,7 @@ import {
 
 import MarketingShell from "../components/MarketingShell"
 import { cn } from "@/lib/utils"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -184,17 +185,35 @@ export default function AboutPage() {
               before it leaves the studio.
             </p>
 
-            <Card className="mt-3 border-l-4 border-l-foreground bg-muted/30 shadow-none">
-              <CardContent className="flex gap-3 p-5">
-                <Quote className="h-5 w-5 shrink-0 text-foreground/60" />
-                <div className="flex flex-col gap-1.5">
-                  <p className="text-sm italic leading-relaxed text-foreground">
-                    &ldquo;Kalakraft is the first platform that treated my work
-                    like art instead of inventory.&rdquo;
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Meera S. · Resin artist, Jaipur · On Kalakraft since 2022
-                  </p>
+            <Card className="relative mt-3 overflow-hidden border-foreground/10 bg-gradient-to-br from-muted/60 via-background to-background shadow-sm">
+              <span
+                aria-hidden
+                className="pointer-events-none absolute -right-3 -top-8 select-none font-serif text-[140px] leading-none text-foreground/[0.05]"
+              >
+                &rdquo;
+              </span>
+              <CardContent className="relative flex flex-col gap-5 p-6 sm:p-7">
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-foreground/5 text-foreground">
+                  <Quote className="h-4 w-4" />
+                </span>
+                <blockquote className="text-lg font-light italic leading-relaxed tracking-tight text-foreground sm:text-xl">
+                  Kalakraft is the first platform that treated my work like art
+                  instead of inventory.
+                </blockquote>
+                <div className="flex items-center gap-3 border-t border-border/60 pt-4">
+                  <Avatar className="h-10 w-10 ring-1 ring-border">
+                    <AvatarFallback className="bg-foreground text-xs font-semibold text-background">
+                      MS
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-semibold text-foreground">
+                      Meera S.
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      Resin artist, Jaipur · On Kalakraft since 2022
+                    </span>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -243,31 +262,52 @@ export default function AboutPage() {
             From a shared studio to homes around the world.
           </h2>
         </div>
-        <ol className="relative grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {MILESTONES.map((m, i) => (
-            <li key={m.year} className="relative flex flex-col gap-2.5">
-              <div className="flex items-center gap-3">
-                <span className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground tabular-nums">
-                  {m.year}
-                </span>
-                <span className="h-px flex-1 bg-border" />
-              </div>
-              <span
-                className={cn(
-                  "flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-semibold tabular-nums",
-                  i === MILESTONES.length - 1
-                    ? "bg-foreground text-background"
-                    : "bg-muted text-foreground"
-                )}
-              >
-                0{i + 1}
-              </span>
-              <h3 className="text-sm font-semibold">{m.title}</h3>
-              <p className="text-xs leading-relaxed text-muted-foreground">
-                {m.body}
-              </p>
-            </li>
-          ))}
+        <ol className="grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
+          {MILESTONES.map((m, i) => {
+            const isLast = i === MILESTONES.length - 1
+            return (
+              <li key={m.year} className="group flex flex-col gap-4">
+                {/* Node + connector line */}
+                <div className="flex items-center gap-3">
+                  <span
+                    className={cn(
+                      "relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border text-sm font-semibold tabular-nums transition-transform duration-300 group-hover:scale-105",
+                      isLast
+                        ? "border-transparent bg-foreground text-background shadow-lg shadow-foreground/25"
+                        : "border-border bg-background text-foreground group-hover:border-foreground/40"
+                    )}
+                  >
+                    0{i + 1}
+                  </span>
+                  {!isLast && (
+                    <span
+                      aria-hidden
+                      className="hidden h-px flex-1 bg-gradient-to-r from-border to-border/30 lg:block"
+                    />
+                  )}
+                </div>
+
+                {/* Card */}
+                <div className="flex flex-col rounded-xl border bg-card p-4 shadow-sm transition-all duration-300 group-hover:-translate-y-1 group-hover:border-foreground/20 group-hover:shadow-md">
+                  <div className="mb-1.5 flex items-center justify-between gap-2">
+                    <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground tabular-nums">
+                      {m.year}
+                    </span>
+                    {isLast && (
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-foreground/5 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-foreground">
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 motion-safe:animate-pulse" />
+                        Now
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="text-sm font-semibold">{m.title}</h3>
+                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                    {m.body}
+                  </p>
+                </div>
+              </li>
+            )
+          })}
         </ol>
       </section>
 

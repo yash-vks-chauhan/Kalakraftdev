@@ -1096,8 +1096,12 @@
   left: 0;
   width: var(--sidebar-width);
   height: calc(100vh - var(--sidebar-top));
-  background: #ffffff;
-  border-right: 1px solid var(--color-border);
+  /* Frosted-glass panel to match the new toolbar + card surfaces */
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-right: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 24px 0 48px -32px rgba(0, 0, 0, 0.18);
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;

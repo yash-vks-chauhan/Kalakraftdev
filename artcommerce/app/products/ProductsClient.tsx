@@ -4,11 +4,22 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import ProductCard from '../components/ProductCard'
+import ProductCardPro from './ProductCardPro'
 import VirtualProductGrid from '../components/VirtualProductGrid'
 import LoadingSpinner from '../components/LoadingSpinner'
 import styles from './products.module.css'
 import animationStyles from './products-animations.module.css'
-import { FiChevronLeft, FiChevronRight, FiFilter, FiGrid, FiStar, FiPackage, FiTrendingUp, FiX, FiChevronDown } from 'react-icons/fi'
+import { FiChevronLeft, FiChevronRight, FiGrid, FiStar, FiPackage, FiTrendingUp, FiX, FiChevronDown } from 'react-icons/fi'
+import { SlidersHorizontal, PackageSearch } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { DataCache } from '../../lib/dataCache'
 import { useDeviceDetection } from '../hooks/useDeviceDetection'
 import { useProductFilters } from '../hooks/useProductFilters'
@@ -31,6 +42,15 @@ const KNOWN_CATEGORIES = [
 
 const PAGE_SORT_OPTIONS = [
   { value: '', label: 'Newest' },
+  { value: 'oldest', label: 'Oldest' },
+  { value: 'price_asc', label: 'Price: Low to High' },
+  { value: 'price_desc', label: 'Price: High to Low' },
+]
+
+// Radix Select can't use an empty-string value, so 'newest' stands in for
+// the default sort and is mapped back to '' when written to the filter.
+const SORT_SELECT_OPTIONS = [
+  { value: 'newest', label: 'Newest' },
   { value: 'oldest', label: 'Oldest' },
   { value: 'price_asc', label: 'Price: Low to High' },
   { value: 'price_desc', label: 'Price: High to Low' },
@@ -88,10 +108,6 @@ export default function ProductsClient() {
   // Infinite scroll state (desktop only)
   const [displayCount, setDisplayCount] = useState(15)
   const loadMoreTriggerRef = useRef<HTMLDivElement>(null)
-
-  // In-page sort dropdown state (only used at top of page on desktop)
-  const [pageSortOpen, setPageSortOpen] = useState(false)
-  const pageSortRef = useRef<HTMLDivElement>(null)
 
   // Pagination state (mobile only)
   const [currentPage, setCurrentPage] = useState(1)
@@ -208,18 +224,6 @@ export default function ProductsClient() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [isMobileView])
 
-  // Close in-page Sort dropdown on outside click
-  useEffect(() => {
-    if (!pageSortOpen) return
-    const onDown = (e: MouseEvent) => {
-      if (pageSortRef.current && !pageSortRef.current.contains(e.target as Node)) {
-        setPageSortOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', onDown)
-    return () => document.removeEventListener('mousedown', onDown)
-  }, [pageSortOpen])
-
   // Active filter count (drives the badge on the Filters button)
   const pageFilterCount =
     (currentCategory ? 1 : 0) +
@@ -227,9 +231,6 @@ export default function ProductsClient() {
     (ratingMin ? 1 : 0) +
     (inStockOnly ? 1 : 0) +
     (lowStockOnly ? 1 : 0)
-
-  const currentPageSortLabel =
-    PAGE_SORT_OPTIONS.find(o => o.value === sortOrder)?.label || 'Newest'
 
   // Fetch list of available usage tags once
   useEffect(() => {
@@ -748,113 +749,162 @@ export default function ProductsClient() {
               }}
               transition={{ duration: 0.46, ease: SMOOTH_EASE }}
             >
-              <h1 className={styles.title}>Discover Our Collection</h1>
+              <div className="px-6 lg:px-12 xl:px-16">
+                {/* Header */}
+                <header className="pt-12 pb-7 text-center lg:pt-16">
+                  <span className="mb-3 inline-block text-[11px] font-semibold uppercase tracking-[0.22em] text-zinc-400">
+                    The Collection
+                  </span>
+                  <h1 className="text-[34px] font-semibold leading-[1.1] tracking-tight text-zinc-900 lg:text-[46px]">
+                    Discover Our Collection
+                  </h1>
+                  <p className="mx-auto mt-4 max-w-md text-[15px] leading-relaxed text-zinc-500">
+                    Handcrafted pieces, curated with care — each one made to be lived with.
+                  </p>
+                </header>
 
-              {/* In-page Filter + Sort toolbar (top of page only; hands off
-                  to the morph navbar once isPageScrolled flips). */}
-              <div
-                className={`${styles.pageToolbar} ${isPageScrolled ? styles.pageToolbarHidden : ''}`}
-                aria-hidden={isPageScrolled}
-              >
-                <button
-                  type="button"
-                  className={styles.pageToolBtn}
-                  onClick={() => setIsDesktopFilterOpen(prev => !prev)}
-                  aria-expanded={isDesktopFilterOpen}
-                  aria-label="Toggle filters"
-                  tabIndex={isPageScrolled ? -1 : 0}
-                >
-                  <FiFilter size={14} />
-                  <span>Filters</span>
-                  {pageFilterCount > 0 && (
-                    <span className={styles.pageToolBadge}>{pageFilterCount}</span>
+                {/* Sticky frosted toolbar — Filters + result count + Sort.
+                    Fades out and hands controls to the morph navbar on scroll. */}
+                <div
+                  className={cn(
+                    'sticky top-[84px] z-30 mb-9 flex items-center justify-between gap-4 rounded-2xl px-3 py-2.5 sm:px-4',
+                    'border border-white/70 bg-white/60 backdrop-blur-xl',
+                    'shadow-[0_10px_34px_-14px_rgba(0,0,0,0.20),inset_0_1px_1px_rgba(255,255,255,0.85)]',
+                    'transition-all duration-[380ms] ease-[cubic-bezier(0.32,0.72,0,1)]',
+                    isPageScrolled
+                      ? 'pointer-events-none -translate-y-2 opacity-0'
+                      : 'translate-y-0 opacity-100',
                   )}
-                </button>
-
-                <div className={styles.pageSortWrap} ref={pageSortRef}>
-                  <button
+                  aria-hidden={isPageScrolled}
+                >
+                  <Button
                     type="button"
-                    className={styles.pageToolBtn}
-                    onClick={() => setPageSortOpen(o => !o)}
-                    aria-expanded={pageSortOpen}
-                    aria-haspopup="listbox"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsDesktopFilterOpen(prev => !prev)}
+                    aria-expanded={isDesktopFilterOpen}
+                    aria-label="Toggle filters"
                     tabIndex={isPageScrolled ? -1 : 0}
+                    className="h-9 gap-2 rounded-full border-zinc-200/80 bg-white/70 px-4 text-[13px] font-medium text-zinc-800 hover:bg-white"
                   >
-                    <span className={styles.pageToolMuted}>Sort:</span>
-                    <span>{currentPageSortLabel}</span>
-                    <FiChevronDown
-                      size={14}
-                      className={`${styles.pageToolChevron} ${pageSortOpen ? styles.pageToolChevronOpen : ''}`}
-                    />
-                  </button>
-                  <div
-                    className={`${styles.pageSortMenu} ${pageSortOpen ? styles.pageSortMenuOpen : ''}`}
-                    role="listbox"
-                    aria-hidden={!pageSortOpen}
-                  >
-                    {PAGE_SORT_OPTIONS.map(opt => (
-                      <button
-                        key={opt.value || 'default'}
-                        type="button"
-                        role="option"
-                        aria-selected={sortOrder === opt.value}
-                        onClick={() => {
-                          updateFilter('sortOrder', opt.value)
-                          setPageSortOpen(false)
-                        }}
-                        className={`${styles.pageSortOption} ${sortOrder === opt.value ? styles.pageSortOptionActive : ''}`}
-                        tabIndex={pageSortOpen ? 0 : -1}
+                    <SlidersHorizontal className="h-3.5 w-3.5" />
+                    Filters
+                    {pageFilterCount > 0 && (
+                      <span className="ml-0.5 inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-zinc-900 px-1.5 text-[10.5px] font-semibold leading-none text-white">
+                        {pageFilterCount}
+                      </span>
+                    )}
+                  </Button>
+
+                  <div className="flex items-center gap-3">
+                    <span className="hidden text-[13px] font-medium text-zinc-400 sm:inline">
+                      {displayedProducts.length} of {allProducts.length}
+                    </span>
+                    <Select
+                      value={sortOrder && sortOrder !== '' ? sortOrder : 'newest'}
+                      onValueChange={(v) =>
+                        updateFilter('sortOrder', v === 'newest' ? '' : v)
+                      }
+                    >
+                      <SelectTrigger
+                        size="sm"
+                        tabIndex={isPageScrolled ? -1 : 0}
+                        className="h-9 gap-2 rounded-full border-zinc-200/80 bg-white/70 px-4 text-[13px] font-medium text-zinc-800 hover:bg-white"
                       >
-                        {opt.label}
-                      </button>
-                    ))}
+                        <span className="text-zinc-400">Sort</span>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent
+                        align="end"
+                        className="rounded-xl border-zinc-200/80 bg-white/95 backdrop-blur-xl"
+                      >
+                        {SORT_SELECT_OPTIONS.map(opt => (
+                          <SelectItem
+                            key={opt.value}
+                            value={opt.value}
+                            className="rounded-lg text-[13px]"
+                          >
+                            {opt.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
+
+                {showInitialLoading ? (
+                  <div className="flex min-h-[360px] items-center justify-center">
+                    <LoadingSpinner size="large" message="Loading products..." />
+                  </div>
+                ) : products.length === 0 ? (
+                  <div className="flex min-h-[360px] flex-col items-center justify-center gap-4 text-center">
+                    <div className="flex h-16 w-16 items-center justify-center rounded-full border border-zinc-200 bg-zinc-50">
+                      <PackageSearch className="h-7 w-7 text-zinc-400" />
+                    </div>
+                    <div>
+                      <p className="text-[17px] font-semibold text-zinc-900">No products found</p>
+                      <p className="mt-1 text-[14px] text-zinc-500">
+                        Try adjusting or clearing your filters.
+                      </p>
+                    </div>
+                  </div>
+                ) : products.length > 50 ? (
+                  <VirtualProductGrid
+                    products={displayedProducts}
+                    className={styles.productGrid}
+                  />
+                ) : (
+                  <>
+                    <div
+                      ref={productGridRef}
+                      className="grid grid-cols-2 gap-x-5 gap-y-10 lg:grid-cols-3 lg:gap-x-6 lg:gap-y-14"
+                    >
+                      {displayedProducts.map((prod, index) => (
+                        <ProductCardPro
+                          key={prod.id}
+                          product={prod}
+                          index={index}
+                        />
+                      ))}
+                    </div>
+
+                    {/* Infinite Scroll Trigger for Desktop */}
+                    {displayedProducts.length < allProducts.length && (
+                      <div
+                        ref={loadMoreTriggerRef}
+                        className="flex min-h-[140px] w-full items-center justify-center pt-10"
+                      >
+                        {loadingMore && (
+                          <LoadingSpinner size="medium" message="Loading more products..." />
+                        )}
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
 
-              {showInitialLoading ? (
-                <div className={styles.gridLoadingContainer}>
-                  <LoadingSpinner size="large" message="Loading products..." />
-                </div>
-              ) : products.length === 0 ? (
-                <p className={styles.emptyProducts}>No products found.</p>
-              ) : products.length > 50 ? (
-                <VirtualProductGrid
-                  products={displayedProducts}
-                  className={styles.productGrid}
-                />
-              ) : (
-                <>
-                  <div className={styles.productGrid} ref={productGridRef}>
-                    {displayedProducts.map((prod, index) => (
-                      <ProductCard
-                        key={prod.id}
-                        product={prod}
-                        index={index}
-                        className={animationStyles.productCard}
-                      />
-                    ))}
+              {/* Full-bleed "Coming Soon" footer when all products are loaded */}
+              {!showInitialLoading &&
+                products.length > 0 &&
+                products.length <= 50 &&
+                displayedProducts.length >= allProducts.length &&
+                allProducts.length > 15 && (
+                  <div className="relative mt-24 overflow-hidden bg-zinc-950 px-10 py-32 lg:py-44">
+                    <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.10),transparent_60%)]" />
+                    <p
+                      className="relative text-center text-[15vw] italic leading-none text-white lg:text-[108px]"
+                      style={{
+                        fontFamily: "'Playfair Display', Georgia, 'Times New Roman', serif",
+                        fontWeight: 300,
+                        letterSpacing: '0.12em',
+                        textTransform: 'lowercase',
+                        textShadow: '0 0 40px rgba(255,255,255,0.12)',
+                      }}
+                    >
+                      coming soon
+                    </p>
                   </div>
-
-                  {/* Infinite Scroll Trigger for Desktop */}
-                  {displayedProducts.length < allProducts.length && (
-                    <div ref={loadMoreTriggerRef} className={styles.loadMoreTrigger}>
-                      {loadingMore && (
-                        <div className={styles.loadingMoreContainer}>
-                          <LoadingSpinner size="medium" message="Loading more products..." />
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Show elegant footer when all products loaded */}
-                  {displayedProducts.length >= allProducts.length && allProducts.length > 15 && (
-                    <div className={styles.allLoadedMessage}>
-                      <p>Coming Soon</p>
-                    </div>
-                  )}
-                </>
-              )}
+                )}
             </motion.div>
           </div>
         ) : (

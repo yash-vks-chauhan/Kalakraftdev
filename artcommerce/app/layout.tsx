@@ -22,8 +22,30 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`${inter.variable}`}>
+    <html
+      lang="en"
+      className={`${inter.variable}`}
+      suppressHydrationWarning
+    >
       <head>
+        {/* Decide the home splash BEFORE first paint so the dark home page can
+            never flash in underneath it. Sets a flag on <html> that CSS uses
+            to hold a clean frame until React mounts the animated splash. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{
+              if(location.pathname!=='/')return;
+              var hs=sessionStorage.getItem('initialLoadingShown');
+              var ls=localStorage.getItem('lastLoadingScreenShown');
+              var now=Date.now();
+              var should=!hs&&(!ls||(now-parseInt(ls,10))>86400000);
+              if(should){
+                document.documentElement.setAttribute('data-kksplash','');
+                localStorage.setItem('lastLoadingScreenShown',String(now));
+              }
+            }catch(e){}})();`,
+          }}
+        />
         <link rel="preload" href="/images/featured1.png" as="image" />
         <link rel="preload" href="/images/featured2.png" as="image" />
         <link rel="preload" href="/images/featured3.JPG" as="image" />

@@ -3,8 +3,9 @@
 import { useAuth } from '../contexts/AuthContext'
 import { useCart } from '../contexts/CartContext'
 import { useWishlist } from '../contexts/WishlistContext'
-import { usePathname } from 'next/navigation'
-import { useEffect, useState, useRef } from 'react'
+import { useCallback, useEffect, useState, useRef } from 'react'
+import { createPortal } from 'react-dom'
+import { AnimatePresence, motion } from 'framer-motion'
 import InitialLoadingScreen from './InitialLoadingScreen'
 import { DataCache } from '../../lib/dataCache'
 
@@ -16,13 +17,33 @@ export default function AppContentWrapper({ children }: AppContentWrapperProps) 
   const { loading: authLoading, user, token } = useAuth()
   const { cartLoading } = useCart()
   const { loading: wishlistLoading } = useWishlist()
-  const pathname = usePathname()
 
-  const [showInitialLoading, setShowInitialLoading] = useState(false)
+  // The head script in app/layout.tsx already decided (before first paint)
+  // whether the splash should show and flagged <html data-kksplash>. We read
+  // that flag so the splash is present on the very first client commit — no
+  // gap where the home page could flash through.
+  const [showInitialLoading, setShowInitialLoading] = useState<boolean>(() =>
+    typeof document !== 'undefined' &&
+    document.documentElement.hasAttribute('data-kksplash')
+  )
+  const [mounted, setMounted] = useState(false)
   const [allSystemsReady, setAllSystemsReady] = useState(false)
   const [dataPreloaded, setDataPreloaded] = useState(false)
   const [currentLoadingStep, setCurrentLoadingStep] = useState(0)
   const loadingStartRef = useRef(0)
+
+  useEffect(() => setMounted(true), [])
+
+  // Dismiss: drop the gate flag (reveals the app) and fade the splash out.
+  const dismiss = useCallback(() => {
+    if (typeof document !== 'undefined') {
+      document.documentElement.removeAttribute('data-kksplash')
+      try {
+        sessionStorage.setItem('initialLoadingShown', 'true')
+      } catch {}
+    }
+    setShowInitialLoading(false)
+  }, [])
 
   const preloadData = async () => {
     if (DataCache.isLoaded()) {
@@ -113,52 +134,59 @@ export default function AppContentWrapper({ children }: AppContentWrapperProps) 
     }
   }, [authLoading, cartLoading, wishlistLoading, token, dataPreloaded])
 
+  // If the splash is showing (decided pre-paint), kick off the real data
+  // preload and a hard fallback so it can never get stuck on screen.
   useEffect(() => {
-    const hasShown = sessionStorage.getItem('initialLoadingShown')
-    const lastShown = localStorage.getItem('lastLoadingScreenShown')
-    const now = Date.now()
-    
-    const shouldShow = pathname === '/' && !hasShown && 
-      (!lastShown || (now - parseInt(lastShown)) > 24 * 60 * 60 * 1000)
-    
-    if (shouldShow) {
-      setShowInitialLoading(true)
-      loadingStartRef.current = Date.now()
-      localStorage.setItem('lastLoadingScreenShown', now.toString())
-      
-      preloadData()
-      
-      const fallbackTimer = setTimeout(() => {
-        setShowInitialLoading(false)
-        sessionStorage.setItem('initialLoadingShown', 'true')
-        console.warn('Loading screen timeout reached - forcing hide')
-      }, 15000)
-      
-      return () => clearTimeout(fallbackTimer)
-    }
-  }, [pathname])
+    if (!showInitialLoading) return
+    loadingStartRef.current = Date.now()
+    preloadData()
+    const fallbackTimer = setTimeout(() => {
+      console.warn('Loading screen timeout reached - forcing hide')
+      dismiss()
+    }, 15000)
+    return () => clearTimeout(fallbackTimer)
+    // Intentionally run once on mount; showInitialLoading is fixed from init.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
+  // Hold the splash for a minimum beat, then dismiss once everything is ready.
   useEffect(() => {
-    if (showInitialLoading && allSystemsReady) {
-      const elapsed = Date.now() - loadingStartRef.current
-      const minimum = 1500
-      const remaining = minimum - elapsed
-      if (remaining <= 0) {
-        setShowInitialLoading(false)
-        sessionStorage.setItem('initialLoadingShown', 'true')
-      } else {
-        const timer = setTimeout(() => {
-          setShowInitialLoading(false)
-          sessionStorage.setItem('initialLoadingShown', 'true')
-        }, remaining)
-        return () => clearTimeout(timer)
-      }
+    if (!showInitialLoading || !allSystemsReady) return
+    const elapsed = Date.now() - loadingStartRef.current
+    const remaining = 1500 - elapsed
+    if (remaining <= 0) {
+      dismiss()
+      return
     }
-  }, [showInitialLoading, allSystemsReady])
+    const timer = setTimeout(dismiss, remaining)
+    return () => clearTimeout(timer)
+  }, [showInitialLoading, allSystemsReady, dismiss])
 
-  if (showInitialLoading) {
-    return <InitialLoadingScreen currentStep={currentLoadingStep} />
-  }
+  return (
+    <>
+      {/* Children always render so SSR and client markup match (no hydration
+          mismatch). While the splash is up they're held hidden via the
+          `html[data-kksplash] [data-app-root]` CSS gate, then revealed on
+          dismiss so the splash dissolves to a fully-ready page. */}
+      {children}
 
-  return <>{children}</>
+      {mounted &&
+        createPortal(
+          <AnimatePresence>
+            {showInitialLoading && (
+              <motion.div
+                key="kalakraft-splash"
+                initial={false}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.55, ease: 'easeInOut' }}
+                style={{ position: 'fixed', inset: 0, zIndex: 9999 }}
+              >
+                <InitialLoadingScreen currentStep={currentLoadingStep} />
+              </motion.div>
+            )}
+          </AnimatePresence>,
+          document.body
+        )}
+    </>
+  )
 }

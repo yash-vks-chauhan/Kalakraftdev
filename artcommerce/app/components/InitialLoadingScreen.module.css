@@ -1,247 +1,116 @@
-/* Art-themed minimal and professional loading screen */
-.loadingScreen {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, #f8f9fa 0%, #f1f3f4 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-  animation: fadeIn 0.4s ease-out;
-}
+/* ──────────────────────────────────────────────────────────────
+   Kalakraft splash — monochrome, brand-true.
+   Black-and-white seal on a clean (shadcn `background`) canvas, with
+   restrained motion: a gently floating seal, concentric "sonar" pulses,
+   a determinate progress meter, and a soft cursor tilt. Colours come from
+   the shadcn design tokens so it stays consistent with the rest of the UI.
+   ────────────────────────────────────────────────────────────── */
 
-.loadingContent {
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2rem;
-  max-width: 320px;
-  padding: 2rem;
-}
-
-/* Art-themed loader */
-.artLoader {
-  position: relative;
-  width: 80px;
-  height: 80px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Paint brush stroke animation */
-.brushStroke {
+/* Faint radial backdrop for subtle depth */
+.backdrop {
   position: absolute;
-  width: 60px;
-  height: 4px;
-  background: linear-gradient(90deg, #8B4513, #DAA520, #2F4F4F);
-  border-radius: 2px;
-  animation: brushPaint 2s ease-in-out infinite;
-  transform-origin: left center;
+  inset: 0;
+  background: radial-gradient(
+    60% 50% at 50% 38%,
+    hsl(var(--foreground) / 0.05),
+    transparent 70%
+  );
+  pointer-events: none;
 }
 
-.brushTip {
+/* Entrance for the whole stack */
+.enter {
+  animation: kkEnter 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Gentle vertical float on the seal */
+.float {
+  animation: kkFloat 5s ease-in-out infinite;
+}
+
+/* Cursor tilt — transform on the image itself (float lives on the parent
+   so the two transforms never collide). */
+.tilt {
+  --rx: 0deg;
+  --ry: 0deg;
+  transform: perspective(640px) rotateY(var(--rx)) rotateX(var(--ry));
+  transition: transform 0.25s ease-out;
+  will-change: transform;
+}
+
+/* Concentric pulses radiating from behind the seal */
+.sonar {
   position: absolute;
-  right: -8px;
-  top: -2px;
-  width: 12px;
-  height: 8px;
-  background: #8B4513;
-  border-radius: 50% 0 50% 50%;
-  animation: brushTipMove 2s ease-in-out infinite;
+  width: 7rem;
+  height: 7rem;
+  border-radius: 9999px;
+  border: 1px solid hsl(var(--foreground) / 0.16);
+  animation: kkSonar 2.8s ease-out infinite;
+  pointer-events: none;
 }
 
-/* Color palette dots */
-.colorPalette {
+.sonarDelay {
+  animation-delay: 1.4s;
+}
+
+/* Travelling sheen across the progress track */
+.shimmer {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  display: flex;
-  gap: 8px;
-  align-items: center;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    hsl(var(--foreground) / 0.12),
+    transparent
+  );
+  transform: translateX(-100%);
+  animation: kkShimmer 1.8s ease-in-out infinite;
+  pointer-events: none;
 }
 
-.colorDot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  animation: colorPulse 2s ease-in-out infinite;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+/* Step label fade (replays on step change via React key) */
+.stepFade {
+  animation: kkStepFade 0.5s ease-out both;
 }
 
-/* Logo styling */
-.logoContainer {
-  opacity: 0.95;
-  animation: logoGlow 3s ease-in-out infinite;
+/* ── Keyframes ───────────────────────────────────────────── */
+@keyframes kkEnter {
+  from { opacity: 0; transform: translateY(10px) scale(0.985); }
+  to { opacity: 1; transform: none; }
 }
 
-.logo {
-  filter: contrast(1.05) brightness(1.02);
-  transition: all 0.3s ease;
+@keyframes kkFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
 }
 
-/* Dynamic loading message */
-.loadingMessage {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  font-size: 15px;
-  font-weight: 400;
-  color: #4a5568;
-  letter-spacing: 0.03em;
-  margin: 0;
-  min-height: 20px;
-  animation: textFade 0.5s ease-in-out;
+@keyframes kkSonar {
+  0% { transform: scale(0.72); opacity: 0.5; }
+  80% { opacity: 0; }
+  100% { transform: scale(1.7); opacity: 0; }
 }
 
-/* Progress dots */
-.progressDots {
-  display: flex;
-  gap: 8px;
-  align-items: center;
+@keyframes kkShimmer {
+  0% { transform: translateX(-100%); }
+  60%, 100% { transform: translateX(100%); }
 }
 
-.progressDot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.2);
-  transition: all 0.3s ease;
+@keyframes kkStepFade {
+  from { opacity: 0; transform: translateY(3px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-.progressDot.active {
-  background: #8B4513;
-  transform: scale(1.3);
-  box-shadow: 0 0 12px rgba(139, 69, 19, 0.4);
-}
-
-/* Animations */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes brushPaint {
-  0%, 100% {
-    transform: translateX(-10px) rotate(-5deg);
-    opacity: 0.7;
-  }
-  50% {
-    transform: translateX(10px) rotate(5deg);
-    opacity: 1;
-  }
-}
-
-@keyframes brushTipMove {
-  0%, 100% {
-    transform: rotate(-5deg);
-  }
-  50% {
-    transform: rotate(5deg);
-  }
-}
-
-@keyframes colorPulse {
-  0%, 100% {
-    transform: scale(0.8);
-    opacity: 0.6;
-  }
-  50% {
-    transform: scale(1.1);
-    opacity: 1;
-  }
-}
-
-@keyframes logoGlow {
-  0%, 100% {
-    filter: contrast(1.05) brightness(1.02) drop-shadow(0 0 0 transparent);
-  }
-  50% {
-    filter: contrast(1.1) brightness(1.05) drop-shadow(0 0 20px rgba(139, 69, 19, 0.1));
-  }
-}
-
-@keyframes textFade {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Mobile optimizations */
-@media (max-width: 768px) {
-  .loadingContent {
-    gap: 1.75rem;
-    padding: 1.5rem;
-    max-width: 280px;
-  }
-  
-  .artLoader {
-    width: 70px;
-    height: 70px;
-  }
-  
-  .brushStroke {
-    width: 50px;
-    height: 3px;
-  }
-  
-  .brushTip {
-    width: 10px;
-    height: 6px;
-    right: -6px;
-    top: -1.5px;
-  }
-  
-  .colorDot {
-    width: 10px;
-    height: 10px;
-  }
-  
-  .logo {
-    width: 100px;
-    height: auto;
-  }
-  
-  .loadingMessage {
-    font-size: 14px;
-    padding: 0 1rem;
-  }
-  
-  .progressDot {
-    width: 5px;
-    height: 5px;
-  }
-}
-
-/* Reduced motion preference */
+/* ── Reduced motion ──────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
-  .brushStroke,
-  .brushTip,
-  .colorDot,
-  .logoContainer {
-    animation: none;
+  .enter,
+  .float,
+  .sonar,
+  .shimmer,
+  .stepFade {
+    animation: none !important;
   }
-  
-  .loadingScreen {
-    animation: none;
-  }
-  
-  .progressDot.active {
-    transform: none;
-    box-shadow: none;
+  .tilt {
+    transform: none !important;
+    transition: none;
   }
 }
