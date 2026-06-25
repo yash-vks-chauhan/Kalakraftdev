@@ -101,7 +101,7 @@ export async function POST(request: Request) {
 
   clearRateLimit(rateLimitKey)
 
-  const hash = await bcrypt.hash(newPassword, 10)
+  const hash = await bcrypt.hash(newPassword, 12)
   await prisma.user.update({
     where: { id: user.id },
     data: {

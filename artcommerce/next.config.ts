@@ -2,52 +2,11 @@ import type { NextConfig } from 'next'
 
 const isProduction = process.env.NODE_ENV === 'production'
 
-const contentSecurityPolicy = [
-  "default-src 'self'",
-  "base-uri 'self'",
-  "form-action 'self'",
-  "frame-ancestors 'none'",
-  "frame-src 'self' https://*.firebaseapp.com https://*.web.app https://accounts.google.com",
-  "manifest-src 'self'",
-  "object-src 'none'",
-  "media-src 'self' https: data: blob:",
-  "img-src 'self' https: data: blob:",
-  "font-src 'self' https: data:",
-  "worker-src 'self' blob:",
-  "style-src 'self' 'unsafe-inline' https:",
-  [
-    "script-src 'self' 'unsafe-inline'",
-    !isProduction ? "'unsafe-eval'" : '',
-    'https://www.gstatic.com',
-    'https://www.googletagmanager.com',
-    'https://js.pusher.com',
-    'https://apis.google.com',
-  ]
-    .filter(Boolean)
-    .join(' '),
-  [
-    "connect-src 'self'",
-    'https://identitytoolkit.googleapis.com',
-    'https://securetoken.googleapis.com',
-    'https://www.googleapis.com',
-    'https://oauth2.googleapis.com',
-    'https://*.firebaseapp.com',
-    'https://*.web.app',
-    'https://api.pusherapp.com',
-    'https://*.pusher.com',
-    'wss://*.pusher.com',
-    !isProduction ? 'http://localhost:*' : '',
-    !isProduction ? 'http://127.0.0.1:*' : '',
-    !isProduction ? 'ws://localhost:*' : '',
-    !isProduction ? 'ws://127.0.0.1:*' : '',
-  ]
-    .filter(Boolean)
-    .join(' '),
-  isProduction ? 'upgrade-insecure-requests' : '',
-].filter(Boolean).join('; ')
-
+// NOTE: Content-Security-Policy is intentionally NOT set here. It is generated
+// per-request in middleware.ts with a unique nonce + 'strict-dynamic' so that
+// inline-script XSS is blocked in modern browsers. Setting a static CSP here
+// would force 'unsafe-inline' and defeat that protection.
 const securityHeaders = [
-  { key: 'Content-Security-Policy', value: contentSecurityPolicy },
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
   { key: 'X-Frame-Options', value: 'DENY' },
   { key: 'X-Content-Type-Options', value: 'nosniff' },

@@ -49,19 +49,14 @@ export async function POST(request: Request): Promise<NextResponse> {
       access,
     })
   } catch (error) {
+    // Log full detail server-side only; never leak internal error messages/stacks to clients.
     console.error('Error uploading to Vercel Blob:', error)
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     return NextResponse.json(
       {
         message: 'Error uploading file.',
-        error: errorMessage,
-        details:
-          error instanceof Error
-            ? {
-                name: error.name,
-                stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
-              }
-            : undefined,
+        ...(process.env.NODE_ENV === 'development' && error instanceof Error
+          ? { error: error.message }
+          : {}),
       },
       { status: 500 },
     )

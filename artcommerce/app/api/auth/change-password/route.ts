@@ -51,7 +51,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Incorrect current password' }, { status: 403 })
     }
 
-    const newHash = await bcrypt.hash(newPassword, 10)
+    const newHash = await bcrypt.hash(newPassword, 12)
     await prisma.$transaction([
       prisma.user.update({
         where: { id: authUser.id },

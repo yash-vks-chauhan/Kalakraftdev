@@ -1,5 +1,6 @@
 import './globals.css'
 import { Inter } from 'next/font/google'
+import { headers } from 'next/headers'
 import AppRootClient from './AppRootClient'
 import { MobileMenuProvider } from './contexts/MobileMenuContext'
 import { Toaster } from '@/components/ui/sonner'
@@ -16,11 +17,13 @@ export const metadata = {
   description: 'Your one-stop shop for handcrafted art pieces',
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  // Per-request CSP nonce set by middleware; applied to our inline <script> tags.
+  const nonce = (await headers()).get('x-nonce') ?? undefined
   return (
     <html
       lang="en"
@@ -32,6 +35,7 @@ export default function RootLayout({
             never flash in underneath it. Sets a flag on <html> that CSS uses
             to hold a clean frame until React mounts the animated splash. */}
         <script
+          nonce={nonce}
           dangerouslySetInnerHTML={{
             __html: `(function(){try{
               if(location.pathname!=='/')return;
@@ -78,6 +82,7 @@ export default function RootLayout({
         />
         {/* Inline global error hook to surface client errors even if hydration fails */}
         <script
+          nonce={nonce}
           dangerouslySetInnerHTML={{
             __html: `(() => {
               function show(msg, stack){

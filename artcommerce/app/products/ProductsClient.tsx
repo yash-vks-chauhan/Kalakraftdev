@@ -159,6 +159,21 @@ function getSeedProducts(searchParams: { get(name: string): string | null }): Pr
   return []
 }
 
+// Single grid card placeholder — shared by the initial load and the
+// infinite-scroll "load more" state so both read as the same skeleton.
+function GridCardSkeleton() {
+  return (
+    <div className="flex flex-col">
+      <div className="aspect-[4/5] w-full animate-pulse rounded-[20px] bg-zinc-100" />
+      <div className="mt-3.5 space-y-2.5">
+        <div className="h-2.5 w-14 animate-pulse rounded bg-zinc-100" />
+        <div className="h-3.5 w-3/4 animate-pulse rounded bg-zinc-100" />
+        <div className="h-3.5 w-1/3 animate-pulse rounded bg-zinc-100" />
+      </div>
+    </div>
+  )
+}
+
 export default function ProductsClient() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -1154,14 +1169,7 @@ export default function ProductsClient() {
                 {showInitialLoading ? (
                   <div className="grid grid-cols-2 gap-x-5 gap-y-10 lg:grid-cols-3 lg:gap-x-6 lg:gap-y-14 2xl:grid-cols-4">
                     {Array.from({ length: 9 }).map((_, i) => (
-                      <div key={i} className="flex flex-col">
-                        <div className="aspect-[4/5] w-full animate-pulse rounded-[20px] bg-zinc-100" />
-                        <div className="mt-3.5 space-y-2.5">
-                          <div className="h-2.5 w-14 animate-pulse rounded bg-zinc-100" />
-                          <div className="h-3.5 w-3/4 animate-pulse rounded bg-zinc-100" />
-                          <div className="h-3.5 w-1/3 animate-pulse rounded bg-zinc-100" />
-                        </div>
-                      </div>
+                      <GridCardSkeleton key={i} />
                     ))}
                   </div>
                 ) : products.length === 0 ? (
@@ -1203,10 +1211,16 @@ export default function ProductsClient() {
                     {displayedProducts.length < visibleProducts.length && (
                       <div
                         ref={loadMoreTriggerRef}
-                        className="flex min-h-[140px] w-full items-center justify-center pt-10"
+                        className="min-h-[140px] w-full pt-10"
                       >
                         {loadingMore && (
-                          <LoadingSpinner size="medium" message="Loading more products..." />
+                          <div className="grid grid-cols-2 gap-x-5 gap-y-10 lg:grid-cols-3 lg:gap-x-6 lg:gap-y-14 2xl:grid-cols-4">
+                            {Array.from({
+                              length: Math.min(3, visibleProducts.length - displayedProducts.length),
+                            }).map((_, i) => (
+                              <GridCardSkeleton key={i} />
+                            ))}
+                          </div>
                         )}
                       </div>
                     )}

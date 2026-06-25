@@ -105,6 +105,8 @@ export function signAccessToken(user: UserForToken): string {
 }
 
 export function verifyAccessToken(token: string): AccessTokenPayload | null {
+  // Always enforce algorithm, issuer, and audience. The list of secrets allows
+  // for zero-downtime JWT_SECRET rotation via JWT_SECRET_PREVIOUS.
   for (const secret of getJwtSecrets()) {
     try {
       const decoded = jwt.verify(token, secret, {
@@ -119,23 +121,7 @@ export function verifyAccessToken(token: string): AccessTokenPayload | null {
         tokenType: 'access',
       }
     } catch {
-      // Continue so we can support secret rotation or older deployed secrets.
-    }
-  }
-
-  for (const secret of getJwtSecrets()) {
-    try {
-      const decoded = jwt.verify(token, secret, {
-        algorithms: [JWT_ALGORITHM],
-      }) as AccessTokenPayload
-      if (!decoded?.userId) continue
-      return {
-        ...decoded,
-        userId: String(decoded.userId),
-        tokenType: 'access',
-      }
-    } catch {
-      // Backward-compatible fallback for legacy tokens already issued pre-hardening.
+      // Try the next secret to support rotation; otherwise reject the token.
     }
   }
 

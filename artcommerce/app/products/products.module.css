@@ -47,6 +47,11 @@
   min-height: 100vh;
   font-family: var(--font-family);
   padding: 0;
+  /* This <main> is a flex child of the page wrapper (display:flex). Without an
+     explicit width it shrinks to its content's intrinsic width, so a filtered
+     category with few/short items would leave a large empty gap on the right
+     and squeeze the grid. width:100% forces it to always fill the viewport. */
+  width: 100%;
   max-width: 100%;
   margin: 0 auto;
   background: var(--color-bg);

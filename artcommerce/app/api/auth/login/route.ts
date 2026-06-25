@@ -13,7 +13,9 @@ import {
 const LOGIN_WINDOW_MS = 15 * 60 * 1000
 const LOGIN_MAX_ATTEMPTS_PER_IP = 30
 const LOGIN_MAX_ATTEMPTS_PER_EMAIL = 10
-const DUMMY_PASSWORD_HASH = '$2b$10$7s4jH2VvFQ3cyLHPZ4Jkxu6rQ6K8A1glnH8JwW4u8cW4Rr2pL2u3a'
+// Cost factor must match the live password hash cost (12) so that the
+// not-found path takes the same time as a wrong-password path (no user enumeration via timing).
+const DUMMY_PASSWORD_HASH = '$2b$12$SPEyFLRcYh6V5l6HW8BDX.KxaFmttyaa/LhrYobB7kOCZXYf9T5.G'
 
 async function comparePasswordSafely(password: string, passwordHash?: string | null): Promise<boolean> {
   const hashToCompare = passwordHash || DUMMY_PASSWORD_HASH

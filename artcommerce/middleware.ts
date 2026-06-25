@@ -21,6 +21,70 @@ const STATIC_PATH_PREFIXES = [
 const STATIC_FILE_PATTERN =
   /\.(?:avif|css|gif|ico|jpeg|jpg|js|map|mp3|mp4|png|svg|txt|webm|webp|woff2?)$/i
 
+const IS_PRODUCTION = process.env.NODE_ENV === 'production'
+
+function generateNonce(): string {
+  const bytes = new Uint8Array(16)
+  crypto.getRandomValues(bytes)
+  let binary = ''
+  for (const byte of bytes) binary += String.fromCharCode(byte)
+  return btoa(binary)
+}
+
+function buildContentSecurityPolicy(nonce: string): string {
+  // 'strict-dynamic' + 'nonce-...' is the enforced policy in modern browsers:
+  // only the nonced bootstrap (and scripts it loads) execute, so reflected/stored
+  // inline-script XSS cannot run. The host allowlist + 'unsafe-inline' below are
+  // ignored by browsers that honor the nonce and exist only as a graceful
+  // fallback for legacy (CSP1/2) browsers.
+  return [
+    "default-src 'self'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "frame-ancestors 'none'",
+    "frame-src 'self' https://*.firebaseapp.com https://*.web.app https://accounts.google.com",
+    "manifest-src 'self'",
+    "object-src 'none'",
+    "media-src 'self' https: data: blob:",
+    "img-src 'self' https: data: blob:",
+    "font-src 'self' https: data:",
+    "worker-src 'self' blob:",
+    "style-src 'self' 'unsafe-inline' https:",
+    [
+      `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'`,
+      "'unsafe-inline'",
+      !IS_PRODUCTION ? "'unsafe-eval'" : '',
+      'https://www.gstatic.com',
+      'https://www.googletagmanager.com',
+      'https://js.pusher.com',
+      'https://apis.google.com',
+    ]
+      .filter(Boolean)
+      .join(' '),
+    [
+      "connect-src 'self'",
+      'https://identitytoolkit.googleapis.com',
+      'https://securetoken.googleapis.com',
+      'https://www.googleapis.com',
+      'https://oauth2.googleapis.com',
+      'https://*.firebaseapp.com',
+      'https://*.web.app',
+      'https://api.pusherapp.com',
+      'https://*.pusher.com',
+      'wss://*.pusher.com',
+      !IS_PRODUCTION ? 'http://localhost:*' : '',
+      !IS_PRODUCTION ? 'http://127.0.0.1:*' : '',
+      !IS_PRODUCTION ? 'ws://localhost:*' : '',
+      !IS_PRODUCTION ? 'ws://127.0.0.1:*' : '',
+    ]
+      .filter(Boolean)
+      .join(' '),
+    IS_PRODUCTION ? 'upgrade-insecure-requests' : '',
+  ]
+    .filter(Boolean)
+    .join('; ')
+}
+
 function getCanonicalOrigin(): string | null {
   const configuredUrl = (process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL)?.trim()
   if (!configuredUrl) return null
@@ -91,8 +155,12 @@ function applyCorsHeaders(response: NextResponse, request: NextRequest) {
   )
 }
 
-function applySharedHeaders(response: NextResponse, request: NextRequest) {
+function applySharedHeaders(response: NextResponse, request: NextRequest, csp?: string) {
   const pathname = request.nextUrl.pathname
+
+  if (csp) {
+    response.headers.set('Content-Security-Policy', csp)
+  }
 
   response.headers.set(
     'Cross-Origin-Opener-Policy',
@@ -132,6 +200,9 @@ export function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
+  const nonce = generateNonce()
+  const csp = buildContentSecurityPolicy(nonce)
+
   if (pathname.startsWith('/api') && request.method.toUpperCase() === 'OPTIONS') {
     const isValidPreflight =
       Boolean(getAllowedCorsOrigin(request)) &&
@@ -139,18 +210,25 @@ export function middleware(request: NextRequest) {
       areAllowedCorsHeaders(request.headers.get('access-control-request-headers'))
 
     const response = new NextResponse(null, { status: isValidPreflight ? 204 : 403 })
-    applySharedHeaders(response, request)
+    applySharedHeaders(response, request, csp)
     return response
   }
 
   if (pathname.startsWith('/api') && isMutationMethod(request.method) && !isAllowedOrigin(request)) {
     const response = NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    applySharedHeaders(response, request)
+    applySharedHeaders(response, request, csp)
     return response
   }
 
-  const response = NextResponse.next()
-  applySharedHeaders(response, request)
+  // Forward the nonce + CSP on the *request* so Next.js stamps the same nonce
+  // onto its own framework/hydration scripts; expose x-nonce for our own inline
+  // <script> tags to read via next/headers.
+  const requestHeaders = new Headers(request.headers)
+  requestHeaders.set('x-nonce', nonce)
+  requestHeaders.set('Content-Security-Policy', csp)
+
+  const response = NextResponse.next({ request: { headers: requestHeaders } })
+  applySharedHeaders(response, request, csp)
   return response
 }
 
