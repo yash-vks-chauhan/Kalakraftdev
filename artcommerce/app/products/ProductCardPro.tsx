@@ -143,23 +143,24 @@ export default function ProductCardPro({
           </Badge>
         )}
 
-        {/* Image dots — frosted pill, top-center, reveal on hover */}
+        {/* Carousel indicator — frosted pill, bottom-center, always visible so
+            multi-image products read as browsable at a glance. The active
+            segment animates to a wider pill for a refined, tactile feel and
+            stays put while paging with the arrows. */}
         {hasMultipleImages && (
           <div
             className={cn(
               GLASS,
-              'absolute top-3 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1.5 rounded-full px-2.5 py-1.5',
-              'opacity-0 transition-opacity duration-300 group-hover:opacity-100',
+              'absolute bottom-3 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1 rounded-full px-2 py-1.5',
+              'transition-[bottom] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:bottom-3.5',
             )}
           >
             {prod.imageUrls.map((_, idx) => (
               <span
                 key={idx}
                 className={cn(
-                  'h-1.5 rounded-full transition-all duration-300',
-                  idx === currentImageIndex
-                    ? 'w-4 bg-zinc-900'
-                    : 'w-1.5 bg-zinc-900/30',
+                  'h-1.5 rounded-full transition-all duration-[400ms] ease-[cubic-bezier(0.32,0.72,0,1)]',
+                  idx === currentImageIndex ? 'w-5 bg-zinc-900' : 'w-1.5 bg-zinc-300',
                 )}
               />
             ))}
@@ -198,18 +199,6 @@ export default function ProductCardPro({
           </>
         )}
 
-        {/* Hover CTA — frosted bar slides up from the bottom */}
-        <div className="pointer-events-none absolute inset-x-3 bottom-3 z-10 translate-y-3 opacity-0 transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:translate-y-0 group-hover:opacity-100">
-          <div
-            className={cn(
-              GLASS,
-              'flex items-center justify-center gap-1.5 rounded-full px-4 py-2.5 text-[12.5px] font-semibold tracking-wide text-zinc-900',
-            )}
-          >
-            View details
-            <ArrowUpRight className="h-3.5 w-3.5" />
-          </div>
-        </div>
       </div>
 
       {/* ── Meta ───────────────────────────────────────────────────── */}
@@ -220,8 +209,9 @@ export default function ProductCardPro({
           </span>
         )}
 
-        <h3 className="line-clamp-1 text-[14.5px] font-medium leading-snug text-zinc-900 transition-colors duration-200 group-hover:text-zinc-600">
-          {prod.name}
+        <h3 className="flex items-center gap-1 text-[14.5px] font-medium leading-snug text-zinc-900 transition-colors duration-200 group-hover:text-zinc-600">
+          <span className="line-clamp-1">{prod.name}</span>
+          <ArrowUpRight className="h-3.5 w-3.5 shrink-0 -translate-x-1 text-zinc-400 opacity-0 transition-all duration-200 ease-out group-hover:translate-x-0 group-hover:opacity-100" />
         </h3>
 
         <div className="mt-0.5 flex items-center justify-between gap-2">
@@ -247,7 +237,7 @@ export default function ProductCardPro({
               ) : null}
             </span>
           ) : (
-            <span className="text-[11px] font-medium text-zinc-300">New</span>
+            <span className="text-[11px] font-medium uppercase tracking-[0.08em] text-zinc-400">New</span>
           )}
 
           <span className="text-[15px] font-semibold tracking-tight text-zinc-900">

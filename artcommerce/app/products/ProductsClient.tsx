@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
@@ -11,7 +11,7 @@ import LoadingSpinner from '../components/LoadingSpinner'
 import styles from './products.module.css'
 import animationStyles from './products-animations.module.css'
 import { FiChevronLeft, FiChevronRight, FiGrid, FiStar, FiPackage, FiTrendingUp, FiX, FiChevronDown } from 'react-icons/fi'
-import { PackageSearch, Heart, ShoppingCart, User, ChevronDown, Check, X } from 'lucide-react'
+import { PackageSearch, Heart, ShoppingCart, User, ChevronDown, Check, X, Star, RotateCcw, SlidersHorizontal, Search } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '../contexts/AuthContext'
@@ -109,16 +109,50 @@ function normalizeProducts(arr: any[]): Product[] {
   })
 }
 
-// Synchronously seed from warm cache (memory or sessionStorage) so a return
-// visit paints products instantly instead of flashing the skeleton. Only used
-// when no filters are active (the cache holds the full, unfiltered catalogue).
+// localStorage stale-while-revalidate cache for the full catalogue. Survives a
+// hard reload / direct deep-link (which never trigger the home splash preload),
+// so the grid paints instantly from the last-known products instead of the
+// skeleton, then revalidates in the background.
+const PRODUCTS_LS_KEY = 'kk_products_v1'
+const PRODUCTS_LS_TTL = 24 * 60 * 60 * 1000 // 1 day
+
+function persistProducts(raw: any[]) {
+  if (typeof window === 'undefined') return
+  try {
+    localStorage.setItem(PRODUCTS_LS_KEY, JSON.stringify({ products: raw, ts: Date.now() }))
+  } catch {
+    /* quota / private mode — ignore */
+  }
+}
+
+// Synchronously seed from warm cache so a return visit paints products instantly
+// instead of flashing the skeleton. Only used when no filters are active (the
+// cache holds the full, unfiltered catalogue).
 function getSeedProducts(searchParams: { get(name: string): string | null }): Product[] {
   if (typeof window === 'undefined') return []
   const filterKeys = ['category', 'usageTag', 'priceMin', 'priceMax', 'sort', 'lowStock', 'inStock', 'ratingMin']
   if (filterKeys.some(k => searchParams.get(k))) return []
+  // 1) In-memory / session cache (warm within an app session)
   try {
     const cached = DataCache.get('products')
     if (cached && cached.length > 0) return normalizeProducts(cached)
+  } catch {
+    /* ignore */
+  }
+  // 2) localStorage cache (survives reloads / deep-links across sessions)
+  try {
+    const raw = localStorage.getItem(PRODUCTS_LS_KEY)
+    if (raw) {
+      const parsed = JSON.parse(raw)
+      if (
+        parsed &&
+        Array.isArray(parsed.products) &&
+        parsed.products.length > 0 &&
+        Date.now() - (parsed.ts || 0) < PRODUCTS_LS_TTL
+      ) {
+        return normalizeProducts(parsed.products)
+      }
+    }
   } catch {
     /* ignore */
   }
@@ -159,6 +193,20 @@ export default function ProductsClient() {
   const [error, setError] = useState<string | null>(null)
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false)
 
+  // Client-side text search over the already-loaded catalogue, wired to the
+  // top-bar search box. An empty query falls through to the full list, so the
+  // existing fetch / infinite-scroll pipeline is unaffected when not searching.
+  const [searchQuery, setSearchQuery] = useState('')
+  const visibleProducts = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase()
+    if (!q) return allProducts
+    return allProducts.filter(p =>
+      p.name.toLowerCase().includes(q) ||
+      (p.category?.name?.toLowerCase().includes(q) ?? false) ||
+      (p.shortDesc?.toLowerCase().includes(q) ?? false),
+    )
+  }, [allProducts, searchQuery])
+
   // State for accordion open/close
   const [openSections, setOpenSections] = useState<{[key: string]: boolean}>({
     category: true,
@@ -195,7 +243,10 @@ export default function ProductsClient() {
   const totalPages = Math.ceil(totalProducts / productsPerPage)
   const startIndex = (currentPage - 1) * productsPerPage
   const endIndex = startIndex + productsPerPage
-  const paginatedProducts = allProducts.slice(startIndex, endIndex)
+  const paginatedProducts = useMemo(
+    () => allProducts.slice(startIndex, endIndex),
+    [allProducts, startIndex, endIndex],
+  )
 
   // Update products based on view type
   useEffect(() => {
@@ -203,11 +254,11 @@ export default function ProductsClient() {
       // Mobile: use pagination
       setProducts(paginatedProducts)
     } else {
-      // Desktop: use all products for infinite scroll
-      setProducts(allProducts)
-      setDisplayedProducts(allProducts.slice(0, displayCount))
+      // Desktop: use the (optionally search-filtered) list for infinite scroll
+      setProducts(visibleProducts)
+      setDisplayedProducts(visibleProducts.slice(0, displayCount))
     }
-  }, [allProducts, currentPage, productsPerPage, isMobileView, displayCount])
+  }, [paginatedProducts, visibleProducts, isMobileView, displayCount])
 
   // Infinite scroll observer for desktop
   useEffect(() => {
@@ -217,13 +268,13 @@ export default function ProductsClient() {
     const observer = new IntersectionObserver(
       (entries) => {
         const [entry] = entries
-        if (entry.isIntersecting && displayedProducts.length < allProducts.length && !loadingMore) {
+        if (entry.isIntersecting && displayedProducts.length < visibleProducts.length && !loadingMore) {
           // Load more products
           setLoadingMore(true)
           setTimeout(() => {
-            const newCount = Math.min(displayCount + 15, allProducts.length)
+            const newCount = Math.min(displayCount + 15, visibleProducts.length)
             setDisplayCount(newCount)
-            setDisplayedProducts(allProducts.slice(0, newCount))
+            setDisplayedProducts(visibleProducts.slice(0, newCount))
             setLoadingMore(false)
           }, 300) // Small delay for smooth UX
         }
@@ -240,12 +291,12 @@ export default function ProductsClient() {
     return () => {
       observer.unobserve(trigger)
     }
-  }, [isMobileView, displayedProducts.length, allProducts.length, displayCount, loadingMore])
+  }, [isMobileView, displayedProducts.length, visibleProducts, displayCount, loadingMore])
 
-  // Reset display count when filters change
+  // Reset display count when filters or the search query change
   useEffect(() => {
     setDisplayCount(15)
-  }, [currentCategory, currentTag, priceMin, priceMax, sortOrder, lowStockOnly, inStockOnly, ratingMin])
+  }, [currentCategory, currentTag, priceMin, priceMax, sortOrder, lowStockOnly, inStockOnly, ratingMin, searchQuery])
 
   // Pagination handlers
   const handlePreviousPage = () => {
@@ -350,6 +401,12 @@ export default function ProductsClient() {
         
         setAllProducts(filteredProducts)
         setCurrentPage(1) // Reset to first page when filters change
+
+        // Persist the full, unfiltered catalogue so the next hard reload /
+        // deep-link paints instantly from localStorage instead of the skeleton.
+        if (!currentCategory && !currentTag && !priceMin && !priceMax && !sortOrder && !lowStockOnly && !inStockOnly && !ratingMin) {
+          persistProducts(allProducts)
+        }
       } catch (err: any) {
         setError(err.message)
       } finally {
@@ -614,19 +671,19 @@ export default function ProductsClient() {
         type="button"
         onClick={onClick}
         className={cn(
-          'group flex w-full items-center gap-2.5 rounded-lg px-2 py-2 text-left text-[13.5px] transition-colors',
-          selected ? 'text-zinc-900' : 'text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900',
+          'group flex w-full items-center gap-2.5 rounded-md px-2.5 py-[7px] text-left text-[13px] transition-colors',
+          selected ? 'bg-zinc-100 font-medium text-zinc-900' : 'text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900',
         )}
       >
         <span
           className={cn(
-            'flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition-colors',
-            selected ? 'border-zinc-900' : 'border-zinc-300 group-hover:border-zinc-400',
+            'flex h-[15px] w-[15px] shrink-0 items-center justify-center rounded-full border transition-colors',
+            selected ? 'border-zinc-900 bg-zinc-900' : 'border-zinc-300 group-hover:border-zinc-400',
           )}
         >
-          {selected && <span className="h-2 w-2 rounded-full bg-zinc-900" />}
+          {selected && <span className="h-[5px] w-[5px] rounded-full bg-white" />}
         </span>
-        <span className="flex-1">{label}</span>
+        <span className="flex-1 truncate">{label}</span>
       </button>
     )
 
@@ -635,17 +692,17 @@ export default function ProductsClient() {
         type="button"
         onClick={onClick}
         className={cn(
-          'group flex w-full items-center gap-2.5 rounded-lg px-2 py-2 text-left text-[13.5px] transition-colors',
-          checked ? 'text-zinc-900' : 'text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900',
+          'group flex w-full items-center gap-2.5 rounded-md px-2.5 py-[7px] text-left text-[13px] transition-colors',
+          checked ? 'bg-zinc-100 font-medium text-zinc-900' : 'text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900',
         )}
       >
         <span
           className={cn(
-            'flex h-4 w-4 shrink-0 items-center justify-center rounded-[5px] border transition-colors',
+            'flex h-[15px] w-[15px] shrink-0 items-center justify-center rounded-[5px] border transition-colors',
             checked ? 'border-zinc-900 bg-zinc-900 text-white' : 'border-zinc-300 group-hover:border-zinc-400',
           )}
         >
-          {checked && <Check className="h-3 w-3" />}
+          {checked && <Check className="h-3 w-3" strokeWidth={3} />}
         </span>
         <span className="flex-1">{label}</span>
       </button>
@@ -657,9 +714,9 @@ export default function ProductsClient() {
           type="button"
           onClick={() => toggleSection(id)}
           aria-expanded={openSections[id]}
-          className="flex w-full items-center justify-between px-2 py-3.5 text-left"
+          className="group flex w-full items-center justify-between px-2.5 py-3 text-left"
         >
-          <span className="text-[12px] font-semibold uppercase tracking-[0.09em] text-zinc-900">{label}</span>
+          <span className="text-[11px] font-semibold uppercase tracking-[0.13em] text-zinc-500 transition-colors group-hover:text-zinc-900">{label}</span>
           <ChevronDown
             className={cn(
               'h-4 w-4 text-zinc-400 transition-transform duration-300',
@@ -674,7 +731,7 @@ export default function ProductsClient() {
           )}
         >
           <div className="overflow-hidden">
-            <div className="pb-3">{children}</div>
+            <div className="space-y-0.5 pb-3">{children}</div>
           </div>
         </div>
       </div>
@@ -714,9 +771,19 @@ export default function ProductsClient() {
             <div key={thr}>
               {radioRow(
                 Number(ratingMin) === thr,
-                <span className="flex items-center gap-1">
-                  <span className="text-amber-400">{'★'.repeat(thr)}</span>
-                  <span className="text-zinc-400">&amp; up</span>
+                <span className="flex items-center gap-1.5">
+                  <span className="flex items-center gap-0.5">
+                    {[0, 1, 2, 3, 4].map(i => (
+                      <Star
+                        key={i}
+                        className={cn(
+                          'h-3.5 w-3.5',
+                          i < thr ? 'fill-amber-400 text-amber-400' : 'fill-zinc-200 text-zinc-200',
+                        )}
+                      />
+                    ))}
+                  </span>
+                  <span className="text-[12px] text-zinc-400">&amp; up</span>
                 </span>,
                 () => updateFilter('ratingMin', Number(ratingMin) === thr ? '' : String(thr)),
               )}
@@ -856,25 +923,41 @@ export default function ProductsClient() {
         {!isMobileView ? (
           <div className="flex w-full bg-white">
             {/* ── Persistent filter sidebar ─────────────────────── */}
-            <aside className="sticky top-0 z-40 hidden h-screen w-[280px] shrink-0 flex-col border-r border-zinc-200/80 bg-white/85 backdrop-blur-xl lg:flex">
+            <aside className="sticky top-0 z-40 hidden h-screen w-[276px] shrink-0 flex-col border-r border-zinc-200/80 bg-white/85 backdrop-blur-xl lg:flex">
               {/* Brand header — aligns with the top bar to form one frame */}
-              <div className="flex h-16 shrink-0 items-center gap-2.5 border-b border-zinc-200/70 px-5">
-                <Link href="/" className="flex items-center gap-2.5 outline-none">
-                  <span className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg bg-zinc-900/[0.06]">
+              <div className="flex h-16 shrink-0 items-center border-b border-zinc-200/70 px-5">
+                <Link href="/" className="group flex items-center gap-2.5 outline-none">
+                  <span className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-[9px] bg-white shadow-sm ring-1 ring-zinc-200/80 transition-shadow group-hover:shadow-md">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={getImageUrl('logo.png')} alt="" className="h-6 w-6 object-contain" />
+                    <img src={getImageUrl('logo.png')} alt="" className="h-5 w-5 object-contain" />
                   </span>
                   <span className="flex flex-col leading-none">
-                    <span className="text-[14px] font-semibold tracking-tight text-zinc-900">Kalakraft</span>
-                    <span className="mt-1 text-[9.5px] font-medium uppercase tracking-[0.2em] text-zinc-400">
-                      Handcrafted
+                    <span className="text-[15px] font-semibold tracking-tight text-zinc-900">Kalakraft</span>
+                    <span className="mt-[3px] text-[9px] font-medium uppercase tracking-[0.22em] text-zinc-400">
+                      Handcrafted Living
                     </span>
                   </span>
                 </Link>
               </div>
 
               {/* Filters */}
-              <div className="flex-1 overflow-y-auto px-5 py-5">
+              <div className="flex-1 overflow-y-auto px-4 py-4">
+                <div className="mb-1 flex items-center justify-between px-2.5">
+                  <span className="flex items-center gap-2 text-[12.5px] font-semibold tracking-tight text-zinc-900">
+                    <SlidersHorizontal className="h-3.5 w-3.5 text-zinc-400" />
+                    Filters
+                  </span>
+                  {pageFilterCount > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => router.replace('/products')}
+                      className="inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-[11.5px] font-medium text-zinc-400 transition-colors hover:bg-zinc-50 hover:text-zinc-900"
+                    >
+                      <RotateCcw className="h-3 w-3" />
+                      Reset
+                    </button>
+                  )}
+                </div>
                 {renderDesktopFilters()}
               </div>
 
@@ -893,15 +976,38 @@ export default function ProductsClient() {
             <div className="flex min-h-screen min-w-0 flex-1 flex-col">
               {/* Top bar attached to the sidebar */}
               <div className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between gap-4 border-b border-zinc-200/80 bg-white/70 px-6 backdrop-blur-xl xl:px-10">
-                <div className="flex items-baseline gap-3">
+                <div className="flex items-center gap-2.5">
                   <h1 className="text-[15px] font-semibold tracking-tight text-zinc-900">
                     {currentCategory
                       ? KNOWN_CATEGORIES.find(c => c.slug === currentCategory)?.name || 'Products'
                       : currentTag || 'All Products'}
                   </h1>
-                  <span className="hidden text-[13px] text-zinc-400 sm:inline">
-                    {displayedProducts.length} of {allProducts.length}
+                  <span className="hidden text-[13px] font-medium tabular-nums text-zinc-400 sm:inline">
+                    {displayedProducts.length}
+                    <span className="text-zinc-300"> / {visibleProducts.length}</span>
                   </span>
+                </div>
+
+                {/* Search — client-side filter over the loaded catalogue */}
+                <div className="relative hidden min-w-0 max-w-sm flex-1 md:block">
+                  <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search products…"
+                    className="h-9 w-full rounded-full border border-zinc-200/80 bg-white/70 pl-10 pr-9 text-[13px] text-zinc-800 outline-none transition-colors placeholder:text-zinc-400 hover:bg-white focus:border-zinc-300 focus:bg-white focus:ring-4 focus:ring-zinc-900/[0.04]"
+                  />
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchQuery('')}
+                      aria-label="Clear search"
+                      className="absolute right-2.5 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-full text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  )}
                 </div>
 
                 <div className="flex items-center gap-1.5">
@@ -1065,8 +1171,21 @@ export default function ProductsClient() {
                     </div>
                     <div>
                       <p className="text-[17px] font-semibold text-zinc-900">No products found</p>
-                      <p className="mt-1 text-[14px] text-zinc-500">Try adjusting or clearing your filters.</p>
+                      <p className="mt-1 text-[14px] text-zinc-500">
+                        {searchQuery
+                          ? <>Nothing matches &ldquo;{searchQuery}&rdquo;.</>
+                          : 'Try adjusting or clearing your filters.'}
+                      </p>
                     </div>
+                    {searchQuery && (
+                      <button
+                        type="button"
+                        onClick={() => setSearchQuery('')}
+                        className="rounded-full border border-zinc-200 bg-white px-4 py-2 text-[13px] font-medium text-zinc-700 transition-colors hover:bg-zinc-50"
+                      >
+                        Clear search
+                      </button>
+                    )}
                   </div>
                 ) : products.length > 50 ? (
                   <VirtualProductGrid products={displayedProducts} className={styles.productGrid} />
@@ -1081,7 +1200,7 @@ export default function ProductsClient() {
                       ))}
                     </div>
 
-                    {displayedProducts.length < allProducts.length && (
+                    {displayedProducts.length < visibleProducts.length && (
                       <div
                         ref={loadMoreTriggerRef}
                         className="flex min-h-[140px] w-full items-center justify-center pt-10"
@@ -1092,7 +1211,7 @@ export default function ProductsClient() {
                       </div>
                     )}
 
-                    {displayedProducts.length >= allProducts.length && allProducts.length > 15 && (
+                    {displayedProducts.length >= visibleProducts.length && visibleProducts.length > 15 && (
                       <div className="relative mt-24 -mx-6 overflow-hidden bg-zinc-950 px-10 py-28 lg:py-40 xl:-mx-10">
                         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.10),transparent_60%)]" />
                         <p
