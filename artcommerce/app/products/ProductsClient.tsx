@@ -11,9 +11,8 @@ import LoadingSpinner from '../components/LoadingSpinner'
 import styles from './products.module.css'
 import animationStyles from './products-animations.module.css'
 import { FiChevronLeft, FiChevronRight, FiGrid, FiStar, FiPackage, FiTrendingUp, FiX, FiChevronDown } from 'react-icons/fi'
-import { PackageSearch, Heart, ShoppingCart, User, ChevronDown, Check, X, Star, RotateCcw, SlidersHorizontal, Search } from 'lucide-react'
+import { AlertCircle, ArrowUp, ArrowUpDown, PackageSearch, Heart, ShoppingCart, User, ChevronDown, Check, X, Star, RotateCcw, SlidersHorizontal, Search } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
 import { useAuth } from '../contexts/AuthContext'
 import { useCart } from '../contexts/CartContext'
 import { useWishlist } from '../contexts/WishlistContext'
@@ -125,13 +124,10 @@ function persistProducts(raw: any[]) {
   }
 }
 
-// Synchronously seed from warm cache so a return visit paints products instantly
-// instead of flashing the skeleton. Only used when no filters are active (the
-// cache holds the full, unfiltered catalogue).
-function getSeedProducts(searchParams: { get(name: string): string | null }): Product[] {
+// Read the full, unfiltered catalogue from the warm caches (session cache
+// first, then localStorage). Returns [] when nothing usable is cached.
+function readCachedCatalogue(): Product[] {
   if (typeof window === 'undefined') return []
-  const filterKeys = ['category', 'usageTag', 'priceMin', 'priceMax', 'sort', 'lowStock', 'inStock', 'ratingMin']
-  if (filterKeys.some(k => searchParams.get(k))) return []
   // 1) In-memory / session cache (warm within an app session)
   try {
     const cached = DataCache.get('products')
@@ -157,6 +153,16 @@ function getSeedProducts(searchParams: { get(name: string): string | null }): Pr
     /* ignore */
   }
   return []
+}
+
+// Synchronously seed from warm cache so a return visit paints products instantly
+// instead of flashing the skeleton. Only used when no filters are active (the
+// cache holds the full, unfiltered catalogue).
+function getSeedProducts(searchParams: { get(name: string): string | null }): Product[] {
+  if (typeof window === 'undefined') return []
+  const filterKeys = ['category', 'usageTag', 'priceMin', 'priceMax', 'sort', 'lowStock', 'inStock', 'ratingMin']
+  if (filterKeys.some(k => searchParams.get(k))) return []
+  return readCachedCatalogue()
 }
 
 // Single grid card placeholder — shared by the initial load and the
@@ -201,17 +207,34 @@ export default function ProductsClient() {
   const [products, setProducts] = useState<Product[]>(seeded)
   const [displayedProducts, setDisplayedProducts] = useState<Product[]>(() => seeded.slice(0, 15))
   const [usageTags, setUsageTags] = useState<string[]>([])
+  // Full, unfiltered catalogue — drives the per-category counts in the
+  // sidebar even while a filter narrows allProducts. Seeded from cache so
+  // counts survive deep links, refreshed by every unfiltered fetch.
+  const [fullCatalogue, setFullCatalogue] = useState<Product[]>(readCachedCatalogue)
   // Start in the loading state on a cold load (no seed) so the very first
   // frame is the skeleton — never a "No products found" flash.
   const [loading, setLoading] = useState<boolean>(() => seeded.length === 0)
   const [loadingMore, setLoadingMore] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
+  // Bumped by the error state's Retry button to re-run the products fetch.
+  const [retryTick, setRetryTick] = useState(0)
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false)
 
   // Client-side text search over the already-loaded catalogue, wired to the
   // top-bar search box. An empty query falls through to the full list, so the
   // existing fetch / infinite-scroll pipeline is unaffected when not searching.
   const [searchQuery, setSearchQuery] = useState('')
+  const searchInputRef = useRef<HTMLInputElement>(null)
+  const [isMac] = useState(
+    () => typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/i.test(navigator.platform),
+  )
+
+  // Desktop inset shell scrolls inside the content card, not the window.
+  // isScrolled drives the top bar's hairline/shadow elevation; showBackTop
+  // reveals the back-to-top button after a deep scroll.
+  const scrollerRef = useRef<HTMLDivElement>(null)
+  const [isScrolled, setIsScrolled] = useState(false)
+  const [showBackTop, setShowBackTop] = useState(false)
   const visibleProducts = useMemo(() => {
     const q = searchQuery.trim().toLowerCase()
     if (!q) return allProducts
@@ -222,13 +245,14 @@ export default function ProductsClient() {
     )
   }, [allProducts, searchQuery])
 
-  // State for accordion open/close
+  // Filter sections default open — visible filters get used, hidden ones
+  // don't. Sections stay collapsible for lists that grow long.
   const [openSections, setOpenSections] = useState<{[key: string]: boolean}>({
     category: true,
-    mood: false,
-    rating: false,
-    stock: false,
-    sort: false
+    mood: true,
+    rating: true,
+    stock: true,
+    sort: true
   })
 
   // Infinite scroll state (desktop only)
@@ -295,7 +319,9 @@ export default function ProductsClient() {
         }
       },
       {
-        root: null,
+        // Desktop scrolls inside the inset card, so observe against that
+        // scroller (falls back to the viewport if it isn't mounted).
+        root: scrollerRef.current,
         rootMargin: '200px', // Start loading 200px before reaching the trigger
         threshold: 0.1
       }
@@ -308,10 +334,26 @@ export default function ProductsClient() {
     }
   }, [isMobileView, displayedProducts.length, visibleProducts, displayCount, loadingMore])
 
-  // Reset display count when filters or the search query change
+  // Reset display count and return to the top when filters or the search
+  // query change, so new result sets always start from their first items.
   useEffect(() => {
     setDisplayCount(15)
+    scrollerRef.current?.scrollTo({ top: 0 })
   }, [currentCategory, currentTag, priceMin, priceMax, sortOrder, lowStockOnly, inStockOnly, ratingMin, searchQuery])
+
+  // ⌘K / Ctrl+K focuses the catalogue search (desktop shell only)
+  useEffect(() => {
+    if (isMobileView) return
+    const onKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault()
+        searchInputRef.current?.focus()
+        searchInputRef.current?.select()
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [isMobileView])
 
   // Pagination handlers
   const handlePreviousPage = () => {
@@ -335,6 +377,17 @@ export default function ProductsClient() {
     }
   }
 
+  // Per-category product counts from the full catalogue (empty map until a
+  // full catalogue is known — the sidebar hides counts in that case).
+  const categoryCounts = useMemo(() => {
+    const counts = new Map<string, number>()
+    for (const p of fullCatalogue) {
+      const slug = p.category?.slug
+      if (slug) counts.set(slug, (counts.get(slug) ?? 0) + 1)
+    }
+    return counts
+  }, [fullCatalogue])
+
   // Active filter count (drives the badge on the Filters button)
   const pageFilterCount =
     (currentCategory ? 1 : 0) +
@@ -342,6 +395,35 @@ export default function ProductsClient() {
     (ratingMin ? 1 : 0) +
     (inStockOnly ? 1 : 0) +
     (lowStockOnly ? 1 : 0)
+
+  // Active filter chips shown in the desktop top bar — one place to define
+  // label + clear behaviour for every removable filter.
+  const clearQueryParam = (key: string) => {
+    const qs = new URLSearchParams(searchParams.toString())
+    qs.delete(key)
+    router.replace(qs.toString() ? `/products?${qs}` : '/products')
+  }
+  const activeFilterChips: { key: string; label: string; onClear: () => void }[] = [
+    ...(currentCategory
+      ? [{
+          key: 'category',
+          label: KNOWN_CATEGORIES.find(c => c.slug === currentCategory)?.name || currentCategory,
+          onClear: () => clearQueryParam('category'),
+        }]
+      : []),
+    ...(currentTag
+      ? [{ key: 'usageTag', label: currentTag, onClear: () => clearQueryParam('usageTag') }]
+      : []),
+    ...(ratingMin
+      ? [{ key: 'ratingMin', label: `${ratingMin}+ ★`, onClear: () => updateFilter('ratingMin', '') }]
+      : []),
+    ...(inStockOnly
+      ? [{ key: 'inStock', label: 'In stock', onClear: () => updateFilter('inStockOnly', false) }]
+      : []),
+    ...(lowStockOnly
+      ? [{ key: 'lowStock', label: 'Low stock', onClear: () => updateFilter('lowStockOnly', false) }]
+      : []),
+  ]
 
   // Fetch list of available usage tags once
   useEffect(() => {
@@ -418,9 +500,11 @@ export default function ProductsClient() {
         setCurrentPage(1) // Reset to first page when filters change
 
         // Persist the full, unfiltered catalogue so the next hard reload /
-        // deep-link paints instantly from localStorage instead of the skeleton.
+        // deep-link paints instantly from localStorage instead of the skeleton,
+        // and keep the sidebar's category counts in sync with it.
         if (!currentCategory && !currentTag && !priceMin && !priceMax && !sortOrder && !lowStockOnly && !inStockOnly && !ratingMin) {
           persistProducts(allProducts)
+          setFullCatalogue(filteredProducts)
         }
       } catch (err: any) {
         setError(err.message)
@@ -429,7 +513,7 @@ export default function ProductsClient() {
       }
     }
     fetchProducts()
-  }, [currentCategory, currentTag, priceMin, priceMax, sortOrder, lowStockOnly, inStockOnly, ratingMin])
+  }, [currentCategory, currentTag, priceMin, priceMax, sortOrder, lowStockOnly, inStockOnly, ratingMin, retryTick])
 
   // Apply scroll-based card animations (optimized)
   // Pause animations while any filter drawer is open to avoid visual size shifts
@@ -445,8 +529,6 @@ export default function ProductsClient() {
       setIsMobileFilterOpen(false)
     }
   }, [isMobileView])
-
-  if (error) return <p className={styles.errorMessage}>Error: {error}</p>
 
   // Loading state: only true initially when there's no data to show.
   // Once products are loaded, subsequent fetches keep the layout visible
@@ -678,18 +760,23 @@ export default function ProductsClient() {
     </>
   )
 
-  // Redesigned persistent filters for the desktop sidebar (shadcn aesthetic).
-  // Reuses the same filter state/handlers as the mobile renderFilters above.
+  // Redesigned persistent filters for the desktop sidebar (shadcn inset
+  // aesthetic). Rows sit directly on the muted canvas; the active row lifts
+  // onto a white pill. Reuses the same filter state/handlers as renderFilters.
   const renderDesktopFilters = () => {
+    // Row states: rest → hover tint → clearly darker while pressed (instant
+    // feedback while the URL round-trip settles) → white pill when selected.
+    const rowClass = (active: boolean) =>
+      cn(
+        'group flex w-full items-center gap-2.5 rounded-lg px-2.5 py-[7px] text-left text-[13px]',
+        'outline-none transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-zinc-900/20',
+        active
+          ? 'bg-white font-medium text-zinc-900 ring-1 ring-zinc-900/[0.08] hover:bg-zinc-50 active:bg-zinc-100'
+          : 'text-zinc-600 hover:bg-zinc-200/45 hover:text-zinc-900 active:bg-zinc-300/50',
+      )
+
     const radioRow = (selected: boolean, label: React.ReactNode, onClick: () => void) => (
-      <button
-        type="button"
-        onClick={onClick}
-        className={cn(
-          'group flex w-full items-center gap-2.5 rounded-md px-2.5 py-[7px] text-left text-[13px] transition-colors',
-          selected ? 'bg-zinc-100 font-medium text-zinc-900' : 'text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900',
-        )}
-      >
+      <button type="button" onClick={onClick} className={rowClass(selected)}>
         <span
           className={cn(
             'flex h-[15px] w-[15px] shrink-0 items-center justify-center rounded-full border transition-colors',
@@ -703,14 +790,7 @@ export default function ProductsClient() {
     )
 
     const checkRow = (checked: boolean, label: React.ReactNode, onClick: () => void) => (
-      <button
-        type="button"
-        onClick={onClick}
-        className={cn(
-          'group flex w-full items-center gap-2.5 rounded-md px-2.5 py-[7px] text-left text-[13px] transition-colors',
-          checked ? 'bg-zinc-100 font-medium text-zinc-900' : 'text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900',
-        )}
-      >
+      <button type="button" onClick={onClick} className={rowClass(checked)}>
         <span
           className={cn(
             'flex h-[15px] w-[15px] shrink-0 items-center justify-center rounded-[5px] border transition-colors',
@@ -723,18 +803,25 @@ export default function ProductsClient() {
       </button>
     )
 
-    const Section = ({ id, label, children }: { id: string; label: string; children: React.ReactNode }) => (
-      <div className="border-b border-zinc-100 last:border-0">
+    const Section = ({ id, label, count = 0, children }: { id: string; label: string; count?: number; children: React.ReactNode }) => (
+      <div>
         <button
           type="button"
           onClick={() => toggleSection(id)}
           aria-expanded={openSections[id]}
-          className="group flex w-full items-center justify-between px-2.5 py-3 text-left"
+          className="group flex w-full items-center justify-between rounded-lg px-2.5 py-2.5 text-left outline-none transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-zinc-900/20"
         >
-          <span className="text-[11px] font-semibold uppercase tracking-[0.13em] text-zinc-500 transition-colors group-hover:text-zinc-900">{label}</span>
+          <span className="flex items-center gap-2">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.13em] text-zinc-500 transition-colors group-hover:text-zinc-900">{label}</span>
+            {count > 0 && (
+              <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-zinc-900 px-1 text-[9.5px] font-semibold leading-none text-white">
+                {count}
+              </span>
+            )}
+          </span>
           <ChevronDown
             className={cn(
-              'h-4 w-4 text-zinc-400 transition-transform duration-300',
+              'h-4 w-4 text-zinc-400 transition-[transform,color] duration-300 group-hover:text-zinc-700',
               openSections[id] && 'rotate-180',
             )}
           />
@@ -766,22 +853,40 @@ export default function ProductsClient() {
     }
 
     return (
-      <div className="flex flex-col">
-        <Section id="category" label="Category">
-          {KNOWN_CATEGORIES.map(cat =>
-            <div key={cat.slug}>{radioRow(currentCategory === cat.slug, cat.name, () => setCategory(cat.slug))}</div>,
+      <div className="flex flex-col gap-0.5">
+        <Section id="category" label="Category" count={currentCategory ? 1 : 0}>
+          {/* Once the full catalogue is known, empty categories are hidden and
+              each row shows how many pieces it filters down to. */}
+          {(fullCatalogue.length > 0
+            ? KNOWN_CATEGORIES.filter(cat => (categoryCounts.get(cat.slug) ?? 0) > 0)
+            : KNOWN_CATEGORIES
+          ).map(cat =>
+            <div key={cat.slug}>
+              {radioRow(
+                currentCategory === cat.slug,
+                <span className="flex w-full items-center justify-between gap-2">
+                  <span className="truncate">{cat.name}</span>
+                  {fullCatalogue.length > 0 && (
+                    <span className="text-[11px] font-normal tabular-nums text-zinc-400">
+                      {categoryCounts.get(cat.slug)}
+                    </span>
+                  )}
+                </span>,
+                () => setCategory(cat.slug),
+              )}
+            </div>,
           )}
         </Section>
 
         {usageTags.length > 0 && (
-          <Section id="mood" label="Purpose / Mood">
+          <Section id="mood" label="Purpose / Mood" count={currentTag ? 1 : 0}>
             {usageTags.map(tag =>
               <div key={tag}>{radioRow(currentTag === tag, tag, () => setTag(tag))}</div>,
             )}
           </Section>
         )}
 
-        <Section id="rating" label="Rating">
+        <Section id="rating" label="Rating" count={ratingMin ? 1 : 0}>
           {[4, 3, 2, 1].map(thr =>
             <div key={thr}>
               {radioRow(
@@ -806,7 +911,7 @@ export default function ProductsClient() {
           )}
         </Section>
 
-        <Section id="stock" label="Availability">
+        <Section id="stock" label="Availability" count={(inStockOnly ? 1 : 0) + (lowStockOnly ? 1 : 0)}>
           {checkRow(inStockOnly, 'In stock only', () => updateFilter('inStockOnly', !inStockOnly))}
           {checkRow(lowStockOnly, 'Low stock', () => updateFilter('lowStockOnly', !lowStockOnly))}
         </Section>
@@ -934,15 +1039,18 @@ export default function ProductsClient() {
           </div>
         )}
 
-        {/* Desktop: left sidebar that pushes content; Mobile: standard layout */}
+        {/* Desktop: inset shell (shadcn "inset" sidebar layout) — a naked
+            sidebar on a muted canvas, with all content in a floating rounded
+            card that scrolls internally so the chrome never moves.
+            Mobile: standard layout. */}
         {!isMobileView ? (
-          <div className="flex w-full bg-white">
-            {/* ── Persistent filter sidebar ─────────────────────── */}
-            <aside className="sticky top-0 z-40 hidden h-screen w-[276px] shrink-0 flex-col border-r border-zinc-200/80 bg-white/85 backdrop-blur-xl lg:flex">
-              {/* Brand header — aligns with the top bar to form one frame */}
-              <div className="flex h-16 shrink-0 items-center border-b border-zinc-200/70 px-5">
+          <div className="flex h-screen w-full overflow-hidden bg-zinc-100/80">
+            {/* ── Filter sidebar — sits directly on the canvas ──── */}
+            <aside className="hidden h-full w-[276px] shrink-0 flex-col lg:flex">
+              {/* Brand */}
+              <div className="flex h-16 shrink-0 items-center px-6">
                 <Link href="/" className="group flex items-center gap-2.5 outline-none">
-                  <span className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-[9px] bg-white shadow-sm ring-1 ring-zinc-200/80 transition-shadow group-hover:shadow-md">
+                  <span className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-zinc-200/80 transition-shadow group-hover:shadow-md">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={getImageUrl('logo.png')} alt="" className="h-5 w-5 object-contain" />
                   </span>
@@ -956,8 +1064,8 @@ export default function ProductsClient() {
               </div>
 
               {/* Filters */}
-              <div className="flex-1 overflow-y-auto px-4 py-4">
-                <div className="mb-1 flex items-center justify-between px-2.5">
+              <div className="flex-1 overflow-y-auto px-4 pb-4 pt-3 [scrollbar-width:thin] [scrollbar-color:#d4d4d8_transparent]">
+                <div className="mb-2 flex items-center justify-between px-2.5">
                   <span className="flex items-center gap-2 text-[12.5px] font-semibold tracking-tight text-zinc-900">
                     <SlidersHorizontal className="h-3.5 w-3.5 text-zinc-400" />
                     Filters
@@ -966,7 +1074,7 @@ export default function ProductsClient() {
                     <button
                       type="button"
                       onClick={() => router.replace('/products')}
-                      className="inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-[11.5px] font-medium text-zinc-400 transition-colors hover:bg-zinc-50 hover:text-zinc-900"
+                      className="inline-flex items-center gap-1 rounded-lg px-1.5 py-1 text-[11.5px] font-medium text-zinc-400 transition-colors hover:bg-zinc-200/45 hover:text-zinc-900"
                     >
                       <RotateCcw className="h-3 w-3" />
                       Reset
@@ -977,7 +1085,7 @@ export default function ProductsClient() {
               </div>
 
               {/* Footer */}
-              <div className="shrink-0 border-t border-zinc-200/70 px-5 py-3">
+              <div className="shrink-0 px-6 py-4">
                 <Link
                   href="/"
                   className="inline-flex items-center gap-1.5 text-[12px] font-medium text-zinc-400 transition-colors hover:text-zinc-700"
@@ -987,263 +1095,289 @@ export default function ProductsClient() {
               </div>
             </aside>
 
-            {/* ── Main column ───────────────────────────────────── */}
-            <div className="flex min-h-screen min-w-0 flex-1 flex-col">
-              {/* Top bar attached to the sidebar */}
-              <div className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between gap-4 border-b border-zinc-200/80 bg-white/70 px-6 backdrop-blur-xl xl:px-10">
-                <div className="flex items-center gap-2.5">
-                  <h1 className="text-[15px] font-semibold tracking-tight text-zinc-900">
-                    {currentCategory
-                      ? KNOWN_CATEGORIES.find(c => c.slug === currentCategory)?.name || 'Products'
-                      : currentTag || 'All Products'}
-                  </h1>
-                  <span className="hidden text-[13px] font-medium tabular-nums text-zinc-400 sm:inline">
-                    {displayedProducts.length}
-                    <span className="text-zinc-300"> / {visibleProducts.length}</span>
-                  </span>
-                </div>
+            {/* ── Inset content card ────────────────────────────── */}
+            <div className="flex h-full min-w-0 flex-1 flex-col p-3 lg:pl-0">
+              <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04),0_12px_32px_-16px_rgba(0,0,0,0.08)] ring-1 ring-zinc-200/70">
+                {/* Top bar — hairline + shadow appear once the card scrolls */}
+                <div
+                  className={cn(
+                    'shrink-0 border-b transition-[border-color,box-shadow] duration-300',
+                    isScrolled
+                      ? 'border-zinc-200/70 shadow-[0_4px_12px_-8px_rgba(0,0,0,0.08)]'
+                      : 'border-transparent',
+                  )}
+                >
+                  <div className="flex h-16 items-center justify-between gap-4 px-6 xl:px-8">
+                    {/* Search — client-side filter over the loaded catalogue.
+                        Anchors the bar's left side; the editorial header below
+                        owns the page title. */}
+                    <div className="relative min-w-0 max-w-md flex-1">
+                      <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+                      <input
+                        ref={searchInputRef}
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Escape') {
+                            setSearchQuery('')
+                            e.currentTarget.blur()
+                          }
+                        }}
+                        placeholder="Search products…"
+                        className="h-9 w-full rounded-full border border-transparent bg-zinc-100/70 pl-10 pr-14 text-[13px] text-zinc-800 outline-none transition-colors placeholder:text-zinc-400 hover:bg-zinc-100 focus:border-zinc-300 focus:bg-white focus:ring-4 focus:ring-zinc-900/[0.04]"
+                      />
+                      {searchQuery ? (
+                        <button
+                          type="button"
+                          onClick={() => setSearchQuery('')}
+                          aria-label="Clear search"
+                          className="absolute right-2.5 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-full text-zinc-400 transition-colors hover:bg-zinc-200/70 hover:text-zinc-700"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      ) : (
+                        <kbd className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 items-center rounded border border-zinc-200 bg-white px-1.5 py-0.5 font-sans text-[10px] font-medium text-zinc-400 lg:flex">
+                          {isMac ? '⌘K' : 'Ctrl K'}
+                        </kbd>
+                      )}
+                    </div>
 
-                {/* Search — client-side filter over the loaded catalogue */}
-                <div className="relative hidden min-w-0 max-w-sm flex-1 md:block">
-                  <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search products…"
-                    className="h-9 w-full rounded-full border border-zinc-200/80 bg-white/70 pl-10 pr-9 text-[13px] text-zinc-800 outline-none transition-colors placeholder:text-zinc-400 hover:bg-white focus:border-zinc-300 focus:bg-white focus:ring-4 focus:ring-zinc-900/[0.04]"
-                  />
-                  {searchQuery && (
-                    <button
-                      type="button"
-                      onClick={() => setSearchQuery('')}
-                      aria-label="Clear search"
-                      className="absolute right-2.5 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-full text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700"
-                    >
-                      <X className="h-3.5 w-3.5" />
-                    </button>
+                    <div className="flex items-center gap-1.5">
+                      <Select
+                        value={sortOrder && sortOrder !== '' ? sortOrder : 'newest'}
+                        onValueChange={(v) => updateFilter('sortOrder', v === 'newest' ? '' : v)}
+                      >
+                        <SelectTrigger
+                          size="sm"
+                          aria-label="Sort products"
+                          className="h-9 gap-2 rounded-full border-zinc-200/80 bg-white px-4 text-[13px] font-medium text-zinc-800 transition-colors hover:bg-zinc-50"
+                        >
+                          <ArrowUpDown className="h-3.5 w-3.5 shrink-0 text-zinc-400" />
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent align="end" className="rounded-xl border-zinc-200/80 bg-white/95 backdrop-blur-xl">
+                          {SORT_SELECT_OPTIONS.map(opt => (
+                            <SelectItem key={opt.value} value={opt.value} className="rounded-lg text-[13px]">
+                              {opt.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+
+                      <div className="mx-1.5 h-5 w-px bg-zinc-200" />
+
+                      <Link
+                        href={user ? '/dashboard/wishlist' : '/auth/login'}
+                        aria-label="Wishlist"
+                        className="relative flex h-9 w-9 items-center justify-center rounded-full text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900"
+                      >
+                        <Heart className="h-[18px] w-[18px]" />
+                        {user && wishlistItems.length > 0 && (
+                          <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-zinc-900 px-1 text-[9.5px] font-semibold leading-none text-white">
+                            {wishlistItems.length}
+                          </span>
+                        )}
+                      </Link>
+
+                      <Link
+                        href={user ? '/dashboard/cart' : '/auth/login'}
+                        aria-label="Cart"
+                        className="relative flex h-9 w-9 items-center justify-center rounded-full text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900"
+                      >
+                        <ShoppingCart className="h-[18px] w-[18px]" />
+                        {user && cartItems.length > 0 && (
+                          <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-zinc-900 px-1 text-[9.5px] font-semibold leading-none text-white">
+                            {cartItems.length}
+                          </span>
+                        )}
+                      </Link>
+
+                      <Link
+                        href={user ? '/dashboard/profile' : '/auth/login'}
+                        aria-label="Account"
+                        className="flex h-9 w-9 items-center justify-center rounded-full text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900"
+                      >
+                        <User className="h-[18px] w-[18px]" />
+                      </Link>
+                    </div>
+                  </div>
+
+                  {/* Active filter chips — live with the chrome, not the content */}
+                  {activeFilterChips.length > 0 && (
+                    <div className="flex flex-wrap items-center gap-2 px-6 pb-3 xl:px-8">
+                      {activeFilterChips.map(chip => (
+                        <button
+                          key={chip.key}
+                          type="button"
+                          onClick={chip.onClear}
+                          className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-[12px] font-medium text-zinc-700 transition-colors hover:border-zinc-300 hover:bg-zinc-100"
+                        >
+                          {chip.label}
+                          <X className="h-3 w-3" />
+                        </button>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={() => router.replace('/products')}
+                        className="ml-1 text-[12px] font-medium text-zinc-400 underline underline-offset-2 transition-colors hover:text-zinc-700"
+                      >
+                        Clear all
+                      </button>
+                    </div>
                   )}
                 </div>
 
-                <div className="flex items-center gap-1.5">
-                  <Select
-                    value={sortOrder && sortOrder !== '' ? sortOrder : 'newest'}
-                    onValueChange={(v) => updateFilter('sortOrder', v === 'newest' ? '' : v)}
-                  >
-                    <SelectTrigger
-                      size="sm"
-                      className="h-9 gap-2 rounded-full border-zinc-200/80 bg-white/70 px-4 text-[13px] font-medium text-zinc-800 hover:bg-white"
-                    >
-                      <span className="text-zinc-400">Sort</span>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent align="end" className="rounded-xl border-zinc-200/80 bg-white/95 backdrop-blur-xl">
-                      {SORT_SELECT_OPTIONS.map(opt => (
-                        <SelectItem key={opt.value} value={opt.value} className="rounded-lg text-[13px]">
-                          {opt.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-
-                  <div className="mx-1.5 h-5 w-px bg-zinc-200" />
-
-                  <Link
-                    href={user ? '/dashboard/wishlist' : '/auth/login'}
-                    aria-label="Wishlist"
-                    className="relative flex h-9 w-9 items-center justify-center rounded-full text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900"
-                  >
-                    <Heart className="h-[18px] w-[18px]" />
-                    {user && wishlistItems.length > 0 && (
-                      <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-zinc-900 px-1 text-[9.5px] font-semibold leading-none text-white">
-                        {wishlistItems.length}
+                {/* Content — the card's internal scroller */}
+                <div
+                  ref={scrollerRef}
+                  onScroll={(e) => {
+                    const top = e.currentTarget.scrollTop
+                    setIsScrolled(top > 8)
+                    setShowBackTop(top > 900)
+                  }}
+                  className="min-h-0 flex-1 overflow-y-auto overscroll-contain [scrollbar-width:thin] [scrollbar-color:#d4d4d8_transparent]"
+                >
+                  <div className="px-6 py-9 xl:px-10">
+                    {/* Editorial intro — the page's one true heading */}
+                    <header className="mb-7">
+                      <span className="mb-2 inline-block text-[11px] font-semibold uppercase tracking-[0.22em] text-zinc-400">
+                        The Collection
+                        {/* Count only once real results are in — a "0" during
+                            loading or an error would just be noise. */}
+                        {!showInitialLoading && !error && (
+                          <>
+                            <span className="mx-1.5 text-zinc-300">·</span>
+                            <span className="tabular-nums">
+                              {visibleProducts.length} {visibleProducts.length === 1 ? 'piece' : 'pieces'}
+                            </span>
+                          </>
+                        )}
                       </span>
-                    )}
-                  </Link>
-
-                  <Link
-                    href={user ? '/dashboard/cart' : '/auth/login'}
-                    aria-label="Cart"
-                    className="relative flex h-9 w-9 items-center justify-center rounded-full text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900"
-                  >
-                    <ShoppingCart className="h-[18px] w-[18px]" />
-                    {user && cartItems.length > 0 && (
-                      <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-zinc-900 px-1 text-[9.5px] font-semibold leading-none text-white">
-                        {cartItems.length}
-                      </span>
-                    )}
-                  </Link>
-
-                  <Link
-                    href={user ? '/dashboard/profile' : '/auth/login'}
-                    aria-label="Account"
-                    className="flex h-9 w-9 items-center justify-center rounded-full text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900"
-                  >
-                    <User className="h-[18px] w-[18px]" />
-                  </Link>
-                </div>
-              </div>
-
-              {/* Content */}
-              <div className="px-6 py-9 xl:px-10">
-                {/* Editorial intro */}
-                <header className="mb-8">
-                  <span className="mb-2 inline-block text-[11px] font-semibold uppercase tracking-[0.22em] text-zinc-400">
-                    The Collection
-                  </span>
-                  <h2 className="text-[30px] font-semibold leading-[1.1] tracking-tight text-zinc-900 lg:text-[38px]">
-                    {currentCategory
-                      ? KNOWN_CATEGORIES.find(c => c.slug === currentCategory)?.name || 'Discover Our Collection'
-                      : 'Discover Our Collection'}
-                  </h2>
-                  <p className="mt-3 max-w-md text-[15px] leading-relaxed text-zinc-500">
-                    Handcrafted pieces, curated with care — each one made to be lived with.
-                  </p>
-                </header>
-
-                {/* Active filter chips */}
-                {pageFilterCount > 0 && (
-                  <div className="mb-7 flex flex-wrap items-center gap-2">
-                    {currentCategory && (
-                      <button
-                        onClick={() => {
-                          const qs = new URLSearchParams(searchParams.toString())
-                          qs.delete('category')
-                          router.replace(qs.toString() ? `/products?${qs}` : '/products')
-                        }}
-                        className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-[12.5px] font-medium text-zinc-700 transition-colors hover:bg-zinc-100"
-                      >
-                        {KNOWN_CATEGORIES.find(c => c.slug === currentCategory)?.name || currentCategory}
-                        <X className="h-3 w-3" />
-                      </button>
-                    )}
-                    {currentTag && (
-                      <button
-                        onClick={() => {
-                          const qs = new URLSearchParams(searchParams.toString())
-                          qs.delete('usageTag')
-                          router.replace(qs.toString() ? `/products?${qs}` : '/products')
-                        }}
-                        className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-[12.5px] font-medium text-zinc-700 transition-colors hover:bg-zinc-100"
-                      >
-                        {currentTag}
-                        <X className="h-3 w-3" />
-                      </button>
-                    )}
-                    {ratingMin && (
-                      <button
-                        onClick={() => updateFilter('ratingMin', '')}
-                        className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-[12.5px] font-medium text-zinc-700 transition-colors hover:bg-zinc-100"
-                      >
-                        {ratingMin}+ ★
-                        <X className="h-3 w-3" />
-                      </button>
-                    )}
-                    {inStockOnly && (
-                      <button
-                        onClick={() => updateFilter('inStockOnly', false)}
-                        className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-[12.5px] font-medium text-zinc-700 transition-colors hover:bg-zinc-100"
-                      >
-                        In stock
-                        <X className="h-3 w-3" />
-                      </button>
-                    )}
-                    {lowStockOnly && (
-                      <button
-                        onClick={() => updateFilter('lowStockOnly', false)}
-                        className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-[12.5px] font-medium text-zinc-700 transition-colors hover:bg-zinc-100"
-                      >
-                        Low stock
-                        <X className="h-3 w-3" />
-                      </button>
-                    )}
-                    <button
-                      onClick={() => router.replace('/products')}
-                      className="ml-1 text-[12.5px] font-medium text-zinc-400 underline underline-offset-2 transition-colors hover:text-zinc-700"
-                    >
-                      Clear all
-                    </button>
-                  </div>
-                )}
-
-                {showInitialLoading ? (
-                  <div className="grid grid-cols-2 gap-x-5 gap-y-10 lg:grid-cols-3 lg:gap-x-6 lg:gap-y-14 2xl:grid-cols-4">
-                    {Array.from({ length: 9 }).map((_, i) => (
-                      <GridCardSkeleton key={i} />
-                    ))}
-                  </div>
-                ) : products.length === 0 ? (
-                  <div className="flex min-h-[360px] flex-col items-center justify-center gap-4 text-center">
-                    <div className="flex h-16 w-16 items-center justify-center rounded-full border border-zinc-200 bg-zinc-50">
-                      <PackageSearch className="h-7 w-7 text-zinc-400" />
-                    </div>
-                    <div>
-                      <p className="text-[17px] font-semibold text-zinc-900">No products found</p>
-                      <p className="mt-1 text-[14px] text-zinc-500">
-                        {searchQuery
-                          ? <>Nothing matches &ldquo;{searchQuery}&rdquo;.</>
-                          : 'Try adjusting or clearing your filters.'}
+                      <h1 className="text-[28px] font-semibold leading-[1.1] tracking-tight text-zinc-900 lg:text-[34px]">
+                        {currentCategory
+                          ? KNOWN_CATEGORIES.find(c => c.slug === currentCategory)?.name || 'Discover Our Collection'
+                          : currentTag || 'Discover Our Collection'}
+                      </h1>
+                      <p className="mt-2.5 max-w-md text-[14.5px] leading-relaxed text-zinc-500">
+                        Handcrafted pieces, curated with care — each one made to be lived with.
                       </p>
-                    </div>
-                    {searchQuery && (
-                      <button
-                        type="button"
-                        onClick={() => setSearchQuery('')}
-                        className="rounded-full border border-zinc-200 bg-white px-4 py-2 text-[13px] font-medium text-zinc-700 transition-colors hover:bg-zinc-50"
-                      >
-                        Clear search
-                      </button>
-                    )}
-                  </div>
-                ) : products.length > 50 ? (
-                  <VirtualProductGrid products={displayedProducts} className={styles.productGrid} />
-                ) : (
-                  <>
-                    <div
-                      ref={productGridRef}
-                      className="grid grid-cols-2 gap-x-5 gap-y-10 lg:grid-cols-3 lg:gap-x-6 lg:gap-y-14 2xl:grid-cols-4"
-                    >
-                      {displayedProducts.map((prod, index) => (
-                        <ProductCardPro key={prod.id} product={prod} index={index} />
-                      ))}
-                    </div>
+                    </header>
 
-                    {displayedProducts.length < visibleProducts.length && (
-                      <div
-                        ref={loadMoreTriggerRef}
-                        className="min-h-[140px] w-full pt-10"
-                      >
-                        {loadingMore && (
-                          <div className="grid grid-cols-2 gap-x-5 gap-y-10 lg:grid-cols-3 lg:gap-x-6 lg:gap-y-14 2xl:grid-cols-4">
-                            {Array.from({
-                              length: Math.min(3, visibleProducts.length - displayedProducts.length),
-                            }).map((_, i) => (
-                              <GridCardSkeleton key={i} />
-                            ))}
-                          </div>
+                    {showInitialLoading ? (
+                      <div className="grid grid-cols-2 gap-x-5 gap-y-10 lg:grid-cols-3 lg:gap-x-6 lg:gap-y-14 2xl:grid-cols-4">
+                        {Array.from({ length: 9 }).map((_, i) => (
+                          <GridCardSkeleton key={i} />
+                        ))}
+                      </div>
+                    ) : error && products.length === 0 ? (
+                      <div className="flex min-h-[360px] flex-col items-center justify-center gap-4 text-center">
+                        <div className="flex h-16 w-16 items-center justify-center rounded-full border border-zinc-200 bg-zinc-50">
+                          <AlertCircle className="h-7 w-7 text-zinc-400" />
+                        </div>
+                        <div>
+                          <p className="text-[17px] font-semibold text-zinc-900">Something went wrong</p>
+                          <p className="mt-1 text-[14px] text-zinc-500">
+                            We couldn&rsquo;t load the catalogue. Check your connection and try again.
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setRetryTick(t => t + 1)}
+                          className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-4 py-2 text-[13px] font-medium text-zinc-700 transition-colors hover:bg-zinc-50 active:bg-zinc-100"
+                        >
+                          <RotateCcw className="h-3.5 w-3.5" />
+                          Try again
+                        </button>
+                      </div>
+                    ) : products.length === 0 ? (
+                      <div className="flex min-h-[360px] flex-col items-center justify-center gap-4 text-center">
+                        <div className="flex h-16 w-16 items-center justify-center rounded-full border border-zinc-200 bg-zinc-50">
+                          <PackageSearch className="h-7 w-7 text-zinc-400" />
+                        </div>
+                        <div>
+                          <p className="text-[17px] font-semibold text-zinc-900">No products found</p>
+                          <p className="mt-1 text-[14px] text-zinc-500">
+                            {searchQuery
+                              ? <>Nothing matches &ldquo;{searchQuery}&rdquo;.</>
+                              : 'Try adjusting or clearing your filters.'}
+                          </p>
+                        </div>
+                        {searchQuery && (
+                          <button
+                            type="button"
+                            onClick={() => setSearchQuery('')}
+                            className="rounded-full border border-zinc-200 bg-white px-4 py-2 text-[13px] font-medium text-zinc-700 transition-colors hover:bg-zinc-50"
+                          >
+                            Clear search
+                          </button>
                         )}
                       </div>
-                    )}
-
-                    {displayedProducts.length >= visibleProducts.length && visibleProducts.length > 15 && (
-                      <div className="relative mt-24 -mx-6 overflow-hidden bg-zinc-950 px-10 py-28 lg:py-40 xl:-mx-10">
-                        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.10),transparent_60%)]" />
-                        <p
-                          className="relative text-center text-[13vw] italic leading-none text-white lg:text-[92px]"
-                          style={{
-                            fontFamily: "'Playfair Display', Georgia, 'Times New Roman', serif",
-                            fontWeight: 300,
-                            letterSpacing: '0.12em',
-                            textTransform: 'lowercase',
-                            textShadow: '0 0 40px rgba(255,255,255,0.12)',
-                          }}
+                    ) : (
+                      <>
+                        <div
+                          ref={productGridRef}
+                          className="grid grid-cols-2 gap-x-5 gap-y-10 lg:grid-cols-3 lg:gap-x-6 lg:gap-y-14 2xl:grid-cols-4"
                         >
-                          coming soon
-                        </p>
-                      </div>
+                          {displayedProducts.map((prod, index) => (
+                            <ProductCardPro key={prod.id} product={prod} index={index} />
+                          ))}
+                        </div>
+
+                        {displayedProducts.length < visibleProducts.length && (
+                          <div
+                            ref={loadMoreTriggerRef}
+                            className="min-h-[140px] w-full pt-10"
+                          >
+                            {loadingMore && (
+                              <div className="grid grid-cols-2 gap-x-5 gap-y-10 lg:grid-cols-3 lg:gap-x-6 lg:gap-y-14 2xl:grid-cols-4">
+                                {Array.from({
+                                  length: Math.min(3, visibleProducts.length - displayedProducts.length),
+                                }).map((_, i) => (
+                                  <GridCardSkeleton key={i} />
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {displayedProducts.length >= visibleProducts.length && visibleProducts.length > 15 && (
+                          <div className="relative mt-24 -mx-6 -mb-9 overflow-hidden bg-zinc-950 px-10 py-28 lg:py-40 xl:-mx-10">
+                            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.10),transparent_60%)]" />
+                            <p
+                              className="relative text-center text-[13vw] italic leading-none text-white lg:text-[92px]"
+                              style={{
+                                fontFamily: "'Playfair Display', Georgia, 'Times New Roman', serif",
+                                fontWeight: 300,
+                                letterSpacing: '0.12em',
+                                textTransform: 'lowercase',
+                                textShadow: '0 0 40px rgba(255,255,255,0.12)',
+                              }}
+                            >
+                              coming soon
+                            </p>
+                          </div>
+                        )}
+                      </>
                     )}
-                  </>
-                )}
+                  </div>
+                </div>
+
+                {/* Back to top — floats in the card's corner after deep scroll */}
+                <button
+                  type="button"
+                  onClick={() => scrollerRef.current?.scrollTo({ top: 0, behavior: 'smooth' })}
+                  aria-label="Back to top"
+                  tabIndex={showBackTop ? 0 : -1}
+                  className={cn(
+                    'absolute bottom-6 right-6 z-20 flex h-10 w-10 items-center justify-center rounded-full',
+                    'bg-white text-zinc-600 shadow-[0_8px_24px_-8px_rgba(0,0,0,0.25)] ring-1 ring-zinc-200/80',
+                    'transition-all duration-300 hover:text-zinc-900 active:scale-95',
+                    showBackTop ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-2 opacity-0',
+                  )}
+                >
+                  <ArrowUp className="h-4 w-4" />
+                </button>
               </div>
             </div>
           </div>
@@ -1253,6 +1387,8 @@ export default function ProductsClient() {
               <div className={styles.gridLoadingContainer}>
                 <LoadingSpinner size="large" message="Loading products..." />
               </div>
+            ) : error && products.length === 0 ? (
+              <p className={styles.errorMessage}>Error: {error}</p>
             ) : products.length === 0 ? (
               <p className={styles.emptyProducts}>No products found.</p>
             ) : products.length > 50 ? (

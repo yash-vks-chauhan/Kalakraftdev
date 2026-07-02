@@ -2,15 +2,33 @@
 
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronLeft, ChevronRight, Star, ArrowUpRight } from 'lucide-react'
+import { Check, ChevronLeft, ChevronRight, ShoppingCart, Star, ArrowUpRight } from 'lucide-react'
 import WishlistButton from '../components/WishlistButton'
 import { useImagePreload } from '../hooks/useImagePreload'
+import { useAuth } from '../contexts/AuthContext'
+import { useCart } from '../contexts/CartContext'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import animationStyles from './products-animations.module.css'
 
 const LOW_STOCK_THRESHOLD = 5
+
+// "INR 1250.00" → "₹1,250": currency symbol + local digit grouping, decimals
+// only when the price actually has them.
+function formatPrice(price: number, currency: string) {
+  try {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: currency || 'INR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    }).format(price)
+  } catch {
+    return `${currency} ${price.toFixed(2)}`
+  }
+}
 
 // Shared frosted-glass surface used by every floating control on the card.
 // Soft white blur + hairline highlight + layered shadow = premium, tactile.
@@ -46,11 +64,34 @@ export default function ProductCardPro({
   className = '',
 }: ProductCardProProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
+  const [cartState, setCartState] = useState<'idle' | 'adding' | 'added'>('idle')
+  const { user } = useAuth()
+  const { addToCart } = useCart()
+  const router = useRouter()
 
   const hasMultipleImages = prod.imageUrls.length > 1
   const rating = Math.round(prod.avgRating ?? 0)
   const isOut = prod.stockQuantity === 0
   const isLow = prod.stockQuantity > 0 && prod.stockQuantity <= LOW_STOCK_THRESHOLD
+
+  // Quick add — the card is a Link, so swallow the navigation.
+  const quickAdd = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (cartState !== 'idle') return
+    if (!user) {
+      router.push('/auth/login')
+      return
+    }
+    setCartState('adding')
+    try {
+      const ok = await addToCart(prod.id, 1)
+      setCartState(ok ? 'added' : 'idle')
+      if (ok) setTimeout(() => setCartState('idle'), 1600)
+    } catch {
+      setCartState('idle')
+    }
+  }
 
   // Preload neighbours for instant swaps
   const { preloadImage } = useImagePreload(prod.imageUrls, { priorityCount: 1 })
@@ -89,11 +130,6 @@ export default function ProductCardPro({
           'group-hover:shadow-[0_28px_50px_-22px_rgba(0,0,0,0.28)]',
         )}
       >
-        {/* sheen that drifts across on hover */}
-        <div className="pointer-events-none absolute inset-0 z-[6] opacity-0 transition-opacity duration-500 group-hover:opacity-100">
-          <div className="absolute -inset-y-2 -left-1/3 w-1/3 -skew-x-12 bg-gradient-to-r from-transparent via-white/40 to-transparent blur-md translate-x-0 group-hover:translate-x-[420%] transition-transform duration-[1100ms] ease-out" />
-        </div>
-
         <AnimatePresence initial={false} mode="sync">
           <motion.div
             key={currentImageIndex}
@@ -109,7 +145,10 @@ export default function ProductCardPro({
               src={prod.imageUrls[currentImageIndex]}
               alt={prod.name}
               loading="lazy"
-              className="h-full w-full object-contain drop-shadow-[0_10px_24px_rgba(0,0,0,0.08)] transition-transform duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:scale-[1.06]"
+              className={cn(
+                'h-full w-full object-contain drop-shadow-[0_10px_24px_rgba(0,0,0,0.08)] transition-transform duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:scale-[1.06]',
+                isOut && 'opacity-50 saturate-50',
+              )}
             />
           </motion.div>
         </AnimatePresence>
@@ -143,16 +182,16 @@ export default function ProductCardPro({
           </Badge>
         )}
 
-        {/* Carousel indicator — frosted pill, bottom-center, always visible so
-            multi-image products read as browsable at a glance. The active
-            segment animates to a wider pill for a refined, tactile feel and
-            stays put while paging with the arrows. */}
+        {/* Carousel indicator — frosted pill, bottom-center, visible at rest so
+            multi-image products read as browsable at a glance. Fades out on
+            hover to make room for the quick-add action. */}
         {hasMultipleImages && (
           <div
             className={cn(
               GLASS,
               'absolute bottom-3 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1 rounded-full px-2 py-1.5',
-              'transition-[bottom] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:bottom-3.5',
+              'transition-opacity duration-200',
+              !isOut && 'group-hover:pointer-events-none group-hover:opacity-0',
             )}
           >
             {prod.imageUrls.map((_, idx) => (
@@ -199,6 +238,35 @@ export default function ProductCardPro({
           </>
         )}
 
+        {/* Quick add — slides up from the bottom edge on hover */}
+        {!isOut && (
+          <button
+            type="button"
+            onClick={quickAdd}
+            aria-label={`Add ${prod.name} to cart`}
+            className={cn(
+              'absolute inset-x-3 bottom-3 z-30 flex h-10 items-center justify-center gap-2 rounded-full',
+              'bg-zinc-900/90 text-[13px] font-medium text-white shadow-lg backdrop-blur-md',
+              'translate-y-2 opacity-0 transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]',
+              'group-hover:translate-y-0 group-hover:opacity-100',
+              'hover:bg-zinc-900 active:scale-[0.98]',
+              'focus-visible:translate-y-0 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900/40 focus-visible:ring-offset-2',
+              cartState === 'added' && 'bg-emerald-600/95 hover:bg-emerald-600',
+            )}
+          >
+            {cartState === 'added' ? (
+              <>
+                <Check className="h-4 w-4" strokeWidth={2.5} /> Added
+              </>
+            ) : cartState === 'adding' ? (
+              'Adding…'
+            ) : (
+              <>
+                <ShoppingCart className="h-4 w-4" /> Add to cart
+              </>
+            )}
+          </button>
+        )}
       </div>
 
       {/* ── Meta ───────────────────────────────────────────────────── */}
@@ -236,12 +304,15 @@ export default function ProductCardPro({
                 </span>
               ) : null}
             </span>
-          ) : (
-            <span className="text-[11px] font-medium uppercase tracking-[0.08em] text-zinc-400">New</span>
-          )}
+          ) : null}
 
-          <span className="text-[15px] font-semibold tracking-tight text-zinc-900">
-            {prod.currency} {prod.price.toFixed(2)}
+          <span
+            className={cn(
+              'ml-auto text-[15px] font-semibold tracking-tight',
+              isOut ? 'text-zinc-400' : 'text-zinc-900',
+            )}
+          >
+            {formatPrice(prod.price, prod.currency)}
           </span>
         </div>
       </div>
