@@ -4,7 +4,6 @@ import { FormEvent, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import {
   AlertCircle,
-  CalendarClock,
   CheckCircle2,
   Loader2,
   Percent,
@@ -712,29 +711,19 @@ function UsageMeter({ used, limit }: { used: number; limit: number | null }) {
 }
 
 function StatusBadge({ status }: { status: CouponStatus }) {
-  if (status === 'active') {
-    return (
-      <Badge
-        variant="outline"
-        className="border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
-      >
-        <CheckCircle2 className="h-3 w-3" />
-        Active
-      </Badge>
-    )
-  }
-  if (status === 'expired') {
-    return (
-      <Badge variant="outline" className="text-muted-foreground">
-        <CalendarClock className="h-3 w-3" />
-        Expired
-      </Badge>
-    )
-  }
+  const meta =
+    status === 'active'
+      ? { dot: 'bg-emerald-500', label: 'Active' }
+      : status === 'expired'
+      ? { dot: 'bg-muted-foreground/40', label: 'Expired' }
+      : { dot: 'bg-amber-500', label: 'Used up' }
   return (
-    <Badge variant="outline" className="border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300">
-      <TicketX className="h-3 w-3" />
-      Used up
+    <Badge variant="outline" className="gap-1.5 font-normal text-foreground">
+      <span
+        aria-hidden
+        className={cn('h-1.5 w-1.5 shrink-0 rounded-full', meta.dot)}
+      />
+      {meta.label}
     </Badge>
   )
 }

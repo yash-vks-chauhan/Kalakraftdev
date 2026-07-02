@@ -22,7 +22,11 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  // Per-request CSP nonce set by middleware; applied to our inline <script> tags.
+  // Per-request CSP nonce set by middleware; applied to our inline <script>
+  // tags. Those tags carry suppressHydrationWarning because browsers empty
+  // the `nonce` content attribute after parsing (the value survives only on
+  // the IDL property), so React's client diff always sees "" vs the real
+  // nonce. CSP itself is enforced at parse time — the mismatch is cosmetic.
   const nonce = (await headers()).get('x-nonce') ?? undefined
   return (
     <html
@@ -36,6 +40,7 @@ export default async function RootLayout({
             to hold a clean frame until React mounts the animated splash. */}
         <script
           nonce={nonce}
+          suppressHydrationWarning
           dangerouslySetInnerHTML={{
             __html: `(function(){try{
               if(location.pathname!=='/')return;
@@ -83,6 +88,7 @@ export default async function RootLayout({
         {/* Inline global error hook to surface client errors even if hydration fails */}
         <script
           nonce={nonce}
+          suppressHydrationWarning
           dangerouslySetInnerHTML={{
             __html: `(() => {
               function show(msg, stack){

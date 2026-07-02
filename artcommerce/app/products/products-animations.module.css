@@ -16,8 +16,8 @@
   top: 0;
   left: 0;
   overflow-y: auto;
-  color: #1a202c;
-  border-right: 1px solid rgba(226, 232, 240, 0.8);
+  color: #1a1a1a;
+  border-right: 1px solid rgba(229, 229, 229, 0.8);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
   z-index: 100;
   
@@ -45,7 +45,7 @@
   top: 50%;
   transform: translate3d(0, -50%, 0);
   background: #ffffff;
-  border: 1px solid rgba(226, 232, 240, 0.8);
+  border: 1px solid rgba(229, 229, 229, 0.8);
   border-radius: 0 4px 4px 0;
   width: 32px;
   height: 64px;
@@ -53,7 +53,7 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: #1a202c;
+  color: #1a1a1a;
   z-index: 101;
   box-shadow: 4px 0 20px rgba(0, 0, 0, 0.05);
   
@@ -164,7 +164,7 @@
   cursor: pointer;
   padding: 1rem;
   font-weight: 500;
-  color: #1a202c;
+  color: #1a1a1a;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -179,7 +179,7 @@
 }
 
 .filterHeader:hover {
-  background-color: rgba(226, 232, 240, 0.3);
+  background-color: rgba(229, 229, 229, 0.3);
 }
 
 .filterHeader:active {

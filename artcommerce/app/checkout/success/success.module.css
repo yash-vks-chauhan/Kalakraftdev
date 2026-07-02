@@ -223,8 +223,8 @@
   
   /* Order Card */
   .orderCard {
-    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
-    border: 1px solid #e2e8f0;
+    background: linear-gradient(135deg, #fafafa, #f1f5f9);
+    border: 1px solid #e5e5e5;
     border-radius: 1rem;
     padding: 1.5rem;
     display: flex;
@@ -253,7 +253,7 @@
   
   .orderLabel {
     font-size: 0.875rem;
-    color: #64748b;
+    color: #666666;
     font-weight: 500;
   }
   
@@ -310,7 +310,7 @@
   
   .infoCard {
     background: white;
-    border: 1px solid #e2e8f0;
+    border: 1px solid #e5e5e5;
     border-radius: 0.75rem;
     padding: 1.5rem;
     display: flex;
@@ -342,7 +342,7 @@
   
   .infoText {
     font-size: 0.875rem;
-    color: #64748b;
+    color: #666666;
     line-height: 1.4;
   }
   
@@ -783,8 +783,8 @@
   
   /* Order Card */
   .orderCard {
-    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
-    border: 1px solid #e2e8f0;
+    background: linear-gradient(135deg, #fafafa, #f1f5f9);
+    border: 1px solid #e5e5e5;
     border-radius: 1rem;
     padding: 1.5rem;
     display: flex;
@@ -813,7 +813,7 @@
   
   .orderLabel {
     font-size: 0.875rem;
-    color: #64748b;
+    color: #666666;
     font-weight: 500;
   }
   
@@ -870,7 +870,7 @@
   
   .infoCard {
     background: white;
-    border: 1px solid #e2e8f0;
+    border: 1px solid #e5e5e5;
     border-radius: 0.75rem;
     padding: 1.5rem;
     display: flex;
@@ -902,7 +902,7 @@
   
   .infoText {
     font-size: 0.875rem;
-    color: #64748b;
+    color: #666666;
     line-height: 1.4;
   }
   

@@ -1,6 +1,6 @@
 .profileContainer {
   min-height: 100vh;
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
   padding: 2rem 3rem;
   position: relative;
   overflow: hidden;
@@ -20,8 +20,8 @@
   right: 0;
   bottom: 0;
   background: 
-    radial-gradient(circle at 20% 20%, rgba(26, 32, 44, 0.03) 0%, transparent 50%),
-    radial-gradient(circle at 80% 80%, rgba(26, 32, 44, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 20% 20%, rgba(0, 0, 0, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(0, 0, 0, 0.03) 0%, transparent 50%),
     url('/images/art-pattern.png') center/cover no-repeat;
   opacity: 0.05;
   z-index: 0;
@@ -83,7 +83,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(45deg, transparent, rgba(26, 32, 44, 0.02), transparent);
+  background: linear-gradient(45deg, transparent, rgba(0, 0, 0, 0.02), transparent);
   transform: translateX(-100%);
   transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -95,7 +95,7 @@
 .title {
   font-size: 2.5rem;
   font-weight: 800;
-  color: #1a202c;
+  color: #1a1a1a;
   margin-bottom: 2.5rem;
   letter-spacing: -0.025em;
   position: relative;
@@ -109,7 +109,7 @@
   left: 0;
   width: 40%;
   height: 2px;
-  background: linear-gradient(90deg, #1a202c, transparent);
+  background: linear-gradient(90deg, #1a1a1a, transparent);
   transform: scaleX(0);
   transform-origin: left;
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -125,10 +125,10 @@
   font-size: 0.85rem;
   font-weight: 500;
   padding: 0.75rem 1.5rem;
-  border: 1px solid #1a202c;
+  border: 1px solid #1a1a1a;
   border-radius: 4px;
   background-color: transparent;
-  color: #1a202c;
+  color: #1a1a1a;
   cursor: pointer;
   transition: all 0.3s ease;
   text-align: center;
@@ -138,7 +138,7 @@
 }
 
 .otpButton:hover {
-  background-color: #1a202c;
+  background-color: #1a1a1a;
   color: #ffffff;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -152,7 +152,7 @@
   display: block;
   font-size: 1rem;
   font-weight: 600;
-  color: #4a5568;
+  color: #555555;
   margin-bottom: 0.75rem;
   letter-spacing: 0.3px;
 }
@@ -160,18 +160,18 @@
 .input {
   width: 100%;
   padding: 0.875rem 1.25rem;
-  border: 2px solid #e2e8f0;
+  border: 2px solid #e5e5e5;
   border-radius: 12px;
   background-color: rgba(255, 255, 255, 0.9);
-  color: #1a202c;
+  color: #1a1a1a;
   font-size: 1rem;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .input:focus {
   outline: none;
-  border-color: #1a202c;
-  box-shadow: 0 0 0 3px rgba(26, 32, 44, 0.1);
+  border-color: #1a1a1a;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
   transform: translateY(-1px);
 }
 
@@ -179,10 +179,10 @@
   font-size: 0.85rem;
   font-weight: 500;
   padding: 1rem 2rem;
-  border: 1px solid #1a202c;
+  border: 1px solid #1a1a1a;
   border-radius: 4px;
   background-color: transparent;
-  color: #1a202c;
+  color: #1a1a1a;
   text-decoration: none;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -195,7 +195,7 @@
 }
 
 .button:hover {
-  background-color: #1a202c;
+  background-color: #1a1a1a;
   color: #ffffff;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -203,7 +203,7 @@
 
 .buttonLoading .spinner {
   border: 2px solid rgba(0, 0, 0, 0.2);
-  border-top: 2px solid #1a202c;
+  border-top: 2px solid #1a1a1a;
   border-radius: 50%;
   width: 16px;
   height: 16px;
@@ -222,9 +222,9 @@
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
-  background-color: #e2e8f0;
-  border-color: #e2e8f0;
-  color: #64748b;
+  background-color: #e5e5e5;
+  border-color: #e5e5e5;
+  color: #666666;
 }
 
 .deleteButton {
@@ -256,7 +256,7 @@
   width: 80px;
   height: 80px;
   padding: 0.5rem;
-  border: 2px solid #e2e8f0;
+  border: 2px solid #e5e5e5;
   border-radius: 16px;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -267,14 +267,14 @@
 }
 
 .avatarOption:hover {
-  border-color: #1a202c;
+  border-color: #1a1a1a;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .avatarOption.selected {
-  border-color: #1a202c;
-  background-color: rgba(26, 32, 44, 0.05);
+  border-color: #1a1a1a;
+  background-color: rgba(0, 0, 0, 0.05);
 }
 
 .avatar {
@@ -282,7 +282,7 @@
   height: 120px;
   border-radius: 20px;
   object-fit: cover;
-  border: 3px solid #1a202c;
+  border: 3px solid #1a1a1a;
   transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
@@ -292,7 +292,7 @@
 .uploadLabel {
   font-size: 1rem;
   font-weight: 600;
-  color: #4a5568;
+  color: #555555;
   margin-bottom: 1rem;
   display: block;
 }
@@ -419,7 +419,7 @@
 
   .orderItem span {
     font-size: 0.8rem;
-    color: #1a202c;
+    color: #1a1a1a;
     font-weight: 500;
     width: 100%;
     margin-bottom: 0;
@@ -434,7 +434,7 @@
   }
 
   .orderItem span:nth-child(2) {
-    color: #64748b;
+    color: #666666;
     font-size: 0.7rem;
     margin-bottom: 0.2rem;
   }
@@ -496,10 +496,10 @@
     width: 100%;
     text-align: center;
     padding: 0.4rem;
-    border: 1px solid #1a202c;
+    border: 1px solid #1a1a1a;
     border-radius: 4px;
     background-color: transparent;
-    color: #1a202c;
+    color: #1a1a1a;
     transition: all 0.2s ease;
     text-transform: none;
     font-weight: 500;
@@ -507,7 +507,7 @@
   }
 
   .orderItem .link:hover {
-    background-color: #1a202c;
+    background-color: #1a1a1a;
     color: #ffffff;
     transform: none;
   }
@@ -598,7 +598,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(45deg, transparent, rgba(26, 32, 44, 0.02), transparent);
+  background: linear-gradient(45deg, transparent, rgba(0, 0, 0, 0.02), transparent);
   transform: translateX(-100%);
   transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
   pointer-events: none;
@@ -616,7 +616,7 @@
 
 .orderItem span {
   font-size: 0.95rem;
-  color: #1a202c;
+  color: #1a1a1a;
   font-weight: 500;
 }
 
@@ -680,10 +680,10 @@
   font-size: 0.85rem;
   font-weight: 500;
   padding: 0.75rem 1.5rem;
-  border: 1px solid #1a202c;
+  border: 1px solid #1a1a1a;
   border-radius: 4px;
   background-color: transparent;
-  color: #1a202c;
+  color: #1a1a1a;
   text-decoration: none;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -705,7 +705,7 @@
 }
 
 .link:hover {
-  background-color: #1a202c;
+  background-color: #1a1a1a;
   color: #ffffff;
   transform: translateY(-1px);
   padding-right: 1.75rem;
@@ -749,7 +749,7 @@
 }
 
 .emptyText {
-  color: #4a5568;
+  color: #555555;
   font-style: italic;
   text-align: center;
   padding: 2rem;
@@ -800,7 +800,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(45deg, transparent, rgba(26, 32, 44, 0.01), transparent);
+  background: linear-gradient(45deg, transparent, rgba(0, 0, 0, 0.01), transparent);
   transform: translateX(-100%);
   transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
   pointer-events: none;
@@ -829,13 +829,13 @@
 
 .addressItem strong {
   font-size: 1.1rem;
-  color: #1a202c;
+  color: #1a1a1a;
   font-weight: 700;
   margin-bottom: 0.25rem;
 }
 
 .addressItem div:first-of-type {
-  color: #4a5568;
+  color: #555555;
   font-size: 0.95rem;
   line-height: 1.6;
 }
@@ -849,7 +849,7 @@
 
 .defaultBadge {
   background-color: rgba(0, 0, 0, 0.05); /* Very light black tint */
-  color: #4a5568; /* Dark grey text */
+  color: #555555; /* Dark grey text */
   padding: 0.5rem 1rem;
   border-radius: 9999px;
   font-size: 0.8rem;
@@ -866,7 +866,7 @@
 .addressForm {
   margin-top: 2rem;
   padding-top: 2rem;
-  border-top: 1px solid rgba(226, 232, 240, 0.8);
+  border-top: 1px solid rgba(229, 229, 229, 0.8);
   display: grid;
   gap: 1rem;
 }
@@ -875,9 +875,9 @@
   font-size: 1.4rem;
   margin-bottom: 1rem;
   text-align: center;
-  color: #1a202c;
+  color: #1a1a1a;
   font-weight: 700;
-  background: linear-gradient(to right, #4a5568, #1a202c);
+  background: linear-gradient(to right, #555555, #1a1a1a);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -1011,7 +1011,7 @@ details[open] > .summaryWithArrow::after {
 /* Profile Skeleton Styles */
 .profileSkeleton {
   min-height: 100vh;
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
   padding: 2rem 3rem;
   position: relative;
   overflow: hidden;

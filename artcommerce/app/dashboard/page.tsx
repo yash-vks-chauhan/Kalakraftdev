@@ -30,6 +30,7 @@ import {
 } from "lucide-react"
 
 import { useAuth } from "../contexts/AuthContext"
+import { OrderStatusBadge } from "./_components/OrderStatusBadge"
 import { useCart } from "../contexts/CartContext"
 import { useWishlist } from "../contexts/WishlistContext"
 import { cn } from "@/lib/utils"
@@ -646,7 +647,7 @@ function RecentOrderRow({ order }: { order: OrderLite }) {
             <p className="truncate text-sm font-medium text-foreground">
               #{order.orderNumber}
             </p>
-            <SmallStatusBadge status={order.status} />
+            <OrderStatusBadge status={order.status} className="text-[10px]" />
           </div>
           <p className="text-xs text-muted-foreground">
             {formatShortDate(order.createdAt)} • {itemCount} item
@@ -716,14 +717,7 @@ function SpendChartCard({
           <CardDescription>
             {formatCurrency(total)} across the period
             {delta !== null && (
-              <span
-                className={cn(
-                  "ml-2 text-xs font-medium",
-                  delta >= 0
-                    ? "text-emerald-600 dark:text-emerald-400"
-                    : "text-destructive"
-                )}
-              >
+              <span className="ml-2 text-xs font-medium text-muted-foreground">
                 {delta >= 0 ? "+" : ""}
                 {delta}% vs prev mo
               </span>
@@ -1534,7 +1528,7 @@ function AdminRecentOrderRow({ order }: { order: OrderLite }) {
             <p className="truncate text-sm font-medium text-foreground">
               #{order.orderNumber}
             </p>
-            <SmallStatusBadge status={order.status} />
+            <OrderStatusBadge status={order.status} className="text-[10px]" />
           </div>
           <p className="truncate text-xs text-muted-foreground">
             {order.user?.fullName ?? "Customer"} · {itemCount} item
@@ -1650,25 +1644,6 @@ function StatTile({
   )
 }
 
-function SmallStatusBadge({ status }: { status: string }) {
-  const s = status.toLowerCase()
-  const label = capitalize(status.toLowerCase())
-  const tone =
-    s === "delivered"
-      ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
-      : s === "shipped"
-      ? "bg-sky-500/10 text-sky-700 dark:text-sky-400"
-      : s === "accepted"
-      ? "bg-indigo-500/10 text-indigo-700 dark:text-indigo-400"
-      : s === "cancelled"
-      ? "bg-destructive/10 text-destructive"
-      : "bg-amber-500/10 text-amber-700 dark:text-amber-400"
-  return (
-    <Badge className={cn("border-transparent text-[10px] font-medium", tone)}>
-      {label}
-    </Badge>
-  )
-}
 
 function CompactLinkRow({ link }: { link: QuickLink }) {
   const Icon = link.icon

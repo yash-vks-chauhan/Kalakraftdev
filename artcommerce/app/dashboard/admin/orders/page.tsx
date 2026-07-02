@@ -844,7 +844,6 @@ function StatusSelect({
   const isSuccess = state === "success"
   const isError = state === "error"
 
-  const tone = statusTone(s)
 
   return (
     <div className="flex items-center gap-2">
@@ -856,9 +855,6 @@ function StatusSelect({
         <SelectTrigger
           className={cn(
             "h-8 w-[148px] gap-1.5 border text-xs font-medium transition-colors",
-            tone.bg,
-            tone.text,
-            tone.border,
             isError && "ring-2 ring-destructive/40",
             isSuccess && "ring-2 ring-emerald-500/40"
           )}
@@ -868,7 +864,7 @@ function StatusSelect({
             <span
               className={cn(
                 "inline-flex h-1.5 w-1.5 shrink-0 rounded-full",
-                tone.dot
+                statusDot(s)
               )}
             />
             <SelectValue />
@@ -917,48 +913,18 @@ function StatusSelect({
   )
 }
 
-function statusTone(status: string): {
-  bg: string
-  text: string
-  border: string
-  dot: string
-} {
+function statusDot(status: string): string {
   switch (status) {
     case "delivered":
-      return {
-        bg: "bg-emerald-500/10 hover:bg-emerald-500/15",
-        text: "text-emerald-700 dark:text-emerald-400",
-        border: "border-emerald-500/30",
-        dot: "bg-emerald-500",
-      }
+      return "bg-emerald-500"
     case "shipped":
-      return {
-        bg: "bg-sky-500/10 hover:bg-sky-500/15",
-        text: "text-sky-700 dark:text-sky-400",
-        border: "border-sky-500/30",
-        dot: "bg-sky-500",
-      }
+      return "bg-sky-500"
     case "accepted":
-      return {
-        bg: "bg-indigo-500/10 hover:bg-indigo-500/15",
-        text: "text-indigo-700 dark:text-indigo-400",
-        border: "border-indigo-500/30",
-        dot: "bg-indigo-500",
-      }
+      return "bg-indigo-500"
     case "cancelled":
-      return {
-        bg: "bg-destructive/10 hover:bg-destructive/15",
-        text: "text-destructive",
-        border: "border-destructive/30",
-        dot: "bg-destructive",
-      }
+      return "bg-destructive"
     default:
-      return {
-        bg: "bg-amber-500/10 hover:bg-amber-500/15",
-        text: "text-amber-700 dark:text-amber-500",
-        border: "border-amber-500/30",
-        dot: "bg-amber-500",
-      }
+      return "bg-amber-500"
   }
 }
 

@@ -1,7 +1,5 @@
 "use client"
 
-import { CircleDot, Clock, CheckCircle2 } from "lucide-react"
-
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 
@@ -9,9 +7,23 @@ export type SupportStatus = "open" | "pending" | "closed" | string
 
 /**
  * A single source of truth for how a ticket's status is presented across the
- * customer and admin support surfaces. Keeps the colour language identical
- * everywhere: open = needs us, pending = waiting on the customer, closed = done.
+ * customer and admin support surfaces: open = needs us, pending = waiting on
+ * the customer, closed = done. Neutral outline badge with a semantic dot —
+ * open is amber (needs attention), not red (nothing is wrong).
  */
+function statusDot(status: SupportStatus): string {
+  switch ((status || "").toLowerCase()) {
+    case "open":
+      return "bg-amber-500"
+    case "pending":
+      return "bg-sky-500"
+    case "closed":
+      return "bg-emerald-500"
+    default:
+      return "bg-muted-foreground/40"
+  }
+}
+
 export function SupportStatusBadge({
   status,
   className,
@@ -20,47 +32,20 @@ export function SupportStatusBadge({
   className?: string
 }) {
   const normalized = (status || "").toLowerCase()
-
-  if (normalized === "open") {
-    return (
-      <Badge
-        className={cn(
-          "gap-1 bg-destructive/10 text-destructive hover:bg-destructive/15 dark:bg-destructive/20",
-          className
-        )}
-      >
-        <CircleDot className="h-3 w-3" />
-        Open
-      </Badge>
-    )
-  }
-
-  if (normalized === "pending") {
-    return (
-      <Badge
-        className={cn(
-          "gap-1 bg-amber-500/10 text-amber-600 hover:bg-amber-500/15 dark:text-amber-500",
-          className
-        )}
-      >
-        <Clock className="h-3 w-3" />
-        Pending
-      </Badge>
-    )
-  }
-
-  if (normalized === "closed") {
-    return (
-      <Badge variant="secondary" className={cn("gap-1", className)}>
-        <CheckCircle2 className="h-3 w-3" />
-        Closed
-      </Badge>
-    )
-  }
+  const label = normalized
+    ? normalized.charAt(0).toUpperCase() + normalized.slice(1)
+    : String(status)
 
   return (
-    <Badge variant="outline" className={className}>
-      {status}
+    <Badge
+      variant="outline"
+      className={cn("gap-1.5 font-normal text-foreground", className)}
+    >
+      <span
+        aria-hidden
+        className={cn("h-1.5 w-1.5 shrink-0 rounded-full", statusDot(status))}
+      />
+      {label}
     </Badge>
   )
 }
@@ -74,16 +59,10 @@ export function SupportStatusDot({
   className?: string
 }) {
   const normalized = (status || "").toLowerCase()
-  const tone =
-    normalized === "open"
-      ? "bg-destructive"
-      : normalized === "pending"
-      ? "bg-amber-500"
-      : "bg-muted-foreground/40"
 
   return (
     <span className={cn("inline-flex items-center gap-1.5", className)}>
-      <span className={cn("h-2 w-2 shrink-0 rounded-full", tone)} />
+      <span className={cn("h-2 w-2 shrink-0 rounded-full", statusDot(status))} />
       <span className="capitalize">{normalized || "unknown"}</span>
     </span>
   )

@@ -20,6 +20,7 @@ import {
 } from "lucide-react"
 
 import { useAuth } from "../../../contexts/AuthContext"
+import { OrderStatusBadge } from "../../_components/OrderStatusBadge"
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -256,7 +257,7 @@ export default function OrderDetailsPage() {
           <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
             Order #{order.orderNumber}
           </h1>
-          <StatusBadge status={order.status} />
+          <OrderStatusBadge status={order.status} />
         </div>
         <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
           <span className="inline-flex items-center gap-1.5">
@@ -496,7 +497,7 @@ export default function OrderDetailsPage() {
         </div>
 
         {/* Right: summary (sticky on desktop) */}
-        <div className="flex flex-col gap-4 lg:sticky lg:top-20 lg:self-start">
+        <div className="flex flex-col gap-4 lg:sticky lg:top-6 lg:self-start">
           <SummaryCard order={order} />
         </div>
       </div>
@@ -734,50 +735,6 @@ function RatingRow({
         ))}
       </div>
     </div>
-  )
-}
-
-function StatusBadge({ status }: { status: string }) {
-  const s = status.toLowerCase()
-  const label = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase()
-
-  if (s === "delivered") {
-    return (
-      <Badge className="gap-1 border-transparent bg-emerald-500/10 text-emerald-700 hover:bg-emerald-500/15 dark:text-emerald-400">
-        <CircleCheck className="h-3 w-3" />
-        {label}
-      </Badge>
-    )
-  }
-  if (s === "shipped") {
-    return (
-      <Badge className="gap-1 border-transparent bg-sky-500/10 text-sky-700 hover:bg-sky-500/15 dark:text-sky-400">
-        <Truck className="h-3 w-3" />
-        {label}
-      </Badge>
-    )
-  }
-  if (s === "accepted") {
-    return (
-      <Badge className="gap-1 border-transparent bg-indigo-500/10 text-indigo-700 hover:bg-indigo-500/15 dark:text-indigo-400">
-        <Package className="h-3 w-3" />
-        {label}
-      </Badge>
-    )
-  }
-  if (s === "cancelled") {
-    return (
-      <Badge className="gap-1 border-transparent bg-destructive/10 text-destructive hover:bg-destructive/15">
-        <CircleX className="h-3 w-3" />
-        {label}
-      </Badge>
-    )
-  }
-  return (
-    <Badge className="gap-1 border-transparent bg-amber-500/10 text-amber-700 hover:bg-amber-500/15 dark:text-amber-400">
-      <Loader2 className="h-3 w-3" />
-      {label}
-    </Badge>
   )
 }
 

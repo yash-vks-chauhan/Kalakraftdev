@@ -440,7 +440,7 @@ export default function ProfilePage() {
         {/* Vertical sub-rail (desktop) / horizontal pills (mobile) */}
         <nav
           aria-label="Profile sections"
-          className="flex gap-1 overflow-x-auto md:sticky md:top-20 md:flex-col md:self-start md:overflow-visible"
+          className="flex gap-1 overflow-x-auto md:sticky md:top-20 lg:top-6 md:flex-col md:self-start md:overflow-visible"
         >
           {sections.map((s) => {
             const isActive = active === s.key
@@ -979,7 +979,7 @@ function ProfileSkeleton() {
         {/* Sub-rail */}
         <nav
           aria-hidden
-          className="flex gap-1 overflow-x-auto md:sticky md:top-20 md:flex-col md:self-start md:overflow-visible"
+          className="flex gap-1 overflow-x-auto md:sticky md:top-20 lg:top-6 md:flex-col md:self-start md:overflow-visible"
         >
           {Array.from({ length: 3 }).map((_, i) => (
             <Skeleton

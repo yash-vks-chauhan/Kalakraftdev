@@ -1491,7 +1491,7 @@
   left: 4px;
   width: calc(50% - 4px);
   height: calc(100% - 8px);
-  background: #1a202c;
+  background: #1a1a1a;
   border-radius: 8px;
   transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
   z-index: 1;
@@ -1508,7 +1508,7 @@
   font-weight: 500;
   border: none;
   background: transparent;
-  color: #1a202c;
+  color: #1a1a1a;
   cursor: pointer;
   position: relative;
   z-index: 2;

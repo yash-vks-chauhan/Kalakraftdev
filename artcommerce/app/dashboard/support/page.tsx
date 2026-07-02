@@ -121,7 +121,10 @@ export default function MySupportTickets() {
       {/* Page header */}
       <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-col gap-1">
-          <h1 className="text-2xl font-semibold tracking-tight">Support</h1>
+          <p className="text-xs text-muted-foreground sm:text-sm">Help</p>
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+            Support
+          </h1>
           <p className="text-sm text-muted-foreground">
             Questions about an order, a delivery, or a product? Start a conversation
             and our team will get back to you.

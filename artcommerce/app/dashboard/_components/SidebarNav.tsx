@@ -143,8 +143,8 @@ function NavGroup({ label, items, pathname, onNavigate, collapsed, counts }: {
             className={cn(
               "group relative flex h-10 items-center overflow-hidden rounded-md whitespace-nowrap transition-colors duration-150",
               active
-                ? "bg-secondary text-foreground font-medium"
-                : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
+                ? "bg-foreground/[0.07] text-foreground font-medium"
+                : "text-muted-foreground hover:bg-foreground/[0.04] hover:text-foreground"
             )}
           >
             <span className="relative flex h-10 w-10 shrink-0 items-center justify-center">
@@ -239,7 +239,7 @@ export function SidebarNav({
   return (
     <div className="flex h-full flex-col">
       {/* Brand + collapse toggle */}
-      <div className="flex h-14 shrink-0 items-center gap-1 overflow-hidden border-b px-3">
+      <div className="flex h-14 shrink-0 items-center gap-1 overflow-hidden px-3">
         {collapsed && onToggleCollapsed ? (
           // Collapsed: the logo itself becomes the expand control.
           <button
@@ -247,7 +247,7 @@ export function SidebarNav({
             onClick={onToggleCollapsed}
             aria-label="Expand sidebar"
             title="Expand sidebar (⌘B)"
-            className="group relative mx-auto flex h-10 w-10 shrink-0 items-center justify-center rounded-md transition-colors duration-150 hover:bg-secondary"
+            className="group relative mx-auto flex h-10 w-10 shrink-0 items-center justify-center rounded-md transition-colors duration-150 hover:bg-foreground/[0.05]"
           >
             <Image
               src={getImageUrl("logo.png")}
@@ -264,7 +264,7 @@ export function SidebarNav({
             href="/"
             onClick={onNavigate}
             aria-label="Kalakraft home"
-            className="group flex h-10 min-w-0 flex-1 items-center rounded-md pr-2 transition-colors duration-150 hover:bg-secondary/60"
+            className="group flex h-10 min-w-0 flex-1 items-center rounded-md pr-2 transition-colors duration-150 hover:bg-foreground/[0.04]"
           >
             <span className="flex h-10 w-10 shrink-0 items-center justify-center">
               <Image
@@ -294,7 +294,7 @@ export function SidebarNav({
             onClick={onToggleCollapsed}
             aria-label="Collapse sidebar"
             title="Collapse sidebar (⌘B)"
-            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors duration-150 hover:bg-secondary hover:text-foreground"
+            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors duration-150 hover:bg-foreground/[0.05] hover:text-foreground"
           >
             <PanelLeftClose className="h-4 w-4" />
           </button>
@@ -322,7 +322,7 @@ export function SidebarNav({
       </nav>
 
       {/* User footer */}
-      <div className="flex h-16 shrink-0 items-center overflow-hidden border-t pl-3">
+      <div className="flex h-16 shrink-0 items-center overflow-hidden pl-3">
         <span className="flex h-10 w-10 shrink-0 items-center justify-center">
           <Avatar
             className="h-9 w-9 border"

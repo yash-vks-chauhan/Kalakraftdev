@@ -43,9 +43,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #e2e8f0;
+  background-color: #e5e5e5;
   border-radius: 14px;
-  color: #94a3b8;
+  color: #999999;
   font-style: italic;
   font-size: 1.1rem;
 }
@@ -61,8 +61,8 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 10;
-  border: 1px solid rgba(226, 232, 240, 0.8);
-  color: #1a202c;
+  border: 1px solid rgba(229, 229, 229, 0.8);
+  color: #1a1a1a;
   font-size: 1.2rem;
   display: flex;
   align-items: center;
@@ -72,7 +72,7 @@
 }
 
 .navigationButton:hover {
-  background-color: #1a202c;
+  background-color: #1a1a1a;
   color: #ffffff;
   transform: translateY(-50%) scale(1.1);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
@@ -110,14 +110,14 @@
 }
 
 .thumbnailButton:hover {
-  border-color: #1a202c;
+  border-color: #1a1a1a;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .thumbnailButton.active {
-  border-color: #1a202c;
-  box-shadow: 0 0 0 3px rgba(26, 32, 44, 0.2);
+  border-color: #1a1a1a;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.2);
 }
 
 .thumbnailImage {

@@ -6,42 +6,44 @@
 :root {
   --foreground-rgb: 0, 0, 0;
   --background-rgb: 255, 255, 255;
-  --primary-color: #2d3748;
-  --secondary-color: #4a5568;
+  --primary-color: #1a1a1a;
+  --secondary-color: #555555;
 
   /*
    * Shadcn design tokens — defined at :root so they're available globally,
    * including inside Radix Portals (Select, Dropdown, Popover, Tooltip),
    * which mount at document.body and would otherwise miss tokens scoped
    * to .dashboard-shell. The dashboard-shell block below still owns the
-   * page-level surface styles (bg-background, text-foreground, font).
+   * page-level text color and font; backgrounds are set per-layout.
    * The rest of the site keeps its existing look because it never uses
    * shadcn utility classes like bg-popover or text-foreground directly.
    */
   --background: 0 0% 100%;
-  --foreground: 222.2 47.4% 11.2%;
+  --foreground: 0 0% 10.2%;
   --card: 0 0% 100%;
-  --card-foreground: 222.2 47.4% 11.2%;
+  --card-foreground: 0 0% 10.2%;
   --popover: 0 0% 100%;
-  --popover-foreground: 222.2 47.4% 11.2%;
-  --primary: 222.2 47.4% 11.2%;
-  --primary-foreground: 210 40% 98%;
-  --secondary: 210 40% 96.1%;
-  --secondary-foreground: 222.2 47.4% 11.2%;
-  --muted: 210 40% 96.1%;
-  --muted-foreground: 215.4 16.3% 46.9%;
-  --accent: 210 40% 96.1%;
-  --accent-foreground: 222.2 47.4% 11.2%;
+  --popover-foreground: 0 0% 10.2%;
+  --primary: 0 0% 10.2%;
+  --primary-foreground: 0 0% 98%;
+  --secondary: 0 0% 96.1%;
+  --secondary-foreground: 0 0% 10.2%;
+  --muted: 0 0% 96.1%;
+  --muted-foreground: 0 0% 40%;
+  --accent: 0 0% 96.1%;
+  --accent-foreground: 0 0% 10.2%;
   --destructive: 0 72% 51%;
-  --destructive-foreground: 210 40% 98%;
-  --border: 214.3 31.8% 91.4%;
-  --input: 214.3 31.8% 91.4%;
-  --ring: 222.2 84% 4.9%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 0 0% 89.8%;
+  --input: 0 0% 89.8%;
+  --ring: 0 0% 10.2%;
   --radius: 0.625rem;
 }
 
 .dashboard-shell {
-  background-color: hsl(var(--background));
+  /* Background intentionally not set here: the dashboard layout controls it
+     with utilities (white on mobile, muted canvas behind the inset panel on
+     desktop), and a rule this late in the file would override them. */
   color: hsl(var(--foreground));
   font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;

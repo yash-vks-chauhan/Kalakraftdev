@@ -309,7 +309,7 @@ export default function DashboardCartPage() {
         </Card>
 
         {/* Order summary */}
-        <div className="flex flex-col gap-4 lg:sticky lg:top-20 lg:self-start">
+        <div className="flex flex-col gap-4 lg:sticky lg:top-6 lg:self-start">
           <Card className="shadow-sm">
             <CardHeader className="gap-1 p-4 sm:p-6">
               <CardTitle>Order summary</CardTitle>
@@ -425,9 +425,8 @@ export default function DashboardCartPage() {
                       setPromoCode(e.target.value.toUpperCase())
                       if (promoError) setPromoError(null)
                     }}
-                    placeholder="ENTER CODE"
+                    placeholder="Promo code"
                     aria-label="Promo code"
-                    className="font-mono tracking-wider"
                   />
                   <Button
                     type="submit"

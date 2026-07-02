@@ -288,7 +288,7 @@ export default function AdminProductsPage() {
         <aside>
           <nav
             aria-label="Filter by category"
-            className="flex gap-1 overflow-x-auto rounded-md border bg-card p-2 md:sticky md:top-20 md:flex-col md:overflow-visible md:p-2"
+            className="flex gap-1 overflow-x-auto rounded-md border bg-card p-2 md:sticky md:top-20 lg:top-6 md:flex-col md:overflow-visible md:p-2"
           >
             <CategoryButton
               icon={Package}

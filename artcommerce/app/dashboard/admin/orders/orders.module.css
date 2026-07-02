@@ -1,6 +1,6 @@
 .container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
   padding: 3rem;
   position: relative;
   overflow: hidden;
@@ -15,8 +15,8 @@
   right: 0;
   bottom: 0;
   background:
-    radial-gradient(circle at 20% 20%, rgba(26, 32, 44, 0.03) 0%, transparent 50%),
-    radial-gradient(circle at 80% 80%, rgba(26, 32, 44, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 20% 20%, rgba(0, 0, 0, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(0, 0, 0, 0.03) 0%, transparent 50%),
     url('/images/art-pattern.png') center/cover no-repeat;
   opacity: 0.05;
   z-index: 0;
@@ -41,7 +41,7 @@
 .title {
   font-size: 2.5rem;
   font-weight: 700;
-  color: #1a202c;
+  color: #1a1a1a;
   margin-bottom: 2rem;
   letter-spacing: -0.025em;
   position: relative;
@@ -55,7 +55,7 @@
   left: 0;
   width: 40%;
   height: 2px;
-  background: linear-gradient(90deg, #1a202c, transparent);
+  background: linear-gradient(90deg, #1a1a1a, transparent);
   transform: scaleX(0);
   transform-origin: left;
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -73,7 +73,7 @@
   margin-bottom: 2rem;
   background: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(8px);
-  border: 1px solid rgba(226, 232, 240, 0.8);
+  border: 1px solid rgba(229, 229, 229, 0.8);
   border-radius: 16px;
   padding: 2rem;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -93,7 +93,7 @@
   display: block;
   font-size: 0.875rem;
   font-weight: 600;
-  color: #4a5568;
+  color: #555555;
   margin-bottom: 0.5rem;
   letter-spacing: 0.3px;
 }
@@ -102,10 +102,10 @@
 .filterSelect {
   width: 100%;
   padding: 0.75rem 1rem;
-  border: 2px solid #e2e8f0;
+  border: 2px solid #e5e5e5;
   border-radius: 8px;
   background-color: rgba(255, 255, 255, 0.9);
-  color: #1a202c;
+  color: #1a1a1a;
   font-size: 0.875rem;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -113,8 +113,8 @@
 .filterInput:focus,
 .filterSelect:focus {
   outline: none;
-  border-color: #1a202c;
-  box-shadow: 0 0 0 3px rgba(26, 32, 44, 0.1);
+  border-color: #1a1a1a;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
   transform: translateY(-1px);
 }
 
@@ -125,9 +125,9 @@
   padding: 0.75rem 1.5rem;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #1a202c;
+  color: #1a1a1a;
   background-color: transparent;
-  border: 2px solid #1a202c;
+  border: 2px solid #1a1a1a;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -136,7 +136,7 @@
 }
 
 .exportButton:hover {
-  background-color: #1a202c;
+  background-color: #1a1a1a;
   color: #ffffff;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -151,7 +151,7 @@
 .orderCard {
   background: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(8px);
-  border: 1px solid rgba(226, 232, 240, 0.8);
+  border: 1px solid rgba(229, 229, 229, 0.8);
   border-radius: 16px;
   padding: 2rem;
   transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
@@ -167,7 +167,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(45deg, transparent, rgba(26, 32, 44, 0.02), transparent);
+  background: linear-gradient(45deg, transparent, rgba(0, 0, 0, 0.02), transparent);
   transform: translateX(-100%);
   transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -191,18 +191,18 @@
 .orderNumber {
   font-size: 1.25rem;
   font-weight: 600;
-  color: #1a202c;
+  color: #1a1a1a;
 }
 
 .orderAmount {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #1a202c;
+  color: #1a1a1a;
 }
 
 .orderDate {
   font-size: 0.875rem;
-  color: #4a5568;
+  color: #555555;
   margin-top: 0.25rem;
 }
 
@@ -212,18 +212,18 @@
 
 .customerName {
   font-weight: 600;
-  color: #1a202c;
+  color: #1a1a1a;
 }
 
 .customerEmail {
-  color: #4a5568;
+  color: #555555;
   font-size: 0.875rem;
 }
 
 .shippingAddress {
   margin-top: 1rem;
   font-size: 0.875rem;
-  color: #4a5568;
+  color: #555555;
 }
 
 .orderActions {
@@ -232,7 +232,7 @@
   gap: 1rem;
   margin-top: 1.5rem;
   padding-top: 1.5rem;
-  border-top: 1px solid rgba(226, 232, 240, 0.8);
+  border-top: 1px solid rgba(229, 229, 229, 0.8);
 }
 
 .statusBadge {
@@ -251,9 +251,9 @@
   padding: 0.75rem 1.25rem;
   font-size: 0.85rem;
   font-weight: 500;
-  color: #1a202c;
+  color: #1a1a1a;
   background-color: transparent;
-  border: 1px solid #1a202c;
+  border: 1px solid #1a1a1a;
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -275,7 +275,7 @@
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(26, 32, 44, 0.03),
+    rgba(0, 0, 0, 0.03),
     transparent
   );
   transform: translateX(-100%);
@@ -283,7 +283,7 @@
 }
 
 .viewLink:hover {
-  background-color: #1a202c;
+  background-color: #1a1a1a;
   color: #ffffff;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -345,7 +345,7 @@
 .chartCard {
   background: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(8px);
-  border: 1px solid rgba(226, 232, 240, 0.8);
+  border: 1px solid rgba(229, 229, 229, 0.8);
   border-radius: 16px;
   padding: 2rem;
   transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
@@ -362,7 +362,7 @@
 .chartTitle {
   font-size: 1.25rem;
   font-weight: 600;
-  color: #1a202c;
+  color: #1a1a1a;
   margin-bottom: 1.5rem;
   position: relative;
   display: inline-block;
@@ -375,7 +375,7 @@
   left: 0;
   width: 30%;
   height: 1px;
-  background: linear-gradient(90deg, #1a202c, transparent);
+  background: linear-gradient(90deg, #1a1a1a, transparent);
   transform: scaleX(0);
   transform-origin: left;
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -387,7 +387,7 @@
 }
 
 .noDataText {
-  color: #4a5568;
+  color: #555555;
   font-size: 0.875rem;
   text-align: center;
   padding: 2rem;

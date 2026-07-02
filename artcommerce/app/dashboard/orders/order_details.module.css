@@ -1,6 +1,6 @@
 .orderDetailsContainer {
   min-height: 100vh;
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
   padding: 3rem;
   position: relative;
   overflow: hidden;
@@ -15,8 +15,8 @@
   right: 0;
   bottom: 0;
   background:
-    radial-gradient(circle at 20% 20%, rgba(26, 32, 44, 0.03) 0%, transparent 50%),
-    radial-gradient(circle at 80% 80%, rgba(26, 32, 44, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 20% 20%, rgba(0, 0, 0, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(0, 0, 0, 0.03) 0%, transparent 50%),
     url('/images/art-pattern.png') center/cover no-repeat;
   opacity: 0.05;
   z-index: 0;
@@ -38,7 +38,7 @@
   align-items: flex-start;
   margin-bottom: 2rem;
   padding-bottom: 1rem;
-  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+  border-bottom: 1px solid rgba(229, 229, 229, 0.8);
   position: relative;
   z-index: 1;
 }
@@ -46,7 +46,7 @@
 .orderNumber {
   font-size: 2.5rem;
   font-weight: 700;
-  color: #1a202c;
+  color: #1a1a1a;
   letter-spacing: -0.025em;
   position: relative;
   display: inline-block;
@@ -59,7 +59,7 @@
   left: 0;
   width: 40%;
   height: 2px;
-  background: linear-gradient(90deg, #1a202c, transparent);
+  background: linear-gradient(90deg, #1a1a1a, transparent);
   transform: scaleX(0);
   transform-origin: left;
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -72,7 +72,7 @@
 
 .orderDate {
   font-size: 0.9rem;
-  color: #64748b;
+  color: #666666;
   font-weight: 500;
   margin-top: 0.5rem;
 }
@@ -80,7 +80,7 @@
 .totalCharged {
   font-size: 1.8rem;
   font-weight: 700;
-  color: #1a202c;
+  color: #1a1a1a;
   margin-bottom: 1.5rem;
 }
 
@@ -104,7 +104,7 @@
   background-color: rgba(0, 0, 0, 0.05);
   padding: 0.2em 0.4em;
   border-radius: 4px;
-  color: #4a5568;
+  color: #555555;
 }
 
 .section {
@@ -134,7 +134,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(45deg, transparent, rgba(26, 32, 44, 0.02), transparent);
+  background: linear-gradient(45deg, transparent, rgba(0, 0, 0, 0.02), transparent);
   transform: translateX(-100%);
   transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
   pointer-events: none;
@@ -147,7 +147,7 @@
 .sectionTitle {
   font-size: 1.5rem;
   font-weight: 600;
-  color: #1a202c;
+  color: #1a1a1a;
   margin-bottom: 1.5rem;
   position: relative;
   display: inline-block;
@@ -160,7 +160,7 @@
   left: 0;
   width: 30%;
   height: 1px;
-  background: linear-gradient(90deg, #1a202c, transparent);
+  background: linear-gradient(90deg, #1a1a1a, transparent);
   transform: scaleX(0);
   transform-origin: left;
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -178,12 +178,12 @@
 }
 
 .infoItem p {
-  color: #4a5568;
+  color: #555555;
   margin-bottom: 0.5rem;
 }
 
 .infoItem strong {
-  color: #1a202c;
+  color: #1a1a1a;
 }
 
 .statusContainer {
@@ -230,18 +230,18 @@
 
 .statusSelect {
   padding: 0.6rem 1rem;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #e5e5e5;
   border-radius: 8px;
   background-color: #ffffff;
-  color: #1a202c;
+  color: #1a1a1a;
   font-size: 0.875rem;
   transition: all 0.3s ease;
 }
 
 .statusSelect:focus {
   outline: none;
-  border-color: #1a202c;
-  box-shadow: 0 0 0 2px rgba(26, 32, 44, 0.1);
+  border-color: #1a1a1a;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
 }
 
 .updateButton {
@@ -249,8 +249,8 @@
   font-size: 0.85rem;
   font-weight: 500;
   color: #ffffff;
-  background-color: #1a202c;
-  border: 1px solid #1a202c;
+  background-color: #1a1a1a;
+  border: 1px solid #1a1a1a;
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -296,13 +296,13 @@
 }
 
 .itemTable thead th {
-  background-color: rgba(26, 32, 44, 0.05);
+  background-color: rgba(0, 0, 0, 0.05);
   padding: 1rem;
   text-align: left;
   font-size: 0.875rem;
-  color: #4a5568;
+  color: #555555;
   font-weight: 600;
-  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+  border-bottom: 1px solid rgba(229, 229, 229, 0.8);
 }
 
 .itemTable tbody tr {
@@ -320,7 +320,7 @@
 
 .itemTable td {
   padding: 1rem;
-  color: #1a202c;
+  color: #1a1a1a;
   font-size: 0.9rem;
 }
 
@@ -337,14 +337,14 @@
 .itemTable tfoot td {
   padding: 1rem;
   font-weight: 600;
-  color: #1a202c;
+  color: #1a1a1a;
   font-size: 1rem;
 }
 
 .itemTable tfoot tr:last-child td {
   font-size: 1.25rem;
   font-weight: 700;
-  background-color: rgba(26, 32, 44, 0.08);
+  background-color: rgba(0, 0, 0, 0.08);
   border-radius: 8px;
 }
 
@@ -374,7 +374,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(45deg, transparent, rgba(26, 32, 44, 0.02), transparent);
+  background: linear-gradient(45deg, transparent, rgba(0, 0, 0, 0.02), transparent);
   transform: translateX(-100%);
   transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -390,7 +390,7 @@
   padding: 1rem;
   margin-bottom: 1rem;
   transition: all 0.3s ease;
-  border: 1px solid rgba(226, 232, 240, 0.8);
+  border: 1px solid rgba(229, 229, 229, 0.8);
 }
 
 .noteItem:hover {
@@ -399,7 +399,7 @@
 }
 
 .noteText {
-  color: #1a202c;
+  color: #1a1a1a;
   font-size: 0.95rem;
   line-height: 1.6;
 }
@@ -407,7 +407,7 @@
 .noteMeta {
   margin-top: 0.5rem;
   font-size: 0.75rem;
-  color: #64748b;
+  color: #666666;
   font-style: italic;
 }
 
@@ -420,25 +420,25 @@
 .noteInput {
   flex-grow: 1;
   padding: 0.75rem 1rem;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #e5e5e5;
   border-radius: 8px;
   background-color: rgba(255, 255, 255, 0.9);
-  color: #1a202c;
+  color: #1a1a1a;
   font-size: 0.9rem;
   transition: all 0.3s ease;
 }
 
 .noteInput:focus {
   outline: none;
-  border-color: #1a202c;
-  box-shadow: 0 0 0 2px rgba(26, 32, 44, 0.1);
+  border-color: #1a1a1a;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
 }
 
 .backLink {
   display: inline-block;
   margin-top: 3rem;
   font-size: 0.9rem;
-  color: #1a202c;
+  color: #1a1a1a;
   text-decoration: none;
   font-weight: 500;
   transition: all 0.3s ease;
@@ -452,7 +452,7 @@
   height: 1px;
   bottom: -2px;
   left: 0;
-  background-color: #1a202c;
+  background-color: #1a1a1a;
   transition: width 0.3s ease;
 }
 
@@ -462,7 +462,7 @@
 
 .backLink:hover {
   transform: translateX(-5px);
-  color: #4a5568;
+  color: #555555;
 }
 
 @keyframes gradientFlow {
@@ -535,7 +535,7 @@
   }
 
   .itemTable td:not(:last-child) {
-    border-bottom: 1px solid rgba(226, 232, 240, 0.5);
+    border-bottom: 1px solid rgba(229, 229, 229, 0.5);
   }
 
   .itemTable td:first-child,
@@ -546,7 +546,7 @@
   .itemTable td::before {
     content: attr(data-label);
     font-weight: 600;
-    color: #4a5568;
+    color: #555555;
   }
 
   .itemTable tfoot td {

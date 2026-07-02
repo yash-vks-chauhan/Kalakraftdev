@@ -13,7 +13,6 @@ import {
   ShoppingCart,
   Sparkles,
   Trash2,
-  X,
 } from "lucide-react"
 
 import { useAuth } from "../../contexts/AuthContext"
@@ -252,27 +251,6 @@ export default function DashboardWishlistPage() {
                       aria-hidden
                       className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/20 to-transparent opacity-0 transition-opacity duration-300 group-hover/card:opacity-100"
                     />
-
-                    {/* Top-right remove */}
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.preventDefault()
-                        e.stopPropagation()
-                        handleRemove(item)
-                      }}
-                      aria-label="Remove from wishlist"
-                      disabled={isBusy}
-                      className={cn(
-                        "absolute right-2 top-2 inline-flex h-8 w-8 items-center justify-center rounded-full border bg-background/90 text-muted-foreground shadow-sm backdrop-blur",
-                        "transition-all duration-200",
-                        "opacity-90 hover:scale-105 hover:bg-background hover:text-destructive hover:opacity-100",
-                        "focus-visible:outline-none focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ring/40",
-                        "disabled:opacity-50"
-                      )}
-                    >
-                      <X className="h-3.5 w-3.5" />
-                    </button>
 
                     {/* Stock badge overlay */}
                     {stockKnown && (

@@ -663,7 +663,7 @@ export default function NewProductPage() {
         </form>
 
         {/* RIGHT — sticky live preview + checklist */}
-        <aside className="flex flex-col gap-4 lg:sticky lg:top-[88px] lg:self-start">
+        <aside className="flex flex-col gap-4 lg:sticky lg:top-16 lg:self-start">
           <PreviewCard
             name={name}
             cover={imageUrls[0]}

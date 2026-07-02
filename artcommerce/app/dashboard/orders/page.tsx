@@ -8,15 +8,12 @@ import {
   Clock,
   Package,
   PackageX,
-  ReceiptText,
   ShoppingBag,
-  Truck,
-  CircleCheck,
   CircleX,
-  Loader2,
 } from "lucide-react"
 
 import { useAuth } from "../../contexts/AuthContext"
+import { OrderStatusBadge } from "../_components/OrderStatusBadge"
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -153,17 +150,6 @@ export default function DashboardOrdersPage() {
     )
   }, [orders, statusFilter])
 
-  const stats = useMemo(() => {
-    const totalSpend = orders.reduce(
-      (sum, o) => sum + (o.discountedTotal ?? o.totalAmount),
-      0
-    )
-    const active = orders.filter((o) =>
-      ["pending", "accepted", "shipped"].includes(o.status.toLowerCase())
-    ).length
-    return { totalSpend, active, count: orders.length }
-  }, [orders])
-
   if (!user) return null
 
   if (loading) {
@@ -229,27 +215,6 @@ export default function DashboardOrdersPage() {
   return (
     <main className="flex flex-col gap-6">
       <OrdersHeader count={orders.length} />
-
-      {/* Summary strip */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
-        <StatTile
-          icon={ReceiptText}
-          label="Orders placed"
-          value={stats.count.toString()}
-        />
-        <StatTile
-          icon={Truck}
-          label="Active"
-          value={stats.active.toString()}
-          tone={stats.active > 0 ? "primary" : "muted"}
-        />
-        <StatTile
-          icon={ShoppingBag}
-          label="Lifetime spend"
-          value={formatCurrency(stats.totalSpend)}
-          className="col-span-2 lg:col-span-1"
-        />
-      </div>
 
       {/* Filter row */}
       <div className="flex items-center justify-between gap-3">
@@ -353,14 +318,14 @@ function OrderRow({
 
   return (
     <li>
-      <Card className="shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-foreground/20 hover:shadow-md">
+      <Card className="group/row relative shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-foreground/20 hover:shadow-md">
         <CardContent className="flex flex-col gap-4 p-4 sm:p-5">
-          {/* Header */}
+          {/* Header — the order link stretches over the whole card */}
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="flex min-w-0 flex-col gap-1">
               <Link
                 href={`/dashboard/orders/${order.id}`}
-                className="text-sm font-semibold text-foreground hover:underline sm:text-base"
+                className="text-sm font-semibold text-foreground after:absolute after:inset-0 after:content-[''] sm:text-base"
               >
                 Order #{order.orderNumber}
               </Link>
@@ -387,7 +352,10 @@ function OrderRow({
                 ) : null}
               </div>
             </div>
-            <StatusBadge status={order.status} />
+            <div className="flex items-center gap-2">
+              <OrderStatusBadge status={order.status} />
+              <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform duration-200 group-hover/row:translate-x-0.5" />
+            </div>
           </div>
 
           {/* Item mini-list */}
@@ -436,128 +404,32 @@ function OrderRow({
             )}
           </ul>
 
-          <Separator />
-
-          {/* Actions */}
-          <div className="flex items-center justify-end gap-2">
-            {isAdmin && (
-              <Button asChild variant="outline" size="sm">
-                <Link href={`/dashboard/orders/${order.id}/edit-status`}>
-                  Edit status
-                </Link>
-              </Button>
-            )}
-            <Button asChild size="sm" className="gap-1.5">
-              <Link href={`/dashboard/orders/${order.id}`}>
-                View details
-                <ChevronRight className="h-3.5 w-3.5" />
-              </Link>
-            </Button>
-          </div>
+          {isAdmin && (
+            <>
+              <Separator />
+              <div className="flex justify-end">
+                <Button
+                  asChild
+                  variant="outline"
+                  size="sm"
+                  className="relative z-10"
+                >
+                  <Link href={`/dashboard/orders/${order.id}/edit-status`}>
+                    Edit status
+                  </Link>
+                </Button>
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
     </li>
   )
 }
 
-function StatusBadge({ status }: { status: string }) {
-  const s = status.toLowerCase()
-  const label = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase()
-
-  if (s === "delivered") {
-    return (
-      <Badge className="gap-1 border-transparent bg-emerald-500/10 text-emerald-700 hover:bg-emerald-500/15 dark:text-emerald-400">
-        <CircleCheck className="h-3 w-3" />
-        {label}
-      </Badge>
-    )
-  }
-  if (s === "shipped") {
-    return (
-      <Badge className="gap-1 border-transparent bg-sky-500/10 text-sky-700 hover:bg-sky-500/15 dark:text-sky-400">
-        <Truck className="h-3 w-3" />
-        {label}
-      </Badge>
-    )
-  }
-  if (s === "accepted") {
-    return (
-      <Badge className="gap-1 border-transparent bg-indigo-500/10 text-indigo-700 hover:bg-indigo-500/15 dark:text-indigo-400">
-        <Package className="h-3 w-3" />
-        {label}
-      </Badge>
-    )
-  }
-  if (s === "cancelled") {
-    return (
-      <Badge className="gap-1 border-transparent bg-destructive/10 text-destructive hover:bg-destructive/15">
-        <CircleX className="h-3 w-3" />
-        {label}
-      </Badge>
-    )
-  }
-  return (
-    <Badge className="gap-1 border-transparent bg-amber-500/10 text-amber-700 hover:bg-amber-500/15 dark:text-amber-400">
-      <Loader2 className="h-3 w-3" />
-      {label}
-    </Badge>
-  )
-}
-
-function StatTile({
-  icon: Icon,
-  label,
-  value,
-  tone = "default",
-  className,
-}: {
-  icon: typeof Package
-  label: string
-  value: string
-  tone?: "default" | "primary" | "muted"
-  className?: string
-}) {
-  const toneStyles =
-    tone === "primary"
-      ? "bg-foreground/5 text-foreground border"
-      : tone === "muted"
-      ? "bg-muted text-muted-foreground"
-      : "bg-muted/50 text-foreground border"
-
-  return (
-    <Card className={cn("shadow-sm", className)}>
-      <CardContent className="flex items-center gap-3 p-3 sm:gap-4 sm:p-4">
-        <span
-          className={cn(
-            "flex h-9 w-9 shrink-0 items-center justify-center rounded-md sm:h-10 sm:w-10",
-            toneStyles
-          )}
-        >
-          <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
-        </span>
-        <div className="flex min-w-0 flex-col">
-          <span className="truncate text-[10px] font-medium uppercase tracking-wide text-muted-foreground sm:text-xs">
-            {label}
-          </span>
-          <span className="truncate text-base font-semibold tabular-nums tracking-tight text-foreground sm:text-lg">
-            {value}
-          </span>
-        </div>
-      </CardContent>
-    </Card>
-  )
-}
-
 function OrdersSkeleton() {
   return (
     <>
-      {/* Stats strip — mirrors the real 3-tile summary */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
-        <StatTileSkeleton />
-        <StatTileSkeleton />
-        <StatTileSkeleton className="col-span-2 lg:col-span-1" />
-      </div>
-
       {/* Filter row */}
       <div className="flex items-center justify-between gap-3">
         <Skeleton className="h-4 w-32" />
@@ -573,20 +445,6 @@ function OrdersSkeleton() {
         ))}
       </ul>
     </>
-  )
-}
-
-function StatTileSkeleton({ className }: { className?: string }) {
-  return (
-    <Card className={cn("shadow-sm", className)}>
-      <CardContent className="flex items-center gap-3 p-3 sm:gap-4 sm:p-4">
-        <Skeleton className="h-9 w-9 rounded-md sm:h-10 sm:w-10" />
-        <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-          <Skeleton className="h-2.5 w-16" />
-          <Skeleton className="h-5 w-24" />
-        </div>
-      </CardContent>
-    </Card>
   )
 }
 
@@ -617,12 +475,6 @@ function OrderRowSkeleton({ itemRows = 2 }: { itemRows?: number }) {
           ))}
         </ul>
 
-        <Separator />
-
-        {/* Actions row — right-aligned, matches View details button */}
-        <div className="flex justify-end">
-          <Skeleton className="h-8 w-28" />
-        </div>
       </CardContent>
     </Card>
   )
