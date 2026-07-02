@@ -10,7 +10,7 @@ import VirtualProductGrid from '../components/VirtualProductGrid'
 import LoadingSpinner from '../components/LoadingSpinner'
 import styles from './products.module.css'
 import animationStyles from './products-animations.module.css'
-import { FiChevronLeft, FiChevronRight, FiGrid, FiStar, FiPackage, FiTrendingUp, FiX, FiChevronDown } from 'react-icons/fi'
+import { FiChevronLeft, FiChevronRight, FiX } from 'react-icons/fi'
 import { AlertCircle, ArrowUp, ArrowUpDown, PackageSearch, Heart, ShoppingCart, User, ChevronDown, Check, X, Star, RotateCcw, SlidersHorizontal, Search } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '../contexts/AuthContext'
@@ -539,267 +539,46 @@ export default function ProductsClient() {
     setOpenSections(prev => ({ ...prev, [section]: !prev[section] }))
   }
 
-  // Accordion content animation — single source of truth so every
-  // section opens/closes with the same feel.
-  const accordionMotion = {
-    initial: { height: 0, opacity: 0 },
-    animate: { height: 'auto' as const, opacity: 1 },
-    exit:    { height: 0, opacity: 0 },
-    transition: { duration: 0.32, ease: SMOOTH_EASE },
-    style: { overflow: 'hidden' as const },
-  }
+  // Unified filter panel — used by the desktop sidebar (on the muted canvas)
+  // and the narrow-window drawer (on a white card). One interaction model:
+  // click a row to select it, click again to deselect. No form controls —
+  // selection reads as a lifted pill plus a right-aligned check.
+  const renderFilterPanel = (opts?: { surface?: 'canvas' | 'card'; includeSort?: boolean }) => {
+    const { surface = 'canvas', includeSort = false } = opts ?? {}
+    const onCanvas = surface === 'canvas'
 
-  // Chevron rotation — one shared transition.
-  const chevronTransition = { duration: 0.28, ease: SMOOTH_EASE }
-
-  // Render the filter sidebar/drawer
-  const renderFilters = () => (
-    <>
-      {/* Category filter */}
-      <div className={styles.filterSection}>
-        <div className={styles.filterHeader} onClick={() => toggleSection('category')}>
-          <span><FiGrid />Category</span>
-          <motion.div animate={{ rotate: openSections.category ? 180 : 0 }} transition={chevronTransition}>
-            <FiChevronDown className={styles.arrow} />
-          </motion.div>
-        </div>
-        <AnimatePresence initial={false}>
-          {openSections.category && (
-            <motion.div className={styles.filterContent} {...accordionMotion}>
-              {KNOWN_CATEGORIES.map(cat => (
-                <label key={cat.slug} className={styles.filterOption}>
-                  <input
-                    type="radio"
-                    name="categoryFilter"
-                    checked={currentCategory === cat.slug}
-                    onChange={() => {
-                      const qs = new URLSearchParams(searchParams.toString())
-                      if (cat.slug === currentCategory) qs.delete('category')
-                      else qs.set('category', cat.slug)
-                      router.replace(qs.toString() ? `/products?${qs}` : '/products')
-                      if (isMobileView) setIsMobileFilterOpen(false)
-                    }}
-                  />
-                  <span>{cat.name}</span>
-                </label>
-              ))}
-              {currentCategory && (
-                <button
-                  type="button"
-                  className={styles.clearButton}
-                  onClick={() => {
-                    const qs = new URLSearchParams(searchParams.toString())
-                    qs.delete('category')
-                    router.replace(qs.toString() ? `/products?${qs}` : '/products')
-                  }}
-                >
-                  Clear
-                </button>
-              )}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* Mood Tags */}
-      {usageTags.length > 0 && (
-        <div className={styles.filterSection}>
-          <div className={styles.filterHeader} onClick={() => toggleSection('mood')}>
-            <span><FiTrendingUp />Purpose / Mood</span>
-            <motion.div animate={{ rotate: openSections.mood ? 180 : 0 }} transition={chevronTransition}>
-              <FiChevronDown className={styles.arrow} />
-            </motion.div>
-          </div>
-          <AnimatePresence initial={false}>
-            {openSections.mood && (
-              <motion.div className={styles.filterContent} {...accordionMotion}>
-                {usageTags.map(tag => (
-                  <label key={tag} className={styles.filterOption}>
-                    <input
-                      type="radio"
-                      name="tagFilter"
-                      checked={currentTag === tag}
-                      onChange={() => {
-                        const qs = new URLSearchParams(searchParams.toString())
-                        if (tag === currentTag) qs.delete('usageTag')
-                        else qs.set('usageTag', tag)
-                        router.replace(qs.toString() ? `/products?${qs}` : '/products')
-                        if (isMobileView) setIsMobileFilterOpen(false)
-                      }}
-                    />
-                    <span>{tag}</span>
-                  </label>
-                ))}
-                {currentTag && (
-                  <button
-                    type="button"
-                    className={styles.clearButton}
-                    onClick={() => {
-                      const qs = new URLSearchParams(searchParams.toString())
-                      qs.delete('usageTag')
-                      router.replace(qs.toString() ? `/products?${qs}` : '/products')
-                    }}
-                  >
-                    Clear
-                  </button>
-                )}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      )}
-
-      {/* Rating */}
-      <div className={styles.filterSection}>
-        <div className={styles.filterHeader} onClick={() => toggleSection('rating')}>
-          <span><FiStar />Rating</span>
-          <motion.div animate={{ rotate: openSections.rating ? 180 : 0 }} transition={chevronTransition}>
-            <FiChevronDown className={styles.arrow} />
-          </motion.div>
-        </div>
-        <AnimatePresence initial={false}>
-          {openSections.rating && (
-            <motion.div className={styles.filterContent} {...accordionMotion}>
-              {[4, 3, 2, 1].map(thr => (
-                <label key={thr} className={styles.filterOption}>
-                  <input
-                    type="radio"
-                    name="ratingFilter"
-                    checked={Number(ratingMin) === thr}
-                    onChange={() => {
-                      const newValue = Number(ratingMin) === thr ? '' : String(thr)
-                      updateFilter('ratingMin', newValue)
-                      if (isMobileView) setIsMobileFilterOpen(false)
-                    }}
-                  />
-                  <span>{thr}+ stars</span>
-                </label>
-              ))}
-              {ratingMin && (
-                <button type="button" className={styles.clearButton} onClick={() => updateFilter('ratingMin', '')}>
-                  Clear
-                </button>
-              )}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* Stock */}
-      <div className={styles.filterSection}>
-        <div className={styles.filterHeader} onClick={() => toggleSection('stock')}>
-          <span><FiPackage />Stock</span>
-          <motion.div animate={{ rotate: openSections.stock ? 180 : 0 }} transition={chevronTransition}>
-            <FiChevronDown className={styles.arrow} />
-          </motion.div>
-        </div>
-        <AnimatePresence initial={false}>
-          {openSections.stock && (
-            <motion.div className={styles.filterContent} {...accordionMotion}>
-              <label className={styles.filterOption}>
-                <input
-                  type="checkbox"
-                  checked={lowStockOnly}
-                  onChange={e => {
-                    updateFilter('lowStockOnly', e.target.checked)
-                    if (isMobileView) setIsMobileFilterOpen(false)
-                  }}
-                />
-                <span>Only low stock</span>
-              </label>
-              <label className={styles.filterOption}>
-                <input
-                  type="checkbox"
-                  checked={inStockOnly}
-                  onChange={e => {
-                    updateFilter('inStockOnly', e.target.checked)
-                    if (isMobileView) setIsMobileFilterOpen(false)
-                  }}
-                />
-                <span>In stock only</span>
-              </label>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* Sort */}
-      <div className={styles.filterSection}>
-        <div className={styles.filterHeader} onClick={() => toggleSection('sort')}>
-          <span><FiTrendingUp />Sort</span>
-          <motion.div animate={{ rotate: openSections.sort ? 180 : 0 }} transition={chevronTransition}>
-            <FiChevronDown className={styles.arrow} />
-          </motion.div>
-        </div>
-        <AnimatePresence initial={false}>
-          {openSections.sort && (
-            <motion.div className={styles.filterContent} {...accordionMotion}>
-              {PAGE_SORT_OPTIONS.map(opt => (
-                <label key={opt.value || 'default'} className={styles.filterOption}>
-                  <input
-                    type="radio"
-                    name="sortoption"
-                    checked={sortOrder === opt.value || (opt.value === '' && sortOrder === 'newest')}
-                    onChange={() => {
-                      updateFilter('sortOrder', opt.value)
-                      if (isMobileView) setIsMobileFilterOpen(false)
-                    }}
-                  />
-                  <span>{opt.label}</span>
-                </label>
-              ))}
-              {sortOrder && sortOrder !== '' && (
-                <button type="button" className={styles.clearButton} onClick={() => updateFilter('sortOrder', '')}>
-                  Clear
-                </button>
-              )}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-    </>
-  )
-
-  // Redesigned persistent filters for the desktop sidebar (shadcn inset
-  // aesthetic). Rows sit directly on the muted canvas; the active row lifts
-  // onto a white pill. Reuses the same filter state/handlers as renderFilters.
-  const renderDesktopFilters = () => {
-    // Row states: rest → hover tint → clearly darker while pressed (instant
-    // feedback while the URL round-trip settles) → white pill when selected.
+    // Row states: rest → hover tint → darker while pressed (instant feedback
+    // while the URL round-trip settles) → pill when selected. The pill is
+    // white on the muted canvas, muted on the white drawer.
     const rowClass = (active: boolean) =>
       cn(
-        'group flex w-full items-center gap-2.5 rounded-lg px-2.5 py-[7px] text-left text-[13px]',
+        'group flex w-full items-center gap-2 rounded-lg px-2.5 py-[7px] text-left text-[13px]',
         'outline-none transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-zinc-900/20',
         active
-          ? 'bg-white font-medium text-zinc-900 ring-1 ring-zinc-900/[0.08] hover:bg-zinc-50 active:bg-zinc-100'
-          : 'text-zinc-600 hover:bg-zinc-200/45 hover:text-zinc-900 active:bg-zinc-300/50',
+          ? onCanvas
+            ? 'bg-white font-medium text-zinc-900 ring-1 ring-zinc-900/[0.08] hover:bg-zinc-50 active:bg-zinc-100'
+            : 'bg-zinc-100 font-medium text-zinc-900 active:bg-zinc-200/70'
+          : onCanvas
+            ? 'text-zinc-600 hover:bg-zinc-200/45 hover:text-zinc-900 active:bg-zinc-300/50'
+            : 'text-zinc-600 hover:bg-zinc-100/80 hover:text-zinc-900 active:bg-zinc-200/60',
       )
 
-    const radioRow = (selected: boolean, label: React.ReactNode, onClick: () => void) => (
-      <button type="button" onClick={onClick} className={rowClass(selected)}>
-        <span
+    const row = (
+      selected: boolean,
+      label: React.ReactNode,
+      onClick: () => void,
+      trailing?: React.ReactNode,
+    ) => (
+      <button type="button" onClick={onClick} aria-pressed={selected} className={rowClass(selected)}>
+        <span className="flex min-w-0 flex-1 items-center gap-1.5">{label}</span>
+        {trailing}
+        <Check
+          strokeWidth={2.5}
           className={cn(
-            'flex h-[15px] w-[15px] shrink-0 items-center justify-center rounded-full border transition-colors',
-            selected ? 'border-zinc-900 bg-zinc-900' : 'border-zinc-300 group-hover:border-zinc-400',
+            'h-3.5 w-3.5 shrink-0 transition-opacity duration-150',
+            selected ? 'opacity-100' : 'opacity-0',
           )}
-        >
-          {selected && <span className="h-[5px] w-[5px] rounded-full bg-white" />}
-        </span>
-        <span className="flex-1 truncate">{label}</span>
-      </button>
-    )
-
-    const checkRow = (checked: boolean, label: React.ReactNode, onClick: () => void) => (
-      <button type="button" onClick={onClick} className={rowClass(checked)}>
-        <span
-          className={cn(
-            'flex h-[15px] w-[15px] shrink-0 items-center justify-center rounded-[5px] border transition-colors',
-            checked ? 'border-zinc-900 bg-zinc-900 text-white' : 'border-zinc-300 group-hover:border-zinc-400',
-          )}
-        >
-          {checked && <Check className="h-3 w-3" strokeWidth={3} />}
-        </span>
-        <span className="flex-1">{label}</span>
+        />
       </button>
     )
 
@@ -862,17 +641,15 @@ export default function ProductsClient() {
             : KNOWN_CATEGORIES
           ).map(cat =>
             <div key={cat.slug}>
-              {radioRow(
+              {row(
                 currentCategory === cat.slug,
-                <span className="flex w-full items-center justify-between gap-2">
-                  <span className="truncate">{cat.name}</span>
-                  {fullCatalogue.length > 0 && (
-                    <span className="text-[11px] font-normal tabular-nums text-zinc-400">
-                      {categoryCounts.get(cat.slug)}
-                    </span>
-                  )}
-                </span>,
+                <span className="truncate">{cat.name}</span>,
                 () => setCategory(cat.slug),
+                fullCatalogue.length > 0 ? (
+                  <span className="text-[11px] font-normal tabular-nums text-zinc-400">
+                    {categoryCounts.get(cat.slug)}
+                  </span>
+                ) : undefined,
               )}
             </div>,
           )}
@@ -881,7 +658,7 @@ export default function ProductsClient() {
         {usageTags.length > 0 && (
           <Section id="mood" label="Purpose / Mood" count={currentTag ? 1 : 0}>
             {usageTags.map(tag =>
-              <div key={tag}>{radioRow(currentTag === tag, tag, () => setTag(tag))}</div>,
+              <div key={tag}>{row(currentTag === tag, <span className="truncate">{tag}</span>, () => setTag(tag))}</div>,
             )}
           </Section>
         )}
@@ -889,22 +666,12 @@ export default function ProductsClient() {
         <Section id="rating" label="Rating" count={ratingMin ? 1 : 0}>
           {[4, 3, 2, 1].map(thr =>
             <div key={thr}>
-              {radioRow(
+              {row(
                 Number(ratingMin) === thr,
-                <span className="flex items-center gap-1.5">
-                  <span className="flex items-center gap-0.5">
-                    {[0, 1, 2, 3, 4].map(i => (
-                      <Star
-                        key={i}
-                        className={cn(
-                          'h-3.5 w-3.5',
-                          i < thr ? 'fill-amber-400 text-amber-400' : 'fill-zinc-200 text-zinc-200',
-                        )}
-                      />
-                    ))}
-                  </span>
-                  <span className="text-[12px] text-zinc-400">&amp; up</span>
-                </span>,
+                <>
+                  <Star className="h-3.5 w-3.5 shrink-0 fill-current" />
+                  <span>{`${thr} & up`}</span>
+                </>,
                 () => updateFilter('ratingMin', Number(ratingMin) === thr ? '' : String(thr)),
               )}
             </div>,
@@ -912,9 +679,23 @@ export default function ProductsClient() {
         </Section>
 
         <Section id="stock" label="Availability" count={(inStockOnly ? 1 : 0) + (lowStockOnly ? 1 : 0)}>
-          {checkRow(inStockOnly, 'In stock only', () => updateFilter('inStockOnly', !inStockOnly))}
-          {checkRow(lowStockOnly, 'Low stock', () => updateFilter('lowStockOnly', !lowStockOnly))}
+          {row(inStockOnly, 'In stock only', () => updateFilter('inStockOnly', !inStockOnly))}
+          {row(lowStockOnly, 'Low stock', () => updateFilter('lowStockOnly', !lowStockOnly))}
         </Section>
+
+        {includeSort && (
+          <Section id="sort" label="Sort" count={sortOrder && sortOrder !== '' ? 1 : 0}>
+            {PAGE_SORT_OPTIONS.map(opt =>
+              <div key={opt.value || 'default'}>
+                {row(
+                  sortOrder === opt.value || (opt.value === '' && sortOrder === 'newest'),
+                  <span className="truncate">{opt.label}</span>,
+                  () => updateFilter('sortOrder', opt.value),
+                )}
+              </div>,
+            )}
+          </Section>
+        )}
       </div>
     )
   }
@@ -947,7 +728,18 @@ export default function ProductsClient() {
                 </motion.button>
               </div>
               <div className={styles.mobileFilterContent}>
-                {renderFilters()}
+                {renderFilterPanel({ surface: 'card', includeSort: true })}
+              </div>
+
+              {/* Sticky footer — close the drawer and see the filtered grid */}
+              <div className="sticky bottom-0 border-t border-zinc-200/80 bg-white p-3">
+                <button
+                  type="button"
+                  onClick={() => setIsMobileFilterOpen(false)}
+                  className="flex h-11 w-full items-center justify-center rounded-xl bg-zinc-900 text-[13.5px] font-medium text-white transition-colors hover:bg-zinc-800 active:bg-zinc-950"
+                >
+                  View {products.length} result{products.length === 1 ? '' : 's'}
+                </button>
               </div>
             </motion.div>
 
@@ -972,11 +764,26 @@ export default function ProductsClient() {
           <h1 className={styles.title}>Discover Our Collection</h1>
         )}
 
-        {/* Results count for mobile */}
+        {/* Results toolbar — count + filter drawer trigger */}
         {isMobileView && (
-          <p className={styles.mobileResultsCount}>
-            {products.length} products found
-          </p>
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <p className="text-[13px] font-medium text-zinc-500">
+              {products.length} product{products.length === 1 ? '' : 's'} found
+            </p>
+            <button
+              type="button"
+              onClick={() => setIsMobileFilterOpen(true)}
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-[12.5px] font-medium text-zinc-700 shadow-sm transition-colors hover:border-zinc-300 hover:text-zinc-900 active:bg-zinc-50"
+            >
+              <SlidersHorizontal className="h-3.5 w-3.5 text-zinc-400" />
+              Filters
+              {pageFilterCount > 0 && (
+                <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-zinc-900 px-1 text-[9.5px] font-semibold leading-none text-white">
+                  {pageFilterCount}
+                </span>
+              )}
+            </button>
+          </div>
         )}
 
         {/* Active filters display for mobile */}
@@ -1081,7 +888,7 @@ export default function ProductsClient() {
                     </button>
                   )}
                 </div>
-                {renderDesktopFilters()}
+                {renderFilterPanel()}
               </div>
 
               {/* Footer */}

@@ -1237,12 +1237,14 @@
   gap: 10px;
 }
 
-.filterHeader svg {
-  font-size: 14px;
-  opacity: 0.55;
+/* Section-label icons are hidden — the small-caps label carries the row;
+   only the chevron (.arrow) stays. */
+.filterHeader > span svg {
+  display: none;
 }
 
 .filterHeader .arrow {
+  display: inline-block;
   transition: transform 0.25s ease;
   opacity: 0.45;
   font-size: 14px;
@@ -1257,32 +1259,57 @@
   gap: 2px;
 }
 
-/* Option row — minimal */
+/* Option row — a quiet selectable row, no visible form control. The native
+   input is restyled as a right-aligned check that fades in when selected;
+   the selected row lifts onto a soft pill (via :has, with the check as the
+   fallback signal on older engines). */
 .filterOption {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 0;
+  padding: 8px 10px;
+  border-radius: 10px;
   font-size: 14px;
-  color: var(--color-text-primary);
+  color: #52525b;
   cursor: pointer;
   margin: 0;
   background: transparent;
-  transition: color 160ms ease;
+  transition: background-color 150ms ease, color 150ms ease;
 }
 
 .filterOption:hover {
-  color: #000;
+  background: rgba(0, 0, 0, 0.04);
+  color: #18181b;
+}
+
+.filterOption:has(input:checked) {
+  background: #f4f4f5;
+  color: #18181b;
+  font-weight: 500;
 }
 
 .filterOption input[type="radio"],
 .filterOption input[type="checkbox"] {
-  cursor: pointer;
-  width: 16px;
-  height: 16px;
-  accent-color: #000000;
+  appearance: none;
+  -webkit-appearance: none;
+  order: 2;
+  width: 15px;
+  height: 15px;
+  margin: 0 0 0 auto;
   flex-shrink: 0;
-  margin: 0;
+  cursor: pointer;
+  border: none;
+  border-radius: 0;
+  background-color: currentColor;
+  opacity: 0;
+  transition: opacity 150ms ease;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+.filterOption input[type="radio"]:checked,
+.filterOption input[type="checkbox"]:checked {
+  opacity: 1;
 }
 
 .filterOption label,
