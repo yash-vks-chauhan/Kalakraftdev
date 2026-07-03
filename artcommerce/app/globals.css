@@ -71,16 +71,20 @@ html[data-kksplash] [data-app-root] {
   visibility: hidden;
 }
 
-/* Home page only: snap each full-screen section into view on scroll. */
-body:has(> div > main[data-page="home"]) {
-  scroll-snap-type: y proximity;
-}
+/* Home page, mobile only: snap each full-screen section into view on scroll.
+   The desktop home is an editorial page with variable-height sections, so
+   these full-viewport constraints must not apply above 1024px. */
+@media (max-width: 1024px) {
+  body:has(> div > main[data-page="home"]) {
+    scroll-snap-type: y proximity;
+  }
 
-body:has(> div > main[data-page="home"]) section {
-  scroll-snap-align: start;
-  min-height: 100dvh;
-  position: relative;
-  overflow: hidden;
+  body:has(> div > main[data-page="home"]) section {
+    scroll-snap-align: start;
+    min-height: 100dvh;
+    position: relative;
+    overflow: hidden;
+  }
 }
 
 body {
@@ -95,11 +99,19 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Home page specific styles */
+/* Home page specific styles (mobile keeps the dark theme) */
 body:has(> div > main[data-page="home"]) {
   padding-top: 0;
   background: black;
   color: white;
+}
+
+/* Desktop home is the light editorial layout */
+@media (min-width: 1025px) {
+  body:has(> div > main[data-page="home"]) {
+    background: #ffffff;
+    color: #1a1a1a;
+  }
 }
 
 /* Mobile Dashboard Override - Clean white and light grey theme */
@@ -379,4 +391,9 @@ body:has(.mobileDashboardContainer) * {
   .skeleton-shimmer::after {
     animation: none;
   }
+}
+/* Desktop home: seamless marquee drift (track holds two identical halves) */
+@keyframes home-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
 }

@@ -1,5 +1,5 @@
 import './globals.css'
-import { Inter } from 'next/font/google'
+import { Inter, Cormorant_Garamond } from 'next/font/google'
 import { headers } from 'next/headers'
 import AppRootClient from './AppRootClient'
 import { MobileMenuProvider } from './contexts/MobileMenuContext'
@@ -10,6 +10,16 @@ const inter = Inter({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-inter',
+})
+
+// Serif voice for the brand (hero, section titles). Self-hosted via next/font
+// so headlines never flash a system serif before the webfont arrives.
+const cormorant = Cormorant_Garamond({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600'],
+  style: ['normal', 'italic'],
+  display: 'swap',
+  variable: '--font-cormorant',
 })
 
 export const metadata = {
@@ -31,7 +41,7 @@ export default async function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable}`}
+      className={`${inter.variable} ${cormorant.variable}`}
       suppressHydrationWarning
     >
       <head>

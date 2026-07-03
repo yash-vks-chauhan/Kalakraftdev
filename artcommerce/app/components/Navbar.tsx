@@ -10,6 +10,8 @@ import { useCart } from '../contexts/CartContext'
 import { useWishlist } from '../contexts/WishlistContext'
 import { Search as SearchIcon, Menu, X, User, LogOut, Grid, ShoppingBag, Heart, ShoppingCart, HelpCircle, Filter as FilterIcon, ChevronDown } from 'lucide-react'
 import SearchModal from './SearchModal'
+import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 import styles from './Navbar.module.css'
 import { useMobileMenu } from '../contexts/MobileMenuContext'
 import { getImageUrl } from '../../lib/cloudinaryImages'
@@ -213,10 +215,14 @@ export default function Navbar() {
   const profileDropdownRef = useRef<HTMLDivElement>(null)
   const pathname = usePathname()
   const [showMegaMenu, setShowMegaMenu] = useState(false)
-  const [isSignupActive, setIsSignupActive] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
+  const [isPastHero, setIsPastHero] = useState(false)
   const isHomePage = pathname === '/'
   const isProductsPage = pathname === '/products'
+
+  // The home page opens with a full-viewport dark hero: the bar stays
+  // transparent (white content) until the hero scrolls away, then turns solid.
+  const overDarkHero = isHomePage && !isPastHero
 
   // Add scroll event listener
   useEffect(() => {
@@ -224,8 +230,10 @@ export default function Navbar() {
       const scrollPosition = window.scrollY
       setIsMinimized(scrollPosition > 100) // Minimize after scrolling 100px
       setIsScrolled(scrollPosition > 10) // Consider scrolled after minimal movement
+      setIsPastHero(scrollPosition > window.innerHeight * 0.6)
     }
 
+    handleScroll()
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
@@ -308,8 +316,8 @@ export default function Navbar() {
     <>
       <div className={`${styles.megaMenuBackdrop} ${showMegaMenu ? styles.megaMenuBackdropVisible : ''}`} />
       <div className={`${styles.profileDropdownBackdrop} ${isProfileOpen ? styles.profileDropdownBackdropVisible : ''}`} />
-      <nav 
-        className={`${styles.navbar} ${isMinimized ? styles.minimized : ''} ${isHomePage ? styles.homeNavbar : ''}`} 
+      <nav
+        className={`${styles.navbar} ${isMinimized ? styles.minimized : ''} ${overDarkHero ? styles.homeNavbar : ''}`}
         data-scrolled={isScrolled ? 'true' : 'false'}
       >
         <div className={styles.left}>
@@ -423,14 +431,7 @@ export default function Navbar() {
             aria-label="Open search"
             aria-expanded={searchOpen}
           >
-            <SearchIcon 
-              size={22} 
-              className={styles.searchIcon}
-              style={{
-                animation: !searchOpen ? 'pulse 2s infinite' : 'none',
-                transition: 'all 0.3s ease-out'
-              }}
-            />
+            <SearchIcon size={22} className={styles.searchIcon} />
           </button>
 
           <Link
@@ -520,22 +521,30 @@ export default function Navbar() {
                 </div>
               </>
             ) : (
-              <div className={`${styles.authToggleContainer} ${isSignupActive ? styles.signupActive : ''}`}>
-                <div className={styles.authToggleBackground} />
-                <Link
-                  href="/auth/login"
-                  className={`${styles.authToggleButton} ${!isSignupActive ? styles.active : ''}`}
-                  onClick={() => setIsSignupActive(false)}
+              <div className="inline-flex items-center gap-2">
+                <Button
+                  asChild
+                  variant="ghost"
+                  className={cn(
+                    'h-9 px-4 text-sm font-medium transition-colors',
+                    overDarkHero
+                      ? 'text-white/80 hover:bg-white/10 hover:text-white'
+                      : 'text-[#666] hover:bg-black/[0.04] hover:text-[#1a1a1a]',
+                  )}
                 >
-                  Log in
-                </Link>
-                <Link
-                  href="/auth/signup"
-                  className={`${styles.authToggleButton} ${isSignupActive ? styles.active : ''}`}
-                  onClick={() => setIsSignupActive(true)}
+                  <Link href="/auth/login">Log in</Link>
+                </Button>
+                <Button
+                  asChild
+                  className={cn(
+                    'h-9 px-4 text-sm font-medium transition-colors',
+                    overDarkHero
+                      ? 'bg-white text-[#1a1a1a] hover:bg-white/90'
+                      : 'bg-[#1a1a1a] text-white hover:bg-[#333]',
+                  )}
                 >
-                  Sign up
-                </Link>
+                  <Link href="/auth/signup">Sign up</Link>
+                </Button>
               </div>
             )}
           </div>

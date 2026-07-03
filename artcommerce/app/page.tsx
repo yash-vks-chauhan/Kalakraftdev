@@ -4,7 +4,7 @@ import { useEffect, useState, useRef, useMemo } from 'react'
 import AOS from 'aos'
 import 'aos/dist/aos.css'
 
-import { ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 import styles from './home.module.css'
 import { getImageUrl } from '../lib/cloudinaryImages'
@@ -13,277 +13,13 @@ import MobileVideoSection from './components/MobileVideoSection'
 import { DataCache } from '../lib/dataCache'
 import WishlistButton from './components/WishlistButton'
 import BestSellersSection from './components/BestSellersSection'
-import PearlButton from './components/PearlButton'
-import FlippingText from './components/FlippingText'
-import SplashCursor from './components/SplashCursor'
-import BlurText from './components/BlurText'
+import HomeHero from './components/home/HomeHero'
+import CategoryTiles from './components/home/CategoryTiles'
+import FeaturedPieces from './components/home/FeaturedPieces'
+import MarqueeDivider from './components/home/MarqueeDivider'
+import CraftSection from './components/home/CraftSection'
+import CtaBand from './components/home/CtaBand'
 
-// Add this to detect mobile view
-const isMobileView = () => {
-  if (typeof window === 'undefined') return false;
-  return window.innerWidth <= 1024;
-};
-
-// Featured Products Grid Component
-const FeaturedProductsGrid = () => {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [imageIndices, setImageIndices] = useState({});
-
-  // Format price function
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 0,
-      minimumFractionDigits: 0
-    }).format(price);
-  };
-
-  // Product Card Component (similar to ProductsMobileClient)
-  const ProductCard = ({ product }) => {
-    const [currentImageIndex, setCurrentImageIndex] = useState(0);
-    
-    const handleImageTap = (e) => {
-      e.preventDefault();
-      if (product.imageUrls && product.imageUrls.length > 1) {
-        setCurrentImageIndex((prev) => (prev + 1) % product.imageUrls.length);
-      }
-    };
-
-    // Format stock status
-    const getStockStatus = () => {
-      if (product.stockQuantity <= 0) return "Out of Stock";
-      if (product.stockQuantity <= 5) return "Low Stock";
-      return "In Stock";
-    };
-
-    // Check if product is new (within 14 days)
-    const isNewProduct = () => {
-      if (!product.createdAt) return false;
-      const createdDate = new Date(product.createdAt);
-      const now = new Date();
-      const diffTime = Math.abs(now.getTime() - createdDate.getTime());
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      return diffDays <= 14;
-    };
-
-    return (
-      <Link href={`/products/${product.id}`} className={styles.mobileFeaturedCard}>
-        <div className={styles.mobileFeaturedCardInner}>
-          <div 
-            className={styles.mobileFeaturedImageContainer}
-            onClick={handleImageTap}
-          >
-            {product.imageUrls && product.imageUrls.length > 0 ? (
-              <img
-                src={product.imageUrls[currentImageIndex]}
-                alt={product.name}
-                className={styles.mobileFeaturedImage}
-                onError={(e) => (e.currentTarget.src = 'https://placehold.co/300x300/f0f0f0/888?text=No+Image')}
-              />
-            ) : (
-              <div className={styles.mobileFeaturedNoImage}>No Image</div>
-            )}
-            
-            {/* Stock badges */}
-            {product.stockQuantity === 0 && (
-              <div className={`${styles.mobileFeaturedBadge} ${styles.mobileFeaturedOutOfStock}`}>
-                Out of Stock
-              </div>
-            )}
-            
-            {product.stockQuantity > 0 && product.stockQuantity <= 5 && (
-              <div className={`${styles.mobileFeaturedBadge} ${styles.mobileFeaturedLowStock}`}>
-                Only {product.stockQuantity} left
-              </div>
-            )}
-
-            {isNewProduct() && product.stockQuantity > 0 && (
-              <div className={`${styles.mobileFeaturedBadge} ${styles.mobileFeaturedNew}`}
-                   style={{ top: product.stockQuantity <= 5 ? '40px' : '10px' }}>
-                New
-              </div>
-            )}
-            
-            {/* Image indicators */}
-            {product.imageUrls && product.imageUrls.length > 1 && (
-              <div className={styles.mobileFeaturedImageIndicators}>
-                {product.imageUrls.map((_, index) => (
-                  <div 
-                    key={index} 
-                    className={`${styles.mobileFeaturedIndicator} ${
-                      index === currentImageIndex ? styles.mobileFeaturedActiveIndicator : ''
-                    }`}
-                  />
-                ))}
-              </div>
-            )}
-
-            {/* Quick action buttons */}
-            <div className={styles.mobileFeaturedQuickActions}>
-              <button 
-                className={styles.mobileFeaturedActionButton}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  // Wishlist functionality would go here
-                }}
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" stroke="currentColor" strokeWidth="1.5" fill="none" />
-                </svg>
-              </button>
-            </div>
-
-            {/* Product details overlay */}
-            <div className={styles.mobileFeaturedDetails}>
-              <div className={styles.mobileFeaturedDetailsContent}>
-                <div className={styles.mobileFeaturedDetailRow}>
-                  <span className={styles.mobileFeaturedDetailLabel}>Status</span>
-                  <span className={styles.mobileFeaturedDetailValue}>{getStockStatus()}</span>
-                </div>
-                {product.material && (
-                  <div className={styles.mobileFeaturedDetailRow}>
-                    <span className={styles.mobileFeaturedDetailLabel}>Material</span>
-                    <span className={styles.mobileFeaturedDetailValue}>{product.material}</span>
-                  </div>
-                )}
-                {product.dimensions && (
-                  <div className={styles.mobileFeaturedDetailRow}>
-                    <span className={styles.mobileFeaturedDetailLabel}>Dimensions</span>
-                    <span className={styles.mobileFeaturedDetailValue}>{product.dimensions}</span>
-                  </div>
-                )}
-                <div className={styles.mobileFeaturedViewButton}>
-                  View Details
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div className={styles.mobileFeaturedCardInfo}>
-            {product.category && (
-              <div className={styles.mobileFeaturedCategory}>
-                {product.category.name}
-              </div>
-            )}
-            <h3 className={styles.mobileFeaturedProductName}>{product.name}</h3>
-            <div className={styles.mobileFeaturedPriceRow}>
-              <p className={styles.mobileFeaturedPrice}>{formatPrice(product.price)}</p>
-              {product.avgRating > 0 && (
-                <p className={styles.mobileFeaturedRating}>
-                  <span className={styles.mobileFeaturedStarFilled}>★</span>
-                  <span className={styles.mobileFeaturedRatingValue}>{product.avgRating.toFixed(1)}</span>
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
-      </Link>
-    );
-  };
-
-  // Fetch products from cache or API
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        setLoading(true);
-        console.log('Loading products from cache...');
-        
-        // Try to get from cache first
-        const cachedProducts = await DataCache.getProducts();
-        
-        if (cachedProducts && Array.isArray(cachedProducts)) {
-          // Normalize imageUrls and filter active products
-          const normalizedProducts = cachedProducts
-            .filter(p => p.isActive && p.stockQuantity >= 0)
-            .map(p => {
-              let imageUrls = [];
-              try {
-                imageUrls = Array.isArray(p.imageUrls) ? p.imageUrls : JSON.parse(p.imageUrls || '[]');
-              } catch {
-                imageUrls = [];
-              }
-              return { ...p, imageUrls };
-            });
-          
-          // Shuffle and take 4 random products
-          const shuffled = [...normalizedProducts].sort(() => Math.random() - 0.5);
-          console.log('Loaded products from cache:', shuffled.slice(0, 4));
-          setProducts(shuffled.slice(0, 4));
-        }
-      } catch (err) {
-        console.error('Error loading products:', err);
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProducts();
-  }, []);
-
-  if (loading) {
-    return (
-      <div className={styles.mobileFeaturedProductsGrid}>
-        {[1, 2, 3, 4].map((_, index) => (
-          <div key={index} className={styles.mobileFeaturedCard}>
-            <div className={styles.mobileFeaturedCardInner}>
-              <div className={styles.mobileFeaturedImageContainer}>
-                <div className={`${styles.skeletonImage} ${styles.skeletonShimmer}`}></div>
-              </div>
-              
-              <div className={styles.mobileFeaturedCardInfo}>
-                <div className={`${styles.skeletonCategory} ${styles.skeletonShimmer}`}></div>
-                <div className={`${styles.skeletonProductName} ${styles.skeletonShimmer}`}></div>
-                <div className={`${styles.skeletonPrice} ${styles.skeletonShimmer}`}></div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className={styles.mobileFeaturedError}>
-        <p>Unable to load featured products</p>
-      </div>
-    );
-  }
-
-  // Add fallback for when there are no products
-  if (!products || products.length === 0) {
-    return (
-      <div className={styles.mobileFeaturedProductsGrid}>
-        {[1, 2, 3, 4].map((_, index) => (
-          <div key={index} className={styles.mobileFeaturedCard}>
-            <div className={styles.mobileFeaturedCardInner}>
-              <div className={styles.mobileFeaturedImageContainer}>
-                <div className={styles.mobileFeaturedNoImage}>Product {index + 1}</div>
-              </div>
-              <div className={styles.mobileFeaturedCardInfo}>
-                <h3 className={styles.mobileFeaturedProductName}>Sample Product</h3>
-                <p className={styles.mobileFeaturedPrice}>{formatPrice(1200)}</p>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  }
-
-  return (
-    <div className={styles.mobileFeaturedProductsGrid}>
-      {products.map((product, index) => (
-        <ProductCard key={product.id} product={product} />
-      ))}
-    </div>
-  );
-};
 
 // Mobile Featured Carousel Component - Optimized for Smooth Performance
 const MobileFeaturedCarousel = ({ products = [] }) => {
@@ -1298,13 +1034,7 @@ const FeaturedCategoriesSection = () => {
 
 export default function Home() {
 const [featuredProducts, setFeaturedProducts] = useState([]);
-const [isHoveringVideo, setIsHoveringVideo] = useState(false);
-const [isHeroVideoLoaded, setIsHeroVideoLoaded] = useState(false);
-const [hasHeroVideoError, setHasHeroVideoError] = useState(false);
-const [heroVideoSourceIndex, setHeroVideoSourceIndex] = useState(0);
 
-// Words for the flipping text animation
-const flippingWords = ['home decor', 'resin art', 'clocks', 'trays', 'wall art', 'custom pieces']
 
 const carouselTrackRef = useRef<HTMLDivElement>(null)
 
@@ -1313,12 +1043,6 @@ const [isManualNav, setIsManualNav] = useState(false)
 const [slidePosition, setSlidePosition] = useState(0)
 
 const resumeTimerRef = useRef<NodeJS.Timeout | null>(null)
-const heroVideoSources = [
-  'https://ik.imagekit.io/4pjvf8k9u/Videos/homepage4.mp4?updatedAt=1753532187691',
-  '/images/homepage4.mp4',
-  '/images/homepage.mp4',
-]
-
 
 
 // Product categories for the grid - expanded with more items
@@ -1408,8 +1132,6 @@ alt: 'Stylish resin serving trays'
 ]
 
 
-
-
 useEffect(() => {
 
 // Add required fonts
@@ -1421,7 +1143,6 @@ const fonts = [
 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap'
 
 ]
-
 
 
 const links = fonts.map(font => {
@@ -1439,34 +1160,10 @@ return link
 })
 
 
-
-// Smooth scroll to content when clicking the scroll indicator
-
-const handleScrollClick = () => {
-
-window.scrollTo({
-
-top: window.innerHeight,
-
-behavior: 'smooth'
-
-})
-
-}
-
-
-
-const scrollIndicator = document.querySelector(`.${styles.scrollIndicator}`)
-
-scrollIndicator?.addEventListener('click', handleScrollClick)
-
-
-
 return () => {
 
 links.forEach(link => document.head.removeChild(link))
 
-scrollIndicator?.removeEventListener('click', handleScrollClick)
 
 }
 
@@ -1479,7 +1176,6 @@ const handleCarouselNav = (direction: 'prev' | 'next') => {
 if (!carouselTrackRef.current) return;
 
 
-
 // If this is the first manual navigation, stop the auto-scrolling
 
 if (!isManualNav) {
@@ -1487,7 +1183,6 @@ if (!isManualNav) {
 setIsManualNav(true);
 
 }
-
 
 
 // Clear any existing timer to reset the idle timeout
@@ -1499,7 +1194,6 @@ clearTimeout(resumeTimerRef.current)
 }
 
 
-
 const cardWidth = 380; // Width of each card
 
 const gap = 40; // Gap between cards (2.5rem)
@@ -1509,11 +1203,9 @@ const containerWidth = carouselTrackRef.current.parentElement?.clientWidth || 0;
 const totalWidth = productCategories.length * (cardWidth + gap);
 
 
-
 // Calculate the step size (one card width + gap)
 
 const step = cardWidth + gap;
-
 
 
 // Update the position based on direction
@@ -1531,9 +1223,7 @@ newPosition = Math.min(slidePosition + step, 0);
 }
 
 
-
 setSlidePosition(newPosition);
-
 
 
 // Set a timer to resume auto-scrolling after 5 seconds of inactivity
@@ -1545,13 +1235,11 @@ setIsManualNav(false)
 }, 5000) // 5 seconds
 
 
-
 // Apply the transform
 
 carouselTrackRef.current.style.transform = `translateX(${newPosition}px)`;
 
 }
-
 
 
 // Cleanup timer on component unmount
@@ -1571,7 +1259,6 @@ clearTimeout(resumeTimerRef.current)
 }, [])
 
 
-
 useEffect(() => {
 
 AOS.init({
@@ -1585,32 +1272,6 @@ easing: 'ease-in-out',
 })
 
 }, [])
-
-const handleHeroVideoLoaded = (event: any) => {
-  setIsHeroVideoLoaded(true);
-  setHasHeroVideoError(false);
-
-  const playPromise = event.currentTarget?.play?.();
-  if (playPromise && typeof playPromise.catch === 'function') {
-    playPromise.catch(() => {
-      // Some browsers block autoplay in strict power/data modes.
-      // Keep the decoded first frame instead of forcing an error fallback.
-    });
-  }
-};
-
-const handleHeroVideoError = () => {
-  if (heroVideoSourceIndex < heroVideoSources.length - 1) {
-    setHeroVideoSourceIndex((prev) => prev + 1);
-    setIsHeroVideoLoaded(false);
-    setHasHeroVideoError(false);
-    return;
-  }
-
-  setHasHeroVideoError(true);
-  setIsHeroVideoLoaded(false);
-};
-
 
 
 // Fetch featured products for mobile carousel from cache
@@ -1663,134 +1324,27 @@ useEffect(() => {
 }, []);
 
 
-
 return (
 
 <main data-page="home" style={{background: '#f8f8f8'}}>
 
-{/* SplashCursor - only on desktop and when hovering video */}
-{isHoveringVideo && (
-  <div className={styles.desktopOnly}>
-    <SplashCursor 
-      SIM_RESOLUTION={128}
-      DYE_RESOLUTION={1024}
-      DENSITY_DISSIPATION={1.5}
-      VELOCITY_DISSIPATION={0.8}
-      PRESSURE={0.8}
-      SPLAT_RADIUS={0.25}
-      SPLAT_FORCE={6000}
-      SHADING={true}
-      COLOR_UPDATE_SPEED={10}
-      TRANSPARENT={true}
-    />
-  </div>
-)}
 
-<section 
-  className={`relative overflow-hidden ${styles.desktopOnly}`}
-  onMouseEnter={() => setIsHoveringVideo(true)}
-  onMouseLeave={() => setIsHoveringVideo(false)}
->
-
-<div className={styles.videoContainer}>
-  {/* Video with fallback image */}
-  <picture>
-    {/* Fallback image that will be shown if video fails */}
-    <img 
-      src={getImageUrl('featured3.JPG')}
-      alt="Handcrafted resin art" 
-      className={styles.videoBackground}
-      style={{ display: hasHeroVideoError || !isHeroVideoLoaded ? 'block' : 'none' }}
-      id="videoFallback"
-      loading="lazy"
-    />
-  </picture>
-
-  <video
-    key={heroVideoSources[heroVideoSourceIndex]}
-    className={styles.videoBackground}
-    autoPlay
-    loop
-    muted
-    playsInline
-    src={heroVideoSources[heroVideoSourceIndex]}
-    preload="auto"
-    poster="/images/loading.png"
-    style={{ display: hasHeroVideoError ? 'none' : 'block' }}
-    onLoadedData={handleHeroVideoLoaded}
-    onError={handleHeroVideoError}
-  >
-    Your browser does not support the video tag.
-  </video>
-
-  <div className={styles.overlay} />
-
-
-<div className={styles.content}>
-
-<div className={styles.headerText}>
-
-<BlurText 
-  text="A HANDCRAFTED ART STUDIO"
-  className={styles.topText}
-  delay={100}
-  animateBy="words"
-  direction="top"
-/>
-
-<img
-
-src={getImageUrl('logo.png')}
-
-alt="Kalakraft Logo"
-
-className={styles.logo}
-
-loading="lazy"
-
-data-aos="fade-in"
-
-data-aos-delay="400"
-
-/>
-
-<h1 className={styles.title} data-aos="fade-up" data-aos-delay="600">
-
-<BlurText 
-  text="Handcrafted resin art for "
-  delay={150}
-  animateBy="words"
-  direction="top"
-/><FlippingText words={flippingWords} />
-
-</h1>
-
-{/* New Pearl Button for "Discover All Pieces" - Mobile & Desktop */}
-<div className={styles.buttonContainer} data-aos="fade-up" data-aos-delay="700">
-  <PearlButton href="/products">
-    Discover All Pieces
-  </PearlButton>
+{/* ================================================================ */}
+{/* Desktop homepage — monochrome gallery redesign (shadcn styling)  */}
+{/* ================================================================ */}
+<div className={styles.desktopOnly}>
+  <HomeHero />
+  <CategoryTiles />
+  <FeaturedPieces />
+  <MarqueeDivider />
+  <CraftSection />
+  <CtaBand />
 </div>
 
-</div>
-
-
-<div
-  className={styles.scrollIndicator}
-  onClick={() => {
-    window.scrollTo({
-      top: window.innerHeight,
-      behavior: 'smooth'
-    })
-  }}
-/>
-
-</div>
-
-</div>
-
-</section>
-
+{/* ================================================================ */}
+{/* Mobile homepage — unchanged legacy sections                      */}
+{/* ================================================================ */}
+<div className={styles.mobileOnly}>
 
 
   {/* Featured Categories Section */}
@@ -1878,7 +1432,6 @@ onError={(e) => (e.currentTarget.src = 'https://placehold.co/600x400/f0f0f0/ccc?
 ))}
 
 
-
 {/* Duplicate set for seamless looping */}
 
 {productCategories.map((category, index) => (
@@ -1924,7 +1477,6 @@ onError={(e) => (e.currentTarget.src = 'https://placehold.co/600x400/f0f0f0/ccc?
 ))}
 
 </div>
-
 
 
 {/* Navigation arrows */}
@@ -2238,88 +1790,9 @@ onClick={() => handleCarouselNav('next')}
   
 
 
+{/* End of mobile homepage */}
+</div>
 
-{/* Artistry in Every Layer Section - Desktop Only (Behind the Scene) */}
-<section className={`${styles.artistrySection} ${styles.desktopOnly}`}>
-  <div 
-    className={styles.artistryBackground}
-    style={{
-      backgroundImage: `linear-gradient(to right, rgba(248, 248, 248, 0.95), rgba(248, 248, 248, 0.8)), url('${getImageUrl('collectionwall.png')}')`
-    }}
-  >
-    <img 
-      src={getImageUrl('DSC01366.JPG')}
-      alt="Resin art creation process" 
-      className={styles.artistryFeatureImage} 
-      data-aos="fade-left"
-      loading="lazy"
-    />
-    
-    <div className={styles.artistryContent}>
-      {/* Section Header with description */}
-      <div className={styles.sectionHeader} data-aos="fade-in">
-        <div className={styles.headerLine}></div>
-        <h2 className={styles.sectionTitle}>Artistry in Every Layer</h2>
-        <div className={styles.headerLine}></div>
-      </div>
-      
-      <div className={styles.artistryQuote} data-aos="fade-up">
-        Our resin art combines premium materials with meticulous craftsmanship to create pieces that capture light, color, and imagination in ways that will endure for generations.
-      </div>
-      
-      <div className={styles.artistryCards}>
-        {/* Card 1 */}
-        <div className={styles.artistryCard} data-aos="fade-up" data-aos-delay="100">
-          <div className={styles.artistryIcon}>
-            <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="rgba(179, 138, 88, 0.8)" strokeWidth="1.5">
-              <path d="M32 8C32 8 16 24 16 40C16 48.8366 23.1634 56 32 56C40.8366 56 48 48.8366 48 40C48 24 32 8 32 8Z" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M32 44C34.2091 44 36 42.2091 36 40C36 37.7909 32 32 32 32C32 32 28 37.7909 28 40C28 42.2091 29.7909 44 32 44Z" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            <div className={styles.artistryIconRipple}></div>
-          </div>
-          <h3 className={styles.artistryCardTitle}>Museum-Grade Resin</h3>
-          <p className={styles.artistryCardText}>Hand-mixed for crystal clarity and vibrant hues that endure.</p>
-        </div>
-        
-        {/* Card 2 */}
-        <div className={styles.artistryCard} data-aos="fade-up" data-aos-delay="200">
-          <div className={styles.artistryIcon}>
-            <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="rgba(179, 138, 88, 0.8)" strokeWidth="1.5">
-              <path d="M8 24L32 32L56 24" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M8 32L32 40L56 32" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M8 40L32 48L56 40" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M32 16L16 22L32 28L48 22L32 16Z" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            <div className={styles.artistryIconRipple}></div>
-          </div>
-          <h3 className={styles.artistryCardTitle}>Precision Pouring</h3>
-          <p className={styles.artistryCardText}>Controlled, bubble-free layers for a seamless, mirror-smooth surface.</p>
-        </div>
-        
-        {/* Card 3 */}
-        <div className={styles.artistryCard} data-aos="fade-up" data-aos-delay="300">
-          <div className={styles.artistryIcon}>
-            <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="rgba(179, 138, 88, 0.8)" strokeWidth="1.5">
-              <circle cx="32" cy="32" r="16" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M32 16V8" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M32 56V48" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M16 32H8" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M56 32H48" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M48 16L44 20" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M20 44L16 48" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M48 48L44 44" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M20 20L16 16" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M32 24V32H40" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            <div className={styles.artistryIconRipple}></div>
-          </div>
-          <h3 className={styles.artistryCardTitle}>UV-Resistant Gloss</h3>
-          <p className={styles.artistryCardText}>Anti-yellowing top coat protects color and shine from sun exposure.</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
 
 </main>
 
