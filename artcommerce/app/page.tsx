@@ -14,11 +14,12 @@ import { DataCache } from '../lib/dataCache'
 import WishlistButton from './components/WishlistButton'
 import BestSellersSection from './components/BestSellersSection'
 import HomeHero from './components/home/HomeHero'
-import CategoryTiles from './components/home/CategoryTiles'
+import CollectionsIndex from './components/home/CollectionsIndex'
 import FeaturedPieces from './components/home/FeaturedPieces'
 import MarqueeDivider from './components/home/MarqueeDivider'
 import CraftSection from './components/home/CraftSection'
 import CtaBand from './components/home/CtaBand'
+import HomeFooter from './components/home/HomeFooter'
 
 
 // Mobile Featured Carousel Component - Optimized for Smooth Performance
@@ -1334,11 +1335,16 @@ return (
 {/* ================================================================ */}
 <div className={styles.desktopOnly}>
   <HomeHero />
-  <CategoryTiles />
-  <FeaturedPieces />
-  <MarqueeDivider />
-  <CraftSection />
-  <CtaBand />
+  {/* The hero is sticky: everything below rides over it like a curtain,
+      so this wrapper needs a solid background and a higher z-index. */}
+  <div className="relative z-10 bg-white">
+    <CollectionsIndex />
+    <FeaturedPieces />
+    <MarqueeDivider />
+    <CraftSection />
+    <CtaBand />
+    <HomeFooter />
+  </div>
 </div>
 
 {/* ================================================================ */}

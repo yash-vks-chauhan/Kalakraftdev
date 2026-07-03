@@ -42,6 +42,16 @@ export default function SectionHeader({
         >
           {eyebrow}
         </p>
+        {/* Copper hairline — the pigment ribbon from the hero, at rest */}
+        <span
+          aria-hidden="true"
+          className={cn(
+            'mt-2.5 block h-px w-10',
+            centered
+              ? 'bg-gradient-to-r from-transparent via-[#d4a373] to-transparent'
+              : 'bg-gradient-to-r from-[#d4a373] to-transparent',
+          )}
+        />
         <h2
           className={cn(
             'mt-3 font-serif text-4xl font-medium leading-[1.1] xl:text-5xl',

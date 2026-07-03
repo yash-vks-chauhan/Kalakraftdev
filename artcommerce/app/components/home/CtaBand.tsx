@@ -7,6 +7,7 @@ import { ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import Reveal from './Reveal'
+import ResinVeil from './ResinVeil'
 
 export default function CtaBand() {
   const [email, setEmail] = useState('')
@@ -19,11 +20,13 @@ export default function CtaBand() {
   }
 
   return (
-    <section className="relative overflow-hidden bg-[#1a1a1a]">
-      {/* Dot-grid texture, faded toward the edges */}
+    <section className="relative overflow-hidden bg-[#0a0908]">
+      {/* The pour returns — the page closes in the material it opened with.
+          Slower and dimmer than the hero; it pauses itself offscreen. */}
+      <ResinVeil speed={0.55} resolutionScale={0.4} className="absolute inset-0 h-full w-full" />
       <div
         aria-hidden="true"
-        className="absolute inset-0 opacity-60 [background-image:radial-gradient(circle,rgba(255,255,255,0.13)_1px,transparent_1px)] [background-size:26px_26px] [mask-image:radial-gradient(ellipse_at_center,black_25%,transparent_75%)]"
+        className="absolute inset-0 [background:radial-gradient(ellipse_at_center,rgba(8,7,6,0.72)_0%,rgba(8,7,6,0.38)_60%,rgba(8,7,6,0.2)_100%)]"
       />
 
       <div className="relative mx-auto max-w-2xl px-10 py-28 text-center">

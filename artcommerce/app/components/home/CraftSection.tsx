@@ -72,7 +72,7 @@ function CountUp({
 
 export default function CraftSection() {
   return (
-    <section className="bg-[#fafafa]">
+    <section id="craft" className="scroll-mt-16 bg-[#fafafa]">
       <div className="mx-auto max-w-7xl px-10 py-28 2xl:px-4">
         <div className="grid grid-cols-12 gap-16">
           {/* Sticky narrative column */}

@@ -45,7 +45,7 @@
 .homeNavbar .link:hover,
 .homeNavbar .productLink:hover {
   color: #ffffff;
-  background: rgba(255, 255, 255, 0.08);
+  background: transparent;
 }
 
 .homeNavbar .productLink:has(> span):after {
@@ -61,7 +61,7 @@
 }
 
 .homeNavbar .icon:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: transparent;
 }
 
 .homeNavbar .icon:hover svg {
@@ -72,9 +72,30 @@
   filter: brightness(0) invert(1);
 }
 
+.homeNavbar .wordmark {
+  color: #ffffff;
+}
+
+.homeNavbar .searchPill {
+  border-color: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.homeNavbar .searchPill:hover {
+  border-color: rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+}
+
+.homeNavbar .searchKbd {
+  border-color: rgba(255, 255, 255, 0.25);
+  color: rgba(255, 255, 255, 0.55);
+}
+
 .homeNavbar .badge {
-  background-color: #ffffff;
-  color: #1a1a1a;
+  background-color: #d4a373;
+  color: #141210;
   border-color: transparent;
 }
 
@@ -97,13 +118,15 @@
 }
 
 .link {
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
   color: #666;
   text-decoration: none;
-  transition: color 0.2s ease, background 0.2s ease;
-  padding: 0.5rem 0.875rem;
-  border-radius: 0.5rem;
+  transition: color 0.2s ease;
+  padding: 0.5rem 0.25rem;
+  border-radius: 0;
   position: relative;
   white-space: nowrap;
   text-shadow: none;
@@ -111,7 +134,7 @@
 
 .link:hover {
   color: #1a1a1a;
-  background: rgba(0, 0, 0, 0.04);
+  background: transparent;
 }
 
 .icon svg {
@@ -129,9 +152,86 @@
   margin-left: 1.5rem;
 }
 
+/* Serif wordmark — the brand voice from the hero, in the bar. Desktop only;
+   mobile keeps the image logo untouched. */
+.wordmark {
+  font-family: var(--font-cormorant), 'Cormorant Garamond', Georgia, serif;
+  font-size: 1.45rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: #1a1a1a;
+  line-height: 1;
+  transition: color 300ms ease;
+}
+
+@media (max-width: 768px) {
+  .wordmark {
+    display: none;
+  }
+}
+
+@media (min-width: 769px) {
+  .logo {
+    display: none;
+  }
+}
+
+/* Command-palette style search trigger (desktop) */
+.searchPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 34px;
+  padding: 0 0.5rem 0 0.75rem;
+  border: 1px solid #e5e5e5;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: #666;
+  font-size: 0.8125rem;
+  font-weight: 450;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 200ms ease, background 200ms ease, color 200ms ease;
+}
+
+.searchPill:hover {
+  border-color: #ccc;
+  background: rgba(0, 0, 0, 0.03);
+  color: #1a1a1a;
+}
+
+.searchKbd {
+  display: inline-flex;
+  align-items: center;
+  height: 19px;
+  padding: 0 5px;
+  border: 1px solid #e5e5e5;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 0.6875rem;
+  color: #999;
+  transition: border-color 200ms ease, color 200ms ease;
+}
+
+/* Doubled class beats the later `.icon { display:inline-flex }` rule */
+.icon.searchIconMobile {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .searchPill {
+    display: none;
+  }
+
+  .icon.searchIconMobile {
+    display: inline-flex;
+  }
+}
+
 /* Center section */
 .center {
-  gap: 2.5rem;
+  gap: 3rem;
   padding: 0 3rem;
 }
 
@@ -180,7 +280,7 @@
 .center {
   flex: 1;
   justify-content: center;
-  gap: 2.5rem;
+  gap: 3rem;
   display: flex;
   align-items: center;
   margin: 0 auto;
@@ -211,29 +311,29 @@
 }
 
 .icon:hover {
-  background: rgba(0, 0, 0, 0.04);
+  background: transparent;
 }
 
 .icon svg {
-  width: 20px;
-  height: 20px;
+  width: 19px;
+  height: 19px;
 }
 
 .badge {
   position: absolute;
-  top: 2px;
-  right: 2px;
-  background-color: #1a1a1a;
-  color: white;
-  font-size: 0.625rem;
+  top: 4px;
+  right: 3px;
+  background-color: #d4a373;
+  color: #141210;
+  font-size: 0.5625rem;
   font-weight: 600;
-  min-width: 16px;
-  height: 16px;
-  line-height: 16px;
+  min-width: 14px;
+  height: 14px;
+  line-height: 14px;
   text-align: center;
-  padding: 0 4px;
+  padding: 0 3px;
   border-radius: 9999px;
-  border: 1.5px solid #fff;
+  border: none;
   box-sizing: content-box;
 }
 
@@ -466,27 +566,29 @@
    navbar instead, so it can centre on the viewport without clipping. */
 .productLink {
   cursor: pointer;
-  padding: 0.5rem 0.875rem;
-  border-radius: 0.5rem;
+  padding: 0.5rem 0.25rem;
+  border-radius: 0;
   display: flex;
   align-items: center;
   gap: 0.25rem;
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
   color: #666;
   text-shadow: none;
-  transition: color 0.2s ease, background 0.2s ease;
+  transition: color 0.2s ease;
 }
 
 .productLink:hover {
   color: #1a1a1a;
-  background: rgba(0, 0, 0, 0.04);
+  background: transparent;
 }
 
 .productLink:has(> span):after {
-  content: "▼";
-  font-size: 0.55rem;
-  margin-left: 0.25rem;
+  content: "▾";
+  font-size: 0.6rem;
+  margin-left: 0.3rem;
   transition: transform 0.2s ease, color 0.2s ease;
   color: #999;
 }
@@ -518,117 +620,160 @@
   visibility: visible;
 }
 
+/* Over the dark hero the backdrop darkens instead of frosting white */
+.megaMenuBackdropDark {
+  background: rgba(4, 3, 3, 0.5);
+}
+
 .megaMenu {
   position: absolute;
-  top: calc(100% - 1px);
+  top: calc(100% + 8px);
   left: 50%;
   transform-origin: top center;
-  transform: translateX(-50%) translateY(-6px);
+  transform: translateX(-50%) translateY(-6px) scale(0.99);
   background: #ffffff;
-  border-radius: 0 0 0.75rem 0.75rem;
-  padding: 2rem;
-  width: min(90vw, 1100px);
-  max-width: 1100px;
+  border-radius: 0.9rem;
+  padding: 1.75rem;
+  width: min(92vw, 920px);
   opacity: 0;
   visibility: hidden;
   transition:
     transform 0.3s cubic-bezier(0.21, 0.47, 0.32, 0.98),
     opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-    visibility 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.1);
+    visibility 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    background 300ms ease,
+    border-color 300ms ease;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.04);
   border: 1px solid #e5e5e5;
   z-index: 1000;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: 1fr 300px;
   gap: 2rem;
+}
+
+/* Invisible bridge across the 8px gap so hover survives the crossing */
+.megaMenu::before {
+  content: '';
+  position: absolute;
+  top: -12px;
+  left: 0;
+  right: 0;
+  height: 12px;
 }
 
 .megaMenuVisible {
   opacity: 1;
   visibility: visible;
-  transform: translateX(-50%) translateY(0);
+  transform: translateX(-50%) translateY(0) scale(1);
 }
 
-/* Add paper-like hover effect to category items */
-.categoryItem {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 0.75rem;
-  border-radius: 0.75rem;
-  text-decoration: none;
-  color: #555555;
-  background: transparent;
-  margin-top: 0.5rem;
-  opacity: 0;
-  transform: translateX(-10px);
-  transition: all 0.5s cubic-bezier(0.33, 1, 0.68, 1);
+/* Charcoal panel while the bar floats over the dark hero — the menu belongs
+   to the material behind it, not to the white pages further down. */
+.homeNavbar .megaMenu {
+  background: #121110;
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.55);
 }
 
-.megaMenuVisible .categoryItem {
-  opacity: 1;
-  transform: translateX(0);
+.homeNavbar .menuHeading {
+  color: rgba(255, 255, 255, 0.4);
+  border-bottom-color: rgba(255, 255, 255, 0.1);
 }
 
-.categoryGroup:nth-child(1) .categoryItem:nth-child(1) { transition-delay: 0.3s; }
-.categoryGroup:nth-child(1) .categoryItem:nth-child(2) { transition-delay: 0.4s; }
-.categoryGroup:nth-child(2) .categoryItem:nth-child(1) { transition-delay: 0.4s; }
-.categoryGroup:nth-child(2) .categoryItem:nth-child(2) { transition-delay: 0.5s; }
-.categoryGroup:nth-child(3) .categoryItem:nth-child(1) { transition-delay: 0.5s; }
-.categoryGroup:nth-child(3) .categoryItem:nth-child(2) { transition-delay: 0.6s; }
-
-.categoryItem:hover {
-  background: rgba(0, 0, 0, 0.03);
-  color: #1a1a1a;
-  transform: translateX(5px);
+.homeNavbar .menuItem:hover {
+  background: rgba(255, 255, 255, 0.05);
 }
 
-/* Enhance the category groups with staggered animation */
-.categoryGroup {
+.homeNavbar .menuItemName {
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.homeNavbar .menuItem:hover .menuItemName {
+  color: #d4a373;
+}
+
+.homeNavbar .menuItemDesc {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.homeNavbar .menuThumb {
+  border-color: rgba(255, 255, 255, 0.14);
+  background: #1c1a18;
+}
+
+.homeNavbar .menuAllLink {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.homeNavbar .menuAllLink:hover {
+  color: #ffffff;
+}
+
+.homeNavbar .menuFeature {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+/* ---- Mega menu content: text-first list + featured pour ---- */
+.menuLinks {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  padding-top: 0.5rem;
-  opacity: 0;
-  transform: translateY(10px);
-  transition: all 0.5s cubic-bezier(0.33, 1, 0.68, 1);
+  min-width: 0;
 }
 
-.megaMenuVisible .categoryGroup {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.megaMenuVisible .categoryGroup:nth-child(1) {
-  transition-delay: 0.2s;
-}
-
-.megaMenuVisible .categoryGroup:nth-child(2) {
-  transition-delay: 0.3s;
-}
-
-.megaMenuVisible .categoryGroup:nth-child(3) {
-  transition-delay: 0.4s;
-}
-
-/* Add paper-like effect to category titles */
-.categoryTitle {
+.menuHeading {
   font-size: 0.6875rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.18em;
   color: #999;
-  margin: 0;
-  position: relative;
+  margin: 0 0 0.75rem;
   padding-bottom: 0.75rem;
   border-bottom: 1px solid #ececec;
-  opacity: 0;
-  transform: translateY(5px);
-  transition: all 0.5s cubic-bezier(0.33, 1, 0.68, 1);
+  transition: color 300ms ease, border-color 300ms ease;
 }
 
-/* Category entry: thumbnail + stacked name/description */
-.categoryImage {
+.menuGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.25rem 1.5rem;
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 0.5rem 0.625rem;
+  margin: 0 -0.625rem;
+  border-radius: 0.625rem;
+  text-decoration: none;
+  opacity: 0;
+  transform: translateY(6px);
+  transition:
+    background 180ms ease,
+    opacity 0.45s cubic-bezier(0.33, 1, 0.68, 1),
+    transform 0.45s cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.megaMenuVisible .menuItem {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.megaMenuVisible .menuItem:nth-child(1) { transition-delay: 0.05s; }
+.megaMenuVisible .menuItem:nth-child(2) { transition-delay: 0.09s; }
+.megaMenuVisible .menuItem:nth-child(3) { transition-delay: 0.13s; }
+.megaMenuVisible .menuItem:nth-child(4) { transition-delay: 0.17s; }
+.megaMenuVisible .menuItem:nth-child(5) { transition-delay: 0.21s; }
+.megaMenuVisible .menuItem:nth-child(6) { transition-delay: 0.25s; }
+.megaMenuVisible .menuItem:nth-child(7) { transition-delay: 0.29s; }
+.megaMenuVisible .menuItem:nth-child(8) { transition-delay: 0.33s; }
+
+.menuItem:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+/* Thumbnails rest in monochrome; colour returns on hover */
+.menuThumb {
   width: 44px;
   height: 44px;
   border-radius: 0.5rem;
@@ -636,144 +781,136 @@
   flex-shrink: 0;
   border: 1px solid #ececec;
   background: #fafafa;
+  filter: grayscale(1);
+  transition: filter 350ms ease, border-color 300ms ease;
 }
 
-.categoryInfo {
+.menuItem:hover .menuThumb {
+  filter: grayscale(0);
+}
+
+.menuItemText {
   display: flex;
   flex-direction: column;
   gap: 2px;
   min-width: 0;
 }
 
-.categoryName {
+.menuItemName {
   font-size: 0.875rem;
   font-weight: 500;
   color: #1a1a1a;
+  transition: color 180ms ease;
 }
 
-.categoryDesc {
+.menuItem:hover .menuItemName {
+  color: #b8845a;
+}
+
+.menuItemDesc {
   font-size: 0.75rem;
   color: #888;
   line-height: 1.35;
+  transition: color 300ms ease;
 }
 
-.megaMenuVisible .categoryTitle {
-  opacity: 1;
-  transform: translateY(0);
-  transition-delay: 0.1s;
+.menuAllLink {
+  margin-top: auto;
+  padding-top: 1rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #666;
+  text-decoration: none;
+  transition: color 180ms ease;
 }
 
-.categoryGroup:hover .categoryTitle::after {
-  width: 100%;
+.menuAllLink:hover {
+  color: #1a1a1a;
 }
 
-/* Featured Section */
-.featuredSection {
-  grid-column: 1 / -1;
-  margin-top: 1.5rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid rgba(229, 229, 229, 0.8);
-  opacity: 0;
-  transform: translateY(10px);
-  transition: all 0.5s cubic-bezier(0.33, 1, 0.68, 1);
-}
-
-.featuredTitle {
-  font-size: 0.6875rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.18em;
-  color: #999;
-  margin-bottom: 1rem;
-}
-
-.featuredGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 1rem;
-}
-
-.featuredItem {
+/* Featured pour: one image, quiet caption */
+.menuFeature {
   position: relative;
+  display: block;
   border-radius: 0.75rem;
   overflow: hidden;
-  aspect-ratio: 16 / 9;
-  opacity: 0;
-  transform: translateY(10px);
-  transition: all 0.5s cubic-bezier(0.33, 1, 0.68, 1);
-  background: #fafafa;
   border: 1px solid #ececec;
+  text-decoration: none;
+  opacity: 0;
+  transform: translateY(8px);
+  transition:
+    opacity 0.5s cubic-bezier(0.33, 1, 0.68, 1) 0.2s,
+    transform 0.5s cubic-bezier(0.33, 1, 0.68, 1) 0.2s,
+    border-color 300ms ease;
 }
 
-.featuredImage {
+.megaMenuVisible .menuFeature {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.menuFeatureImage {
   width: 100%;
   height: 100%;
+  min-height: 300px;
   object-fit: cover;
-  transition: transform 0.5s cubic-bezier(0.33, 1, 0.68, 1);
+  /* Rests desaturated to sit with the monochrome menu */
+  filter: grayscale(0.65);
+  transition:
+    transform 0.6s cubic-bezier(0.33, 1, 0.68, 1),
+    filter 0.45s ease;
 }
 
-.featuredItem:hover .featuredImage {
-  transform: scale(1.04);
+.menuFeature:hover .menuFeatureImage {
+  transform: scale(1.03);
+  filter: grayscale(0);
 }
 
-.featuredOverlay {
+.menuFeatureOverlay {
   position: absolute;
+  inset-inline: 0;
   bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 0.625rem 0.875rem;
-  background: rgba(255, 255, 255, 0.92);
-  border-top: 1px solid #ececec;
-  color: #1a1a1a;
-  font-size: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 1.5rem 1.125rem 1rem;
+  background: linear-gradient(to top, rgba(8, 7, 6, 0.78), transparent);
+}
+
+.menuFeatureEyebrow {
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: #d4a373;
+}
+
+.menuFeatureTitle {
+  font-family: var(--font-cormorant), 'Cormorant Garamond', Georgia, serif;
+  font-size: 1.25rem;
   font-weight: 500;
-  letter-spacing: 0.04em;
+  color: #ffffff;
 }
-
-.megaMenuVisible .featuredSection {
-  opacity: 1;
-  transform: translateY(0);
-  transition-delay: 0.7s;
-}
-
-.megaMenuVisible .featuredItem {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.megaMenuVisible .featuredItem:nth-child(1) { transition-delay: 0.8s; }
-.megaMenuVisible .featuredItem:nth-child(2) { transition-delay: 0.9s; }
-.megaMenuVisible .featuredItem:nth-child(3) { transition-delay: 1s; }
 
 @media (max-width: 768px) {
   .megaMenu {
     display: none;
   }
-  
+
   .productLink::after {
     display: none;
   }
 }
 
-/* Add transition delays for the fourth category */
-.categoryGroup:nth-child(4) .categoryItem:nth-child(1) { transition-delay: 0.6s; }
-.categoryGroup:nth-child(4) .categoryItem:nth-child(2) { transition-delay: 0.7s; }
-
-.megaMenuVisible .categoryGroup:nth-child(4) {
-  transition-delay: 0.5s;
-}
-
 @media (max-width: 1024px) {
-  .megaMenu {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 640px) {
   .megaMenu {
     grid-template-columns: 1fr;
   }
-} 
+
+  .menuFeature {
+    display: none;
+  }
+}
 
 /* Auth toggle switch styles */
 /* ============================================================

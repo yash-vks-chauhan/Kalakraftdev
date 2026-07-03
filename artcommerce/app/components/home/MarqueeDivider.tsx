@@ -5,13 +5,10 @@ function Row() {
     <div className="flex shrink-0 items-center">
       {WORDS.map(word => (
         <span key={word} className="flex items-center">
-          <span
-            className="whitespace-nowrap px-8 font-serif text-[5.5rem] font-medium italic leading-none text-transparent"
-            style={{ WebkitTextStroke: '1px #d6d6d6' }}
-          >
+          <span className="whitespace-nowrap px-8 font-serif text-[5.5rem] font-medium italic leading-none text-transparent [-webkit-text-stroke:1px_#d6d6d6] transition-all duration-300 hover:[-webkit-text-stroke:1px_#d4a373]">
             {word}
           </span>
-          <span className="h-1.5 w-1.5 rounded-full bg-[#d6d6d6]" />
+          <span className="h-1.5 w-1.5 rounded-full bg-[#d4a373]/70" />
         </span>
       ))}
     </div>

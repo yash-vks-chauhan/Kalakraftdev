@@ -16,82 +16,17 @@ import styles from './Navbar.module.css'
 import { useMobileMenu } from '../contexts/MobileMenuContext'
 import { getImageUrl } from '../../lib/cloudinaryImages'
 
-const categories = [
-  {
-    title: 'Home Decor',
-    items: [
-      {
-        name: 'Clocks',
-        description: 'Handcrafted timepieces',
-        image: 'category1.png'
-      },
-      {
-        name: 'Wall Art',
-        description: 'Unique wall decorations',
-        image: 'category6.png'
-      }
-    ]
-  },
-  {
-    title: 'Traditional Art',
-    items: [
-      {
-        name: 'Rangolis',
-        description: 'Traditional floor art',
-        image: 'category8.png'
-      },
-      {
-        name: 'Matt Rangoli',
-        description: 'Modern matt finish rangolis',
-        image: 'category5.png'
-      }
-    ]
-  },
-  {
-    title: 'Art & Decor',
-    items: [
-      {
-        name: 'Paintings',
-        description: 'Hand-painted artworks',
-        image: 'category7.png'
-      },
-      {
-        name: 'Pots & Vases',
-        description: 'Handcrafted ceramic pieces',
-        image: 'category3.png'
-      }
-    ]
-  },
-  {
-    title: 'Trays',
-    items: [
-      {
-        name: 'Jewelry Trays',
-        description: 'Elegant organizers for your precious pieces',
-        image: 'category2.png'
-      },
-      {
-        name: 'Trays',
-        description: 'Beautiful trays for serving in style',
-        image: 'category4.png'
-      }
-    ]
-  }
-];
-
-const featuredItems = [
-  {
-    name: 'Antique Clock Collection',
-    image: 'featured1.png'
-  },
-  {
-    name: 'Premium Rangoli Set',
-    image: 'featured2.png'
-  },
-  {
-    name: 'Designer Pottery',
-    image: 'featured3.JPG'
-  }
+// Flat, text-first menu — query values mirror the filters the products page
+// already understands (same mapping the old grouped menu used).
+const MENU_LINKS = [
+  { name: 'Clocks', description: 'Handcrafted timepieces', query: 'clocks', image: 'category1.png' },
+  { name: 'Wall Art', description: 'Unique wall decorations', query: 'wall art', image: 'category6.png' },
+  { name: 'Rangolis', description: 'Traditional floor art', query: 'rangolis', image: 'category8.png' },
+  { name: 'Matt Rangoli', description: 'Modern matt finish', query: 'matt rangoli', image: 'category5.png' },
+  { name: 'Paintings', description: 'Hand-painted artworks', query: 'paintings', image: 'category7.png' },
+  { name: 'Pots & Vases', description: 'Handcrafted ceramics', query: 'pots & vases', image: 'category3.png' },
+  { name: 'Jewelry Trays', description: 'For your precious pieces', query: 'Tray', image: 'category2.png' },
+  { name: 'Trays', description: 'Serving in style', query: 'tray', image: 'category4.png' },
 ];
 
 const PRODUCT_SORT_OPTIONS = [
@@ -230,7 +165,9 @@ export default function Navbar() {
       const scrollPosition = window.scrollY
       setIsMinimized(scrollPosition > 100) // Minimize after scrolling 100px
       setIsScrolled(scrollPosition > 10) // Consider scrolled after minimal movement
-      setIsPastHero(scrollPosition > window.innerHeight * 0.6)
+      // The hero is sticky (the page scrolls over it), so it stays visible
+      // until the covering content reaches the top of the viewport.
+      setIsPastHero(scrollPosition > window.innerHeight - 72)
     }
 
     handleScroll()
@@ -258,6 +195,18 @@ export default function Navbar() {
   useEffect(() => {
     setIsProfileOpen(false)
   }, [user])
+
+  // ⌘K / Ctrl+K opens search from anywhere
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault()
+        setSearchOpen(true)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
 
   const handleLogout = useCallback(async () => {
     setIsProfileOpen(false)
@@ -314,7 +263,7 @@ export default function Navbar() {
 
   return (
     <>
-      <div className={`${styles.megaMenuBackdrop} ${showMegaMenu ? styles.megaMenuBackdropVisible : ''}`} />
+      <div className={`${styles.megaMenuBackdrop} ${overDarkHero ? styles.megaMenuBackdropDark : ''} ${showMegaMenu ? styles.megaMenuBackdropVisible : ''}`} />
       <div className={`${styles.profileDropdownBackdrop} ${isProfileOpen ? styles.profileDropdownBackdropVisible : ''}`} />
       <nav
         className={`${styles.navbar} ${isMinimized ? styles.minimized : ''} ${overDarkHero ? styles.homeNavbar : ''}`}
@@ -333,6 +282,9 @@ export default function Navbar() {
             </div>
           </button>
           <Link href="/" className={styles.brand} onClick={closeMobileMenu}>
+            {/* Desktop: serif wordmark in the site's brand voice. Mobile keeps
+                the image logo untouched. */}
+            <span className={styles.wordmark}>kalakraft</span>
             <Image
               src={getImageUrl('logo.png')}
               alt="Artcommerce Logo"
@@ -346,76 +298,72 @@ export default function Navbar() {
         </div>
         
         <div className={styles.center}>
-          <Link href="/" className={styles.link}>
-            Home
+          <Link href="/products" className={styles.link}>
+            Shop
           </Link>
-          <div 
+          <div
             className={styles.productLink}
             onMouseEnter={() => setShowMegaMenu(true)}
             onMouseLeave={() => setShowMegaMenu(false)}
           >
-            <span>Categories</span>
-            {/* Mega Menu */}
+            <span>Collections</span>
+            {/* Mega menu: text-first category list + one featured pour */}
             <div className={`${styles.megaMenu} ${showMegaMenu ? styles.megaMenuVisible : ''}`}>
-              {categories.map((category, idx) => (
-                <div key={idx} className={styles.categoryGroup}>
-                  <h3 className={styles.categoryTitle}>{category.title}</h3>
-                  {category.items.map((item, itemIdx) => (
-                    <Link 
-                      href={`/products?category=${
-                        item.name === 'Trays' ? 'tray' : 
-                        item.name === 'Jewelry Trays' ? 'Tray' :
-                        item.name === 'Wall Decor' ? 'decor' :
-                        item.name === 'Matt Rangoli' ? 'matt rangoli' :
-                        item.name === 'Mirror Work' ? 'mirror work' :
-                        item.name.toLowerCase()
-                      }`}
-                      key={itemIdx}
-                      className={styles.categoryItem}
+              <div className={styles.menuLinks}>
+                <p className={styles.menuHeading}>Shop by category</p>
+                <div className={styles.menuGrid}>
+                  {MENU_LINKS.map(item => (
+                    <Link
+                      href={`/products?category=${encodeURIComponent(item.query)}`}
+                      key={item.name}
+                      className={styles.menuItem}
                       onClick={() => setShowMegaMenu(false)}
                     >
                       <Image
                         src={getImageUrl(item.image)}
-                        alt={item.name}
-                        width={50}
-                        height={50}
-                        className={styles.categoryImage}
+                        alt=""
+                        width={44}
+                        height={44}
+                        className={styles.menuThumb}
                       />
-                      <div className={styles.categoryInfo}>
-                        <span className={styles.categoryName}>{item.name}</span>
-                        <span className={styles.categoryDesc}>{item.description}</span>
-                      </div>
+                      <span className={styles.menuItemText}>
+                        <span className={styles.menuItemName}>{item.name}</span>
+                        <span className={styles.menuItemDesc}>{item.description}</span>
+                      </span>
                     </Link>
                   ))}
                 </div>
-              ))}
-              
-              {/* Featured Section */}
-              <div className={styles.featuredSection}>
-                <h3 className={styles.featuredTitle}>Featured Collections</h3>
-                <div className={styles.featuredGrid}>
-                  {featuredItems.map((item, idx) => (
-                    <div key={idx} className={styles.featuredItem}>
-                      <Image
-                        src={getImageUrl(item.image)}
-                        alt={item.name}
-                        width={200}
-                        height={200}
-                        className={styles.featuredImage}
-                      />
-                      <div className={styles.featuredOverlay}>
-                        <span>{item.name}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <Link
+                  href="/products"
+                  className={styles.menuAllLink}
+                  onClick={() => setShowMegaMenu(false)}
+                >
+                  View all pieces →
+                </Link>
               </div>
+
+              <Link
+                href="/products"
+                className={styles.menuFeature}
+                onClick={() => setShowMegaMenu(false)}
+              >
+                <Image
+                  src={getImageUrl('category1.png')}
+                  alt="Featured collection"
+                  width={340}
+                  height={420}
+                  className={styles.menuFeatureImage}
+                />
+                <span className={styles.menuFeatureOverlay}>
+                  <span className={styles.menuFeatureEyebrow}>Featured</span>
+                  <span className={styles.menuFeatureTitle}>The latest pours</span>
+                </span>
+              </Link>
             </div>
           </div>
-          <Link href="/products" className={styles.link}>
-            All Products
+          <Link href="/#craft" className={styles.link}>
+            Our craft
           </Link>
-          {/* Contact Support moved to profile dropdown */}
         </div>
 
         <div className={styles.right}>
@@ -425,13 +373,24 @@ export default function Navbar() {
             </Suspense>
           )}
 
+          {/* Desktop: bordered command-palette trigger. Mobile: icon only. */}
           <button
             onClick={handleSearchClick}
-            className={`${styles.icon} ${styles.searchTrigger}`}
+            className={styles.searchPill}
             aria-label="Open search"
             aria-expanded={searchOpen}
           >
-            <SearchIcon size={22} className={styles.searchIcon} />
+            <SearchIcon size={14} strokeWidth={1.75} />
+            <span>Search</span>
+            <kbd className={styles.searchKbd}>⌘K</kbd>
+          </button>
+          <button
+            onClick={handleSearchClick}
+            className={`${styles.icon} ${styles.searchTrigger} ${styles.searchIconMobile}`}
+            aria-label="Open search"
+            aria-expanded={searchOpen}
+          >
+            <SearchIcon size={20} strokeWidth={1.75} className={styles.searchIcon} />
           </button>
 
           <Link
@@ -439,7 +398,7 @@ export default function Navbar() {
             className={styles.icon}
             aria-label="Your Wishlist"
           >
-            <Heart size={22} />
+            <Heart size={20} strokeWidth={1.75} />
             {user && wishlistItems.length > 0 && (
               <span className={styles.badge}>
                 {wishlistItems.length}
@@ -452,7 +411,7 @@ export default function Navbar() {
             className={styles.icon}
             aria-label="Your Cart"
           >
-            <ShoppingCart size={22} />
+            <ShoppingCart size={20} strokeWidth={1.75} />
             {user && cartItems.length > 0 && (
               <span className={styles.badge}>
                 {cartItems.length}
@@ -536,10 +495,11 @@ export default function Navbar() {
                 </Button>
                 <Button
                   asChild
+                  variant={overDarkHero ? 'outline' : 'default'}
                   className={cn(
                     'h-9 px-4 text-sm font-medium transition-colors',
                     overDarkHero
-                      ? 'bg-white text-[#1a1a1a] hover:bg-white/90'
+                      ? 'border-white/30 bg-transparent text-white hover:border-white/60 hover:bg-white/10 hover:text-white'
                       : 'bg-[#1a1a1a] text-white hover:bg-[#333]',
                   )}
                 >
