@@ -1,0 +1,2315 @@
+<title>Kalakraft — Mobile Auth Redesign</title>
+
+<style>
+/* ══════════════════════════════════════════════════════════════════════
+   DOC CHROME TOKENS
+   Warm near-black studio ground. Ember accent derived from the brand
+   panel already in AuthShell.tsx: hsl(28 90% 35%) radial + the
+   #f59e0b → #b91c1c monogram gradient.
+   ══════════════════════════════════════════════════════════════════ */
+:root {
+  --ground: #0b0a09;
+  --panel: #141110;
+  --panel-2: #1c1815;
+  --ink: #efe9e3;
+  --ink-2: #a39a91;
+  --ink-3: #6f665e;
+  --line: rgba(240, 233, 227, 0.10);
+  --line-2: rgba(240, 233, 227, 0.16);
+  --ember: #e2853d;
+  --ember-soft: rgba(226, 133, 61, 0.14);
+  --good: #34d399;
+  --bad: #f87171;
+  --stage: #100d0c;
+
+  --serif: Georgia, "Iowan Old Style", "Times New Roman", serif;
+  --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+
+  --measure: 63ch;
+  --shell: 1180px;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --ground: #f6f3ef;
+    --panel: #ffffff;
+    --panel-2: #f1ece5;
+    --ink: #1b1917;
+    --ink-2: #5e574f;
+    --ink-3: #8d857c;
+    --line: rgba(27, 25, 23, 0.11);
+    --line-2: rgba(27, 25, 23, 0.18);
+    --ember: #b45309;
+    --ember-soft: rgba(180, 83, 9, 0.10);
+    --good: #059669;
+    --bad: #dc2626;
+    --stage: #e9e3db;
+  }
+}
+:root[data-theme="light"] {
+  --ground: #f6f3ef;
+  --panel: #ffffff;
+  --panel-2: #f1ece5;
+  --ink: #1b1917;
+  --ink-2: #5e574f;
+  --ink-3: #8d857c;
+  --line: rgba(27, 25, 23, 0.11);
+  --line-2: rgba(27, 25, 23, 0.18);
+  --ember: #b45309;
+  --ember-soft: rgba(180, 83, 9, 0.10);
+  --good: #059669;
+  --bad: #dc2626;
+  --stage: #e9e3db;
+}
+:root[data-theme="dark"] {
+  --ground: #0b0a09;
+  --panel: #141110;
+  --panel-2: #1c1815;
+  --ink: #efe9e3;
+  --ink-2: #a39a91;
+  --ink-3: #6f665e;
+  --line: rgba(240, 233, 227, 0.10);
+  --line-2: rgba(240, 233, 227, 0.16);
+  --ember: #e2853d;
+  --ember-soft: rgba(226, 133, 61, 0.14);
+  --good: #34d399;
+  --bad: #f87171;
+  --stage: #100d0c;
+}
+
+/* ── base ─────────────────────────────────────────────────────────── */
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+a { color: inherit; }
+
+:focus-visible {
+  outline: 2px solid var(--ember);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.wrap {
+  max-width: var(--shell);
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.prose { max-width: var(--measure); }
+
+.kicker {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin: 0;
+}
+
+h1, h2, h3 { text-wrap: balance; margin: 0; }
+
+h1 {
+  font-size: clamp(30px, 5.4vw, 50px);
+  line-height: 1.06;
+  letter-spacing: -0.022em;
+  font-weight: 600;
+}
+h1 em {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 400;
+  color: var(--ember);
+}
+
+h2 {
+  font-size: clamp(21px, 2.6vw, 28px);
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+  font-weight: 600;
+}
+
+h3 {
+  font-size: 15px;
+  font-weight: 650;
+  letter-spacing: -0.005em;
+}
+
+p { margin: 0; }
+.lede { color: var(--ink-2); font-size: 17px; line-height: 1.62; }
+.note { color: var(--ink-2); font-size: 14.5px; }
+
+code {
+  font-family: var(--mono);
+  font-size: 0.86em;
+  background: var(--ember-soft);
+  color: var(--ember);
+  padding: 0.13em 0.4em;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+hr.rule {
+  border: 0;
+  border-top: 1px solid var(--line);
+  margin: 0;
+}
+
+/* ── header ───────────────────────────────────────────────────────── */
+.masthead {
+  border-bottom: 1px solid var(--line);
+  background:
+    radial-gradient(ellipse 70% 120% at 12% 0%, var(--ember-soft), transparent 62%),
+    var(--ground);
+}
+.masthead .wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+  padding-top: 40px;
+  padding-bottom: 44px;
+}
+.mast-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.brandline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+.brandline .dot {
+  width: 22px; height: 22px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #f59e0b, #b91c1c);
+  display: grid; place-items: center;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 13px;
+  color: #fff;
+  letter-spacing: 0;
+}
+.meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+}
+.tag {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--ink-2);
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  padding: 4px 11px;
+  white-space: nowrap;
+}
+.tag.on {
+  color: var(--ember);
+  border-color: color-mix(in srgb, var(--ember) 45%, transparent);
+  background: var(--ember-soft);
+}
+
+/* ── sections ─────────────────────────────────────────────────────── */
+section { border-bottom: 1px solid var(--line); }
+section > .wrap {
+  padding-top: 56px;
+  padding-bottom: 56px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+.sec-head { display: flex; flex-direction: column; gap: 10px; }
+
+/* ══════════════════════════════════════════════════════════════════
+   PHONE STAGE
+   ══════════════════════════════════════════════════════════════════ */
+.stages {
+  display: flex;
+  gap: 40px;
+  align-items: flex-start;
+  overflow-x: auto;
+  /* left room so the annotation pins aren't clipped by the scroll container */
+  padding: 4px 4px 14px 20px;
+  margin-left: -20px;
+  scrollbar-width: thin;
+}
+.stage {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 410px;
+}
+.stage-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.stage-label .name {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.stage-label .name.now { color: var(--ink-3); }
+.stage-label .name.next { color: var(--ember); }
+.stage-label .spec {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--ink-3);
+  white-space: nowrap;
+}
+
+.phone {
+  position: relative;
+  width: 410px;
+  height: 864px;
+  border-radius: 44px;
+  padding: 10px;
+  background: linear-gradient(160deg, #3a3330, #1a1615 40%, #2b2624);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.06),
+    0 30px 70px -30px rgba(0, 0, 0, 0.85);
+  flex: 0 0 auto;
+}
+.phone-screen {
+  position: relative;
+  width: 390px;
+  height: 844px;
+  border-radius: 35px;
+  overflow: hidden;
+  background: #fff;
+  isolation: isolate;
+}
+.notch {
+  position: absolute;
+  top: 9px; left: 50%;
+  transform: translateX(-50%);
+  width: 108px; height: 26px;
+  border-radius: 999px;
+  background: #0b0a09;
+  z-index: 60;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   MOCK — the app's real shadcn tokens (app/globals.css :root)
+   ══════════════════════════════════════════════════════════════════ */
+.mock {
+  --background: 0 0% 100%;
+  --foreground: 0 0% 10.2%;
+  --card: 0 0% 100%;
+  --muted: 0 0% 96.1%;
+  --muted-foreground: 0 0% 40%;
+  --border: 0 0% 89.8%;
+  --primary: 0 0% 10.2%;
+  --primary-foreground: 0 0% 98%;
+  --destructive: 0 72% 51%;
+  --radius: 0.625rem;
+  --kb-h: 222px;
+
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 1.5;
+  overflow: hidden;
+}
+
+.statusbar {
+  position: relative;
+  z-index: 50;
+  height: 44px;
+  flex: 0 0 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 26px 0 30px;
+  font-size: 12.5px;
+  font-weight: 620;
+  font-variant-numeric: tabular-nums;
+  color: hsl(var(--foreground));
+  pointer-events: none;
+}
+.statusbar.on-dark { color: #fff; }
+.statusbar .sigs { display: flex; align-items: center; gap: 5px; }
+.statusbar .bar { width: 3px; border-radius: 1px; background: currentColor; }
+.statusbar .batt {
+  width: 22px; height: 11px;
+  border: 1.2px solid currentColor;
+  border-radius: 3px;
+  padding: 1.4px;
+  opacity: 0.9;
+}
+.statusbar .batt i { display: block; height: 100%; width: 72%; background: currentColor; border-radius: 1px; }
+
+.mock-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* shadcn-ish primitives, reproduced ------------------------------- */
+.f-label {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1;
+  color: hsl(var(--foreground));
+}
+.f-input {
+  width: 100%;
+  height: 44px;                       /* .auth-shell mobile override */
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font: inherit;
+  font-size: 16px;                    /* no iOS zoom */
+  padding: 0 12px;
+  transition: border-color 0.16s ease, box-shadow 0.16s ease;
+}
+.f-input::placeholder { color: hsl(var(--muted-foreground)); }
+.f-input:focus {
+  outline: none;
+  border-color: hsl(var(--foreground));
+  box-shadow: 0 0 0 3px hsl(var(--foreground) / 0.08);
+}
+.f-btn {
+  width: 100%;
+  height: 44px;
+  border-radius: var(--radius);
+  border: 1px solid transparent;
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  font: inherit;
+  font-size: 14.5px;
+  font-weight: 550;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: transform 0.12s ease, opacity 0.15s ease, background 0.15s ease;
+}
+.f-btn:active { transform: scale(0.985); }
+.f-btn[disabled] { opacity: 0.6; cursor: default; }
+.f-btn.outline {
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  border-color: hsl(var(--border));
+}
+.f-btn.outline:active { background: hsl(var(--muted)); }
+.f-btn.lg { height: 48px; font-size: 15px; }
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: hsl(var(--muted-foreground));
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.divider::before, .divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: hsl(var(--border));
+}
+
+.banner {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  border-radius: var(--radius);
+  border: 1px solid hsl(var(--destructive) / 0.3);
+  background: hsl(var(--destructive) / 0.09);
+  color: hsl(var(--destructive));
+  padding: 10px 13px;
+  font-size: 13.5px;
+  line-height: 1.4;
+}
+
+.spin {
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  animation: spin 0.75s linear infinite;
+  flex: 0 0 auto;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ══════════════════════════════════════════════════════════════════
+   BEFORE phone — faithful to app/auth/AuthShell.tsx at <lg
+   ══════════════════════════════════════════════════════════════════ */
+.before-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid hsl(var(--border));
+  padding: 12px 16px;
+}
+.before-strip .bm {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 14px; font-weight: 600;
+}
+.before-strip .bm span.sq {
+  width: 28px; height: 28px; border-radius: 6px;
+  background: linear-gradient(135deg, #f59e0b, #b91c1c);
+  display: grid; place-items: center;
+  font-family: var(--serif); font-style: italic; color: #fff; font-size: 15px;
+}
+.before-strip .shoplink { font-size: 12px; color: hsl(var(--muted-foreground)); }
+
+.before-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 24px 20px 24px;
+}
+.before-head { display: flex; flex-direction: column; gap: 6px; }
+.before-head .eyebrow {
+  font-size: 11px; font-weight: 500; letter-spacing: 0.2em;
+  text-transform: uppercase; color: hsl(var(--muted-foreground));
+}
+.before-head h2 { font-size: 24px; font-weight: 600; letter-spacing: -0.02em; }
+.before-head p { font-size: 13.5px; color: hsl(var(--muted-foreground)); line-height: 1.5; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field-row { display: flex; align-items: center; justify-content: space-between; }
+.field-row a { font-size: 12px; color: hsl(var(--muted-foreground)); text-decoration: none; }
+.input-wrap { position: relative; display: flex; }
+.input-wrap .lead {
+  position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+  color: hsl(var(--muted-foreground)); pointer-events: none; display: flex;
+}
+.input-wrap .lead + .f-input { padding-left: 36px; }
+.input-wrap .trail {
+  position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+  width: 30px; height: 30px; border: 0; background: transparent;
+  color: hsl(var(--muted-foreground)); border-radius: 6px; cursor: pointer;
+  display: grid; place-items: center;
+}
+.before-dead {
+  flex: 1;
+  min-height: 150px;
+  margin: 0 20px 20px;
+  border: 1px dashed hsl(var(--border));
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  color: hsl(var(--muted-foreground));
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-align: center;
+  padding: 12px;
+}
+.before-footer {
+  border-top: 1px solid hsl(var(--border));
+  margin: 0 20px 26px;
+  padding-top: 16px;
+  text-align: center;
+  font-size: 13.5px;
+  color: hsl(var(--muted-foreground));
+}
+
+/* problem pins */
+.pin {
+  position: absolute;
+  z-index: 55;
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: var(--ember);
+  color: #150f09;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  font-weight: 700;
+  display: grid; place-items: center;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ember) 28%, transparent);
+  cursor: help;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   AFTER phone — the proposal
+   ══════════════════════════════════════════════════════════════════ */
+#after .mock { background: hsl(var(--background)); }
+
+/* Crown: the desktop brand panel, brought to mobile at mobile scale */
+.crown {
+  position: relative;
+  flex: 0 0 auto;
+  height: 230px;
+  overflow: hidden;
+  background: #0c0a09;
+  transition: height 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.mock.compact .crown { height: 104px; }
+
+.crown-grad {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 60% 55% at 18% 22%, hsl(28 90% 38% / 0.62), transparent 66%),
+    radial-gradient(ellipse 55% 60% at 86% 78%, hsl(340 65% 32% / 0.5), transparent 66%),
+    radial-gradient(circle at 50% 105%, hsl(262 50% 26% / 0.55), transparent 70%),
+    linear-gradient(160deg, #0c0a09, #171312 55%, #221a15);
+}
+.crown-img {
+  position: absolute; inset: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  transition: opacity 1.4s ease;
+}
+.crown-img.on { opacity: 0.42; }
+.crown-veil {
+  position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.86) 4%, rgba(0,0,0,0.30) 52%, rgba(0,0,0,0.42));
+}
+.crown-mesh { position: absolute; inset: 0; opacity: 0.075; }
+
+.crown-inner {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 6px 20px 30px;
+  color: #fff;
+}
+.crown-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.crown-bar .mark {
+  display: flex; align-items: center; gap: 9px;
+  font-size: 15px; font-weight: 600; letter-spacing: 0.01em;
+}
+.crown-bar .mark .sq {
+  width: 30px; height: 30px; border-radius: 8px;
+  background: linear-gradient(135deg, #f59e0b, #b91c1c);
+  display: grid; place-items: center;
+  font-family: var(--serif); font-style: italic; font-size: 16px;
+}
+.crown-bar .shop {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 32px; padding: 0 13px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.22);
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(6px);
+  font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.92);
+  text-decoration: none;
+}
+
+.crown-copy {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  transition: opacity 0.26s ease, transform 0.32s ease;
+}
+.mock.compact .crown-copy {
+  opacity: 0;
+  transform: translateY(10px);
+  pointer-events: none;
+}
+.crown-badge {
+  align-self: flex-start;
+  display: inline-flex; align-items: center; gap: 6px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.16);
+  padding: 4px 10px;
+  font-size: 9.5px; font-weight: 500;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  color: rgba(255,255,255,0.88);
+}
+.crown-copy h2 {
+  font-size: 27px;
+  font-weight: 300;
+  line-height: 1.14;
+  letter-spacing: -0.015em;
+}
+.crown-copy h2 em {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 400;
+}
+.crown-piece {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 9px;
+  border-top: 1px solid rgba(255,255,255,0.14);
+}
+.crown-piece .cap { display: flex; flex-direction: column; min-width: 0; }
+.crown-piece .cap b { font-size: 12.5px; font-weight: 550; }
+.crown-piece .cap span { font-size: 10.5px; color: rgba(255,255,255,0.6); }
+.crown-dots { display: flex; gap: 5px; }
+.crown-dots button {
+  height: 5px; width: 5px; padding: 0; border: 0; border-radius: 999px;
+  background: rgba(255,255,255,0.34); cursor: pointer;
+  transition: width 0.3s ease, background 0.3s ease;
+}
+.crown-dots button.on { width: 22px; background: #fff; }
+
+/* Sheet — lifts over the crown, the bottom-sheet idiom */
+.sheet {
+  position: relative;
+  z-index: 3;
+  margin-top: -22px;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: hsl(var(--card));
+  border-radius: 26px 26px 0 0;
+  box-shadow: 0 -14px 34px -18px rgba(0, 0, 0, 0.42);
+}
+.grabber {
+  width: 38px; height: 4px; border-radius: 999px;
+  background: hsl(var(--border));
+  margin: 9px auto 0;
+  flex: 0 0 auto;
+}
+.sheet-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 14px 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* Segmented switch — replaces the full page navigation */
+.seg {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 4px;
+  background: hsl(var(--muted));
+  border-radius: 12px;
+  flex: 0 0 auto;
+}
+.seg .thumb {
+  position: absolute;
+  z-index: 0;
+  top: 4px; left: 4px;
+  width: calc(50% - 6px);
+  height: calc(100% - 8px);
+  border-radius: 9px;
+  background: hsl(var(--card));
+  box-shadow: 0 1px 3px rgba(0,0,0,0.10), 0 0 0 1px hsl(var(--border));
+  transition: transform 0.34s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.seg.b .thumb { transform: translateX(calc(100% + 4px)); }
+.seg button {
+  position: relative;
+  z-index: 1;
+  height: 38px;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 550;
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+  border-radius: 9px;
+  transition: color 0.24s ease;
+}
+.seg button[aria-selected="true"] { color: hsl(var(--foreground)); }
+
+.pane-head { display: flex; flex-direction: column; gap: 3px; }
+.pane-head h3 { font-size: 20px; font-weight: 620; letter-spacing: -0.018em; }
+.pane-head p { font-size: 13px; color: hsl(var(--muted-foreground)); }
+
+.pane { display: flex; flex-direction: column; gap: 15px; }
+.pane[hidden] { display: none; }
+
+.social-stack { display: flex; flex-direction: column; gap: 9px; }
+
+.form-fields { display: flex; flex-direction: column; gap: 14px; }
+
+/* live validation affordances */
+.tick {
+  position: absolute; right: 12px; top: 50%;
+  transform: translateY(-50%) scale(0.6);
+  color: #059669;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.24s cubic-bezier(0.34, 1.56, 0.64, 1);
+  pointer-events: none;
+}
+.tick.on { opacity: 1; transform: translateY(-50%) scale(1); }
+.f-input.ok { border-color: rgba(5, 150, 105, 0.55); }
+.f-input.bad { border-color: hsl(var(--destructive) / 0.6); }
+
+.reqs { display: flex; flex-wrap: wrap; gap: 5px; }
+.req {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11px;
+  border-radius: 999px;
+  border: 1px solid hsl(var(--border));
+  color: hsl(var(--muted-foreground));
+  padding: 3px 9px 3px 6px;
+  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+.req i {
+  width: 12px; height: 12px; border-radius: 50%;
+  border: 1.4px solid currentColor;
+  display: grid; place-items: center;
+  font-size: 8px; font-style: normal;
+}
+.req.met {
+  color: #059669;
+  border-color: rgba(5, 150, 105, 0.4);
+  background: rgba(5, 150, 105, 0.07);
+}
+.req.met i { background: #059669; border-color: #059669; color: #fff; }
+
+.meter { display: flex; align-items: center; gap: 8px; }
+.meter .segs { display: flex; gap: 4px; flex: 1; }
+.meter .segs span {
+  height: 4px; flex: 1; border-radius: 999px;
+  background: hsl(var(--muted));
+  transition: background 0.3s ease;
+}
+.meter b { font-size: 11px; font-weight: 550; font-variant-numeric: tabular-nums; min-width: 54px; text-align: right; }
+
+.hint { font-size: 11.5px; color: hsl(var(--muted-foreground)); }
+.hint.good { color: #059669; }
+.hint.bad { color: hsl(var(--destructive)); }
+
+.terms { font-size: 11px; line-height: 1.5; text-align: center; color: hsl(var(--muted-foreground)); }
+.terms a { color: hsl(var(--foreground)); }
+
+/* trust row — desktop-only proof, condensed for mobile */
+.trust {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border-top: 1px solid hsl(var(--border));
+  padding-top: 13px;
+  margin-top: 2px;
+}
+.trust div { display: flex; flex-direction: column; align-items: center; gap: 1px; flex: 1; }
+.trust b { font-size: 13px; font-weight: 650; font-variant-numeric: tabular-nums; }
+.trust span { font-size: 9.5px; letter-spacing: 0.05em; color: hsl(var(--muted-foreground)); text-align: center; }
+
+/* sticky action bar — survives the keyboard */
+.action-bar {
+  flex: 0 0 auto;
+  padding: 11px 20px calc(11px + env(safe-area-inset-bottom, 0px));
+  background: hsl(var(--card));
+  border-top: 1px solid hsl(var(--border));
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transform: translateY(0);
+  box-shadow: 0 -8px 20px -14px rgba(0,0,0,0.3);
+}
+.action-bar .swap {
+  text-align: center;
+  font-size: 12.5px;
+  color: hsl(var(--muted-foreground));
+}
+.action-bar .swap button {
+  border: 0; background: transparent; font: inherit; font-size: 12.5px;
+  font-weight: 600; color: hsl(var(--foreground)); text-decoration: underline;
+  text-underline-offset: 3px; cursor: pointer; padding: 0;
+}
+
+/* simulated iOS keyboard */
+.keyboard {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: var(--kb-h);
+  z-index: 40;
+  background: #d1d3d9;
+  padding: 8px 4px 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transform: translateY(100%);
+  transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+  box-shadow: 0 -1px 0 rgba(0,0,0,0.12);
+}
+.mock.kb .keyboard { transform: translateY(0); }
+.keyboard .row { display: flex; gap: 5px; justify-content: center; padding: 0 3px; }
+.keyboard .key {
+  flex: 1;
+  height: 38px;
+  border-radius: 5px;
+  background: #fff;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.28);
+  display: grid;
+  place-items: center;
+  font-size: 15px;
+  color: #111;
+}
+.keyboard .key.wide { flex: 1.6; background: #adb3bd; }
+.keyboard .key.space { flex: 5; }
+.keyboard .bar {
+  height: 5px; width: 108px; border-radius: 999px;
+  background: rgba(0,0,0,0.3); margin: 2px auto 0;
+}
+/* The whole sheet shrinks by the keyboard height, so the sticky action bar
+   lands directly above the keys instead of under them — finding 04. */
+.mock.kb .sheet { margin-bottom: var(--kb-h); }
+.mock.kb .sheet-scroll { padding-bottom: 8px; }
+
+/* OAuth splash */
+.splash {
+  display: flex;
+  flex-direction: column;
+  gap: 17px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 14px;
+  padding: 18px;
+  background: hsl(var(--card));
+}
+.splash-top { display: flex; align-items: center; gap: 13px; }
+.splash-badge {
+  position: relative;
+  width: 54px; height: 54px;
+  border-radius: 16px;
+  background: hsl(var(--muted));
+  border: 1px solid hsl(var(--border));
+  display: grid; place-items: center;
+  flex: 0 0 auto;
+}
+.splash-badge .pip {
+  position: absolute; right: -6px; bottom: -6px;
+  width: 24px; height: 24px; border-radius: 50%;
+  background: hsl(var(--primary)); color: hsl(var(--primary-foreground));
+  display: grid; place-items: center;
+  border: 2px solid hsl(var(--card));
+}
+.splash-top h3 { font-size: 16px; font-weight: 620; letter-spacing: -0.01em; }
+.splash-top p { font-size: 13px; color: hsl(var(--muted-foreground)); }
+.progress {
+  position: relative;
+  height: 6px;
+  border-radius: 999px;
+  background: hsl(var(--muted));
+  overflow: hidden;
+}
+.progress i {
+  position: absolute; inset: 0 auto 0 0;
+  border-radius: 999px;
+  background: hsl(var(--primary));
+  transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.splash-msg { display: flex; align-items: center; gap: 9px; font-size: 13.5px; }
+.assure {
+  display: flex; gap: 10px; align-items: flex-start;
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--muted) / 0.5);
+  border-radius: 11px;
+  padding: 12px;
+}
+.assure b { font-size: 12px; font-weight: 600; display: block; }
+.assure span { font-size: 11px; color: hsl(var(--muted-foreground)); line-height: 1.45; }
+.ghost-link {
+  align-self: center;
+  border: 0; background: transparent;
+  font: inherit; font-size: 12px;
+  color: hsl(var(--muted-foreground));
+  text-decoration: underline; text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+/* success */
+.done {
+  display: flex; flex-direction: column; align-items: center; gap: 16px;
+  padding: 46px 20px;
+  text-align: center;
+}
+.done .ring {
+  width: 74px; height: 74px; border-radius: 50%;
+  background: rgba(5, 150, 105, 0.10);
+  display: grid; place-items: center;
+}
+.done h3 { font-size: 17px; font-weight: 620; }
+.done p { font-size: 12.5px; color: hsl(var(--muted-foreground)); display: inline-flex; align-items: center; gap: 7px; }
+.check-path {
+  stroke-dasharray: 30;
+  stroke-dashoffset: 30;
+  animation: draw 0.55s 0.12s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}
+@keyframes draw { to { stroke-dashoffset: 0; } }
+
+.sheet > .view:not([hidden]) {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.view[hidden] { display: none; }
+.view-enter { animation: rise 0.34s cubic-bezier(0.22, 1, 0.36, 1); }
+@keyframes rise {
+  from { opacity: 0; transform: translateY(9px); }
+  to { opacity: 1; transform: none; }
+}
+.shake { animation: shake 0.34s ease; }
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  50% { transform: translateX(4px); }
+  75% { transform: translateX(-2px); }
+}
+
+/* ── controls under the live phone ─────────────────────────────────── */
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px;
+  background: var(--panel);
+}
+.controls .clabel {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.chips { display: flex; flex-wrap: wrap; gap: 7px; }
+.chip {
+  border: 1px solid var(--line-2);
+  background: transparent;
+  color: var(--ink-2);
+  border-radius: 999px;
+  padding: 6px 13px;
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+  transition: color 0.16s ease, border-color 0.16s ease, background 0.16s ease;
+}
+.chip:hover { color: var(--ink); border-color: var(--line-2); background: var(--panel-2); }
+.chip[aria-pressed="true"] {
+  color: var(--ember);
+  border-color: color-mix(in srgb, var(--ember) 50%, transparent);
+  background: var(--ember-soft);
+}
+
+/* ── findings / fixes ──────────────────────────────────────────────── */
+.pairs { display: flex; flex-direction: column; gap: 0; }
+.pair {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) minmax(0, 1fr);
+  gap: 18px;
+  padding: 20px 0;
+  border-top: 1px solid var(--line);
+  align-items: start;
+}
+.pair:last-child { border-bottom: 1px solid var(--line); }
+.pair .num {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--ember);
+  padding-top: 2px;
+}
+.pair .now h3 { color: var(--ink); margin-bottom: 4px; }
+.pair .now p, .pair .fix p { font-size: 14px; color: var(--ink-2); line-height: 1.55; }
+.pair .fix h3 { color: var(--ember); margin-bottom: 4px; }
+.pair .fix { border-left: 1px solid var(--line); padding-left: 18px; }
+@media (max-width: 720px) {
+  .pair { grid-template-columns: 26px minmax(0, 1fr); }
+  .pair .fix { grid-column: 2; border-left: 0; padding-left: 0; padding-top: 10px; }
+}
+
+/* ── spec table ────────────────────────────────────────────────────── */
+.table-scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 14px; }
+table { border-collapse: collapse; width: 100%; min-width: 640px; font-size: 14px; }
+th, td { text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-weight: 400;
+  background: var(--panel);
+}
+tr:last-child td { border-bottom: 0; }
+td:first-child { font-weight: 550; white-space: nowrap; }
+td .m { font-family: var(--mono); font-size: 12.5px; color: var(--ink-2); }
+
+/* ── two-col cards ─────────────────────────────────────────────────── */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(268px, 1fr));
+  gap: 14px;
+}
+.card {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 18px;
+  background: var(--panel);
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.card h3 { display: flex; align-items: center; gap: 9px; }
+.card h3 .bullet {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--ember); flex: 0 0 auto;
+}
+.card p { font-size: 13.5px; color: var(--ink-2); line-height: 1.55; }
+.card ul { margin: 0; padding-left: 17px; display: flex; flex-direction: column; gap: 6px; }
+.card li { font-size: 13.5px; color: var(--ink-2); line-height: 1.5; }
+
+footer.foot {
+  border: 0;
+}
+footer.foot .wrap {
+  padding: 34px 24px 56px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 26px;
+  justify-content: space-between;
+  align-items: baseline;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink-3);
+  letter-spacing: 0.05em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+</style>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="mast-top">
+      <div class="brandline"><span class="dot">K</span> Kalakraft · design proposal</div>
+      <div class="brandline" style="letter-spacing:.1em">Branch <code style="letter-spacing:0">claude/design-skill-kkffc6</code></div>
+    </div>
+
+    <div class="prose" style="display:flex;flex-direction:column;gap:16px">
+      <p class="kicker">Mobile viewport · below the lg breakpoint</p>
+      <h1>The sign-in screen a phone actually gets is the <em>plainest</em> screen we ship.</h1>
+      <p class="lede">
+        Everything that makes Kalakraft feel handmade — the warm gradient, the rotating
+        pieces, the artisan proof — lives inside <code>lg:flex</code> and never reaches a
+        390&nbsp;px screen. This is a redesign of <code>/auth/login</code> and
+        <code>/auth/signup</code> at mobile width, built on the shadcn primitives already
+        in the repo. No component API changes. The prototype below is live — type in it.
+      </p>
+    </div>
+
+    <div class="meta-row">
+      <span class="tag on">Live prototype</span>
+      <span class="tag">shadcn primitives only</span>
+      <span class="tag">390 × 844 · iPhone 14</span>
+      <span class="tag">44 px touch targets</span>
+      <span class="tag">No new dependencies</span>
+      <span class="tag">Proposal — nothing shipped</span>
+    </div>
+  </div>
+</header>
+
+<!-- ═════════════════════════════ STAGES ═════════════════════════════ -->
+<section>
+  <div class="wrap">
+    <div class="sec-head prose">
+      <p class="kicker">01 — Side by side</p>
+      <h2>Current build, then the proposal</h2>
+      <p class="note">
+        Left is what <code>AuthShell.tsx</code> renders today under
+        <code>lg</code>, with the eight findings pinned. Right is the
+        proposal, running for real — switch tabs, type an email, watch the
+        strength meter, hit Google, open the keyboard.
+      </p>
+    </div>
+
+    <div class="stages">
+      <!-- ───────────── BEFORE ───────────── -->
+      <div class="stage">
+        <div class="stage-label">
+          <span class="name now">Now — login/page.tsx</span>
+          <span class="spec">static</span>
+        </div>
+
+        <div class="phone">
+          <div class="notch"></div>
+
+          <span class="pin" style="top:66px;left:-13px" title="Finding 1 — the brand panel is hidden below lg">1</span>
+          <span class="pin" style="top:170px;right:-13px" title="Finding 2 — no way to switch to sign-up without a page load">2</span>
+          <span class="pin" style="top:450px;left:-13px" title="Finding 4 — the CTA scrolls away under the keyboard">4</span>
+          <span class="pin" style="top:580px;right:-13px" title="Finding 5 — social sign-in sits below the fold">5</span>
+          <span class="pin" style="top:770px;left:-13px" title="Finding 3 — dead space on tall phones">3</span>
+
+          <div class="phone-screen">
+            <div class="mock">
+              <div class="statusbar">
+                <span>9:41</span>
+                <span class="sigs">
+                  <span class="bar" style="height:5px"></span>
+                  <span class="bar" style="height:7px"></span>
+                  <span class="bar" style="height:9px"></span>
+                  <span class="bar" style="height:11px"></span>
+                  <span class="batt"><i></i></span>
+                </span>
+              </div>
+
+              <div class="mock-body">
+                <div class="before-strip">
+                  <span class="bm"><span class="sq">K</span> Kalakraft</span>
+                  <span class="shoplink">Browse shop →</span>
+                </div>
+
+                <div class="before-form">
+                  <div class="before-head">
+                    <span class="eyebrow">Welcome back</span>
+                    <h2>Sign in to Kalakraft</h2>
+                    <p>Pick up where you left off — orders, saved pieces and curated drops.</p>
+                  </div>
+
+                  <div class="field">
+                    <label class="f-label">Email</label>
+                    <div class="input-wrap">
+                      <span class="lead">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg>
+                      </span>
+                      <input class="f-input" type="email" placeholder="you@example.com" disabled>
+                    </div>
+                  </div>
+
+                  <div class="field">
+                    <div class="field-row">
+                      <label class="f-label">Password</label>
+                      <a href="#0">Forgot password?</a>
+                    </div>
+                    <div class="input-wrap">
+                      <input class="f-input" type="password" placeholder="Enter your password" disabled>
+                      <span class="trail">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                      </span>
+                    </div>
+                  </div>
+
+                  <button class="f-btn" type="button" disabled>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/></svg>
+                    Sign in
+                  </button>
+
+                  <div class="divider">or continue with</div>
+
+                  <div style="display:flex;flex-direction:column;gap:10px">
+                    <button class="f-btn outline" type="button" disabled>
+                      <svg width="16" height="16" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+                      Google
+                    </button>
+                    <button class="f-btn outline" type="button" disabled>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                      Facebook
+                    </button>
+                  </div>
+                </div>
+
+                <div class="before-dead">DEAD SPACE<br>≈ 180 PX ON A 390 × 844 SCREEN</div>
+
+                <div class="before-footer">Don't have an account? <b style="color:hsl(var(--foreground))">Create one</b></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ───────────── AFTER ───────────── -->
+      <div class="stage" id="after">
+        <div class="stage-label">
+          <span class="name next">Proposed — one screen, both flows</span>
+          <span class="spec" id="stateReadout">state: idle</span>
+        </div>
+
+        <div class="phone">
+          <div class="notch"></div>
+          <div class="phone-screen">
+            <div class="mock" id="mock">
+              <div class="statusbar on-dark" id="statusbar">
+                <span>9:41</span>
+                <span class="sigs">
+                  <span class="bar" style="height:5px"></span>
+                  <span class="bar" style="height:7px"></span>
+                  <span class="bar" style="height:9px"></span>
+                  <span class="bar" style="height:11px"></span>
+                  <span class="batt"><i></i></span>
+                </span>
+              </div>
+
+              <!-- CROWN -->
+              <div class="crown" id="crown">
+                <div class="crown-grad"></div>
+                <div class="crown-img" data-slide="0"></div>
+                <div class="crown-img" data-slide="1"></div>
+                <div class="crown-img" data-slide="2"></div>
+                <svg class="crown-mesh" aria-hidden="true">
+                  <defs>
+                    <pattern id="mandala" width="120" height="120" patternUnits="userSpaceOnUse">
+                      <circle cx="60" cy="60" r="1.5" fill="#fff"/>
+                      <circle cx="60" cy="60" r="22" stroke="#fff" stroke-width=".4" fill="none"/>
+                      <circle cx="60" cy="60" r="44" stroke="#fff" stroke-width=".25" fill="none"/>
+                    </pattern>
+                  </defs>
+                  <rect width="100%" height="100%" fill="url(#mandala)"/>
+                </svg>
+                <div class="crown-veil"></div>
+
+                <div class="crown-inner">
+                  <div class="crown-bar">
+                    <span class="mark"><span class="sq">K</span> Kalakraft</span>
+                    <a class="shop" href="#0">
+                      Browse shop
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                    </a>
+                  </div>
+
+                  <div class="crown-copy">
+                    <span class="crown-badge">Handcrafted in India</span>
+                    <h2>Where every piece tells a <em>story.</em></h2>
+                    <div class="crown-piece">
+                      <span class="cap">
+                        <b id="pieceName">Resin Tray Set</b>
+                        <span id="pieceCat">Trays · Hand-poured</span>
+                      </span>
+                      <span class="crown-dots" id="dots">
+                        <button type="button" class="on" aria-label="Piece 1"></button>
+                        <button type="button" aria-label="Piece 2"></button>
+                        <button type="button" aria-label="Piece 3"></button>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- SHEET -->
+              <div class="sheet" id="sheet">
+                <div class="grabber"></div>
+
+                <!-- FORM VIEW -->
+                <div class="view" id="viewForm" style="display:contents">
+                  <div class="sheet-scroll" id="scroller">
+                    <div class="seg" id="seg" role="tablist" aria-label="Account">
+                      <span class="thumb"></span>
+                      <button type="button" role="tab" aria-selected="true" data-tab="signin">Sign in</button>
+                      <button type="button" role="tab" aria-selected="false" data-tab="signup">Create account</button>
+                    </div>
+
+                    <div id="errorSlot"></div>
+
+                    <!-- SIGN IN -->
+                    <div class="pane" data-pane="signin">
+                      <div class="pane-head">
+                        <h3>Welcome back</h3>
+                        <p>Your saved pieces and orders are waiting.</p>
+                      </div>
+
+                      <div class="social-stack">
+                        <button class="f-btn outline lg" type="button" data-oauth="google">
+                          <svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+                          Continue with Google
+                        </button>
+                        <button class="f-btn outline lg" type="button" data-oauth="facebook">
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                          Continue with Facebook
+                        </button>
+                      </div>
+
+                      <div class="divider">or use email</div>
+
+                      <div class="form-fields">
+                        <div class="field">
+                          <label class="f-label" for="mEmail">Email</label>
+                          <div class="input-wrap">
+                            <input class="f-input" id="mEmail" type="email" placeholder="you@example.com" autocomplete="off" spellcheck="false">
+                            <span class="tick" id="mEmailTick">
+                              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="m4 12 5.5 5.5L20 7"/></svg>
+                            </span>
+                          </div>
+                        </div>
+
+                        <div class="field">
+                          <div class="field-row">
+                            <label class="f-label" for="mPass">Password</label>
+                            <a href="#0">Forgot password?</a>
+                          </div>
+                          <div class="input-wrap">
+                            <input class="f-input" id="mPass" type="password" placeholder="Enter your password">
+                            <button class="trail" type="button" data-eye="mPass" aria-label="Show password">
+                              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="trust">
+                        <div><b>200+</b><span>ARTISANS</span></div>
+                        <div><b>20+</b><span>COUNTRIES</span></div>
+                        <div><b>5,000+</b><span>COLLECTORS</span></div>
+                      </div>
+                    </div>
+
+                    <!-- SIGN UP -->
+                    <div class="pane" data-pane="signup" hidden>
+                      <div class="pane-head">
+                        <h3>Create your account</h3>
+                        <p>Save favourites, track orders, get first look at drops.</p>
+                      </div>
+
+                      <div class="social-stack">
+                        <button class="f-btn outline lg" type="button" data-oauth="google">
+                          <svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+                          Sign up with Google
+                        </button>
+                      </div>
+
+                      <div class="divider">or use email</div>
+
+                      <div class="form-fields">
+                        <div class="field">
+                          <label class="f-label" for="sName">Full name</label>
+                          <div class="input-wrap">
+                            <span class="lead">
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            </span>
+                            <input class="f-input" id="sName" type="text" placeholder="Your name" autocomplete="off">
+                          </div>
+                        </div>
+
+                        <div class="field">
+                          <label class="f-label" for="sEmail">Email</label>
+                          <div class="input-wrap">
+                            <input class="f-input" id="sEmail" type="email" placeholder="you@example.com" autocomplete="off" spellcheck="false">
+                            <span class="tick" id="sEmailTick">
+                              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="m4 12 5.5 5.5L20 7"/></svg>
+                            </span>
+                          </div>
+                        </div>
+
+                        <div class="field">
+                          <label class="f-label" for="sPass">Password</label>
+                          <div class="input-wrap">
+                            <input class="f-input" id="sPass" type="password" placeholder="At least 8 characters">
+                            <button class="trail" type="button" data-eye="sPass" aria-label="Show password">
+                              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                            </button>
+                          </div>
+
+                          <div class="meter" aria-hidden="true">
+                            <span class="segs" id="meterSegs"><span></span><span></span><span></span><span></span></span>
+                            <b id="meterLabel" style="color:hsl(var(--muted-foreground))">Too short</b>
+                          </div>
+
+                          <div class="reqs" id="reqs">
+                            <span class="req" data-req="len"><i>✓</i>8+ characters</span>
+                            <span class="req" data-req="case"><i>✓</i>Aa</span>
+                            <span class="req" data-req="num"><i>✓</i>Number</span>
+                            <span class="req" data-req="sym"><i>✓</i>Symbol</span>
+                          </div>
+                        </div>
+
+                        <div class="field">
+                          <label class="f-label" for="sConfirm">Confirm password</label>
+                          <div class="input-wrap">
+                            <input class="f-input" id="sConfirm" type="password" placeholder="Repeat your password">
+                            <button class="trail" type="button" data-eye="sConfirm" aria-label="Show password">
+                              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                            </button>
+                          </div>
+                          <span class="hint" id="matchHint"></span>
+                        </div>
+                      </div>
+
+                      <p class="terms">
+                        By creating an account you agree to our <a href="#0">terms</a>
+                        and <a href="#0">privacy policy</a>.
+                      </p>
+                    </div>
+                  </div>
+
+                  <!-- STICKY ACTION BAR -->
+                  <div class="action-bar">
+                    <button class="f-btn lg" type="button" id="cta">
+                      <span id="ctaIcon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/></svg>
+                      </span>
+                      <span id="ctaText">Sign in</span>
+                    </button>
+                    <p class="swap" id="swapLine">
+                      New to Kalakraft? <button type="button" data-goto="signup">Create an account</button>
+                    </p>
+                  </div>
+                </div>
+
+                <!-- OAUTH VIEW -->
+                <div class="view" id="viewOauth" hidden>
+                  <div class="sheet-scroll">
+                    <div class="splash">
+                      <div class="splash-top">
+                        <span class="splash-badge">
+                          <span id="oauthLogo"></span>
+                          <span class="pip"><span class="spin" style="width:11px;height:11px;border-width:1.6px"></span></span>
+                        </span>
+                        <span>
+                          <h3>Signing you in with <span id="oauthName">Google</span></h3>
+                          <p>Hold tight — this usually takes a moment.</p>
+                        </span>
+                      </div>
+
+                      <div class="progress" role="progressbar" aria-label="Sign-in progress">
+                        <i id="oauthBar" style="width:25%"></i>
+                      </div>
+
+                      <div class="splash-msg" role="status" aria-live="polite">
+                        <span class="spin" style="color:hsl(var(--muted-foreground))"></span>
+                        <span id="oauthMsg">Opening Google sign-in…</span>
+                      </div>
+
+                      <div class="assure">
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" style="flex:0 0 auto;margin-top:1px"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
+                        <span>
+                          <b>Your password never leaves <span class="oauth-name">Google</span></b>
+                          <span>We only receive your name, email and avatar — nothing else.</span>
+                        </span>
+                      </div>
+
+                      <button class="ghost-link" type="button" id="oauthCancel">Cancel and use a different method</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- SUCCESS VIEW -->
+                <div class="view" id="viewDone" hidden>
+                  <div class="sheet-scroll">
+                    <div class="done">
+                      <span class="ring">
+                        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.4" stroke-linecap="round">
+                          <path class="check-path" d="m4 12.5 5 5L20 6.5"/>
+                        </svg>
+                      </span>
+                      <span>
+                        <h3 id="doneMsg">Welcome back, taking you to your account…</h3>
+                      </span>
+                      <p><span class="spin" style="width:12px;height:12px;border-width:1.6px"></span> Redirecting…</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- SIMULATED KEYBOARD -->
+              <div class="keyboard" aria-hidden="true">
+                <div class="row">
+                  <span class="key">q</span><span class="key">w</span><span class="key">e</span><span class="key">r</span><span class="key">t</span><span class="key">y</span><span class="key">u</span><span class="key">i</span><span class="key">o</span><span class="key">p</span>
+                </div>
+                <div class="row" style="padding:0 16px">
+                  <span class="key">a</span><span class="key">s</span><span class="key">d</span><span class="key">f</span><span class="key">g</span><span class="key">h</span><span class="key">j</span><span class="key">k</span><span class="key">l</span>
+                </div>
+                <div class="row">
+                  <span class="key wide">⇧</span><span class="key">z</span><span class="key">x</span><span class="key">c</span><span class="key">v</span><span class="key">b</span><span class="key">n</span><span class="key">m</span><span class="key wide">⌫</span>
+                </div>
+                <div class="row">
+                  <span class="key wide">123</span><span class="key space">space</span><span class="key wide">go</span>
+                </div>
+                <span class="bar"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <span class="clabel">Drive the prototype</span>
+          <div class="chips" id="stateChips">
+            <button class="chip" type="button" data-act="reset" aria-pressed="true">Idle</button>
+            <button class="chip" type="button" data-act="fill">Fill demo data</button>
+            <button class="chip" type="button" data-act="error">Wrong password</button>
+            <button class="chip" type="button" data-act="submit">Signing in…</button>
+            <button class="chip" type="button" data-act="oauth">Google splash</button>
+            <button class="chip" type="button" data-act="done">Success</button>
+          </div>
+          <span class="clabel" style="margin-top:2px">Environment</span>
+          <div class="chips">
+            <button class="chip" type="button" data-act="kb" aria-pressed="false">Keyboard open</button>
+            <button class="chip" type="button" data-act="compact" aria-pressed="false">Crown collapsed</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═════════════════════════ FINDINGS → FIXES ═════════════════════════ -->
+<section>
+  <div class="wrap">
+    <div class="sec-head prose">
+      <p class="kicker">02 — Findings</p>
+      <h2>Eight things the phone loses, and what replaces each</h2>
+      <p class="note">
+        Left column is the behaviour in the current build. Right column is the
+        proposed replacement, numbered to match the pins on the Before screen.
+      </p>
+    </div>
+
+    <div class="pairs">
+      <div class="pair">
+        <span class="num">01</span>
+        <div class="now">
+          <h3>The brand is desktop-only</h3>
+          <p>The whole <code>&lt;aside&gt;</code> — gradients, mandala, rotating hero pieces, artisan stats — is <code>hidden lg:flex</code>. A phone gets a 48&nbsp;px logo strip and a white page.</p>
+        </div>
+        <div class="fix">
+          <h3>A 230 px brand crown</h3>
+          <p>The same gradient stack, mandala pattern and rotating Cloudinary pieces, sized for a phone. Same assets, same art direction, no new images to ship.</p>
+        </div>
+      </div>
+
+      <div class="pair">
+        <span class="num">02</span>
+        <div class="now">
+          <h3>Sign-in and sign-up are separate routes</h3>
+          <p>Switching costs a full client-side navigation, unmounts the form, and drops whatever the person had already typed.</p>
+        </div>
+        <div class="fix">
+          <h3>One screen, a segmented switch</h3>
+          <p>Both flows in a single mounted component. The email carries across the switch, so a mistyped destination costs one tap, not a re-type.</p>
+        </div>
+      </div>
+
+      <div class="pair">
+        <span class="num">03</span>
+        <div class="now">
+          <h3>Roughly 180 px of dead space</h3>
+          <p>The form is top-aligned inside <code>h-svh</code>, so on any tall phone the bottom third of the screen is empty and the footer floats mid-air.</p>
+        </div>
+        <div class="fix">
+          <h3>Crown, sheet, action bar</h3>
+          <p>Three bands that each own their height. Nothing floats: the sheet takes the remaining space and scrolls internally when it runs out.</p>
+        </div>
+      </div>
+
+      <div class="pair">
+        <span class="num">04</span>
+        <div class="now">
+          <h3>The CTA scrolls away under the keyboard</h3>
+          <p>The submit button lives inline. On a 667&nbsp;px screen with the keyboard up, it can sit below the fold — the person types, then has to hunt for the button.</p>
+        </div>
+        <div class="fix">
+          <h3>A sticky action bar</h3>
+          <p>The primary button is pinned above <code>safe-area-inset-bottom</code>. Tap <em>Keyboard open</em> on the prototype: the crown collapses, the form scrolls, the button stays.</p>
+        </div>
+      </div>
+
+      <div class="pair">
+        <span class="num">05</span>
+        <div class="now">
+          <h3>Social sign-in is buried</h3>
+          <p>Google and Facebook sit below a divider, below the form, in a <code>grid-cols-1</code> stack — last on the page for the path most people take.</p>
+        </div>
+        <div class="fix">
+          <h3>OAuth first, email below</h3>
+          <p>Full-width 48&nbsp;px provider buttons above the fold, then <em>or use email</em>. The email form is still complete, just second.</p>
+        </div>
+      </div>
+
+      <div class="pair">
+        <span class="num">06</span>
+        <div class="now">
+          <h3>Validation is end-loaded</h3>
+          <p>Errors arrive after submit. The strength meter only appears once a password exists, and nothing confirms a valid email.</p>
+        </div>
+        <div class="fix">
+          <h3>Feedback while typing</h3>
+          <p>A tick when the email parses, requirement chips that fill in as they're satisfied, and a match line on confirm. The scoring function stays exactly as written in <code>signup/page.tsx</code>.</p>
+        </div>
+      </div>
+
+      <div class="pair">
+        <span class="num">07</span>
+        <div class="now">
+          <h3>The proof never reaches mobile</h3>
+          <p>200+ artisans, 20+ countries, 5,000+ collectors — all inside the desktop panel. A first-time buyer on a phone sees no reason to trust the form.</p>
+        </div>
+        <div class="fix">
+          <h3>One condensed trust row</h3>
+          <p>The same three numbers on a single 40&nbsp;px line under the fields. Present, quiet, not a second hero.</p>
+        </div>
+      </div>
+
+      <div class="pair">
+        <span class="num">08</span>
+        <div class="now">
+          <h3>Nothing moves</h3>
+          <p>Below <code>lg</code> the only animation on the screen is the button's colour transition. The screen reads as a form, not as part of a craft brand.</p>
+        </div>
+        <div class="fix">
+          <h3>Four deliberate moments</h3>
+          <p>Crown slides, sheet lifts, segmented thumb glides, success check draws. Everything else stays still — and all of it is off under <code>prefers-reduced-motion</code>.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ COMPONENT MAP ═══════════════════════════ -->
+<section>
+  <div class="wrap">
+    <div class="sec-head prose">
+      <p class="kicker">03 — Component map</p>
+      <h2>What each piece is made of</h2>
+      <p class="note">
+        Every element maps to a primitive already in <code>components/ui</code> or to a
+        composition of them. Two of them are not yet installed — those are the only
+        <code>npx shadcn add</code> calls this redesign needs.
+      </p>
+    </div>
+
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>Element</th><th>Primitive</th><th>Status</th><th>Mobile spec</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Segmented switch</td>
+            <td><span class="m">tabs</span></td>
+            <td>needs <span class="m">add tabs</span></td>
+            <td>38 px triggers in a 46 px rail; thumb on transform, not width</td>
+          </tr>
+          <tr>
+            <td>Email / name fields</td>
+            <td><span class="m">input + label</span></td>
+            <td>installed</td>
+            <td>44 px via <span class="m">.auth-shell</span>; 16 px text, no iOS zoom</td>
+          </tr>
+          <tr>
+            <td>Provider buttons</td>
+            <td><span class="m">button variant="outline"</span></td>
+            <td>installed</td>
+            <td>48 px, full width, icon 18 px, label left of centre</td>
+          </tr>
+          <tr>
+            <td>Primary CTA</td>
+            <td><span class="m">button size="lg"</span></td>
+            <td>installed</td>
+            <td>48 px in a sticky bar with <span class="m">safe-area-inset-bottom</span></td>
+          </tr>
+          <tr>
+            <td>Error banner</td>
+            <td><span class="m">alert variant="destructive"</span></td>
+            <td>needs <span class="m">add alert</span></td>
+            <td>Replaces the local <span class="m">Banner</span> in AuthBits; role="alert"</td>
+          </tr>
+          <tr>
+            <td>Requirement chips</td>
+            <td><span class="m">badge</span></td>
+            <td>installed</td>
+            <td>11 px, wraps to two rows at 320 px</td>
+          </tr>
+          <tr>
+            <td>Strength meter</td>
+            <td>4 × <span class="m">div</span>, existing scorer</td>
+            <td>as built</td>
+            <td>Unchanged logic, moved above the requirement chips</td>
+          </tr>
+          <tr>
+            <td>OAuth splash</td>
+            <td><span class="m">card + progress</span></td>
+            <td>needs <span class="m">add progress</span></td>
+            <td>Existing <span class="m">OAuthSplash</span> keeps its copy and cancel path</td>
+          </tr>
+          <tr>
+            <td>Sheet + grabber</td>
+            <td>plain div, <span class="m">rounded-t-3xl</span></td>
+            <td>as built</td>
+            <td>−22 px lift over the crown; shadow only, no border</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════ MOTION / A11Y ═══════════════════════════ -->
+<section>
+  <div class="wrap">
+    <div class="sec-head prose">
+      <p class="kicker">04 — Specification</p>
+      <h2>Motion, accessibility, and what changes on disk</h2>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <h3><span class="bullet"></span>Motion budget</h3>
+        <ul>
+          <li>Crown collapse — 420 ms, <code>cubic-bezier(.22,1,.36,1)</code>, on <code>:focus-within</code></li>
+          <li>Segment thumb — 340 ms transform, never width</li>
+          <li>Hero cross-fade — 1.4 s opacity, 6.5 s interval, same as desktop</li>
+          <li>Success check — 550 ms stroke draw, fires once</li>
+          <li>Everything above is disabled under <code>prefers-reduced-motion</code></li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3><span class="bullet"></span>Accessibility</h3>
+        <ul>
+          <li>Every control clears 44 × 44 px — the <code>.auth-shell</code> rules already handle this</li>
+          <li>Inputs stay at 16 px so iOS Safari never zooms</li>
+          <li>Segmented switch is a real <code>role="tablist"</code>, arrow-key navigable</li>
+          <li>Errors are <code>role="alert"</code>; the splash is <code>aria-live="polite"</code></li>
+          <li>Crown text sits on a veil that holds 4.5:1 against every hero slide</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3><span class="bullet"></span>Files this touches</h3>
+        <ul>
+          <li><code>app/auth/AuthShell.tsx</code> — add the mobile crown and the sticky slot</li>
+          <li><code>app/auth/_components/AuthBits.tsx</code> — add the meter, chips, tick</li>
+          <li><code>app/auth/login/page.tsx</code>, <code>signup/page.tsx</code> — feed one shared pane</li>
+          <li>Desktop <code>lg:</code> layout is untouched — every change is behind a mobile query</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3><span class="bullet"></span>Deliberately not doing</h3>
+        <ul>
+          <li>No new colour tokens — the shadcn neutrals in <code>globals.css</code> stay as they are</li>
+          <li>No animation library; the existing framer-motion bundle isn't loaded on this route</li>
+          <li>No change to auth logic, Firebase calls, or the OAuth redirect handling</li>
+          <li>No merge of the two routes — both URLs keep working, they just share a pane</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="foot">
+  <div class="wrap">
+    <span>Kalakraft · mobile auth redesign · proposal, not shipped</span>
+    <span>artcommerce/design/mobile-auth-redesign.html</span>
+  </div>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var mock = document.getElementById("mock");
+  var crown = document.getElementById("crown");
+  var seg = document.getElementById("seg");
+  var scroller = document.getElementById("scroller");
+  var readout = document.getElementById("stateReadout");
+  var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ── hero slides (same Cloudinary assets as AuthShell.tsx) ─────────── */
+  var SLIDES = [
+    { url: "https://res.cloudinary.com/downe8107/image/upload/c_fill,w_1600,h_1200,q_auto:good,f_auto/v1751076343/kalakraft/featured3.png",
+      name: "Resin Tray Set", cat: "Trays · Hand-poured" },
+    { url: "https://res.cloudinary.com/downe8107/image/upload/c_fill,w_1600,h_1200,q_auto:good,f_auto/v1751076808/kalakraft/featured1.png",
+      name: "Handcrafted Resin Clock", cat: "Clocks · Limited series" },
+    { url: "https://res.cloudinary.com/downe8107/image/upload/c_fill,w_1600,h_1200,q_auto:good,f_auto/v1751076810/kalakraft/featured2.png",
+      name: "Decorative Wall Piece", cat: "Wall décor · Made to order" }
+  ];
+
+  /* The artifact CSP blocks remote images, so the crown falls back to a
+     generated gradient per slide. In the app these are the real photos. */
+  var FALLBACKS = [
+    "radial-gradient(circle at 30% 30%, #c2703a, transparent 60%), radial-gradient(circle at 70% 70%, #7c2d12, transparent 60%), #451a03",
+    "radial-gradient(circle at 65% 25%, #b45309, transparent 58%), radial-gradient(circle at 25% 80%, #7f1d1d, transparent 62%), #3f1d0b",
+    "radial-gradient(circle at 40% 70%, #a16207, transparent 60%), radial-gradient(circle at 80% 20%, #831843, transparent 60%), #3b1219"
+  ];
+
+  var imgs = crown.querySelectorAll(".crown-img");
+  var dots = document.getElementById("dots").querySelectorAll("button");
+  var pieceName = document.getElementById("pieceName");
+  var pieceCat = document.getElementById("pieceCat");
+  var slideIdx = 0;
+  var slideTimer = null;
+
+  imgs.forEach(function (el, i) {
+    el.style.backgroundImage = FALLBACKS[i];
+    var probe = new Image();
+    probe.onload = function () { el.style.backgroundImage = "url('" + SLIDES[i].url + "')"; };
+    probe.src = SLIDES[i].url;
+  });
+
+  function showSlide(i) {
+    slideIdx = i;
+    imgs.forEach(function (el, n) { el.classList.toggle("on", n === i); });
+    dots.forEach(function (d, n) { d.classList.toggle("on", n === i); });
+    pieceName.textContent = SLIDES[i].name;
+    pieceCat.textContent = SLIDES[i].cat;
+  }
+
+  function startSlides() {
+    if (reduced) return;
+    stopSlides();
+    slideTimer = window.setInterval(function () {
+      showSlide((slideIdx + 1) % SLIDES.length);
+    }, 6500);
+  }
+  function stopSlides() {
+    if (slideTimer) { window.clearInterval(slideTimer); slideTimer = null; }
+  }
+
+  showSlide(0);
+  startSlides();
+
+  dots.forEach(function (d, i) {
+    d.addEventListener("click", function () { showSlide(i); startSlides(); });
+  });
+
+  /* ── views ─────────────────────────────────────────────────────────── */
+  var views = {
+    form: document.getElementById("viewForm"),
+    oauth: document.getElementById("viewOauth"),
+    done: document.getElementById("viewDone")
+  };
+
+  function setView(name) {
+    Object.keys(views).forEach(function (k) {
+      var el = views[k];
+      if (k === "form") {
+        el.style.display = k === name ? "contents" : "none";
+      } else {
+        el.hidden = k !== name;
+        if (k === name && !reduced) {
+          el.classList.remove("view-enter");
+          void el.offsetWidth;
+          el.classList.add("view-enter");
+        }
+      }
+    });
+    readout.textContent = "state: " + (name === "form" ? currentFormState() : name);
+  }
+
+  var busy = false;
+  var errored = false;
+  function currentFormState() {
+    if (busy) return "submitting";
+    if (errored) return "error";
+    return "idle";
+  }
+  function sync() { readout.textContent = "state: " + currentFormState(); }
+
+  /* ── tabs ──────────────────────────────────────────────────────────── */
+  var tab = "signin";
+  var panes = {
+    signin: document.querySelector('[data-pane="signin"]'),
+    signup: document.querySelector('[data-pane="signup"]')
+  };
+  var ctaText = document.getElementById("ctaText");
+  var swapLine = document.getElementById("swapLine");
+
+  function setTab(next) {
+    tab = next;
+    seg.classList.toggle("b", next === "signup");
+    seg.querySelectorAll("button").forEach(function (b) {
+      b.setAttribute("aria-selected", String(b.dataset.tab === next));
+    });
+    panes.signin.hidden = next !== "signin";
+    panes.signup.hidden = next !== "signup";
+    ctaText.textContent = next === "signin" ? "Sign in" : "Create account";
+    ctaIcon.innerHTML = next === "signin" ? ICON_SIGNIN : ICON_SIGNUP;
+    swapLine.innerHTML = next === "signin"
+      ? 'New to Kalakraft? <button type="button" data-goto="signup">Create an account</button>'
+      : 'Already have an account? <button type="button" data-goto="signin">Sign in</button>';
+    clearError();
+    scroller.scrollTop = 0;
+
+    /* the email carries across the switch — finding 02 */
+    var from = next === "signup" ? "mEmail" : "sEmail";
+    var to = next === "signup" ? "sEmail" : "mEmail";
+    var v = document.getElementById(from).value;
+    if (v && !document.getElementById(to).value) {
+      document.getElementById(to).value = v;
+      checkEmail(document.getElementById(to));
+    }
+  }
+
+  seg.addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-tab]");
+    if (b) setTab(b.dataset.tab);
+  });
+
+  seg.addEventListener("keydown", function (e) {
+    if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+    e.preventDefault();
+    setTab(tab === "signin" ? "signup" : "signin");
+    seg.querySelector('[aria-selected="true"]').focus();
+  });
+
+  document.querySelector(".action-bar").addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-goto]");
+    if (b) setTab(b.dataset.goto);
+  });
+
+  /* ── password eyes ─────────────────────────────────────────────────── */
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-eye]");
+    if (!b) return;
+    var input = document.getElementById(b.dataset.eye);
+    var show = input.type === "password";
+    input.type = show ? "text" : "password";
+    b.setAttribute("aria-label", show ? "Hide password" : "Show password");
+    b.innerHTML = show
+      ? '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.7 5.1A10 10 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-2.2 3.1"/><path d="M6.6 6.6A17 17 0 0 0 2 12s3.6 7 10 7a9.7 9.7 0 0 0 5.4-1.6"/><path d="m2 2 20 20"/></svg>'
+      : '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>';
+  });
+
+  /* ── live email validation ─────────────────────────────────────────── */
+  var EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+  function checkEmail(input) {
+    var tick = document.getElementById(input.id + "Tick");
+    var ok = EMAIL.test(input.value.trim());
+    input.classList.toggle("ok", ok);
+    if (tick) tick.classList.toggle("on", ok);
+  }
+  ["mEmail", "sEmail"].forEach(function (id) {
+    document.getElementById(id).addEventListener("input", function () {
+      checkEmail(this);
+      clearError();
+    });
+  });
+
+  /* ── password strength — same scorer as signup/page.tsx ────────────── */
+  var LABELS = ["Too short", "Weak", "Fair", "Good", "Strong"];
+  var TONES = ["hsl(var(--destructive))", "hsl(var(--destructive))", "#d97706", "#0284c7", "#059669"];
+
+  function score(pw) {
+    if (pw.length < 8) return 0;
+    var s = 1;
+    if (/[a-z]/.test(pw) && /[A-Z]/.test(pw)) s++;
+    if (/\d/.test(pw)) s++;
+    if (/[^A-Za-z0-9]/.test(pw)) s++;
+    return s;
+  }
+
+  var meterSegs = document.getElementById("meterSegs").children;
+  var meterLabel = document.getElementById("meterLabel");
+  var reqs = document.getElementById("reqs");
+  var sPass = document.getElementById("sPass");
+  var sConfirm = document.getElementById("sConfirm");
+  var matchHint = document.getElementById("matchHint");
+
+  function renderStrength() {
+    var pw = sPass.value;
+    var s = score(pw);
+    var tone = TONES[s];
+    for (var i = 0; i < meterSegs.length; i++) {
+      meterSegs[i].style.background = i < s ? tone : "hsl(var(--muted))";
+    }
+    meterLabel.textContent = pw ? LABELS[s] : "Too short";
+    meterLabel.style.color = pw ? tone : "hsl(var(--muted-foreground))";
+
+    var met = {
+      len: pw.length >= 8,
+      case: /[a-z]/.test(pw) && /[A-Z]/.test(pw),
+      num: /\d/.test(pw),
+      sym: /[^A-Za-z0-9]/.test(pw)
+    };
+    reqs.querySelectorAll(".req").forEach(function (chip) {
+      chip.classList.toggle("met", !!met[chip.dataset.req]);
+    });
+  }
+
+  function renderMatch() {
+    var a = sPass.value, b = sConfirm.value;
+    if (!a || !b) {
+      matchHint.textContent = "";
+      matchHint.className = "hint";
+      sConfirm.classList.remove("ok", "bad");
+      return;
+    }
+    var same = a === b;
+    matchHint.textContent = same ? "Passwords match" : "Passwords do not match";
+    matchHint.className = "hint " + (same ? "good" : "bad");
+    sConfirm.classList.toggle("ok", same);
+    sConfirm.classList.toggle("bad", !same);
+  }
+
+  sPass.addEventListener("input", function () { renderStrength(); renderMatch(); clearError(); });
+  sConfirm.addEventListener("input", function () { renderMatch(); clearError(); });
+  renderStrength();
+
+  /* ── error banner ──────────────────────────────────────────────────── */
+  var errorSlot = document.getElementById("errorSlot");
+  function showError(msg) {
+    errored = true;
+    errorSlot.innerHTML =
+      '<div class="banner" role="alert">' +
+      '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex:0 0 auto;margin-top:1px"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>' +
+      "<span>" + msg + "</span></div>";
+    if (!reduced) {
+      var b = errorSlot.firstElementChild;
+      b.classList.add("shake");
+    }
+    scroller.scrollTop = 0;
+    sync();
+  }
+  function clearError() {
+    if (!errored) return;
+    errored = false;
+    errorSlot.innerHTML = "";
+    sync();
+  }
+
+  /* ── CTA / submit ──────────────────────────────────────────────────── */
+  var cta = document.getElementById("cta");
+  var ctaIcon = document.getElementById("ctaIcon");
+  var submitTimer = null;
+
+  var ICON_SIGNIN = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/></svg>';
+  var ICON_SIGNUP = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6"/><path d="M22 11h-6"/></svg>';
+
+  function setBusy(on) {
+    busy = on;
+    cta.disabled = on;
+    if (on) {
+      ctaIcon.innerHTML = '<span class="spin" style="width:15px;height:15px"></span>';
+      ctaText.textContent = tab === "signin" ? "Signing in…" : "Creating account…";
+    } else {
+      ctaIcon.innerHTML = tab === "signin" ? ICON_SIGNIN : ICON_SIGNUP;
+      ctaText.textContent = tab === "signin" ? "Sign in" : "Create account";
+    }
+    sync();
+  }
+
+  function submit() {
+    clearError();
+    setBusy(true);
+    window.clearTimeout(submitTimer);
+    submitTimer = window.setTimeout(function () {
+      setBusy(false);
+      finish();
+    }, 1500);
+  }
+
+  function finish() {
+    document.getElementById("doneMsg").textContent = tab === "signin"
+      ? "Welcome back, taking you to your account…"
+      : "Account created, setting up your shop…";
+    setView("done");
+    readout.textContent = "state: success";
+  }
+
+  cta.addEventListener("click", submit);
+
+  /* ── OAuth splash ──────────────────────────────────────────────────── */
+  var oauthTimer = null;
+  var GOOGLE_SVG = '<svg width="26" height="26" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>';
+  var FB_SVG = '<svg width="26" height="26" viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>';
+
+  function startOauth(provider) {
+    var label = provider === "google" ? "Google" : "Facebook";
+    document.getElementById("oauthLogo").innerHTML = provider === "google" ? GOOGLE_SVG : FB_SVG;
+    document.getElementById("oauthName").textContent = label;
+    document.querySelectorAll(".oauth-name").forEach(function (n) { n.textContent = label; });
+
+    var msgs = [
+      "Opening " + label + " sign-in…",
+      "Verifying your " + label + " account…",
+      "Linking your Kalakraft profile…",
+      "Almost there — preparing your session…"
+    ];
+    var i = 0;
+    var msgEl = document.getElementById("oauthMsg");
+    var bar = document.getElementById("oauthBar");
+    msgEl.textContent = msgs[0];
+    bar.style.width = "25%";
+    setView("oauth");
+    readout.textContent = "state: oauth";
+
+    window.clearInterval(oauthTimer);
+    oauthTimer = window.setInterval(function () {
+      i++;
+      if (i >= msgs.length) {
+        window.clearInterval(oauthTimer);
+        window.setTimeout(finish, 900);
+        return;
+      }
+      msgEl.textContent = msgs[i];
+      bar.style.width = ((i + 1) / msgs.length) * 100 + "%";
+    }, 1300);
+  }
+
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-oauth]");
+    if (b) startOauth(b.dataset.oauth);
+  });
+
+  document.getElementById("oauthCancel").addEventListener("click", function () {
+    window.clearInterval(oauthTimer);
+    setView("form");
+  });
+
+  /* ── crown collapses when the form takes focus ─────────────────────── */
+  mock.addEventListener("focusin", function (e) {
+    if (e.target.classList.contains("f-input")) {
+      mock.classList.add("compact");
+      pressChip("compact", true);
+    }
+  });
+  mock.addEventListener("focusout", function () {
+    window.setTimeout(function () {
+      if (mock.classList.contains("kb")) return;
+      var a = document.activeElement;
+      if (a && a.classList && a.classList.contains("f-input")) return;
+      mock.classList.remove("compact");
+      pressChip("compact", false);
+    }, 90);
+  });
+
+  /* ── control chips ─────────────────────────────────────────────────── */
+  var chipHost = document.querySelector(".controls");
+
+  function pressChip(act, on) {
+    var c = chipHost.querySelector('[data-act="' + act + '"]');
+    if (c) c.setAttribute("aria-pressed", String(on));
+  }
+
+  function markState(act) {
+    chipHost.querySelectorAll('#stateChips .chip').forEach(function (c) {
+      c.setAttribute("aria-pressed", String(c.dataset.act === act));
+    });
+  }
+
+  function resetAll() {
+    window.clearTimeout(submitTimer);
+    window.clearInterval(oauthTimer);
+    setBusy(false);
+    clearError();
+    ["mEmail", "mPass", "sName", "sEmail", "sPass", "sConfirm"].forEach(function (id) {
+      var el = document.getElementById(id);
+      el.value = "";
+      el.classList.remove("ok", "bad");
+    });
+    document.querySelectorAll("button[data-eye]").forEach(function (b) {
+      document.getElementById(b.dataset.eye).type = "password";
+      b.setAttribute("aria-label", "Show password");
+      b.innerHTML = '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>';
+    });
+    matchHint.textContent = "";
+    matchHint.className = "hint";
+    document.querySelectorAll(".tick").forEach(function (t) { t.classList.remove("on"); });
+    renderStrength();
+    renderMatch();
+    mock.classList.remove("kb", "compact");
+    pressChip("kb", false);
+    pressChip("compact", false);
+    setTab("signin");
+    setView("form");
+    scroller.scrollTop = 0;
+    sync();
+  }
+
+  chipHost.addEventListener("click", function (e) {
+    var b = e.target.closest(".chip");
+    if (!b) return;
+    var act = b.dataset.act;
+
+    if (act === "kb") {
+      var on = !mock.classList.contains("kb");
+      mock.classList.toggle("kb", on);
+      mock.classList.toggle("compact", on);
+      pressChip("kb", on);
+      pressChip("compact", on);
+      return;
+    }
+
+    if (act === "compact") {
+      var c = !mock.classList.contains("compact");
+      mock.classList.toggle("compact", c);
+      pressChip("compact", c);
+      return;
+    }
+
+    markState(act);
+
+    switch (act) {
+      case "reset":
+        resetAll();
+        markState("reset");
+        break;
+
+      case "fill":
+        setView("form");
+        setTab("signin");
+        document.getElementById("mEmail").value = "asha.menon@gmail.com";
+        checkEmail(document.getElementById("mEmail"));
+        document.getElementById("mPass").value = "kalakraft!24";
+        document.getElementById("sName").value = "Asha Menon";
+        document.getElementById("sEmail").value = "asha.menon@gmail.com";
+        checkEmail(document.getElementById("sEmail"));
+        sPass.value = "Kalakraft!24";
+        sConfirm.value = "Kalakraft!24";
+        renderStrength();
+        renderMatch();
+        break;
+
+      case "error":
+        setView("form");
+        showError("That password doesn't match this email. Try again or reset it.");
+        break;
+
+      case "submit":
+        setView("form");
+        setBusy(true);
+        window.clearTimeout(submitTimer);
+        break;
+
+      case "oauth":
+        startOauth("google");
+        break;
+
+      case "done":
+        finish();
+        break;
+    }
+  });
+
+  /* ── page theme toggle awareness (artifact chrome) ─────────────────── */
+  sync();
+})();
+</script>
