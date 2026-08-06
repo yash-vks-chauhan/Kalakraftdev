@@ -1,6 +1,6 @@
 import { getPublicAppUrlForPath } from '../appUrl'
+import { renderEmail } from '../emailTemplate'
 import { sendAdminMail } from '../mailer'
-import { escapeHtml } from '../emailContent'
 
 interface OutOfStockEmailParams {
   productId: number
@@ -11,30 +11,28 @@ export async function sendOutOfStockEmail({
   productId,
   productName,
 }: OutOfStockEmailParams) {
-  const htmlContent = `
-    <div style="font-family: Arial, sans-serif; color: #333;">
-      <h2>⚠️ Out of Stock Alert</h2>
-      <p>The following product is now out of stock:</p>
-      <div style="background: #f5f5f5; padding: 15px; border-radius: 5px; margin: 15px 0;">
-        <h3 style="margin-top: 0;">${escapeHtml(productName)}</h3>
-        <p><strong>Product ID:</strong> ${productId}</p>
-      </div>
-      <p>
-        <a 
-          href="${getPublicAppUrlForPath(`/dashboard/admin/products/${productId}`)}"
-          target="_blank" 
-          rel="noopener noreferrer"
-          style="background: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;"
-        >
-          View Product in Admin Dashboard &raquo;
-        </a>
-      </p>
-    </div>
-  `
-
   await sendAdminMail({
-    subject: `Out of Stock Alert: ${productName}`,
-    html: htmlContent,
+    subject: `Out of stock: ${productName}`,
+    html: renderEmail({
+      preheader: `${productName} has sold out.`,
+      eyebrow: 'Inventory · staff notice',
+      heading: 'This product has sold out',
+      body: ['The last unit just left with an order. The listing will show as unavailable until it is restocked.'],
+      module: {
+        kind: 'facts',
+        title: productName,
+        rows: [
+          { label: 'Remaining', value: '0 units', accent: true },
+          { label: 'Product ID', value: String(productId) },
+        ],
+      },
+      cta: {
+        label: 'Restock in dashboard',
+        href: getPublicAppUrlForPath(`/dashboard/admin/products/${productId}`),
+      },
+      signoff: false,
+      footerReason: "Internal alert sent to the store's admin address. Customers never receive this message.",
+    }),
     fromName: 'Kalakraft Inventory',
   })
 }

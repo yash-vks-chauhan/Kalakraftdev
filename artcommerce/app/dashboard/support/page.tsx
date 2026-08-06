@@ -120,7 +120,7 @@ export default function MySupportTickets() {
     <main className="flex flex-col gap-6">
       {/* Page header */}
       <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-col gap-1">
+        <div className="hidden flex-col gap-1 md:flex">
           <p className="text-xs text-muted-foreground sm:text-sm">Help</p>
           <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
             Support

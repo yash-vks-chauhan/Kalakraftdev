@@ -1,6 +1,6 @@
 // app/api/admin/users/[id]/remind-cart/route.ts
 import { NextResponse } from 'next/server'
-import { escapeHtml } from '../../../../../../lib/emailContent'
+import { renderEmail } from '../../../../../../lib/emailTemplate'
 import prisma from '../../../../../../lib/prisma'
 import { sendSecureMail } from '../../../../../../lib/mailer'
 import { consumeRateLimit, getClientIp } from '../../../../../../lib/rateLimit'
@@ -57,15 +57,21 @@ export async function POST(
   try {
     await sendSecureMail({
       to: user.email,
-      subject: 'You left items in your cart!',
-      html: `
-        <p>Hi ${escapeHtml(user.fullName)},</p>
-        <p>We noticed you left these items in your cart:</p>
-        <ul>
-          ${items.map(i => `<li>${escapeHtml(i.product.name)} (qty: ${i.quantity})</li>`).join('')}
-        </ul>
-        <p><a href="${getPublicAppUrlForPath('/cart')}">Return to your cart & checkout</a></p>
-      `,
+      subject: 'You left something in your cart',
+      html: renderEmail({
+        preheader: 'Your cart is still saved — pick up where you left off.',
+        eyebrow: 'Your cart',
+        heading: 'Still thinking it over?',
+        body: [
+          `Hi ${(user.fullName || '').trim().split(' ')[0] || 'there'} — these pieces are still in your cart. Each one is made in small batches, so stock can move quickly.`,
+        ],
+        module: {
+          kind: 'list',
+          items: items.map(i => ({ name: i.product.name, meta: `Qty ${i.quantity}` })),
+        },
+        cta: { label: 'Return to cart', href: getPublicAppUrlForPath('/cart') },
+        footerReason: 'You are receiving this because you have items saved in your Kalakraft cart.',
+      }),
       fromName: 'Kalakraft Support',
     })
   } catch (err) {

@@ -320,7 +320,7 @@ export default function CouponManager() {
         </Button>
       </PageHeader>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2.5 sm:gap-3 lg:grid-cols-4">
         <StatTile icon={Ticket} label="Total" value={stats.total} />
         <StatTile
           icon={CheckCircle2}
@@ -658,7 +658,7 @@ export default function CouponManager() {
 function PageHeader({ children }: { children?: React.ReactNode }) {
   return (
     <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <div className="flex flex-col gap-1">
+      <div className="hidden flex-col gap-1 md:flex">
         <h1 className="text-2xl font-semibold tracking-tight">Coupons</h1>
         <p className="text-sm text-muted-foreground">
           Create discount codes, control usage limits, and track redemptions.
@@ -689,7 +689,7 @@ function StatTile({
 
   return (
     <Card className="shadow-sm">
-      <CardContent className="flex items-center gap-3 p-4">
+      <CardContent className="flex items-center gap-2.5 p-2.5 sm:gap-3 sm:p-4">
         <span
           className={cn(
             'flex h-10 w-10 shrink-0 items-center justify-center rounded-md',
@@ -742,17 +742,15 @@ function AdminCouponCard({
         }
         badge={<StatusBadge status={status} />}
         meta={
-          <span className="inline-flex items-center gap-1.5">
+          <>
             {coupon.type === 'percentage' ? (
-              <Percent className="h-3.5 w-3.5" />
+              <Percent className="mr-1.5 inline-block h-3.5 w-3.5 align-[-2px]" />
             ) : (
-              <Tag className="h-3.5 w-3.5" />
+              <Tag className="mr-1.5 inline-block h-3.5 w-3.5 align-[-2px]" />
             )}
-            {formatAmount(coupon)} off
-            <span aria-hidden>·</span>
-            {coupon.usedCount}
+            {formatAmount(coupon)} off · {coupon.usedCount}
             {coupon.usageLimit ? `/${coupon.usageLimit}` : ''} used
-          </span>
+          </>
         }
         submeta={`Expires ${formatDate(coupon.expiresAt)} · ${daysFromNow(
           coupon.expiresAt
@@ -868,10 +866,10 @@ function CouponsSkeleton() {
         <Skeleton className="h-9 w-32" />
       </header>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2.5 sm:gap-3 lg:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
           <Card key={i} className="shadow-sm">
-            <CardContent className="flex items-center gap-3 p-4">
+            <CardContent className="flex items-center gap-2.5 p-2.5 sm:gap-3 sm:p-4">
               <Skeleton className="h-10 w-10 rounded-md" />
               <div className="flex flex-1 flex-col gap-1.5">
                 <Skeleton className="h-3 w-16" />

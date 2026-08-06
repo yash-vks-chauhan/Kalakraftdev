@@ -316,7 +316,7 @@ export default function ReviewsDashboard() {
       <PageHeader />
 
       {/* Stat tiles */}
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2.5 sm:gap-3 lg:grid-cols-4">
         <StatTile icon={MessageCircle} label="Total reviews" value={stats.total.toString()} />
         <StatTile
           icon={Star}
@@ -543,7 +543,7 @@ export default function ReviewsDashboard() {
 
 function PageHeader() {
   return (
-    <header className="flex flex-col gap-1">
+    <header className="hidden flex-col gap-1 md:flex">
       <h1 className="text-2xl font-semibold tracking-tight">Reviews &amp; ratings</h1>
       <p className="text-sm text-muted-foreground">
         Monitor customer feedback, jump on pending replies, and watch your rating trend.
@@ -576,7 +576,7 @@ function StatTile({
 
   return (
     <Card className="shadow-sm">
-      <CardContent className="flex items-center gap-3 p-4">
+      <CardContent className="flex items-center gap-2.5 p-2.5 sm:gap-3 sm:p-4">
         <span className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-md', toneClass)}>
           <Icon className="h-5 w-5" />
         </span>
@@ -864,10 +864,10 @@ function ReviewsSkeleton() {
         <Skeleton className="h-4 w-96" />
       </header>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2.5 sm:gap-3 lg:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
           <Card key={i} className="shadow-sm">
-            <CardContent className="flex items-center gap-3 p-4">
+            <CardContent className="flex items-center gap-2.5 p-2.5 sm:gap-3 sm:p-4">
               <Skeleton className="h-10 w-10 rounded-md" />
               <div className="flex flex-1 flex-col gap-1.5">
                 <Skeleton className="h-3 w-20" />

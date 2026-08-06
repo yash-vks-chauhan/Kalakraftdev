@@ -5,14 +5,12 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '../contexts/AuthContext'
-import { useCart } from '../contexts/CartContext'
 import { useWishlist } from '../contexts/WishlistContext'
-import { Search, Home, ShoppingBag, User, Menu, X, Heart, ShoppingCart, Monitor, ChevronDown, Grid, HelpCircle, LogOut, ArrowLeft, Share, Save, Instagram, Twitter, Facebook } from 'lucide-react'
+import { Home, ShoppingBag, User, Menu, X, Heart, Monitor, ChevronDown, Grid, HelpCircle, LogOut, ArrowLeft, Share, Save, Instagram, Twitter, Facebook } from 'lucide-react'
 import { useMobileMenu } from '../contexts/MobileMenuContext'
 import { getImageUrl } from '../../lib/cloudinaryImages'
 import styles from './MobileLayout.module.css'
 import MobileMenuPanel from './MobileMenuPanel'
-import MobileSearchModal from './MobileSearchModal'
 import PearlButton from './PearlButton'
 import StaggeredMenu from './StaggeredMenu'
 
@@ -23,13 +21,8 @@ interface MobileLayoutProps {
 
 export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayoutProps) {
   const { user, logout } = useAuth()
-  const { cartItems } = useCart()
   const { wishlistItems } = useWishlist()
   const { isMobileMenuOpen, setIsMobileMenuOpen, isProductPage, isTransparentNavbar, isCreateProductPage } = useMobileMenu()
-  const [isSearchOpen, setIsSearchOpen] = React.useState(false)
-  const [isSearchClosing, setIsSearchClosing] = useState(false)
-  const searchCloseTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const [searchQuery, setSearchQuery] = useState('')
   const pathname = usePathname()
   const isHomePage = pathname === '/'
   const isProductsPage = pathname === '/products' || pathname.startsWith('/products?')
@@ -241,14 +234,6 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
     }
   }
 
-  const handleCartClick = () => {
-    setIsRouteLoading(true)
-    router.push('/cart/mobile');
-    if (isMobileMenuOpen) {
-      setIsMobileMenuOpen(false);
-    }
-  }
-
   const handleWishlistClick = () => {
     router.push('/dashboard/wishlist');
     if (isMobileMenuOpen) {
@@ -292,63 +277,6 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
       console.error('Logout failed:', error)
     }
   }
-
-  const toggleSearch = () => {
-    if (isSearchOpen) {
-      closeSearch()
-    } else {
-      setIsSearchOpen(true)
-      setIsSearchClosing(false)
-      if (searchCloseTimeoutRef.current) {
-        clearTimeout(searchCloseTimeoutRef.current)
-      }
-    }
-  }
-
-  const closeSearch = () => {
-    setIsSearchClosing(true)
-    
-    if (searchCloseTimeoutRef.current) {
-      clearTimeout(searchCloseTimeoutRef.current)
-    }
-    
-    searchCloseTimeoutRef.current = setTimeout(() => {
-      setIsSearchOpen(false)
-      setIsSearchClosing(false)
-    }, 300)
-  }
-
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (searchQuery.trim()) {
-      router.push(`/products?search=${encodeURIComponent(searchQuery.trim())}`)
-      closeSearch()
-    }
-  }
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isSearchOpen) {
-        closeSearch()
-      }
-    }
-    
-    if (isSearchOpen) {
-      window.addEventListener('keydown', handleKeyDown)
-    }
-    
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown)
-    }
-  }, [isSearchOpen])
-
-  useEffect(() => {
-    return () => {
-      if (searchCloseTimeoutRef.current) {
-        clearTimeout(searchCloseTimeoutRef.current)
-      }
-    }
-  }, [])
 
   const handleScrollDown = () => {
     window.scrollTo({
@@ -794,30 +722,9 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
             </button>
           )}
           
-          {/* Search Icon - Hidden only on create product page */}
-          {!isCreateProductPage && (
-            <button 
-              onClick={toggleSearch}
-              className={styles.headerIconButton}
-              aria-label="Search"
-            >
-              <Search size={20} strokeWidth={2} />
-            </button>
-          )}
-          
-          {/* Cart Icon - Hidden only on create product page */}
-          {!isCreateProductPage && (
-            <button 
-              onClick={handleCartClick}
-              className={styles.headerIconButton}
-              aria-label="Cart"
-            >
-              <ShoppingCart size={20} />
-              {cartItems.length > 0 && (
-                <span className={styles.cartBadge}>{cartItems.length}</span>
-              )}
-            </button>
-          )}
+          {/* Search and cart deliberately omitted: both live in the app-wide
+              MobileDock at the bottom of every page, so repeating them here
+              showed the same two controls twice on one screen. */}
         </div>
       </header>
       
@@ -968,12 +875,6 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
         />
       )}
       
-      {/* Search Overlay */}
-      <MobileSearchModal
-        open={isSearchOpen}
-        onClose={closeSearch}
-      />
-
       {/* Mobile Bottom Navigation removed as we're using the footer instead */}
     </div>
   )

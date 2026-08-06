@@ -404,12 +404,12 @@ export default function DashboardHomePage() {
   return (
     <div className="flex flex-col gap-8 lg:gap-10">
       {/* Header */}
-      <header className="flex flex-col gap-2">
-        <p className="text-sm text-muted-foreground">Welcome back</p>
+      <header className="flex flex-col gap-1 md:gap-2">
+        <p className="hidden text-sm text-muted-foreground md:block">Welcome back</p>
         <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
           {firstName}
         </h1>
-        <p className="text-sm text-muted-foreground">
+        <p className="hidden text-sm text-muted-foreground md:block">
           {isAdmin
             ? "A quick look at your store today."
             : "Pick up where you left off."}
@@ -718,6 +718,7 @@ function SpendChartCard({
                 name="Spend"
                 fill="var(--color-value)"
                 radius={[4, 4, 0, 0]}
+                maxBarSize={28}
               />
             </BarChart>
           </ChartContainer>
@@ -1008,7 +1009,9 @@ function AdminDesktop({
       <section className="flex flex-col gap-4">
         <div className="flex items-center justify-between gap-4">
           <h2 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            Overview · {periodLabels[period]}
+            Overview
+            {/* Period lives in the select beside this, not in the label too */}
+            <span className="hidden md:inline"> · {periodLabels[period]}</span>
           </h2>
           <Select value={period} onValueChange={(v) => setPeriod(v as Period)}>
             <SelectTrigger className="h-9 w-[160px]">
@@ -1250,6 +1253,7 @@ function OrdersChart({
                   name="Orders"
                   fill="var(--color-count)"
                   radius={[4, 4, 0, 0]}
+                  maxBarSize={28}
                 />
               </BarChart>
             ) : type === "line" ? (
@@ -1575,7 +1579,7 @@ function StatTile({
 
   return (
     <Card className="shadow-sm">
-      <CardContent className="flex flex-col items-start gap-2 p-3 sm:flex-row sm:items-center sm:gap-4 sm:p-4">
+      <CardContent className="flex items-center gap-2.5 p-2.5 sm:gap-4 sm:p-4">
         <span
           className={cn(
             "flex h-8 w-8 shrink-0 items-center justify-center rounded-md sm:h-10 sm:w-10",
@@ -1585,7 +1589,7 @@ function StatTile({
           <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
         </span>
         <div className="flex min-w-0 flex-col">
-          <span className="truncate text-[10px] font-medium uppercase tracking-wide text-muted-foreground sm:text-xs">
+          <span className="text-[11px] font-medium leading-tight text-muted-foreground sm:truncate sm:text-xs sm:uppercase sm:tracking-wide">
             {label}
           </span>
           <span className="truncate text-base font-semibold tabular-nums tracking-tight text-foreground sm:text-lg">
@@ -1646,7 +1650,7 @@ function EmptyHint({
 function StatTileSkeleton() {
   return (
     <Card className="shadow-sm">
-      <CardContent className="flex flex-col items-start gap-2 p-3 sm:flex-row sm:items-center sm:gap-4 sm:p-4">
+      <CardContent className="flex items-center gap-2.5 p-2.5 sm:gap-4 sm:p-4">
         <Skeleton className="h-9 w-9 rounded-md sm:h-10 sm:w-10" />
         <div className="flex min-w-0 flex-1 flex-col gap-1.5">
           <Skeleton className="h-2.5 w-14" />

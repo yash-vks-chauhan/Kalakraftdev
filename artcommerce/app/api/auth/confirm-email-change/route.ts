@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { escapeHtml } from '../../../../lib/emailContent'
+import { renderEmail } from '../../../../lib/emailTemplate'
 import { sendSecureMail } from '../../../../lib/mailer'
 import { getOtpSecretValidationError, hashOtpForScope } from '../../../../lib/otp-security'
 import prisma from '../../../../lib/prisma'
@@ -95,12 +95,21 @@ export async function POST(request: Request) {
   try {
     await sendSecureMail({
       to: updatedUser.email,
-      subject: 'Your Artcommerce email has been changed',
-      html: `
-        <p>Hi ${escapeHtml(updatedUser.fullName)},</p>
-        <p>Your account email has been successfully updated to <strong>${escapeHtml(updatedUser.email)}</strong>.</p>
-        <p>If you did not make this change, please contact support immediately.</p>
-      `,
+      subject: 'Your Kalakraft email has been changed',
+      html: renderEmail({
+        preheader: `Your Kalakraft account email is now ${updatedUser.email}.`,
+        eyebrow: 'Account security',
+        heading: 'Your email has been changed',
+        body: [
+          `Hi ${(updatedUser.fullName || '').trim().split(' ')[0] || 'there'} — the address on your Kalakraft account has been updated. Sign-ins and order updates now go here.`,
+        ],
+        module: {
+          kind: 'facts',
+          rows: [{ label: 'New email', value: updatedUser.email, accent: true }],
+        },
+        note: 'If you did not make this change, contact us straight away and we will restore the previous address.',
+        footerReason: 'You are receiving this because the email on your Kalakraft account was changed.',
+      }),
     })
   } catch (error) {
     console.error('[auth/confirm-email-change] Error sending confirmation email:', error)

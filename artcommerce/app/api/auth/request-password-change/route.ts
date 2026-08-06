@@ -3,7 +3,7 @@
 import { customAlphabet } from 'nanoid'
 import { NextResponse } from 'next/server'
 import { getAuthContext } from '../../../../lib/auth'
-import { escapeHtml } from '../../../../lib/emailContent'
+import { renderEmail } from '../../../../lib/emailTemplate'
 import { sendSecureMail } from '../../../../lib/mailer'
 import { getOtpSecretValidationError, hashOtpForScope } from '../../../../lib/otp-security'
 import prisma from '../../../../lib/prisma'
@@ -77,18 +77,26 @@ export async function POST(request: Request) {
     },
   })
 
-  const html = `
-    <p>Hi ${escapeHtml(user.fullName || '')},</p>
-    <p>Your one-time code to reset your password is:</p>
-    <h2 style="letter-spacing:4px;">${code}</h2>
-    <p>This code expires in 5 minutes.</p>
-    <p>If you didn’t request this, ignore this email.</p>
-  `
+  const firstName = (user.fullName || '').trim().split(' ')[0]
+
+  const html = renderEmail({
+    preheader: `Your password reset code is ${code}. It expires in 5 minutes.`,
+    eyebrow: 'Account security',
+    heading: 'Reset your password',
+    body: [
+      firstName
+        ? `Hi ${firstName} — use the code below to finish resetting your password.`
+        : 'Use the code below to finish resetting your password.',
+    ],
+    module: { kind: 'code', code, caption: 'Expires in 5 minutes' },
+    note: "Didn't ask for this? Ignore this email — your password stays as it is.",
+    footerReason: 'You are receiving this because someone requested a password reset for this address.',
+  })
 
   try {
     await sendSecureMail({
       to: user.email as string,
-      subject: 'Your Artcommerce password reset code',
+      subject: 'Your Kalakraft password reset code',
       html,
     })
   } catch (err) {

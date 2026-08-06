@@ -275,7 +275,7 @@ function OrdersHeader({
 }) {
   return (
     <header className="flex items-end justify-between gap-3">
-      <div className="flex min-w-0 flex-col gap-1">
+      <div className="hidden min-w-0 flex-col gap-1 md:flex">
         <p className="text-xs text-muted-foreground sm:text-sm">History</p>
         <h1 className="flex flex-wrap items-center gap-2 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
           Your orders

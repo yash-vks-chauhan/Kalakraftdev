@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { NextResponse } from 'next/server'
-import { escapeHtml } from '../../../lib/emailContent'
+import { getPublicAppUrlForPath } from '../../../lib/appUrl'
+import { renderEmail } from '../../../lib/emailTemplate'
 import { sendSecureMail } from '../../../lib/mailer'
 import prisma from '../../../lib/prisma'
 import { orderEvents } from '../../../lib/orderEvents'
@@ -417,62 +418,50 @@ export async function POST(request: Request) {
 
   if (toEmail) {
     try {
-      // build the HTML body
-      const itemsRows = createdOrder.orderItems.map(item => {
-        const unit = item.priceAtPurchase.toFixed(2)
-        const line = (item.quantity * item.priceAtPurchase).toFixed(2)
-        return `
-          <tr>
-            <td style="padding:8px;border:1px solid #ddd;">${escapeHtml(item.product.name)}</td>
-            <td style="padding:8px;border:1px solid #ddd;text-align:center;">${item.quantity}</td>
-            <td style="padding:8px;border:1px solid #ddd;text-align:right;">${escapeHtml(item.product.currency)} ${unit}</td>
-            <td style="padding:8px;border:1px solid #ddd;text-align:right;">${escapeHtml(item.product.currency)} ${line}</td>
-          </tr>
-        `
-      }).join('')
+      const currency = createdOrder.orderItems[0].product.currency
+      const money = (amount: number) => `${currency} ${amount.toFixed(2)}`
 
-      const htmlBody = `
-        <div style="font-family:Arial,sans-serif;color:#333;">
-          <h2>Thank you for your order!</h2>
-          <p>Order Number: <b>${escapeHtml(createdOrder.orderNumber)}</b></p>
-          <h3>Order Summary</h3>
-          <table style="width:100%;border-collapse:collapse;">
-            <thead><tr style="background:#f5f5f5;">
-              <th style="padding:12px;border:1px solid #ddd;text-align:left;">Product</th>
-              <th style="padding:12px;border:1px solid #ddd;text-align:center;">Qty</th>
-              <th style="padding:12px;border:1px solid #ddd;text-align:right;">Unit Price</th>
-              <th style="padding:12px;border:1px solid #ddd;text-align:right;">Line Total</th>
-            </tr></thead>
-            <tbody>${itemsRows}</tbody>
-            <tfoot>
-              <tr><td colspan="3" style="padding:8px;border:1px solid #ddd;text-align:right;font-weight:bold;">Subtotal:</td>
-                <td style="padding:8px;border:1px solid #ddd;text-align:right;">${escapeHtml(createdOrder.orderItems[0].product.currency)} ${createdOrder.subtotal.toFixed(2)}</td>
-              </tr>
-              <tr><td colspan="3" style="padding:8px;border:1px solid #ddd;text-align:right;font-weight:bold;">Tax (5%):</td>
-                <td style="padding:8px;border:1px solid #ddd;text-align:right;">${escapeHtml(createdOrder.orderItems[0].product.currency)} ${createdOrder.tax.toFixed(2)}</td>
-              </tr>
-              <tr><td colspan="3" style="padding:8px;border:1px solid #ddd;text-align:right;font-weight:bold;">Shipping Fee:</td>
-                <td style="padding:8px;border:1px solid #ddd;text-align:right;">${escapeHtml(createdOrder.orderItems[0].product.currency)} ${createdOrder.shippingFee.toFixed(2)}</td>
-              </tr>
-              ${(createdOrder.discountAmount ?? 0) > 0 ? `
-              <tr><td colspan="3" style="padding:8px;border:1px solid #ddd;text-align:right;font-weight:bold;">Discount:</td>
-                <td style="padding:8px;border:1px solid #ddd;text-align:right;">${escapeHtml(createdOrder.orderItems[0].product.currency)} ${(createdOrder.discountAmount ?? 0).toFixed(2)}</td>
-              </tr>
-              ` : ''}
-              <tr style="background:#f5f5f5;">
-                <td colspan="3" style="padding:12px;border:1px solid #ddd;text-align:right;font-weight:bold;">Total:</td>
-                <td style="padding:12px;border:1px solid #ddd;text-align:right;font-size:1.1em;font-weight:bold;">${escapeHtml(createdOrder.orderItems[0].product.currency)} ${(createdOrder.discountedTotal ?? createdOrder.totalAmount).toFixed(2)}</td>
-              </tr>
-            </tfoot>
-          </table>
-          <p>We'll notify you again once your items ship. Thanks for shopping!</p>
-        </div>
-      `
+      const items = createdOrder.orderItems.map(item => ({
+        name: item.product.name,
+        meta: `Qty ${item.quantity} · ${money(item.priceAtPurchase)} each`,
+        amount: money(item.quantity * item.priceAtPurchase),
+      }))
+
+      const subtotals = [
+        { label: 'Subtotal', value: money(createdOrder.subtotal) },
+        { label: 'Tax (5%)', value: money(createdOrder.tax) },
+        { label: 'Shipping', value: money(createdOrder.shippingFee) },
+      ]
+      if ((createdOrder.discountAmount ?? 0) > 0) {
+        subtotals.push({ label: 'Discount', value: `−${money(createdOrder.discountAmount ?? 0)}` })
+      }
+
+      const firstName = (customer?.fullName || '').trim().split(' ')[0]
 
       await sendSecureMail({
         to: toEmail,
-        subject: `Order Confirmation (#${createdOrder.orderNumber})`,
-        html: htmlBody,
+        subject: `Order confirmation (#${createdOrder.orderNumber})`,
+        html: renderEmail({
+          preheader: `We have your order ${createdOrder.orderNumber}. Here is everything in it.`,
+          eyebrow: `Order ${createdOrder.orderNumber}`,
+          heading: 'Your order is confirmed',
+          body: [
+            firstName
+              ? `Thanks, ${firstName}. Each piece is finished by hand before it ships — we'll write again the moment it leaves the studio.`
+              : "Thanks for your order. Each piece is finished by hand before it ships — we'll write again the moment it leaves the studio.",
+          ],
+          module: {
+            kind: 'receipt',
+            items,
+            subtotals,
+            total: {
+              label: 'Total paid',
+              value: money(createdOrder.discountedTotal ?? createdOrder.totalAmount),
+            },
+          },
+          cta: { label: 'Track this order', href: getPublicAppUrlForPath('/dashboard/orders') },
+          footerReason: 'You are receiving this because you placed an order with Kalakraft.',
+        }),
         fromName: 'Kalakraft Orders',
       })
     } catch (emailErr) {

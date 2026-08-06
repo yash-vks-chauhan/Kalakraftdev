@@ -1,7 +1,7 @@
 // File: app/api/admin/users/[id]/route.ts
 
 import { NextResponse } from 'next/server'
-import { escapeHtml } from '../../../../../lib/emailContent'
+import { renderEmail } from '../../../../../lib/emailTemplate'
 import { sendSecureMail } from '../../../../../lib/mailer'
 import prisma from '../../../../../lib/prisma'
 import { requireAdminUser } from '../../../../../lib/session-auth'
@@ -61,13 +61,17 @@ export async function DELETE(
       try {
         await sendSecureMail({
           to: target.email,
-          subject: 'Your Artcommerce Account Has Been Deleted',
-          html: `
-            <p>Hi ${escapeHtml(target.fullName)},</p>
-            <p>We're writing to let you know that your Artcommerce account has been deleted by an administrator.</p>
-            <p>If you believe this was in error, please contact support.</p>
-            <p>Regards,<br/>The Artcommerce Team</p>
-          `,
+          subject: 'Your Kalakraft account has been closed',
+          html: renderEmail({
+            preheader: 'Your Kalakraft account and its data have been removed.',
+            eyebrow: 'Account',
+            heading: 'Your account has been closed',
+            body: [
+              `Hi ${(target.fullName || '').trim().split(' ')[0] || 'there'} — your Kalakraft account has been closed by an administrator. Your saved addresses, cart and order history have been removed along with it.`,
+              'If you think this was a mistake, get in touch and we will look into it.',
+            ],
+            footerReason: 'You are receiving this because an account registered to this address was closed.',
+          }),
           fromName: 'Kalakraft Support',
         })
       } catch (mailErr) {

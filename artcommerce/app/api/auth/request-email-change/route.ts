@@ -1,6 +1,6 @@
 import { customAlphabet } from 'nanoid'
 import { NextResponse } from 'next/server'
-import { escapeHtml } from '../../../../lib/emailContent'
+import { renderEmail } from '../../../../lib/emailTemplate'
 import { sendSecureMail } from '../../../../lib/mailer'
 import { getOtpSecretValidationError, hashOtpForScope } from '../../../../lib/otp-security'
 import prisma from '../../../../lib/prisma'
@@ -87,14 +87,18 @@ export async function POST(request: Request) {
   try {
     await sendSecureMail({
       to: newEmail,
-      subject: 'Verify your new Artcommerce email',
-      html: `
-        <p>Hi ${escapeHtml(user.fullName)},</p>
-        <p>Your OTP to verify this new Artcommerce account email is:</p>
-        <h2 style="letter-spacing:4px;">${code}</h2>
-        <p>This code expires in 5 minutes.</p>
-        <p>If you didn’t request this, ignore this email. Your account email will not change without this code.</p>
-      `,
+      subject: 'Verify your new Kalakraft email',
+      html: renderEmail({
+        preheader: `Your verification code is ${code}. It expires in 5 minutes.`,
+        eyebrow: 'Account security',
+        heading: 'Verify your new email',
+        body: [
+          `Hi ${(user.fullName || '').trim().split(' ')[0] || 'there'} — enter this code to confirm ${newEmail} as the address on your Kalakraft account.`,
+        ],
+        module: { kind: 'code', code, caption: 'Expires in 5 minutes' },
+        note: "Didn't ask for this? Ignore this email — your account email will not change without the code.",
+        footerReason: 'You are receiving this because this address was entered as a new email on a Kalakraft account.',
+      }),
     })
   } catch (error) {
     console.error('[auth/request-email-change] Failed to send OTP email:', error)

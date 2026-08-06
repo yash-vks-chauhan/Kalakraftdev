@@ -209,7 +209,7 @@ export default function AdminUsersPage() {
   return (
     <main className="flex flex-col gap-6">
       {/* Page header */}
-      <header className="flex flex-col gap-1">
+      <header className="hidden flex-col gap-1 md:flex">
         <h1 className="text-2xl font-semibold tracking-tight">User management</h1>
         <p className="text-sm text-muted-foreground">
           View, search, and manage every account on Artcommerce.
@@ -217,7 +217,7 @@ export default function AdminUsersPage() {
       </header>
 
       {/* Stats */}
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3">
         {loading ? (
           <>
             <StatCardSkeleton />
@@ -237,7 +237,7 @@ export default function AdminUsersPage() {
         <CardHeader className="gap-4 p-4 sm:p-6">
           <div className="flex flex-col gap-1">
             <CardTitle>Accounts</CardTitle>
-            <CardDescription>
+            <CardDescription className="hidden md:block">
               Switch tabs to filter by role or use search to find someone fast.
             </CardDescription>
           </div>
@@ -540,18 +540,21 @@ function AdminUserCard({
         }
         meta={account.email}
         submeta={
-          <span className="inline-flex items-center gap-1.5">
+          <>
             Joined {formatDate(account.createdAt)}
             {hasAbandoned && (
               <>
-                <span aria-hidden>·</span>
-                <span className="inline-flex items-center gap-1 text-amber-600 dark:text-amber-500">
-                  <span className="inline-flex h-1.5 w-1.5 rounded-full bg-amber-500" />
+                {' · '}
+                <span className="text-amber-600 dark:text-amber-500">
+                  <span
+                    aria-hidden
+                    className="mr-1 inline-block h-1.5 w-1.5 rounded-full bg-amber-500 align-middle"
+                  />
                   {account.abandonedCartCount} abandoned
                 </span>
               </>
             )}
-          </span>
+          </>
         }
         onOpenActions={() => setSheetOpen(true)}
         actionsLabel={`Actions for ${account.fullName}`}
@@ -631,15 +634,15 @@ function StatCard({
 }) {
   return (
     <Card className="shadow-sm">
-      <CardContent className="flex items-center gap-4 p-4">
-        <span className="flex h-10 w-10 items-center justify-center rounded-md border bg-muted/50 text-foreground">
+      <CardContent className="flex items-center gap-2.5 p-2.5 sm:gap-4 sm:p-4">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border bg-muted/50 text-foreground sm:h-10 sm:w-10">
           <Icon className="h-5 w-5" />
         </span>
         <div className="flex flex-col">
-          <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          <span className="text-[11px] font-medium leading-tight text-muted-foreground sm:truncate sm:text-xs sm:uppercase sm:tracking-wide">
             {label}
           </span>
-          <span className="text-xl font-semibold tracking-tight text-foreground">
+          <span className="truncate text-base font-semibold tracking-tight text-foreground sm:text-xl">
             {loading ? '—' : value.toLocaleString()}
           </span>
         </div>
@@ -651,7 +654,7 @@ function StatCard({
 function StatCardSkeleton() {
   return (
     <Card className="shadow-sm">
-      <CardContent className="flex items-center gap-4 p-4">
+      <CardContent className="flex items-center gap-2.5 p-2.5 sm:gap-4 sm:p-4">
         <Skeleton className="h-10 w-10 rounded-md" />
         <div className="flex min-w-0 flex-1 flex-col gap-1.5">
           <Skeleton className="h-3 w-20" />

@@ -1,45 +1,39 @@
 // src/lib/notifications/sendinblue.ts
 import type { Order } from '@/types'
 import { getPublicAppUrlForPath } from '../appUrl'
-import { escapeHtml } from '../emailContent'
+import { renderEmail } from '../emailTemplate'
 import { sendAdminMail } from '../mailer'
 
 export async function sendOrderNotificationEmail(order: Order) {
-  // 1. Build the HTML body
-  const itemsHtml = order.items
-    .map(
-      (it) => `
-    <li>
-      <strong>${escapeHtml(it.productName)}</strong> × ${it.quantity}
-      @ ₹${it.unitPrice.toFixed(2)} = ₹${(it.quantity * it.unitPrice).toFixed(2)}
-    </li>`
-    )
-    .join('')
-
-  const htmlContent = `
-    <h2>🛒 New Order #${order.id}</h2>
-    <p><strong>Customer:</strong> ${escapeHtml(order.customer.name)} (${escapeHtml(order.customer.email)})</p>
-    <p><strong>Shipping Address:</strong><br/>
-      ${escapeHtml(order.customer.address.street)}<br/>
-      ${escapeHtml(order.customer.address.city)}, ${escapeHtml(order.customer.address.state)} ${escapeHtml(order.customer.address.zip)}
-    </p>
-    <h3>Items:</h3>
-    <ul>${itemsHtml}</ul>
-    <p><strong>Total:</strong> ₹${order.total.toFixed(2)}</p>
-    <p>
-      <a 
-        href="${getPublicAppUrlForPath(`/dashboard/orders/${order.id}`)}"
-        target="_blank" 
-        rel="noopener noreferrer"
-      >
-        View Order #${order.id} in Admin Dashboard &raquo;
-      </a>
-    </p>
-  `
+  const money = (amount: number) => `₹${amount.toFixed(2)}`
+  const { address } = order.customer
 
   await sendAdminMail({
-    subject: `New Order #${order.id} — ₹${order.total.toFixed(2)}`,
-    html: htmlContent,
+    subject: `New order #${order.id} — ${money(order.total)}`,
+    html: renderEmail({
+      preheader: `${order.customer.name} ordered ${order.items.length} item(s) for ${money(order.total)}.`,
+      eyebrow: 'Orders · staff notice',
+      heading: `New order #${order.id}`,
+      body: [
+        `${order.customer.name} (${order.customer.email}) just checked out.`,
+        `Ship to: ${address.street}, ${address.city}, ${address.state} ${address.zip}.`,
+      ],
+      module: {
+        kind: 'receipt',
+        items: order.items.map((item) => ({
+          name: item.productName,
+          meta: `Qty ${item.quantity} · ${money(item.unitPrice)} each`,
+          amount: money(item.quantity * item.unitPrice),
+        })),
+        total: { label: 'Order total', value: money(order.total) },
+      },
+      cta: {
+        label: 'Open in dashboard',
+        href: getPublicAppUrlForPath(`/dashboard/orders/${order.id}`),
+      },
+      signoff: false,
+      footerReason: "Internal alert sent to the store's admin address. Customers never receive this message.",
+    }),
     fromName: 'Kalakraft Orders',
   })
 }

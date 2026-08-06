@@ -239,7 +239,7 @@ export default function AdminProductsPage() {
     <main className="flex flex-col gap-6">
       {/* Page header */}
       <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-col gap-1">
+        <div className="hidden flex-col gap-1 md:flex">
           <h1 className="text-2xl font-semibold tracking-tight">Products</h1>
           <p className="text-sm text-muted-foreground">
             Manage your catalog, stock levels, and product visibility.
@@ -266,7 +266,7 @@ export default function AdminProductsPage() {
       </header>
 
       {/* Stats */}
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2.5 sm:gap-3 lg:grid-cols-4">
         <StatCard
           icon={Boxes}
           label="Total products"
@@ -627,10 +627,11 @@ function AdminProductCard({
           ) : undefined
         }
         meta={
-          <span className="inline-flex items-center gap-1.5">
+          <>
             <span
+              aria-hidden
               className={cn(
-                'inline-flex h-1.5 w-1.5 rounded-full',
+                'mr-1.5 inline-block h-1.5 w-1.5 rounded-full align-middle',
                 product.stockQuantity === 0
                   ? 'bg-destructive'
                   : product.stockQuantity <= LOW_STOCK_THRESHOLD
@@ -640,10 +641,9 @@ function AdminProductCard({
             />
             <span className={stockTone(product.stockQuantity)}>
               {stockLabel(product.stockQuantity)}
-            </span>
-            <span aria-hidden>·</span>
-            {product.totalSold.toLocaleString()} sold
-          </span>
+            </span>{' '}
+            · {product.totalSold.toLocaleString()} sold
+          </>
         }
         value={formatPrice(product.price, product.currency)}
         onOpenActions={() => setSheetOpen(true)}
@@ -716,7 +716,7 @@ function ProductsSkeleton() {
       </header>
 
       {/* Stats grid */}
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2.5 sm:gap-3 lg:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
           <StatCardSkeleton key={i} />
         ))}
@@ -872,11 +872,11 @@ function StatCard({
           <Icon className="h-5 w-5" />
         </span>
         <div className="flex min-w-0 flex-col">
-          <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          <span className="text-[11px] font-medium leading-tight text-muted-foreground sm:truncate sm:text-xs sm:uppercase sm:tracking-wide">
             {label}
           </span>
           <div className="flex items-baseline gap-1.5">
-            <span className="text-xl font-semibold tracking-tight text-foreground">
+            <span className="truncate text-base font-semibold tracking-tight text-foreground sm:text-xl">
               {value.toLocaleString()}
             </span>
             {hint && (

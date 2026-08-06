@@ -7,7 +7,8 @@ import { requireAdminUser } from "../../../../../../../lib/session-auth";
 import { isAllowedOrigin } from "@/lib/security";
 import { sanitizeSupportAttachments, validateSupportAttachments } from "@/lib/supportAttachments";
 import { getBoundedString } from "@/lib/inputValidation";
-import { escapeHtml } from "@/lib/emailContent";
+import { getPublicAppUrlForPath } from "@/lib/appUrl";
+import { renderEmail } from "@/lib/emailTemplate";
 import { sendSecureMail } from "@/lib/mailer";
 
 const ALLOWED_STATUSES = ['open', 'pending', 'resolved', 'closed'];
@@ -108,7 +109,16 @@ export async function POST(
     await sendSecureMail({
       to: ticket.email,
       subject: `Re: ${ticket.subject}`,
-      html: `<p>${escapeHtml(trimmedReply).replace(/\n/g, '<br/>')}</p><p>Your ticket status is now <strong>${escapeHtml(normalizedStatus)}</strong>.</p>`,
+      html: renderEmail({
+        preheader: trimmedReply.slice(0, 140),
+        eyebrow: 'Support',
+        heading: 'A reply from our team',
+        body: [`Regarding "${ticket.subject}":`],
+        module: { kind: 'quote', text: trimmedReply },
+        note: `Your ticket is now marked ${normalizedStatus}. Reply in your account to keep the thread going.`,
+        cta: { label: 'Open conversation', href: getPublicAppUrlForPath('/dashboard/support') },
+        footerReason: 'You are receiving this because you contacted Kalakraft support.',
+      }),
       fromName: 'Kalakraft Support',
     });
   } catch (err) {

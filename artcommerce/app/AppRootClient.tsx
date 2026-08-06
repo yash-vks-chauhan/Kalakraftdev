@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { usePathname } from 'next/navigation'
 import Navbar from './components/Navbar'
+import { MobileDock } from './components/mobile/MobileDock'
 import AdminNotifications from './components/AdminNotifications'
 import UserNotifications from './components/UserNotifications'
 import Providers from './Providers'
@@ -202,7 +203,12 @@ export default function AppRootClient({ children }: { children: React.ReactNode 
             </>
           )}
         </AppContentWrapper>
-        
+
+        {/* One mobile navigation surface for the whole app — storefront and
+            dashboard alike. Suppressed on auth and checkout, which are
+            single-purpose flows that should not offer somewhere else to go. */}
+        {!isAuthRoute && !isCheckoutRoute && <MobileDock />}
+
         {/* Performance Optimizer */}
         <PerformanceOptimizer />
       </Providers>

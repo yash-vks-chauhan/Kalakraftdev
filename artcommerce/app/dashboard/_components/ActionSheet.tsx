@@ -76,7 +76,9 @@ export function ActionSheet({
           <span aria-hidden className="h-1 w-9 rounded-full bg-border" />
         </div>
 
-        <div className="px-5 pb-3 pt-1.5">
+        {/* pr-14 clears SheetContent's built-in close button (top-4 right-4),
+            which would otherwise sit on top of a truncated title. */}
+        <div className="px-5 pb-3 pr-14 pt-1.5">
           <SheetTitle className="truncate text-[15px] font-semibold">
             {title}
           </SheetTitle>

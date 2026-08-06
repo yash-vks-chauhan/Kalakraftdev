@@ -420,7 +420,7 @@ export default function ProfilePage() {
   return (
     <div className="flex flex-col gap-8">
       {/* Header */}
-      <header className="flex flex-col gap-2">
+      <header className="hidden flex-col gap-2 md:flex">
         <p className="text-sm text-muted-foreground">Settings</p>
         <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
           Profile

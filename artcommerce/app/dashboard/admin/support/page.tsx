@@ -167,7 +167,7 @@ export default function AdminSupportPage() {
     <main className="flex flex-col gap-6">
       {/* Page header */}
       <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-col gap-1">
+        <div className="hidden flex-col gap-1 md:flex">
           <h1 className="text-2xl font-semibold tracking-tight">Support tickets</h1>
           <p className="text-sm text-muted-foreground">
             Triage customer messages, track open conversations, and close out resolved ones.

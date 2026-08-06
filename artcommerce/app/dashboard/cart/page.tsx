@@ -185,7 +185,7 @@ export default function DashboardCartPage() {
       <CartHeader itemCount={itemCount} />
 
       {/* Summary stat strip */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="hidden grid-cols-2 gap-3 md:grid lg:grid-cols-4">
         <StatTile icon={ShoppingBag} label="Items" value={itemCount.toString()} />
         <StatTile icon={ReceiptText} label="Subtotal" value={formatCurrency(subtotal)} />
         <StatTile
@@ -208,7 +208,7 @@ export default function DashboardCartPage() {
         <Card className="shadow-sm">
           <CardHeader className="gap-1 p-4 sm:p-6">
             <CardTitle>Your items</CardTitle>
-            <CardDescription>
+            <CardDescription className="hidden md:block">
               Review pieces in your cart before checkout. Stock is updated in real time.
             </CardDescription>
           </CardHeader>
@@ -523,7 +523,7 @@ function MobileCheckoutBar({
 function CartHeader({ itemCount, loading }: { itemCount: number; loading?: boolean }) {
   return (
     <header className="flex items-end justify-between gap-3">
-      <div className="flex min-w-0 flex-col gap-1">
+      <div className="hidden min-w-0 flex-col gap-1 md:flex">
         <p className="text-xs text-muted-foreground sm:text-sm">Shopping</p>
         <h1 className="flex flex-wrap items-center gap-2 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
           Your cart
@@ -574,7 +574,7 @@ function StatTile({
 
   return (
     <Card className="shadow-sm transition-shadow duration-200 hover:shadow-md">
-      <CardContent className="flex flex-col items-start gap-2 p-3 sm:flex-row sm:items-center sm:gap-4 sm:p-4">
+      <CardContent className="flex items-center gap-2.5 p-2.5 sm:gap-4 sm:p-4">
         <span
           className={cn(
             "flex h-9 w-9 shrink-0 items-center justify-center rounded-md transition-colors duration-200 sm:h-10 sm:w-10",
@@ -584,7 +584,7 @@ function StatTile({
           <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
         </span>
         <div className="flex min-w-0 flex-col">
-          <span className="truncate text-[10px] font-medium uppercase tracking-wide text-muted-foreground sm:text-xs">
+          <span className="text-[11px] font-medium leading-tight text-muted-foreground sm:truncate sm:text-xs sm:uppercase sm:tracking-wide">
             {label}
           </span>
           <span className="truncate text-base font-semibold tabular-nums tracking-tight text-foreground transition-colors sm:text-lg">

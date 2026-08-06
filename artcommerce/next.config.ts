@@ -21,6 +21,11 @@ if (isProduction) {
 }
 
 const nextConfig: NextConfig = {
+  // Pin the file-tracing root to this app. Without it Next walks up looking
+  // for a lockfile, finds one in the developer's home directory, and picks
+  // that as the workspace root — which both warns on every build and widens
+  // the trace for standalone output far beyond the project.
+  outputFileTracingRoot: __dirname,
   productionBrowserSourceMaps: false,
   distDir: '.next',
   images: {

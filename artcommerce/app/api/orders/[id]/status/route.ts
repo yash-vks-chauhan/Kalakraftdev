@@ -1,7 +1,8 @@
 // File: app/api/orders/[id]/status/route.ts
 
 import { NextResponse } from 'next/server'
-import { escapeHtml } from '../../../../../lib/emailContent'
+import { getPublicAppUrlForPath } from '../../../../../lib/appUrl'
+import { renderEmail } from '../../../../../lib/emailTemplate'
 import { sendSecureMail } from '../../../../../lib/mailer'
 import { parsePositiveInteger } from '../../../../../lib/inputValidation'
 import prisma from '../../../../../lib/prisma'
@@ -51,11 +52,23 @@ export async function PATCH(
     await sendSecureMail({
       to: order.user.email,
       subject: `Your order #${order.orderNumber} is now ${status}`,
-      html: `
-        <p>Hi ${escapeHtml(order.user.fullName)},</p>
-        <p>Your order <strong>${escapeHtml(order.orderNumber)}</strong> status has changed to <strong>${escapeHtml(status)}</strong>.</p>
-        <p>Thanks for shopping with us!</p>
-      `,
+      html: renderEmail({
+        preheader: `Order ${order.orderNumber} has moved to ${status}.`,
+        eyebrow: `Order ${order.orderNumber}`,
+        heading: 'Your order has an update',
+        body: [
+          `Hi ${(order.user.fullName || '').trim().split(' ')[0] || 'there'} — your order has moved to a new stage. The full history is always in your account.`,
+        ],
+        module: {
+          kind: 'facts',
+          rows: [
+            { label: 'Order', value: order.orderNumber },
+            { label: 'Status', value: status, accent: true },
+          ],
+        },
+        cta: { label: 'View order', href: getPublicAppUrlForPath('/dashboard/orders') },
+        footerReason: 'You are receiving this because you placed an order with Kalakraft.',
+      }),
       fromName: 'Kalakraft Orders',
     })
   } catch (mailErr) {

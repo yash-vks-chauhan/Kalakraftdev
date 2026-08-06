@@ -9,7 +9,9 @@ import { storeSupportAttachment } from '@/lib/supportUploadStorage';
 import { consumeRateLimit, getClientIp } from '@/lib/rateLimit';
 import { validateUploadBuffer } from '@/lib/uploadGuard';
 import { getBoundedString } from '@/lib/inputValidation';
-import { cleanEmailHeader, escapeHtml } from '@/lib/emailContent';
+import { getPublicAppUrlForPath } from '@/lib/appUrl';
+import { cleanEmailHeader } from '@/lib/emailContent';
+import { renderEmail } from '@/lib/emailTemplate';
 import { sendSecureMail } from '@/lib/mailer';
 
 const TICKET_WINDOW_MS = 15 * 60 * 1000;
@@ -173,8 +175,23 @@ export async function POST(request: Request) {
     await sendSecureMail({
       to: authenticatedEmail,
       subject: `We received your request: ${safeFullSubject}`,
-      html: `<p>Hi ${escapeHtml(authenticatedName || safeName || 'there')},</p>
-        <p>Thanks for contacting our support team! Your ticket ID is <strong>${escapeHtml(ticket.id)}</strong>. We will get back to you shortly.</p>`,
+      html: renderEmail({
+        preheader: `Your ticket is open. Reference ${ticket.id}.`,
+        eyebrow: 'Support',
+        heading: "We've got your message",
+        body: [
+          `Hi ${(authenticatedName || safeName || '').trim().split(' ')[0] || 'there'} — thanks for writing in. A member of the team will reply to this address, usually within one working day.`,
+        ],
+        module: {
+          kind: 'facts',
+          rows: [
+            { label: 'Ticket', value: ticket.id, accent: true },
+            { label: 'Subject', value: safeFullSubject },
+          ],
+        },
+        cta: { label: 'View conversation', href: getPublicAppUrlForPath('/dashboard/support') },
+        footerReason: 'You are receiving this because you contacted Kalakraft support.',
+      }),
       fromName: 'Kalakraft Support',
     });
   } catch (err) {

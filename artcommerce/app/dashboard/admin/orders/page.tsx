@@ -425,7 +425,7 @@ export default function AdminOrdersPage() {
     <main className="flex flex-col gap-6">
       {/* Header */}
       <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div className="flex min-w-0 flex-col gap-1">
+        <div className="hidden min-w-0 flex-col gap-1 md:flex">
           <p className="text-xs text-muted-foreground sm:text-sm">Admin</p>
           <h1 className="flex flex-wrap items-center gap-2 text-2xl font-semibold tracking-tight sm:text-3xl">
             All orders
@@ -496,7 +496,7 @@ export default function AdminOrdersPage() {
         <CardHeader className="gap-4 p-4 sm:p-6">
           <div className="flex flex-col gap-1">
             <CardTitle>Orders</CardTitle>
-            <CardDescription>
+            <CardDescription className="hidden md:block">
               Switch tabs to filter by status, search to find a specific order, or use Filters for payment and date range.
             </CardDescription>
           </div>
@@ -795,11 +795,9 @@ function AdminOrderCard({
         }
         meta={order.user.fullName}
         submeta={
-          <span className="inline-flex items-center gap-1.5">
-            {totalItems} item{totalItems === 1 ? "" : "s"}
-            <span aria-hidden>·</span>
-            {formatRelative(order.createdAt)}
-            <span aria-hidden>·</span>
+          <>
+            {totalItems} item{totalItems === 1 ? "" : "s"} ·{" "}
+            {formatRelative(order.createdAt)} ·{" "}
             <span
               className={cn(
                 paymentPaid
@@ -809,7 +807,7 @@ function AdminOrderCard({
             >
               {capitalize(order.paymentMethod)}
             </span>
-          </span>
+          </>
         }
         value={formatCurrency(finalTotal)}
         onOpenActions={() => setSheetOpen(true)}
@@ -1152,7 +1150,7 @@ function StatTile({
       : "bg-muted/50 text-foreground border"
   return (
     <Card className="shadow-sm">
-      <CardContent className="flex flex-col items-start gap-2 p-3 sm:flex-row sm:items-center sm:gap-4 sm:p-4">
+      <CardContent className="flex items-center gap-2.5 p-2.5 sm:gap-4 sm:p-4">
         <span
           className={cn(
             "flex h-8 w-8 shrink-0 items-center justify-center rounded-md sm:h-10 sm:w-10",
@@ -1162,7 +1160,7 @@ function StatTile({
           <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
         </span>
         <div className="flex min-w-0 flex-col">
-          <span className="truncate text-[10px] font-medium uppercase tracking-wide text-muted-foreground sm:text-xs">
+          <span className="text-[11px] font-medium leading-tight text-muted-foreground sm:truncate sm:text-xs sm:uppercase sm:tracking-wide">
             {label}
           </span>
           <span className="truncate text-base font-semibold tabular-nums tracking-tight text-foreground sm:text-lg">
@@ -1177,7 +1175,7 @@ function StatTile({
 function StatTileSkeleton() {
   return (
     <Card className="shadow-sm">
-      <CardContent className="flex flex-col items-start gap-2 p-3 sm:flex-row sm:items-center sm:gap-4 sm:p-4">
+      <CardContent className="flex items-center gap-2.5 p-2.5 sm:gap-4 sm:p-4">
         <Skeleton className="h-9 w-9 rounded-md sm:h-10 sm:w-10" />
         <div className="flex min-w-0 flex-1 flex-col gap-1.5">
           <Skeleton className="h-2.5 w-16" />

@@ -10,8 +10,6 @@ import LoadingSpinner from "../components/LoadingSpinner"
 import SearchModal from "../components/SearchModal"
 import { SidebarNav } from "./_components/SidebarNav"
 import { MobileHeader } from "./_components/MobileHeader"
-import { BottomTabBar } from "./_components/BottomTabBar"
-import { CommandSheet } from "./_components/CommandSheet"
 import { cn } from "@/lib/utils"
 
 const SIDEBAR_STORAGE_KEY = "dashboard:sidebar:collapsed"
@@ -25,7 +23,6 @@ export default function DashboardLayout({
   const router = useRouter()
   const pathname = usePathname()
   const contentRef = useRef<HTMLDivElement | null>(null)
-  const [commandOpen, setCommandOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
 
@@ -34,12 +31,6 @@ export default function DashboardLayout({
   useEffect(() => {
     contentRef.current?.scrollTo(0, 0)
     window.scrollTo(0, 0)
-  }, [pathname])
-
-  // Close the palette on navigation — otherwise a route change from anywhere
-  // else (bottom tab, in-page link) leaves it hanging open over the new page.
-  useEffect(() => {
-    setCommandOpen(false)
   }, [pathname])
 
   // Hydrate collapsed state from localStorage
@@ -99,7 +90,6 @@ export default function DashboardLayout({
   }
 
   const handleLogout = () => {
-    setCommandOpen(false)
     logout()
   }
 
@@ -122,8 +112,9 @@ export default function DashboardLayout({
         />
       </aside>
 
-      {/* Mobile app bar — contextual title, palette trigger and cart */}
-      <MobileHeader onOpenCommand={() => setCommandOpen(true)} />
+      {/* Mobile app bar — contextual title only; search and cart live in
+          the app-wide dock at the bottom, within thumb reach. */}
+      <MobileHeader />
 
       {/* Main content — a white inset panel on the muted canvas */}
       <main
@@ -182,20 +173,6 @@ export default function DashboardLayout({
           </div>
         </div>
       </main>
-
-      <BottomTabBar
-        user={user}
-        onOpenCommand={() => setCommandOpen(true)}
-        commandOpen={commandOpen}
-      />
-
-      <CommandSheet
-        open={commandOpen}
-        onOpenChange={setCommandOpen}
-        user={user}
-        onLogout={handleLogout}
-        onSearchProducts={() => setSearchOpen(true)}
-      />
 
       <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
     </div>
