@@ -4,24 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
-import {
-  LayoutDashboard,
-  User,
-  Package,
-  Heart,
-  ShoppingCart,
-  LifeBuoy,
-  ShoppingBag,
-  Users,
-  Tag,
-  Star,
-  AlertTriangle,
-  Boxes,
-  LogOut,
-  PanelLeftClose,
-  PanelLeftOpen,
-} from "lucide-react"
-import { LucideIcon } from "lucide-react"
+import { LogOut, PanelLeftClose, PanelLeftOpen } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { getImageUrl } from "@/lib/cloudinaryImages"
@@ -31,34 +14,13 @@ import ConfirmDialog from "../../components/ConfirmDialog"
 import type { User as AuthUser } from "../../contexts/AuthContext"
 import { useCart } from "../../contexts/CartContext"
 import { useWishlist } from "../../contexts/WishlistContext"
-
-type NavKey = "cart" | "wishlist"
-type NavItem = {
-  href: string
-  label: string
-  icon: LucideIcon
-  exact?: boolean
-  countKey?: NavKey
-}
-
-const userNav: NavItem[] = [
-  { href: "/dashboard", label: "Overview", icon: LayoutDashboard, exact: true },
-  { href: "/dashboard/orders", label: "Orders", icon: Package },
-  { href: "/dashboard/wishlist", label: "Wishlist", icon: Heart, countKey: "wishlist" },
-  { href: "/dashboard/cart", label: "Cart", icon: ShoppingCart, countKey: "cart" },
-  { href: "/dashboard/support", label: "Support", icon: LifeBuoy },
-  { href: "/dashboard/profile", label: "Profile", icon: User },
-]
-
-const adminNav: NavItem[] = [
-  { href: "/dashboard/admin/orders", label: "All Orders", icon: ShoppingBag },
-  { href: "/dashboard/admin/products", label: "Products", icon: Boxes },
-  { href: "/dashboard/admin/products/low-stock", label: "Low Stock", icon: AlertTriangle },
-  { href: "/dashboard/admin/users", label: "Users", icon: Users },
-  { href: "/dashboard/admin/coupons", label: "Coupons", icon: Tag },
-  { href: "/dashboard/admin/reviews", label: "Reviews", icon: Star },
-  { href: "/dashboard/admin/support", label: "Support", icon: LifeBuoy },
-]
+import {
+  adminNav,
+  isActive,
+  userNav,
+  type NavItem,
+  type NavKey,
+} from "./nav-config"
 
 // Apple-like spring easing + staggered fades so labels disappear before the
 // sidebar width shrinks and reappear after it has opened. (Used only for
@@ -76,11 +38,6 @@ function initialsOf(name?: string) {
     .slice(0, 2)
     .join("")
     .toUpperCase()
-}
-
-function isActive(pathname: string, href: string, exact?: boolean) {
-  if (exact) return pathname === href
-  return pathname === href || pathname.startsWith(href + "/")
 }
 
 function formatBadgeCount(count: number) {

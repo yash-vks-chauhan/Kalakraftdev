@@ -139,14 +139,6 @@ type QuickLink = {
   icon: LucideIcon
 }
 
-const userLinks: QuickLink[] = [
-  { href: "/dashboard/orders", label: "Orders", description: "Track and review your past orders", icon: Package },
-  { href: "/dashboard/wishlist", label: "Wishlist", description: "Items you've saved for later", icon: Heart },
-  { href: "/dashboard/cart", label: "Cart", description: "Continue your in-progress checkout", icon: ShoppingCart },
-  { href: "/dashboard/support", label: "Support", description: "Open a ticket or browse FAQs", icon: LifeBuoy },
-  { href: "/dashboard/profile", label: "Profile", description: "Manage personal details and security", icon: User },
-]
-
 const adminLinks: QuickLink[] = [
   { href: "/dashboard/admin/orders", label: "All Orders", description: "Manage customer orders and statuses", icon: ShoppingBag },
   { href: "/dashboard/admin/products", label: "Products", description: "Edit listings, pricing, and inventory", icon: Boxes },
@@ -443,45 +435,6 @@ export default function DashboardHomePage() {
           wishlistLoading={wishlistLoading}
           cartLoading={cartLoading}
         />
-      )}
-
-      {/* Mobile: Account & Admin quick links (hidden on lg) */}
-      <section className="flex flex-col gap-3 lg:hidden">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            Account
-          </h2>
-        </div>
-        <Card className="shadow-sm">
-          <CardContent className="p-0">
-            <ul className="divide-y">
-              {userLinks.map((link) => (
-                <li key={link.href}>
-                  <CompactLinkRow link={link} />
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-      </section>
-
-      {isAdmin && (
-        <section className="flex flex-col gap-3 lg:hidden">
-          <h2 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            Admin
-          </h2>
-          <Card className="shadow-sm">
-            <CardContent className="p-0">
-              <ul className="divide-y">
-                {adminLinks.map((link) => (
-                  <li key={link.href}>
-                    <CompactLinkRow link={link} />
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-        </section>
       )}
     </div>
   )
@@ -1644,27 +1597,6 @@ function StatTile({
   )
 }
 
-
-function CompactLinkRow({ link }: { link: QuickLink }) {
-  const Icon = link.icon
-  return (
-    <Link
-      href={link.href}
-      className="group flex items-center gap-3 px-4 py-3.5 transition-colors hover:bg-muted/40"
-    >
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border bg-background text-muted-foreground group-hover:text-foreground">
-        <Icon className="h-4 w-4" />
-      </span>
-      <div className="flex min-w-0 flex-1 flex-col">
-        <p className="text-sm font-medium text-foreground">{link.label}</p>
-        <p className="truncate text-xs text-muted-foreground">
-          {link.description}
-        </p>
-      </div>
-      <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
-    </Link>
-  )
-}
 
 function CompactShortcut({ link }: { link: QuickLink }) {
   const Icon = link.icon

@@ -132,7 +132,7 @@ export default function FeaturedPieces() {
             <div className="grid grid-cols-4 gap-x-6 gap-y-12">
               {Array.from({ length: MAX_PIECES }).map((_, i) => (
                 <div key={i} className="flex flex-col gap-3">
-                  <Skeleton className="aspect-[4/5] w-full rounded-[20px] bg-[#ececec]" />
+                  <Skeleton className="aspect-[4/5] w-full rounded-xl bg-[#ececec]" />
                   <Skeleton className="h-4 w-2/3 bg-[#ececec]" />
                   <Skeleton className="h-4 w-1/3 bg-[#ececec]" />
                 </div>

@@ -170,11 +170,10 @@ function getSeedProducts(searchParams: { get(name: string): string | null }): Pr
 function GridCardSkeleton() {
   return (
     <div className="flex flex-col">
-      <div className="aspect-[4/5] w-full animate-pulse rounded-[20px] bg-zinc-100" />
-      <div className="mt-3.5 space-y-2.5">
-        <div className="h-2.5 w-14 animate-pulse rounded bg-zinc-100" />
-        <div className="h-3.5 w-3/4 animate-pulse rounded bg-zinc-100" />
-        <div className="h-3.5 w-1/3 animate-pulse rounded bg-zinc-100" />
+      <div className="aspect-[4/5] w-full animate-pulse rounded-xl bg-[#f0f0f0]" />
+      <div className="mt-4 space-y-2.5">
+        <div className="h-4 w-3/4 animate-pulse rounded bg-[#f0f0f0]" />
+        <div className="h-3.5 w-1/3 animate-pulse rounded bg-[#f0f0f0]" />
       </div>
     </div>
   )
@@ -1047,26 +1046,32 @@ export default function ProductsClient() {
                 >
                   <div className="px-6 py-9 xl:px-10">
                     {/* Editorial intro — the page's one true heading */}
-                    <header className="mb-7">
-                      <span className="mb-2 inline-block text-[11px] font-semibold uppercase tracking-[0.22em] text-zinc-400">
+                    <header className="mb-9">
+                      <span className="inline-block text-[11px] font-medium uppercase tracking-[0.3em] text-[#999]">
                         The Collection
                         {/* Count only once real results are in — a "0" during
                             loading or an error would just be noise. */}
                         {!showInitialLoading && !error && (
                           <>
-                            <span className="mx-1.5 text-zinc-300">·</span>
+                            <span className="mx-1.5 text-[#d0d0d0]">·</span>
                             <span className="tabular-nums">
                               {visibleProducts.length} {visibleProducts.length === 1 ? 'piece' : 'pieces'}
                             </span>
                           </>
                         )}
                       </span>
-                      <h1 className="text-[28px] font-semibold leading-[1.1] tracking-tight text-zinc-900 lg:text-[34px]">
+                      {/* Copper hairline — the same rule that opens every
+                          section on the homepage and the detail page */}
+                      <span
+                        aria-hidden="true"
+                        className="mt-2.5 block h-px w-10 bg-gradient-to-r from-[#d4a373] to-transparent"
+                      />
+                      <h1 className="mt-3 font-serif text-4xl font-medium leading-[1.1] text-[#1a1a1a] xl:text-5xl">
                         {currentCategory
                           ? KNOWN_CATEGORIES.find(c => c.slug === currentCategory)?.name || 'Discover Our Collection'
                           : currentTag || 'Discover Our Collection'}
                       </h1>
-                      <p className="mt-2.5 max-w-md text-[14.5px] leading-relaxed text-zinc-500">
+                      <p className="mt-4 max-w-md text-[15px] leading-relaxed text-[#666]">
                         Handcrafted pieces, curated with care — each one made to be lived with.
                       </p>
                     </header>

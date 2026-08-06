@@ -2,17 +2,17 @@
 
 import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
-import Image from "next/image"
 import { usePathname, useRouter } from "next/navigation"
-import { Menu, Search, Heart, ShoppingCart, ArrowUpRight } from "lucide-react"
+import { Search, Heart, ShoppingCart, ArrowUpRight } from "lucide-react"
 
 import { useAuth } from "../contexts/AuthContext"
 import LoadingSpinner from "../components/LoadingSpinner"
 import SearchModal from "../components/SearchModal"
 import { SidebarNav } from "./_components/SidebarNav"
+import { MobileHeader } from "./_components/MobileHeader"
+import { BottomTabBar } from "./_components/BottomTabBar"
+import { CommandSheet } from "./_components/CommandSheet"
 import { cn } from "@/lib/utils"
-import { getImageUrl } from "@/lib/cloudinaryImages"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 
 const SIDEBAR_STORAGE_KEY = "dashboard:sidebar:collapsed"
 
@@ -25,14 +25,21 @@ export default function DashboardLayout({
   const router = useRouter()
   const pathname = usePathname()
   const contentRef = useRef<HTMLDivElement | null>(null)
-  const [mobileOpen, setMobileOpen] = useState(false)
+  const [commandOpen, setCommandOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
 
-  // The panel scrolls internally on desktop, so route changes don't reset
-  // window scroll — reset the panel ourselves.
+  // Desktop scrolls an inner panel; mobile scrolls the document. Reset both,
+  // or navigating on a phone lands you mid-page at the previous scroll offset.
   useEffect(() => {
     contentRef.current?.scrollTo(0, 0)
+    window.scrollTo(0, 0)
+  }, [pathname])
+
+  // Close the palette on navigation — otherwise a route change from anywhere
+  // else (bottom tab, in-page link) leaves it hanging open over the new page.
+  useEffect(() => {
+    setCommandOpen(false)
   }, [pathname])
 
   // Hydrate collapsed state from localStorage
@@ -92,7 +99,7 @@ export default function DashboardLayout({
   }
 
   const handleLogout = () => {
-    setMobileOpen(false)
+    setCommandOpen(false)
     logout()
   }
 
@@ -115,44 +122,8 @@ export default function DashboardLayout({
         />
       </aside>
 
-      {/* Mobile top bar */}
-      <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-3 border-b bg-background/95 px-4 backdrop-blur lg:hidden">
-        <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-          <SheetTrigger asChild>
-            <button
-              type="button"
-              aria-label="Open menu"
-              className="inline-flex h-9 w-9 items-center justify-center rounded-md border text-foreground transition-colors hover:bg-secondary"
-            >
-              <Menu className="h-4 w-4" />
-            </button>
-          </SheetTrigger>
-          <SheetContent side="left" className="w-72 p-0">
-            <SidebarNav
-              user={user}
-              onLogout={handleLogout}
-              onNavigate={() => setMobileOpen(false)}
-            />
-          </SheetContent>
-        </Sheet>
-        <Link
-          href="/"
-          aria-label="Kalakraft home"
-          className="group flex items-center gap-2"
-        >
-          <Image
-            src={getImageUrl("logo.png")}
-            alt="Kalakraft"
-            width={22}
-            height={22}
-            priority
-            className="h-[22px] w-[22px] object-contain transition-transform duration-200 group-hover:scale-110"
-          />
-          <span className="text-sm font-semibold tracking-tight text-foreground">
-            Kalakraft
-          </span>
-        </Link>
-      </header>
+      {/* Mobile app bar — contextual title, palette trigger and cart */}
+      <MobileHeader onOpenCommand={() => setCommandOpen(true)} />
 
       {/* Main content — a white inset panel on the muted canvas */}
       <main
@@ -203,12 +174,28 @@ export default function DashboardLayout({
           </div>
 
           <div ref={contentRef} className="min-h-0 flex-1 lg:overflow-y-auto">
-            <div className="w-full px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
+            {/* pb-tabbar keeps the last row clear of the fixed bottom nav
+                (and the home indicator below it) on mobile. */}
+            <div className="w-full px-4 py-5 pb-tabbar sm:px-6 lg:px-10 lg:py-10">
               {children}
             </div>
           </div>
         </div>
       </main>
+
+      <BottomTabBar
+        user={user}
+        onOpenCommand={() => setCommandOpen(true)}
+        commandOpen={commandOpen}
+      />
+
+      <CommandSheet
+        open={commandOpen}
+        onOpenChange={setCommandOpen}
+        user={user}
+        onLogout={handleLogout}
+        onSearchProducts={() => setSearchOpen(true)}
+      />
 
       <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
     </div>

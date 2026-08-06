@@ -3,38 +3,25 @@
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Check, ChevronLeft, ChevronRight, ShoppingCart, Star, ArrowUpRight } from 'lucide-react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { ArrowUpRight, Check, ChevronLeft, ChevronRight, ShoppingCart } from 'lucide-react'
 import WishlistButton from '../components/WishlistButton'
+import Stars from '../components/Stars'
 import { useImagePreload } from '../hooks/useImagePreload'
 import { useAuth } from '../contexts/AuthContext'
 import { useCart } from '../contexts/CartContext'
 import { cn } from '@/lib/utils'
-import { Badge } from '@/components/ui/badge'
+import { formatPrice } from '../../lib/formatPrice'
 import animationStyles from './products-animations.module.css'
 
 const LOW_STOCK_THRESHOLD = 5
 
-// "INR 1250.00" → "₹1,250": currency symbol + local digit grouping, decimals
-// only when the price actually has them.
-function formatPrice(price: number, currency: string) {
-  try {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: currency || 'INR',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 2,
-    }).format(price)
-  } catch {
-    return `${currency} ${price.toFixed(2)}`
-  }
-}
-
-// Shared frosted-glass surface used by every floating control on the card.
-// Soft white blur + hairline highlight + layered shadow = premium, tactile.
-const GLASS =
-  'backdrop-blur-md bg-white/65 border border-white/70 ' +
-  'shadow-[0_6px_20px_-6px_rgba(0,0,0,0.18),inset_0_1px_1px_rgba(255,255,255,0.85)]'
+// Every floating control on the card: a flat white disc on a hairline. No
+// frosted glass — the gallery language is flat surfaces and thin rules.
+const DISC =
+  'flex items-center justify-center rounded-full border border-[#e5e5e5] bg-white text-[#1a1a1a] ' +
+  'shadow-[0_2px_8px_-4px_rgba(0,0,0,0.16)] transition-all duration-300 ' +
+  'hover:border-[#b9b9b9] active:scale-95'
 
 interface Product {
   id: number
@@ -56,12 +43,22 @@ interface ProductCardProProps {
   product: Product
   index?: number
   className?: string
+  /**
+   * 'shop' — the browsing grid: quick add, angle stepping, wishlist.
+   * 'quiet' — a reading rail beside another piece: the work and its price
+   * only, so the card never competes with the page it sits under.
+   */
+  variant?: 'shop' | 'quiet'
 }
 
+// A piece hung as a small mounted print: matte well, hairline frame, serif
+// name. Shared by the products grid, the homepage shelf, and the detail
+// page's explore rail so one piece reads the same everywhere.
 export default function ProductCardPro({
   product: prod,
   index = 0,
   className = '',
+  variant = 'shop',
 }: ProductCardProProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [cartState, setCartState] = useState<'idle' | 'adding' | 'added'>('idle')
@@ -69,8 +66,9 @@ export default function ProductCardPro({
   const { addToCart } = useCart()
   const router = useRouter()
 
-  const hasMultipleImages = prod.imageUrls.length > 1
-  const rating = Math.round(prod.avgRating ?? 0)
+  const quiet = variant === 'quiet'
+  const hasMultipleImages = !quiet && prod.imageUrls.length > 1
+  const rating = prod.avgRating ?? 0
   const isOut = prod.stockQuantity === 0
   const isLow = prod.stockQuantity > 0 && prod.stockQuantity <= LOW_STOCK_THRESHOLD
 
@@ -113,32 +111,29 @@ export default function ProductCardPro({
     <Link
       href={`/products/${prod.id}`}
       className={cn(
-        'group relative flex flex-col rounded-[20px] outline-none',
-        'focus-visible:ring-2 focus-visible:ring-zinc-900/40 focus-visible:ring-offset-2',
-        animationStyles.cardEnter,
+        'group relative flex flex-col outline-none',
+        !quiet && animationStyles.cardEnter,
         className,
       )}
-      style={{ animationDelay: `${Math.min(index, 8) * 55}ms` }}
+      style={quiet ? undefined : { animationDelay: `${Math.min(index, 8) * 55}ms` }}
     >
-      {/* ── Image well ─────────────────────────────────────────────── */}
+      {/* ── The mount ───────────────────────────────────────────────── */}
       <div
         className={cn(
-          'relative aspect-[4/5] w-full overflow-hidden rounded-[20px]',
-          'border border-zinc-200/80 bg-gradient-to-br from-zinc-50 via-white to-zinc-100/80',
-          'transition-[transform,box-shadow,border-color] duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]',
-          'group-hover:-translate-y-1 group-hover:border-zinc-300/90',
-          'group-hover:shadow-[0_28px_50px_-22px_rgba(0,0,0,0.28)]',
+          'relative aspect-[4/5] w-full overflow-hidden rounded-xl',
+          'border border-[#e5e5e5] bg-[#fafafa]',
+          'transition-colors duration-500 group-hover:border-[#d0d0d0]',
         )}
       >
         <AnimatePresence initial={false} mode="sync">
           <motion.div
             key={currentImageIndex}
-            initial={{ opacity: 0, scale: 0.99 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.99 }}
-            transition={{ duration: 0.22, ease: 'easeOut' }}
-            className="absolute inset-0 flex items-center justify-center p-5 sm:p-6"
-            style={{ willChange: 'opacity, transform' }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.28, ease: 'easeOut' }}
+            className="absolute inset-0"
+            style={{ willChange: 'opacity' }}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -146,174 +141,147 @@ export default function ProductCardPro({
               alt={prod.name}
               loading="lazy"
               className={cn(
-                'h-full w-full object-contain drop-shadow-[0_10px_24px_rgba(0,0,0,0.08)] transition-transform duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:scale-[1.06]',
-                isOut && 'opacity-50 saturate-50',
+                'h-full w-full object-contain p-5 transition-transform duration-[900ms] ease-[cubic-bezier(0.21,0.47,0.32,0.98)] group-hover:scale-[1.05]',
+                isOut && 'opacity-45 grayscale',
               )}
             />
           </motion.div>
         </AnimatePresence>
 
-        {/* Wishlist — frosted circle, top-right */}
-        <div
-          className="absolute right-3 top-3 z-20"
-          onClick={(e) => e.preventDefault()}
-        >
-          <WishlistButton
-            productId={prod.id}
-            className={cn(
-              GLASS,
-              'flex h-9 w-9 items-center justify-center rounded-full text-zinc-900',
-              'transition-transform duration-200 hover:scale-105 active:scale-95',
-            )}
-            preventNavigation={true}
-          />
-        </div>
-
-        {/* Stock badge — frosted pill, top-left */}
+        {/* Stock, set as a plate rather than a badge */}
         {(isLow || isOut) && (
-          <Badge
+          <span
             className={cn(
-              GLASS,
-              'absolute left-3 top-3 z-20 rounded-full px-3 py-1 text-[10.5px] font-semibold uppercase tracking-[0.08em]',
-              isOut ? 'text-zinc-500' : 'text-zinc-900',
+              'absolute left-4 top-4 z-20 text-[10px] font-medium uppercase tracking-[0.2em]',
+              isOut ? 'text-[#999]' : 'text-[#b8845a]',
             )}
           >
             {isOut ? 'Sold out' : `Only ${prod.stockQuantity} left`}
-          </Badge>
-        )}
-
-        {/* Carousel indicator — frosted pill, bottom-center, visible at rest so
-            multi-image products read as browsable at a glance. Fades out on
-            hover to make room for the quick-add action. */}
-        {hasMultipleImages && (
-          <div
-            className={cn(
-              GLASS,
-              'absolute bottom-3 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1 rounded-full px-2 py-1.5',
-              'transition-opacity duration-200',
-              !isOut && 'group-hover:pointer-events-none group-hover:opacity-0',
-            )}
-          >
-            {prod.imageUrls.map((_, idx) => (
-              <span
-                key={idx}
-                className={cn(
-                  'h-1.5 rounded-full transition-all duration-[400ms] ease-[cubic-bezier(0.32,0.72,0,1)]',
-                  idx === currentImageIndex ? 'w-5 bg-zinc-900' : 'w-1.5 bg-zinc-300',
-                )}
-              />
-            ))}
-          </div>
-        )}
-
-        {/* Prev / Next — frosted circles, reveal on hover */}
-        {hasMultipleImages && (
-          <>
-            <button
-              type="button"
-              aria-label="Previous image"
-              onClick={(e) => step(e, -1)}
-              className={cn(
-                GLASS,
-                'absolute left-3 top-1/2 z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full text-zinc-900',
-                'opacity-0 -translate-x-1 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100',
-                'hover:scale-105 active:scale-95',
-              )}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              aria-label="Next image"
-              onClick={(e) => step(e, 1)}
-              className={cn(
-                GLASS,
-                'absolute right-3 top-1/2 z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full text-zinc-900',
-                'opacity-0 translate-x-1 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100',
-                'hover:scale-105 active:scale-95',
-              )}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </button>
-          </>
-        )}
-
-        {/* Quick add — slides up from the bottom edge on hover */}
-        {!isOut && (
-          <button
-            type="button"
-            onClick={quickAdd}
-            aria-label={`Add ${prod.name} to cart`}
-            className={cn(
-              'absolute inset-x-3 bottom-3 z-30 flex h-10 items-center justify-center gap-2 rounded-full',
-              'bg-zinc-900/90 text-[13px] font-medium text-white shadow-lg backdrop-blur-md',
-              'translate-y-2 opacity-0 transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]',
-              'group-hover:translate-y-0 group-hover:opacity-100',
-              'hover:bg-zinc-900 active:scale-[0.98]',
-              'focus-visible:translate-y-0 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900/40 focus-visible:ring-offset-2',
-              cartState === 'added' && 'bg-emerald-600/95 hover:bg-emerald-600',
-            )}
-          >
-            {cartState === 'added' ? (
-              <>
-                <Check className="h-4 w-4" strokeWidth={2.5} /> Added
-              </>
-            ) : cartState === 'adding' ? (
-              'Adding…'
-            ) : (
-              <>
-                <ShoppingCart className="h-4 w-4" /> Add to cart
-              </>
-            )}
-          </button>
-        )}
-      </div>
-
-      {/* ── Meta ───────────────────────────────────────────────────── */}
-      <div className="mt-3.5 flex flex-col gap-1 px-0.5">
-        {prod.category && (
-          <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-zinc-400">
-            {prod.category.name}
           </span>
         )}
 
-        <h3 className="flex items-center gap-1 text-[14.5px] font-medium leading-snug text-zinc-900 transition-colors duration-200 group-hover:text-zinc-600">
-          <span className="line-clamp-1">{prod.name}</span>
-          <ArrowUpRight className="h-3.5 w-3.5 shrink-0 -translate-x-1 text-zinc-400 opacity-0 transition-all duration-200 ease-out group-hover:translate-x-0 group-hover:opacity-100" />
-        </h3>
+        {!quiet && (
+          <>
+            {/* Wishlist */}
+            <div className="absolute right-3 top-3 z-20" onClick={(e) => e.preventDefault()}>
+              <WishlistButton
+                productId={prod.id}
+                className={cn(DISC, 'h-9 w-9')}
+                preventNavigation={true}
+              />
+            </div>
 
-        <div className="mt-0.5 flex items-center justify-between gap-2">
-          {prod.avgRating && prod.avgRating > 0 ? (
-            <span className="flex items-center gap-1">
-              <span className="flex items-center gap-[1px]">
-                {[0, 1, 2, 3, 4].map((i) => (
-                  <Star
-                    key={i}
+            {/* Which angle you're on — copper marks the current one */}
+            {hasMultipleImages && (
+              <div
+                className={cn(
+                  'absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1.5',
+                  'transition-opacity duration-200',
+                  !isOut && 'group-hover:pointer-events-none group-hover:opacity-0',
+                )}
+              >
+                {prod.imageUrls.map((_, idx) => (
+                  <span
+                    key={idx}
                     className={cn(
-                      'h-3 w-3',
-                      i < rating
-                        ? 'fill-amber-400 text-amber-400'
-                        : 'fill-zinc-200 text-zinc-200',
+                      'h-[3px] rounded-full transition-all duration-[400ms] ease-[cubic-bezier(0.32,0.72,0,1)]',
+                      idx === currentImageIndex ? 'w-5 bg-[#d4a373]' : 'w-[3px] bg-[#d0d0d0]',
                     )}
                   />
                 ))}
-              </span>
-              {prod.ratingCount ? (
-                <span className="text-[11px] font-medium text-zinc-400">
-                  ({prod.ratingCount})
-                </span>
-              ) : null}
-            </span>
-          ) : null}
+              </div>
+            )}
 
+            {/* Step between angles */}
+            {hasMultipleImages && (
+              <>
+                <button
+                  type="button"
+                  aria-label="Previous image"
+                  onClick={(e) => step(e, -1)}
+                  className={cn(
+                    DISC,
+                    'absolute left-3 top-1/2 z-20 h-9 w-9 -translate-y-1/2',
+                    '-translate-x-1 opacity-0 group-hover:translate-x-0 group-hover:opacity-100',
+                  )}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+                <button
+                  type="button"
+                  aria-label="Next image"
+                  onClick={(e) => step(e, 1)}
+                  className={cn(
+                    DISC,
+                    'absolute right-3 top-1/2 z-20 h-9 w-9 -translate-y-1/2',
+                    'translate-x-1 opacity-0 group-hover:translate-x-0 group-hover:opacity-100',
+                  )}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </>
+            )}
+
+            {/* Quick add — rises from the bottom edge on approach */}
+            {!isOut && (
+              <button
+                type="button"
+                onClick={quickAdd}
+                aria-label={`Add ${prod.name} to cart`}
+                className={cn(
+                  'absolute inset-x-3 bottom-3 z-30 flex h-10 items-center justify-center gap-2 rounded-full',
+                  'bg-[#1a1a1a] text-[13px] font-medium text-white',
+                  'translate-y-2 opacity-0 transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]',
+                  'group-hover:translate-y-0 group-hover:opacity-100',
+                  'hover:bg-[#000] active:scale-[0.98]',
+                  'focus-visible:translate-y-0 focus-visible:opacity-100 focus-visible:outline-none',
+                  cartState === 'added' && 'bg-[#3f6b4f] hover:bg-[#3f6b4f]',
+                )}
+              >
+                {cartState === 'added' ? (
+                  <>
+                    <Check className="h-4 w-4" strokeWidth={2.5} /> Added
+                  </>
+                ) : cartState === 'adding' ? (
+                  'Adding…'
+                ) : (
+                  <>
+                    <ShoppingCart className="h-4 w-4" /> Add to cart
+                  </>
+                )}
+              </button>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* ── The placard ─────────────────────────────────────────────── */}
+      <div className="mt-4">
+        <h3 className="flex items-start gap-1.5 font-serif text-[19px] font-medium leading-tight text-[#1a1a1a]">
+          <span className="line-clamp-2">{prod.name}</span>
+          <ArrowUpRight className="mt-1 h-3.5 w-3.5 shrink-0 -translate-x-1 text-[#b9b9b9] opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100" />
+        </h3>
+
+        <div className="mt-2 flex items-center justify-between gap-3">
           <span
             className={cn(
-              'ml-auto text-[15px] font-semibold tracking-tight',
-              isOut ? 'text-zinc-400' : 'text-zinc-900',
+              'text-[13.5px] tabular-nums',
+              isOut ? 'text-[#b9b9b9]' : 'text-[#666]',
             )}
           >
             {formatPrice(prod.price, prod.currency)}
           </span>
+
+          {rating > 0 && (
+            <span className="flex items-center gap-1.5">
+              <Stars value={rating} size={11} />
+              {prod.ratingCount ? (
+                <span className="text-[11px] tabular-nums text-[#b9b9b9]">
+                  ({prod.ratingCount})
+                </span>
+              ) : null}
+            </span>
+          )}
         </div>
       </div>
     </Link>

@@ -55,6 +55,111 @@
   border-color: hsl(var(--border));
 }
 
+/* ──────────────────────────────────────────────────────────────────────────
+   Mobile touch targets — scoped to the app shells only.
+
+   The shadcn primitives ship desktop-sized (Button default h-9/36px, sm
+   h-8/32px, Input h-9/36px). That is below the 44px iOS / 48dp Android
+   minimum, and the dashboard uses size="sm" almost everywhere.
+
+   These rules are scoped to .dashboard-shell / .auth-shell rather than baked
+   into components/ui/* on purpose: those primitives are shared with the
+   homepage, PDP and marketing pages, whose layouts are tuned to the current
+   heights. Scoping keeps the blast radius at zero.
+
+   Hooks are the data-slot / data-size attributes the primitives already
+   emit, so this applies to every call site without touching page code.
+   Two attribute selectors (0,2,0) outrank a single utility class (0,1,0),
+   so cva's h-8/h-9 loses — which is what we want below 768px.
+   ────────────────────────────────────────────────────────────────────────── */
+@media (max-width: 767.98px) {
+  .dashboard-shell [data-slot="button"][data-size="default"],
+  .auth-shell [data-slot="button"][data-size="default"] {
+    height: 2.75rem; /* 44px */
+  }
+
+  .dashboard-shell [data-slot="button"][data-size="sm"],
+  .auth-shell [data-slot="button"][data-size="sm"] {
+    height: 2.5rem; /* 40px — secondary actions, still thumb-safe */
+    padding-inline: 0.875rem;
+  }
+
+  .dashboard-shell [data-slot="button"][data-size="lg"],
+  .auth-shell [data-slot="button"][data-size="lg"] {
+    height: 3rem; /* 48px — primary CTAs */
+  }
+
+  .dashboard-shell [data-slot="button"][data-size="icon"],
+  .auth-shell [data-slot="button"][data-size="icon"] {
+    height: 2.75rem;
+    width: 2.75rem;
+  }
+
+  .dashboard-shell [data-slot="button"][data-size="icon-sm"],
+  .auth-shell [data-slot="button"][data-size="icon-sm"] {
+    height: 2.5rem;
+    width: 2.5rem;
+  }
+
+  .dashboard-shell [data-slot="input"],
+  .auth-shell [data-slot="input"] {
+    height: 2.75rem;
+  }
+
+  .dashboard-shell [data-slot="select-trigger"][data-size="default"],
+  .auth-shell [data-slot="select-trigger"][data-size="default"] {
+    height: 2.75rem;
+  }
+
+  .dashboard-shell [data-slot="select-trigger"][data-size="sm"],
+  .auth-shell [data-slot="select-trigger"][data-size="sm"] {
+    height: 2.5rem;
+  }
+
+  /* Radix menu/select items in portals — matched via the portal content,
+     which sits outside .dashboard-shell in the DOM. */
+  [data-slot="select-item"] {
+    padding-block: 0.625rem;
+  }
+
+  /* Text below 12px is unreadable on a phone. Floor the two sizes the
+     dashboard leans on for metadata rather than editing ~200 call sites. */
+  .dashboard-shell .text-\[10px\],
+  .dashboard-shell .text-\[11px\] {
+    font-size: 0.75rem; /* 12px */
+    line-height: 1rem;
+  }
+}
+
+/* Safe-area helpers — app/layout.tsx sets viewport-fit=cover, so without
+   these the dashboard runs under the notch and the home indicator. */
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.h-safe-bottom {
+  height: env(safe-area-inset-bottom, 0px);
+}
+
+/* Bottom tab bar height + safe area, exposed as a token so pages can
+   reserve space for it (e.g. the cart's sticky checkout bar). */
+.dashboard-shell {
+  --mobile-tabbar-h: 3.5rem; /* 56px */
+  --mobile-tabbar-total: calc(var(--mobile-tabbar-h) + env(safe-area-inset-bottom, 0px));
+}
+
+/* Scoped below lg so it simply doesn't exist on desktop — otherwise it would
+   win the cascade over lg:py-10 and flatten the desktop bottom padding. */
+@media (max-width: 1023.98px) {
+  .pb-tabbar {
+    padding-bottom: calc(var(--mobile-tabbar-total, 3.5rem) + 1.25rem);
+  }
+}
+
 html, body {
   scroll-behavior: smooth;
 }
