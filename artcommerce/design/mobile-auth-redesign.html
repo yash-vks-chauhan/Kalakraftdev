@@ -1134,7 +1134,8 @@ footer.foot .wrap {
         pieces, the artisan proof — lives inside <code>lg:flex</code> and never reaches a
         390&nbsp;px screen. This is a redesign of <code>/auth/login</code> and
         <code>/auth/signup</code> at mobile width, built on the shadcn primitives already
-        in the repo. No component API changes. The prototype below is live — type in it.
+        in the repo. The prototype below is live — type in it — and the redesign it
+        specifies is now implemented in the app.
       </p>
     </div>
 
@@ -1144,7 +1145,7 @@ footer.foot .wrap {
       <span class="tag">390 × 844 · iPhone 14</span>
       <span class="tag">44 px touch targets</span>
       <span class="tag">No new dependencies</span>
-      <span class="tag">Proposal — nothing shipped</span>
+      <span class="tag on">Built — on branch claude/design-skill-kkffc6</span>
     </div>
   </div>
 </header>
@@ -1636,7 +1637,7 @@ footer.foot .wrap {
         </div>
         <div class="fix">
           <h3>A sticky action bar</h3>
-          <p>The primary button is pinned above <code>safe-area-inset-bottom</code>. Tap <em>Keyboard open</em> on the prototype: the crown collapses, the form scrolls, the button stays.</p>
+          <p>The primary button is pinned above <code>safe-area-inset-bottom</code>. iOS never shrinks the layout for the keyboard, so the shipped version measures the overlap with <code>visualViewport</code> and shortens the sheet by exactly that much. Tap <em>Keyboard open</em> to see it.</p>
         </div>
       </div>
 
@@ -1698,9 +1699,10 @@ footer.foot .wrap {
       <p class="kicker">03 — Component map</p>
       <h2>What each piece is made of</h2>
       <p class="note">
-        Every element maps to a primitive already in <code>components/ui</code> or to a
-        composition of them. Two of them are not yet installed — those are the only
-        <code>npx shadcn add</code> calls this redesign needs.
+        Every element is a primitive already in <code>components/ui</code> or a composition
+        of them. As built, the redesign needed no <code>npx shadcn add</code> at all — the
+        segmented switch, requirement chips and trust row are small compositions living in
+        <code>AuthBits.tsx</code> next to the parts that were already there.
       </p>
     </div>
 
@@ -1712,9 +1714,9 @@ footer.foot .wrap {
         <tbody>
           <tr>
             <td>Segmented switch</td>
-            <td><span class="m">tabs</span></td>
-            <td>needs <span class="m">add tabs</span></td>
-            <td>38 px triggers in a 46 px rail; thumb on transform, not width</td>
+            <td><span class="m">SegmentedTabs</span></td>
+            <td>new, no dependency</td>
+            <td>role="tablist", arrow-key navigable; thumb on transform, not width</td>
           </tr>
           <tr>
             <td>Email / name fields</td>
@@ -1732,37 +1734,37 @@ footer.foot .wrap {
             <td>Primary CTA</td>
             <td><span class="m">button size="lg"</span></td>
             <td>installed</td>
-            <td>48 px in a sticky bar with <span class="m">safe-area-inset-bottom</span></td>
+            <td>48 px in a sticky bar; <span class="m">form=</span> links it to the form it submits</td>
           </tr>
           <tr>
             <td>Error banner</td>
-            <td><span class="m">alert variant="destructive"</span></td>
-            <td>needs <span class="m">add alert</span></td>
-            <td>Replaces the local <span class="m">Banner</span> in AuthBits; role="alert"</td>
+            <td><span class="m">Banner</span></td>
+            <td>unchanged</td>
+            <td>The existing AuthBits banner, moved above the providers; role="alert"</td>
           </tr>
           <tr>
             <td>Requirement chips</td>
-            <td><span class="m">badge</span></td>
-            <td>installed</td>
+            <td><span class="m">PasswordRequirements</span></td>
+            <td>new</td>
             <td>11 px, wraps to two rows at 320 px</td>
           </tr>
           <tr>
             <td>Strength meter</td>
-            <td>4 × <span class="m">div</span>, existing scorer</td>
-            <td>as built</td>
-            <td>Unchanged logic, moved above the requirement chips</td>
+            <td><span class="m">PasswordStrength</span></td>
+            <td>moved to AuthBits</td>
+            <td>Same scorer, byte for byte; now shared with the reset flow</td>
           </tr>
           <tr>
             <td>OAuth splash</td>
-            <td><span class="m">card + progress</span></td>
-            <td>needs <span class="m">add progress</span></td>
-            <td>Existing <span class="m">OAuthSplash</span> keeps its copy and cancel path</td>
+            <td><span class="m">OAuthSplash</span></td>
+            <td>unchanged</td>
+            <td>Keeps its copy, progress and cancel path exactly as they were</td>
           </tr>
           <tr>
             <td>Sheet + grabber</td>
             <td>plain div, <span class="m">rounded-t-3xl</span></td>
-            <td>as built</td>
-            <td>−22 px lift over the crown; shadow only, no border</td>
+            <td>new</td>
+            <td>−24 px lift over the crown; every class resets at <span class="m">lg</span></td>
           </tr>
         </tbody>
       </table>
@@ -1802,22 +1804,24 @@ footer.foot .wrap {
       </div>
 
       <div class="card">
-        <h3><span class="bullet"></span>Files this touches</h3>
+        <h3><span class="bullet"></span>Files this touched</h3>
         <ul>
-          <li><code>app/auth/AuthShell.tsx</code> — add the mobile crown and the sticky slot</li>
-          <li><code>app/auth/_components/AuthBits.tsx</code> — add the meter, chips, tick</li>
-          <li><code>app/auth/login/page.tsx</code>, <code>signup/page.tsx</code> — feed one shared pane</li>
+          <li><code>app/auth/AuthShell.tsx</code> — mobile crown, lifted sheet, sticky slot, keyboard inset</li>
+          <li><code>app/auth/_components/AuthFlow.tsx</code> — new; both flows in one mounted component</li>
+          <li><code>app/auth/_components/AuthBits.tsx</code> — segmented switch, email tick, chips, trust row</li>
+          <li><code>app/auth/login/page.tsx</code>, <code>signup/page.tsx</code> — now thin wrappers over the shared flow</li>
           <li>Desktop <code>lg:</code> layout is untouched — every change is behind a mobile query</li>
         </ul>
       </div>
 
       <div class="card">
-        <h3><span class="bullet"></span>Deliberately not doing</h3>
+        <h3><span class="bullet"></span>Deliberately not done</h3>
         <ul>
           <li>No new colour tokens — the shadcn neutrals in <code>globals.css</code> stay as they are</li>
-          <li>No animation library; the existing framer-motion bundle isn't loaded on this route</li>
+          <li>No new dependency, and no animation library — CSS transitions only</li>
           <li>No change to auth logic, Firebase calls, or the OAuth redirect handling</li>
           <li>No merge of the two routes — both URLs keep working, they just share a pane</li>
+          <li>The reset flow keeps the old shell: the crown is opt-in per screen</li>
         </ul>
       </div>
     </div>
@@ -1826,7 +1830,7 @@ footer.foot .wrap {
 
 <footer class="foot">
   <div class="wrap">
-    <span>Kalakraft · mobile auth redesign · proposal, not shipped</span>
+    <span>Kalakraft · mobile auth redesign · specified here, implemented in app/auth</span>
     <span>artcommerce/design/mobile-auth-redesign.html</span>
   </div>
 </footer>

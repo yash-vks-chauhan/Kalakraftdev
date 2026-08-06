@@ -1,6 +1,6 @@
 "use client"
 
-import { ReactNode, useEffect, useState } from "react"
+import { ReactNode, useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import {
   ArrowLeft,
@@ -13,6 +13,7 @@ import {
 
 import { cn } from "@/lib/utils"
 import { getImageUrl } from "../../lib/cloudinaryImages"
+import { TRUST_STATS } from "./_components/AuthBits"
 
 interface HeroSlide {
   src: string
@@ -41,11 +42,25 @@ const HERO_SLIDES: HeroSlide[] = [
   },
 ]
 
-const TRUST_BADGES = [
-  { icon: Palette, value: "200+", label: "Curated artisans" },
-  { icon: Globe2, value: "20+", label: "Countries served" },
-  { icon: Heart, value: "5,000+", label: "Happy collectors" },
-]
+// Narrower crops for the mobile crown — a 390px-wide band never needs the
+// 1600px desktop asset.
+const MOBILE_SLIDE_SRC = HERO_SLIDES.map((s) =>
+  s.src.replace("c_fill,w_1600,h_1200", "c_fill,w_780,h_520")
+)
+
+// Numbers live in AuthBits so the desktop panel and the mobile TrustRow can
+// never drift apart; the icons are a desktop-only flourish.
+const TRUST_BADGES = [Palette, Globe2, Heart].map((icon, i) => ({
+  icon,
+  ...TRUST_STATS[i],
+}))
+
+const WARM_BACKDROP = `
+  radial-gradient(ellipse 55% 50% at 18% 25%, hsl(28 90% 35% / 0.55), transparent 65%),
+  radial-gradient(ellipse 50% 55% at 85% 75%, hsl(340 65% 30% / 0.45), transparent 65%),
+  radial-gradient(circle at 50% 100%, hsl(262 50% 25% / 0.5), transparent 70%),
+  radial-gradient(circle at 50% 0%, hsl(45 60% 30% / 0.25), transparent 50%)
+`
 
 interface AuthShellProps {
   eyebrow?: string
@@ -57,6 +72,21 @@ interface AuthShellProps {
     current: number
     items: { label: string; description: string }[]
   }
+  /**
+   * Mobile only. Swaps the compact brand strip for the full brand crown —
+   * the same gradients, mandala and rotating pieces the desktop panel gets,
+   * at mobile scale — and lifts the form onto a rounded sheet. The desktop
+   * (lg and up) layout is identical either way.
+   */
+  mobileCrown?: boolean
+  /** Mobile only. Sits above the form; hidden from lg up (desktop uses `footer`). */
+  tabs?: ReactNode
+  /**
+   * Mobile only. Pinned above the home indicator so the primary action
+   * survives the on-screen keyboard. Pages render their own inline copy of
+   * the button from lg up.
+   */
+  actionBar?: ReactNode
 }
 
 export default function AuthShell({
@@ -66,8 +96,20 @@ export default function AuthShell({
   children,
   footer,
   steps,
+  mobileCrown = false,
+  tabs,
+  actionBar,
 }: AuthShellProps) {
   const [slideIdx, setSlideIdx] = useState(0)
+  // Mobile: the crown gives its height back to the form while a field is
+  // focused, so an open keyboard never squeezes the inputs.
+  const [compact, setCompact] = useState(false)
+  // How much of the layout the on-screen keyboard is covering. iOS Safari
+  // never shrinks the layout viewport for the keyboard, and Chrome defaults to
+  // resizing only the visual one, so a bottom bar in normal flow would sit
+  // underneath the keys. Shrinking the sheet by the overlap keeps it above.
+  const [keyboardInset, setKeyboardInset] = useState(0)
+  const sheetRef = useRef<HTMLDivElement>(null)
   const logoSrc = getImageUrl("logo.png")
 
   useEffect(() => {
@@ -77,7 +119,52 @@ export default function AuthShell({
     return () => window.clearInterval(id)
   }, [])
 
+  useEffect(() => {
+    if (!mobileCrown) return
+    const vv = window.visualViewport
+    if (!vv) return
+
+    const desktop = window.matchMedia("(min-width: 1024px)")
+    const update = () => {
+      if (desktop.matches) {
+        setKeyboardInset(0)
+        return
+      }
+      const overlap = window.innerHeight - vv.height - vv.offsetTop
+      // 80px of slack so a collapsing URL bar doesn't read as a keyboard.
+      setKeyboardInset(overlap > 80 ? Math.round(overlap) : 0)
+    }
+
+    update()
+    vv.addEventListener("resize", update)
+    vv.addEventListener("scroll", update)
+    desktop.addEventListener("change", update)
+    return () => {
+      vv.removeEventListener("resize", update)
+      vv.removeEventListener("scroll", update)
+      desktop.removeEventListener("change", update)
+    }
+  }, [mobileCrown])
+
   const current = HERO_SLIDES[slideIdx]
+
+  function handleFocusCapture(e: React.FocusEvent<HTMLDivElement>) {
+    const el = e.target as HTMLElement
+    if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) {
+      setCompact(true)
+    }
+  }
+
+  // Stay collapsed while focus moves between fields (and to the show/hide
+  // password buttons); only expand once focus leaves the sheet entirely.
+  function handleBlurCapture() {
+    window.setTimeout(() => {
+      const active = document.activeElement
+      if (!sheetRef.current || !active || !sheetRef.current.contains(active)) {
+        setCompact(false)
+      }
+    }, 0)
+  }
 
   return (
     // `auth-shell` opts these screens into the mobile touch-target sizing in
@@ -94,51 +181,10 @@ export default function AuthShell({
         <div
           aria-hidden
           className="absolute inset-0"
-          style={{
-            backgroundImage: `
-              radial-gradient(ellipse 55% 50% at 18% 25%, hsl(28 90% 35% / 0.55), transparent 65%),
-              radial-gradient(ellipse 50% 55% at 85% 75%, hsl(340 65% 30% / 0.45), transparent 65%),
-              radial-gradient(circle at 50% 100%, hsl(262 50% 25% / 0.5), transparent 70%),
-              radial-gradient(circle at 50% 0%, hsl(45 60% 30% / 0.25), transparent 50%)
-            `,
-          }}
+          style={{ backgroundImage: WARM_BACKDROP }}
         />
         {/* Delicate mandala-inspired pattern */}
-        <svg
-          aria-hidden
-          className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.07]"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <defs>
-            <pattern
-              id="kk-mandala"
-              x="0"
-              y="0"
-              width="120"
-              height="120"
-              patternUnits="userSpaceOnUse"
-            >
-              <circle cx="60" cy="60" r="1.5" fill="#fff" />
-              <circle
-                cx="60"
-                cy="60"
-                r="22"
-                stroke="#fff"
-                strokeWidth="0.4"
-                fill="none"
-              />
-              <circle
-                cx="60"
-                cy="60"
-                r="44"
-                stroke="#fff"
-                strokeWidth="0.25"
-                fill="none"
-              />
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#kk-mandala)" />
-        </svg>
+        <MandalaPattern id="kk-mandala" className="opacity-[0.07]" />
 
         {/* Optional hero slides via CSS background-image (CDN, small + fast) */}
         {HERO_SLIDES.map((s, i) => (
@@ -256,21 +302,39 @@ export default function AuthShell({
       </aside>
 
       {/* ─────────────────────────── Form panel ─────────────────────────── */}
-      <section className="relative flex h-svh flex-col overflow-y-auto overscroll-contain lg:col-span-2">
-        {/* Mobile-only brand strip */}
-        <div className="pt-safe lg:hidden" />
-        <div className="flex items-center justify-between border-b bg-card px-4 py-3 lg:hidden">
-          <Link href="/" className="flex items-center gap-2">
-            <BrandMark logoSrc={logoSrc} compact />
-            <span className="text-sm font-semibold">Kalakraft</span>
-          </Link>
-          <Link
-            href="/products"
-            className="text-xs text-muted-foreground hover:text-foreground"
-          >
-            Browse shop →
-          </Link>
-        </div>
+      <section
+        className={cn(
+          "relative flex h-svh flex-col lg:col-span-2 lg:overflow-y-auto lg:overscroll-contain",
+          // With the crown, the sheet owns the scrolling on mobile so the
+          // action bar can stay pinned. Without it, the panel scrolls itself.
+          mobileCrown ? "overflow-hidden" : "overflow-y-auto overscroll-contain"
+        )}
+      >
+        {mobileCrown ? (
+          <MobileCrown
+            compact={compact}
+            slideIdx={slideIdx}
+            onSelectSlide={setSlideIdx}
+            logoSrc={logoSrc}
+          />
+        ) : (
+          <>
+            {/* Mobile-only brand strip */}
+            <div className="pt-safe lg:hidden" />
+            <div className="flex items-center justify-between border-b bg-card px-4 py-3 lg:hidden">
+              <Link href="/" className="flex items-center gap-2">
+                <BrandMark logoSrc={logoSrc} compact />
+                <span className="text-sm font-semibold">Kalakraft</span>
+              </Link>
+              <Link
+                href="/products"
+                className="text-xs text-muted-foreground hover:text-foreground"
+              >
+                Browse shop →
+              </Link>
+            </div>
+          </>
+        )}
 
         {/* Desktop back-to-shop link */}
         <div className="hidden items-center justify-end px-10 pt-5 lg:flex">
@@ -284,41 +348,94 @@ export default function AuthShell({
         </div>
 
         {/*
-          Top-aligned on mobile: centring inside h-svh meant the whole form
-          jumped and compressed the moment the iOS keyboard opened. From lg up
-          there is room to spare, so it centres as before.
+          Mobile: a rounded sheet lifted over the crown, scrolling internally so
+          the action bar below it stays put. From lg up every one of these
+          classes resets and the panel lays out exactly as it did before.
         */}
-        <div className="flex flex-1 items-start justify-center px-5 py-6 sm:px-10 lg:items-center">
-          <div className="flex w-full max-w-md flex-col gap-5">
-            <div className="flex flex-col gap-1.5">
-              {eyebrow && (
-                <span className="text-[11px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
-                  {eyebrow}
-                </span>
-              )}
-              <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-                {title}
-              </h1>
-              {subtitle && (
-                <p className="text-sm leading-relaxed text-muted-foreground">
-                  {subtitle}
-                </p>
-              )}
-            </div>
+        <div
+          ref={sheetRef}
+          onFocusCapture={mobileCrown ? handleFocusCapture : undefined}
+          onBlurCapture={mobileCrown ? handleBlurCapture : undefined}
+          style={keyboardInset ? { marginBottom: keyboardInset } : undefined}
+          className={cn(
+            "flex min-h-0 flex-1 flex-col",
+            mobileCrown &&
+              "relative z-10 -mt-6 rounded-t-3xl bg-background shadow-[0_-14px_34px_-18px_rgba(0,0,0,0.35)] lg:mt-0 lg:rounded-none lg:shadow-none"
+          )}
+        >
+          {mobileCrown && (
+            <span
+              aria-hidden
+              className="mx-auto mt-2.5 h-1 w-9 shrink-0 rounded-full bg-border lg:hidden"
+            />
+          )}
 
-            {steps && <StepIndicator current={steps.current} items={steps.items} />}
-
-            {children}
-
-            {footer && (
-              <div className="border-t pt-4 text-center text-sm text-muted-foreground">
-                {footer}
-              </div>
+          {/*
+            Top-aligned on mobile: centring inside h-svh meant the whole form
+            jumped and compressed the moment the iOS keyboard opened. From lg up
+            there is room to spare, so it centres as before.
+          */}
+          <div
+            className={cn(
+              "flex min-h-0 flex-1 items-start justify-center px-5 py-6 sm:px-10 lg:items-center lg:overflow-visible",
+              mobileCrown &&
+                "overflow-y-auto overscroll-contain pt-4 lg:py-6"
             )}
+          >
+            <div className="flex w-full max-w-md flex-col gap-5">
+              {tabs && <div className="lg:hidden">{tabs}</div>}
 
-            {/* Home-indicator clearance — the desktop mini footer is lg-only */}
-            <div className="pb-safe lg:hidden" />
+              <div
+                className={cn(
+                  "flex-col gap-1.5",
+                  // With the crown carrying the brand on mobile, the pages
+                  // render their own compact heading inside the sheet.
+                  mobileCrown ? "hidden lg:flex" : "flex"
+                )}
+              >
+                {eyebrow && (
+                  <span className="text-[11px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
+                    {eyebrow}
+                  </span>
+                )}
+                <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+                  {title}
+                </h1>
+                {subtitle && (
+                  <p className="text-sm leading-relaxed text-muted-foreground">
+                    {subtitle}
+                  </p>
+                )}
+              </div>
+
+              {steps && <StepIndicator current={steps.current} items={steps.items} />}
+
+              {children}
+
+              {footer && (
+                <div
+                  className={cn(
+                    "border-t pt-4 text-center text-sm text-muted-foreground",
+                    // On mobile the swap line lives in the action bar instead.
+                    actionBar ? "hidden lg:block" : "block"
+                  )}
+                >
+                  {footer}
+                </div>
+              )}
+
+              {/* Home-indicator clearance — the desktop mini footer is lg-only */}
+              {!actionBar && <div className="pb-safe lg:hidden" />}
+            </div>
           </div>
+
+          {actionBar && (
+            <div className="shrink-0 border-t bg-background px-5 pb-safe pt-3 shadow-[0_-8px_20px_-14px_rgba(0,0,0,0.25)] lg:hidden">
+              <div className="mx-auto flex w-full max-w-md flex-col gap-2 pb-3">
+                {actionBar}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Mini footer */}
@@ -338,6 +455,186 @@ export default function AuthShell({
         </div>
       </section>
     </div>
+  )
+}
+
+/* -------------------------------------------------------------- */
+/* MobileCrown — the desktop brand panel, at mobile scale          */
+/* -------------------------------------------------------------- */
+
+function MobileCrown({
+  compact,
+  slideIdx,
+  onSelectSlide,
+  logoSrc,
+}: {
+  compact: boolean
+  slideIdx: number
+  onSelectSlide: (i: number) => void
+  logoSrc: string
+}) {
+  const current = HERO_SLIDES[slideIdx]
+
+  return (
+    <div
+      // The notch inset is added to the height rather than eaten out of it,
+      // so the brand row keeps its full size on a notched phone instead of
+      // being pushed under the sheet that lifts over the crown.
+      style={{
+        height: compact
+          ? "calc(104px + env(safe-area-inset-top, 0px))"
+          : "calc(230px + env(safe-area-inset-top, 0px))",
+      }}
+      className="relative shrink-0 overflow-hidden bg-stone-950 transition-[height] duration-500 ease-out motion-reduce:transition-none lg:hidden"
+    >
+      <div
+        aria-hidden
+        className="absolute inset-0 bg-gradient-to-br from-stone-950 via-zinc-950 to-stone-900"
+      />
+      <div
+        aria-hidden
+        className="absolute inset-0"
+        style={{ backgroundImage: WARM_BACKDROP }}
+      />
+      <MandalaPattern id="kk-mandala-mobile" className="opacity-[0.07]" />
+
+      {MOBILE_SLIDE_SRC.map((src, i) => (
+        <div
+          key={src}
+          aria-hidden
+          className={cn(
+            "absolute inset-0 bg-cover bg-center transition-opacity duration-[1500ms] ease-out",
+            i === slideIdx ? "opacity-40" : "opacity-0"
+          )}
+          style={{ backgroundImage: `url('${src}')` }}
+        />
+      ))}
+
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-black/40"
+      />
+
+      <div className="pt-safe relative z-10 flex h-full flex-col px-5 pb-5">
+        <div className="flex items-center justify-between pt-3">
+          <Link
+            href="/"
+            className="flex items-center gap-2.5 text-white"
+            aria-label="Kalakraft home"
+          >
+            <BrandMark logoSrc={logoSrc} />
+            <span className="text-[15px] font-semibold tracking-wide">
+              Kalakraft
+            </span>
+          </Link>
+          <Link
+            href="/products"
+            className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3.5 py-2 text-xs font-medium text-white/90 backdrop-blur transition-colors hover:bg-white/20"
+          >
+            Browse shop
+            <Sparkles className="h-3 w-3" />
+          </Link>
+        </div>
+
+        <div
+          aria-hidden={compact}
+          className={cn(
+            "mt-auto flex flex-col gap-2.5 transition-all duration-300 motion-reduce:transition-none",
+            compact && "pointer-events-none translate-y-2 opacity-0"
+          )}
+        >
+          <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-[9.5px] font-medium uppercase tracking-[0.2em] text-white/85 ring-1 ring-white/15 backdrop-blur">
+            <Sparkles className="h-2.5 w-2.5" />
+            Handcrafted in India
+          </span>
+          <h2 className="text-[26px] font-light leading-[1.14] tracking-tight text-white">
+            Where every piece tells a
+            <span className="ml-1.5 font-serif italic">story.</span>
+          </h2>
+
+          <div className="flex items-center justify-between gap-4 border-t border-white/15 pt-2.5">
+            <div className="flex min-w-0 flex-col leading-tight">
+              <span className="truncate text-[12.5px] font-medium text-white">
+                {current.caption}
+              </span>
+              <span className="truncate text-[10.5px] text-white/60">
+                {current.category}
+              </span>
+            </div>
+            {/* The dot is 6px, but the button around it is 24px tall and
+                spaced so neighbouring targets never overlap (WCAG 2.5.8). */}
+            <div
+              className="-mr-2 flex items-center gap-0.5"
+              role="tablist"
+              aria-label="Featured pieces"
+            >
+              {HERO_SLIDES.map((_, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  role="tab"
+                  aria-selected={i === slideIdx}
+                  aria-label={`Show piece ${i + 1}`}
+                  tabIndex={compact ? -1 : 0}
+                  onClick={() => onSelectSlide(i)}
+                  className="flex h-6 items-center px-2"
+                >
+                  <span
+                    className={cn(
+                      "block h-1.5 rounded-full transition-all duration-300",
+                      i === slideIdx ? "w-6 bg-white" : "w-1.5 bg-white/35"
+                    )}
+                  />
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function MandalaPattern({ id, className }: { id: string; className?: string }) {
+  return (
+    <svg
+      aria-hidden
+      className={cn(
+        "pointer-events-none absolute inset-0 h-full w-full",
+        className
+      )}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <defs>
+        <pattern
+          id={id}
+          x="0"
+          y="0"
+          width="120"
+          height="120"
+          patternUnits="userSpaceOnUse"
+        >
+          <circle cx="60" cy="60" r="1.5" fill="#fff" />
+          <circle
+            cx="60"
+            cy="60"
+            r="22"
+            stroke="#fff"
+            strokeWidth="0.4"
+            fill="none"
+          />
+          <circle
+            cx="60"
+            cy="60"
+            r="44"
+            stroke="#fff"
+            strokeWidth="0.25"
+            fill="none"
+          />
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill={`url(#${id})`} />
+    </svg>
   )
 }
 

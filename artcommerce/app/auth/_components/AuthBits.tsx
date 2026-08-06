@@ -3,6 +3,7 @@
 import { ReactNode, useEffect, useState } from "react"
 import {
   AlertCircle,
+  Check,
   CheckCircle2,
   Eye,
   EyeOff,
@@ -15,6 +16,18 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
+
+/* -------------------------------------------------------------- */
+/* Shared copy                                                     */
+/* -------------------------------------------------------------- */
+
+/** Single source for the proof numbers — the desktop brand panel in
+ *  AuthShell adds icons to these, the mobile TrustRow uses `short`. */
+export const TRUST_STATS = [
+  { value: "200+", label: "Curated artisans", short: "Artisans" },
+  { value: "20+", label: "Countries served", short: "Countries" },
+  { value: "5,000+", label: "Happy collectors", short: "Collectors" },
+] as const
 
 /* -------------------------------------------------------------- */
 /* Banner — inline error/success/info notice                       */
@@ -86,14 +99,16 @@ export function PasswordInput({
         autoComplete={autoComplete}
         disabled={disabled}
         required
-        className="pr-10"
+        className="pr-11 lg:pr-10"
       />
       <button
         type="button"
         onClick={onToggle}
         disabled={disabled}
         aria-label={visible ? "Hide password" : "Show password"}
-        className="absolute right-2 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-50"
+        // 40px on mobile (inside a 44px input) so the toggle is thumb-safe;
+        // back to the compact 28px square from lg up.
+        className="absolute right-1 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-50 lg:right-2 lg:h-7 lg:w-7"
       >
         {visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
       </button>
@@ -136,9 +151,12 @@ export function SocialButton({
     <Button
       type="button"
       variant="outline"
+      size="lg"
       onClick={onClick}
       disabled={disabled}
-      className="h-10 gap-2"
+      // size="lg" is h-10 from lg up (unchanged) and 48px on mobile via the
+      // .auth-shell touch-target rules in globals.css.
+      className="w-full gap-2.5"
     >
       {loading ? (
         <Loader2 className="h-4 w-4 animate-spin" />
@@ -148,7 +166,15 @@ export function SocialButton({
         <FacebookIcon />
       )}
       <span className="text-sm">
-        {loading ? "Connecting…" : provider === "google" ? "Google" : "Facebook"}
+        {loading ? (
+          "Connecting…"
+        ) : (
+          <>
+            {/* Mobile leads with the providers, so they get the full label. */}
+            <span className="lg:hidden">Continue with </span>
+            {provider === "google" ? "Google" : "Facebook"}
+          </>
+        )}
       </span>
     </Button>
   )
@@ -364,5 +390,302 @@ function FacebookIcon() {
     <svg width="16" height="16" viewBox="0 0 24 24" fill="#1877F2" aria-hidden>
       <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
     </svg>
+  )
+}
+
+/* -------------------------------------------------------------- */
+/* SegmentedTabs — sign in ↔ create account without a navigation   */
+/* -------------------------------------------------------------- */
+
+export interface SegmentedOption {
+  value: string
+  label: string
+  /** id of the panel this tab controls */
+  controls: string
+}
+
+export function SegmentedTabs({
+  value,
+  onChange,
+  options,
+  disabled,
+  label = "Account",
+}: {
+  value: string
+  onChange: (value: string) => void
+  /** Exactly two options — the thumb geometry assumes a 50/50 split. */
+  options: [SegmentedOption, SegmentedOption]
+  disabled?: boolean
+  label?: string
+}) {
+  const activeIdx = Math.max(
+    0,
+    options.findIndex((o) => o.value === value)
+  )
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
+    if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return
+    e.preventDefault()
+    const next = options[activeIdx === 0 ? 1 : 0]
+    onChange(next.value)
+    // Move focus with the selection, per the tabs pattern.
+    const el = e.currentTarget.querySelector<HTMLButtonElement>(
+      `[data-tab="${next.value}"]`
+    )
+    el?.focus()
+  }
+
+  return (
+    <div
+      role="tablist"
+      aria-label={label}
+      onKeyDown={handleKeyDown}
+      className="relative grid grid-cols-2 gap-1 rounded-xl bg-muted p-1"
+    >
+      <span
+        aria-hidden
+        className="absolute bottom-1 left-1 top-1 w-[calc(50%-6px)] rounded-lg bg-background shadow-sm ring-1 ring-border transition-transform duration-300 ease-out motion-reduce:transition-none"
+        style={{
+          transform: activeIdx === 1 ? "translateX(calc(100% + 4px))" : "none",
+        }}
+      />
+      {options.map((option) => {
+        const selected = option.value === value
+        return (
+          <button
+            key={option.value}
+            type="button"
+            role="tab"
+            data-tab={option.value}
+            aria-selected={selected}
+            aria-controls={option.controls}
+            tabIndex={selected ? 0 : -1}
+            disabled={disabled}
+            onClick={() => onChange(option.value)}
+            className={cn(
+              "relative z-10 flex h-10 items-center justify-center rounded-lg text-sm font-medium transition-colors",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
+              "disabled:pointer-events-none disabled:opacity-50",
+              selected ? "text-foreground" : "text-muted-foreground"
+            )}
+          >
+            {option.label}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+/* -------------------------------------------------------------- */
+/* Password strength — scoring shared by signup and reset          */
+/* -------------------------------------------------------------- */
+
+export interface PasswordScore {
+  score: 0 | 1 | 2 | 3 | 4
+  label: "Too short" | "Weak" | "Fair" | "Good" | "Strong"
+}
+
+export function scorePassword(pw: string): PasswordScore {
+  if (pw.length < 8) return { score: 0, label: "Too short" }
+  let s = 1
+  if (/[a-z]/.test(pw) && /[A-Z]/.test(pw)) s++
+  if (/\d/.test(pw)) s++
+  if (/[^A-Za-z0-9]/.test(pw)) s++
+  const labels: PasswordScore["label"][] = [
+    "Too short",
+    "Weak",
+    "Fair",
+    "Good",
+    "Strong",
+  ]
+  return { score: s as PasswordScore["score"], label: labels[s] }
+}
+
+export function PasswordStrength({ password }: { password: string }) {
+  const strength = scorePassword(password)
+
+  if (!password) {
+    return (
+      <p className="text-[11px] text-muted-foreground">
+        Use at least 8 characters with a mix of letters, numbers and symbols.
+      </p>
+    )
+  }
+
+  const segments = [0, 1, 2, 3]
+  const toneClass =
+    strength.score <= 1
+      ? "bg-destructive"
+      : strength.score === 2
+      ? "bg-amber-500"
+      : strength.score === 3
+      ? "bg-sky-500"
+      : "bg-emerald-500"
+  const toneText =
+    strength.score <= 1
+      ? "text-destructive"
+      : strength.score === 2
+      ? "text-amber-600 dark:text-amber-400"
+      : strength.score === 3
+      ? "text-sky-600 dark:text-sky-400"
+      : "text-emerald-600 dark:text-emerald-400"
+
+  return (
+    <div className="flex items-center gap-2">
+      <div className="flex flex-1 gap-1">
+        {segments.map((i) => (
+          <span
+            key={i}
+            className={cn(
+              "h-1 flex-1 rounded-full transition-colors",
+              i < strength.score ? toneClass : "bg-muted"
+            )}
+          />
+        ))}
+      </div>
+      <span className={cn("text-[11px] font-medium tabular-nums", toneText)}>
+        {strength.label}
+      </span>
+    </div>
+  )
+}
+
+/* -------------------------------------------------------------- */
+/* PasswordRequirements — chips that tick off while typing         */
+/* -------------------------------------------------------------- */
+
+const REQUIREMENTS: { key: string; label: string; test: (pw: string) => boolean }[] = [
+  { key: "len", label: "8+ characters", test: (pw) => pw.length >= 8 },
+  {
+    key: "case",
+    label: "Upper & lower",
+    test: (pw) => /[a-z]/.test(pw) && /[A-Z]/.test(pw),
+  },
+  { key: "num", label: "Number", test: (pw) => /\d/.test(pw) },
+  { key: "sym", label: "Symbol", test: (pw) => /[^A-Za-z0-9]/.test(pw) },
+]
+
+export function PasswordRequirements({ password }: { password: string }) {
+  return (
+    <ul className="flex flex-wrap gap-1.5" aria-label="Password requirements">
+      {REQUIREMENTS.map((req) => {
+        const met = req.test(password)
+        return (
+          <li
+            key={req.key}
+            className={cn(
+              "inline-flex items-center gap-1.5 rounded-full border py-1 pl-1.5 pr-2.5 text-[11px] transition-colors",
+              met
+                ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+                : "border-border text-muted-foreground"
+            )}
+          >
+            <span
+              aria-hidden
+              className={cn(
+                "flex h-3.5 w-3.5 items-center justify-center rounded-full border",
+                met
+                  ? "border-emerald-500 bg-emerald-500 text-white"
+                  : "border-current"
+              )}
+            >
+              {met && <Check className="h-2.5 w-2.5" strokeWidth={3.5} />}
+            </span>
+            <span className="sr-only">{met ? "Met: " : "Not met: "}</span>
+            {req.label}
+          </li>
+        )
+      })}
+    </ul>
+  )
+}
+
+/* -------------------------------------------------------------- */
+/* EmailInput — confirms a parseable address while typing          */
+/* -------------------------------------------------------------- */
+
+export const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
+
+export function EmailInput({
+  id,
+  value,
+  onChange,
+  disabled,
+  autoComplete = "email",
+  placeholder = "you@example.com",
+  leadingIcon,
+}: {
+  id: string
+  value: string
+  onChange: (value: string) => void
+  disabled?: boolean
+  autoComplete?: string
+  placeholder?: string
+  leadingIcon?: ReactNode
+}) {
+  const valid = EMAIL_PATTERN.test(value.trim())
+
+  return (
+    <div className="relative">
+      {leadingIcon && (
+        <span className="pointer-events-none absolute left-3 top-1/2 flex -translate-y-1/2 text-muted-foreground">
+          {leadingIcon}
+        </span>
+      )}
+      <Input
+        id={id}
+        type="email"
+        inputMode="email"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        autoComplete={autoComplete}
+        autoCapitalize="none"
+        spellCheck={false}
+        disabled={disabled}
+        required
+        className={cn(
+          leadingIcon && "pl-9",
+          "pr-9",
+          valid && "border-emerald-500/60"
+        )}
+      />
+      <span
+        aria-hidden
+        className={cn(
+          "pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-emerald-600 transition-all duration-200 dark:text-emerald-400 motion-reduce:transition-none",
+          valid ? "scale-100 opacity-100" : "scale-75 opacity-0"
+        )}
+      >
+        <Check className="h-4 w-4" strokeWidth={3} />
+      </span>
+    </div>
+  )
+}
+
+/* -------------------------------------------------------------- */
+/* TrustRow — the desktop panel's proof, condensed for mobile      */
+/* -------------------------------------------------------------- */
+
+export function TrustRow({ className }: { className?: string }) {
+  return (
+    <div
+      className={cn(
+        "flex items-center justify-between gap-2 border-t pt-3",
+        className
+      )}
+    >
+      {TRUST_STATS.map((stat) => (
+        <div key={stat.short} className="flex flex-1 flex-col items-center gap-0.5">
+          <span className="text-[13px] font-semibold tabular-nums">
+            {stat.value}
+          </span>
+          <span className="text-[10px] uppercase tracking-wide text-muted-foreground">
+            {stat.short}
+          </span>
+        </div>
+      ))}
+    </div>
   )
 }
