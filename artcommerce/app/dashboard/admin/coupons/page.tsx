@@ -15,10 +15,19 @@ import {
   TicketX,
   Trash2,
   Wallet,
+  Copy,
 } from 'lucide-react'
 
 import { useAuth } from '../../../contexts/AuthContext'
 import ConfirmDialog from '../../../components/ConfirmDialog'
+import { ActionSheet } from '../../_components/ActionSheet'
+import {
+  DataCard,
+  DataCardEmpty,
+  DataCardList,
+  DataCardSkeleton,
+  DesktopTableFrame,
+} from '../../_components/DataCardList'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -364,7 +373,8 @@ export default function CouponManager() {
           </div>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="border-t">
+          {/* Desktop: full table. Mobile: stacked cards below. */}
+          <DesktopTableFrame>
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/30 hover:bg-muted/30">
@@ -460,7 +470,30 @@ export default function CouponManager() {
                 )}
               </TableBody>
             </Table>
-          </div>
+          </DesktopTableFrame>
+
+          <DataCardList>
+            {loading ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <DataCardSkeleton key={i} media={false} />
+              ))
+            ) : filtered.length === 0 ? (
+              <DataCardEmpty
+                icon={<TicketX className="h-5 w-5" />}
+                title="No coupons match this view"
+                description="Try another status, or clear the search."
+              />
+            ) : (
+              filtered.map((c) => (
+                <AdminCouponCard
+                  key={c.id}
+                  coupon={c}
+                  onEdit={() => openEdit(c)}
+                  onDelete={() => setDeleteTarget(c)}
+                />
+              ))
+            )}
+          </DataCardList>
         </CardContent>
       </Card>
 
@@ -673,6 +706,102 @@ function StatTile({
         </div>
       </CardContent>
     </Card>
+  )
+}
+
+/* -------------------------------------------------------------- */
+/* MOBILE CARD                                                     */
+/* -------------------------------------------------------------- */
+
+function AdminCouponCard({
+  coupon,
+  onEdit,
+  onDelete,
+}: {
+  coupon: Coupon
+  onEdit: () => void
+  onDelete: () => void
+}) {
+  const [sheetOpen, setSheetOpen] = useState(false)
+  const status = getStatus(coupon)
+
+  async function copyCode() {
+    try {
+      await navigator.clipboard.writeText(coupon.code)
+      toast.success(`Copied ${coupon.code}`)
+    } catch {
+      toast.error('Could not copy the code')
+    }
+  }
+
+  return (
+    <>
+      <DataCard
+        title={
+          <span className="font-mono tracking-wide">{coupon.code}</span>
+        }
+        badge={<StatusBadge status={status} />}
+        meta={
+          <span className="inline-flex items-center gap-1.5">
+            {coupon.type === 'percentage' ? (
+              <Percent className="h-3.5 w-3.5" />
+            ) : (
+              <Tag className="h-3.5 w-3.5" />
+            )}
+            {formatAmount(coupon)} off
+            <span aria-hidden>·</span>
+            {coupon.usedCount}
+            {coupon.usageLimit ? `/${coupon.usageLimit}` : ''} used
+          </span>
+        }
+        submeta={`Expires ${formatDate(coupon.expiresAt)} · ${daysFromNow(
+          coupon.expiresAt
+        )}`}
+        onOpenActions={() => setSheetOpen(true)}
+        actionsLabel={`Actions for coupon ${coupon.code}`}
+        footer={
+          <UsageMeter used={coupon.usedCount} limit={coupon.usageLimit} />
+        }
+      />
+
+      <ActionSheet
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
+        title={coupon.code}
+        description={`${formatAmount(coupon)} off · expires ${formatDate(
+          coupon.expiresAt
+        )}`}
+        groups={[
+          {
+            actions: [
+              {
+                id: 'copy',
+                label: 'Copy code',
+                icon: Copy,
+                onSelect: copyCode,
+              },
+              {
+                id: 'edit',
+                label: 'Edit coupon',
+                icon: Pencil,
+                onSelect: onEdit,
+              },
+            ],
+          },
+          {
+            actions: [
+              {
+                id: 'delete',
+                label: 'Delete coupon',
+                icon: Trash2,
+                destructive: true,
+                onSelect: onDelete,
+              },
+            ],
+          },
+        ]}
+      />
+    </>
   )
 }
 

@@ -366,7 +366,7 @@ function WishlistHeader({
       <Button asChild variant="outline" size="sm" className="shrink-0 gap-1.5">
         <Link href="/products" aria-label="Browse products">
           <ShoppingBag className="h-4 w-4" />
-          <span className="hidden sm:inline">Browse products</span>
+          Browse<span className="hidden sm:inline">&nbsp;products</span>
         </Link>
       </Button>
     </header>

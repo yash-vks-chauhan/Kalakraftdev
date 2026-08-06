@@ -216,8 +216,9 @@ export default function DashboardOrdersPage() {
     <main className="flex flex-col gap-6">
       <OrdersHeader count={orders.length} />
 
-      {/* Filter row */}
-      <div className="flex items-center justify-between gap-3">
+      {/* Filter row — stacks on mobile so the select gets full width instead
+          of fighting the count text for a 160px slot */}
+      <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-muted-foreground">
           Showing{" "}
           <span className="font-medium text-foreground">
@@ -229,7 +230,7 @@ export default function DashboardOrdersPage() {
           value={statusFilter}
           onValueChange={(v) => setStatusFilter(v as StatusFilter)}
         >
-          <SelectTrigger className="h-9 w-[160px]">
+          <SelectTrigger className="w-full sm:w-[160px]">
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
           <SelectContent>
@@ -294,9 +295,11 @@ function OrdersHeader({
         size="sm"
         className="shrink-0 gap-1.5"
       >
+        {/* Labelled on every width — an unlabelled icon button was the only
+            affordance here on a phone. */}
         <Link href="/products" aria-label="Browse products">
           <ShoppingBag className="h-4 w-4" />
-          <span className="hidden sm:inline">Browse products</span>
+          Browse<span className="hidden sm:inline">&nbsp;products</span>
         </Link>
       </Button>
     </header>
@@ -433,7 +436,7 @@ function OrdersSkeleton() {
       {/* Filter row */}
       <div className="flex items-center justify-between gap-3">
         <Skeleton className="h-4 w-32" />
-        <Skeleton className="h-9 w-[160px]" />
+        <Skeleton className="h-11 w-full sm:h-9 sm:w-[160px]" />
       </div>
 
       {/* Order list */}

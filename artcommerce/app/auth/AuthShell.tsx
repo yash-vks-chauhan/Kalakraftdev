@@ -80,7 +80,10 @@ export default function AuthShell({
   const current = HERO_SLIDES[slideIdx]
 
   return (
-    <div className="grid h-svh w-full overflow-hidden bg-background lg:grid-cols-5">
+    // `auth-shell` opts these screens into the mobile touch-target sizing in
+    // globals.css (44px controls, 12px minimum text) without affecting the
+    // marketing pages that share the same shadcn primitives.
+    <div className="auth-shell grid h-svh w-full overflow-hidden bg-background lg:grid-cols-5">
       {/* ─────────────────────────── Brand panel ─────────────────────────── */}
       <aside className="relative hidden overflow-hidden bg-stone-950 lg:col-span-3 lg:flex lg:flex-col">
         {/* Always-on warm artisan backdrop */}
@@ -253,8 +256,9 @@ export default function AuthShell({
       </aside>
 
       {/* ─────────────────────────── Form panel ─────────────────────────── */}
-      <section className="relative flex h-svh flex-col overflow-y-auto lg:col-span-2">
+      <section className="relative flex h-svh flex-col overflow-y-auto overscroll-contain lg:col-span-2">
         {/* Mobile-only brand strip */}
+        <div className="pt-safe lg:hidden" />
         <div className="flex items-center justify-between border-b bg-card px-4 py-3 lg:hidden">
           <Link href="/" className="flex items-center gap-2">
             <BrandMark logoSrc={logoSrc} compact />
@@ -279,7 +283,12 @@ export default function AuthShell({
           </Link>
         </div>
 
-        <div className="flex flex-1 items-center justify-center px-6 py-6 sm:px-10">
+        {/*
+          Top-aligned on mobile: centring inside h-svh meant the whole form
+          jumped and compressed the moment the iOS keyboard opened. From lg up
+          there is room to spare, so it centres as before.
+        */}
+        <div className="flex flex-1 items-start justify-center px-5 py-6 sm:px-10 lg:items-center">
           <div className="flex w-full max-w-md flex-col gap-5">
             <div className="flex flex-col gap-1.5">
               {eyebrow && (
@@ -306,6 +315,9 @@ export default function AuthShell({
                 {footer}
               </div>
             )}
+
+            {/* Home-indicator clearance — the desktop mini footer is lg-only */}
+            <div className="pb-safe lg:hidden" />
           </div>
         </div>
 
@@ -413,57 +425,75 @@ function StepIndicator({
   current: number
   items: { label: string; description: string }[]
 }) {
-  return (
-    <ol
-      aria-label="Progress"
-      className="flex items-stretch gap-1 rounded-xl border bg-muted/30 p-1"
-    >
-      {items.map((item, idx) => {
-        const stepNumber = idx + 1
-        const state =
-          stepNumber < current
-            ? "complete"
-            : stepNumber === current
-            ? "active"
-            : "upcoming"
+  const activeItem = items[current - 1]
 
-        return (
-          <li
-            key={item.label}
-            aria-current={state === "active" ? "step" : undefined}
-            title={item.description}
-            className={cn(
-              "flex min-w-0 flex-1 items-center justify-center gap-2 rounded-lg px-2 py-2 transition-colors",
-              state === "active" && "bg-foreground text-background shadow-sm",
-              state === "complete" && "text-foreground/85",
-              state === "upcoming" && "text-muted-foreground"
-            )}
-          >
-            <span
+  return (
+    <div className="flex flex-col gap-2">
+      {/*
+        Three truncated 11px labels side by side were unreadable stubs on a
+        390px screen. On mobile only the active step is named — with an
+        explicit "Step 2 of 3" — and the others collapse to dots. From sm up
+        there is room for the full segmented layout.
+      */}
+      <ol
+        aria-label="Progress"
+        className="flex items-stretch gap-1 rounded-xl border bg-muted/30 p-1"
+      >
+        {items.map((item, idx) => {
+          const stepNumber = idx + 1
+          const state =
+            stepNumber < current
+              ? "complete"
+              : stepNumber === current
+              ? "active"
+              : "upcoming"
+
+          return (
+            <li
+              key={item.label}
+              aria-current={state === "active" ? "step" : undefined}
+              title={item.description}
               className={cn(
-                "flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold tabular-nums",
-                state === "active" && "bg-background/15 text-background",
-                state === "complete" && "bg-emerald-500 text-white",
-                state === "upcoming" && "bg-background text-muted-foreground ring-1 ring-border"
+                "flex min-w-0 items-center justify-center gap-2 rounded-lg px-2 py-2 transition-colors sm:flex-1",
+                // Mobile: the active step takes the room, others stay compact.
+                state === "active" ? "flex-1" : "shrink-0",
+                state === "active" && "bg-foreground text-background shadow-sm",
+                state === "complete" && "text-foreground/85",
+                state === "upcoming" && "text-muted-foreground"
               )}
             >
-              {state === "complete" ? (
-                <Check className="h-3 w-3" strokeWidth={3} />
-              ) : (
-                String(stepNumber).padStart(2, "0")
-              )}
-            </span>
-            <span
-              className={cn(
-                "truncate text-[11px] font-semibold",
-                state === "active" && "text-background"
-              )}
-            >
-              {item.label}
-            </span>
-          </li>
-        )
-      })}
-    </ol>
+              <span
+                className={cn(
+                  "flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold tabular-nums",
+                  state === "active" && "bg-background/15 text-background",
+                  state === "complete" && "bg-emerald-500 text-white",
+                  state === "upcoming" && "bg-background text-muted-foreground ring-1 ring-border"
+                )}
+              >
+                {state === "complete" ? (
+                  <Check className="h-3 w-3" strokeWidth={3} />
+                ) : (
+                  String(stepNumber).padStart(2, "0")
+                )}
+              </span>
+              <span
+                className={cn(
+                  "truncate text-[11px] font-semibold",
+                  state === "active" ? "text-background" : "hidden sm:inline"
+                )}
+              >
+                {item.label}
+              </span>
+            </li>
+          )
+        })}
+      </ol>
+
+      {activeItem && (
+        <p className="px-1 text-[12px] text-muted-foreground sm:hidden">
+          Step {current} of {items.length} · {activeItem.description}
+        </p>
+      )}
+    </div>
   )
 }

@@ -19,6 +19,14 @@ import {
 import { useAuth } from '../../../contexts/AuthContext'
 import ConfirmDialog from '../../../components/ConfirmDialog'
 import { SegmentedControl, SegmentedControlItem } from '../../_components/SegmentedControl'
+import { ActionSheet } from '../../_components/ActionSheet'
+import {
+  DataCard,
+  DataCardEmpty,
+  DataCardList,
+  DataCardSkeleton,
+  DesktopTableFrame,
+} from '../../_components/DataCardList'
 import { cn } from '@/lib/utils'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
@@ -267,7 +275,8 @@ export default function AdminUsersPage() {
         </CardHeader>
 
         <CardContent className="p-0">
-          <div className="border-t">
+          {/* Desktop: full table. Mobile: stacked cards below. */}
+          <DesktopTableFrame>
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/30 hover:bg-muted/30">
@@ -417,7 +426,32 @@ export default function AdminUsersPage() {
                 )}
               </TableBody>
             </Table>
-          </div>
+          </DesktopTableFrame>
+
+          <DataCardList>
+            {loading ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <DataCardSkeleton key={i} />
+              ))
+            ) : displayUsers.length === 0 ? (
+              <DataCardEmpty
+                icon={<Users className="h-5 w-5" />}
+                title="No users match this view"
+                description="Try another tab, or clear the search."
+              />
+            ) : (
+              displayUsers.map((u) => (
+                <AdminUserCard
+                  key={u.id}
+                  account={u}
+                  reminding={remindingId === u.id}
+                  onChangeRole={() => setRoleTarget(u)}
+                  onRemind={() => handleRemind(u.id)}
+                  onDelete={() => setDeleteTarget(u)}
+                />
+              ))
+            )}
+          </DataCardList>
         </CardContent>
       </Card>
 
@@ -461,6 +495,126 @@ export default function AdminUsersPage() {
         }}
       />
     </main>
+  )
+}
+
+/* -------------------------------------------------------------- */
+/* MOBILE CARD                                                     */
+/* -------------------------------------------------------------- */
+
+function AdminUserCard({
+  account,
+  reminding,
+  onChangeRole,
+  onRemind,
+  onDelete,
+}: {
+  account: UserRow
+  reminding: boolean
+  onChangeRole: () => void
+  onRemind: () => void
+  onDelete: () => void
+}) {
+  const [sheetOpen, setSheetOpen] = useState(false)
+  const isAdmin = account.role === 'admin'
+  const hasAbandoned = account.abandonedCartCount > 0
+
+  return (
+    <>
+      <DataCard
+        media={
+          <Avatar className="h-12 w-12 border">
+            <AvatarFallback className="bg-secondary text-sm font-medium text-foreground">
+              {initialsOf(account.fullName)}
+            </AvatarFallback>
+          </Avatar>
+        }
+        title={account.fullName}
+        badge={
+          isAdmin ? (
+            <Badge className="gap-1 bg-foreground text-background hover:bg-foreground/90">
+              <ShieldCheck className="h-3 w-3" />
+              Admin
+            </Badge>
+          ) : undefined
+        }
+        meta={account.email}
+        submeta={
+          <span className="inline-flex items-center gap-1.5">
+            Joined {formatDate(account.createdAt)}
+            {hasAbandoned && (
+              <>
+                <span aria-hidden>·</span>
+                <span className="inline-flex items-center gap-1 text-amber-600 dark:text-amber-500">
+                  <span className="inline-flex h-1.5 w-1.5 rounded-full bg-amber-500" />
+                  {account.abandonedCartCount} abandoned
+                </span>
+              </>
+            )}
+          </span>
+        }
+        onOpenActions={() => setSheetOpen(true)}
+        actionsLabel={`Actions for ${account.fullName}`}
+      />
+
+      <ActionSheet
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
+        title={account.fullName}
+        description={account.email}
+        groups={[
+          {
+            actions: [
+              {
+                id: 'role',
+                label: isAdmin ? 'Demote to customer' : 'Promote to admin',
+                icon: isAdmin ? ArrowDownCircle : ArrowUpCircle,
+                description: isAdmin
+                  ? 'Removes dashboard access'
+                  : 'Grants full dashboard access',
+                onSelect: onChangeRole,
+              },
+              {
+                id: 'orders',
+                label: 'View their orders',
+                icon: ShoppingBag,
+                href: `/dashboard/admin/orders?userId=${account.id}`,
+              },
+              {
+                id: 'remind',
+                label: 'Send cart reminder',
+                icon: Send,
+                description: hasAbandoned
+                  ? `${account.abandonedCartCount} item${
+                      account.abandonedCartCount === 1 ? '' : 's'
+                    } left behind`
+                  : 'Nothing abandoned in their cart',
+                disabled: !hasAbandoned,
+                pending: reminding,
+                onSelect: onRemind,
+              },
+              {
+                id: 'email',
+                label: 'Email customer',
+                icon: Mail,
+                href: `mailto:${account.email}`,
+              },
+            ],
+          },
+          {
+            actions: [
+              {
+                id: 'delete',
+                label: 'Delete user',
+                icon: Trash2,
+                destructive: true,
+                onSelect: onDelete,
+              },
+            ],
+          },
+        ]}
+      />
+    </>
   )
 }
 

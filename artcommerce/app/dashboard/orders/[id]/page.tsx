@@ -273,12 +273,26 @@ export default function OrderDetailsPage() {
         </p>
       </header>
 
+      {/*
+        Explicit grid placement so mobile and desktop can order these
+        differently without duplicating markup. On a phone the DOM order wins:
+        tracking (where is it?), then the summary (what did it cost?), then the
+        detail. On desktop the summary moves to the sticky right rail and
+        tracking sits above the items in column one.
+      */}
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
-        {/* Left/Main column */}
-        <div className="flex flex-col gap-6">
-          {/* Progress tracker */}
+        {/* Progress tracker */}
+        <div className="lg:col-start-1 lg:row-start-1">
           <TrackingCard status={order.status} />
+        </div>
 
+        {/* Summary — second on mobile, sticky right rail on desktop */}
+        <div className="flex flex-col gap-4 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:sticky lg:top-6 lg:self-start">
+          <SummaryCard order={order} />
+        </div>
+
+        {/* Left/Main column */}
+        <div className="flex flex-col gap-6 lg:col-start-1 lg:row-start-2">
           {/* Items */}
           <Card className="shadow-sm">
             <CardHeader className="gap-1 p-5 pb-3">
@@ -495,11 +509,6 @@ export default function OrderDetailsPage() {
             </Card>
           )}
         </div>
-
-        {/* Right: summary (sticky on desktop) */}
-        <div className="flex flex-col gap-4 lg:sticky lg:top-6 lg:self-start">
-          <SummaryCard order={order} />
-        </div>
       </div>
     </main>
   )
@@ -710,7 +719,10 @@ function RatingRow({
   onRate: (n: number) => void
 }) {
   return (
-    <div className="ml-[76px] flex items-center gap-2 rounded-md bg-muted/30 px-3 py-2 sm:ml-24">
+    // No indent on mobile — the tinted background already groups this with the
+    // item above, and 76px of dead space left the stars fighting for room.
+    // From sm up it lines up with the item title (thumb width + gap).
+    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-md bg-muted/30 px-3 py-2 sm:ml-24">
       <span className="text-xs text-muted-foreground">
         {rated > 0 ? "Thanks for rating!" : "Rate this item:"}
       </span>

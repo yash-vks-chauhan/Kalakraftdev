@@ -437,10 +437,19 @@ export default function ProfilePage() {
 
       {/* Two-column shell: vertical sub-rail + active section */}
       <div className="grid gap-8 md:grid-cols-[220px_1fr]">
-        {/* Vertical sub-rail (desktop) / horizontal pills (mobile) */}
+        {/*
+          Mobile: a fixed 3-up segmented control. There are only three
+          sections, so the previous horizontally-scrolling pill row hid
+          options behind an edge with no affordance for no reason.
+          Desktop: the vertical rail with descriptions, sticky.
+        */}
         <nav
           aria-label="Profile sections"
-          className="flex gap-1 overflow-x-auto md:sticky md:top-20 lg:top-6 md:flex-col md:self-start md:overflow-visible"
+          className={cn(
+            "grid grid-cols-3 gap-1 rounded-lg border bg-muted/40 p-1",
+            "md:sticky md:top-20 md:flex md:flex-col md:self-start md:gap-1",
+            "md:rounded-none md:border-0 md:bg-transparent md:p-0 lg:top-6"
+          )}
         >
           {sections.map((s) => {
             const isActive = active === s.key
@@ -450,26 +459,35 @@ export default function ProfilePage() {
                 key={s.key}
                 type="button"
                 onClick={() => setActive(s.key)}
+                aria-current={isActive ? "true" : undefined}
                 className={cn(
-                  "group inline-flex shrink-0 items-center gap-3 rounded-md px-3 py-2.5 text-left text-sm transition-colors md:w-full",
+                  "group min-w-0 rounded-md transition-colors",
+                  // Mobile: stacked icon + label, centred, thumb-sized
+                  "flex min-h-[3.25rem] flex-col items-center justify-center gap-1 px-1 py-1.5",
+                  // Desktop: the original horizontal row
+                  "md:min-h-0 md:w-full md:flex-row md:items-center md:justify-start md:gap-3 md:px-3 md:py-2.5 md:text-left",
                   isActive
-                    ? "bg-secondary text-foreground font-medium"
-                    : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
+                    ? "bg-background text-foreground shadow-sm ring-1 ring-black/5 md:bg-secondary md:shadow-none md:ring-0 font-medium"
+                    : "text-muted-foreground active:bg-background/60 md:hover:bg-secondary/60 md:hover:text-foreground"
                 )}
               >
                 <Icon
                   className={cn(
-                    "h-4 w-4 shrink-0",
+                    "h-[18px] w-[18px] shrink-0 md:h-4 md:w-4",
                     isActive
                       ? "text-foreground"
-                      : "text-muted-foreground group-hover:text-foreground"
+                      : "text-muted-foreground md:group-hover:text-foreground"
                   )}
                 />
-                <div className="hidden md:flex md:flex-col">
+                <div className="hidden md:flex md:min-w-0 md:flex-col">
                   <span>{s.label}</span>
-                  <span className="text-xs text-muted-foreground">{s.description}</span>
+                  <span className="truncate text-xs text-muted-foreground">
+                    {s.description}
+                  </span>
                 </div>
-                <span className="md:hidden">{s.label}</span>
+                <span className="w-full truncate text-center text-[12px] leading-none md:hidden">
+                  {s.label}
+                </span>
               </button>
             )
           })}
@@ -486,7 +504,7 @@ export default function ProfilePage() {
 
               <form
                 onSubmit={handleProfileSubmit}
-                className="flex flex-col gap-6 rounded-lg border bg-card p-6"
+                className="flex flex-col gap-5 rounded-lg border bg-card p-4 md:gap-6 md:p-6"
               >
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
                   <Avatar className="h-20 w-20 border">
@@ -640,7 +658,7 @@ export default function ProfilePage() {
                 description="Update your password using one-time verification."
               />
 
-              <div className="rounded-lg border bg-card p-6">
+              <div className="rounded-lg border bg-card p-4 md:p-6">
                 {!pwOpen ? (
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
@@ -979,13 +997,14 @@ function ProfileSkeleton() {
         {/* Sub-rail */}
         <nav
           aria-hidden
-          className="flex gap-1 overflow-x-auto md:sticky md:top-20 lg:top-6 md:flex-col md:self-start md:overflow-visible"
+          className={cn(
+            "grid grid-cols-3 gap-1 rounded-lg border bg-muted/40 p-1",
+            "md:sticky md:top-20 md:flex md:flex-col md:gap-1 md:self-start",
+            "md:rounded-none md:border-0 md:bg-transparent md:p-0 lg:top-6"
+          )}
         >
           {Array.from({ length: 3 }).map((_, i) => (
-            <Skeleton
-              key={i}
-              className="h-11 w-full min-w-[140px] shrink-0 md:min-w-0"
-            />
+            <Skeleton key={i} className="h-[3.25rem] w-full md:h-11" />
           ))}
         </nav>
 

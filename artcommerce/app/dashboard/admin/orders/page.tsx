@@ -25,6 +25,14 @@ import {
 
 import { useAuth } from "../../../contexts/AuthContext"
 import { SegmentedControl, SegmentedControlItem } from "../../_components/SegmentedControl"
+import { ActionSheet } from "../../_components/ActionSheet"
+import {
+  DataCard,
+  DataCardEmpty,
+  DataCardList,
+  DataCardSkeleton,
+  DesktopTableFrame,
+} from "../../_components/DataCardList"
 import { cn } from "@/lib/utils"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
@@ -617,7 +625,8 @@ export default function AdminOrdersPage() {
         </CardHeader>
 
         <CardContent className="p-0">
-          <div className="overflow-x-auto border-t">
+          {/* Desktop: full table. Mobile: stacked cards (see DataCardList). */}
+          <DesktopTableFrame className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/30 hover:bg-muted/30">
@@ -687,11 +696,171 @@ export default function AdminOrdersPage() {
                 )}
               </TableBody>
             </Table>
-          </div>
+          </DesktopTableFrame>
+
+          <DataCardList>
+            {loading ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <DataCardSkeleton key={i} media={false} />
+              ))
+            ) : error ? (
+              <DataCardEmpty
+                icon={<CircleX className="h-5 w-5" />}
+                title="Couldn't load orders"
+                description={error}
+              />
+            ) : displayed.length === 0 ? (
+              <DataCardEmpty
+                icon={<Package className="h-5 w-5" />}
+                title="No orders here"
+                description={
+                  anyFilterActive
+                    ? "Try clearing filters to see all orders."
+                    : "When customers place an order it will appear here."
+                }
+                action={
+                  anyFilterActive ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={clearFilters}
+                      className="gap-1.5"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                      Clear filters
+                    </Button>
+                  ) : undefined
+                }
+              />
+            ) : (
+              displayed.map((o) => (
+                <AdminOrderCard
+                  key={o.id}
+                  order={o}
+                  isNew={newOrderIds.has(o.id)}
+                  statusState={statusState[o.id]}
+                  onStatusChange={handleStatusChange}
+                />
+              ))
+            )}
+          </DataCardList>
         </CardContent>
       </Card>
     </main>
   )
+}
+
+/* -------------------------------------------------------------- */
+/* MOBILE CARD                                                     */
+/* -------------------------------------------------------------- */
+
+function AdminOrderCard({
+  order,
+  isNew,
+  statusState,
+  onStatusChange,
+}: {
+  order: AdminOrder
+  isNew: boolean
+  statusState?: StatusState
+  onStatusChange: (id: number, status: string) => void
+}) {
+  const [sheetOpen, setSheetOpen] = useState(false)
+  const totalItems = order.orderItems?.reduce((s, i) => s + i.quantity, 0) ?? 0
+  const finalTotal = order.discountedTotal ?? order.totalAmount
+  const status = order.status.toLowerCase()
+  const paymentPaid = order.paymentStatus.toLowerCase() === "paid"
+  const locked = status === "cancelled" || statusState === "pending"
+
+  return (
+    <>
+      <DataCard
+        className={cn(
+          isNew &&
+            "bg-emerald-500/5 animate-in fade-in slide-in-from-top-2 duration-500"
+        )}
+        href={`/dashboard/orders/${order.id}`}
+        title={`#${order.orderNumber}`}
+        badge={
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-2 py-0.5 text-[11px] font-medium text-foreground">
+            <span
+              className={cn(
+                "inline-flex h-1.5 w-1.5 rounded-full",
+                statusDot(status)
+              )}
+            />
+            {capitalize(status)}
+          </span>
+        }
+        meta={order.user.fullName}
+        submeta={
+          <span className="inline-flex items-center gap-1.5">
+            {totalItems} item{totalItems === 1 ? "" : "s"}
+            <span aria-hidden>·</span>
+            {formatRelative(order.createdAt)}
+            <span aria-hidden>·</span>
+            <span
+              className={cn(
+                paymentPaid
+                  ? "text-emerald-600 dark:text-emerald-400"
+                  : "text-amber-600 dark:text-amber-500"
+              )}
+            >
+              {capitalize(order.paymentMethod)}
+            </span>
+          </span>
+        }
+        value={formatCurrency(finalTotal)}
+        onOpenActions={() => setSheetOpen(true)}
+        actionsLabel={`Actions for order ${order.orderNumber}`}
+      />
+
+      <ActionSheet
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
+        title={`Order #${order.orderNumber}`}
+        description={`${order.user.fullName} · ${formatCurrency(finalTotal)}`}
+        groups={[
+          {
+            label: "Set status",
+            actions: EDITABLE_STATUSES.map((opt) => ({
+              id: opt,
+              label: capitalize(opt),
+              icon: STATUS_ICONS[opt],
+              selected: status === opt,
+              disabled: locked || status === opt,
+              pending: statusState === "pending",
+              onSelect: () => onStatusChange(order.id, opt),
+            })),
+          },
+          {
+            actions: [
+              {
+                id: "view",
+                label: "View order details",
+                icon: ArrowRight,
+                href: `/dashboard/orders/${order.id}`,
+              },
+              {
+                id: "email",
+                label: "Email customer",
+                icon: Mail,
+                description: order.user.email,
+                href: `mailto:${order.user.email}`,
+              },
+            ],
+          },
+        ]}
+      />
+    </>
+  )
+}
+
+const STATUS_ICONS: Record<(typeof EDITABLE_STATUSES)[number], typeof CircleCheck> = {
+  accepted: CircleCheck,
+  shipped: Truck,
+  delivered: Package,
 }
 
 /* -------------------------------------------------------------- */
@@ -983,10 +1152,10 @@ function StatTile({
       : "bg-muted/50 text-foreground border"
   return (
     <Card className="shadow-sm">
-      <CardContent className="flex items-center gap-3 p-3 sm:gap-4 sm:p-4">
+      <CardContent className="flex flex-col items-start gap-2 p-3 sm:flex-row sm:items-center sm:gap-4 sm:p-4">
         <span
           className={cn(
-            "flex h-9 w-9 shrink-0 items-center justify-center rounded-md sm:h-10 sm:w-10",
+            "flex h-8 w-8 shrink-0 items-center justify-center rounded-md sm:h-10 sm:w-10",
             toneStyles
           )}
         >
@@ -1008,7 +1177,7 @@ function StatTile({
 function StatTileSkeleton() {
   return (
     <Card className="shadow-sm">
-      <CardContent className="flex items-center gap-3 p-3 sm:gap-4 sm:p-4">
+      <CardContent className="flex flex-col items-start gap-2 p-3 sm:flex-row sm:items-center sm:gap-4 sm:p-4">
         <Skeleton className="h-9 w-9 rounded-md sm:h-10 sm:w-10" />
         <div className="flex min-w-0 flex-1 flex-col gap-1.5">
           <Skeleton className="h-2.5 w-16" />

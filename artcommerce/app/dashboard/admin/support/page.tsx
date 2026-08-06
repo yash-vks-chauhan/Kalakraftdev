@@ -12,11 +12,19 @@ import {
   CheckCircle2,
   ArrowRight,
   RefreshCw,
+  AlertCircle,
 } from 'lucide-react'
 
 import { useAuth } from '../../../contexts/AuthContext'
 import { SegmentedControl, SegmentedControlItem } from '../../_components/SegmentedControl'
 import { SupportStatusBadge } from '../../../components/support/SupportStatusBadge'
+import {
+  DataCard,
+  DataCardEmpty,
+  DataCardList,
+  DataCardSkeleton,
+  DesktopTableFrame,
+} from '../../_components/DataCardList'
 import { cn } from '@/lib/utils'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
@@ -264,7 +272,8 @@ export default function AdminSupportPage() {
         </CardHeader>
 
         <CardContent className="p-0">
-          <div className="border-t">
+          {/* Desktop: full table. Mobile: stacked cards below. */}
+          <DesktopTableFrame>
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/30 hover:bg-muted/30">
@@ -371,7 +380,45 @@ export default function AdminSupportPage() {
                 )}
               </TableBody>
             </Table>
-          </div>
+          </DesktopTableFrame>
+
+          <DataCardList>
+            {loading ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <DataCardSkeleton key={i} />
+              ))
+            ) : error ? (
+              <DataCardEmpty
+                icon={<AlertCircle className="h-5 w-5" />}
+                title="Couldn't load tickets"
+                description={error}
+              />
+            ) : displayTickets.length === 0 ? (
+              <DataCardEmpty
+                icon={<Inbox className="h-5 w-5" />}
+                title="No tickets here"
+                description="Customer support requests will appear in this list."
+              />
+            ) : (
+              displayTickets.map((t) => (
+                <DataCard
+                  key={t.id}
+                  href={`/dashboard/admin/support/${t.id}`}
+                  media={
+                    <Avatar className="h-12 w-12 border">
+                      <AvatarFallback className="bg-secondary text-sm font-medium text-foreground">
+                        {initialsOf(t.name)}
+                      </AvatarFallback>
+                    </Avatar>
+                  }
+                  title={t.subject}
+                  badge={<SupportStatusBadge status={t.status} />}
+                  meta={t.name}
+                  submeta={`${t.email} · ${formatRelative(t.createdAt)}`}
+                />
+              ))
+            )}
+          </DataCardList>
         </CardContent>
       </Card>
     </main>

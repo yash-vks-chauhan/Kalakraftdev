@@ -229,7 +229,7 @@ export default function MySupportTickets() {
                           Opened {formatRelative(ticket.createdAt)}
                         </span>
                       </div>
-                      <SupportStatusBadge status={ticket.status} className="hidden sm:inline-flex" />
+                      <SupportStatusBadge status={ticket.status} />
                       <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
                     </Link>
                   </li>

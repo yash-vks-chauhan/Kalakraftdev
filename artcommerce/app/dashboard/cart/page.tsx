@@ -181,7 +181,7 @@ export default function DashboardCartPage() {
   }
 
   return (
-    <main className="flex flex-col gap-6">
+    <main className="flex flex-col gap-6 pb-20 lg:pb-0">
       <CartHeader itemCount={itemCount} />
 
       {/* Summary stat strip */}
@@ -446,7 +446,77 @@ export default function DashboardCartPage() {
           </Card>
         </div>
       </div>
+
+      <MobileCheckoutBar
+        total={total}
+        itemCount={itemCount}
+        disabled={hasOutOfStock}
+        href={
+          appliedCode && discount > 0
+            ? `/checkout?coupon=${encodeURIComponent(appliedCode)}&discountType=${discountType}&discountAmount=${discount}`
+            : "/checkout"
+        }
+      />
     </main>
+  )
+}
+
+/* -------------------------------------------------------------- */
+/* MOBILE CHECKOUT BAR                                             */
+/* -------------------------------------------------------------- */
+
+/**
+ * On mobile the order summary sits below every line item, so with a full cart
+ * the one button that matters was several screens down. This pins the total
+ * and the CTA above the tab bar instead — the standard mobile-commerce
+ * pattern, and the single biggest conversion fix on this page.
+ */
+function MobileCheckoutBar({
+  total,
+  itemCount,
+  disabled,
+  href,
+}: {
+  total: number
+  itemCount: number
+  disabled: boolean
+  href: string
+}) {
+  return (
+    <div
+      className={cn(
+        "fixed inset-x-0 z-30 border-t bg-background/95 backdrop-blur-md",
+        "supports-[backdrop-filter]:bg-background/85 lg:hidden"
+      )}
+      // Sits directly on top of the bottom tab bar.
+      style={{ bottom: "var(--mobile-tabbar-total, 3.5rem)" }}
+    >
+      <div className="flex items-center gap-3 px-4 py-3">
+        <div className="flex min-w-0 flex-col">
+          <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
+            Estimated total
+          </span>
+          <span className="text-[17px] font-semibold tabular-nums leading-tight text-foreground">
+            {formatCurrency(total)}
+          </span>
+        </div>
+        <Button
+          asChild={!disabled}
+          size="lg"
+          disabled={disabled}
+          className="ml-auto min-w-[9.5rem] flex-1 gap-1.5"
+        >
+          {disabled ? (
+            <span>Resolve stock issue</span>
+          ) : (
+            <Link href={href}>
+              Checkout · {itemCount}
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          )}
+        </Button>
+      </div>
+    </div>
   )
 }
 
@@ -475,7 +545,7 @@ function CartHeader({ itemCount, loading }: { itemCount: number; loading?: boole
       >
         <Link href="/products" aria-label="Continue shopping">
           <ShoppingBag className="h-4 w-4" />
-          <span className="hidden sm:inline">Continue shopping</span>
+          Continue<span className="hidden sm:inline">&nbsp;shopping</span>
         </Link>
       </Button>
     </header>
@@ -504,7 +574,7 @@ function StatTile({
 
   return (
     <Card className="shadow-sm transition-shadow duration-200 hover:shadow-md">
-      <CardContent className="flex items-center gap-3 p-3 sm:gap-4 sm:p-4">
+      <CardContent className="flex flex-col items-start gap-2 p-3 sm:flex-row sm:items-center sm:gap-4 sm:p-4">
         <span
           className={cn(
             "flex h-9 w-9 shrink-0 items-center justify-center rounded-md transition-colors duration-200 sm:h-10 sm:w-10",

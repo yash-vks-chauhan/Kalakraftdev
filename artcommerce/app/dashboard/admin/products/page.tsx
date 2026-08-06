@@ -16,11 +16,23 @@ import {
   Tag,
   Boxes,
   ChevronRight,
+  Eye,
+  EyeOff,
+  ExternalLink,
 } from 'lucide-react'
 
 import { useAuth } from '../../../contexts/AuthContext'
 import LoadingSpinner from '../../../components/LoadingSpinner'
 import ConfirmDialog from '../../../components/ConfirmDialog'
+import { ActionSheet } from '../../_components/ActionSheet'
+import {
+  DataCard,
+  DataCardEmpty,
+  DataCardList,
+  DataCardSkeleton,
+  DataCardThumb,
+  DesktopTableFrame,
+} from '../../_components/DataCardList'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -345,7 +357,8 @@ export default function AdminProductsPage() {
             </CardHeader>
 
             <CardContent className="p-0">
-              <div className="border-t">
+              {/* Desktop: full table. Mobile: stacked cards below. */}
+              <DesktopTableFrame>
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-muted/30 hover:bg-muted/30">
@@ -480,7 +493,27 @@ export default function AdminProductsPage() {
                     )}
                   </TableBody>
                 </Table>
-              </div>
+              </DesktopTableFrame>
+
+              <DataCardList>
+                {displayProducts.length === 0 ? (
+                  <DataCardEmpty
+                    icon={<Package className="h-5 w-5" />}
+                    title="No products match this view"
+                    description="Try another category, or clear the search."
+                  />
+                ) : (
+                  displayProducts.map((p) => (
+                    <AdminProductCard
+                      key={p.id}
+                      product={p}
+                      onEdit={() => handleEdit(p.id)}
+                      onToggleActive={() => handleToggleStatus(p.id, !p.isActive)}
+                      onDelete={() => setDeleteTarget(p)}
+                    />
+                  ))
+                )}
+              </DataCardList>
             </CardContent>
           </Card>
         </div>
@@ -558,6 +591,115 @@ function CategoryButton({
   )
 }
 
+/* -------------------------------------------------------------- */
+/* MOBILE CARD                                                     */
+/* -------------------------------------------------------------- */
+
+function AdminProductCard({
+  product,
+  onEdit,
+  onToggleActive,
+  onDelete,
+}: {
+  product: Product
+  onEdit: () => void
+  onToggleActive: () => void
+  onDelete: () => void
+}) {
+  const [sheetOpen, setSheetOpen] = useState(false)
+
+  return (
+    <>
+      <DataCard
+        media={
+          <DataCardThumb
+            src={product.imageUrls?.[0]}
+            alt={product.name}
+            fallback={<Package className="h-4 w-4" />}
+          />
+        }
+        title={product.name || 'Untitled product'}
+        badge={
+          !product.isActive ? (
+            <Badge variant="outline" className="h-5 px-1.5 text-[11px]">
+              Inactive
+            </Badge>
+          ) : undefined
+        }
+        meta={
+          <span className="inline-flex items-center gap-1.5">
+            <span
+              className={cn(
+                'inline-flex h-1.5 w-1.5 rounded-full',
+                product.stockQuantity === 0
+                  ? 'bg-destructive'
+                  : product.stockQuantity <= LOW_STOCK_THRESHOLD
+                  ? 'bg-amber-500'
+                  : 'bg-emerald-500'
+              )}
+            />
+            <span className={stockTone(product.stockQuantity)}>
+              {stockLabel(product.stockQuantity)}
+            </span>
+            <span aria-hidden>·</span>
+            {product.totalSold.toLocaleString()} sold
+          </span>
+        }
+        value={formatPrice(product.price, product.currency)}
+        onOpenActions={() => setSheetOpen(true)}
+        actionsLabel={`Actions for ${product.name}`}
+      />
+
+      <ActionSheet
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
+        title={product.name || 'Untitled product'}
+        description={`${formatPrice(product.price, product.currency)} · ${stockLabel(
+          product.stockQuantity
+        )}`}
+        groups={[
+          {
+            actions: [
+              {
+                id: 'edit',
+                label: 'Edit product',
+                icon: Pencil,
+                onSelect: onEdit,
+              },
+              {
+                id: 'toggle',
+                label: product.isActive ? 'Hide from store' : 'Publish to store',
+                icon: product.isActive ? EyeOff : Eye,
+                description: product.isActive
+                  ? 'Customers will no longer see this'
+                  : 'Make this visible to customers',
+                onSelect: onToggleActive,
+              },
+              {
+                id: 'view',
+                label: 'View on storefront',
+                icon: ExternalLink,
+                href: `/products/${product.id}`,
+              },
+            ],
+          },
+          {
+            actions: [
+              {
+                id: 'delete',
+                label: 'Delete product',
+                icon: Trash2,
+                destructive: true,
+                onSelect: onDelete,
+              },
+            ],
+          },
+        ]}
+      />
+    </>
+  )
+}
+
 function ProductsSkeleton() {
   return (
     <main className="flex flex-col gap-6">
@@ -600,7 +742,7 @@ function ProductsSkeleton() {
               <Skeleton className="h-9 w-full lg:max-w-sm" />
             </CardHeader>
             <CardContent className="p-0">
-              <div className="border-t">
+              <DesktopTableFrame>
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-muted/30 hover:bg-muted/30">
@@ -618,7 +760,13 @@ function ProductsSkeleton() {
                     ))}
                   </TableBody>
                 </Table>
-              </div>
+              </DesktopTableFrame>
+
+              <DataCardList>
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <DataCardSkeleton key={i} />
+                ))}
+              </DataCardList>
             </CardContent>
           </Card>
         </div>

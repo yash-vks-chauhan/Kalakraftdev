@@ -1575,10 +1575,10 @@ function StatTile({
 
   return (
     <Card className="shadow-sm">
-      <CardContent className="flex items-center gap-3 p-3 sm:gap-4 sm:p-4">
+      <CardContent className="flex flex-col items-start gap-2 p-3 sm:flex-row sm:items-center sm:gap-4 sm:p-4">
         <span
           className={cn(
-            "flex h-9 w-9 shrink-0 items-center justify-center rounded-md sm:h-10 sm:w-10",
+            "flex h-8 w-8 shrink-0 items-center justify-center rounded-md sm:h-10 sm:w-10",
             toneStyles
           )}
         >
@@ -1646,7 +1646,7 @@ function EmptyHint({
 function StatTileSkeleton() {
   return (
     <Card className="shadow-sm">
-      <CardContent className="flex items-center gap-3 p-3 sm:gap-4 sm:p-4">
+      <CardContent className="flex flex-col items-start gap-2 p-3 sm:flex-row sm:items-center sm:gap-4 sm:p-4">
         <Skeleton className="h-9 w-9 rounded-md sm:h-10 sm:w-10" />
         <div className="flex min-w-0 flex-1 flex-col gap-1.5">
           <Skeleton className="h-2.5 w-14" />
