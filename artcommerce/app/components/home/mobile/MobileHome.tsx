@@ -73,8 +73,23 @@ export default function MobileHome() {
   return (
     <div className="bg-background text-foreground">
       <HeroPour />
-      <CategoryRail categories={categories} loading={loading} />
-      <OccasionChips tags={tags} loading={loading} />
+
+      {/*
+        The hero used to stop at a hard white line, which left the pour — the
+        one idea the whole brand is built on — sealed inside two boxes. This
+        carries its warmth a short way past the edge and dissolves it, so the
+        hero resolves into the page. It stops before the products: they should
+        stay the loudest thing here.
+      */}
+      <div className="relative isolate">
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-60 bg-[radial-gradient(125%_100%_at_50%_0%,rgba(194,112,58,0.17),rgba(125,47,63,0.07)_45%,transparent_72%)]"
+        />
+        <CategoryRail categories={categories} loading={loading} />
+        <OccasionChips tags={tags} loading={loading} />
+      </div>
+
       <BestSellersRail products={bestSellers} loading={loading} />
       <EditorialBand />
       <NewInGrid products={newIn} loading={loading} />

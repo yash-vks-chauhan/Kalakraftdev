@@ -27,7 +27,7 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
   const isProductsPage = pathname === '/products' || pathname.startsWith('/products?')
   const [isScrolled, setIsScrolled] = useState(false)
   // The header flips from transparent to solid past the hero, not at 10px —
-  // on the homepage it sits over a 470px dark block.
+  // on the homepage it sits over a 424px dark block.
   const [pastHero, setPastHero] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   // Transparent only where there is a dark hero to sit on.
@@ -133,7 +133,7 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
       scrollVelocity = Math.abs(currentScrollY - prevScrollY) / Math.max(timeDiff, 1)
       
       setIsScrolled(currentScrollY > 10)
-      setPastHero(currentScrollY > 380)
+      setPastHero(currentScrollY > 368)
       
       const currentDirection = currentScrollY > prevScrollY ? 1 : -1
       

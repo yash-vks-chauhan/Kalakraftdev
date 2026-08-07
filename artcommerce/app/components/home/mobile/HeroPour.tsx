@@ -15,7 +15,7 @@ import { Pour, grain } from "./Pour"
 export function HeroPour() {
   return (
     <section
-      className={cn("relative h-[470px] shrink-0 overflow-hidden bg-stone-950", grain)}
+      className={cn("relative h-[424px] shrink-0 overflow-hidden bg-stone-950", grain)}
     >
       <Pour />
 

@@ -22,7 +22,7 @@ export function CategoryDisc({ name }: { name: string }) {
         "relative h-16 w-16 overflow-hidden rounded-full border transition-transform active:scale-95",
         grain
       )}
-      style={{ backgroundImage: categoryTint(name) }}
+      style={{ background: categoryTint(name) }}
     >
       {art && !failed && (
         // eslint-disable-next-line @next/next/no-img-element
