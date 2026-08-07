@@ -6,6 +6,7 @@ import Navbar from './components/Navbar'
 import { MobileDock } from './components/mobile/MobileDock'
 import AdminNotifications from './components/AdminNotifications'
 import UserNotifications from './components/UserNotifications'
+import { MobileToasts } from './components/mobile/MobileToasts'
 import Providers from './Providers'
 import { useMobileMenu } from './contexts/MobileMenuContext'
 import MobileMenuPanel from './components/MobileMenuPanel'
@@ -159,13 +160,14 @@ export default function AppRootClient({ children }: { children: React.ReactNode 
             // Mobile Layout or Bypass
             shouldBypassMobileLayout ? (
               <>
-                <UserNotifications />
+                {/* Pills above the dock instead of glass cards — see MobileToasts. */}
+                <MobileToasts />
                 <AdminNotifications />
                 {children}
               </>
             ) : (
               <>
-                <UserNotifications />
+                <MobileToasts />
                 <AdminNotifications />
                 <MobileLayout onSwitchToDesktop={switchToDesktopView}>{children}</MobileLayout>
               </>

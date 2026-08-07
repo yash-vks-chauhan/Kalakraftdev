@@ -70,15 +70,28 @@ export default function MobileHome() {
     }
   }, [])
 
+  // The section numbers are part of the design, so they have to count what
+  // actually renders. Each section hides itself when it has nothing to show —
+  // no usage tags on any product, say — and hardcoded numbers left a hole
+  // like 01, 03, 04. This walks them in render order instead.
+  let counted = 0
+  const step = (shown: boolean) =>
+    shown ? String(++counted).padStart(2, "0") : ""
+
+  const categoryIndex = step(loading || categories.length > 0)
+  const occasionIndex = step(loading || tags.length > 0)
+  const bestIndex = step(loading || bestSellers.length > 0)
+  const newIndex = step(loading || newIn.length > 0)
+
   return (
     <div className="bg-background text-foreground">
       <HeroPour />
 
-      <CategoryRail categories={categories} loading={loading} />
-      <OccasionChips tags={tags} loading={loading} />
-      <BestSellersRail products={bestSellers} loading={loading} />
+      <CategoryRail categories={categories} loading={loading} index={categoryIndex} />
+      <OccasionChips tags={tags} loading={loading} index={occasionIndex} />
+      <BestSellersRail products={bestSellers} loading={loading} index={bestIndex} />
       <EditorialBand />
-      <NewInGrid products={newIn} loading={loading} />
+      <NewInGrid products={newIn} loading={loading} index={newIndex} />
       <TrustStrip />
       <MobileFooter />
     </div>

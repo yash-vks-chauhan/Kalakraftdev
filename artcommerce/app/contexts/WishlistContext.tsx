@@ -107,6 +107,17 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
 
     const data = await res.json()
     setWishlistItems((prev) => [...prev, data.wishlistItem])
+
+    // Removing already announced itself; adding did not, which left the
+    // caller to invent its own confirmation. Both go through here now, so
+    // there is one message per action wherever the wishlist is touched.
+    addNotification({
+      title: 'Added to Wishlist',
+      body: 'Item saved to your wishlist',
+      category: 'user',
+      severity: 'success',
+    })
+
     return data.wishlistItem
   }
 

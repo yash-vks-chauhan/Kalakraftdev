@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useAuth } from "../../../contexts/AuthContext"
 import { useCart } from "../../../contexts/CartContext"
+import { useWishlist } from "../../../contexts/WishlistContext"
 import { LOW_STOCK, firstImage, formatPrice, type MobileProduct } from "./types"
 import { grain } from "./Pour"
 
@@ -19,7 +20,11 @@ import { grain } from "./Pour"
  * The card answers the four questions a shopper actually has — what is it,
  * what does it cost, is it any good, can I still get one — and then lets them
  * act without leaving the page. CartItem is product + quantity with no
- * variants, so one tap is a complete action and the toast is the undo path.
+ * variants, so one tap is a complete action.
+ *
+ * Both actions hit the real contexts, which raise their own notifications —
+ * on a phone those arrive as the black pill above the dock. Nothing here
+ * toasts on success, or every tap would confirm itself twice.
  */
 export function ProductCard({
   product,
@@ -33,9 +38,14 @@ export function ProductCard({
 }) {
   const image = firstImage(product.imageUrls)
   const { addToCart } = useCart()
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist()
   const { user } = useAuth()
   const [adding, setAdding] = useState(false)
-  const [saved, setSaved] = useState(false)
+  const [saving, setSaving] = useState(false)
+
+  // The heart used to be local state, so it forgot itself on every navigation
+  // and never reached the wishlist the dock counts.
+  const saved = isInWishlist(product.id)
 
   const outOfStock = product.stockQuantity <= 0
   const lowStock = !outOfStock && product.stockQuantity <= LOW_STOCK
@@ -45,16 +55,16 @@ export function ProductCard({
     e.preventDefault()
     e.stopPropagation()
     if (adding) return
+    // addToCart throws before it can notify anyone when there is no token, so
+    // a guest would otherwise get "could not add" for something that is really
+    // just a sign-in.
+    if (!user) {
+      toast("Sign in to add to cart")
+      return
+    }
     setAdding(true)
     try {
-      const ok = await addToCart(product.id, 1)
-      if (ok) {
-        toast.success(`${product.name} added`, {
-          action: { label: "View cart", onClick: () => { window.location.href = user ? "/dashboard/cart" : "/cart" } },
-        })
-      } else {
-        toast.error("Could not add that to your cart")
-      }
+      await addToCart(product.id, 1)
     } catch {
       toast.error("Could not add that to your cart")
     } finally {
@@ -62,11 +72,23 @@ export function ProductCard({
     }
   }
 
-  function handleSave(e: React.MouseEvent) {
+  async function handleSave(e: React.MouseEvent) {
     e.preventDefault()
     e.stopPropagation()
-    setSaved((v) => !v)
-    toast(saved ? "Removed from saved" : "Saved for later")
+    if (saving) return
+    if (!user) {
+      toast("Sign in to save pieces")
+      return
+    }
+    setSaving(true)
+    try {
+      if (saved) await removeFromWishlist(product.id)
+      else await addToWishlist(product.id)
+    } catch {
+      toast.error("Could not update your saved list")
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
@@ -97,6 +119,7 @@ export function ProductCard({
           type="button"
           onClick={handleSave}
           aria-pressed={saved}
+          disabled={saving}
           aria-label={saved ? `Remove ${product.name} from saved` : `Save ${product.name}`}
           className={cn(
             "absolute right-1.5 top-1.5 flex h-10 w-10 items-center justify-center rounded-full",

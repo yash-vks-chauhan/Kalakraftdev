@@ -111,12 +111,8 @@ export default function WishlistButton({ productId, className = '', preventNavig
           }
         }
         
-        addNotification({
-          title: 'Added to Wishlist',
-          body: 'Item has been added to your wishlist',
-          category: 'user',
-          severity: 'success'
-        })
+        // addToWishlist announces this itself now — a second call here would
+        // show the confirmation twice.
       }
       
     } catch (error) {

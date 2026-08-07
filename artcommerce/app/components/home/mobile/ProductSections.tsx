@@ -6,16 +6,18 @@ import type { MobileProduct } from "./types"
 export function BestSellersRail({
   products,
   loading,
+  index,
 }: {
   products: MobileProduct[]
   loading: boolean
+  index: string
 }) {
   if (!loading && products.length === 0) return null
 
   return (
     <section className="pt-6">
       <SectionHeading
-        index="03"
+        index={index}
         job="Buy"
         title="Best"
         accent="sellers"
@@ -47,15 +49,17 @@ export function BestSellersRail({
 export function NewInGrid({
   products,
   loading,
+  index,
 }: {
   products: MobileProduct[]
   loading: boolean
+  index: string
 }) {
   if (!loading && products.length === 0) return null
 
   return (
     <section className="pt-6">
-      <SectionHeading index="04" job="Buy" title="New" accent="in" href="/products?sort=newest" />
+      <SectionHeading index={index} job="Buy" title="New" accent="in" href="/products?sort=newest" />
       <div className="grid grid-cols-2 gap-3.5 px-4 pb-3">
         {loading
           ? Array.from({ length: 4 }).map((_, i) => <ProductCardSkeleton key={i} />)

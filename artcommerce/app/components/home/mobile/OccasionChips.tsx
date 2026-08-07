@@ -10,19 +10,26 @@ import { SectionHeading } from "./SectionHeading"
  * flattens and dedupes them across active products, and the products list
  * filters on ?usageTag= — this is the one browse axis that is distinctly
  * Kalakraft rather than a marketplace convention.
+ *
+ * Nothing to show means no products carry usage tags yet, and an empty
+ * section is worse than none, so it hides. The section number comes from the
+ * page rather than being hardcoded, so hiding leaves 01, 02, 03 rather than
+ * a hole where 02 used to be.
  */
 export function OccasionChips({
   tags,
   loading,
+  index,
 }: {
   tags: string[]
   loading: boolean
+  index: string
 }) {
   if (!loading && tags.length === 0) return null
 
   return (
     <section className="pt-6">
-      <SectionHeading index="02" job="Browse" title="Shop by" accent="occasion" />
+      <SectionHeading index={index} job="Browse" title="Shop by" accent="occasion" />
       <div className="flex gap-2 overflow-x-auto px-4 pb-2.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {loading
           ? Array.from({ length: 4 }).map((_, i) => (
