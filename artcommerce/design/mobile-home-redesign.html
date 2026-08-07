@@ -1,0 +1,1191 @@
+<title>Kalakraft — Mobile Home & Dock</title>
+
+<style>
+/* Same token system as the sign-in and reset specs — one set of documents. */
+:root {
+  --ground: #0b0a09; --panel: #141110; --panel-2: #1c1815;
+  --ink: #efe9e3; --ink-2: #a39a91; --ink-3: #6f665e;
+  --line: rgba(240,233,227,.10); --line-2: rgba(240,233,227,.16);
+  --ember: #e2853d; --ember-soft: rgba(226,133,61,.14);
+  --good: #34d399; --warn: #f0b429; --bad: #f87171;
+  --serif: Georgia, "Iowan Old Style", "Times New Roman", serif;
+  --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  --measure: 63ch; --shell: 1180px;
+}
+@media (prefers-color-scheme: light) {
+  :root {
+    --ground: #f6f3ef; --panel: #fff; --panel-2: #f1ece5;
+    --ink: #1b1917; --ink-2: #5e574f; --ink-3: #8d857c;
+    --line: rgba(27,25,23,.11); --line-2: rgba(27,25,23,.18);
+    --ember: #b45309; --ember-soft: rgba(180,83,9,.10);
+    --good: #059669; --warn: #b45309; --bad: #dc2626;
+  }
+}
+:root[data-theme="light"] {
+  --ground: #f6f3ef; --panel: #fff; --panel-2: #f1ece5;
+  --ink: #1b1917; --ink-2: #5e574f; --ink-3: #8d857c;
+  --line: rgba(27,25,23,.11); --line-2: rgba(27,25,23,.18);
+  --ember: #b45309; --ember-soft: rgba(180,83,9,.10);
+  --good: #059669; --warn: #b45309; --bad: #dc2626;
+}
+:root[data-theme="dark"] {
+  --ground: #0b0a09; --panel: #141110; --panel-2: #1c1815;
+  --ink: #efe9e3; --ink-2: #a39a91; --ink-3: #6f665e;
+  --line: rgba(240,233,227,.10); --line-2: rgba(240,233,227,.16);
+  --ember: #e2853d; --ember-soft: rgba(226,133,61,.14);
+  --good: #34d399; --warn: #f0b429; --bad: #f87171;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--ground); color: var(--ink);
+  font-family: var(--sans); font-size: 16px; line-height: 1.6;
+  -webkit-font-smoothing: antialiased; overflow-x: hidden;
+}
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--ember); outline-offset: 2px; border-radius: 4px; }
+
+.wrap { max-width: var(--shell); margin: 0 auto; padding: 0 24px; }
+.prose { max-width: var(--measure); }
+.kicker {
+  font-family: var(--mono); font-size: 11px; letter-spacing: .16em;
+  text-transform: uppercase; color: var(--ink-3); margin: 0;
+}
+h1, h2, h3 { text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(30px, 5.4vw, 50px); line-height: 1.06; letter-spacing: -.022em; font-weight: 600; }
+h1 em { font-family: var(--serif); font-style: italic; font-weight: 400; color: var(--ember); }
+h2 { font-size: clamp(21px, 2.6vw, 28px); line-height: 1.2; letter-spacing: -.015em; font-weight: 600; }
+h3 { font-size: 15px; font-weight: 650; letter-spacing: -.005em; }
+p { margin: 0; }
+.lede { color: var(--ink-2); font-size: 17px; line-height: 1.62; }
+.note { color: var(--ink-2); font-size: 14.5px; }
+code {
+  font-family: var(--mono); font-size: .86em; background: var(--ember-soft);
+  color: var(--ember); padding: .13em .4em; border-radius: 4px; white-space: nowrap;
+}
+
+.masthead {
+  border-bottom: 1px solid var(--line);
+  background: radial-gradient(ellipse 70% 120% at 12% 0%, var(--ember-soft), transparent 62%), var(--ground);
+}
+.masthead .wrap { display: flex; flex-direction: column; gap: 26px; padding: 40px 24px 44px; }
+.mast-top { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.brandline {
+  display: flex; align-items: center; gap: 10px; font-family: var(--mono);
+  font-size: 11.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-2);
+}
+.brandline .dot {
+  width: 22px; height: 22px; border-radius: 6px;
+  background: linear-gradient(135deg,#f59e0b,#b91c1c);
+  display: grid; place-items: center; font-family: var(--serif);
+  font-style: italic; font-size: 13px; color: #fff; letter-spacing: 0;
+}
+.meta-row { display: flex; flex-wrap: wrap; gap: 8px 10px; }
+.tag {
+  font-family: var(--mono); font-size: 11px; letter-spacing: .06em; color: var(--ink-2);
+  border: 1px solid var(--line-2); border-radius: 999px; padding: 4px 11px; white-space: nowrap;
+}
+.tag.on { color: var(--ember); border-color: color-mix(in srgb, var(--ember) 45%, transparent); background: var(--ember-soft); }
+.tag.yes { color: var(--good); border-color: color-mix(in srgb, var(--good) 45%, transparent); background: color-mix(in srgb, var(--good) 10%, transparent); }
+
+section { border-bottom: 1px solid var(--line); }
+section > .wrap { padding: 56px 24px; display: flex; flex-direction: column; gap: 28px; }
+.sec-head { display: flex; flex-direction: column; gap: 10px; }
+
+/* ─────────── verdict callout ─────────── */
+.verdict {
+  display: grid; grid-template-columns: auto minmax(0,1fr); gap: 18px;
+  border: 1px solid color-mix(in srgb, var(--good) 35%, transparent);
+  background: color-mix(in srgb, var(--good) 7%, transparent);
+  border-radius: 16px; padding: 20px 22px;
+}
+.verdict .mark {
+  width: 34px; height: 34px; border-radius: 999px; flex: 0 0 auto;
+  background: var(--good); color: var(--ground);
+  display: grid; place-items: center;
+}
+.verdict h3 { font-size: 16px; margin-bottom: 5px; }
+.verdict p { font-size: 14px; color: var(--ink-2); line-height: 1.55; }
+
+/* ─────────── phones ─────────── */
+.strip {
+  display: flex; gap: 40px; align-items: flex-start;
+  overflow-x: auto; padding: 4px 4px 14px 20px; margin-left: -20px;
+  scrollbar-width: thin;
+}
+.stage { flex: 0 0 auto; display: flex; flex-direction: column; gap: 14px; width: 410px; }
+.stage.wide { width: auto; }
+.stage-label { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.stage-label .name { font-family: var(--mono); font-size: 11px; letter-spacing: .16em; text-transform: uppercase; }
+.stage-label .name.now { color: var(--ink-3); }
+.stage-label .name.next { color: var(--ember); }
+.stage-label .spec { font-family: var(--mono); font-size: 10.5px; color: var(--ink-3); white-space: nowrap; }
+
+.phone {
+  position: relative; width: 410px; height: 864px; border-radius: 44px; padding: 10px;
+  background: linear-gradient(160deg,#3a3330,#1a1615 40%,#2b2624);
+  box-shadow: 0 0 0 1px rgba(255,255,255,.06), 0 30px 70px -30px rgba(0,0,0,.85);
+  flex: 0 0 auto;
+}
+.phone-screen {
+  position: relative; width: 390px; height: 844px; border-radius: 35px;
+  overflow: hidden; background: #fff; isolation: isolate;
+}
+.notch {
+  position: absolute; top: 9px; left: 50%; transform: translateX(-50%);
+  width: 108px; height: 26px; border-radius: 999px; background: #0b0a09; z-index: 60;
+}
+.pin {
+  position: absolute; z-index: 55; width: 24px; height: 24px; border-radius: 50%;
+  background: var(--ember); color: #150f09; font-family: var(--mono);
+  font-size: 11.5px; font-weight: 700; display: grid; place-items: center;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ember) 28%, transparent); cursor: help;
+}
+
+/* ─────────── mock: the app's real shadcn tokens ─────────── */
+.mock {
+  --background: 0 0% 100%; --foreground: 0 0% 10.2%; --card: 0 0% 100%;
+  --muted: 0 0% 96.1%; --muted-foreground: 0 0% 40%; --border: 0 0% 89.8%;
+  --primary: 0 0% 10.2%; --primary-foreground: 0 0% 98%; --radius: .625rem;
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  background: hsl(var(--background)); color: hsl(var(--foreground));
+  font-family: var(--sans); font-size: 14px; line-height: 1.5; overflow: hidden;
+}
+.statusbar {
+  position: relative; z-index: 50; height: 44px; flex: 0 0 44px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 26px 0 30px; font-size: 12.5px; font-weight: 620;
+  font-variant-numeric: tabular-nums; pointer-events: none;
+}
+.statusbar .sigs { display: flex; align-items: center; gap: 5px; }
+.statusbar .bar { width: 3px; border-radius: 1px; background: currentColor; }
+.statusbar .batt { width: 22px; height: 11px; border: 1.2px solid currentColor; border-radius: 3px; padding: 1.4px; opacity: .9; }
+.statusbar .batt i { display: block; height: 100%; width: 72%; background: currentColor; border-radius: 1px; }
+.scroller { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+
+/* resin-swirl tiles stand in for photography (the artifact CSP blocks remote images) */
+.art { position: relative; overflow: hidden; background: #e8e2db; }
+.art::after {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(circle at 30% 25%, rgba(255,255,255,.5), transparent 45%);
+}
+.a1 { background: radial-gradient(circle at 28% 30%, #f0a868, transparent 58%), radial-gradient(circle at 72% 70%, #9d4a3b, transparent 60%), #e8c9a4; }
+.a2 { background: radial-gradient(circle at 65% 25%, #7fb3c8, transparent 55%), radial-gradient(circle at 25% 75%, #2f5d73, transparent 60%), #cfe0e6; }
+.a3 { background: radial-gradient(circle at 40% 70%, #d98ca6, transparent 55%), radial-gradient(circle at 75% 25%, #7d3050, transparent 58%), #ecd2dc; }
+.a4 { background: radial-gradient(circle at 30% 30%, #b7c99a, transparent 55%), radial-gradient(circle at 70% 72%, #3f5b34, transparent 58%), #dbe4cc; }
+.a5 { background: radial-gradient(circle at 60% 35%, #e7c463, transparent 55%), radial-gradient(circle at 25% 70%, #8a6a1f, transparent 58%), #f0e2b8; }
+.a6 { background: radial-gradient(circle at 35% 65%, #a99bd4, transparent 55%), radial-gradient(circle at 70% 30%, #453a72, transparent 58%), #ded8ee; }
+.a7 { background: radial-gradient(circle at 50% 30%, #f0b7a1, transparent 55%), radial-gradient(circle at 30% 75%, #a5462c, transparent 58%), #f2d8cc; }
+.a8 { background: radial-gradient(circle at 65% 60%, #8fc7b0, transparent 55%), radial-gradient(circle at 30% 25%, #22614c, transparent 58%), #cfe6dc; }
+
+/* ─────────── BEFORE (legacy mobile home) ─────────── */
+.legacy-hero {
+  padding: 26px 18px 20px; text-align: center;
+  background: linear-gradient(180deg,#fdfbf8,#f4efe8);
+  border-bottom: 1px solid hsl(var(--border));
+}
+.legacy-hero .rule { height: 1px; background: hsl(var(--border)); margin: 0 auto 12px; width: 54px; }
+.legacy-hero h2 { font-family: var(--serif); font-size: 25px; font-weight: 400; letter-spacing: -.01em; }
+.legacy-hero p { font-size: 12.5px; color: hsl(var(--muted-foreground)); margin-top: 7px; line-height: 1.55; }
+.legacy-pills { display: flex; gap: 7px; overflow-x: auto; padding: 14px 18px; border-bottom: 1px solid hsl(var(--border)); }
+.legacy-pills span {
+  flex: 0 0 auto; border: 1px solid hsl(var(--border)); border-radius: 999px;
+  padding: 7px 13px; font-size: 12px; color: hsl(var(--muted-foreground)); white-space: nowrap;
+}
+.legacy-pills span.on { background: hsl(var(--foreground)); color: hsl(var(--primary-foreground)); border-color: transparent; }
+.legacy-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 16px 18px; }
+.legacy-card { border: 1px solid hsl(var(--border)); border-radius: 10px; overflow: hidden; }
+.legacy-card .art { height: 118px; }
+.legacy-card .meta { padding: 8px 9px 10px; }
+.legacy-card .meta b { display: block; font-size: 12px; font-weight: 550; }
+.legacy-card .meta span { font-size: 12px; color: hsl(var(--muted-foreground)); }
+.legacy-band {
+  margin: 6px 18px 18px; border: 1px dashed hsl(var(--border)); border-radius: 12px;
+  padding: 20px 14px; text-align: center; color: hsl(var(--muted-foreground));
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: .09em; line-height: 1.9;
+}
+.legacy-carousel { display: flex; gap: 12px; padding: 4px 18px 18px; overflow: hidden; }
+.legacy-carousel > div { flex: 0 0 62%; border-radius: 12px; overflow: hidden; height: 190px; }
+
+/* ─────────── AFTER (proposed home) ─────────── */
+.top-bar {
+  position: sticky; top: 0; z-index: 30; flex: 0 0 auto;
+  background: hsl(var(--background) / .92); backdrop-filter: blur(12px);
+  border-bottom: 1px solid hsl(var(--border));
+  padding: 8px 14px 10px; display: flex; flex-direction: column; gap: 9px;
+}
+.top-row { display: flex; align-items: center; gap: 10px; }
+.top-row .mark { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 650; letter-spacing: -.01em; }
+.top-row .mark .sq {
+  width: 28px; height: 28px; border-radius: 8px; background: linear-gradient(135deg,#f59e0b,#b91c1c);
+  display: grid; place-items: center; font-family: var(--serif); font-style: italic; color: #fff; font-size: 15px;
+}
+.icon-btn {
+  position: relative; width: 40px; height: 40px; border-radius: 999px; border: 0;
+  background: transparent; color: hsl(var(--foreground)); display: grid; place-items: center; cursor: pointer;
+}
+.icon-btn .dot { position: absolute; top: 8px; right: 8px; width: 7px; height: 7px; border-radius: 999px; background: #b45309; }
+.searchbar {
+  display: flex; align-items: center; gap: 9px; height: 42px; padding: 0 13px;
+  border: 1px solid hsl(var(--border)); border-radius: 999px;
+  background: hsl(var(--muted) / .55); color: hsl(var(--muted-foreground)); font-size: 13.5px;
+}
+.searchbar .mic { margin-left: auto; }
+
+.sec { padding: 20px 0 4px; }
+.sec-top { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 0 16px 11px; }
+.sec-top h4 { font-size: 16px; font-weight: 650; letter-spacing: -.015em; }
+.sec-top .all { font-size: 12.5px; font-weight: 550; color: hsl(var(--muted-foreground)); display: inline-flex; align-items: center; gap: 3px; }
+.sec-sub { padding: 0 16px 11px; font-size: 12px; color: hsl(var(--muted-foreground)); margin-top: -8px; }
+
+/* hero carousel */
+.hero-rail { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 12px 16px 10px; }
+.hero-rail::-webkit-scrollbar { display: none; }
+.hero-card {
+  flex: 0 0 84%; scroll-snap-align: center; height: 178px; border-radius: 18px;
+  overflow: hidden; position: relative; display: flex; align-items: flex-end;
+}
+.hero-card .veil { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,.72), rgba(0,0,0,.12) 62%); }
+.hero-card .copy { position: relative; padding: 15px; color: #fff; }
+.hero-card .eyebrow {
+  display: inline-flex; font-size: 9px; letter-spacing: .2em; text-transform: uppercase;
+  background: rgba(255,255,255,.2); border: 1px solid rgba(255,255,255,.25);
+  border-radius: 999px; padding: 3px 8px; margin-bottom: 7px; backdrop-filter: blur(4px);
+}
+.hero-card h3 { font-size: 21px; font-weight: 300; line-height: 1.15; }
+.hero-card h3 em { font-family: var(--serif); font-style: italic; }
+.hero-card .go {
+  margin-top: 9px; display: inline-flex; align-items: center; gap: 5px;
+  background: #fff; color: #111; border-radius: 999px; padding: 7px 13px; font-size: 12px; font-weight: 600;
+}
+.hero-dots { display: flex; justify-content: center; gap: 5px; padding-bottom: 4px; }
+.hero-dots i { width: 5px; height: 5px; border-radius: 999px; background: hsl(var(--border)); transition: width .3s ease, background .3s ease; }
+.hero-dots i.on { width: 18px; background: hsl(var(--foreground)); }
+
+/* category rail */
+.cat-rail { display: flex; gap: 14px; overflow-x: auto; padding: 2px 16px 6px; }
+.cat-rail::-webkit-scrollbar { display: none; }
+.cat {
+  flex: 0 0 auto; width: 68px; display: flex; flex-direction: column; align-items: center; gap: 7px;
+  border: 0; background: transparent; padding: 0; cursor: pointer; color: inherit;
+}
+.cat .disc { width: 62px; height: 62px; border-radius: 999px; border: 1px solid hsl(var(--border)); }
+.cat span { font-size: 11px; line-height: 1.25; text-align: center; color: hsl(var(--foreground)); }
+
+/* mood chips */
+.chips { display: flex; gap: 7px; overflow-x: auto; padding: 2px 16px 8px; }
+.chips::-webkit-scrollbar { display: none; }
+.chip-m {
+  flex: 0 0 auto; border: 1px solid hsl(var(--border)); border-radius: 999px;
+  padding: 8px 13px; font-size: 12.5px; background: hsl(var(--background));
+  color: hsl(var(--foreground)); cursor: pointer; white-space: nowrap;
+}
+.chip-m[aria-pressed="true"] { background: hsl(var(--foreground)); color: hsl(var(--primary-foreground)); border-color: transparent; }
+
+/* product rail + grid */
+.p-rail { display: flex; gap: 12px; overflow-x: auto; padding: 2px 16px 10px; }
+.p-rail::-webkit-scrollbar { display: none; }
+.p-rail .pcard { flex: 0 0 152px; }
+.p-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; padding: 2px 16px 12px; }
+
+.pcard { display: flex; flex-direction: column; gap: 7px; position: relative; }
+.pcard .shot { position: relative; aspect-ratio: 1; border-radius: 13px; overflow: hidden; border: 1px solid hsl(var(--border)); }
+.pcard .heart {
+  position: absolute; top: 6px; right: 6px; width: 32px; height: 32px; border-radius: 999px;
+  border: 0; background: rgba(255,255,255,.86); backdrop-filter: blur(6px);
+  display: grid; place-items: center; cursor: pointer; color: #57534e;
+}
+.pcard .heart[aria-pressed="true"] { color: #dc2626; }
+.pcard .rank {
+  position: absolute; left: 6px; top: 6px; min-width: 22px; height: 22px; border-radius: 999px;
+  background: hsl(var(--foreground)); color: hsl(var(--primary-foreground));
+  font-size: 11px; font-weight: 700; display: grid; place-items: center; padding: 0 6px;
+}
+.pcard .flag {
+  position: absolute; left: 6px; bottom: 6px; border-radius: 999px; padding: 3px 8px;
+  font-size: 9.5px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
+  background: rgba(255,255,255,.92); color: #7c2d12;
+}
+.pcard .flag.made { color: #3f3f46; }
+.pcard .nm { font-size: 12.5px; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.pcard .row { display: flex; align-items: center; gap: 7px; }
+.pcard .pr { font-size: 13.5px; font-weight: 650; letter-spacing: -.01em; }
+.pcard .mrp { font-size: 11.5px; color: hsl(var(--muted-foreground)); text-decoration: line-through; }
+.pcard .rt { margin-left: auto; display: inline-flex; align-items: center; gap: 3px; font-size: 11px; color: hsl(var(--muted-foreground)); }
+.pcard .add {
+  height: 32px; border-radius: 8px; border: 1px solid hsl(var(--border));
+  background: hsl(var(--background)); font: inherit; font-size: 12px; font-weight: 550;
+  display: inline-flex; align-items: center; justify-content: center; gap: 5px; cursor: pointer;
+}
+.pcard .add[data-added="true"] { background: hsl(var(--foreground)); color: hsl(var(--primary-foreground)); border-color: transparent; }
+
+/* editorial band */
+.editorial { margin: 16px; border-radius: 16px; overflow: hidden; position: relative; height: 200px; display: flex; align-items: flex-end; }
+.editorial .veil { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,.78), rgba(0,0,0,.1) 65%); }
+.editorial .copy { position: relative; padding: 16px; color: #fff; }
+.editorial h4 { font-size: 19px; font-weight: 300; line-height: 1.2; }
+.editorial h4 em { font-family: var(--serif); font-style: italic; }
+.editorial p { font-size: 12px; color: rgba(255,255,255,.8); margin-top: 5px; line-height: 1.5; }
+
+/* trust */
+.trust { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 4px 16px 0; padding: 14px 0; border-top: 1px solid hsl(var(--border)); }
+.trust div { display: flex; flex-direction: column; align-items: center; gap: 2px; flex: 1; }
+.trust b { font-size: 14px; font-weight: 650; }
+.trust span { font-size: 9.5px; letter-spacing: .05em; text-transform: uppercase; color: hsl(var(--muted-foreground)); }
+
+.foot-links { padding: 16px; display: flex; flex-wrap: wrap; gap: 10px 18px; border-top: 1px solid hsl(var(--border)); margin-top: 10px; }
+.foot-links a { font-size: 12px; color: hsl(var(--muted-foreground)); }
+
+/* ─────────── the dock ─────────── */
+.dock-wrap {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 40;
+  display: flex; justify-content: center; padding: 0 16px 14px;
+  transition: transform .3s cubic-bezier(.32,.72,0,1);
+}
+.mock.dock-away .dock-wrap { transform: translateY(140%); }
+.dock {
+  display: flex; align-items: center; gap: 4px; width: 100%; max-width: 340px;
+  border: 1px solid hsl(var(--border)); border-radius: 999px;
+  background: hsl(var(--background) / .82); backdrop-filter: blur(16px);
+  padding: 6px; box-shadow: 0 8px 24px -8px rgba(0,0,0,.18);
+}
+.dock .t {
+  flex: 1 1 0; min-width: 0; height: 44px; border-radius: 999px; border: 0; background: transparent;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  color: hsl(var(--muted-foreground)); cursor: pointer; padding: 0;
+}
+.dock .t small { font-size: 9.5px; font-weight: 550; letter-spacing: .01em; }
+.dock .t[aria-current="page"] { color: hsl(var(--foreground)); }
+.dock .t[aria-current="page"] .pip { background: hsl(var(--foreground)); }
+.dock .pip { width: 4px; height: 4px; border-radius: 999px; background: transparent; margin-top: 1px; }
+.dock .t .badge {
+  position: absolute; transform: translate(11px,-9px); min-width: 16px; height: 16px;
+  border-radius: 999px; background: hsl(var(--foreground)); color: hsl(var(--primary-foreground));
+  font-size: 9.5px; font-weight: 700; display: grid; place-items: center; padding: 0 4px;
+  border: 2px solid hsl(var(--background));
+}
+/* the shipped three-target version keeps a wide search affordance */
+.dock.v3 .t.search { flex: 2 1 0; flex-direction: row; gap: 7px; justify-content: flex-start; padding: 0 12px; }
+.dock.v3 .t.search small { font-size: 13.5px; font-weight: 500; }
+.dock.v3 .t.search .pip { display: none; }
+
+/* ─────────── stack map ─────────── */
+.map { display: flex; flex-direction: column; gap: 6px; width: 330px; flex: 0 0 auto; }
+.band {
+  display: grid; grid-template-columns: 52px minmax(0,1fr) auto; gap: 12px; align-items: center;
+  border: 1px solid var(--line); border-left: 3px solid var(--ember);
+  border-radius: 10px; padding: 10px 12px; background: var(--panel);
+}
+.band.brand { border-left-color: #b91c1c; }
+.band.browse { border-left-color: var(--ember); }
+.band.buy { border-left-color: var(--good); }
+.band.trustb { border-left-color: var(--ink-3); }
+.band .h { font-family: var(--mono); font-size: 10.5px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.band b { font-size: 13px; font-weight: 600; display: block; }
+.band span { font-size: 11.5px; color: var(--ink-2); line-height: 1.4; }
+.band .job {
+  font-family: var(--mono); font-size: 9px; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--ink-3); border: 1px solid var(--line-2); border-radius: 999px; padding: 2px 7px; white-space: nowrap;
+}
+
+/* ─────────── controls ─────────── */
+.controls {
+  display: flex; flex-direction: column; gap: 10px; border: 1px solid var(--line);
+  border-radius: 14px; padding: 14px; background: var(--panel);
+}
+.controls .clabel { font-family: var(--mono); font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: var(--ink-3); }
+.chips-c { display: flex; flex-wrap: wrap; gap: 7px; }
+.chip {
+  border: 1px solid var(--line-2); background: transparent; color: var(--ink-2);
+  border-radius: 999px; padding: 6px 13px; font: inherit; font-size: 12.5px; cursor: pointer;
+  transition: color .16s ease, border-color .16s ease, background .16s ease;
+}
+.chip:hover { color: var(--ink); background: var(--panel-2); }
+.chip[aria-pressed="true"] { color: var(--ember); border-color: color-mix(in srgb, var(--ember) 50%, transparent); background: var(--ember-soft); }
+
+/* ─────────── findings ─────────── */
+.pairs { display: flex; flex-direction: column; }
+.pair { display: grid; grid-template-columns: 34px minmax(0,1fr) minmax(0,1fr); gap: 18px; padding: 20px 0; border-top: 1px solid var(--line); align-items: start; }
+.pair:last-child { border-bottom: 1px solid var(--line); }
+.pair .num { font-family: var(--mono); font-size: 12px; color: var(--ember); padding-top: 2px; }
+.pair .now h3 { margin-bottom: 4px; }
+.pair .now p, .pair .fix p { font-size: 14px; color: var(--ink-2); line-height: 1.55; }
+.pair .fix h3 { color: var(--ember); margin-bottom: 4px; }
+.pair .fix { border-left: 1px solid var(--line); padding-left: 18px; }
+@media (max-width: 720px) {
+  .pair { grid-template-columns: 26px minmax(0,1fr); }
+  .pair .fix { grid-column: 2; border-left: 0; padding-left: 0; padding-top: 10px; }
+}
+
+.table-scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 14px; }
+table { border-collapse: collapse; width: 100%; min-width: 680px; font-size: 14px; }
+th, td { text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-family: var(--mono); font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); font-weight: 400; background: var(--panel); }
+tr:last-child td { border-bottom: 0; }
+td:first-child { font-weight: 550; white-space: nowrap; }
+td .m { font-family: var(--mono); font-size: 12.5px; color: var(--ink-2); }
+
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(268px,1fr)); gap: 14px; }
+.card { border: 1px solid var(--line); border-radius: 14px; padding: 18px; background: var(--panel); display: flex; flex-direction: column; gap: 9px; }
+.card h3 { display: flex; align-items: center; gap: 9px; }
+.card h3 .bullet { width: 6px; height: 6px; border-radius: 50%; background: var(--ember); flex: 0 0 auto; }
+.card ul { margin: 0; padding-left: 17px; display: flex; flex-direction: column; gap: 6px; }
+.card li, .card p { font-size: 13.5px; color: var(--ink-2); line-height: 1.5; }
+.card.pick { border-color: color-mix(in srgb, var(--ember) 40%, transparent); background: var(--ember-soft); }
+.card.pick h3 { color: var(--ember); }
+
+.q { display: flex; flex-direction: column; gap: 4px; border-left: 3px solid var(--ember); padding: 2px 0 2px 14px; }
+.q b { font-size: 14px; }
+.q span { font-size: 13.5px; color: var(--ink-2); line-height: 1.55; }
+
+footer.foot .wrap {
+  padding: 34px 24px 56px; display: flex; flex-wrap: wrap; gap: 12px 26px;
+  justify-content: space-between; align-items: baseline;
+  font-family: var(--mono); font-size: 11px; color: var(--ink-3); letter-spacing: .05em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
+</style>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="mast-top">
+      <div class="brandline"><span class="dot">K</span> Kalakraft · design proposal</div>
+      <div class="brandline" style="letter-spacing:.1em">Third of the mobile set</div>
+    </div>
+    <div class="prose" style="display:flex;flex-direction:column;gap:16px">
+      <p class="kicker">Home · mobile viewport</p>
+      <h1>The desktop home got a redesign. Mobile got a <em>comment.</em></h1>
+      <p class="lede">
+        <code>app/page.tsx</code> splits at line 1350: <code>desktopOnly</code> renders the
+        gallery redesign, <code>mobileOnly</code> is labelled — in the file —
+        <em>"unchanged legacy sections"</em>. That's the page most of your traffic sees.
+        This proposes it as a marketplace home: browse first, product-led, with the
+        navigation you already ship doing more work. The prototype is live — scroll it.
+      </p>
+    </div>
+    <div class="meta-row">
+      <span class="tag on">Live prototype</span>
+      <span class="tag">Proposal — nothing built</span>
+      <span class="tag yes">Dock check: already universal</span>
+      <span class="tag">390 × 844 · iPhone 14</span>
+      <span class="tag">Real categories &amp; usage tags</span>
+      <span class="tag">Desktop untouched</span>
+    </div>
+  </div>
+</header>
+
+<!-- ═══════════════ 01 THE DOCK CHECK ═══════════════ -->
+<section>
+  <div class="wrap">
+    <div class="sec-head prose">
+      <p class="kicker">01 — You asked me to check first</p>
+      <h2>Is the bottom navigation universal?</h2>
+    </div>
+
+    <div class="verdict">
+      <span class="mark">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m4 12.5 5 5L20 6.5"/></svg>
+      </span>
+      <div>
+        <h3>Yes — and it has been for a while.</h3>
+        <p>
+          <code>MobileDock</code> renders from <code>AppRootClient</code> on every route
+          except auth and checkout, which are deliberately excluded as single-purpose
+          flows. Its own comment says it replaced two systems: a hamburger drawer on the
+          storefront and a full-width tab bar in the dashboard, which used to swap under
+          you at the <code>/dashboard</code> boundary. So this isn't a question of making
+          it universal. It's a question of whether <strong>three targets</strong> —
+          Home, Search, Cart — are the right three for a marketplace.
+        </p>
+      </div>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <h3><span class="bullet"></span>What it does today</h3>
+        <ul>
+          <li>Floating pill, <code>max-w-sm</code>, blurred, above the safe area</li>
+          <li>Home is context-aware — it becomes <em>Dashboard</em> inside <code>/dashboard</code></li>
+          <li>Search opens the command palette, which searches products, pages and actions together</li>
+          <li>Cart carries a live count and routes to <code>/dashboard/cart</code> when signed in</li>
+          <li>Hides on scroll down past 120px, returns on scroll up</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3><span class="bullet"></span>What a marketplace misses</h3>
+        <ul>
+          <li><strong>No browse target.</strong> Discovery is search-only, and search needs a word you already have. Shopping is often "show me what you have".</li>
+          <li><strong>No saved items.</strong> Wishlist exists in the schema and the dashboard, but is unreachable from the dock.</li>
+          <li><strong>No account.</strong> Only reachable through Home once you're already in the dashboard.</li>
+          <li><strong>The first target is unstable</strong> — the same position means Home or Dashboard depending on where you stand.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="sec-head prose" style="margin-top:6px">
+      <h3 style="font-size:17px">Three ways to spend the space</h3>
+      <p class="note">Switch between them on the live phone below — the dock is real.</p>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <h3><span class="bullet"></span>A — Keep three</h3>
+        <p>No change. The homepage's own category rail carries browsing. Cheapest, and the dock stays uncluttered — but "saved" stays invisible, and search keeps carrying discovery it isn't good at.</p>
+      </div>
+      <div class="card pick">
+        <h3><span class="bullet"></span>B — Four, with search moved up <em style="font-family:var(--serif);font-size:13px">(recommended)</em></h3>
+        <p>Home · Shop · Saved · Cart. Search becomes a real field pinned to the top of the home screen, where a thumb looks for it while browsing, and the freed slot buys a browse destination. The palette still opens from the field.</p>
+      </div>
+      <div class="card">
+        <h3><span class="bullet"></span>C — Five</h3>
+        <p>Home · Shop · Search · Saved · Cart. Everything addressable, nothing hidden — but five targets in a floating pill at 390px leaves each about 62px, and the labels start to crowd.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ 02 BEFORE ═══════════════ -->
+<section>
+  <div class="wrap">
+    <div class="sec-head prose">
+      <p class="kicker">02 — What mobile renders now</p>
+      <h2>Six sections, most of them scenery</h2>
+      <p class="note">
+        Reconstructed from the <code>mobileOnly</code> branch: a serif hero, hardcoded
+        category pills, a shuffled product grid, then four more full-bleed carousels and
+        a video, separated by watercolour and ink-splash decoration.
+      </p>
+    </div>
+
+    <div class="strip">
+      <div class="stage">
+        <div class="stage-label">
+          <span class="name now">Now — page.tsx, mobileOnly</span>
+          <span class="spec">static</span>
+        </div>
+        <div class="phone">
+          <div class="notch"></div>
+          <span class="pin" style="top:120px;left:-13px" title="Finding 1 — no search anywhere above the fold">1</span>
+          <span class="pin" style="top:220px;right:-13px" title="Finding 2 — nine hardcoded categories, fuzzy-matched by name">2</span>
+          <span class="pin" style="top:380px;left:-13px" title="Finding 3 — products shuffled with Math.random on every mount">3</span>
+          <span class="pin" style="top:560px;right:-13px" title="Finding 5 — decoration between every section">5</span>
+          <span class="pin" style="top:720px;left:-13px" title="Finding 4 — four carousels of the same shape">4</span>
+          <div class="phone-screen">
+            <div class="mock">
+              <div class="statusbar">
+                <span>9:41</span>
+                <span class="sigs">
+                  <span class="bar" style="height:5px"></span><span class="bar" style="height:7px"></span>
+                  <span class="bar" style="height:9px"></span><span class="bar" style="height:11px"></span>
+                  <span class="batt"><i></i></span>
+                </span>
+              </div>
+              <div class="scroller">
+                <div class="legacy-hero">
+                  <div class="rule"></div>
+                  <h2>Featured Categories</h2>
+                  <p>Discover our handcrafted collections, made to order by artisans across India</p>
+                </div>
+                <div class="legacy-pills">
+                  <span class="on">All Products</span><span>Clocks</span><span>Pots</span>
+                  <span>Trays</span><span>Jewelry Trays</span><span>Rangoli</span>
+                </div>
+                <div class="legacy-grid">
+                  <div class="legacy-card"><div class="art a1"></div><div class="meta"><b>Resin Wall Clock</b><span>₹2,400</span></div></div>
+                  <div class="legacy-card"><div class="art a2"></div><div class="meta"><b>Ocean Tray</b><span>₹1,850</span></div></div>
+                  <div class="legacy-card"><div class="art a3"></div><div class="meta"><b>Blush Rangoli Set</b><span>₹990</span></div></div>
+                  <div class="legacy-card"><div class="art a4"></div><div class="meta"><b>Fern Coaster Set</b><span>₹750</span></div></div>
+                </div>
+                <div class="legacy-band">OUR COLLECTION — LOOPING CAROUSEL<br>WATERCOLOUR SPLASH · INK SPLASH · BRUSH ACCENT</div>
+                <div class="legacy-carousel">
+                  <div class="art a5"></div><div class="art a6"></div>
+                </div>
+                <div class="legacy-band">BEST SELLERS<br>THEN FEATURED DISCOVERIES CAROUSEL</div>
+                <div class="legacy-carousel">
+                  <div class="art a7"></div><div class="art a8"></div>
+                </div>
+                <div class="legacy-band">EXPLORE OUR ARTISAN CREATIONS<br>THEN MOBILE VIDEO SECTION</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ 03 THE PROPOSAL ═══════════════ -->
+<section>
+  <div class="wrap">
+    <div class="sec-head prose">
+      <p class="kicker">03 — The proposal</p>
+      <h2>A marketplace home, in one thumb's reach</h2>
+      <p class="note">
+        Scroll the phone. Tap the categories, the mood chips, the hearts, the add
+        buttons. Switch the dock between the three options. The map beside it is the
+        same page as a stack — what each band is for, and what it costs in height.
+      </p>
+    </div>
+
+    <div class="strip">
+      <div class="stage" id="after">
+        <div class="stage-label">
+          <span class="name next">Proposed — marketplace home</span>
+          <span class="spec" id="readout">dock: 4 targets</span>
+        </div>
+
+        <div class="phone">
+          <div class="notch"></div>
+          <div class="phone-screen">
+            <div class="mock" id="mock">
+              <div class="statusbar">
+                <span>9:41</span>
+                <span class="sigs">
+                  <span class="bar" style="height:5px"></span><span class="bar" style="height:7px"></span>
+                  <span class="bar" style="height:9px"></span><span class="bar" style="height:11px"></span>
+                  <span class="batt"><i></i></span>
+                </span>
+              </div>
+
+              <div class="scroller" id="scroller">
+                <!-- sticky top bar -->
+                <div class="top-bar">
+                  <div class="top-row">
+                    <span class="mark"><span class="sq">K</span> Kalakraft</span>
+                    <span style="margin-left:auto;display:flex;gap:2px">
+                      <button class="icon-btn" aria-label="Saved">
+                        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M19 14c1.5-1.5 3-3.3 3-5.5A5.5 5.5 0 0 0 12 5.4 5.5 5.5 0 0 0 2 8.5c0 2.2 1.5 4 3 5.5l7 7Z"/></svg>
+                      </button>
+                      <button class="icon-btn" aria-label="Account">
+                        <span class="dot"></span>
+                        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                      </button>
+                    </span>
+                  </div>
+                  <div class="searchbar" id="fakeSearch">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>
+                    <span>Search clocks, trays, rangoli…</span>
+                    <svg class="mic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v4"/></svg>
+                  </div>
+                </div>
+
+                <!-- hero carousel -->
+                <div class="hero-rail" id="heroRail">
+                  <div class="hero-card art a1">
+                    <span class="veil"></span>
+                    <span class="copy">
+                      <span class="eyebrow">New this week</span>
+                      <h3>Monsoon resin, poured in <em>small batches.</em></h3>
+                      <span class="go">Shop the drop
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                      </span>
+                    </span>
+                  </div>
+                  <div class="hero-card art a6">
+                    <span class="veil"></span>
+                    <span class="copy">
+                      <span class="eyebrow">Festive</span>
+                      <h3>Rangoli sets that <em>keep.</em></h3>
+                      <span class="go">Browse festive
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                      </span>
+                    </span>
+                  </div>
+                  <div class="hero-card art a8">
+                    <span class="veil"></span>
+                    <span class="copy">
+                      <span class="eyebrow">Made to order</span>
+                      <h3>Your piece, your <em>palette.</em></h3>
+                      <span class="go">Start a commission
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                      </span>
+                    </span>
+                  </div>
+                </div>
+                <div class="hero-dots" id="heroDots"><i class="on"></i><i></i><i></i></div>
+
+                <!-- categories -->
+                <div class="sec">
+                  <div class="sec-top">
+                    <h4>Shop by category</h4>
+                    <span class="all">All
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                    </span>
+                  </div>
+                  <div class="cat-rail">
+                    <button class="cat"><span class="disc art a1"></span><span>Clocks</span></button>
+                    <button class="cat"><span class="disc art a2"></span><span>Trays</span></button>
+                    <button class="cat"><span class="disc art a3"></span><span>Rangoli</span></button>
+                    <button class="cat"><span class="disc art a4"></span><span>Pots</span></button>
+                    <button class="cat"><span class="disc art a6"></span><span>Wall décor</span></button>
+                    <button class="cat"><span class="disc art a5"></span><span>Mirror work</span></button>
+                  </div>
+                </div>
+
+                <!-- mood chips -->
+                <div class="sec">
+                  <div class="sec-top">
+                    <h4>Shop by occasion</h4>
+                  </div>
+                  <p class="sec-sub">Straight from the tags already on your products.</p>
+                  <div class="chips" id="moodChips">
+                    <button class="chip-m" aria-pressed="true">Gifting</button>
+                    <button class="chip-m" aria-pressed="false">Festive</button>
+                    <button class="chip-m" aria-pressed="false">Housewarming</button>
+                    <button class="chip-m" aria-pressed="false">Desk</button>
+                    <button class="chip-m" aria-pressed="false">Wedding</button>
+                  </div>
+                </div>
+
+                <!-- best sellers -->
+                <div class="sec">
+                  <div class="sec-top">
+                    <h4>Best sellers</h4>
+                    <span class="all">See all
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                    </span>
+                  </div>
+                  <div class="p-rail" data-rail>
+                    <div class="pcard">
+                      <div class="shot art a1">
+                        <span class="rank">1</span>
+                        <button class="heart" aria-pressed="false" aria-label="Save">
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.6"><path d="M19 14c1.5-1.5 3-3.3 3-5.5A5.5 5.5 0 0 0 12 5.4 5.5 5.5 0 0 0 2 8.5c0 2.2 1.5 4 3 5.5l7 7Z"/></svg>
+                        </button>
+                        <span class="flag">2 left</span>
+                      </div>
+                      <span class="nm">Handcrafted Resin Wall Clock</span>
+                      <span class="row"><b class="pr">₹2,400</b><s class="mrp">₹3,200</s>
+                        <span class="rt">★ 4.8</span>
+                      </span>
+                      <button class="add" data-added="false">Add to cart</button>
+                    </div>
+                    <div class="pcard">
+                      <div class="shot art a2">
+                        <span class="rank">2</span>
+                        <button class="heart" aria-pressed="false" aria-label="Save">
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.6"><path d="M19 14c1.5-1.5 3-3.3 3-5.5A5.5 5.5 0 0 0 12 5.4 5.5 5.5 0 0 0 2 8.5c0 2.2 1.5 4 3 5.5l7 7Z"/></svg>
+                        </button>
+                      </div>
+                      <span class="nm">Ocean Pour Serving Tray</span>
+                      <span class="row"><b class="pr">₹1,850</b><span class="rt">★ 4.9</span></span>
+                      <button class="add" data-added="false">Add to cart</button>
+                    </div>
+                    <div class="pcard">
+                      <div class="shot art a5">
+                        <span class="rank">3</span>
+                        <button class="heart" aria-pressed="false" aria-label="Save">
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.6"><path d="M19 14c1.5-1.5 3-3.3 3-5.5A5.5 5.5 0 0 0 12 5.4 5.5 5.5 0 0 0 2 8.5c0 2.2 1.5 4 3 5.5l7 7Z"/></svg>
+                        </button>
+                        <span class="flag made">Made to order</span>
+                      </div>
+                      <span class="nm">Gold Leaf Coaster Set of 4</span>
+                      <span class="row"><b class="pr">₹1,150</b><span class="rt">★ 4.7</span></span>
+                      <button class="add" data-added="false">Add to cart</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- editorial -->
+                <div class="editorial art a6">
+                  <span class="veil"></span>
+                  <span class="copy">
+                    <h4>Where every piece tells a <em>story.</em></h4>
+                    <p>Two hundred artisans. One kiln at a time. Meet the makers behind the pour.</p>
+                    <span class="go" style="display:inline-flex;align-items:center;gap:5px;margin-top:10px;background:#fff;color:#111;border-radius:999px;padding:7px 13px;font-size:12px;font-weight:600">
+                      Read the craft story
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                    </span>
+                  </span>
+                </div>
+
+                <!-- new in -->
+                <div class="sec">
+                  <div class="sec-top">
+                    <h4>New in</h4>
+                    <span class="all">See all
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                    </span>
+                  </div>
+                  <div class="p-grid" data-rail>
+                    <div class="pcard">
+                      <div class="shot art a3">
+                        <button class="heart" aria-pressed="false" aria-label="Save">
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.6"><path d="M19 14c1.5-1.5 3-3.3 3-5.5A5.5 5.5 0 0 0 12 5.4 5.5 5.5 0 0 0 2 8.5c0 2.2 1.5 4 3 5.5l7 7Z"/></svg>
+                        </button>
+                      </div>
+                      <span class="nm">Blush Marble Rangoli, set of 5</span>
+                      <span class="row"><b class="pr">₹990</b><span class="rt">★ 4.6</span></span>
+                      <button class="add" data-added="false">Add to cart</button>
+                    </div>
+                    <div class="pcard">
+                      <div class="shot art a4">
+                        <button class="heart" aria-pressed="false" aria-label="Save">
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.6"><path d="M19 14c1.5-1.5 3-3.3 3-5.5A5.5 5.5 0 0 0 12 5.4 5.5 5.5 0 0 0 2 8.5c0 2.2 1.5 4 3 5.5l7 7Z"/></svg>
+                        </button>
+                        <span class="flag">4 left</span>
+                      </div>
+                      <span class="nm">Fern Press Planter, medium</span>
+                      <span class="row"><b class="pr">₹1,320</b><span class="rt">★ 4.8</span></span>
+                      <button class="add" data-added="false">Add to cart</button>
+                    </div>
+                    <div class="pcard">
+                      <div class="shot art a7">
+                        <button class="heart" aria-pressed="false" aria-label="Save">
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.6"><path d="M19 14c1.5-1.5 3-3.3 3-5.5A5.5 5.5 0 0 0 12 5.4 5.5 5.5 0 0 0 2 8.5c0 2.2 1.5 4 3 5.5l7 7Z"/></svg>
+                        </button>
+                      </div>
+                      <span class="nm">Terracotta Pour Mirror, round</span>
+                      <span class="row"><b class="pr">₹3,600</b><s class="mrp">₹4,100</s></span>
+                      <button class="add" data-added="false">Add to cart</button>
+                    </div>
+                    <div class="pcard">
+                      <div class="shot art a8">
+                        <button class="heart" aria-pressed="false" aria-label="Save">
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.6"><path d="M19 14c1.5-1.5 3-3.3 3-5.5A5.5 5.5 0 0 0 12 5.4 5.5 5.5 0 0 0 2 8.5c0 2.2 1.5 4 3 5.5l7 7Z"/></svg>
+                        </button>
+                      </div>
+                      <span class="nm">Jade Wave Wall Piece</span>
+                      <span class="row"><b class="pr">₹5,200</b><span class="rt">★ 5.0</span></span>
+                      <button class="add" data-added="false">Add to cart</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- trust -->
+                <div class="trust">
+                  <div><b>200+</b><span>Artisans</span></div>
+                  <div><b>20+</b><span>Countries</span></div>
+                  <div><b>5,000+</b><span>Collectors</span></div>
+                </div>
+
+                <div class="foot-links">
+                  <a href="#0">About</a><a href="#0">Contact</a><a href="#0">Shipping</a>
+                  <a href="#0">Returns</a><a href="#0">Privacy</a><a href="#0">Terms</a>
+                </div>
+
+                <div style="height:96px"></div>
+              </div>
+
+              <!-- the dock -->
+              <div class="dock-wrap">
+                <nav class="dock v4" id="dock" aria-label="Primary"></nav>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <span class="clabel">Dock option</span>
+          <div class="chips-c" id="dockChips">
+            <button class="chip" data-dock="3">A · Three</button>
+            <button class="chip" data-dock="4" aria-pressed="true">B · Four (recommended)</button>
+            <button class="chip" data-dock="5">C · Five</button>
+          </div>
+          <span class="clabel" style="margin-top:2px">Behaviour</span>
+          <div class="chips-c">
+            <button class="chip" data-act="hide" aria-pressed="false">Hide on scroll down</button>
+            <button class="chip" data-act="top">Back to top</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- stack map -->
+      <div class="stage wide">
+        <div class="stage-label">
+          <span class="name next">The page as a stack</span>
+          <span class="spec">≈ 1,950 px</span>
+        </div>
+        <div class="map">
+          <div class="band brand"><span class="h">104</span><span><b>Sticky top bar</b><span>Wordmark, saved, account, search field</span></span><span class="job">Find</span></div>
+          <div class="band brand"><span class="h">200</span><span><b>Hero carousel</b><span>3 slides, edge-peeking, snap</span></span><span class="job">Pitch</span></div>
+          <div class="band browse"><span class="h">150</span><span><b>Category rail</b><span>Real categories from the API</span></span><span class="job">Browse</span></div>
+          <div class="band browse"><span class="h">120</span><span><b>Occasion chips</b><span>From existing usageTags</span></span><span class="job">Browse</span></div>
+          <div class="band buy"><span class="h">300</span><span><b>Best sellers rail</b><span>Ranked 1–3, quick add</span></span><span class="job">Buy</span></div>
+          <div class="band brand"><span class="h">232</span><span><b>Editorial band</b><span>The one piece of desktop soul</span></span><span class="job">Trust</span></div>
+          <div class="band buy"><span class="h">640</span><span><b>New in — 2-up grid</b><span>Four cards, then See all</span></span><span class="job">Buy</span></div>
+          <div class="band trustb"><span class="h">64</span><span><b>Trust row</b><span>Same three numbers as auth</span></span><span class="job">Trust</span></div>
+          <div class="band trustb"><span class="h">140</span><span><b>Footer + dock clearance</b><span>Links, then 96px of air</span></span><span class="job">Exit</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ 04 FINDINGS ═══════════════ -->
+<section>
+  <div class="wrap">
+    <div class="sec-head prose">
+      <p class="kicker">04 — Findings</p>
+      <h2>Six things to change on the way</h2>
+    </div>
+    <div class="pairs">
+      <div class="pair">
+        <span class="num">01</span>
+        <div class="now"><h3>Nothing to search with</h3>
+          <p>There is no search field on the page. The only way in is the dock's palette, behind an icon, which auto-hides as you scroll down.</p></div>
+        <div class="fix"><h3>A field at the top, sticky</h3>
+          <p>It looks like an input and opens the palette you already built. Costs 42px and is the first thing a shopper reaches for.</p></div>
+      </div>
+      <div class="pair">
+        <span class="num">02</span>
+        <div class="now"><h3>Categories are hardcoded and fuzzy</h3>
+          <p>Nine categories are written into <code>page.tsx</code> and matched by substring against category <em>names</em>. Two of them — "Trays" (<code>tray</code>) and "Jewelry Trays" (<code>Tray</code>) — differ only in case, so they return the same products. Meanwhile <code>/api/categories</code> returns the real list, unused.</p></div>
+        <div class="fix"><h3>Read the real categories</h3>
+          <p>Rail sourced from <code>/api/categories</code>, linking to <code>/products?category=&lt;slug&gt;</code>, which the products API already filters on properly.</p></div>
+      </div>
+      <div class="pair">
+        <span class="num">03</span>
+        <div class="now"><h3>The grid reshuffles every visit</h3>
+          <p>Products are sorted with <code>Math.random()</code> and sliced to eight. Come back tomorrow and the piece you half-remember is gone — the worst property a storefront can have.</p></div>
+        <div class="fix"><h3>Ordered by something meaningful</h3>
+          <p>Best sellers from <code>/api/products/best-sellers</code>, new arrivals from the default <code>createdAt desc</code>. Stable, explicable, and already built.</p></div>
+      </div>
+      <div class="pair">
+        <span class="num">04</span>
+        <div class="now"><h3>Four carousels of the same shape</h3>
+          <p>Our Collection, Best Sellers, Featured Discoveries and Explore Our Artisan Creations are all horizontal scrollers of product images. By the third, they stop reading as different things.</p></div>
+        <div class="fix"><h3>Vary the shape, not just the title</h3>
+          <p>One ranked rail, one 2-up grid, one editorial band. Different shapes tell you something different is being said.</p></div>
+      </div>
+      <div class="pair">
+        <span class="num">05</span>
+        <div class="now"><h3>Decoration between every section</h3>
+          <p>Watercolour splashes, ink splashes, brush accents, light effects and header rules sit between sections, adding height without adding information.</p></div>
+        <div class="fix"><h3>Let the products be the colour</h3>
+          <p>Section headers are a title and a "See all". The pieces are vivid enough — resin art doesn't need a painted frame around it.</p></div>
+      </div>
+      <div class="pair">
+        <span class="num">06</span>
+        <div class="now"><h3>No price, rating or stock on the card</h3>
+          <p>The legacy cards show a name and a price. The API already returns rating average and count, and <code>stockQuantity</code> is right there — none of it reaches the card.</p></div>
+        <div class="fix"><h3>A card that answers the obvious questions</h3>
+          <p>Price with any MRP struck through, rating, a scarcity or made-to-order flag, a save heart and one-tap add. Anatomy below.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ 05 DATA MAP ═══════════════ -->
+<section>
+  <div class="wrap">
+    <div class="sec-head prose">
+      <p class="kicker">05 — Where each band gets its data</p>
+      <h2>Everything here is already queryable</h2>
+      <p class="note">
+        No new endpoints. The products API already takes <code>category</code>,
+        <code>usageTag</code>, <code>sort</code>, <code>inStock</code>,
+        <code>priceMin/Max</code> and <code>ratingMin</code>, and returns rating
+        averages and counts alongside each product.
+      </p>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Band</th><th>Source</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Search field</td><td><span class="m">CommandPalette</span></td><td>Already built and wired into the dock — this just gives it a visible entry point</td></tr>
+          <tr><td>Hero slides</td><td>Editable constant</td><td>Three slides; a CMS-free array until there's a reason for more</td></tr>
+          <tr><td>Category rail</td><td><span class="m">GET /api/categories</span></td><td>Returns id and name today; add <span class="m">slug</span> to the select for correct links</td></tr>
+          <tr><td>Occasion chips</td><td><span class="m">GET /api/products/usage-tags</span></td><td>Already flattens and dedupes tags across active products</td></tr>
+          <tr><td>Best sellers</td><td><span class="m">GET /api/products/best-sellers?limit=6</span></td><td>Powers the existing desktop section too</td></tr>
+          <tr><td>New in</td><td><span class="m">GET /api/products?sort=newest</span></td><td><span class="m">createdAt desc</span> is already the default order</td></tr>
+          <tr><td>Card rating</td><td>products API</td><td>Attached per product via a <span class="m">groupBy</span> on ProductReview</td></tr>
+          <tr><td>Card stock flag</td><td><span class="m">stockQuantity</span></td><td>"n left" under the low-stock threshold, "Made to order" at zero</td></tr>
+          <tr><td>Quick add</td><td><span class="m">CartContext</span></td><td>CartItem is product + quantity with no variants, so one tap is a complete action</td></tr>
+          <tr><td>Trust row</td><td><span class="m">TRUST_STATS</span></td><td>The same constant the auth screens use, so the numbers can't drift</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="cards" style="margin-top:6px">
+      <div class="card">
+        <h3><span class="bullet"></span>Card anatomy</h3>
+        <ul>
+          <li>Square image, <code>aspect-square</code>, 13px radius — one shape everywhere</li>
+          <li>Heart top-right, 32px visual in a 44px hit area</li>
+          <li>Name clamped to two lines so cards stay the same height</li>
+          <li>Price 13.5px semibold; MRP struck through only when there is one</li>
+          <li>Rating right-aligned on the price row, hidden when there are no reviews</li>
+          <li>Rank pill only in the best-sellers rail, where the number means something</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3><span class="bullet"></span>Performance</h3>
+        <ul>
+          <li>Above the fold is the top bar and the first hero slide — everything else lazy</li>
+          <li>Rails render 6 cards, not 20; the rest is a "See all"</li>
+          <li>Cloudinary crops per slot (<code>w_320</code> for cards, <code>w_780</code> for hero) rather than one large asset reused</li>
+          <li>The legacy page ships four carousels and a video on first load — this drops the video to the collection page</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3><span class="bullet"></span>Accessibility</h3>
+        <ul>
+          <li>Rails are horizontally scrollable with visible focus, not drag-only</li>
+          <li>Hearts are <code>aria-pressed</code> toggles with a label naming the piece</li>
+          <li>Section headers are real headings so the page can be skimmed by structure</li>
+          <li>Dock targets keep 44px and gain visible labels in options B and C</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ 06 DECISIONS ═══════════════ -->
+<section>
+  <div class="wrap">
+    <div class="sec-head prose">
+      <p class="kicker">06 — Before I build</p>
+      <h2>Five things only you can answer</h2>
+    </div>
+    <div class="cards">
+      <div class="card"><div class="q"><b>1 · Which dock?</b><span>B is my recommendation — Home · Shop · Saved · Cart, with search promoted to the top bar. It changes navigation app-wide, not just here, so it's your call.</span></div></div>
+      <div class="card"><div class="q"><b>2 · Does "Shop" go to /products or a category index?</b><span>Straight to the products list is simpler; a category index screen browses better when you have more than a dozen categories.</span></div></div>
+      <div class="card"><div class="q"><b>3 · Is there an MRP to strike through?</b><span>The schema has one price. Struck-through pricing needs a compare-at field, or the cards drop it.</span></div></div>
+      <div class="card"><div class="q"><b>4 · Quick add, or always open the product?</b><span>No variants means one-tap add works — but handcrafted pieces sometimes want the detail page read first.</span></div></div>
+      <div class="card"><div class="q"><b>5 · Keep the video?</b><span>It's a real asset, just an expensive first-load. I'd move it to the collection page rather than delete it.</span></div></div>
+    </div>
+  </div>
+</section>
+
+<footer class="foot">
+  <div class="wrap">
+    <span>Kalakraft · mobile home &amp; dock · proposal, nothing built</span>
+    <span>artcommerce/design/mobile-home-redesign.html</span>
+  </div>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+  var mock = document.getElementById("mock");
+  var scroller = document.getElementById("scroller");
+  var dock = document.getElementById("dock");
+  var readout = document.getElementById("readout");
+  var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  var ICON = {
+    home: '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>',
+    shop: '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="3" width="7" height="7" rx="1.6"/><rect x="14" y="3" width="7" height="7" rx="1.6"/><rect x="3" y="14" width="7" height="7" rx="1.6"/><rect x="14" y="14" width="7" height="7" rx="1.6"/></svg>',
+    search: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>',
+    saved: '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M19 14c1.5-1.5 3-3.3 3-5.5A5.5 5.5 0 0 0 12 5.4 5.5 5.5 0 0 0 2 8.5c0 2.2 1.5 4 3 5.5l7 7Z"/></svg>',
+    cart: '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M6 2 3 6.5V21h18V6.5L18 2Z"/><path d="M3 6.5h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>'
+  };
+
+  var LAYOUTS = {
+    3: [
+      { k: "home", label: "Home", on: true },
+      { k: "search", label: "Search", cls: "search" },
+      { k: "cart", label: "Cart", badge: 2 }
+    ],
+    4: [
+      { k: "home", label: "Home", on: true },
+      { k: "shop", label: "Shop" },
+      { k: "saved", label: "Saved" },
+      { k: "cart", label: "Cart", badge: 2 }
+    ],
+    5: [
+      { k: "home", label: "Home", on: true },
+      { k: "shop", label: "Shop" },
+      { k: "search", label: "Search" },
+      { k: "saved", label: "Saved" },
+      { k: "cart", label: "Cart", badge: 2 }
+    ]
+  };
+
+  function renderDock(n) {
+    dock.className = "dock v" + n;
+    dock.innerHTML = LAYOUTS[n]
+      .map(function (t) {
+        return (
+          '<button type="button" class="t ' + (t.cls || "") + '"' +
+          (t.on ? ' aria-current="page"' : "") +
+          ' aria-label="' + t.label + '">' +
+          '<span style="position:relative;display:flex">' + ICON[t.k] +
+          (t.badge ? '<span class="badge">' + t.badge + "</span>" : "") +
+          "</span>" +
+          "<small>" + t.label + "</small>" +
+          '<span class="pip"></span>' +
+          "</button>"
+        );
+      })
+      .join("");
+    readout.textContent = "dock: " + n + " targets";
+    document.querySelectorAll("#dockChips .chip").forEach(function (c) {
+      c.setAttribute("aria-pressed", String(c.dataset.dock === String(n)));
+    });
+  }
+  renderDock(4);
+
+  document.getElementById("dockChips").addEventListener("click", function (e) {
+    var b = e.target.closest(".chip");
+    if (b) renderDock(Number(b.dataset.dock));
+  });
+
+  /* hearts and quick-add */
+  document.addEventListener("click", function (e) {
+    var heart = e.target.closest(".heart");
+    if (heart) {
+      var on = heart.getAttribute("aria-pressed") === "true";
+      heart.setAttribute("aria-pressed", String(!on));
+      return;
+    }
+    var add = e.target.closest(".add");
+    if (add) {
+      var added = add.dataset.added === "true";
+      add.dataset.added = String(!added);
+      add.textContent = added ? "Add to cart" : "Added ✓";
+      return;
+    }
+    var chip = e.target.closest(".chip-m");
+    if (chip) {
+      var pressed = chip.getAttribute("aria-pressed") === "true";
+      chip.parentElement.querySelectorAll(".chip-m").forEach(function (c) {
+        c.setAttribute("aria-pressed", "false");
+      });
+      chip.setAttribute("aria-pressed", String(!pressed));
+    }
+  });
+
+  /* hero dots follow the rail */
+  var rail = document.getElementById("heroRail");
+  var dots = document.getElementById("heroDots").children;
+  rail.addEventListener("scroll", function () {
+    var i = Math.round(rail.scrollLeft / (rail.scrollWidth / dots.length));
+    for (var n = 0; n < dots.length; n++) {
+      dots[n].className = n === Math.min(i, dots.length - 1) ? "on" : "";
+    }
+  }, { passive: true });
+
+  /* dock hide-on-scroll, mirroring the shipped behaviour */
+  var hideOnScroll = false;
+  var lastY = 0;
+  scroller.addEventListener("scroll", function () {
+    if (!hideOnScroll) return;
+    var y = scroller.scrollTop;
+    if (Math.abs(y - lastY) > 6) {
+      mock.classList.toggle("dock-away", y > lastY && y > 120);
+      lastY = y;
+    }
+  }, { passive: true });
+
+  document.querySelector(".controls").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-act]");
+    if (!b) return;
+    if (b.dataset.act === "hide") {
+      hideOnScroll = !hideOnScroll;
+      b.setAttribute("aria-pressed", String(hideOnScroll));
+      if (!hideOnScroll) mock.classList.remove("dock-away");
+      return;
+    }
+    if (b.dataset.act === "top") {
+      scroller.scrollTo({ top: 0, behavior: reduced ? "auto" : "smooth" });
+      mock.classList.remove("dock-away");
+    }
+  });
+})();
+</script>
