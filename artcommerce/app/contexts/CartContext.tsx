@@ -113,7 +113,16 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         title: 'Added to Cart',
         body: 'Item successfully added to your cart',
         category: 'user',
-        severity: 'success'
+        severity: 'success',
+        // The mobile toast says "<name> added", so it needs the name. The
+        // POST already includes the product, so this costs nothing.
+        productData: data.cartItem?.product
+          ? {
+              id: data.cartItem.product.id,
+              name: data.cartItem.product.name,
+              price: data.cartItem.product.price,
+            }
+          : undefined,
       })
       
       return true

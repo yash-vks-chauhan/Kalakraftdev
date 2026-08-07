@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { Check } from 'lucide-react'
 import { Toaster as SonnerToaster, type ToasterProps } from 'sonner'
 
 /**
@@ -19,17 +20,16 @@ import { Toaster as SonnerToaster, type ToasterProps } from 'sonner'
 const ABOVE_DOCK = 'calc(84px + env(safe-area-inset-bottom, 0px))'
 
 /**
- * sonner wraps its own rules in :where(), which has no specificity, so a plain
- * class beats them. The one exception is its under-600px block — not wrapped,
- * and it pins every toast to the full width — hence the ! on the width and
- * the auto margins that re-centre what is left.
+ * .k-toast from design/mobile-home-v2.html, to the pixel: a bar inset 16px on
+ * each side, one radius, a check, the message, and the way out pushed to the
+ * far end. sonner wraps its own rules in :where(), which has no specificity,
+ * so plain classes are enough to replace them.
  */
-const PILL = [
-  'flex items-center justify-center gap-2',
-  '!w-fit !mx-auto !max-w-[calc(100vw-3rem)]',
-  'rounded-full border-transparent bg-foreground text-background',
-  'px-4 py-2.5 text-[13px] font-medium leading-none',
-  'shadow-[0_14px_34px_-10px_rgba(0,0,0,0.5)]',
+const BAR = [
+  'flex w-full items-center gap-2.5',
+  'rounded-[var(--radius)] border-transparent bg-foreground text-background',
+  'px-[13px] py-[11px] text-[13px]',
+  'shadow-[0_10px_30px_-8px_rgba(0,0,0,0.4)]',
 ].join(' ')
 
 function Toaster(props: ToasterProps) {
@@ -49,21 +49,22 @@ function Toaster(props: ToasterProps) {
       <SonnerToaster
         position="bottom-center"
         offset={ABOVE_DOCK}
-        // Zero on the sides on purpose: under 600px sonner pins the container
-        // to left + width:100%, so any inset shifts the whole thing right
-        // instead of insetting it. The pill keeps its own max-width.
-        mobileOffset={{ bottom: ABOVE_DOCK, left: '0px', right: '0px' }}
+        mobileOffset={{ bottom: ABOVE_DOCK, left: '16px', right: '16px' }}
         duration={2600}
         gap={8}
         visibleToasts={2}
+        // The bar is one colour whatever happened, so the mark has to carry
+        // the difference. Anything that worked gets the design's check.
+        icons={{ success: <Check className="h-4 w-4" strokeWidth={2.4} /> }}
         toastOptions={{
           classNames: {
-            toast: PILL,
-            title: 'font-medium',
+            toast: BAR,
+            // A long product name ellipsizes rather than pushing View off.
+            title: 'min-w-0 flex-1 truncate font-normal',
             description: 'text-background/70',
-            // Colour already carries the meaning at this size.
-            icon: 'hidden',
-            actionButton: 'h-7 rounded-full bg-background px-3 text-foreground',
+            icon: 'shrink-0',
+            actionButton:
+              'ml-auto shrink-0 bg-transparent p-0 text-[12px] font-normal text-background underline underline-offset-[3px]',
           },
         }}
         {...props}
