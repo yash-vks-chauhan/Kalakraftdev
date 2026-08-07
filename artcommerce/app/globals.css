@@ -150,6 +150,17 @@
 .dashboard-shell {
   --mobile-tabbar-h: 3.5rem; /* 56px */
   --mobile-tabbar-total: calc(var(--mobile-tabbar-h) + env(safe-area-inset-bottom, 0px));
+
+  /* The dock is not a tab bar — it is a floating pill. Its container sits at
+     bottom-0 with padding-bottom:14px and the pill itself is 58px tall
+     (h-11 + p-1.5 + a 1px border), so the dock's top edge is 72px off the
+     bottom, not 56px. Anything pinned to --mobile-tabbar-total lands 16px
+     *behind* the pill. Use this token for anything that must clear the dock. */
+  --mobile-dock-h: 3.625rem;    /* 58px — h-11 + p-1.5 + the pill's 1px border */
+  --mobile-dock-gap: 0.875rem;  /* 14px — the float */
+  --mobile-dock-total: calc(
+    var(--mobile-dock-h) + var(--mobile-dock-gap) + env(safe-area-inset-bottom, 0px)
+  );
 }
 
 /* Scoped below lg so it simply doesn't exist on desktop — otherwise it would
@@ -157,6 +168,13 @@
 @media (max-width: 1023.98px) {
   .pb-tabbar {
     padding-bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* For pages that float a card above the dock (the cart's checkout bar).
+     The layout wrapper already reserves the dock itself via .pb-tabbar, so
+     this only adds the card and the gap above it — the two stack. */
+  .pb-checkout {
+    padding-bottom: 5.5rem;
   }
 }
 

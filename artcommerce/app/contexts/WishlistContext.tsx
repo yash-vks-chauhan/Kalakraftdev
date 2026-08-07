@@ -28,10 +28,15 @@ export interface WishlistItem {
   }
 }
 
+/** See CartContext — suppresses the success notification only. */
+export interface MutationOptions {
+  silent?: boolean
+}
+
 export interface WishlistContextValue {
   wishlistItems: WishlistItem[]
-  addToWishlist: (productId: number) => Promise<WishlistItem>
-  removeFromWishlist: (productId: number) => Promise<void>
+  addToWishlist: (productId: number, options?: MutationOptions) => Promise<WishlistItem>
+  removeFromWishlist: (productId: number, options?: MutationOptions) => Promise<void>
   isInWishlist: (productId: number) => boolean
   loading: boolean
 }
@@ -82,7 +87,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
   }, [token])
 
   // Add a product to wishlist
-  async function addToWishlist(productId: number) {
+  async function addToWishlist(productId: number, options?: MutationOptions) {
     if (!token) throw new Error('Not authenticated')
 
     const res = await fetch('/api/wishlist', {
@@ -111,18 +116,20 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     // Removing already announced itself; adding did not, which left the
     // caller to invent its own confirmation. Both go through here now, so
     // there is one message per action wherever the wishlist is touched.
-    addNotification({
-      title: 'Added to Wishlist',
-      body: 'Item saved to your wishlist',
-      category: 'user',
-      severity: 'success',
-    })
+    if (!options?.silent) {
+      addNotification({
+        title: 'Added to Wishlist',
+        body: 'Item saved to your wishlist',
+        category: 'user',
+        severity: 'success',
+      })
+    }
 
     return data.wishlistItem
   }
 
   // Remove from wishlist
-  async function removeFromWishlist(productId: number) {
+  async function removeFromWishlist(productId: number, options?: MutationOptions) {
     if (!token) throw new Error('Not authenticated')
 
     const res = await fetch(`/api/wishlist/${productId}`, {
@@ -155,7 +162,9 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     setWishlistItems((prev) =>
       prev.filter((wi) => wi.productId !== productId)
     )
-    
+
+    if (options?.silent) return
+
     // Get product image from the removed item
     let productImageUrl = ''
     if (removedItem?.product?.imageUrls) {

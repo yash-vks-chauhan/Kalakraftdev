@@ -7,6 +7,7 @@ import { getBoundedString } from '../../../lib/inputValidation'
 
 const LOW_STOCK_THRESHOLD = 5
 const MAX_SEARCH_LENGTH = 120
+const MAX_ID_LOOKUP = 100
 
 const SYNONYMS: Record<string, string[]> = {
   plate:    ['tray'],
@@ -32,6 +33,35 @@ export async function GET(request: Request) {
     const ratingMinParam = url.searchParams.get('ratingMin')
     const sortParam = url.searchParams.get('sort')?.trim() || undefined
     const inStockParam = url.searchParams.get('inStock') === 'true'
+    const idsParam = url.searchParams.get('ids')?.trim() || undefined
+
+    /*
+     * Batched stock lookup. The wishlist needs stockQuantity for every saved
+     * piece and was firing one request per item on mount — twenty saved
+     * pieces meant twenty round trips. This answers all of them at once and
+     * returns before the ratings groupBy and best-seller work, none of which
+     * a stock check has any use for.
+     */
+    if (idsParam) {
+      const ids = Array.from(
+        new Set(
+          idsParam
+            .split(',')
+            .map((s) => Number(s.trim()))
+            .filter((n) => Number.isInteger(n) && n > 0)
+        )
+      ).slice(0, MAX_ID_LOOKUP)
+
+      if (ids.length === 0) {
+        return NextResponse.json({ products: [] })
+      }
+
+      const rows = await prisma.product.findMany({
+        where: { id: { in: ids }, isActive: true },
+        select: { id: true, stockQuantity: true },
+      })
+      return NextResponse.json({ products: rows })
+    }
 
     if (rawSearch) {
       const lower = rawSearch.toLowerCase()

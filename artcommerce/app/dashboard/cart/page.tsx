@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 import {
   ShoppingCart,
   ShoppingBag,
@@ -14,6 +15,7 @@ import {
   X,
   ArrowRight,
   ReceiptText,
+  ChevronUp,
   PackageX,
   ShieldCheck,
 } from "lucide-react"
@@ -36,12 +38,26 @@ import { Skeleton } from "@/components/ui/skeleton"
 
 const TAX_RATE = 0.18
 
-function formatCurrency(value: number) {
+function formatCurrency(value: number, opts?: { compact?: boolean }) {
   return new Intl.NumberFormat("en-IN", {
     style: "currency",
     currency: "INR",
-    maximumFractionDigits: 2,
+    maximumFractionDigits: opts?.compact ? 0 : 2,
+    minimumFractionDigits: opts?.compact ? 0 : 2,
   }).format(value)
+}
+
+/**
+ * Below lg the paise are dropped: at 375px those two extra glyphs cost more
+ * width than they tell you, and every line here is already an estimate.
+ */
+function Money({ value, className }: { value: number; className?: string }) {
+  return (
+    <span className={cn("tabular-nums", className)}>
+      <span className="lg:hidden">{formatCurrency(value, { compact: true })}</span>
+      <span className="hidden lg:inline">{formatCurrency(value)}</span>
+    </span>
+  )
 }
 
 export default function DashboardCartPage() {
@@ -49,6 +65,7 @@ export default function DashboardCartPage() {
   const { user, loading: authLoading } = useAuth()
   const {
     cartItems,
+    addToCart,
     updateCartItem,
     removeFromCart,
     cartLoading,
@@ -86,6 +103,11 @@ export default function DashboardCartPage() {
     (i) => typeof i.product.stockQuantity === "number" && i.product.stockQuantity <= 0
   )
 
+  const checkoutHref =
+    appliedCode && discount > 0
+      ? `/checkout?coupon=${encodeURIComponent(appliedCode)}&discountType=${discountType}&discountAmount=${discount}`
+      : "/checkout"
+
   const redirectedRef = useRef(false)
   useEffect(() => {
     if (!authLoading && !user && !redirectedRef.current) {
@@ -107,10 +129,26 @@ export default function DashboardCartPage() {
     }
   }
 
+  /**
+   * Removal is silent at the context level and confirmed here instead, because
+   * this page needs the toast to carry an Undo — a bare "Removed from cart"
+   * only narrates what you just watched happen.
+   */
   async function handleRemove(item: CartItem) {
     setRemovingId(item.id)
     try {
-      await removeFromCart(item.id)
+      await removeFromCart(item.id, { silent: true })
+      toast.success(`${item.product.name} removed`, {
+        action: {
+          label: "Undo",
+          onClick: async () => {
+            const ok = await addToCart(item.productId, item.quantity, { silent: true })
+            if (!ok) toast.error(`Could not put ${item.product.name} back`)
+          },
+        },
+      })
+    } catch {
+      toast.error("Could not remove that item")
     } finally {
       setRemovingId(null)
     }
@@ -157,7 +195,7 @@ export default function DashboardCartPage() {
     return (
       <main className="flex flex-col gap-6">
         <CartHeader itemCount={0} />
-        <Card className="shadow-sm">
+        <Card className="border-0 shadow-none sm:border sm:shadow-sm">
           <CardContent className="flex flex-col items-center gap-4 p-10 text-center sm:p-16">
             <span className="flex h-14 w-14 items-center justify-center rounded-full bg-muted text-muted-foreground">
               <ShoppingCart className="h-6 w-6" />
@@ -181,7 +219,7 @@ export default function DashboardCartPage() {
   }
 
   return (
-    <main className="flex flex-col gap-6 pb-20 lg:pb-0">
+    <main className="flex flex-col gap-4 pb-checkout sm:gap-6 lg:pb-0">
       <CartHeader itemCount={itemCount} />
 
       {/* Summary stat strip */}
@@ -204,112 +242,38 @@ export default function DashboardCartPage() {
 
       {/* Main grid: items + summary */}
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
-        {/* Items list */}
-        <Card className="shadow-sm">
-          <CardHeader className="gap-1 p-4 sm:p-6">
+        {/*
+         * The card wrapper — its border, shadow, radius and header — costs a
+         * band of vertical space and ~34px of row width at 375px, and gives
+         * nothing back on a screen it already spans edge to edge. Below sm the
+         * list is hairline-divided rows on the page itself; the card returns
+         * at sm and up, where there is room around it.
+         */}
+        <div className="sm:rounded-xl sm:border sm:bg-card sm:shadow-sm">
+          <CardHeader className="hidden gap-1 p-4 sm:flex sm:p-6">
             <CardTitle>Your items</CardTitle>
             <CardDescription className="hidden md:block">
               Review pieces in your cart before checkout. Stock is updated in real time.
             </CardDescription>
           </CardHeader>
 
-          <CardContent className="p-0">
-            <ul className="divide-y border-t">
-              {cartItems.map((item) => {
-                const isUpdating = updatingId === item.id
-                const isRemoving = removingId === item.id
-                const stock = item.product.stockQuantity
-                const hasStock = typeof stock === "number"
-                const isOut = hasStock && (stock as number) <= 0
-                const max = hasStock && (stock as number) > 0 ? (stock as number) : undefined
-                const lineTotal = item.quantity * item.product.price
-                const imageUrl = Array.isArray(item.product.imageUrls)
-                  ? item.product.imageUrls[0]
-                  : undefined
+          <ul className="-mx-4 divide-y border-y sm:mx-0 sm:border-x-0 sm:border-b-0">
+            {cartItems.map((item) => (
+              <CartRow
+                key={item.id}
+                item={item}
+                updating={updatingId === item.id}
+                removing={removingId === item.id}
+                onQty={(next) => handleQty(item, next)}
+                onRemove={() => handleRemove(item)}
+              />
+            ))}
+          </ul>
+        </div>
 
-                return (
-                  <li
-                    key={item.id}
-                    className={cn(
-                      "group/item flex gap-3 p-3 transition-[opacity,transform,background-color] duration-200 ease-out sm:gap-4 sm:p-4 lg:p-6",
-                      "hover:bg-muted/30",
-                      isRemoving && "pointer-events-none scale-[0.99] opacity-50"
-                    )}
-                  >
-                    <Link
-                      href={`/products/${item.product.id}`}
-                      className="group relative h-20 w-20 shrink-0 overflow-hidden rounded-md border bg-muted/40 transition-shadow duration-200 hover:shadow-sm sm:h-24 sm:w-24 lg:h-28 lg:w-28"
-                    >
-                      {imageUrl ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={imageUrl}
-                          alt={item.product.name}
-                          className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
-                          loading="lazy"
-                        />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center text-muted-foreground">
-                          <PackageX className="h-6 w-6" />
-                        </div>
-                      )}
-                    </Link>
-
-                    <div className="flex min-w-0 flex-1 flex-col gap-2 sm:gap-3">
-                      <div className="flex items-start justify-between gap-2 sm:gap-3">
-                        <div className="flex min-w-0 flex-1 flex-col gap-1">
-                          <Link
-                            href={`/products/${item.product.id}`}
-                            className="line-clamp-2 text-sm font-medium text-foreground hover:underline sm:text-base"
-                          >
-                            {item.product.name}
-                          </Link>
-                          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
-                            <span className="tabular-nums">{formatCurrency(item.product.price)}</span>
-                            <span className="text-border">•</span>
-                            <StockBadge isOut={isOut} stock={stock} />
-                          </div>
-                        </div>
-                        <div className="shrink-0 text-right text-sm font-semibold tabular-nums text-foreground transition-colors sm:text-base">
-                          {formatCurrency(lineTotal)}
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between gap-2">
-                        <QuantityStepper
-                          value={item.quantity}
-                          max={max}
-                          disabled={isOut || isRemoving}
-                          updating={isUpdating}
-                          onChange={(next) => handleQty(item, next)}
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleRemove(item)}
-                          disabled={isRemoving}
-                          aria-label="Remove item"
-                          className="shrink-0 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-                        >
-                          {isRemoving ? (
-                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                          ) : (
-                            <Trash2 className="h-3.5 w-3.5" />
-                          )}
-                          <span className="hidden sm:inline">Remove</span>
-                        </Button>
-                      </div>
-                    </div>
-                  </li>
-                )
-              })}
-            </ul>
-          </CardContent>
-        </Card>
-
-        {/* Order summary */}
-        <div className="flex flex-col gap-4 lg:sticky lg:top-6 lg:self-start">
+        {/* Order summary — desktop rail. Below lg this lives in the sticky
+            checkout card instead, so it is never a scroll away. */}
+        <div className="hidden flex-col gap-4 lg:sticky lg:top-6 lg:flex lg:self-start">
           <Card className="shadow-sm">
             <CardHeader className="gap-1 p-4 sm:p-6">
               <CardTitle>Order summary</CardTitle>
@@ -359,24 +323,25 @@ export default function DashboardCartPage() {
                 </p>
               )}
 
-              <Button
-                asChild
-                size="lg"
-                className="w-full gap-1.5"
-                disabled={hasOutOfStock}
-              >
-                <Link
-                  href={
-                    appliedCode && discount > 0
-                      ? `/checkout?coupon=${encodeURIComponent(appliedCode)}&discountType=${discountType}&discountAmount=${discount}`
-                      : "/checkout"
-                  }
-                  aria-disabled={hasOutOfStock}
-                >
+              {/*
+               * `disabled` on <Button asChild> is forwarded onto the <a> by
+               * Radix Slot, where it means nothing — the link stayed tappable
+               * with a sold-out item in the cart. A blocked cart gets a real
+               * disabled button instead.
+               */}
+              {hasOutOfStock ? (
+                <Button size="lg" className="w-full gap-1.5" disabled>
                   Proceed to checkout
                   <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
+                </Button>
+              ) : (
+                <Button asChild size="lg" className="w-full gap-1.5">
+                  <Link href={checkoutHref}>
+                    Proceed to checkout
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              )}
             </CardContent>
           </Card>
 
@@ -447,78 +412,374 @@ export default function DashboardCartPage() {
         </div>
       </div>
 
-      <MobileCheckoutBar
+      <MobileCheckoutCard
+        subtotal={subtotal}
+        discountAmount={discountAmount}
+        appliedCode={appliedCode}
+        taxes={taxes}
         total={total}
         itemCount={itemCount}
-        disabled={hasOutOfStock}
-        href={
-          appliedCode && discount > 0
-            ? `/checkout?coupon=${encodeURIComponent(appliedCode)}&discountType=${discountType}&discountAmount=${discount}`
-            : "/checkout"
-        }
+        blocked={hasOutOfStock}
+        href={checkoutHref}
+        promoCode={promoCode}
+        setPromoCode={setPromoCode}
+        applyingPromo={applyingPromo}
+        promoError={promoError}
+        setPromoError={setPromoError}
+        onApplyPromo={handleApplyPromo}
+        onRemovePromo={handleRemovePromo}
       />
     </main>
   )
 }
 
 /* -------------------------------------------------------------- */
-/* MOBILE CHECKOUT BAR                                             */
+/* ROW                                                             */
+/* -------------------------------------------------------------- */
+
+function CartRow({
+  item,
+  updating,
+  removing,
+  onQty,
+  onRemove,
+}: {
+  item: CartItem
+  updating: boolean
+  removing: boolean
+  onQty: (next: number) => void
+  onRemove: () => void
+}) {
+  const stock = item.product.stockQuantity
+  const hasStock = typeof stock === "number"
+  const isOut = hasStock && (stock as number) <= 0
+  const isLow = hasStock && (stock as number) > 0 && (stock as number) <= 5
+  const max = hasStock && (stock as number) > 0 ? (stock as number) : undefined
+  const lineTotal = item.quantity * item.product.price
+  const imageUrl = Array.isArray(item.product.imageUrls) ? item.product.imageUrls[0] : undefined
+
+  return (
+    <li
+      className={cn(
+        "group/item flex gap-3.5 px-4 py-4 transition-[opacity,transform] duration-200 ease-out",
+        "sm:gap-4 sm:p-4 lg:p-6 lg:hover:bg-muted/30",
+        removing && "pointer-events-none scale-[0.99] opacity-50"
+      )}
+    >
+      <Link
+        href={`/products/${item.product.id}`}
+        className="group relative h-24 w-24 shrink-0 overflow-hidden rounded-[10px] border bg-muted/40 transition-shadow duration-200 hover:shadow-sm lg:h-28 lg:w-28 lg:rounded-md"
+      >
+        {imageUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={imageUrl}
+            alt={item.product.name}
+            className={cn(
+              "h-full w-full object-cover transition-transform duration-200 group-hover:scale-105",
+              // A sold-out piece reads as unavailable before you get to the words.
+              isOut && "grayscale lg:grayscale-0"
+            )}
+            loading="lazy"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+            <PackageX className="h-6 w-6" />
+          </div>
+        )}
+      </Link>
+
+      <div className="flex min-w-0 flex-1 flex-col gap-3.5 lg:gap-3">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex min-w-0 flex-1 flex-col">
+            <Link
+              href={`/products/${item.product.id}`}
+              className="line-clamp-2 text-sm font-medium leading-snug text-foreground hover:underline sm:text-base lg:leading-normal"
+            >
+              {item.product.name}
+            </Link>
+
+            {/*
+             * Below lg stock only speaks when it is news. A badge reading
+             * "In stock" on every row is chrome, not information — so the
+             * healthy case says nothing at all.
+             */}
+            {(isOut || isLow) && (
+              <p
+                className={cn(
+                  "mt-1 text-xs lg:hidden",
+                  isOut ? "text-destructive" : "text-amber-600 dark:text-amber-500"
+                )}
+              >
+                {isOut ? "Sold out" : `Only ${stock} left`}
+              </p>
+            )}
+
+            <div className="mt-1 hidden flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground lg:flex">
+              <span className="tabular-nums">{formatCurrency(item.product.price)}</span>
+              <span className="text-border">•</span>
+              <StockBadge isOut={isOut} stock={stock} />
+            </div>
+          </div>
+
+          {/* The money column. The unit price is only worth printing when
+              quantity makes it differ from the line total. */}
+          <div className="shrink-0 text-right">
+            <div
+              className={cn(
+                "text-sm font-semibold tabular-nums text-foreground sm:text-base",
+                isOut && "font-medium text-muted-foreground"
+              )}
+            >
+              <Money value={lineTotal} />
+            </div>
+            {item.quantity > 1 && (
+              <div className="mt-0.5 text-[11px] text-muted-foreground lg:hidden">
+                <Money value={item.product.price} /> each
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Controls — below lg */}
+        <div className="flex items-center lg:hidden">
+          {isOut ? (
+            <Button
+              type="button"
+              size="lg"
+              variant="secondary"
+              className="rounded-full px-5"
+              onClick={onRemove}
+              disabled={removing}
+            >
+              {removing ? <Loader2 className="h-4 w-4 animate-spin" /> : "Remove"}
+            </Button>
+          ) : (
+            <QuantityStepper
+              tone="soft"
+              value={item.quantity}
+              max={max}
+              disabled={removing}
+              updating={updating}
+              onChange={onQty}
+              onRemove={onRemove}
+              removeLabel={`Remove ${item.product.name}`}
+            />
+          )}
+        </div>
+
+        {/* Controls — lg and up, unchanged */}
+        <div className="hidden items-center justify-between gap-2 lg:flex">
+          <QuantityStepper
+            value={item.quantity}
+            max={max}
+            disabled={isOut || removing}
+            updating={updating}
+            onChange={onQty}
+          />
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={onRemove}
+            disabled={removing}
+            aria-label="Remove item"
+            className="shrink-0 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+          >
+            {removing ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Trash2 className="h-3.5 w-3.5" />
+            )}
+            Remove
+          </Button>
+        </div>
+      </div>
+    </li>
+  )
+}
+
+/* -------------------------------------------------------------- */
+/* MOBILE CHECKOUT CARD                                            */
 /* -------------------------------------------------------------- */
 
 /**
- * On mobile the order summary sits below every line item, so with a full cart
- * the one button that matters was several screens down. This pins the total
- * and the CTA above the tab bar instead — the standard mobile-commerce
- * pattern, and the single biggest conversion fix on this page.
+ * The summary and the promo field used to render below every line item, so on
+ * a full cart both were a screen or more away. They live here instead, opening
+ * upward over the list.
+ *
+ * It is pinned to --mobile-dock-total, not --mobile-tabbar-total: the dock is
+ * a floating pill 70px off the bottom, not a 56px tab bar, and the old value
+ * put this card's lower 14px behind it. It also borrows the dock's own
+ * language — inset, rounded, blurred — so the two read as one stack rather
+ * than a square bar wedged under a pill.
  */
-function MobileCheckoutBar({
+function MobileCheckoutCard({
+  subtotal,
+  discountAmount,
+  appliedCode,
+  taxes,
   total,
   itemCount,
-  disabled,
+  blocked,
   href,
+  promoCode,
+  setPromoCode,
+  applyingPromo,
+  promoError,
+  setPromoError,
+  onApplyPromo,
+  onRemovePromo,
 }: {
+  subtotal: number
+  discountAmount: number
+  appliedCode: string | null
+  taxes: number
   total: number
   itemCount: number
-  disabled: boolean
+  blocked: boolean
   href: string
+  promoCode: string
+  setPromoCode: (v: string) => void
+  applyingPromo: boolean
+  promoError: string | null
+  setPromoError: (v: string | null) => void
+  onApplyPromo: () => void
+  onRemovePromo: () => void
 }) {
+  const [open, setOpen] = useState(false)
+
   return (
     <div
-      className={cn(
-        "fixed inset-x-0 z-30 border-t bg-background/95 backdrop-blur-md",
-        "supports-[backdrop-filter]:bg-background/85 lg:hidden"
-      )}
-      // Sits directly on top of the bottom tab bar.
-      style={{ bottom: "var(--mobile-tabbar-total, 3.5rem)" }}
+      className="fixed inset-x-0 z-30 lg:hidden"
+      style={{ bottom: "var(--mobile-dock-total, 4.375rem)" }}
     >
-      <div className="flex items-center gap-3 px-4 py-3">
-        <div className="flex min-w-0 flex-col">
-          <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
-            Estimated total
-          </span>
-          <span className="text-[17px] font-semibold tabular-nums leading-tight text-foreground">
-            {formatCurrency(total)}
-          </span>
-        </div>
-        <Button
-          asChild={!disabled}
-          size="lg"
-          disabled={disabled}
-          className="ml-auto min-w-[9.5rem] flex-1 gap-1.5"
-        >
-          {disabled ? (
-            <span>Resolve stock issue</span>
+      <div
+        className={cn(
+          "mx-3 mb-2.5 overflow-hidden rounded-[18px] border bg-background/95 shadow-lg",
+          "backdrop-blur-xl backdrop-saturate-150 supports-[backdrop-filter]:bg-background/90"
+        )}
+      >
+        <div id="cart-breakdown" hidden={!open} className="border-b">
+          <dl className="flex flex-col gap-2 px-4 pb-1 pt-3 text-[13px]">
+            <SummaryRow label="Subtotal" value={formatCurrency(subtotal, { compact: true })} />
+            {discountAmount > 0 && (
+              <SummaryRow
+                label={
+                  <span className="flex items-center gap-1.5">
+                    Discount
+                    {appliedCode && (
+                      <Badge variant="secondary" className="font-mono text-[10px]">
+                        {appliedCode}
+                      </Badge>
+                    )}
+                  </span>
+                }
+                value={`−${formatCurrency(discountAmount, { compact: true })}`}
+                valueClassName="text-emerald-600 dark:text-emerald-400"
+              />
+            )}
+            <SummaryRow
+              label="Shipping"
+              value={<span className="text-muted-foreground">Calculated next</span>}
+            />
+            <SummaryRow
+              label={`GST (${Math.round(TAX_RATE * 100)}%)`}
+              value={formatCurrency(taxes, { compact: true })}
+            />
+          </dl>
+
+          {appliedCode ? (
+            <div className="mx-4 mb-3 mt-2 flex items-center justify-between gap-2 rounded-md border bg-secondary/40 px-3 py-2">
+              <span className="truncate text-xs text-muted-foreground">
+                Saving {formatCurrency(discountAmount, { compact: true })}
+              </span>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                onClick={onRemovePromo}
+                aria-label="Remove promo code"
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <X className="h-3.5 w-3.5" />
+              </Button>
+            </div>
           ) : (
-            <Link href={href}>
-              Checkout · {itemCount}
-              <ArrowRight className="h-4 w-4" />
-            </Link>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault()
+                onApplyPromo()
+              }}
+              className="flex items-center gap-2 px-4 pb-3 pt-2"
+            >
+              <Input
+                value={promoCode}
+                onChange={(e) => {
+                  setPromoCode(e.target.value.toUpperCase())
+                  if (promoError) setPromoError(null)
+                }}
+                placeholder="Have a promo code?"
+                aria-label="Promo code"
+                className="rounded-[10px]"
+              />
+              <Button type="submit" variant="outline" disabled={!promoCode.trim() || applyingPromo}>
+                {applyingPromo && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                Apply
+              </Button>
+            </form>
           )}
-        </Button>
+          {promoError && <p className="px-4 pb-3 text-xs text-destructive">{promoError}</p>}
+        </div>
+
+        <div className="flex items-center gap-2.5 p-2.5 pl-4">
+          {/* The whole total is the target, not just the label — a 43×17 chevron
+              is not a thumb-sized control, and tapping the amount to see what
+              makes it up is the obvious gesture anyway. */}
+          <button
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            aria-expanded={open}
+            aria-controls="cart-breakdown"
+            className="-my-1 flex min-w-0 flex-col items-start rounded py-1 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <span className="flex items-center gap-1 text-[11.5px] text-muted-foreground">
+              {open ? "Hide breakdown" : "Total"}
+              <ChevronUp
+                className={cn("h-3 w-3 transition-transform duration-200", open && "rotate-180")}
+              />
+            </span>
+            <span
+              aria-live="polite"
+              className="text-[19px] font-semibold leading-tight tabular-nums tracking-tight text-foreground"
+            >
+              {formatCurrency(total, { compact: true })}
+            </span>
+          </button>
+
+          {/* A real disabled button when the cart cannot check out. The sold-out
+              row carries the reason and the one-tap fix, so this stays short. */}
+          {blocked ? (
+            <Button size="lg" disabled className="ml-auto min-w-[8.25rem] rounded-full">
+              Checkout
+            </Button>
+          ) : (
+            <Button asChild size="lg" className="ml-auto min-w-[8.25rem] gap-1.5 rounded-full">
+              <Link href={href}>
+                Checkout · {itemCount}
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   )
 }
+
+/* -------------------------------------------------------------- */
+/* PIECES                                                          */
+/* -------------------------------------------------------------- */
 
 function CartHeader({ itemCount, loading }: { itemCount: number; loading?: boolean }) {
   return (
@@ -537,12 +798,18 @@ function CartHeader({ itemCount, loading }: { itemCount: number; loading?: boole
           Review your selection, apply a promo, and continue to checkout.
         </p>
       </div>
-      <Button
-        asChild
-        variant="outline"
-        size="sm"
-        className="shrink-0 gap-1.5"
-      >
+
+      {/*
+       * Below md the title block was hidden and this row rendered a single
+       * right-aligned outline button in empty space. The app bar already says
+       * "Cart" and the sticky card owns the money, so one quiet line of state
+       * is all this needs — and navigation belongs to the dock.
+       */}
+      <p className="text-sm text-muted-foreground md:hidden">
+        {itemCount} item{itemCount === 1 ? "" : "s"}
+      </p>
+
+      <Button asChild variant="outline" size="sm" className="hidden shrink-0 gap-1.5 md:inline-flex">
         <Link href="/products" aria-label="Continue shopping">
           <ShoppingBag className="h-4 w-4" />
           Continue<span className="hidden sm:inline">&nbsp;shopping</span>
@@ -618,53 +885,96 @@ function StockBadge({ isOut, stock }: { isOut: boolean; stock?: number }) {
   )
 }
 
+/**
+ * `tone="soft"` is the below-lg treatment: borderless on a light fill, 44px
+ * targets (the shared 44px rule in globals.css keys off [data-slot="button"],
+ * which these raw buttons are not, so they carry their own size).
+ *
+ * With `onRemove`, a quantity of one turns the minus into the remove control.
+ * A disabled minus is dead weight, and a separate trash on every row is a
+ * second control doing a job the first one could — this is one per row.
+ */
 function QuantityStepper({
   value,
   max,
   disabled,
   updating,
   onChange,
+  onRemove,
+  removeLabel,
+  tone = "outline",
 }: {
   value: number
   max?: number
   disabled?: boolean
   updating?: boolean
   onChange: (next: number) => void
+  onRemove?: () => void
+  removeLabel?: string
+  tone?: "outline" | "soft"
 }) {
+  const soft = tone === "soft"
+  const atOne = !disabled && value <= 1 && !!onRemove
   const canDecrease = !disabled && value > 1
   const canIncrease = !disabled && (max === undefined || value < max)
+
+  const buttonBase = soft
+    ? "flex h-11 w-11 items-center justify-center rounded-full text-foreground transition-colors duration-150 hover:bg-muted focus-visible:bg-muted focus-visible:outline-none disabled:cursor-not-allowed disabled:text-muted-foreground/40 disabled:hover:bg-transparent"
+    : "flex h-full w-9 items-center justify-center text-muted-foreground transition-all duration-150 hover:bg-accent hover:text-foreground active:scale-95 focus-visible:bg-accent focus-visible:text-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-muted-foreground"
 
   return (
     <div
       className={cn(
-        "inline-flex h-9 items-center overflow-hidden rounded-md border bg-background shadow-xs transition-[opacity,box-shadow] duration-200",
+        soft
+          ? "inline-flex h-11 items-center rounded-full bg-secondary"
+          : "inline-flex h-9 items-center overflow-hidden rounded-md border bg-background shadow-xs",
+        "transition-[opacity,box-shadow] duration-200",
         disabled && "opacity-50"
       )}
     >
-      <button
-        type="button"
-        aria-label="Decrease quantity"
-        onClick={() => canDecrease && onChange(value - 1)}
-        disabled={!canDecrease}
-        className="flex h-full w-9 items-center justify-center text-muted-foreground transition-all duration-150 hover:bg-accent hover:text-foreground active:scale-95 focus-visible:bg-accent focus-visible:text-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-muted-foreground"
+      {atOne ? (
+        <button
+          type="button"
+          aria-label={removeLabel ?? "Remove item"}
+          onClick={onRemove}
+          className={cn(buttonBase, "text-muted-foreground hover:bg-destructive/10 hover:text-destructive")}
+        >
+          <Trash2 className="h-4 w-4" />
+        </button>
+      ) : (
+        <button
+          type="button"
+          aria-label="Decrease quantity"
+          onClick={() => canDecrease && onChange(value - 1)}
+          disabled={!canDecrease}
+          className={buttonBase}
+        >
+          <Minus className={soft ? "h-4 w-4" : "h-3.5 w-3.5"} />
+        </button>
+      )}
+
+      <div
+        className={cn(
+          "flex h-full items-center justify-center font-medium tabular-nums",
+          soft ? "min-w-[1.875rem] text-sm font-semibold" : "w-12 border-x text-sm"
+        )}
+        aria-live="polite"
       >
-        <Minus className="h-3.5 w-3.5" />
-      </button>
-      <div className="flex h-full w-12 items-center justify-center border-x text-sm font-medium tabular-nums" aria-live="polite">
         {updating ? (
           <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
         ) : (
           value
         )}
       </div>
+
       <button
         type="button"
         aria-label="Increase quantity"
         onClick={() => canIncrease && onChange(value + 1)}
         disabled={!canIncrease}
-        className="flex h-full w-9 items-center justify-center text-muted-foreground transition-all duration-150 hover:bg-accent hover:text-foreground active:scale-95 focus-visible:bg-accent focus-visible:text-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-muted-foreground"
+        className={buttonBase}
       >
-        <Plus className="h-3.5 w-3.5" />
+        <Plus className={soft ? "h-4 w-4" : "h-3.5 w-3.5"} />
       </button>
     </div>
   )
@@ -689,19 +999,19 @@ function SummaryRow({
 
 function CartSkeleton() {
   return (
-    <main className="flex flex-col gap-6">
+    <main className="flex flex-col gap-4 sm:gap-6">
       {/* Header */}
       <header className="flex items-end justify-between gap-3">
         <div className="flex min-w-0 flex-col gap-2">
-          <Skeleton className="h-3 w-20" />
-          <Skeleton className="h-8 w-40" />
-          <Skeleton className="h-4 w-72" />
+          <Skeleton className="hidden h-3 w-20 md:block" />
+          <Skeleton className="h-4 w-16 md:h-8 md:w-40" />
+          <Skeleton className="hidden h-4 w-72 md:block" />
         </div>
-        <Skeleton className="h-8 w-28" />
+        <Skeleton className="hidden h-8 w-28 md:block" />
       </header>
 
       {/* Stat tiles */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="hidden grid-cols-2 gap-3 md:grid lg:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
           <Card key={i} className="shadow-sm">
             <CardContent className="flex items-center gap-3 p-4">
@@ -717,32 +1027,26 @@ function CartSkeleton() {
 
       {/* Main grid: items list + summary */}
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
-        <Card className="shadow-sm">
-          <CardHeader className="gap-1 p-4 sm:p-6">
+        <div className="sm:rounded-xl sm:border sm:bg-card sm:shadow-sm">
+          <CardHeader className="hidden gap-1 p-4 sm:flex sm:p-6">
             <Skeleton className="h-5 w-28" />
             <Skeleton className="h-4 w-56" />
           </CardHeader>
-          <CardContent className="flex flex-col gap-3 p-4 pt-0 sm:p-6 sm:pt-0">
+          <ul className="-mx-4 divide-y border-y sm:mx-0 sm:border-x-0 sm:border-b-0">
             {Array.from({ length: 3 }).map((_, i) => (
-              <div
-                key={i}
-                className="flex items-center gap-4 rounded-lg border bg-card p-4"
-              >
-                <Skeleton className="h-20 w-20 shrink-0 rounded-md" />
+              <li key={i} className="flex items-center gap-3.5 px-4 py-4 sm:p-4 lg:p-6">
+                <Skeleton className="h-24 w-24 shrink-0 rounded-[10px] lg:h-28 lg:w-28" />
                 <div className="flex flex-1 flex-col gap-2">
                   <Skeleton className="h-4 w-3/4" />
                   <Skeleton className="h-3 w-1/2" />
-                  <div className="flex items-center justify-between pt-2">
-                    <Skeleton className="h-8 w-28 rounded-md" />
-                    <Skeleton className="h-4 w-16" />
-                  </div>
+                  <Skeleton className="mt-2 h-11 w-32 rounded-full lg:h-9 lg:w-28 lg:rounded-md" />
                 </div>
-              </div>
+              </li>
             ))}
-          </CardContent>
-        </Card>
+          </ul>
+        </div>
 
-        <div className="flex flex-col gap-4 lg:sticky lg:top-6 lg:self-start">
+        <div className="hidden flex-col gap-4 lg:sticky lg:top-6 lg:flex lg:self-start">
           <Card className="shadow-sm">
             <CardHeader className="gap-1 p-4 sm:p-6">
               <Skeleton className="h-5 w-32" />

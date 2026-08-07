@@ -19,11 +19,20 @@ export interface CartItem {
   }
 }
 
+/**
+ * `silent` suppresses the success notification only — errors always surface.
+ * The cart page raises its own toast with an Undo action, and a second
+ * "Removed from cart" reporting what you just watched happen is noise.
+ */
+export interface MutationOptions {
+  silent?: boolean
+}
+
 interface CartContextValue {
   cartItems: CartItem[]
-  addToCart: (productId: number, quantity: number) => Promise<boolean>
+  addToCart: (productId: number, quantity: number, options?: MutationOptions) => Promise<boolean>
   updateCartItem: (cartItemId: number, quantity: number) => Promise<boolean>
-  removeFromCart: (cartItemId: number) => Promise<void>
+  removeFromCart: (cartItemId: number, options?: MutationOptions) => Promise<void>
   clearCart: () => void
   cartLoading: boolean
 }
@@ -63,7 +72,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, [token])
 
   // Add a single item
-  async function addToCart(productId: number, quantity: number): Promise<boolean> {
+  async function addToCart(
+    productId: number,
+    quantity: number,
+    options?: MutationOptions
+  ): Promise<boolean> {
     if (!token) throw new Error('Not authenticated')
     
     try {
@@ -108,7 +121,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       
       // Success - append the newly created item to local state
       setCartItems((prev) => [...prev, data.cartItem])
-      
+
+      if (options?.silent) return true
+
       addNotification({
         title: 'Added to Cart',
         body: 'Item successfully added to your cart',
@@ -239,7 +254,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }
 
   // Remove a cart item
-  async function removeFromCart(cartItemId: number) {
+  async function removeFromCart(cartItemId: number, options?: MutationOptions) {
     if (!token) throw new Error('Not authenticated')
     
     // Get the item being removed for notification
@@ -260,9 +275,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       console.error('Error parsing JSON response:', error);
       // Remove the item from local state anyway
       setCartItems((prev) => prev.filter((ci) => ci.id !== cartItemId));
-      
+
       // Show notification for successful removal
-      if (removedItem) {
+      if (removedItem && !options?.silent) {
         // Get product image from the removed item
         let productImageUrl = ''
         if (removedItem.product?.imageUrls) {
@@ -303,9 +318,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
     
     setCartItems((prev) => prev.filter((ci) => ci.id !== cartItemId))
-    
+
     // Show notification for successful removal
-    if (removedItem) {
+    if (removedItem && !options?.silent) {
       // Get product image from the removed item
       let productImageUrl = ''
       if (removedItem.product?.imageUrls) {

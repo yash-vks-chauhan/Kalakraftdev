@@ -23,6 +23,11 @@ export async function GET(request: Request) {
           price: true,
           currency: true,
           imageUrls: true,
+          // Without this the cart loads with stockQuantity undefined, so every
+          // row reads "In stock" and a sold-out item never blocks checkout.
+          // POST and PATCH already return it via include: { product: true };
+          // this makes the initial load agree with them.
+          stockQuantity: true,
         },
       },
     },
