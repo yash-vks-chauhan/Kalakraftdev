@@ -25,7 +25,17 @@ export function CategoryRail({
   if (!loading && categories.length === 0) return null
 
   return (
-    <section className="pt-6">
+    <section className="relative isolate pt-6">
+      {/*
+        The hero's warmth carried past its edge and dissolved here, so the
+        page reads as one surface instead of a dark box stacked on a white
+        one. It belongs to this section rather than a wrapper, and it stops
+        before the products — they should stay the loudest thing on the page.
+      */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 -top-px -z-10 h-64 bg-[radial-gradient(125%_100%_at_50%_0%,rgba(194,112,58,0.18),rgba(125,47,63,0.07)_45%,transparent_72%)]"
+      />
       <SectionHeading
         index="01"
         job="Browse"

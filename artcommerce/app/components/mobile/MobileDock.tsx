@@ -98,12 +98,32 @@ export function MobileDock() {
       )}
       style={{ paddingBottom: "calc(14px + env(safe-area-inset-bottom, 0px))" }}
     >
+      {/*
+       * Fog. The pill is translucent, so whatever scrolls underneath it reads
+       * straight through — a price, a photo edge — and the labels lose contrast.
+       * This band blurs the backdrop behind and below the dock and dissolves
+       * upward, so there is no seam to notice. It is blur only, no colour: the
+       * dock sits over a white catalogue on most routes and over the dark
+       * footer at the bottom of home, and a tinted scrim would fight one of them.
+       */}
+      <span
+        aria-hidden
+        className={cn(
+          "absolute inset-x-0 bottom-0 -z-10",
+          "supports-[backdrop-filter]:backdrop-blur-lg supports-[backdrop-filter]:backdrop-saturate-150",
+          "[mask-image:linear-gradient(to_top,black,black_46%,transparent)]",
+          "[-webkit-mask-image:linear-gradient(to_top,black,black_46%,transparent)]"
+        )}
+        style={{ height: "calc(116px + env(safe-area-inset-bottom, 0px))" }}
+      />
       <nav
         aria-label="Primary"
         className={cn(
           "pointer-events-auto flex w-full max-w-[340px] items-center gap-1 rounded-full border p-1.5",
-          "bg-background/85 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.22)] backdrop-blur-xl backdrop-saturate-150",
-          "supports-[backdrop-filter]:bg-background/80"
+          // Opaque enough to stay white over the dark footer at the bottom of
+          // home, translucent enough to still read as glass over the catalogue.
+          "bg-background/[0.92] shadow-[0_10px_30px_-10px_rgba(0,0,0,0.22)] backdrop-blur-xl backdrop-saturate-150",
+          "supports-[backdrop-filter]:bg-background/[0.88]"
         )}
       >
         {targets.map((target) => {

@@ -21,7 +21,12 @@ export function BestSellersRail({
         accent="sellers"
         href="/products?sort=best_sellers"
       />
-      <div className="flex snap-x snap-proximity gap-3 overflow-x-auto px-4 pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      {/*
+        scroll-pl-4 is what makes this feel aligned: without it a snapped card
+        lands flush at 0 while the heading above it starts at the 16px gutter.
+        The gap matches the grid below so both sections share one rhythm.
+      */}
+      <div className="flex snap-x snap-proximity scroll-pl-4 gap-3.5 overflow-x-auto overscroll-x-contain px-4 pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {loading
           ? Array.from({ length: 3 }).map((_, i) => (
               <div key={i} className="w-[158px] shrink-0 snap-start">
