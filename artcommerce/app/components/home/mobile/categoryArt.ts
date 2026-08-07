@@ -26,11 +26,24 @@ export function categoryImage(name: string): string | null {
   return BY_NAME[name.trim().toLowerCase()] ?? null
 }
 
-/** Deterministic warm tint so an unmatched category still looks intentional. */
+/**
+ * Deterministic swatch for categories with no matching asset — muted resin
+ * tones rather than saturated hues, so a fallback still looks poured.
+ */
+const SWATCHES = [
+  ["#e8c9a4", "#9d4a3b"],
+  ["#cfe0e6", "#2f5d73"],
+  ["#ecd2dc", "#7d3050"],
+  ["#dbe4cc", "#3f5b34"],
+  ["#f0e2b8", "#8a6a1f"],
+  ["#ded8ee", "#453a72"],
+  ["#f2d8cc", "#a5462c"],
+  ["#cfe6dc", "#22614c"],
+]
+
 export function categoryTint(name: string): string {
-  const hues = [28, 12, 340, 262, 45, 190, 96, 320]
   let sum = 0
   for (let i = 0; i < name.length; i++) sum += name.charCodeAt(i)
-  const hue = hues[sum % hues.length]
-  return `linear-gradient(140deg, hsl(${hue} 55% 72%), hsl(${(hue + 28) % 360} 45% 46%))`
+  const [light, deep] = SWATCHES[sum % SWATCHES.length]
+  return `radial-gradient(circle at 32% 28%, ${light}, transparent 62%), radial-gradient(circle at 72% 74%, ${deep}, transparent 66%), ${light}`
 }

@@ -3,34 +3,62 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, LayoutGrid, Search, ShoppingBag } from "lucide-react"
+import { Heart, Home, LayoutGrid, ShoppingBag } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { useAuth } from "../../contexts/AuthContext"
 import { useCart } from "../../contexts/CartContext"
-import { CommandPalette } from "./CommandPalette"
+import { useWishlist } from "../../contexts/WishlistContext"
 
 /**
  * The single mobile navigation surface for the whole app.
  *
- * Replaces two unrelated systems: a hamburger drawer on the storefront and a
- * full-width tab bar in the dashboard, which swapped under you at the
- * /dashboard boundary. A floating dock reads as one product on both sides,
- * takes less vertical space than a full-width bar, and lets the page content
- * run underneath it rather than being boxed in.
- *
- * Three targets only — anything deeper lives one tap away in the palette,
- * which searches products, pages and actions together.
+ * Four targets, each of them a place rather than an action: search lives in
+ * the header, where a thumb looks for it while browsing, and the slot it used
+ * to occupy here buys a browse destination and saved items. Home is always
+ * home — the previous version turned it into Dashboard inside /dashboard,
+ * which made the leftmost target mean two different things.
  */
+
+interface DockTarget {
+  key: string
+  label: string
+  href: string
+  icon: typeof Home
+  /** Active when the path starts with one of these. */
+  match: string[]
+  count?: number
+}
+
 export function MobileDock() {
   const pathname = usePathname() ?? "/"
   const { user } = useAuth()
   const { cartItems } = useCart()
-  const [paletteOpen, setPaletteOpen] = useState(false)
+  const { wishlistItems } = useWishlist()
   const [hidden, setHidden] = useState(false)
 
   const cartCount = cartItems.reduce((sum, i) => sum + i.quantity, 0)
-  const inDashboard = pathname.startsWith("/dashboard")
+
+  const targets: DockTarget[] = [
+    { key: "home", label: "Home", href: "/", icon: Home, match: ["/"] },
+    { key: "shop", label: "Shop", href: "/products", icon: LayoutGrid, match: ["/products"] },
+    {
+      key: "saved",
+      label: "Saved",
+      href: user ? "/dashboard/wishlist" : "/auth/login",
+      icon: Heart,
+      match: ["/dashboard/wishlist"],
+      count: wishlistItems.length,
+    },
+    {
+      key: "cart",
+      label: "Cart",
+      href: user ? "/dashboard/cart" : "/cart",
+      icon: ShoppingBag,
+      match: ["/cart", "/dashboard/cart"],
+      count: cartCount,
+    },
+  ]
 
   // Get out of the way when scrolling down, come back on the way up — on a
   // phone the content matters more than the chrome.
@@ -59,92 +87,66 @@ export function MobileDock() {
   // Never leave it hidden after a route change.
   useEffect(() => {
     setHidden(false)
-    setPaletteOpen(false)
   }, [pathname])
 
-  const homeHref = inDashboard ? "/dashboard" : "/"
-  const HomeIcon = inDashboard ? LayoutGrid : Home
-  const homeActive = pathname === "/" || pathname === "/dashboard"
-
   return (
-    <>
-      <div
+    <div
+      className={cn(
+        "pointer-events-none fixed inset-x-0 bottom-0 z-40 flex justify-center px-4 lg:hidden",
+        "transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]",
+        hidden ? "translate-y-[150%]" : "translate-y-0"
+      )}
+      style={{ paddingBottom: "calc(14px + env(safe-area-inset-bottom, 0px))" }}
+    >
+      <nav
+        aria-label="Primary"
         className={cn(
-          "pointer-events-none fixed inset-x-0 bottom-0 z-40 flex justify-center px-4 pb-3 lg:hidden",
-          "transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]",
-          hidden ? "translate-y-[140%]" : "translate-y-0"
+          "pointer-events-auto flex w-full max-w-[340px] items-center gap-1 rounded-full border p-1.5",
+          "bg-background/85 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.22)] backdrop-blur-xl backdrop-saturate-150",
+          "supports-[backdrop-filter]:bg-background/80"
         )}
-        style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom, 0px))" }}
       >
-        <nav
-          aria-label="Primary"
-          className={cn(
-            "pointer-events-auto flex w-full max-w-sm items-center gap-1 rounded-full border",
-            "bg-background/80 p-1.5 shadow-lg shadow-black/[0.08] backdrop-blur-xl",
-            "supports-[backdrop-filter]:bg-background/70"
-          )}
-        >
-          <Link
-            href={homeHref}
-            aria-label={inDashboard ? "Dashboard" : "Home"}
-            aria-current={homeActive ? "page" : undefined}
-            className={cn(
-              "flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-colors",
-              "outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-              homeActive
-                ? "bg-foreground text-background"
-                : "text-muted-foreground active:bg-secondary"
-            )}
-          >
-            <HomeIcon className="h-[19px] w-[19px]" strokeWidth={homeActive ? 2.3 : 1.9} />
-          </Link>
-
-          <button
-            type="button"
-            onClick={() => setPaletteOpen(true)}
-            aria-label="Search products, pages and actions"
-            aria-expanded={paletteOpen}
-            className={cn(
-              "flex h-11 min-w-0 flex-1 items-center gap-2 rounded-full px-3.5",
-              "outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-              "text-left text-muted-foreground transition-colors active:bg-secondary"
-            )}
-          >
-            <Search className="h-[18px] w-[18px] shrink-0" strokeWidth={1.9} />
-            <span className="truncate text-[14px] font-medium">Search</span>
-          </button>
-
-          <Link
-            href={user ? "/dashboard/cart" : "/cart"}
-            aria-label={
-              cartCount > 0
-                ? `Cart, ${cartCount} item${cartCount === 1 ? "" : "s"}`
-                : "Cart"
-            }
-            className={cn(
-              "relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full",
-              "outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-              "text-muted-foreground transition-colors active:bg-secondary"
-            )}
-          >
-            <ShoppingBag className="h-[19px] w-[19px]" strokeWidth={1.9} />
-            {cartCount > 0 && (
-              <span
-                aria-hidden
-                className={cn(
-                  "absolute right-0.5 top-0.5 flex h-[17px] min-w-[17px] items-center justify-center",
-                  "rounded-full border-2 border-background bg-foreground px-1",
-                  "text-[10px] font-semibold leading-none tabular-nums text-background"
-                )}
-              >
-                {cartCount > 99 ? "99+" : cartCount}
+        {targets.map((target) => {
+          const active = target.match.some((m) =>
+            m === "/" ? pathname === "/" : pathname.startsWith(m)
+          )
+          const Icon = target.icon
+          return (
+            <Link
+              key={target.key}
+              href={target.href}
+              aria-current={active ? "page" : undefined}
+              aria-label={
+                target.count
+                  ? `${target.label}, ${target.count} item${target.count === 1 ? "" : "s"}`
+                  : target.label
+              }
+              className={cn(
+                "flex h-11 min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-full",
+                "outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring",
+                active ? "text-foreground" : "text-muted-foreground active:bg-secondary"
+              )}
+            >
+              <span className="relative flex">
+                <Icon className="h-[19px] w-[19px]" strokeWidth={active ? 2.2 : 1.9} />
+                {target.count ? (
+                  <span
+                    aria-hidden
+                    className={cn(
+                      "absolute -top-[9px] left-[11px] flex h-4 min-w-4 items-center justify-center",
+                      "rounded-full border-2 border-background bg-foreground px-1",
+                      "text-[9.5px] font-bold leading-none tabular-nums text-background"
+                    )}
+                  >
+                    {target.count > 99 ? "99+" : target.count}
+                  </span>
+                ) : null}
               </span>
-            )}
-          </Link>
-        </nav>
-      </div>
-
-      <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
-    </>
+              <small className="text-[9.5px] font-medium leading-none">{target.label}</small>
+            </Link>
+          )
+        })}
+      </nav>
+    </div>
   )
 }

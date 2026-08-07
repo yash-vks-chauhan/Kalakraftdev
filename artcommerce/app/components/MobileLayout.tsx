@@ -6,14 +6,12 @@ import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '../contexts/AuthContext'
 import { useWishlist } from '../contexts/WishlistContext'
-import { Home, ShoppingBag, User, Menu, X, Heart, Monitor, ChevronDown, Grid, HelpCircle, LogOut, ArrowLeft, Share, Save, Search, Instagram, Twitter, Facebook } from 'lucide-react'
+import { Home, ShoppingBag, User, Menu, X, Heart, Monitor, ChevronDown, Grid, HelpCircle, LogOut, ArrowLeft, Share, Save, Search } from 'lucide-react'
 import { useMobileMenu } from '../contexts/MobileMenuContext'
 import { getImageUrl } from '../../lib/cloudinaryImages'
 import { cn } from '@/lib/utils'
 import { CommandPalette } from './mobile/CommandPalette'
 import styles from './MobileLayout.module.css'
-import MobileMenuPanel from './MobileMenuPanel'
-import StaggeredMenu from './StaggeredMenu'
 
 interface MobileLayoutProps {
   children: React.ReactNode
@@ -54,22 +52,6 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
   ]
 
   const [viewMode, setViewMode] = useState<'mobile' | 'desktop'>('mobile')
-
-  // StaggeredMenu configuration
-  const menuItems = [
-    { label: 'Home', ariaLabel: 'Go to home page', link: '/' },
-    { label: 'Products', ariaLabel: 'Browse all products', link: '/products' },
-    { label: 'Account', ariaLabel: 'Manage your account', link: user ? '/dashboard/profile' : '/auth/login' },
-    { label: 'Cart', ariaLabel: 'View your cart', link: '/dashboard/cart' },
-    { label: 'Wishlist', ariaLabel: 'View your wishlist', link: '/dashboard/wishlist' },
-    { label: 'Support', ariaLabel: 'Get support', link: '/support' },
-  ]
-
-  const socialItems = [
-    { label: 'Instagram', link: 'https://instagram.com/artcommerce', icon: <Instagram size={18} /> },
-    { label: 'Twitter', link: 'https://twitter.com/artcommerce', icon: <Twitter size={18} /> },
-    { label: 'Facebook', link: 'https://facebook.com/artcommerce', icon: <Facebook size={18} /> },
-  ]
 
   const productCategories = [
     {
@@ -867,27 +849,13 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
         </div>
       </nav>
       
-      {/* StaggeredMenu - Hidden on create product and product detail pages */}
-      {!isCreateProductPage && !isProductPage && (
-        <StaggeredMenu
-          position="right"
-          colors={['rgba(255, 255, 255, 0.8)', 'rgba(0, 0, 0, 0.1)']}
-          items={menuItems}
-          socialItems={socialItems}
-          displaySocials={true}
-          displayItemNumbering={false}
-          menuButtonColor="#000"
-          openMenuButtonColor="#000"
-          accentColor="#000"
-          changeMenuColorOnOpen={false}
-          isFixed={true}
-          isOpen={isMobileMenuOpen}
-          onToggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          onMenuOpen={() => setIsMobileMenuOpen(true)}
-          onMenuClose={() => setIsMobileMenuOpen(false)}
-        />
-      )}
-      
+      {/*
+        The burger and its slide-out sidebar used to live here (StaggeredMenu,
+        rendered fixed so the button floated over the header icons). Both are
+        gone: the dock carries navigation, the header carries search, saved and
+        account, and nothing on a phone should need a second menu system.
+      */}
+
       {/* Mobile Bottom Navigation removed as we're using the footer instead */}
     </div>
   )
