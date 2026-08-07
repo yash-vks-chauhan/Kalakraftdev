@@ -79,6 +79,16 @@ interface AuthShellProps {
    * (lg and up) layout is identical either way.
    */
   mobileCrown?: boolean
+  /**
+   * Mobile crown size. "default" is the full brand crown with the rotating
+   * pieces; "compact" is shorter and still, for screens that are a task
+   * rather than a welcome.
+   */
+  crownSize?: "default" | "compact"
+  /** Replaces the crown's badge and headline. */
+  crownCopy?: ReactNode
+  /** Replaces the crown's top-right "Browse shop" pill. */
+  crownAction?: ReactNode
   /** Mobile only. Sits above the form; hidden from lg up (desktop uses `footer`). */
   tabs?: ReactNode
   /**
@@ -97,6 +107,9 @@ export default function AuthShell({
   footer,
   steps,
   mobileCrown = false,
+  crownSize = "default",
+  crownCopy,
+  crownAction,
   tabs,
   actionBar,
 }: AuthShellProps) {
@@ -313,6 +326,9 @@ export default function AuthShell({
         {mobileCrown ? (
           <MobileCrown
             compact={compact}
+            size={crownSize}
+            copy={crownCopy}
+            action={crownAction}
             slideIdx={slideIdx}
             onSelectSlide={setSlideIdx}
             logoSrc={logoSrc}
@@ -464,16 +480,25 @@ export default function AuthShell({
 
 function MobileCrown({
   compact,
+  size,
+  copy,
+  action,
   slideIdx,
   onSelectSlide,
   logoSrc,
 }: {
   compact: boolean
+  size: "default" | "compact"
+  copy?: ReactNode
+  action?: ReactNode
   slideIdx: number
   onSelectSlide: (i: number) => void
   logoSrc: string
 }) {
   const current = HERO_SLIDES[slideIdx]
+  const short = size === "compact"
+  const openHeight = short ? 168 : 230
+  const shutHeight = short ? 96 : 104
 
   return (
     <div
@@ -481,9 +506,9 @@ function MobileCrown({
       // so the brand row keeps its full size on a notched phone instead of
       // being pushed under the sheet that lifts over the crown.
       style={{
-        height: compact
-          ? "calc(104px + env(safe-area-inset-top, 0px))"
-          : "calc(230px + env(safe-area-inset-top, 0px))",
+        height: `calc(${
+          compact ? shutHeight : openHeight
+        }px + env(safe-area-inset-top, 0px))`,
       }}
       className="relative shrink-0 overflow-hidden bg-stone-950 transition-[height] duration-500 ease-out motion-reduce:transition-none lg:hidden"
     >
@@ -498,17 +523,19 @@ function MobileCrown({
       />
       <MandalaPattern id="kk-mandala-mobile" className="opacity-[0.07]" />
 
-      {MOBILE_SLIDE_SRC.map((src, i) => (
-        <div
-          key={src}
-          aria-hidden
-          className={cn(
-            "absolute inset-0 bg-cover bg-center transition-opacity duration-[1500ms] ease-out",
-            i === slideIdx ? "opacity-40" : "opacity-0"
-          )}
-          style={{ backgroundImage: `url('${src}')` }}
-        />
-      ))}
+      {/* The rotating pieces belong on a welcome, not on a task screen. */}
+      {!short &&
+        MOBILE_SLIDE_SRC.map((src, i) => (
+          <div
+            key={src}
+            aria-hidden
+            className={cn(
+              "absolute inset-0 bg-cover bg-center transition-opacity duration-[1500ms] ease-out",
+              i === slideIdx ? "opacity-40" : "opacity-0"
+            )}
+            style={{ backgroundImage: `url('${src}')` }}
+          />
+        ))}
 
       <div
         aria-hidden
@@ -527,13 +554,15 @@ function MobileCrown({
               Kalakraft
             </span>
           </Link>
-          <Link
-            href="/products"
-            className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3.5 py-2 text-xs font-medium text-white/90 backdrop-blur transition-colors hover:bg-white/20"
-          >
-            Browse shop
-            <Sparkles className="h-3 w-3" />
-          </Link>
+          {action ?? (
+            <Link
+              href="/products"
+              className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3.5 py-2 text-xs font-medium text-white/90 backdrop-blur transition-colors hover:bg-white/20"
+            >
+              Browse shop
+              <Sparkles className="h-3 w-3" />
+            </Link>
+          )}
         </div>
 
         <div
@@ -543,16 +572,25 @@ function MobileCrown({
             compact && "pointer-events-none translate-y-2 opacity-0"
           )}
         >
-          <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-[9.5px] font-medium uppercase tracking-[0.2em] text-white/85 ring-1 ring-white/15 backdrop-blur">
-            <Sparkles className="h-2.5 w-2.5" />
-            Handcrafted in India
-          </span>
-          <h2 className="text-[26px] font-light leading-[1.14] tracking-tight text-white">
-            Where every piece tells a
-            <span className="ml-1.5 font-serif italic">story.</span>
-          </h2>
+          {copy ?? (
+            <>
+              <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-[9.5px] font-medium uppercase tracking-[0.2em] text-white/85 ring-1 ring-white/15 backdrop-blur">
+                <Sparkles className="h-2.5 w-2.5" />
+                Handcrafted in India
+              </span>
+              <h2 className="text-[26px] font-light leading-[1.14] tracking-tight text-white">
+                Where every piece tells a
+                <span className="ml-1.5 font-serif italic">story.</span>
+              </h2>
+            </>
+          )}
 
-          <div className="flex items-center justify-between gap-4 border-t border-white/15 pt-2.5">
+          <div
+            className={cn(
+              "flex items-center justify-between gap-4 border-t border-white/15 pt-2.5",
+              short && "hidden"
+            )}
+          >
             <div className="flex min-w-0 flex-col leading-tight">
               <span className="truncate text-[12.5px] font-medium text-white">
                 {current.caption}

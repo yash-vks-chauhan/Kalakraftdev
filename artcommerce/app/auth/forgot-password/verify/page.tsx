@@ -1,4 +1,5 @@
-import ResetPasswordClient from '../ResetPasswordClient'
+// File: app/auth/forgot-password/verify/page.tsx
+import ResetFlow from '../../_components/ResetFlow'
 
 export default async function ForgotPasswordVerifyPage({
   searchParams,
@@ -7,5 +8,11 @@ export default async function ForgotPasswordVerifyPage({
 }) {
   const { email = '', otp = '' } = await searchParams
 
-  return <ResetPasswordClient initialEmail={email} initialCode={otp} />
+  return (
+    <ResetFlow
+      initialPane="code"
+      initialEmail={email.trim().toLowerCase()}
+      initialCode={otp}
+    />
+  )
 }
