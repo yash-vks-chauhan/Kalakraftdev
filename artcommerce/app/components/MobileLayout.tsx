@@ -6,12 +6,13 @@ import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '../contexts/AuthContext'
 import { useWishlist } from '../contexts/WishlistContext'
-import { Home, ShoppingBag, User, Menu, X, Heart, Monitor, ChevronDown, Grid, HelpCircle, LogOut, ArrowLeft, Share, Save, Instagram, Twitter, Facebook } from 'lucide-react'
+import { Home, ShoppingBag, User, Menu, X, Heart, Monitor, ChevronDown, Grid, HelpCircle, LogOut, ArrowLeft, Share, Save, Search, Instagram, Twitter, Facebook } from 'lucide-react'
 import { useMobileMenu } from '../contexts/MobileMenuContext'
 import { getImageUrl } from '../../lib/cloudinaryImages'
+import { cn } from '@/lib/utils'
+import { CommandPalette } from './mobile/CommandPalette'
 import styles from './MobileLayout.module.css'
 import MobileMenuPanel from './MobileMenuPanel'
-import PearlButton from './PearlButton'
 import StaggeredMenu from './StaggeredMenu'
 
 interface MobileLayoutProps {
@@ -27,6 +28,13 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
   const isHomePage = pathname === '/'
   const isProductsPage = pathname === '/products' || pathname.startsWith('/products?')
   const [isScrolled, setIsScrolled] = useState(false)
+  // The header flips from transparent to solid past the hero, not at 10px —
+  // on the homepage it sits over a 470px dark block.
+  const [pastHero, setPastHero] = useState(false)
+  const [searchOpen, setSearchOpen] = useState(false)
+  // Transparent only where there is a dark hero to sit on.
+  const onDark = isHomePage && !pastHero
+  const solidHeader = !onDark
   const [isFooterVisible, setIsFooterVisible] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
   const [rotatingText, setRotatingText] = useState('coasters')
@@ -143,6 +151,7 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
       scrollVelocity = Math.abs(currentScrollY - prevScrollY) / Math.max(timeDiff, 1)
       
       setIsScrolled(currentScrollY > 10)
+      setPastHero(currentScrollY > 380)
       
       const currentDirection = currentScrollY > prevScrollY ? 1 : -1
       
@@ -582,152 +591,166 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
       )}
       
       {/* Home page specific content - Put at the top */}
-      {isHomePage && (
-        <div className={styles.curvedCardContainer}>
-          <div className={styles.curvedHeroCard}>
-            <div className={styles.curvedHeroBackground}></div>
-            
-            {/* Video background with fallback */}
-            <picture>
-              {/* Fallback image that will be shown if video fails */}
-              <img 
-                src={getImageUrl('featured3.JPG')}
-                alt="Handcrafted resin art" 
-                className={styles.curvedHeroVideo}
-                style={{ display: hasHeroVideoError || !isHeroVideoLoaded ? 'block' : 'none' }}
-                id="mobileVideoFallback"
-              />
-            </picture>
-            <video
-              key={heroVideoSources[heroVideoSourceIndex]}
-              ref={videoRef}
-              autoPlay
-              muted
-              loop
-              playsInline
-              className={styles.curvedHeroVideo}
-              src={heroVideoSources[heroVideoSourceIndex]}
-              poster="/images/loading.png"
-              preload="auto"
-              style={{ display: hasHeroVideoError ? 'none' : 'block' }}
-              onLoadedData={handleHeroVideoLoaded}
-              onError={handleHeroVideoError}
-            >
-              Your browser does not support the video tag.
-            </video>
-            
-            <div className={styles.curvedHeroContent}>
-              {/* Top text - "A HANDCRAFTED ART STUDIO" */}
-              <div className={styles.curvedHeroTopText}>A HANDCRAFTED ART STUDIO</div>
-              
-              {/* Logo */}
-              <Image
-                src={getImageUrl('logo.png')}
-                alt="Artcommerce Logo"
-                width={90}
-                height={30}
-                className={styles.curvedHeroLogo}
-                priority
-              />
-              
-              {/* Hero Text */}
-              <h1 className={styles.curvedHeroTitle}>
-                Handcrafted resin art for {rotatingText}
-              </h1>
-              
-              {/* New Pearl Button for Mobile */}
-              <div className={styles.mobileDiscoverButtonContainer}>
-                <PearlButton href="/products">
-                  Discover All Pieces
-                </PearlButton>
-              </div>
-              
-              {/* Scroll indicator */}
-              <div className={styles.scrollIndicator}>
-                <ChevronDown size={30} />
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/*
+        The homepage hero used to live here — a full-screen autoplaying video
+        card with its own logo and CTA. It now belongs to the page itself
+        (components/home/mobile/HeroPour), so the layout stops competing with
+        its own content and the video is no longer on the critical path.
+      */}
 
-      {/* Mobile Header - Now with product page and create product page detection */}
-      <header 
-        className={`${styles.mobileHeader} ${isHomePage ? styles.homeMobileHeader : ''} ${isProductPage ? styles.productPageHeader : ''} ${isCreateProductPage ? styles.createProductPageHeader : ''}`}
+      {/*
+        Mobile header — two decisive states.
+
+        Over the homepage hero it is fully transparent with white content; past
+        the hero (and on every other page) it becomes a frosted surface with a
+        hairline and dark content. The previous version faded in at
+        rgba(255,255,255,0.1), which over a near-white page read as no change,
+        and left its right-hand two thirds empty on the homepage.
+      */}
+      <header
+        className={cn(
+          'fixed inset-x-0 top-0 z-[1001] pt-safe transition-[background-color,border-color,box-shadow] duration-300',
+          'border-b',
+          solidHeader
+            ? 'border-border bg-background/[0.86] backdrop-blur-xl backdrop-saturate-150'
+            : 'border-transparent bg-transparent'
+        )}
         data-scrolled={isScrolled ? 'true' : 'false'}
       >
-        {/* Left side - Logo, Back button for product pages, or Back button for create product page */}
-        {isProductPage ? (
-          <button 
-            onClick={handleBackClick}
-            className={styles.backButton}
-            aria-label="Go back"
+        <div className="flex h-14 items-center gap-1 pl-4 pr-2">
+          {isProductPage || isCreateProductPage ? (
+            <button
+              onClick={isProductPage ? handleBackClick : () => router.push('/dashboard/admin/products')}
+              className={cn(
+                'flex h-10 w-10 shrink-0 items-center justify-center rounded-full',
+                onDark ? 'text-white' : 'text-foreground'
+              )}
+              aria-label="Go back"
+            >
+              <ArrowLeft size={22} strokeWidth={2} />
+            </button>
+          ) : (
+            <Link
+              href="/"
+              className={cn(
+                'flex h-11 items-center font-serif text-[21px] italic leading-none tracking-[-0.01em] transition-colors',
+                onDark ? 'text-white' : 'text-foreground'
+              )}
+            >
+              kalakraft
+            </Link>
+          )}
+
+          {(isProductPage || isCreateProductPage) && (
+            <span
+              className={cn(
+                'min-w-0 flex-1 truncate px-2 text-center text-sm font-medium',
+                onDark ? 'text-white' : 'text-foreground'
+              )}
+            >
+              {isCreateProductPage ? 'New Product' : productName}
+            </span>
+          )}
+
+          <div className="ml-auto flex items-center">
+            {isCreateProductPage && (
+              <button
+                type="submit"
+                form="product-form"
+                className="flex h-10 w-10 items-center justify-center rounded-full text-foreground"
+                aria-label="Save product"
+              >
+                <Save size={20} strokeWidth={2} />
+              </button>
+            )}
+
+            {isProductPage && (
+              <button
+                onClick={handleShareProduct}
+                className={cn(
+                  'flex h-10 w-10 items-center justify-center rounded-full',
+                  onDark ? 'text-white' : 'text-foreground'
+                )}
+                aria-label="Share product"
+              >
+                <Share size={20} strokeWidth={2} />
+              </button>
+            )}
+
+            {!isProductPage && !isCreateProductPage && (
+              <>
+                {/* The field folds away on scroll, so search comes back as an icon. */}
+                {(!isHomePage || pastHero) && (
+                  <button
+                    onClick={() => setSearchOpen(true)}
+                    className={cn(
+                      'flex h-10 w-10 items-center justify-center rounded-full',
+                      onDark ? 'text-white' : 'text-foreground'
+                    )}
+                    aria-label="Search"
+                  >
+                    <Search size={19} strokeWidth={1.9} />
+                  </button>
+                )}
+
+                <Link
+                  href={user ? '/dashboard/wishlist' : '/auth/login'}
+                  className={cn(
+                    'relative flex h-10 w-10 items-center justify-center rounded-full',
+                    onDark ? 'text-white' : 'text-foreground'
+                  )}
+                  aria-label={
+                    wishlistItems.length > 0
+                      ? `Saved, ${wishlistItems.length} item${wishlistItems.length === 1 ? '' : 's'}`
+                      : 'Saved'
+                  }
+                >
+                  <Heart size={19} strokeWidth={1.9} />
+                  {wishlistItems.length > 0 && (
+                    <span
+                      aria-hidden
+                      className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-amber-600 ring-2 ring-background"
+                    />
+                  )}
+                </Link>
+
+                <Link
+                  href={user ? '/dashboard' : '/auth/login'}
+                  className={cn(
+                    'flex h-10 w-10 items-center justify-center rounded-full',
+                    onDark ? 'text-white' : 'text-foreground'
+                  )}
+                  aria-label={user ? 'Your account' : 'Sign in'}
+                >
+                  <User size={19} strokeWidth={1.9} />
+                </Link>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Home only: a real search field at rest, folded away once scrolling. */}
+        {isHomePage && (
+          <div
+            className={cn(
+              'overflow-hidden px-4 transition-[height,opacity,padding] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]',
+              pastHero ? 'h-0 opacity-0' : 'h-[52px] pb-2.5 opacity-100'
+            )}
           >
-            <ArrowLeft size={24} strokeWidth={2} />
-          </button>
-        ) : isCreateProductPage ? (
-          <button 
-            onClick={() => router.push('/dashboard/admin/products')}
-            className={styles.backButton}
-            aria-label="Go back to products"
-          >
-            <ArrowLeft size={24} strokeWidth={2} />
-          </button>
-        ) : (
-          <Link href="/" className={styles.logoContainer}>
-            <Image
-              src={getImageUrl('logo.png')}
-              alt="Artcommerce Logo"
-              width={110}
-              height={36}
-              priority
-              style={{ objectFit: 'contain' }}
-              className={styles.logo}
-            />
-          </Link>
+            <button
+              type="button"
+              onClick={() => setSearchOpen(true)}
+              className="flex h-[42px] w-full items-center gap-2.5 rounded-full border border-white/25 bg-white/[0.16] px-3.5 text-left text-[13.5px] text-white/95 backdrop-blur"
+            >
+              <Search size={16} strokeWidth={2} className="shrink-0" />
+              Search clocks, trays, rangoli&hellip;
+            </button>
+          </div>
         )}
-        
-        {/* Center - Empty spacer, Product title for product pages, or New Product title for create product page */}
-        <div className={styles.headerSpacer}>
-          {isProductPage && productName && (
-            <div className={styles.productPageTitle}>{productName}</div>
-          )}
-          {isCreateProductPage && (
-            <div className={styles.createProductPageTitle}>New Product</div>
-          )}
-        </div>
-        
-        {/* Right side - Icons and burger menu */}
-        <div className={styles.headerIcons}>
-          {/* Save button - Only on create product page */}
-          {isCreateProductPage && (
-            <button 
-              type="submit" 
-              form="product-form"
-              className={styles.headerIconButton}
-              aria-label="Save product"
-            >
-              <Save size={20} strokeWidth={2} />
-            </button>
-          )}
-          
-          {/* Share button - Only on product pages */}
-          {isProductPage && (
-            <button 
-              onClick={handleShareProduct}
-              className={styles.headerIconButton}
-              aria-label="Share product"
-            >
-              <Share size={20} strokeWidth={2} />
-            </button>
-          )}
-          
-          {/* Search and cart deliberately omitted: both live in the app-wide
-              MobileDock at the bottom of every page, so repeating them here
-              showed the same two controls twice on one screen. */}
-        </div>
       </header>
-      
+
+      <CommandPalette open={searchOpen} onOpenChange={setSearchOpen} />
+
       {/* Main Content Area */}
       <main className={`${
         isProductsPage 
@@ -736,16 +759,6 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
       } ${isHomePage ? styles.homeContent : ''}`}>
         {children}
       </main>
-      
-      {/* Simple Black Footer - Appears on all mobile pages */}
-      <div style={{
-        width: '100%',
-        backgroundColor: '#000',
-        padding: '40px 0',
-        marginTop: '20px'
-      }}>
-        {/* This is an empty black footer */}
-      </div>
       
       {/* Mobile Footer Navigation */}
       <nav className={`${styles.mobileFooter} ${isFooterVisible ? styles.footerVisible : styles.footerHidden}`}>

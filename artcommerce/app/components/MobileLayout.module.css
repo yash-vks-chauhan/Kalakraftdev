@@ -147,19 +147,19 @@
 /* Mobile Content */
 .mobileContent {
   flex: 1;
-  padding: 70px 0 90px 0; /* Default bottom padding for footer */
+  padding: calc(56px + env(safe-area-inset-top, 0px)) 0 90px 0;
 }
 
 /* Products page specific content - no bottom padding as pagination handles it */
 .productsPageContent {
   flex: 1;
-  padding: 70px 0 0 0; /* No bottom padding for products page */
+  padding: calc(56px + env(safe-area-inset-top, 0px)) 0 0 0;
 }
 
 /* Home page specific content styles */
 .homeContent {
-  /* Remove horizontal padding on homepage, keep bottom padding for footer */
-  padding: 0 0 90px 0; /* Increased bottom padding to match mobileContent */
+  /* The homepage owns its own footer, so it also owns the bottom spacing. */
+  padding: 0;
   margin-top: 0; /* Remove top margin for home page */
 }
 

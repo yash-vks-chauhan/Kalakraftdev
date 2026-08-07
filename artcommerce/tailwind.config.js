@@ -46,6 +46,20 @@ module.exports = {
           foreground: 'hsl(var(--card-foreground))',
         },
       },
+      keyframes: {
+        'accordion-down': {
+          from: { height: '0' },
+          to: { height: 'var(--radix-accordion-content-height)' },
+        },
+        'accordion-up': {
+          from: { height: 'var(--radix-accordion-content-height)' },
+          to: { height: '0' },
+        },
+      },
+      animation: {
+        'accordion-down': 'accordion-down 0.22s cubic-bezier(0.32, 0.72, 0, 1)',
+        'accordion-up': 'accordion-up 0.22s cubic-bezier(0.32, 0.72, 0, 1)',
+      },
       borderRadius: {
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',

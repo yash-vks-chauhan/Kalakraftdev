@@ -1,0 +1,73 @@
+/*
+ * The two artistic devices, kept out of Tailwind because both are things
+ * utility classes express badly: a four-blob drift animation and a noise
+ * texture. Used on exactly two surfaces — the hero and the footer.
+ */
+
+.pour {
+  position: absolute;
+  inset: -30%;
+  filter: blur(26px);
+  pointer-events: none;
+}
+
+.pour span {
+  position: absolute;
+  display: block;
+  border-radius: 50%;
+  mix-blend-mode: screen;
+  animation: drift 26s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+.pour span:nth-child(1) {
+  width: 74%;
+  height: 62%;
+  left: -6%;
+  top: -4%;
+  background: #c2703a;
+}
+.pour span:nth-child(2) {
+  width: 66%;
+  height: 60%;
+  right: -8%;
+  top: 12%;
+  background: #7d2f3f;
+  animation-delay: -8s;
+}
+.pour span:nth-child(3) {
+  width: 72%;
+  height: 56%;
+  left: 12%;
+  bottom: -12%;
+  background: #3d3466;
+  animation-delay: -15s;
+}
+.pour span:nth-child(4) {
+  width: 46%;
+  height: 42%;
+  right: 6%;
+  bottom: 2%;
+  background: #a67c22;
+  animation-delay: -21s;
+}
+
+@keyframes drift {
+  0% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(6%, -4%, 0) scale(1.12); }
+  100% { transform: translate3d(-5%, 5%, 0) scale(1.04); }
+}
+
+/* Grain is what stops a CSS gradient reading as a CSS gradient. */
+.grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.32'/%3E%3C/svg%3E");
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pour span { animation: none; }
+}
