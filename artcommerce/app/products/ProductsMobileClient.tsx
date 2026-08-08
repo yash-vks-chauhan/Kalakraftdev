@@ -202,8 +202,15 @@ export default function ProductsMobileClient() {
   useEffect(() => {
     const el = sentinelRef.current
     if (!el) return
+    // Offset by the fixed header, or the hairline would appear a header's
+    // height too late.
+    const headerH =
+      parseFloat(
+        getComputedStyle(document.documentElement).getPropertyValue('--mobile-header-h')
+      ) * 16 || 56
     const io = new IntersectionObserver(([entry]) => setStuck(!entry.isIntersecting), {
       threshold: 0,
+      rootMargin: `-${Math.round(headerH) + 1}px 0px 0px 0px`,
     })
     io.observe(el)
     return () => io.disconnect()
@@ -315,12 +322,23 @@ export default function ProductsMobileClient() {
 
       <div ref={sentinelRef} aria-hidden className="h-px" />
 
+      {/*
+       * Sticks below the app header, not at the top of the viewport — that
+       * header is fixed at z-1001, so `top: 0` parked the category rail
+       * behind it and clipped the sort and filter pills in half.
+       */}
+      {/*
+       * Opaque, not frosted. A translucent bar over a grid of colourful work
+       * smears whatever is passing underneath it, and the chips lose their
+       * edges. The dock can be glass because it floats over content; a
+       * full-width bar the eye reads as a surface should behave like one.
+       */}
       <div
         className={cn(
-          'sticky top-0 z-30 border-b bg-background/95 backdrop-blur-md transition-colors duration-200',
-          'supports-[backdrop-filter]:bg-background/85',
-          stuck ? 'border-border' : 'border-transparent'
+          'sticky z-30 border-b bg-background transition-shadow duration-200',
+          stuck ? 'border-border shadow-[0_1px_3px_rgba(0,0,0,0.04)]' : 'border-transparent'
         )}
+        style={{ top: 'var(--mobile-header-total, 3.5rem)' }}
       >
         {/* Category rail — the catalogue's navigation, one tap from any depth. */}
         <div className="flex gap-2 overflow-x-auto px-4 py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -514,6 +532,7 @@ export default function ProductsMobileClient() {
                       src={peeked.imageUrls[0]}
                       alt={peeked.name}
                       className="h-full w-full object-cover"
+                      decoding="async"
                     />
                   ) : null}
                 </Link>
@@ -637,6 +656,7 @@ function ProductTile({
               src={image}
               alt={product.name}
               loading="lazy"
+              decoding="async"
               className={cn(
                 'h-full w-full object-cover transition-transform duration-300 ease-out',
                 'group-active/tile:scale-[0.98]',

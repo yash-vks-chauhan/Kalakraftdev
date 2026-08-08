@@ -34,7 +34,6 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
   const onDark = isHomePage && !pastHero
   const solidHeader = !onDark
   const [isFooterVisible, setIsFooterVisible] = useState(true)
-  const [lastScrollY, setLastScrollY] = useState(0)
   const [rotatingText, setRotatingText] = useState('coasters')
   const videoRef = useRef<HTMLVideoElement>(null)
   const [isHeroVideoLoaded, setIsHeroVideoLoaded] = useState(false)
@@ -167,18 +166,26 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
       
       prevScrollY = currentScrollY
       lastScrollTime = currentTime
-      setLastScrollY(currentScrollY)
     }
 
     window.addEventListener('scroll', handleScroll, { passive: true })
-    
+
     return () => {
       window.removeEventListener('scroll', handleScroll)
       if (scrollTimer) {
         clearTimeout(scrollTimer)
       }
     }
-  }, [lastScrollY])
+    /*
+     * Empty deps on purpose. This used to depend on a `lastScrollY` state that
+     * the handler set on every scroll event and nothing ever read — so each
+     * event re-rendered the whole mobile shell and then tore down and
+     * re-registered this listener. That was the hitch while scrolling. The
+     * handler keeps its own position in `prevScrollY`, which is a local, so it
+     * needs nothing from React state.
+     */
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     let currentIndex = 0

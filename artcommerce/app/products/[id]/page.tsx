@@ -14,6 +14,7 @@ import ProductCardPro from '../ProductCardPro'
 import Reveal from '../../components/home/Reveal'
 import SectionHeader from '../../components/home/SectionHeader'
 import ProductChrome, { type ChromeSection } from './ProductChrome'
+import ProductSkeleton from './ProductSkeleton'
 import ProductStage from './ProductStage'
 import ProductReviews, { type Review } from './ProductReviews'
 import Stars from '../../components/Stars'
@@ -216,29 +217,7 @@ export default function ProductDetailsPage() {
 
   // Loading state
   if (loading) {
-    return (
-      <main className="mx-auto min-h-screen w-full max-w-[1240px] bg-white px-6 pb-24 pt-8 lg:px-10">
-        <div className="mb-7 h-3 w-40 animate-pulse rounded bg-[#f0f0f0]" />
-        <div className="grid grid-cols-12 items-start gap-x-14">
-          <div className="col-span-7 grid grid-cols-[76px_minmax(0,1fr)] gap-5">
-            <div className="flex flex-col gap-2.5">
-              {[0, 1, 2, 3].map(i => (
-                <div key={i} className="aspect-[4/5] animate-pulse rounded-md bg-[#f0f0f0]" />
-              ))}
-            </div>
-            <div className="h-[586px] animate-pulse rounded-2xl bg-[#f0f0f0]" />
-          </div>
-          <div className="col-span-5 space-y-5 pt-2">
-            <div className="h-3 w-24 animate-pulse rounded bg-[#f0f0f0]" />
-            <div className="h-11 w-4/5 animate-pulse rounded bg-[#f0f0f0]" />
-            <div className="h-4 w-40 animate-pulse rounded bg-[#f0f0f0]" />
-            <div className="h-9 w-32 animate-pulse rounded bg-[#f0f0f0]" />
-            <div className="h-20 w-full animate-pulse rounded bg-[#f0f0f0]" />
-            <div className="h-12 w-full animate-pulse rounded-full bg-[#f0f0f0]" />
-          </div>
-        </div>
-      </main>
-    )
+    return <ProductSkeleton />
   }
 
   // Error state

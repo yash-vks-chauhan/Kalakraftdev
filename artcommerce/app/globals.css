@@ -50,6 +50,12 @@
   --mobile-dock-total: calc(
     var(--mobile-dock-h) + var(--mobile-dock-gap) + env(safe-area-inset-bottom, 0px)
   );
+
+  /* MobileLayout's header is position:fixed at z-1001, so anything that
+     sticks has to stick *below* it — `top: 0` slides underneath and is
+     hidden. Same value MobileLayout.module.css pads its content by. */
+  --mobile-header-h: 3.5rem;    /* 56px — the h-14 bar */
+  --mobile-header-total: calc(var(--mobile-header-h) + env(safe-area-inset-top, 0px));
 }
 
 .dashboard-shell {

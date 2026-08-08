@@ -69,6 +69,9 @@ interface MobileProductDetailsProps {
 }
 
 const LOW_STOCK = 5
+/** How far the lightbox enlarges. 2.6× shows brush and pour detail without
+ *  turning a 1000px photo into mush. */
+const ZOOM_SCALE = 2.6
 
 function formatPrice(value: number) {
   return new Intl.NumberFormat('en-IN', {
@@ -131,6 +134,9 @@ export default function MobileProductDetails({
   const [zoomed, setZoomed] = useState(false)
 
   const ctaRef = useRef<HTMLDivElement | null>(null)
+  const zoomRef = useRef<HTMLDivElement | null>(null)
+  // Where in the image the zoom was asked for, 0–1 on each axis.
+  const zoomOrigin = useRef({ x: 0.5, y: 0.5 })
 
   const images = product.imageUrls?.length ? product.imageUrls : []
   const isOut = product.stockQuantity <= 0
@@ -180,19 +186,47 @@ export default function MobileProductDetails({
 
   useEffect(() => {
     if (!lightboxApi) return
-    const onSelect = () => {
-      setCurrent(lightboxApi.selectedScrollSnap())
-      setZoomed(false)
-    }
+    const onSelect = () => setCurrent(lightboxApi.selectedScrollSnap())
     lightboxApi.on('select', onSelect)
     return () => {
       lightboxApi.off('select', onSelect)
     }
   }, [lightboxApi])
 
+  /** Zoom in around the point that was tapped, rather than always the middle. */
+  const zoomAt = useCallback((e: React.MouseEvent<HTMLImageElement>) => {
+    const r = e.currentTarget.getBoundingClientRect()
+    zoomOrigin.current = {
+      x: r.width ? (e.clientX - r.left) / r.width : 0.5,
+      y: r.height ? (e.clientY - r.top) / r.height : 0.5,
+    }
+    setZoomed(true)
+  }, [])
+
+  // Once the enlarged image is laid out, put the tapped point under the finger.
+  useEffect(() => {
+    if (!zoomed) return
+    const el = zoomRef.current
+    if (!el) return
+    const id = requestAnimationFrame(() => {
+      const { x, y } = zoomOrigin.current
+      el.scrollLeft = Math.max(0, (el.scrollWidth - el.clientWidth) * x)
+      el.scrollTop = Math.max(0, (el.scrollHeight - el.clientHeight) * y)
+    })
+    return () => cancelAnimationFrame(id)
+  }, [zoomed])
+
+  // Leaving a picture should never leave the zoom behind on the next one.
+  useEffect(() => {
+    setZoomed(false)
+  }, [current])
+
   // Escape closes the lightbox, and the page underneath must not scroll.
   useEffect(() => {
-    if (!lightboxOpen) return
+    if (!lightboxOpen) {
+      setZoomed(false)
+      return
+    }
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setLightboxOpen(false)
     }
@@ -289,8 +323,12 @@ export default function MobileProductDetails({
                     <img
                       src={url}
                       alt={`${product.name} — view ${i + 1}`}
-                      className={cn('h-full w-full object-cover', isOut && 'grayscale')}
+                      // Tapping the piece opens it full screen — the gesture
+                      // people try first, before they look for a button.
+                      onClick={() => setLightboxOpen(true)}
+                      className={cn('h-full w-full cursor-zoom-in object-cover', isOut && 'grayscale')}
                       loading={i === 0 ? 'eager' : 'lazy'}
+                      decoding="async"
                       draggable={false}
                     />
                   ) : (
@@ -365,7 +403,7 @@ export default function MobileProductDetails({
               )}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={url} alt="" className="h-full w-full object-cover" loading="lazy" />
+              <img src={url} alt="" className="h-full w-full object-cover" loading="lazy" decoding="async" />
             </button>
           ))}
         </div>
@@ -496,6 +534,7 @@ export default function MobileProductDetails({
                     alt={`${product.name} styled, view ${i + 1}`}
                     className="h-full w-full object-cover"
                     loading="lazy"
+                    decoding="async"
                   />
                 </div>
                 {shot.text && (
@@ -634,6 +673,7 @@ export default function MobileProductDetails({
                       alt={p.name}
                       className="h-full w-full object-cover"
                       loading="lazy"
+                      decoding="async"
                     />
                   ) : null}
                 </div>
@@ -691,7 +731,7 @@ export default function MobileProductDetails({
             <div className="aspect-square w-14 shrink-0 overflow-hidden rounded-lg bg-muted">
               {images[0] ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={images[0]} alt="" className="h-full w-full object-cover" />
+                <img src={images[0]} alt="" className="h-full w-full object-cover" decoding="async" />
               ) : null}
             </div>
             <div className="min-w-0">
@@ -738,34 +778,58 @@ export default function MobileProductDetails({
             </button>
           </div>
 
-          <Carousel
-            setApi={setLightboxApi}
-            opts={{ loop: images.length > 1, watchDrag: !zoomed }}
-            className="min-h-0 flex-1"
-          >
-            <CarouselContent wrapperClassName="h-full" className="ml-0 h-full">
-              {images.map((url, i) => (
-                <CarouselItem key={i} className="basis-full pl-0">
-                  <div className="grid h-full place-items-center px-3.5">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={url}
-                      alt={`${product.name} — view ${i + 1}`}
-                      onClick={() => setZoomed((z) => !z)}
-                      className={cn(
-                        'max-h-full w-full rounded-lg object-contain transition-transform duration-300 ease-out',
-                        zoomed && i === current && 'scale-[1.7]'
-                      )}
-                      draggable={false}
-                    />
-                  </div>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-          </Carousel>
+          {/*
+           * Paging and zooming are two different surfaces on purpose. A CSS
+           * transform can enlarge an image but gives nothing to pan with, so
+           * zoomed-in the picture just sat there. Zoom swaps the carousel for
+           * a native scroll container holding an oversized image: panning is
+           * then the browser's own scrolling, with its momentum and its
+           * rubber-banding, which is what "smooth" actually means here.
+           */}
+          {zoomed ? (
+            <div
+              ref={zoomRef}
+              onClick={() => setZoomed(false)}
+              className="min-h-0 flex-1 overflow-auto overscroll-contain [-webkit-overflow-scrolling:touch] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={images[current]}
+                alt={`${product.name} — view ${current + 1}, enlarged`}
+                className="h-auto max-w-none"
+                decoding="async"
+                style={{ width: `${ZOOM_SCALE * 100}%` }}
+                draggable={false}
+              />
+            </div>
+          ) : (
+            <Carousel
+              setApi={setLightboxApi}
+              opts={{ loop: images.length > 1 }}
+              className="min-h-0 flex-1"
+            >
+              <CarouselContent wrapperClassName="h-full" className="ml-0 h-full">
+                {images.map((url, i) => (
+                  <CarouselItem key={i} className="basis-full pl-0">
+                    <div className="grid h-full place-items-center px-3.5">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={url}
+                        alt={`${product.name} — view ${i + 1}`}
+                        onClick={(e) => zoomAt(e)}
+                        className="max-h-full w-full rounded-lg object-contain"
+                        decoding="async"
+                        draggable={false}
+                      />
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+            </Carousel>
+          )}
 
           <p className="pb-2 text-center text-[11.5px] text-white/45">
-            {zoomed ? 'Tap again to fit' : 'Tap the image to zoom'}
+            {zoomed ? 'Drag to explore · tap to fit' : 'Tap the image to zoom'}
           </p>
 
           <div className="flex gap-2 overflow-x-auto px-3.5 pb-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -782,7 +846,7 @@ export default function MobileProductDetails({
                 )}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={url} alt="" className="h-full w-full object-cover" />
+                <img src={url} alt="" className="h-full w-full object-cover" decoding="async" />
               </button>
             ))}
           </div>
