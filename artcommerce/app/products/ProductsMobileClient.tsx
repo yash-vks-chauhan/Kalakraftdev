@@ -4,8 +4,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import {
-  ArrowUpDown,
   Check,
+  ChevronDown,
   Heart,
   Maximize2,
   ShoppingBag,
@@ -17,6 +17,7 @@ import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
   Drawer,
@@ -115,6 +116,7 @@ export default function ProductsMobileClient() {
 
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<Category[]>([])
+  const [catsLoading, setCatsLoading] = useState(true)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [shown, setShown] = useState(PAGE_SIZE)
@@ -126,6 +128,8 @@ export default function ProductsMobileClient() {
 
   const [stuck, setStuck] = useState(false)
   const sentinelRef = useRef<HTMLDivElement | null>(null)
+  const barRef = useRef<HTMLDivElement | null>(null)
+  const railRef = useRef<HTMLDivElement | null>(null)
 
   /* ── data ─────────────────────────────────────────────────── */
 
@@ -138,7 +142,9 @@ export default function ProductsMobileClient() {
         const data = await res.json()
         if (!cancelled && Array.isArray(data.categories)) setCategories(data.categories)
       } catch {
-        /* the rail simply doesn't render; the page still works */
+        /* the rail falls back to "All" alone; the page still works */
+      } finally {
+        if (!cancelled) setCatsLoading(false)
       }
     }
     run()
@@ -195,25 +201,52 @@ export default function ProductsMobileClient() {
   }, [currentCategory, currentTag, priceMin, priceMax, sortOrder, ratingMin, lowStockOnly, inStockOnly])
 
   /*
-   * The rail pins to the top of the viewport. An IntersectionObserver on a
-   * zero-height sentinel above it tells us when to draw the hairline, which
-   * is cheaper than reading scroll position on every frame.
+   * The bar pins below the fixed header. An IntersectionObserver on a
+   * one-pixel sentinel above it tells us when to lift the shadow, which is
+   * cheaper than reading scroll position on every frame.
+   *
+   * The margin is read back off the bar's own resolved `top` rather than
+   * recomputed from the token, so the two can never drift apart — the token
+   * is a calc() with an env() in it and only the browser knows the answer.
    */
   useEffect(() => {
     const el = sentinelRef.current
-    if (!el) return
-    // Offset by the fixed header, or the hairline would appear a header's
-    // height too late.
-    const headerH =
-      parseFloat(
-        getComputedStyle(document.documentElement).getPropertyValue('--mobile-header-h')
-      ) * 16 || 56
+    const bar = barRef.current
+    if (!el || !bar) return
+    const offset = parseFloat(getComputedStyle(bar).top) || 57
     const io = new IntersectionObserver(([entry]) => setStuck(!entry.isIntersecting), {
       threshold: 0,
-      rootMargin: `-${Math.round(headerH) + 1}px 0px 0px 0px`,
+      rootMargin: `-${Math.round(offset)}px 0px 0px 0px`,
     })
     io.observe(el)
     return () => io.disconnect()
+  }, [])
+
+  /*
+   * A rail wide enough to scroll can hide the selection — on load from a deep
+   * link, and after a tap near either end. Pull it back into view whenever the
+   * category changes or the rail is (re)populated.
+   */
+  useEffect(() => {
+    const rail = railRef.current
+    if (!rail) return
+    const active = rail.querySelector<HTMLElement>('[data-active]')
+    if (!active) return
+    if (rail.scrollWidth <= rail.clientWidth) return
+    active.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
+  }, [currentCategory, categories])
+
+  /* Left/Right walk the rail, the way a tab list is expected to behave. */
+  const onRailKeys = useCallback((e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return
+    const rail = e.currentTarget
+    const tabs = Array.from(rail.querySelectorAll<HTMLButtonElement>('button'))
+    const at = tabs.indexOf(document.activeElement as HTMLButtonElement)
+    if (at === -1) return
+    e.preventDefault()
+    const next = e.key === 'ArrowRight' ? (at + 1) % tabs.length : (at - 1 + tabs.length) % tabs.length
+    tabs[next].focus()
+    tabs[next].scrollIntoView({ block: 'nearest', inline: 'nearest' })
   }, [])
 
   /* ── derived ──────────────────────────────────────────────── */
@@ -308,82 +341,128 @@ export default function ProductsMobileClient() {
 
   return (
     <div className="min-h-screen bg-background pb-tabbar">
-      {/* One row of state. The title scrolls away; the rail below does not. */}
-      <div className="flex items-baseline justify-between gap-3 px-4 pb-3 pt-1">
-        <h1 className="text-[22px] font-semibold tracking-tight text-foreground">
-          {activeCategory ? activeCategory.name : 'All pieces'}
-        </h1>
-        {!loading && (
-          <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
-            {products.length} {products.length === 1 ? 'piece' : 'pieces'}
-          </span>
-        )}
-      </div>
+      {/*
+       * The rail below is the heading — it names the slice of the catalogue
+       * you are looking at. A visible <h1> above it only repeated the selected
+       * category word for word, so it is kept for the document outline and
+       * for screen readers, and nothing else.
+       */}
+      <h1 className="sr-only">
+        {activeCategory ? activeCategory.name : 'All pieces'}
+      </h1>
 
       <div ref={sentinelRef} aria-hidden className="h-px" />
 
       {/*
        * Sticks below the app header, not at the top of the viewport — that
        * header is fixed at z-1001, so `top: 0` parked the category rail
-       * behind it and clipped the sort and filter pills in half.
+       * behind it and clipped the controls in half.
        */}
       {/*
        * Opaque, not frosted. A translucent bar over a grid of colourful work
-       * smears whatever is passing underneath it, and the chips lose their
+       * smears whatever is passing underneath it, and the labels lose their
        * edges. The dock can be glass because it floats over content; a
        * full-width bar the eye reads as a surface should behave like one.
        */}
       <div
+        ref={barRef}
         className={cn(
-          'sticky z-30 border-b bg-background transition-shadow duration-200',
-          stuck ? 'border-border shadow-[0_1px_3px_rgba(0,0,0,0.04)]' : 'border-transparent'
+          'sticky z-30 bg-background transition-shadow duration-200',
+          stuck && 'shadow-[0_1px_3px_rgba(0,0,0,0.05)]'
         )}
         style={{ top: 'var(--mobile-header-total, 3.5rem)' }}
       >
-        {/* Category rail — the catalogue's navigation, one tap from any depth. */}
-        <div className="flex gap-2 overflow-x-auto px-4 py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <CategoryChip
+        {/*
+         * Navigation. The rule is the rail's own baseline rather than a stuck
+         * state, so it is always drawn and the selected tab's underline lands
+         * on it — that overlap is the whole reason the two rows read as
+         * different kinds of thing.
+         */}
+        <div
+          ref={railRef}
+          role="group"
+          aria-label="Category"
+          onKeyDown={onRailKeys}
+          className="flex overflow-x-auto border-b px-3.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
+          <CategoryTab
             label="All"
             active={!currentCategory}
             onClick={() => selectCategory(null)}
           />
-          {categories.map((c) => (
-            <CategoryChip
-              key={c.id}
-              label={c.name}
-              active={currentCategory === c.slug}
-              onClick={() => selectCategory(c.slug)}
-            />
-          ))}
+          {catsLoading && categories.length === 0
+            ? /* Hold the rail's shape while the names are in flight, or the
+                 tabs pop in one row late and shove the grid down. */
+              [74, 52, 66].map((w, i) => (
+                <span key={i} aria-hidden className="flex h-11 shrink-0 items-center px-2.5">
+                  <Skeleton className="h-3.5" style={{ width: w }} />
+                </span>
+              ))
+            : categories.map((c) => (
+                <CategoryTab
+                  key={c.id}
+                  label={c.name}
+                  active={currentCategory === c.slug}
+                  onClick={() => selectCategory(c.slug)}
+                />
+              ))}
         </div>
 
-        <div className="flex items-center gap-2 px-4 pb-2.5">
-          <button
-            type="button"
-            onClick={() => setSortOpen(true)}
-            className="inline-flex h-9 items-center gap-1.5 rounded-full border px-3 text-xs text-foreground transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            <ArrowUpDown className="h-3.5 w-3.5" />
-            {sortLabel}
-          </button>
-          <button
-            type="button"
-            onClick={() => setFilterOpen(true)}
-            className="inline-flex h-9 items-center gap-1.5 rounded-full border px-3 text-xs text-foreground transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            <SlidersHorizontal className="h-3.5 w-3.5" />
-            Filter
-            {activeFilters.length > 0 && (
-              <Badge className="ml-0.5 h-4 min-w-4 justify-center rounded-full px-1 text-[10px] tabular-nums">
-                {activeFilters.length}
-              </Badge>
-            )}
-          </button>
+        {/*
+         * Metadata, in a lighter weight and below the rule: how many pieces,
+         * and how the list is ordered. Both controls are text buttons — the
+         * old outlined pills wore the shape of a Select trigger without being
+         * one, which is what made the header read as a pile of buttons.
+         */}
+        <div className="flex h-10 items-center justify-between gap-2 px-3.5">
+          {loading ? (
+            <Skeleton className="ml-0.5 h-3 w-14 shrink-0" />
+          ) : (
+            <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
+              {products.length} {products.length === 1 ? 'piece' : 'pieces'}
+            </span>
+          )}
+
+          {/*
+           * On a 320px screen the two sides compete. The count is short and
+           * load-bearing, so it holds; the sort label is long and already
+           * ellipsises, so it is the one that gives way.
+           */}
+          <div className="flex min-w-0 items-center">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSortOpen(true)}
+              aria-haspopup="dialog"
+              className="min-w-0 shrink gap-1 px-2 text-xs font-medium"
+            >
+              <span className="truncate">{sortOrder ? sortLabel : 'Sort'}</span>
+              <ChevronDown className="size-3 opacity-60" />
+            </Button>
+
+            <Separator orientation="vertical" className="mx-1 !h-4" />
+
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setFilterOpen(true)}
+              aria-haspopup="dialog"
+              className="gap-1.5 px-2 text-xs font-medium"
+            >
+              <SlidersHorizontal className="size-3.5" />
+              Filter
+              {activeFilters.length > 0 && (
+                <Badge className="h-4 min-w-4 justify-center rounded-full px-1 text-[10px] tabular-nums">
+                  {activeFilters.length}
+                </Badge>
+              )}
+            </Button>
+          </div>
         </div>
 
         {/* What's applied, readable without opening anything. */}
         {activeFilters.length > 0 && (
-          <div className="flex gap-1.5 overflow-x-auto px-4 pb-2.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="flex gap-1.5 overflow-x-auto px-3.5 pb-2.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {activeFilters.map((f) => (
               <button
                 key={f.key}
@@ -604,7 +683,16 @@ export default function ProductsMobileClient() {
 /* PIECES                                                          */
 /* -------------------------------------------------------------- */
 
-function CategoryChip({
+/*
+ * The Tabs treatment from the guide — a scrolling list on a rule, the active
+ * item marked by a 2px underline rather than a fill. `-mb-px` drops that
+ * underline onto the rail's own hairline so the two read as one line.
+ *
+ * It stays a button rather than a Radix Tab because it drives the URL, not a
+ * panel: a `role="tab"` with no `tabpanel` to control is a broken aria
+ * reference, and the whole point of the rail is that it is one tap deep.
+ */
+function CategoryTab({
   label,
   active,
   onClick,
@@ -616,14 +704,16 @@ function CategoryChip({
   return (
     <button
       type="button"
+      data-active={active ? '' : undefined}
       aria-pressed={active}
       onClick={onClick}
       className={cn(
-        'h-[34px] shrink-0 whitespace-nowrap rounded-full border px-3.5 text-[13px] font-medium transition-colors duration-200',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+        'relative -mb-px h-11 shrink-0 whitespace-nowrap rounded-none border-b-2 px-2.5',
+        'text-[13.5px] transition-colors duration-200',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset',
         active
-          ? 'border-foreground bg-foreground text-background'
-          : 'border-border bg-background text-foreground hover:bg-secondary'
+          ? 'border-primary font-semibold text-foreground'
+          : 'border-transparent font-medium text-muted-foreground hover:text-foreground'
       )}
     >
       {label}

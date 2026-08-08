@@ -55,7 +55,10 @@
      sticks has to stick *below* it — `top: 0` slides underneath and is
      hidden. Same value MobileLayout.module.css pads its content by. */
   --mobile-header-h: 3.5rem;    /* 56px — the h-14 bar */
-  --mobile-header-total: calc(var(--mobile-header-h) + env(safe-area-inset-top, 0px));
+  --mobile-header-rule: 1px;    /* its border-b, which occupies space too */
+  --mobile-header-total: calc(
+    var(--mobile-header-h) + var(--mobile-header-rule) + env(safe-area-inset-top, 0px)
+  );
 }
 
 .dashboard-shell {
