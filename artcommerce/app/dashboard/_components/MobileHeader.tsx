@@ -4,16 +4,17 @@ import { usePathname, useRouter } from "next/navigation"
 import { ChevronLeft } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import { AccountButton } from "../../components/mobile/AccountSheet"
 import { pageMetaFor } from "./nav-config"
 
 /**
- * A title bar and nothing else.
+ * A title bar, a back chevron and the account avatar.
  *
- * Navigation, search and cart all live in the app-wide MobileDock at the
- * bottom, within thumb reach. Repeating them up here would put the same three
- * controls on screen twice — the kind of doubling that made earlier passes
- * feel cluttered. The left slot is a back chevron on nested routes, so the
- * title sits flush left at the top level the way a native app bar does.
+ * Navigation, search and cart live in the app-wide MobileDock at the bottom,
+ * within thumb reach; repeating them up here would put the same controls on
+ * screen twice. The avatar is the exception — /dashboard bypasses
+ * MobileLayout entirely, so without it this subtree has no account surface at
+ * all, and no way to sign out on a phone.
  */
 export function MobileHeader() {
   const pathname = usePathname() ?? "/dashboard"
@@ -45,6 +46,7 @@ export function MobileHeader() {
           {title}
         </h1>
 
+        <AccountButton className="-mr-0.5 shrink-0" />
       </div>
     </header>
   )

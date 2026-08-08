@@ -9,7 +9,14 @@ import { cn } from "@/lib/utils"
  * Bottom sheet, per the house guide: "Use Drawers as the default bottom sheet
  * popup container on mobile devices." Built on vaul so the sheet can be
  * dragged down to dismiss, which is the gesture people already expect.
+ *
+ * Z_INDEX has to clear the app's fixed chrome, not just page content: the
+ * mobile header in MobileLayout is z-[1001] and the route-loading veil is
+ * z-[1000], so at shadcn's default z-50 the header painted straight over both
+ * the sheet and its scrim. A modal drawer is above everything by definition —
+ * except ConfirmDialog at z-[10000], which is deliberately above this.
  */
+const Z_INDEX = "z-[1100]"
 
 function Drawer(props: React.ComponentProps<typeof DrawerPrimitive.Root>) {
   return <DrawerPrimitive.Root data-slot="drawer" {...props} />
@@ -37,7 +44,8 @@ function DrawerOverlay({
       className={cn(
         // No tailwindcss-animate in this project — same plain-transition
         // approach sheet.tsx already uses.
-        "fixed inset-0 z-50 bg-black/40 transition-opacity duration-300",
+        "fixed inset-0 bg-black/40 transition-opacity duration-300",
+        Z_INDEX,
         "data-[state=closed]:opacity-0 data-[state=open]:opacity-100",
         className
       )}
@@ -57,7 +65,8 @@ function DrawerContent({
       <DrawerPrimitive.Content
         data-slot="drawer-content"
         className={cn(
-          "group/drawer-content fixed z-50 flex h-auto flex-col bg-background",
+          "group/drawer-content fixed flex h-auto flex-col bg-background",
+          Z_INDEX,
           "inset-x-0 bottom-0 mt-24 max-h-[86vh] rounded-t-[20px] border-t",
           "shadow-[0_-8px_34px_-12px_rgba(0,0,0,.36)]",
           className

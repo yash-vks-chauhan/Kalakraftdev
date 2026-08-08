@@ -6,11 +6,12 @@ import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '../contexts/AuthContext'
 import { useWishlist } from '../contexts/WishlistContext'
-import { Home, ShoppingBag, User, Menu, X, Heart, Monitor, ChevronDown, Grid, HelpCircle, LogOut, ArrowLeft, Share, Save, Search } from 'lucide-react'
+import { Heart, ArrowLeft, Share, Save, Search } from 'lucide-react'
 import { useMobileMenu } from '../contexts/MobileMenuContext'
 import { getImageUrl } from '../../lib/cloudinaryImages'
 import { cn } from '@/lib/utils'
 import { CommandPalette } from './mobile/CommandPalette'
+import { AccountButton } from './mobile/AccountSheet'
 import styles from './MobileLayout.module.css'
 
 interface MobileLayoutProps {
@@ -19,7 +20,7 @@ interface MobileLayoutProps {
 }
 
 export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayoutProps) {
-  const { user, logout } = useAuth()
+  const { user } = useAuth()
   const { wishlistItems } = useWishlist()
   const { isMobileMenuOpen, setIsMobileMenuOpen, isProductPage, isTransparentNavbar, isCreateProductPage } = useMobileMenu()
   const pathname = usePathname()
@@ -33,15 +34,12 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
   // Transparent only where there is a dark hero to sit on.
   const onDark = isHomePage && !pastHero
   const solidHeader = !onDark
-  const [isFooterVisible, setIsFooterVisible] = useState(true)
   const [rotatingText, setRotatingText] = useState('coasters')
   const videoRef = useRef<HTMLVideoElement>(null)
   const [isHeroVideoLoaded, setIsHeroVideoLoaded] = useState(false)
   const [hasHeroVideoError, setHasHeroVideoError] = useState(false)
   const [heroVideoSourceIndex, setHeroVideoSourceIndex] = useState(0)
   const router = useRouter()
-  const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false)
-  const accountDropdownRef = useRef<HTMLDivElement>(null)
   const [productName, setProductName] = useState<string>('')
   const [isRouteLoading, setIsRouteLoading] = useState(false)
   const heroVideoSources = [
@@ -98,91 +96,23 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
   const textOptions = ['coasters', 'clocks', 'trays', 'wall art', 'home decor']
 
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (accountDropdownRef.current && !accountDropdownRef.current.contains(event.target as Node)) {
-        setIsAccountDropdownOpen(false)
-      }
-    }
-    
-    if (isAccountDropdownOpen) {
-      document.addEventListener('mousedown', handleClickOutside)
-    }
-    
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [isAccountDropdownOpen, accountDropdownRef])
-
-  useEffect(() => {
-    setIsAccountDropdownOpen(false)
-  }, [user])
-
-  useEffect(() => {
-    let prevScrollY = window.scrollY
-    let scrollDirection = 0
-    let lastScrollTime = Date.now()
-    let scrollVelocity = 0
-    let scrollTimer: NodeJS.Timeout | null = null
-    
     const handleScroll = () => {
       const currentScrollY = window.scrollY
-      const currentTime = Date.now()
-      const timeDiff = currentTime - lastScrollTime
-      
-      scrollVelocity = Math.abs(currentScrollY - prevScrollY) / Math.max(timeDiff, 1)
-      
       setIsScrolled(currentScrollY > 10)
       setPastHero(currentScrollY > 368)
-      
-      const currentDirection = currentScrollY > prevScrollY ? 1 : -1
-      
-      if (currentDirection !== scrollDirection) {
-        scrollDirection = currentDirection
-      }
-      
-      if (scrollTimer) {
-        clearTimeout(scrollTimer)
-      }
-      
-      // Unified footer visibility logic for all pages
-      if (currentScrollY < 50) {
-        setIsFooterVisible(true)
-      } else if (
-        scrollDirection > 0 &&
-        scrollVelocity > 0.3 &&
-        currentScrollY > 100
-      ) {
-        setIsFooterVisible(false)
-      } else if (scrollDirection < 0) {
-        setIsFooterVisible(true)
-      }
-      
-      // Show footer after scrolling stops
-      scrollTimer = setTimeout(() => {
-        if (currentScrollY > 50) {
-          setIsFooterVisible(true)
-        }
-      }, 150)
-      
-      prevScrollY = currentScrollY
-      lastScrollTime = currentTime
     }
 
     window.addEventListener('scroll', handleScroll, { passive: true })
-
-    return () => {
-      window.removeEventListener('scroll', handleScroll)
-      if (scrollTimer) {
-        clearTimeout(scrollTimer)
-      }
-    }
+    return () => window.removeEventListener('scroll', handleScroll)
     /*
      * Empty deps on purpose. This used to depend on a `lastScrollY` state that
      * the handler set on every scroll event and nothing ever read — so each
      * event re-rendered the whole mobile shell and then tore down and
-     * re-registered this listener. That was the hitch while scrolling. The
-     * handler keeps its own position in `prevScrollY`, which is a local, so it
-     * needs nothing from React state.
+     * re-registered this listener. That was the hitch while scrolling.
+     *
+     * The direction/velocity tracking and its 150ms timer went the same way:
+     * they existed only to hide the old footer nav, which is gone. The dock in
+     * MobileDock does its own hide-on-scroll.
      */
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -236,43 +166,6 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
     router.push('/dashboard/wishlist');
     if (isMobileMenuOpen) {
       setIsMobileMenuOpen(false);
-    }
-  }
-
-  const handleHomeClick = () => {
-    if (pathname === '/') {
-      window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-      });
-    } else {
-      router.push('/');
-    }
-    
-    if (isMobileMenuOpen) {
-      setIsMobileMenuOpen(false);
-    }
-  }
-
-  const handleAccountClick = (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    
-    const target = e.currentTarget;
-    target.classList.add(styles.buttonPulse);
-    setTimeout(() => {
-      target.classList.remove(styles.buttonPulse);
-    }, 300);
-    
-    setIsAccountDropdownOpen(prev => !prev)
-  }
-
-  const handleLogout = async () => {
-    try {
-      await logout()
-      setIsAccountDropdownOpen(false)
-    } catch (error) {
-      console.error('Logout failed:', error)
     }
   }
 
@@ -513,22 +406,6 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
     }
   }
 
-  const isActivePath = (path: string) => {
-    if (path === '/') {
-      return pathname === '/'
-    }
-    if (path === '/products') {
-      return pathname.startsWith('/products')
-    }
-    if (path === '/dashboard/cart') {
-      return pathname.startsWith('/dashboard/cart')
-    }
-    if (path === '/dashboard/wishlist') {
-      return pathname.startsWith('/dashboard/wishlist')
-    }
-    return pathname.startsWith(path)
-  }
-
   useEffect(() => {
     console.log('Current path:', pathname);
     console.log('Is product page:', isProductPage);
@@ -574,11 +451,6 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
           </div>
         </div>
       )}
-      {/* Backdrop for account dropdown */}
-      {isAccountDropdownOpen && (
-        <div className={styles.mobileBackdrop} onClick={() => setIsAccountDropdownOpen(false)}></div>
-      )}
-      
       {/* Home page specific content - Put at the top */}
       {/*
         The homepage hero used to live here — a full-screen autoplaying video
@@ -710,16 +582,12 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
                   )}
                 </Link>
 
-                <Link
-                  href={user ? '/dashboard' : '/auth/login'}
-                  className={cn(
-                    'flex h-10 w-10 items-center justify-center rounded-full',
-                    onDark ? 'text-white' : 'text-foreground'
-                  )}
-                  aria-label={user ? 'Your account' : 'Sign in'}
-                >
-                  <User size={19} strokeWidth={1.9} />
-                </Link>
+                {/*
+                  Was a plain link straight to the dashboard Overview — one of
+                  thirteen destinations, chosen for you. It now opens the
+                  account sheet, which carries all of them plus sign-out.
+                */}
+                <AccountButton onDark={onDark} />
               </>
             )}
           </div>
@@ -757,121 +625,17 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
         {children}
       </main>
       
-      {/* Mobile Footer Navigation */}
-      <nav className={`${styles.mobileFooter} ${isFooterVisible ? styles.footerVisible : styles.footerHidden}`}>
-        <button 
-          onClick={handleHomeClick}
-          className={`${styles.footerNavItem} ${isActivePath('/') ? styles.active : ''}`}
-        >
-          <Home size={20} />
-          <span>Home</span>
-        </button>
-        <Link 
-          href="/products" 
-          className={`${styles.footerNavItem} ${isActivePath('/products') ? styles.active : ''}`}
-        >
-          <ShoppingBag size={20} />
-          <span>Products</span>
-        </Link>
-        <Link 
-          href={user ? '/dashboard/wishlist' : '/auth/login'}
-          className={`${styles.footerNavItem} ${isActivePath('/dashboard/wishlist') ? styles.active : ''}`}
-        >
-          <Heart size={20} />
-          <span>Wishlist</span>
-          {wishlistItems.length > 0 && (
-            <span className={styles.badge}>{wishlistItems.length}</span>
-          )}
-        </Link>
-        <div className={styles.footerNavItemContainer} ref={accountDropdownRef}>
-          <button 
-            onClick={handleAccountClick}
-            className={`${styles.footerNavItem} ${isActivePath('/dashboard/profile') || isActivePath('/auth/login') ? styles.active : ''}`}
-          >
-            <User size={20} />
-            <span>Account</span>
-          </button>
-          
-          {/* Account Dropdown */}
-          <div className={`${styles.profileDropdownBackdrop} ${isAccountDropdownOpen ? styles.profileDropdownBackdropVisible : ''}`} />
-          
-          {/* Show different dropdown content based on authentication status */}
-          {isAccountDropdownOpen && (
-            <div
-              ref={accountDropdownRef}
-              className={`${styles.accountDropdown} ${isAccountDropdownOpen ? styles.accountDropdownOpen : ''}`}
-              style={{ 
-                animation: isAccountDropdownOpen ? `${styles.slideUp} 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards` : 
-                  `${styles.slideDown} 0.25s cubic-bezier(0.4, 0.0, 0.2, 1) forwards`
-              }}
-            >
-              {user ? (
-                /* Logged in user dropdown content */
-                <>
-                  <div className={styles.userInfo}>
-                    <div className={styles.userName}>{user.fullName || 'User'}</div>
-                    <div className={styles.userEmail}>{user.email}</div>
-                  </div>
-                  
-                  <Link href="/dashboard/profile" className={styles.dropdownItem} onClick={() => setIsAccountDropdownOpen(false)}>
-                    <User size={20} />
-                    Profile
-                  </Link>
-                  
-                  <Link href="/dashboard" className={styles.dropdownItem} onClick={() => setIsAccountDropdownOpen(false)}>
-                    <Grid size={20} />
-                    Dashboard
-                  </Link>
-                  
-                  <Link href="/dashboard/orders" className={styles.dropdownItem} onClick={() => setIsAccountDropdownOpen(false)}>
-                    <ShoppingBag size={20} />
-                    Orders
-                  </Link>
-                  
-                  <Link href="/support" className={styles.dropdownItem} onClick={() => setIsAccountDropdownOpen(false)}>
-                    <HelpCircle size={20} />
-                    Support
-                  </Link>
-                  
-                  <div className={styles.dropdownDivider} />
-                  
-                  <button onClick={handleLogout} className={styles.dropdownItem}>
-                    <LogOut size={20} />
-                    Sign out
-                  </button>
-                </>
-              ) : (
-                /* Not logged in - show login/signup options */
-                <>
-                  <div className={styles.guestInfo}>
-                    <div className={styles.guestTitle}>Account</div>
-                    <div className={styles.guestSubtitle}>Sign in to access your account</div>
-                  </div>
-                  
-                  <Link href="/auth/login" className={styles.dropdownItem} onClick={() => setIsAccountDropdownOpen(false)}>
-                    <LogOut size={20} style={{ transform: 'rotate(180deg)' }} />
-                    Sign In
-                  </Link>
-                  
-                  <Link href="/auth/signup" className={styles.dropdownItem} onClick={() => setIsAccountDropdownOpen(false)}>
-                    <User size={20} />
-                    Sign Up
-                  </Link>
-                </>
-              )}
-            </div>
-          )}
-        </div>
-      </nav>
-      
       {/*
         The burger and its slide-out sidebar used to live here (StaggeredMenu,
         rendered fixed so the button floated over the header icons). Both are
         gone: the dock carries navigation, the header carries search, saved and
         account, and nothing on a phone should need a second menu system.
-      */}
 
-      {/* Mobile Bottom Navigation removed as we're using the footer instead */}
+        A second footer nav with its own account dropdown lived here too. It
+        had been dead for a while — `.mobileFooter` was `display: none`, so the
+        dropdown it hung off could never open — and the account sheet now owns
+        that job properly. Two account menus is worse than none.
+      */}
     </div>
   )
 } 

@@ -3,12 +3,13 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Heart, Home, LayoutGrid, ShoppingBag } from "lucide-react"
+import { Boxes, Heart, Home, LayoutGrid, Package, ShoppingBag, Users, X } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { useAuth } from "../../contexts/AuthContext"
 import { useCart } from "../../contexts/CartContext"
 import { useWishlist } from "../../contexts/WishlistContext"
+import { useAppMode } from "../../contexts/ModeContext"
 
 /**
  * The single mobile navigation surface for the whole app.
@@ -16,8 +17,13 @@ import { useWishlist } from "../../contexts/WishlistContext"
  * Four targets, each of them a place rather than an action: search lives in
  * the header, where a thumb looks for it while browsing, and the slot it used
  * to occupy here buys a browse destination and saved items. Home is always
- * home — the previous version turned it into Dashboard inside /dashboard,
- * which made the leftmost target mean two different things.
+ * home — an earlier version turned it into Dashboard inside /dashboard, which
+ * made the leftmost target mean two different things.
+ *
+ * The exception is store mode. An admin who has flipped the switch in the
+ * account sheet is running the store, not shopping, so the four targets point
+ * at management destinations instead — and a chip above the pill says so, and
+ * gets them back out.
  */
 
 interface DockTarget {
@@ -35,11 +41,12 @@ export function MobileDock() {
   const { user } = useAuth()
   const { cartItems } = useCart()
   const { wishlistItems } = useWishlist()
+  const { isStoreMode, setMode } = useAppMode()
   const [hidden, setHidden] = useState(false)
 
   const cartCount = cartItems.reduce((sum, i) => sum + i.quantity, 0)
 
-  const targets: DockTarget[] = [
+  const shopTargets: DockTarget[] = [
     { key: "home", label: "Home", href: "/", icon: Home, match: ["/"] },
     { key: "shop", label: "Shop", href: "/products", icon: LayoutGrid, match: ["/products"] },
     {
@@ -59,6 +66,34 @@ export function MobileDock() {
       count: cartCount,
     },
   ]
+
+  /* Mirrors tabsForRole(true) in dashboard/_components/nav-config. */
+  const storeTargets: DockTarget[] = [
+    { key: "home", label: "Home", href: "/", icon: Home, match: ["/"] },
+    {
+      key: "orders",
+      label: "Orders",
+      href: "/dashboard/admin/orders",
+      icon: Package,
+      match: ["/dashboard/admin/orders"],
+    },
+    {
+      key: "products",
+      label: "Products",
+      href: "/dashboard/admin/products",
+      icon: Boxes,
+      match: ["/dashboard/admin/products"],
+    },
+    {
+      key: "users",
+      label: "Users",
+      href: "/dashboard/admin/users",
+      icon: Users,
+      match: ["/dashboard/admin/users"],
+    },
+  ]
+
+  const targets = isStoreMode ? storeTargets : shopTargets
 
   // Get out of the way when scrolling down, come back on the way up — on a
   // phone the content matters more than the chrome.
@@ -92,7 +127,7 @@ export function MobileDock() {
   return (
     <div
       className={cn(
-        "pointer-events-none fixed inset-x-0 bottom-0 z-40 flex justify-center px-4 lg:hidden",
+        "pointer-events-none fixed inset-x-0 bottom-0 z-40 flex flex-col items-center gap-2 px-4 lg:hidden",
         "transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]",
         hidden ? "translate-y-[150%]" : "translate-y-0"
       )}
@@ -116,6 +151,33 @@ export function MobileDock() {
         )}
         style={{ height: "calc(116px + env(safe-area-inset-bottom, 0px))" }}
       />
+
+      {/*
+       * Store mode persists across navigation, so it needs a visible exit.
+       * Without one, an admin who flipped the switch days ago finds a dock
+       * full of management pages and no obvious way back to the shop.
+       */}
+      {isStoreMode && (
+        <button
+          type="button"
+          onClick={() => setMode("shop")}
+          className={cn(
+            "pointer-events-auto inline-flex items-center gap-1.5 rounded-full py-1.5 pl-3 pr-1.5",
+            "bg-foreground text-[10px] font-semibold uppercase tracking-wider text-background",
+            "shadow-[0_6px_16px_-8px_rgba(0,0,0,0.7)] transition-opacity active:opacity-80"
+          )}
+        >
+          Store mode
+          <span
+            aria-hidden
+            className="flex h-4 w-4 items-center justify-center rounded-full bg-background/25"
+          >
+            <X className="h-2.5 w-2.5" />
+          </span>
+          <span className="sr-only">— tap to leave store mode</span>
+        </button>
+      )}
+
       <nav
         aria-label="Primary"
         className={cn(

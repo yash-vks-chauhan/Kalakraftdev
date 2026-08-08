@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, FormEvent, useEffect, useCallback } from "react"
-import { useRouter } from "next/navigation"
+import { useState, FormEvent, useEffect, useCallback, Suspense } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import {
   CheckCircle2,
   AlertCircle,
@@ -50,6 +50,32 @@ const presetAvatars = [
 ]
 
 type SectionKey = "identity" | "security" | "addresses"
+
+const SECTION_KEYS: SectionKey[] = ["identity", "security", "addresses"]
+
+function isSectionKey(value: string | null): value is SectionKey {
+  return value !== null && (SECTION_KEYS as string[]).includes(value)
+}
+
+/**
+ * Opens the section named in `?section=`, so the mobile account sheet can link
+ * straight at Addresses or Login & security rather than dropping everyone on
+ * Identity.
+ *
+ * Split out and rendered inside <Suspense> because useSearchParams() opts the
+ * whole component out of static rendering otherwise — the same reason
+ * Navbar wraps its own search-params reader.
+ */
+function SectionFromQuery({ onSection }: { onSection: (key: SectionKey) => void }) {
+  const searchParams = useSearchParams()
+  const requested = searchParams.get("section")
+
+  useEffect(() => {
+    if (isSectionKey(requested)) onSection(requested)
+  }, [requested, onSection])
+
+  return null
+}
 
 const sections: { key: SectionKey; label: string; description: string; icon: LucideIcon }[] = [
   { key: "identity", label: "Identity", description: "Name, avatar, email", icon: UserRound },
@@ -419,6 +445,10 @@ export default function ProfilePage() {
 
   return (
     <div className="flex flex-col gap-8">
+      <Suspense fallback={null}>
+        <SectionFromQuery onSection={setActive} />
+      </Suspense>
+
       {/* Header */}
       <header className="hidden flex-col gap-2 md:flex">
         <p className="text-sm text-muted-foreground">Settings</p>

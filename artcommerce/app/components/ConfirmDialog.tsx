@@ -74,7 +74,13 @@ export default function ConfirmDialog({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/55 px-4 backdrop-blur-sm animate-in fade-in duration-150"
+      /*
+       * pointer-events-auto because this can be raised as a Radix dialog
+       * (the mobile account sheet) is closing, and Radix leaves
+       * `pointer-events: none` on <body> for a frame or two afterwards —
+       * which this portal would otherwise inherit and become unclickable.
+       */
+      className="pointer-events-auto fixed inset-0 z-[10000] flex items-center justify-center bg-black/55 px-4 backdrop-blur-sm animate-in fade-in duration-150"
       onClick={isProcessing ? undefined : onClose}
     >
       <div

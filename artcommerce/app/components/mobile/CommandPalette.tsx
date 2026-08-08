@@ -57,7 +57,7 @@ function formatPrice(value: number, currency = "INR") {
 export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
   const router = useRouter()
   const pathname = usePathname() ?? "/"
-  const { user } = useAuth()
+  const { user, logout } = useAuth()
   const [query, setQuery] = useState("")
 
   const isAdmin = user?.role === "admin"
@@ -79,7 +79,15 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
     if (href) return go(href)
     onOpenChange(false)
     if (id === "search-products") router.push("/products")
-    if (id === "sign-out") router.push("/auth/logout")
+    /*
+     * This used to push /auth/logout — a page route that has never existed,
+     * so the one sign-out reachable on a phone was a 404. Sign out is a real
+     * operation: clear the session, then AuthContext redirects to login.
+     * No confirmation here, unlike the account sheet: reaching this means
+     * opening search and picking "Sign out" by name, which is deliberate
+     * enough on its own.
+     */
+    if (id === "sign-out") void logout()
   }
 
   const destinations = signedIn ? [...SHOP_NAV, ...userNav] : SHOP_NAV
