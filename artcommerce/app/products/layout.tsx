@@ -2,7 +2,6 @@
 
 import React from 'react'
 import styles from './layout.module.css'
-import MobileLayout from '../components/MobileLayout'
 import { useDeviceDetection } from '../hooks/useDeviceDetection'
 
 export default function ProductsLayout({
@@ -14,13 +13,15 @@ export default function ProductsLayout({
   const { isSmallScreen, switchToDesktopView } = useDeviceDetection()
 
   if (isSmallScreen) {
-    return (
-      <MobileLayout onSwitchToDesktop={switchToDesktopView}>
-        <div className={styles.productContainer}>
-          {children}
-        </div>
-      </MobileLayout>
-    )
+    /*
+     * AppRootClient already wraps every non-bypassed route in MobileLayout,
+     * and /products is not on its bypass list — so wrapping again here mounted
+     * a second header, a second footer nav, and a second
+     * <main class="productsPageContent">, whose 56px top padding applied
+     * twice. That is where the 112px of empty space above the title came
+     * from, and with it the first product sitting 263px down an 844px screen.
+     */
+    return <div className={styles.productContainer}>{children}</div>
   }
 
   // Desktop: /products and /products/[id] own their full-bleed shells now and

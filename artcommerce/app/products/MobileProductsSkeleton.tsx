@@ -1,100 +1,39 @@
-import styles from './productsMobile.module.css'
+import { Skeleton } from '@/components/ui/skeleton'
 
+/**
+ * The Suspense fallback for the mobile catalogue. It mirrors the real grid's
+ * geometry — sticky rail, tools row, 4:5 tiles in two columns — so nothing
+ * jumps when the pieces arrive.
+ */
 export default function MobileProductsSkeleton() {
   return (
-    <>
-      <style dangerouslySetInnerHTML={{
-        __html: `
-          @keyframes shimmer {
-            0% { background-position: -200% 0; }
-            100% { background-position: 200% 0; }
-          }
-          @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-          }
-        `
-      }} />
-      
-      <div className={styles.container}>
-        {/* Page header skeleton */}
-        <div className={styles.pageHeader}>
-          <div style={{ 
-            height: '24px', 
-            width: '150px', 
-            background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
-            backgroundSize: '200% 100%',
-            animation: 'shimmer 2s infinite',
-            borderRadius: '4px',
-            marginBottom: '8px'
-          }}></div>
-          <div style={{ 
-            height: '14px', 
-            width: '80px', 
-            background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
-            backgroundSize: '200% 100%',
-            animation: 'shimmer 2s infinite',
-            borderRadius: '4px'
-          }}></div>
-        </div>
-        
-        {/* Filter/Sort bar skeleton */}
-        <div style={{
-          height: '48px',
-          background: '#fff',
-          borderBottom: '1px solid #f0f0f0',
-          padding: '0 16px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px'
-        }}>
-          <div style={{
-            height: '32px',
-            width: '60px',
-            background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
-            backgroundSize: '200% 100%',
-            animation: 'shimmer 2s infinite',
-            borderRadius: '6px'
-          }}></div>
-          <div style={{
-            height: '32px',
-            width: '80px',
-            background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
-            backgroundSize: '200% 100%',
-            animation: 'shimmer 2s infinite',
-            borderRadius: '6px'
-          }}></div>
-        </div>
-        
-        {/* Product grid skeleton */}
-        <div className={styles.list}>
-          {[...Array(6)].map((_, index) => (
-            <div key={index} className={styles.productCardSkeleton}>
-              <div className={styles.skeletonImageContainer}>
-                <div className={styles.skeletonImage}></div>
-                <div className={styles.skeletonIndicators}>
-                  <div className={styles.skeletonIndicator}></div>
-                  <div className={styles.skeletonIndicator}></div>
-                  <div className={styles.skeletonIndicator}></div>
-                </div>
-              </div>
-              
-              <div className={styles.skeletonInfo}>
-                <div className={styles.skeletonCategory}></div>
-                <div className={styles.skeletonName}></div>
-                <div className={styles.skeletonPriceRow}>
-                  <div className={styles.skeletonPrice}></div>
-                  <div className={styles.skeletonRating}></div>
-                </div>
-              </div>
-              
-              <div className={styles.skeletonWishlistContainer}>
-                <div className={styles.skeletonWishlistButton}></div>
-              </div>
-            </div>
-          ))}
-        </div>
+    <div className="min-h-screen bg-background pb-tabbar">
+      <div className="flex items-baseline justify-between gap-3 px-4 pb-3 pt-1">
+        <Skeleton className="h-6 w-32" />
+        <Skeleton className="h-3 w-16" />
       </div>
-    </>
+
+      <div className="flex gap-2 px-4 py-2">
+        {[56, 92, 74, 88].map((w, i) => (
+          <Skeleton key={i} className="h-[34px] rounded-full" style={{ width: w }} />
+        ))}
+      </div>
+
+      <div className="flex gap-2 px-4 pb-2.5">
+        <Skeleton className="h-9 w-32 rounded-full" />
+        <Skeleton className="h-9 w-20 rounded-full" />
+      </div>
+
+      <ul className="grid grid-cols-2 gap-x-2.5 gap-y-6 px-3.5 pb-2 pt-1">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <li key={i} className="flex flex-col gap-1.5">
+            <Skeleton className="aspect-[4/5] w-full rounded-xl" />
+            <Skeleton className="h-3 w-4/5" />
+            <Skeleton className="h-3 w-3/5" />
+            <Skeleton className="h-3 w-2/5" />
+          </li>
+        ))}
+      </ul>
+    </div>
   )
 }

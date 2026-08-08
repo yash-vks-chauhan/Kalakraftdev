@@ -589,6 +589,13 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
         rgba(255,255,255,0.1), which over a near-white page read as no change,
         and left its right-hand two thirds empty on the homepage.
       */}
+      {/*
+        The product page owns its chrome now: the piece runs full bleed to the
+        top of the screen and back / save / share float over it as glass
+        buttons. Rendering this bar there too gave every product two back
+        buttons and pushed the image down behind a solid strip.
+      */}
+      {!isProductPage && (
       <header
         className={cn(
           'fixed inset-x-0 top-0 z-[1001] pt-safe transition-[background-color,border-color,box-shadow] duration-300',
@@ -730,6 +737,7 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
           </div>
         )}
       </header>
+      )}
 
       <CommandPalette open={searchOpen} onOpenChange={setSearchOpen} />
 

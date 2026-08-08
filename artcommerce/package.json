@@ -38,6 +38,7 @@
     "cloudinary": "2.10.0",
     "clsx": "2.1.1",
     "cmdk": "1.1.1",
+    "embla-carousel-react": "8.6.0",
     "firebase": "12.9.0",
     "firebase-admin": "13.7.0",
     "framer-motion": "12.18.1",
@@ -62,7 +63,8 @@
     "sharp": "0.34.2",
     "sonner": "1.7.4",
     "tailwind-merge": "1.14.0",
-    "three": "0.177.0"
+    "three": "0.177.0",
+    "vaul": "1.1.2"
   },
   "devDependencies": {
     "@types/aos": "3.0.7",

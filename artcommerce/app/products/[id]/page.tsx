@@ -282,6 +282,7 @@ export default function ProductDetailsPage() {
         avgRating={avgRating}
         ratingCount={ratingCount}
         similarProducts={similarProducts}
+        reviews={reviews}
       />
     );
   }

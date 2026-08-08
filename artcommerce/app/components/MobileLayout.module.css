@@ -1604,8 +1604,10 @@
 }
 
 /* Product page specific styles - extend gray background to include navbar */
+/* The product page paints its own surfaces now — a page-wide grey ground was
+   what put every piece in a letterbox. */
 .productPageContainer {
-  background-color: #f0f0f0;
+  background-color: #ffffff;
 }
 
 /* Add transparent navbar styles for product pages with stronger selectors */
@@ -1626,8 +1628,12 @@
   transition: all 0.3s ease;
 }
 
+/* No header offset and no grey ground: the hero runs to the top of the screen
+   and the page owns its own bottom spacing. */
 .productPageContainer .mobileContent {
-  background-color: #f0f0f0;
+  background-color: transparent;
+  padding-top: 0;
+  padding-bottom: 0;
 }
 
 /* Back button for product pages */

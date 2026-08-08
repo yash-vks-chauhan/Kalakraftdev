@@ -1,1074 +1,893 @@
-'use client';
+'use client'
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
-import ProductImagesMobile from '../../components/ProductImagesMobile';
-import { useCart } from '../../contexts/CartContext';
-import WishlistButton from '../../components/WishlistButton';
-import styles from './mobile_product_details.module.css';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import {
+  ArrowLeft,
+  Check,
+  ChevronDown,
+  Heart,
+  PackageX,
+  RotateCcw,
+  Share2,
+  ShieldCheck,
+  Truck,
+  X,
+  ZoomIn,
+} from 'lucide-react'
+import { toast } from 'sonner'
 
-// Animation variants for page entrance
-const pageVariants = {
-  initial: {
-    opacity: 0,
-    scale: 0.95,
-    y: 20
-  },
-  animate: {
-    opacity: 1,
-    scale: 1,
-    y: 0,
-    transition: {
-      duration: 0.4,
-      ease: "easeOut" as const,
-      staggerChildren: 0.1
-    }
-  },
-  exit: {
-    opacity: 0,
-    scale: 0.95,
-    y: -20,
-    transition: {
-      duration: 0.3,
-      ease: "easeIn" as const
-    }
-  }
-}
+import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  type CarouselApi,
+} from '@/components/ui/carousel'
+import {
+  Drawer,
+  DrawerContent,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from '@/components/ui/drawer'
+import { useAuth } from '../../contexts/AuthContext'
+import { useCart } from '../../contexts/CartContext'
+import { useWishlist } from '../../contexts/WishlistContext'
+import type { Review } from './ProductReviews'
 
-// Animation variants for content sections
-const sectionVariants = {
-  hidden: { 
-    opacity: 0, 
-    y: 20 
-  },
-  visible: { 
-    opacity: 1, 
-    y: 0,
-    transition: {
-      duration: 0.5,
-      ease: "easeOut" as const
-    }
-  }
-}
-
-// Animation variants for accordion sections
-const accordionVariants = {
-  closed: {
-    height: 0,
-    opacity: 0,
-    transition: {
-      duration: 0.3,
-      ease: "easeInOut" as const
-    }
-  },
-  open: {
-    height: "auto",
-    opacity: 1,
-    transition: {
-      duration: 0.4,
-      ease: "easeOut" as const
-    }
-  }
-}
-
-// Animation variants for product cards in carousel
-const carouselCardVariants = {
-  hidden: { 
-    opacity: 0, 
-    scale: 0.9,
-    y: 30
-  },
-  visible: { 
-    opacity: 1, 
-    scale: 1,
-    y: 0,
-    transition: {
-      duration: 0.4,
-      ease: "easeOut" as const
-    }
-  }
-}
+/* -------------------------------------------------------------- */
+/* TYPES                                                           */
+/* -------------------------------------------------------------- */
 
 interface Product {
-  id: number;
-  name: string;
-  slug: string;
-  description: string;
-  shortDesc: string;
-  price: number;
-  currency: string;
-  imageUrls: string[];
-  stockQuantity: number;
-  category: { id: number; name: string; slug: string } | null;
-  specifications?: string | null;
-  careInstructions?: string | null;
-  stylingIdeaImages?: ({ url: string; text?: string } | string)[] | null;
-  isNew?: boolean;
-  avgRating?: number;
+  id: number
+  name: string
+  slug: string
+  description: string
+  shortDesc: string
+  price: number
+  currency: string
+  imageUrls: string[]
+  stockQuantity: number
+  category: { id: number; name: string; slug: string } | null
+  specifications?: string | null
+  careInstructions?: string | null
+  stylingIdeaImages?: ({ url: string; text?: string } | string)[] | null
+  isNew?: boolean
+  avgRating?: number
 }
 
 interface MobileProductDetailsProps {
-  product: Product;
-  avgRating: number;
-  ratingCount: number;
-  similarProducts?: Product[];
+  product: Product
+  avgRating: number
+  ratingCount: number
+  similarProducts?: Product[]
+  reviews?: Review[]
 }
 
-export default function MobileProductDetails({ 
-  product, 
-  avgRating, 
+const LOW_STOCK = 5
+
+function formatPrice(value: number) {
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    maximumFractionDigits: 0,
+    minimumFractionDigits: 0,
+  }).format(value)
+}
+
+/** "Material: Epoxy resin" → { key, value }. Anything else is ignored here. */
+function parseSpecPairs(spec: string | null | undefined) {
+  if (!spec) return [] as { key: string; value: string }[]
+  return spec
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line.includes(':'))
+    .map((line) => {
+      const [key, ...rest] = line.split(':')
+      return { key: key.trim(), value: rest.join(':').trim() }
+    })
+    .filter((p) => p.key && p.value)
+}
+
+function bulletise(text: string | null | undefined) {
+  if (!text) return [] as string[]
+  return text
+    .split('\n')
+    .map((l) => l.trim().replace(/^-\s*/, ''))
+    .filter(Boolean)
+}
+
+/* -------------------------------------------------------------- */
+/* PAGE                                                            */
+/* -------------------------------------------------------------- */
+
+export default function MobileProductDetails({
+  product,
+  avgRating,
   ratingCount,
-  similarProducts: initialSimilarProducts = []
+  similarProducts = [],
+  reviews = [],
 }: MobileProductDetailsProps) {
-  const { addToCart } = useCart();
-  const router = useRouter();
-  const [qty, setQty] = useState(1);
-  const [error, setError] = useState<string | null>(null);
-  const [added, setAdded] = useState(false);
-  const [similarProducts, setSimilarProducts] = useState<Product[]>(initialSimilarProducts);
-  const [shareSuccess, setShareSuccess] = useState<boolean | null>(null);
-  const [shareMethod, setShareMethod] = useState<'webshare' | 'clipboard' | null>(null);
-  
-  // Carousel state for similar products
-  const carouselRef = useRef<HTMLDivElement>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [startX, setStartX] = useState(0);
-  const [scrollLeft, setScrollLeft] = useState(0);
-  const [activeCarouselIndex, setActiveCarouselIndex] = useState(0);
-  const [carouselItemsPerView, setCarouselItemsPerView] = useState(2);
-  const [scrollProgress, setScrollProgress] = useState(0);
-  
-  // Similar product image states
-  const [currentImageIndices, setCurrentImageIndices] = useState<Record<number, number>>({});
-  const [touchStartPositions, setTouchStartPositions] = useState<Record<number, number>>({});
-  const [touchEndPositions, setTouchEndPositions] = useState<Record<number, number>>({});
-  const [isSwipingStates, setIsSwipingStates] = useState<Record<number, boolean>>({});
-  const [swipeDistances, setSwipeDistances] = useState<Record<number, number>>({});
-  const productRefs = useRef<Record<number, HTMLDivElement | null>>({});
-  const containerWidths = useRef<Record<number, number>>({});
-  
-  // Section expansion states
-  const [expandedSections, setExpandedSections] = useState({
-    description: false,
-    specifications: false,
-    care: false,
-    styling: true, // Keep styling expanded by default
-  });
+  const router = useRouter()
+  const { user } = useAuth()
+  const { addToCart } = useCart()
+  const { wishlistItems, addToWishlist, removeFromWishlist } = useWishlist()
 
-  // Format price with commas for thousands
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 0,
-      minimumFractionDigits: 0
-    }).format(price);
-  };
+  const [qty, setQty] = useState(1)
+  const [adding, setAdding] = useState(false)
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [careOpen, setCareOpen] = useState(false)
+  const [noteExpanded, setNoteExpanded] = useState(false)
+  const [barVisible, setBarVisible] = useState(false)
+  const [lightboxOpen, setLightboxOpen] = useState(false)
 
-  // Fetch similar products
+  const [api, setApi] = useState<CarouselApi>()
+  const [current, setCurrent] = useState(0)
+  const [lightboxApi, setLightboxApi] = useState<CarouselApi>()
+  const [zoomed, setZoomed] = useState(false)
+
+  const ctaRef = useRef<HTMLDivElement | null>(null)
+
+  const images = product.imageUrls?.length ? product.imageUrls : []
+  const isOut = product.stockQuantity <= 0
+  const isLow = !isOut && product.stockQuantity <= LOW_STOCK
+  const saved = wishlistItems.some((w) => w.productId === product.id)
+
+  const specPairs = useMemo(() => parseSpecPairs(product.specifications), [product.specifications])
+  const facts = specPairs.slice(0, 4)
+  const restSpecs = specPairs.slice(4)
+  const careLines = useMemo(() => bulletise(product.careInstructions), [product.careInstructions])
+
+  const styling = useMemo(() => {
+    if (!Array.isArray(product.stylingIdeaImages)) return [] as { url: string; text?: string }[]
+    return product.stylingIdeaImages
+      .map((s) => (typeof s === 'string' ? { url: s } : s))
+      .filter((s) => s && typeof s.url === 'string' && s.url.length > 0)
+  }, [product.stylingIdeaImages])
+
+  const distribution = useMemo(() => {
+    const buckets = [0, 0, 0, 0, 0]
+    reviews.forEach((r) => {
+      const i = Math.min(5, Math.max(1, Math.round(r.rating))) - 1
+      buckets[i] += 1
+    })
+    return buckets
+  }, [reviews])
+
+  /* ── gallery ──────────────────────────────────────────────── */
+
   useEffect(() => {
-    if (initialSimilarProducts.length > 0) {
-      setSimilarProducts(initialSimilarProducts);
-      return;
-    }
-    
-    if (product?.category?.slug) {
-      fetch(`/api/products?category=${product.category.slug}`)
-        .then(r => r.json())
-        .then(j => {
-          const others = (j.products || [])
-            .filter((p: any) => p.id !== product.id)
-            .slice(0, 8) // Get more products for the carousel
-            .map((p: any) => {
-              let urls: string[] = [];
-              try {
-                urls = Array.isArray(p.imageUrls) ? p.imageUrls : JSON.parse(p.imageUrls || '[]');
-              } catch {
-                urls = [];
-              }
-              
-              // Check if product is new (less than 14 days old)
-              const isNew = p.createdAt && new Date(p.createdAt) > new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
-              
-              return { ...p, imageUrls: urls, isNew };
-            });
-          setSimilarProducts(others);
-        })
-        .catch(console.error);
-    }
-  }, [product, initialSimilarProducts]);
-
-  // Initialize image indices for similar products
-  useEffect(() => {
-    if (similarProducts.length > 0) {
-      const initialIndices: Record<number, number> = {};
-      similarProducts.forEach(p => {
-        initialIndices[p.id] = 0;
-      });
-      setCurrentImageIndices(initialIndices);
-    }
-  }, [similarProducts]);
-
-  // Carousel touch handlers
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (!carouselRef.current) return;
-    setIsDragging(true);
-    setStartX(e.pageX - carouselRef.current.offsetLeft);
-    setScrollLeft(carouselRef.current.scrollLeft);
-  };
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    if (!carouselRef.current) return;
-    setIsDragging(true);
-    setStartX(e.touches[0].pageX - carouselRef.current.offsetLeft);
-    setScrollLeft(carouselRef.current.scrollLeft);
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging || !carouselRef.current) return;
-    e.preventDefault();
-    const x = e.pageX - carouselRef.current.offsetLeft;
-    const walk = (x - startX) * 1.5; // Scroll speed multiplier
-    carouselRef.current.scrollLeft = scrollLeft - walk;
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isDragging || !carouselRef.current) return;
-    const x = e.touches[0].pageX - carouselRef.current.offsetLeft;
-    const walk = (x - startX) * 1.5; // Scroll speed multiplier
-    carouselRef.current.scrollLeft = scrollLeft - walk;
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
-
-  const handleMouseLeave = () => {
-    setIsDragging(false);
-  };
-
-  // Product image swipe handlers
-  const handleProductTouchStart = (e: React.TouchEvent, productId: number) => {
-    const product = similarProducts.find(p => p.id === productId);
-    if (!product || product.imageUrls.length <= 1) return;
-    
-    // Store container width for calculations
-    containerWidths.current[productId] = productRefs.current[productId]?.offsetWidth || 0;
-    
-    const clientX = e.targetTouches[0].clientX;
-    setTouchStartPositions(prev => ({ ...prev, [productId]: clientX }));
-    setTouchEndPositions(prev => ({ ...prev, [productId]: clientX }));
-    setIsSwipingStates(prev => ({ ...prev, [productId]: true }));
-    setSwipeDistances(prev => ({ ...prev, [productId]: 0 }));
-    
-    // Prevent parent carousel from scrolling
-    e.stopPropagation();
-  };
-  
-  const handleProductTouchMove = (e: React.TouchEvent, productId: number) => {
-    const product = similarProducts.find(p => p.id === productId);
-    if (!product || !isSwipingStates[productId] || product.imageUrls.length <= 1) return;
-    
-    // Prevent default to avoid page scrolling while swiping
-    e.preventDefault();
-    e.stopPropagation();
-    
-    const currentTouch = e.targetTouches[0].clientX;
-    setTouchEndPositions(prev => ({ ...prev, [productId]: currentTouch }));
-    
-    // Calculate how far the user has swiped
-    const distance = currentTouch - touchStartPositions[productId];
-    const currentIndex = currentImageIndices[productId] || 0;
-    
-    // Apply resistance at the edges
-    let finalDistance = distance;
-    if ((currentIndex === 0 && distance > 0) || 
-        (currentIndex === product.imageUrls.length - 1 && distance < 0)) {
-      // Apply resistance at edges - finger moves 3x more than image
-      finalDistance = distance / 3;
-    }
-    
-    setSwipeDistances(prev => ({ ...prev, [productId]: finalDistance }));
-  };
-  
-  const handleProductTouchEnd = (productId: number) => {
-    const product = similarProducts.find(p => p.id === productId);
-    if (!product || !isSwipingStates[productId] || product.imageUrls.length <= 1) return;
-    
-    setIsSwipingStates(prev => ({ ...prev, [productId]: false }));
-    
-    const touchStart = touchStartPositions[productId];
-    const touchEnd = touchEndPositions[productId];
-    
-    if (!touchStart || !touchEnd) {
-      setSwipeDistances(prev => ({ ...prev, [productId]: 0 }));
-      return;
-    }
-    
-    const distance = touchStart - touchEnd;
-    const minSwipeDistance = containerWidths.current[productId] * 0.2; // 20% of container width
-    const currentIndex = currentImageIndices[productId] || 0;
-    
-    if (Math.abs(distance) < minSwipeDistance) {
-      // Not swiped far enough, snap back
-      setSwipeDistances(prev => ({ ...prev, [productId]: 0 }));
-      return;
-    }
-    
-    if (distance > 0 && currentIndex < product.imageUrls.length - 1) {
-      // Swiped left, go to next image
-      setCurrentImageIndices(prev => ({ ...prev, [productId]: currentIndex + 1 }));
-    } else if (distance < 0 && currentIndex > 0) {
-      // Swiped right, go to previous image
-      setCurrentImageIndices(prev => ({ ...prev, [productId]: currentIndex - 1 }));
-    }
-    
-    // Reset values
-    setTouchStartPositions(prev => ({ ...prev, [productId]: 0 }));
-    setTouchEndPositions(prev => ({ ...prev, [productId]: 0 }));
-    setSwipeDistances(prev => ({ ...prev, [productId]: 0 }));
-  };
-  
-  // Calculate transform style for real-time finger tracking
-  const getProductImageTransform = (productId: number) => {
-    const currentIndex = currentImageIndices[productId] || 0;
-    
-    if (isSwipingStates[productId]) {
-      // During swipe, follow finger exactly
-      const containerWidth = containerWidths.current[productId] || 0;
-      const percentageOffset = containerWidth ? (swipeDistances[productId] / containerWidth) * 100 : 0;
-      return {
-        transform: `translateX(calc(-${currentIndex * 100}% + ${percentageOffset}%))`,
-        transition: 'none'
-      };
-    }
-    
-    // When not swiping, use smooth transition
-    return {
-      transform: `translateX(-${currentIndex * 100}%)`,
-      transition: 'transform 0.3s ease'
-    };
-  };
-
-  // Handle wishlist button click to prevent navigation
-  const handleWishlistClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
-
-  // Handle share button click
-  const handleShare = useCallback(async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    // Create a more descriptive share text
-    const shareTitle = `${product.name} | Kalakraft`;
-    const shareText = `Check out ${product.name} - ${product.currency}${product.price.toFixed(2)} on Kalakraft!`;
-    
-    // Check if Web Share API is available
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: shareTitle,
-          text: shareText,
-          url: window.location.href,
-        });
-        setShareSuccess(true);
-        setShareMethod('webshare');
-        setTimeout(() => {
-          setShareSuccess(null);
-          setShareMethod(null);
-        }, 3000);
-      } catch (err) {
-        console.error('Error sharing:', err);
-        setShareSuccess(false);
-        setShareMethod('webshare');
-        setTimeout(() => {
-          setShareSuccess(null);
-          setShareMethod(null);
-        }, 3000);
-      }
-    } else {
-      // Fallback for browsers that don't support Web Share API
-      try {
-        await navigator.clipboard.writeText(`${shareTitle}\n${shareText}\n${window.location.href}`);
-        setShareSuccess(true);
-        setShareMethod('clipboard');
-        setTimeout(() => {
-          setShareSuccess(null);
-          setShareMethod(null);
-        }, 3000);
-      } catch (err) {
-        console.error('Error copying to clipboard:', err);
-        setShareSuccess(false);
-        setShareMethod('clipboard');
-        setTimeout(() => {
-          setShareSuccess(null);
-          setShareMethod(null);
-        }, 3000);
-      }
-    }
-  }, [product.name, product.currency, product.price, setShareSuccess, setShareMethod]);
-
-  // Listen for share event from the navbar
-  useEffect(() => {
-    const handleShareEvent = () => {
-      handleShare({ preventDefault: () => {}, stopPropagation: () => {} } as React.MouseEvent);
-    };
-    
-    window.addEventListener('shareProduct', handleShareEvent);
-    
+    if (!api) return
+    const onSelect = () => setCurrent(api.selectedScrollSnap())
+    onSelect()
+    api.on('select', onSelect)
+    api.on('reInit', onSelect)
     return () => {
-      window.removeEventListener('shareProduct', handleShareEvent);
-    };
-  }, [product, handleShare]); // Include handleShare in dependencies
+      api.off('select', onSelect)
+      api.off('reInit', onSelect)
+    }
+  }, [api])
 
-  const toggleSection = (section: keyof typeof expandedSections) => {
-    setExpandedSections(prev => {
-      // Create a new state object with all sections closed
-      const newState = Object.keys(prev).reduce((acc, key) => {
-        acc[key as keyof typeof expandedSections] = false;
-        return acc;
-      }, {} as typeof expandedSections);
-      
-      // Toggle the selected section (if it was already open, it will remain closed)
-      newState[section] = !prev[section];
-      
-      return newState;
-    });
-  };
+  // Opening the lightbox lands you on the shot you were already looking at.
+  useEffect(() => {
+    if (!lightboxOpen || !lightboxApi) return
+    lightboxApi.scrollTo(current, true)
+  }, [lightboxOpen, lightboxApi, current])
 
-  // Format specifications text
-  const formatSpecifications = (text: string) => {
-    if (!text) return [];
-    
-    return text.split('\n').map((line, index) => {
-      const trimmed = line.trim();
-      if (!trimmed) return null;
-      
-      // Check if it's a key-value pair (contains : or -)
-      if (trimmed.includes(':')) {
-        const [key, ...valueParts] = trimmed.split(':');
-        const value = valueParts.join(':').trim();
-        return (
-          <div key={index} className={styles.specRow}>
-            <span className={styles.specKey}>{key.trim()}</span>
-            <span className={styles.specValue}>{value}</span>
-          </div>
-        );
-      } else if (trimmed.startsWith('-')) {
-        return (
-          <div key={index} className={styles.specBullet}>
-            {trimmed.substring(1).trim()}
-          </div>
-        );
-      } else {
-        return (
-          <div key={index} className={styles.specText}>
-            {trimmed}
-          </div>
-        );
-      }
-    }).filter(Boolean);
-  };
+  useEffect(() => {
+    if (!lightboxApi) return
+    const onSelect = () => {
+      setCurrent(lightboxApi.selectedScrollSnap())
+      setZoomed(false)
+    }
+    lightboxApi.on('select', onSelect)
+    return () => {
+      lightboxApi.off('select', onSelect)
+    }
+  }, [lightboxApi])
 
-  // Format care instructions text
-  const formatCareInstructions = (text: string) => {
-    if (!text) return [];
-    
-    return text.split('\n').map((line, index) => {
-      const trimmed = line.trim();
-      if (!trimmed) return null;
-      
-      // Check if it's a bullet point (starts with -)
-      if (trimmed.startsWith('-')) {
-        return (
-          <div key={index} className={styles.careBullet}>
-            {trimmed.substring(1).trim()}
-          </div>
-        );
-      } else {
-        return (
-          <div key={index} className={styles.careText}>
-            {trimmed}
-          </div>
-        );
-      }
-    }).filter(Boolean);
-  };
+  // Escape closes the lightbox, and the page underneath must not scroll.
+  useEffect(() => {
+    if (!lightboxOpen) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setLightboxOpen(false)
+    }
+    document.addEventListener('keydown', onKey)
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      document.body.style.overflow = prev
+    }
+  }, [lightboxOpen])
 
-  const handleAddToCart = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    
+  /*
+   * The bar exists only once the inline buy row has left the screen, so the
+   * page never shows the same control twice and the first screen stays image.
+   */
+  useEffect(() => {
+    const el = ctaRef.current
+    if (!el) return
+    const io = new IntersectionObserver(
+      ([entry]) => setBarVisible(!entry.isIntersecting && entry.boundingClientRect.top < 0),
+      { threshold: 0, rootMargin: '-56px 0px 0px 0px' }
+    )
+    io.observe(el)
+    return () => io.disconnect()
+  }, [])
+
+  /* ── actions ──────────────────────────────────────────────── */
+
+  const handleAdd = useCallback(async () => {
+    if (!user) {
+      router.push('/auth/login')
+      return
+    }
+    setAdding(true)
     try {
-      await addToCart(product.id, qty);
-      setAdded(true);
-      
-      // Reset the added state after 3 seconds
-      setTimeout(() => {
-        setAdded(false);
-      }, 3000);
+      const ok = await addToCart(product.id, qty)
+      if (ok) setConfirmOpen(true)
     } catch (err: any) {
-      setError(err.message || 'Error adding to cart');
+      toast.error(err?.message || 'Could not add that to your bag')
+    } finally {
+      setAdding(false)
     }
-  };
+  }, [user, router, addToCart, product.id, qty])
 
-  // Calculate visible carousel items and update active index
-  const updateCarouselActiveIndex = useCallback(() => {
-    if (!carouselRef.current || similarProducts.length === 0) return;
-    
-    const scrollPosition = carouselRef.current.scrollLeft;
-    const maxScroll = carouselRef.current.scrollWidth - carouselRef.current.clientWidth;
-    const itemWidth = carouselRef.current.scrollWidth / similarProducts.length;
-    const viewportWidth = carouselRef.current.clientWidth;
-    
-    // Calculate scroll progress (0 to 1)
-    const progress = maxScroll > 0 ? scrollPosition / maxScroll : 0;
-    setScrollProgress(progress);
-    
-    // Calculate how many items are visible in the viewport
-    const itemsPerView = Math.max(1, Math.floor(viewportWidth / itemWidth));
-    setCarouselItemsPerView(itemsPerView);
-    
-    // Calculate which item is most visible (centered)
-    const activeIndex = Math.min(
-      Math.floor(scrollPosition / itemWidth),
-      similarProducts.length - itemsPerView
-    );
-    setActiveCarouselIndex(activeIndex);
-  }, [similarProducts.length]);
+  async function toggleSave() {
+    if (!user) {
+      router.push('/auth/login')
+      return
+    }
+    try {
+      if (saved) await removeFromWishlist(product.id)
+      else await addToWishlist(product.id)
+    } catch {
+      toast.error('Could not update your saved items')
+    }
+  }
 
-  // Add scroll event listener to track carousel position
+  const handleShare = useCallback(async () => {
+    const url = typeof window !== 'undefined' ? window.location.href : ''
+    const payload = { title: product.name, text: `${product.name} — ${formatPrice(product.price)}`, url }
+    try {
+      if (typeof navigator !== 'undefined' && navigator.share) {
+        await navigator.share(payload)
+        return
+      }
+      await navigator.clipboard.writeText(url)
+      toast.success('Link copied')
+    } catch {
+      /* the user dismissed the share sheet — nothing to report */
+    }
+  }, [product.name, product.price])
+
+  // The navbar's share button dispatches this.
   useEffect(() => {
-    const carousel = carouselRef.current;
-    if (!carousel) return;
-    
-    const handleScroll = () => {
-      updateCarouselActiveIndex();
-    };
-    
-    carousel.addEventListener('scroll', handleScroll);
-    
-    // Initial calculation
-    updateCarouselActiveIndex();
-    
-    return () => {
-      carousel.removeEventListener('scroll', handleScroll);
-    };
-  }, [similarProducts, updateCarouselActiveIndex]);
+    const onShare = () => handleShare()
+    window.addEventListener('shareProduct', onShare)
+    return () => window.removeEventListener('shareProduct', onShare)
+  }, [handleShare])
 
-  // Recalculate on resize
-  useEffect(() => {
-    const handleResize = () => {
-      updateCarouselActiveIndex();
-    };
-    
-    window.addEventListener('resize', handleResize);
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, [updateCarouselActiveIndex]);
-
-  // Scroll to a specific item in the carousel
-  const scrollToItem = (index: number) => {
-    if (!carouselRef.current) return;
-    
-    const itemWidth = carouselRef.current.scrollWidth / similarProducts.length;
-    carouselRef.current.scrollTo({
-      left: index * itemWidth,
-      behavior: 'smooth'
-    });
-  };
+  /* ── render ───────────────────────────────────────────────── */
 
   return (
-    <motion.div 
-      className={styles.mobileProductContainer}
-      variants={pageVariants}
-      initial="initial"
-      animate="animate"
-      exit="exit"
-    >
-      {/* Product Images - Full width with transparent background */}
-      <motion.div 
-        className={styles.productImageWrapper}
-        variants={sectionVariants}
-      >
-        <ProductImagesMobile 
-          imageUrls={product.imageUrls} 
-          name={product.name} 
-        />
-        {/* Low Stock Banner - Only show for products with low stock (5 or less) */}
-        {product.stockQuantity > 0 && product.stockQuantity <= 5 && (
-          <motion.div 
-            className={styles.cardLowStock}
-            initial={{ opacity: 0, scale: 0.8, y: -10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ delay: 0.5, type: "spring", stiffness: 500 }}
-          >
-            Only {product.stockQuantity} left
-          </motion.div>
-        )}
-      </motion.div>
-      
-      {/* Share feedback toast */}
-      <AnimatePresence>
-        {shareSuccess !== null && (
-          <motion.div 
-            className={styles.shareToast}
-            initial={{ opacity: 0, y: 50, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -50, scale: 0.9 }}
-            transition={{ type: "spring", stiffness: 400, damping: 25 }}
-          >
-            {shareSuccess 
-              ? (shareMethod === 'webshare' 
-                ? 'Product shared successfully!' 
-                : 'Product link copied to clipboard!')
-              : (shareMethod === 'webshare'
-                ? 'Failed to share product'
-                : 'Failed to copy product link')}
-          </motion.div>
-        )}
-      </AnimatePresence>
-      
-      {/* Product Info - Overlapping the image slightly with rounded corners */}
-      <motion.div 
-        className={styles.productInfo}
-        variants={sectionVariants}
-      >
-        {/* Category */}
-        {product.category && (
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
-          >
-            <Link href={`/products?category=${product.category.slug}`} className={styles.category}>
-              {product.category.name}
-            </Link>
-          </motion.div>
-        )}
-        
-        {/* Product Name and Wishlist Button */}
-        <motion.div 
-          className={styles.productHeader}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-        >
-          <h1 className={styles.productName}>{product.name}</h1>
-          <div className={styles.headerWishlistContainer}>
-            <motion.div
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
+    <div className="min-h-screen bg-background pb-tabbar">
+      {/* ── Hero: the piece, full bleed ─────────────────────── */}
+      <div className="relative">
+        <Carousel setApi={setApi} opts={{ loop: images.length > 1 }} className="w-full">
+          <CarouselContent className="ml-0">
+            {(images.length ? images : [null]).map((url, i) => (
+              <CarouselItem key={i} className="basis-full pl-0">
+                <div className="relative aspect-[4/5] w-full overflow-hidden bg-muted">
+                  {url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={url}
+                      alt={`${product.name} — view ${i + 1}`}
+                      className={cn('h-full w-full object-cover', isOut && 'grayscale')}
+                      loading={i === 0 ? 'eager' : 'lazy'}
+                      draggable={false}
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+                      <PackageX className="h-8 w-8" />
+                    </div>
+                  )}
+                </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+        </Carousel>
+
+        {/* Floating controls — no bar across the artwork. */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-center justify-between px-3 pt-3">
+          <GlassButton label="Go back" onClick={() => router.back()}>
+            <ArrowLeft className="h-[17px] w-[17px]" />
+          </GlassButton>
+          <div className="flex gap-2">
+            <GlassButton
+              label={saved ? 'Remove from saved' : 'Save this piece'}
+              pressed={saved}
+              onClick={toggleSave}
             >
-              <WishlistButton productId={product.id} className={styles.headerWishlistButton} />
-            </motion.div>
+              <Heart className={cn('h-[17px] w-[17px]', saved && 'fill-current')} />
+            </GlassButton>
+            <GlassButton label="Share" onClick={handleShare}>
+              <Share2 className="h-[17px] w-[17px]" />
+            </GlassButton>
           </div>
-        </motion.div>
-        
-        {/* Variation (if applicable) - Moved up like in Gucci design */}
-        <motion.div 
-          className={styles.variation}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-        >
-          <span className={styles.variationLabel}>Variation</span>
-          <span className={styles.variationValue}>{product.shortDesc || 'Standard'}</span>
-        </motion.div>
-        
-        {/* Price */}
-        <motion.div 
-          className={styles.priceContainer}
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.5, type: "spring", stiffness: 500 }}
-        >
-          <p className={styles.price}>
-            <span className={styles.currency}>{product.currency}</span>
-            {product.price.toFixed(2)}
-          </p>
-          
-          {/* Rating */}
+        </div>
+
+        {images.length > 0 && (
+          <button
+            type="button"
+            onClick={() => setLightboxOpen(true)}
+            className="absolute bottom-3.5 right-3 z-10 inline-flex h-[30px] items-center gap-1.5 rounded-full bg-background/90 px-2.5 text-[11.5px] font-semibold text-foreground shadow-sm backdrop-blur transition-transform active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <ZoomIn className="h-3 w-3" />
+            Zoom
+          </button>
+        )}
+
+        {images.length > 1 && (
+          <div className="pointer-events-none absolute inset-x-3.5 bottom-2 z-10 flex gap-1">
+            {images.map((_, i) => (
+              <span
+                key={i}
+                className={cn(
+                  'h-[2.5px] flex-1 rounded-full transition-colors duration-200',
+                  i === current ? 'bg-white' : 'bg-white/45'
+                )}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Thumbnails — jump, don't hunt. */}
+      {images.length > 1 && (
+        <div className="flex gap-1.5 overflow-x-auto px-4 pt-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {images.map((url, i) => (
+            <button
+              key={i}
+              type="button"
+              aria-label={`View image ${i + 1}`}
+              aria-current={i === current}
+              onClick={() => api?.scrollTo(i)}
+              className={cn(
+                'aspect-square w-[46px] shrink-0 overflow-hidden rounded-lg border-[1.5px] transition-colors',
+                i === current ? 'border-foreground' : 'border-transparent'
+              )}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={url} alt="" className="h-full w-full object-cover" loading="lazy" />
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* ── The piece ───────────────────────────────────────── */}
+      <div className="px-4 pt-4">
+        {product.category && (
+          <Link
+            href={`/products?category=${product.category.slug}`}
+            className="text-[11px] uppercase tracking-wider text-muted-foreground"
+          >
+            {product.category.name}
+          </Link>
+        )}
+
+        <h1 className="mt-1.5 font-serif text-[25px] font-medium leading-[1.16] tracking-tight text-foreground">
+          {product.name}
+        </h1>
+
+        <div className="mt-2.5 flex items-baseline gap-2.5">
+          <span className="text-[21px] font-semibold tabular-nums text-foreground">
+            {formatPrice(product.price)}
+          </span>
           {ratingCount > 0 && (
-            <div className={styles.ratingContainer}>
-              <div className={styles.stars}>
-                {[...Array(5)].map((_, i) => (
-                  <span 
-                    key={i} 
-                    className={i < Math.round(avgRating) ? styles.filledStar : styles.emptyStar}
-                  >
-                    ★
-                  </span>
-                ))}
-              </div>
-              <span className={styles.ratingCount}>({ratingCount})</span>
-            </div>
-          )}
-        </motion.div>
-        
-        {/* Stock Status - Only show for out of stock or when stock is not low */}
-        <div className={styles.stockStatus}>
-          {product.stockQuantity <= 0 ? (
-            <span className={styles.outOfStock}>Out of stock</span>
-          ) : product.stockQuantity > 5 && (
-            <span className={styles.inStock}>In stock: {product.stockQuantity} available</span>
+            <span className="text-[12.5px] text-muted-foreground">
+              ★ <b className="font-semibold text-foreground">{avgRating.toFixed(1)}</b> ·{' '}
+              {ratingCount} {ratingCount === 1 ? 'review' : 'reviews'}
+            </span>
           )}
         </div>
-        
-        {/* Add to Cart Form */}
-        <motion.form 
-          onSubmit={handleAddToCart} 
-          className={styles.addToCartForm}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7 }}
-        >
-          <div className={styles.quantityContainer}>
-            <label htmlFor="quantity" className={styles.quantityLabel}>Quantity</label>
-            <div className={styles.quantityControls}>
-              <button 
-                type="button" 
-                className={styles.quantityButton}
-                onClick={() => qty > 1 && setQty(qty - 1)}
-                disabled={qty <= 1}
-                aria-label="Decrease quantity"
-              >
-                <svg width="12" height="2" viewBox="0 0 12 2" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <rect width="12" height="2" fill="currentColor"/>
-                </svg>
-              </button>
-              <input
-                type="number"
-                id="quantity"
-                name="quantity"
-                min="1"
-                max={product.stockQuantity}
-                value={qty}
-                onChange={(e) => setQty(parseInt(e.target.value) || 1)}
-                className={styles.quantityInput}
-                aria-label="Quantity"
-              />
-              <button 
-                type="button" 
-                className={styles.quantityButton}
-                onClick={() => qty < product.stockQuantity && setQty(qty + 1)}
-                disabled={qty >= product.stockQuantity}
-                aria-label="Increase quantity"
-              >
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <rect y="5" width="12" height="2" fill="currentColor"/>
-                  <rect x="5" width="2" height="12" fill="currentColor"/>
-                </svg>
-              </button>
+
+        {(isOut || isLow) && (
+          <p
+            className={cn(
+              'mt-1.5 text-[12.5px]',
+              isOut ? 'text-destructive' : 'text-amber-600 dark:text-amber-500'
+            )}
+          >
+            {isOut ? 'Sold out' : `Only ${product.stockQuantity} left — each pour is unique`}
+          </p>
+        )}
+
+        {/* Inline buy row. The sticky bar below is its stand-in once it goes. */}
+        <div ref={ctaRef} className="mt-4 flex gap-2.5">
+          <QuantityStepper
+            value={qty}
+            max={product.stockQuantity}
+            disabled={isOut}
+            onChange={setQty}
+          />
+          <Button
+            className="h-12 flex-1 rounded-full text-[14.5px]"
+            disabled={isOut || adding}
+            onClick={handleAdd}
+          >
+            {isOut ? 'Sold out' : adding ? 'Adding…' : `Add to bag · ${formatPrice(product.price * qty)}`}
+          </Button>
+        </div>
+
+        {/* Grounded in the FAQ's stated timings, not invented. */}
+        <div className="mt-3 flex items-center gap-2 rounded-[10px] bg-secondary px-3 py-2.5 text-[12.5px] text-foreground">
+          <Truck className="h-[15px] w-[15px] shrink-0 text-muted-foreground" />
+          <span>
+            Ships in <b className="font-semibold">2–4 business days</b>, then 3–6 in transit
+          </span>
+        </div>
+
+        <div className="mt-3 grid grid-cols-3 gap-2">
+          <TrustTile icon={ShieldCheck} label="Insured in transit" />
+          <TrustTile icon={RotateCcw} label="14-day returns" />
+          <TrustTile icon={Check} label="Handmade to order" />
+        </div>
+
+        {/* Four facts, always visible — no tap to learn the size. */}
+        {facts.length > 0 && (
+          <dl className="mt-4 grid grid-cols-2 gap-px overflow-hidden rounded-xl border bg-border">
+            {facts.map((f) => (
+              <div key={f.key} className="bg-background px-3.5 py-2.5">
+                <dt className="text-[10.5px] uppercase tracking-wider text-muted-foreground">
+                  {f.key}
+                </dt>
+                <dd className="mt-0.5 text-[13px] font-medium text-foreground">{f.value}</dd>
+              </div>
+            ))}
+          </dl>
+        )}
+
+        {/* For handmade work the making is the pitch, so it is not collapsed. */}
+        {product.description && (
+          <div className="mt-5">
+            <h2 className="text-[11.5px] font-semibold uppercase tracking-wider text-muted-foreground">
+              From the studio
+            </h2>
+            <p
+              className={cn(
+                'mt-2 text-sm leading-[1.62] text-foreground/85',
+                !noteExpanded && 'line-clamp-3'
+              )}
+            >
+              {product.description}
+            </p>
+            <button
+              type="button"
+              onClick={() => setNoteExpanded((v) => !v)}
+              className="mt-2 py-1.5 text-[13px] font-semibold text-foreground underline underline-offset-[3px]"
+            >
+              {noteExpanded ? 'Read less' : 'Read more'}
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* ── The one dark surface on the page ────────────────── */}
+      {styling.length > 0 && (
+        <section className="mt-7 bg-[#101013] py-6 text-white">
+          <h2 className="px-4 font-serif text-[19px] font-medium">In your space</h2>
+          <p className="px-4 pb-4 pt-1 text-[12.5px] text-white/60">
+            Styled by the studio — every piece finishes differently.
+          </p>
+          <div className="flex snap-x snap-mandatory gap-2.5 overflow-x-auto px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {styling.map((shot, i) => (
+              <figure key={i} className="w-[230px] shrink-0 snap-start">
+                <div className="aspect-[4/5] overflow-hidden rounded-[10px]">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={shot.url}
+                    alt={`${product.name} styled, view ${i + 1}`}
+                    className="h-full w-full object-cover"
+                    loading="lazy"
+                  />
+                </div>
+                {shot.text && (
+                  <figcaption className="mt-2 text-xs leading-relaxed text-white/70">
+                    {shot.text}
+                  </figcaption>
+                )}
+              </figure>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ── Reviews — present on the phone at last ──────────── */}
+      {ratingCount > 0 && (
+        <section className="px-4 pt-6">
+          <h2 className="text-[11.5px] font-semibold uppercase tracking-wider text-muted-foreground">
+            What buyers say
+          </h2>
+
+          <div className="mt-3 flex items-center gap-4">
+            <div>
+              <p className="text-[32px] font-semibold leading-none tabular-nums text-foreground">
+                {avgRating.toFixed(1)}
+              </p>
+              <p className="mt-1.5 text-[11.5px] text-muted-foreground">
+                {ratingCount} {ratingCount === 1 ? 'review' : 'reviews'}
+              </p>
+            </div>
+            <div className="flex flex-1 flex-col gap-1">
+              {[5, 4, 3, 2, 1].map((star) => {
+                const n = distribution[star - 1]
+                const pct = ratingCount > 0 ? (n / ratingCount) * 100 : 0
+                return (
+                  <div key={star} className="flex items-center gap-1.5 text-[10.5px] text-muted-foreground">
+                    <span className="w-2 text-right">{star}</span>
+                    <span className="h-1 flex-1 overflow-hidden rounded-full bg-secondary">
+                      <span
+                        className="block h-full rounded-full bg-foreground"
+                        style={{ width: `${pct}%` }}
+                      />
+                    </span>
+                  </div>
+                )
+              })}
             </div>
           </div>
-          
-          <div className={styles.actionButtons}>
-            <button 
-              type="submit" 
-              className={styles.addToCartButton}
-              disabled={product.stockQuantity <= 0 || added}
-            >
-              {added ? 'Added to Cart ✓' : 'Add to Cart'}
-            </button>
+
+          {reviews.slice(0, 2).map((r) => (
+            <article key={r.id} className="mt-3.5 border-t pt-3.5">
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[12.5px]">
+                <b className="font-semibold text-foreground">
+                  {r.user?.fullName || 'Verified buyer'}
+                </b>
+                <span className="inline-flex items-center gap-1 text-[10.5px] text-emerald-700 dark:text-emerald-500">
+                  <Check className="h-3 w-3" strokeWidth={3} />
+                  Verified buyer
+                </span>
+                <span className="tracking-[1px] text-[11px] text-foreground">
+                  {'★'.repeat(Math.round(r.rating))}
+                </span>
+              </div>
+              {r.comment && (
+                <p className="mt-1.5 text-[13px] leading-relaxed text-foreground/75">{r.comment}</p>
+              )}
+            </article>
+          ))}
+
+          {ratingCount > 2 && (
+            <Button asChild variant="outline" className="mt-3.5 h-11 w-full rounded-[10px]">
+              <Link href={`/products/${product.id}#reviews`}>Read all {ratingCount} reviews</Link>
+            </Button>
+          )}
+        </section>
+      )}
+
+      {/* ── Everything secondary, behind one disclosure ─────── */}
+      <section className="px-4 pt-6">
+        <div className="border-t">
+          <button
+            type="button"
+            aria-expanded={careOpen}
+            onClick={() => setCareOpen((v) => !v)}
+            className="flex w-full items-center justify-between py-4 text-sm font-medium text-foreground"
+          >
+            Care &amp; shipping
+            <ChevronDown
+              className={cn('h-3.5 w-3.5 transition-transform duration-200', careOpen && 'rotate-180')}
+            />
+          </button>
+          {careOpen && (
+            <div className="space-y-3 pb-4 text-[13px] leading-relaxed text-foreground/75">
+              {careLines.length > 0 && (
+                <ul className="list-disc space-y-1 pl-4">
+                  {careLines.map((line, i) => (
+                    <li key={i}>{line}</li>
+                  ))}
+                </ul>
+              )}
+              {restSpecs.length > 0 && (
+                <dl className="space-y-1">
+                  {restSpecs.map((s) => (
+                    <div key={s.key} className="flex justify-between gap-4">
+                      <dt className="text-muted-foreground">{s.key}</dt>
+                      <dd className="text-right text-foreground">{s.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              )}
+              <p>
+                In-stock pieces ship within 2–4 business days, then 3–6 business days in transit
+                within India. Most pieces can be returned within 14 days.{' '}
+                <Link href="/faq" className="underline underline-offset-2">
+                  Full policy
+                </Link>
+              </p>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* ── More from this collection ───────────────────────── */}
+      {similarProducts.length > 0 && (
+        <section className="pt-6">
+          <h2 className="px-4 pb-3 text-[11.5px] font-semibold uppercase tracking-wider text-muted-foreground">
+            More from {product.category?.name || 'the studio'}
+          </h2>
+          <div className="flex gap-3 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {similarProducts.map((p) => (
+              <Link key={p.id} href={`/products/${p.id}`} className="w-[134px] shrink-0">
+                <div className="aspect-[4/5] overflow-hidden rounded-[10px] bg-muted">
+                  {p.imageUrls?.[0] ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={p.imageUrls[0]}
+                      alt={p.name}
+                      className="h-full w-full object-cover"
+                      loading="lazy"
+                    />
+                  ) : null}
+                </div>
+                <p className="mt-1.5 truncate text-[12.5px] font-medium text-foreground">{p.name}</p>
+                <p className="text-[12.5px] font-semibold tabular-nums text-foreground">
+                  {formatPrice(p.price)}
+                </p>
+              </Link>
+            ))}
           </div>
-          
-          {error && <p className={styles.error}>{error}</p>}
-        </motion.form>
-        
-        {/* Collapsible Sections */}
-        <div className={styles.accordionSections}>
-          {/* Description Section */}
-          <div className={`${styles.accordionSection} ${expandedSections.description ? styles.expanded : ''}`}>
-            <button 
-              className={styles.accordionHeader} 
-              onClick={() => toggleSection('description')}
-              aria-expanded={expandedSections.description}
+        </section>
+      )}
+
+      <div className="h-24" />
+
+      {/* ── Sticky buy bar, above the dock ──────────────────── */}
+      {!isOut && (
+        <div
+          className={cn(
+            'fixed inset-x-0 z-40 transition-[transform,opacity] duration-300 ease-out lg:hidden',
+            barVisible
+              ? 'translate-y-0 opacity-100'
+              : 'pointer-events-none translate-y-[160%] opacity-0'
+          )}
+          style={{ bottom: 'var(--mobile-dock-total, 4.5rem)' }}
+        >
+          <div className="mx-3 mb-2.5 flex items-center gap-2.5 rounded-[18px] border bg-background/95 p-2.5 pl-3.5 shadow-lg backdrop-blur-xl supports-[backdrop-filter]:bg-background/90">
+            <div className="min-w-0">
+              <p className="text-[10.5px] uppercase tracking-wide text-muted-foreground">Total</p>
+              <p className="text-[17px] font-semibold leading-tight tabular-nums text-foreground">
+                {formatPrice(product.price * qty)}
+              </p>
+            </div>
+            <Button
+              className="ml-auto h-12 min-w-[8.25rem] flex-1 rounded-full"
+              disabled={adding}
+              onClick={handleAdd}
             >
-              <span className={styles.accordionTitle}>Description</span>
-              <span className={styles.accordionIcon} style={{ transform: expandedSections.description ? 'rotate(180deg)' : 'rotate(0deg)' }}>
-                <svg width="14" height="8" viewBox="0 0 14 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M1 1L7 7L13 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </span>
-            </button>
-            
-            <div className={`${styles.accordionContent} ${expandedSections.description ? styles.expanded : ''}`}>
-              <p className={styles.description} style={{ 
-                transform: expandedSections.description ? 'translateY(0)' : 'translateY(10px)',
-                transition: 'transform 0.6s cubic-bezier(0.25, 0.1, 0.25, 1)',
-                transitionDelay: expandedSections.description ? '0.1s' : '0s'
-              }}>
-                {product.description}
+              {adding ? 'Adding…' : 'Add to bag'}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Added to bag ────────────────────────────────────── */}
+      <Drawer open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <DrawerContent>
+          <DrawerHeader>
+            <DrawerTitle className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-500">
+              <Check className="h-3.5 w-3.5" strokeWidth={3} />
+              Added to your bag
+            </DrawerTitle>
+          </DrawerHeader>
+          <div className="flex items-center gap-3 px-4 pb-4">
+            <div className="aspect-square w-14 shrink-0 overflow-hidden rounded-lg bg-muted">
+              {images[0] ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={images[0]} alt="" className="h-full w-full object-cover" />
+              ) : null}
+            </div>
+            <div className="min-w-0">
+              <p className="truncate text-[13.5px] font-semibold text-foreground">{product.name}</p>
+              <p className="text-[12.5px] tabular-nums text-muted-foreground">
+                Qty {qty} · {formatPrice(product.price * qty)}
               </p>
             </div>
           </div>
-          
-          {/* Specifications Section */}
-          {product.specifications && (
-            <div className={`${styles.accordionSection} ${expandedSections.specifications ? styles.expanded : ''}`}>
-              <button 
-                className={styles.accordionHeader} 
-                onClick={() => toggleSection('specifications')}
-                aria-expanded={expandedSections.specifications}
-              >
-                <span className={styles.accordionTitle}>Specifications</span>
-                <span className={styles.accordionIcon} style={{ transform: expandedSections.specifications ? 'rotate(180deg)' : 'rotate(0deg)' }}>
-                  <svg width="14" height="8" viewBox="0 0 14 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M1 1L7 7L13 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </span>
-              </button>
-              
-              <div className={`${styles.accordionContent} ${expandedSections.specifications ? styles.expanded : ''}`}>
-                <div className={styles.specificationsList} style={{ 
-                  transform: expandedSections.specifications ? 'translateY(0)' : 'translateY(10px)',
-                  transition: 'transform 0.6s cubic-bezier(0.25, 0.1, 0.25, 1)',
-                  transitionDelay: expandedSections.specifications ? '0.1s' : '0s'
-                }}>
-                  {formatSpecifications(product.specifications)}
-                </div>
-              </div>
-            </div>
-          )}
-          
-          {/* Care Instructions Section */}
-          {product.careInstructions && (
-            <div className={`${styles.accordionSection} ${expandedSections.care ? styles.expanded : ''}`}>
-              <button 
-                className={styles.accordionHeader} 
-                onClick={() => toggleSection('care')}
-                aria-expanded={expandedSections.care}
-              >
-                <span className={styles.accordionTitle}>Care Instructions</span>
-                <span className={styles.accordionIcon} style={{ transform: expandedSections.care ? 'rotate(180deg)' : 'rotate(0deg)' }}>
-                  <svg width="14" height="8" viewBox="0 0 14 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M1 1L7 7L13 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </span>
-              </button>
-              
-              <div className={`${styles.accordionContent} ${expandedSections.care ? styles.expanded : ''}`}>
-                <div className={styles.careInstructionsList} style={{ 
-                  transform: expandedSections.care ? 'translateY(0)' : 'translateY(10px)',
-                  transition: 'transform 0.6s cubic-bezier(0.25, 0.1, 0.25, 1)',
-                  transitionDelay: expandedSections.care ? '0.1s' : '0s'
-                }}>
-                  {formatCareInstructions(product.careInstructions)}
-                </div>
-              </div>
-            </div>
-          )}
+          <DrawerFooter>
+            <Button
+              variant="outline"
+              className="h-12 flex-none rounded-xl px-5"
+              onClick={() => setConfirmOpen(false)}
+            >
+              Keep looking
+            </Button>
+            <Button asChild className="h-12 flex-1 rounded-xl">
+              <Link href={user ? '/dashboard/cart' : '/cart'}>View bag</Link>
+            </Button>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
 
-          {/* Styling Inspiration Section */}
-          {product.stylingIdeaImages && product.stylingIdeaImages.length > 0 && (
-            <div className={`${styles.accordionSection} ${expandedSections.styling ? styles.expanded : ''}`}>
-              <button
-                className={styles.accordionHeader}
-                onClick={() => toggleSection('styling')}
-                aria-expanded={expandedSections.styling}
-              >
-                <span className={styles.accordionTitle}>Styling Inspiration Gallery</span>
-                <span className={styles.accordionIcon} style={{ transform: expandedSections.styling ? 'rotate(180deg)' : 'rotate(0deg)' }}>
-                  <svg width="14" height="8" viewBox="0 0 14 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M1 1L7 7L13 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </span>
-              </button>
-              <div
-                className={`${styles.accordionContent} ${expandedSections.styling ? styles.expanded : ''}`}
-                style={{ padding: expandedSections.styling ? '0' : undefined }}
-              >
-                <div className={styles.fullWidthSection}>
-                  <div className={styles.stylingGallery}>
-                      {product.stylingIdeaImages.map((idea, index) => {
-                        const image = typeof idea === 'string' ? { url: idea } : idea;
-                        const defaultCaptions = [
-                          "Tradition reimagined – detailed Indian craftsmanship in its purest form.",
-                          "Elevate your table setting with this elegant piece, adorned with gold accents and crystal embellishments — the perfect blend of art and function.",
-                          "Delicate beauty meets functionality — a handcrafted piece paired with soft-toned tableware and dried florals for a refined, romantic aesthetic."
-                        ];
-
-                        return (
-                          <div key={index} className={styles.galleryItem}>
-                            <div className={styles.galleryImageWrap}>
-                              <img src={image.url} alt={`Styling idea ${index + 1}`} className={styles.galleryImage} loading="lazy" />
-                              <div className={styles.galleryOverlay}>
-                                <span className={styles.galleryLabel}>
-                                  Featured Styling
-                                </span>
-                              </div>
-                            </div>
-                            <div className={styles.galleryText}>
-                              <p className={styles.galleryCaption}>
-                                {image.text || defaultCaptions[index % defaultCaptions.length]}
-                              </p>
-                            </div>
-                          </div>
-                        );
-                      })}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </motion.div>
-      
-      {/* You might also like section - Horizontal carousel with swipeable product cards */}
-      {similarProducts.length > 0 && (
-        <motion.div 
-          className={styles.similarProductsSection}
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8, duration: 0.6 }}
+      {/* ── Lightbox ────────────────────────────────────────── */}
+      {lightboxOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={`${product.name} — full screen`}
+          className="fixed inset-0 z-[100] flex flex-col bg-[#0b0b0c]"
         >
-          <motion.h2 
-            className={styles.similarProductsTitle}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.9 }}
+          <div className="flex items-center justify-between px-3.5 pt-3.5">
+            <span className="text-[12.5px] tabular-nums text-white/60">
+              {current + 1} / {images.length}
+            </span>
+            <button
+              type="button"
+              onClick={() => setLightboxOpen(false)}
+              aria-label="Close full screen"
+              className="grid h-9 w-9 place-items-center rounded-full bg-white/10 text-white"
+            >
+              <X className="h-[17px] w-[17px]" />
+            </button>
+          </div>
+
+          <Carousel
+            setApi={setLightboxApi}
+            opts={{ loop: images.length > 1, watchDrag: !zoomed }}
+            className="min-h-0 flex-1"
           >
-            You might also like
-          </motion.h2>
-          
-          <motion.div 
-            className={styles.similarProductsCarousel}
-            ref={carouselRef}
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseLeave}
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleMouseUp}
-            style={{
-              scrollSnapType: 'x mandatory',
-              scrollPaddingLeft: '0'
-            }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1.0 }}
-          >
-            {similarProducts.map((similarProduct, index) => (
-              <motion.div 
-                key={similarProduct.id} 
-                className={styles.cardWrapper}
-                style={{ scrollSnapAlign: 'start' }}
-                variants={carouselCardVariants}
-                initial="hidden"
-                animate="visible"
-                whileHover={{ scale: 1.03, y: -5 }}
-                transition={{ delay: 1.1 + (index * 0.1) }}
-              >
-                <Link href={`/products/${similarProduct.id}`} className={styles.card}>
-                  <div 
-                    className={styles.imageContainer}
-                    ref={el => productRefs.current[similarProduct.id] = el}
-                    onTouchStart={(e) => handleProductTouchStart(e, similarProduct.id)}
-                    onTouchMove={(e) => handleProductTouchMove(e, similarProduct.id)}
-                    onTouchEnd={() => handleProductTouchEnd(similarProduct.id)}
-                  >
-                    <div 
-                      className={styles.imageSlider} 
-                      style={getProductImageTransform(similarProduct.id)}
-                    >
-                      {similarProduct.imageUrls.map((url, index) => (
-                        <div key={index} className={styles.imageSlide}>
-                          <img 
-                            src={url}
-                            alt={`${similarProduct.name} - Image ${index + 1}`}
-                            className={styles.image}
-                            loading="lazy"
-                            draggable="false"
-                          />
-                        </div>
-                      ))}
-                    </div>
-                    
-                    {similarProduct.imageUrls.length === 0 && (
-                      <div className={styles.noImage}>No image</div>
-                    )}
-                    
-                    {similarProduct.isNew && <span className={styles.badge}>New</span>}
-                    {similarProduct.stockQuantity === 0 && <div className={styles.outOfStock}>Out of Stock</div>}
-                    {similarProduct.stockQuantity > 0 && similarProduct.stockQuantity <= 5 && (
-                      <div className={styles.cardLowStock}>Only {similarProduct.stockQuantity} left</div>
-                    )}
-                    
-                    {/* Image indicators */}
-                    {similarProduct.imageUrls.length > 1 && (
-                      <div className={styles.imageIndicators}>
-                        {similarProduct.imageUrls.map((_, index) => (
-                          <div 
-                            key={index} 
-                            className={`${styles.indicator} ${index === (currentImageIndices[similarProduct.id] || 0) ? styles.activeIndicator : ''}`}
-                          />
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className={styles.info}>
-                    {similarProduct.category && (
-                      <div className={styles.categoryTag}>
-                        {similarProduct.category.name}
-                      </div>
-                    )}
-                    <h3 className={styles.name}>{similarProduct.name}</h3>
-                    
-                    
-                    <div className={styles.priceRow}>
-                      <p className={styles.price}>{formatPrice(similarProduct.price)}</p>
-                      {similarProduct.avgRating && similarProduct.avgRating > 0 && (
-                        <p className={styles.productRating}>
-                          <span className={styles.starFilled}>★</span> 
-                          <span className={styles.ratingValue}>{similarProduct.avgRating.toFixed(1)}</span>
-                        </p>
+            <CarouselContent wrapperClassName="h-full" className="ml-0 h-full">
+              {images.map((url, i) => (
+                <CarouselItem key={i} className="basis-full pl-0">
+                  <div className="grid h-full place-items-center px-3.5">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={url}
+                      alt={`${product.name} — view ${i + 1}`}
+                      onClick={() => setZoomed((z) => !z)}
+                      className={cn(
+                        'max-h-full w-full rounded-lg object-contain transition-transform duration-300 ease-out',
+                        zoomed && i === current && 'scale-[1.7]'
                       )}
-                    </div>
+                      draggable={false}
+                    />
                   </div>
-                </Link>
-                
-                <div className={styles.wishlistContainer} onClick={handleWishlistClick}>
-                  <WishlistButton 
-                    productId={similarProduct.id} 
-                    className={`${styles.wishlistButton} ${styles.blackWishlist}`}
-                    preventNavigation={true}
-                  />
-                </div>
-              </motion.div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+          </Carousel>
+
+          <p className="pb-2 text-center text-[11.5px] text-white/45">
+            {zoomed ? 'Tap again to fit' : 'Tap the image to zoom'}
+          </p>
+
+          <div className="flex gap-2 overflow-x-auto px-3.5 pb-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {images.map((url, i) => (
+              <button
+                key={i}
+                type="button"
+                aria-label={`View image ${i + 1}`}
+                aria-current={i === current}
+                onClick={() => lightboxApi?.scrollTo(i)}
+                className={cn(
+                  'aspect-square w-[52px] shrink-0 overflow-hidden rounded-lg border-[1.5px] transition-opacity',
+                  i === current ? 'border-white opacity-100' : 'border-transparent opacity-50'
+                )}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={url} alt="" className="h-full w-full object-cover" />
+              </button>
             ))}
-          </motion.div>
-          
-          {/* Single line carousel pagination indicator */}
-          {similarProducts.length > carouselItemsPerView && (
-            <div className={styles.carouselPagination}>
-              <div 
-                className={styles.paginationIndicatorActive} 
-                style={{ 
-                  width: `${100 / Math.ceil(similarProducts.length / carouselItemsPerView)}px`,
-                  transform: `translateX(${scrollProgress * (100 - (100 / Math.ceil(similarProducts.length / carouselItemsPerView)))}px)`
-                }}
-              />
-            </div>
-          )}
-          
-          {/* Link to view more similar products in this category */}
-          {product.category && (
-            <div className={styles.viewAllSimilarWrapper}>
-              <Link href={`/products?category=${product.category.slug}`} className={styles.viewAllSimilarLink}>
-                View all {product.category.name} products →
-              </Link>
-            </div>
-          )}
-        </motion.div>
+          </div>
+        </div>
       )}
-    </motion.div>
-  );
+    </div>
+  )
+}
+
+/* -------------------------------------------------------------- */
+/* PIECES                                                          */
+/* -------------------------------------------------------------- */
+
+function GlassButton({
+  children,
+  label,
+  pressed,
+  onClick,
+}: {
+  children: React.ReactNode
+  label: string
+  pressed?: boolean
+  onClick: () => void
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      aria-pressed={pressed}
+      onClick={onClick}
+      className={cn(
+        'pointer-events-auto grid h-9 w-9 place-items-center rounded-full shadow-sm backdrop-blur transition-[background-color,color,transform] duration-200',
+        'active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+        pressed ? 'bg-foreground text-background' : 'bg-background/90 text-foreground'
+      )}
+    >
+      {children}
+    </button>
+  )
+}
+
+function TrustTile({
+  icon: Icon,
+  label,
+}: {
+  icon: typeof ShieldCheck
+  label: string
+}) {
+  return (
+    <Link
+      href="/faq"
+      className="flex flex-col items-center rounded-[10px] border px-1 py-2.5 text-center transition-colors hover:bg-secondary"
+    >
+      <Icon className="h-4 w-4 text-muted-foreground" />
+      <span className="mt-1.5 text-[10.5px] leading-tight text-muted-foreground">{label}</span>
+    </Link>
+  )
+}
+
+function QuantityStepper({
+  value,
+  max,
+  disabled,
+  onChange,
+}: {
+  value: number
+  max: number
+  disabled?: boolean
+  onChange: (n: number) => void
+}) {
+  const canDec = !disabled && value > 1
+  const canInc = !disabled && value < Math.max(1, max)
+
+  return (
+    <div
+      className={cn(
+        'inline-flex h-12 shrink-0 items-center rounded-full bg-secondary',
+        disabled && 'opacity-50'
+      )}
+    >
+      <button
+        type="button"
+        aria-label="Decrease quantity"
+        disabled={!canDec}
+        onClick={() => onChange(value - 1)}
+        className="grid h-12 w-11 place-items-center rounded-full text-foreground transition-colors disabled:text-muted-foreground/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
+          <path d="M5 12h14" />
+        </svg>
+      </button>
+      <span className="min-w-[22px] text-center text-[14.5px] font-semibold tabular-nums" aria-live="polite">
+        {value}
+      </span>
+      <button
+        type="button"
+        aria-label="Increase quantity"
+        disabled={!canInc}
+        onClick={() => onChange(value + 1)}
+        className="grid h-12 w-11 place-items-center rounded-full text-foreground transition-colors disabled:text-muted-foreground/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
+          <path d="M12 5v14M5 12h14" />
+        </svg>
+      </button>
+    </div>
+  )
 }

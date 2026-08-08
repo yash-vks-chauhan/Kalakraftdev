@@ -1,1704 +1,872 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
-import { motion, AnimatePresence } from 'framer-motion'
-import styles from './productsMobile.module.css'
-import WishlistButton from '../components/WishlistButton'
-import MobileFilterSortBar from '../components/MobileFilterSortBar'
 import { useRouter, useSearchParams } from 'next/navigation'
-import MobileProductsSkeleton from './MobileProductsSkeleton'
-import { FiFilter, FiX, FiChevronRight, FiStar, FiPackage, FiTrendingUp, FiGrid, FiHeart, FiChevronLeft, FiClock, FiZap } from 'react-icons/fi'
+import {
+  ArrowUpDown,
+  Check,
+  Heart,
+  Maximize2,
+  ShoppingBag,
+  SlidersHorizontal,
+  X,
+} from 'lucide-react'
+import { toast } from 'sonner'
+
+import { cn } from '@/lib/utils'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
+import {
+  Drawer,
+  DrawerContent,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from '@/components/ui/drawer'
 import { useProductFilters } from '../hooks/useProductFilters'
-import { useImagePreload } from '../hooks/useImagePreload'
-import OptimizedProductTransition from '../components/OptimizedProductTransition'
-import { usePerformanceOptimization, createAnimationDebouncer } from '../../lib/performanceUtils'
+import { useAuth } from '../contexts/AuthContext'
+import { useCart } from '../contexts/CartContext'
+import { useWishlist } from '../contexts/WishlistContext'
 
-// Optimized animation variants for better performance
-const cardVariants = {
-  hidden: { 
-    opacity: 0, 
-    y: 20
-  },
-  visible: { 
-    opacity: 1, 
-    y: 0,
-    transition: {
-      type: "tween" as const,
-      duration: 0.3,
-      ease: [0.4, 0, 0.2, 1] as const
-    }
-  },
-  hover: {
-    y: -2,
-    transition: {
-      type: "tween" as const,
-      duration: 0.2
-    }
-  },
-  tap: {
-    scale: 0.98,
-    transition: {
-      type: "tween" as const,
-      duration: 0.1
-    }
-  }
+/* -------------------------------------------------------------- */
+/* TYPES                                                           */
+/* -------------------------------------------------------------- */
+
+interface Category {
+  id: number
+  name: string
+  slug: string
 }
 
-// Simplified product opening animation
-const productOpenVariants = {
-  initial: {
-    scale: 1,
-    opacity: 1
-  },
-  animate: {
-    scale: 1.05,
-    opacity: 0.8,
-    transition: {
-      duration: 0.2,
-      ease: [0.4, 0, 0.2, 1] as const
-    }
-  }
+interface Product {
+  id: number
+  name: string
+  price: number
+  currency?: string
+  imageUrls: string[]
+  stockQuantity: number
+  shortDesc?: string | null
+  specifications?: string | null
+  category?: { id: number; name: string; slug: string } | null
+  avgRating?: number
+  isNew?: boolean
 }
 
-// Optimized animation variants for the product list container
-const listVariants = {
-  hidden: {
-    opacity: 0
-  },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.03, // Reduced from 0.05 for faster loading
-      delayChildren: 0.05    // Reduced from 0.1
-    }
-  }
+const SORTS = [
+  { value: '', label: 'Recommended' },
+  { value: 'oldest', label: 'Oldest first' },
+  { value: 'price_asc', label: 'Price: low to high' },
+  { value: 'price_desc', label: 'Price: high to low' },
+] as const
+
+const PRICE_BANDS = [
+  { key: 'under2000', label: 'Under ₹2,000', min: '', max: '1999' },
+  { key: '2000to5000', label: '₹2,000 – ₹5,000', min: '2000', max: '5000' },
+  { key: 'over5000', label: 'Over ₹5,000', min: '5001', max: '' },
+] as const
+
+const PAGE_SIZE = 12
+
+function formatPrice(value: number) {
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    maximumFractionDigits: 0,
+    minimumFractionDigits: 0,
+  }).format(value)
 }
 
-// Define known categories similar to desktop version
-const KNOWN_CATEGORIES = [
-  { slug: 'clocks', name: 'Clocks' },
-  { slug: 'pots', name: 'Pots' },
-  { slug: 'tray', name: 'Trays' },
-  { slug: 'Tray', name: 'Jewelry Trays' },
-  { slug: 'rangoli', name: 'Rangoli' },
-  { slug: 'decor', name: 'Wall Decor' },
-  { slug: 'matt rangoli', name: 'Matt Rangoli' },
-  { slug: 'mirror work', name: 'Mirror Work' }
-]
-
-// Product Card with Swipeable Images component
-const ProductCard = ({ product, formatPrice, onParticleTransition }) => {
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [touchStart, setTouchStart] = useState(0);
-  const [touchEnd, setTouchEnd] = useState(0);
-  const [isSwiping, setIsSwiping] = useState(false);
-  const [swipeDistance, setSwipeDistance] = useState(0);
-  const [showHints, setShowHints] = useState(true);
-  const [isPressed, setIsPressed] = useState(false);
-  const [isOpening, setIsOpening] = useState(false);
-  const imageContainerRef = useRef(null);
-  const containerWidth = useRef(0);
-  const router = useRouter();
-  
-  // Optimized image preloading
-  const { isImageLoaded, preloadImage } = useImagePreload(product.imageUrls, {
-    priorityCount: 1, // Only preload first image immediately
-    maxConcurrentPreloads: 2,
-    enableLazyLoading: true
-  });
-  
-  // Hide hints after first interaction or after timeout
-  useEffect(() => {
-    const timer = setTimeout(() => setShowHints(false), 4000);
-    return () => clearTimeout(timer);
-  }, []);
-  
-  // Preload next/previous images on swipe
-  useEffect(() => {
-    if (product.imageUrls.length <= 1) return;
-    
-    // Preload adjacent images when current changes
-    const nextIndex = currentImageIndex + 1;
-    const prevIndex = currentImageIndex - 1;
-    
-    if (nextIndex < product.imageUrls.length) {
-      preloadImage(product.imageUrls[nextIndex]);
-    }
-    if (prevIndex >= 0) {
-      preloadImage(product.imageUrls[prevIndex]);
-    }
-  }, [currentImageIndex, product.imageUrls, preloadImage]);
-
-  // Handle product card click with particle transition
-  const handleProductClick = useCallback((e) => {
-    e.preventDefault();
-    setIsOpening(true);
-    
-    // Trigger particle transition
-    if (onParticleTransition) {
-      onParticleTransition(() => {
-        router.push(`/products/${product.id}`);
-      });
-    } else {
-      // Fallback without particles
-      setTimeout(() => {
-        router.push(`/products/${product.id}`);
-      }, 200);
-    }
-  }, [product.id, router, onParticleTransition]);
-  
-  // Direct touch event handlers for better reliability
-  const handleTouchStart = (e) => {
-    if (product.imageUrls.length <= 1) return;
-    
-    // Hide hints on first interaction
-    setShowHints(false);
-    
-    // Store container width for calculations
-    containerWidth.current = imageContainerRef.current?.offsetWidth || 0;
-    
-    setTouchStart(e.targetTouches[0].clientX);
-    setTouchEnd(e.targetTouches[0].clientX);
-    setIsSwiping(true);
-    setSwipeDistance(0);
-  };
-  
-  const handleTouchMove = (e) => {
-    if (!isSwiping || product.imageUrls.length <= 1) return;
-    
-    // Prevent default to avoid page scrolling while swiping
-    e.preventDefault();
-    
-    const currentTouch = e.targetTouches[0].clientX;
-    setTouchEnd(currentTouch);
-    
-    // Calculate how far the user has swiped
-    const distance = currentTouch - touchStart;
-    
-    // Apply resistance at the edges
-    let finalDistance = distance;
-    if ((currentImageIndex === 0 && distance > 0) || 
-        (currentImageIndex === product.imageUrls.length - 1 && distance < 0)) {
-      // Apply resistance at edges - finger moves 3x more than image
-      finalDistance = distance / 3;
-    }
-    
-    setSwipeDistance(finalDistance);
-  };
-  
-  const handleTouchEnd = () => {
-    if (!isSwiping || product.imageUrls.length <= 1) return;
-    
-    setIsSwiping(false);
-    
-    if (!touchStart || !touchEnd) {
-      setSwipeDistance(0);
-      return;
-    }
-    
-    const distance = touchStart - touchEnd;
-    const minSwipeDistance = containerWidth.current * 0.2; // 20% of container width
-    
-    if (Math.abs(distance) < minSwipeDistance) {
-      // Not swiped far enough, snap back
-      setSwipeDistance(0);
-      return;
-    }
-    
-    if (distance > 0 && currentImageIndex < product.imageUrls.length - 1) {
-      // Swiped left, go to next image
-      setCurrentImageIndex(prevIndex => prevIndex + 1);
-    } else if (distance < 0 && currentImageIndex > 0) {
-      // Swiped right, go to previous image
-      setCurrentImageIndex(prevIndex => prevIndex - 1);
-    }
-    
-    // Reset values
-    setTouchStart(0);
-    setTouchEnd(0);
-    setSwipeDistance(0);
-  };
-  
-  // Handle manual image navigation with tap
-  const handleImageTap = (e) => {
-    if (product.imageUrls.length <= 1) return;
-    
-    const containerWidth = imageContainerRef.current?.offsetWidth || 0;
-    const tapX = e.nativeEvent.offsetX;
-    
-    // Tap on right third of image - go next
-    if (tapX > containerWidth * 0.7 && currentImageIndex < product.imageUrls.length - 1) {
-      setCurrentImageIndex(prevIndex => prevIndex + 1);
-    }
-    // Tap on left third of image - go previous
-    else if (tapX < containerWidth * 0.3 && currentImageIndex > 0) {
-      setCurrentImageIndex(prevIndex => prevIndex - 1);
-    }
-  };
-  
-  // Handle wishlist button click to prevent navigation
-  const handleWishlistClick = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
-  
-  // Calculate transform style for real-time finger tracking
-  const getImageTransform = () => {
-    if (isSwiping) {
-      // During swipe, follow finger exactly
-      const percentageOffset = containerWidth.current ? (swipeDistance / containerWidth.current) * 100 : 0;
-      return {
-        transform: `translateX(calc(-${currentImageIndex * 100}% + ${percentageOffset}%))`,
-        transition: 'none'
-      };
-    }
-    
-    // When not swiping, use smooth transition
-    return {
-      transform: `translateX(-${currentImageIndex * 100}%)`,
-      transition: 'transform 0.3s ease'
-    };
-  };
-  
-  // Format short description
-  const getShortDescription = () => {
-    if (!product.shortDesc) return null;
-    return product.shortDesc.length > 60 
-      ? `${product.shortDesc.substring(0, 60)}...` 
-      : product.shortDesc;
-  };
-  
-  return (
-    <motion.div 
-      className={styles.cardWrapper}
-      variants={cardVariants}
-      initial="hidden"
-      animate="visible"
-      whileHover="hover"
-      whileTap="tap"
-      exit="exit"
-      layout
-      style={{ perspective: 1000 }}
-    >
-      <motion.div
-        className={styles.card}
-        onClick={handleProductClick}
-        variants={isOpening ? productOpenVariants : {}}
-        initial="initial"
-        animate={isOpening ? "animate" : "initial"}
-        exit="exit"
-        style={{ cursor: 'pointer' }}
-      >
-        <motion.div 
-          className={styles.imageContainer}
-          ref={imageContainerRef}
-          onClick={handleImageTap}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        >
-          <motion.div 
-            className={styles.imageSlider} 
-            style={getImageTransform()}
-            animate={{ opacity: isOpening ? 0.8 : 1 }}
-            transition={{ duration: 0.3 }}
-          >
-            {product.imageUrls.map((url, index) => (
-              <div key={index} className={styles.imageSlide}>
-                <motion.img 
-                  src={url}
-                  alt={`${product.name} - Image ${index + 1}`}
-                  className={styles.image}
-                  loading={index === 0 || index === 1 ? "eager" : "lazy"}
-                  draggable="false"
-                  initial={{ opacity: 0, scale: 1.1 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                />
-              </div>
-            ))}
-          </motion.div>
-          
-          {product.imageUrls.length === 0 && (
-            <div className={styles.noImage}>No image</div>
-          )}
-          
-          {product.isNew && (
-            <motion.span 
-              className={styles.badge}
-              initial={{ opacity: 0, scale: 0.8, y: -10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ delay: 0.3, type: "spring", stiffness: 500 }}
-            >
-              New
-            </motion.span>
-          )}
-          {product.stockQuantity === 0 && (
-            <motion.div 
-              className={styles.outOfStock}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.4 }}
-            >
-              Out of Stock
-            </motion.div>
-          )}
-          {product.stockQuantity > 0 && product.stockQuantity <= 5 && (
-            <motion.div 
-              className={styles.lowStock}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, type: "spring", stiffness: 400 }}
-            >
-              Only {product.stockQuantity} left
-            </motion.div>
-          )}
-          
-          {/* Image indicators */}
-          {product.imageUrls.length > 1 && (
-            <motion.div 
-              className={styles.imageIndicators}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-            >
-              {product.imageUrls.map((_, index) => (
-                <motion.div 
-                  key={index} 
-                  className={`${styles.indicator} ${index === currentImageIndex ? styles.activeIndicator : ''}`}
-                  whileHover={{ scale: 1.2 }}
-                  animate={{ 
-                    width: index === currentImageIndex ? 20 : 16,
-                    backgroundColor: index === currentImageIndex ? '#000' : 'rgba(0, 0, 0, 0.3)'
-                  }}
-                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                />
-              ))}
-            </motion.div>
-          )}
-          
-          {/* Swipe hints - only show if multiple images and on first render */}
-          <AnimatePresence>
-            {showHints && product.imageUrls.length > 1 && (
-              <>
-                {currentImageIndex > 0 && (
-                  <motion.div 
-                    className={styles.swipeRightHint}
-                    initial={{ opacity: 0, x: 10 }}
-                    animate={{ opacity: 0.7, x: 0 }}
-                    exit={{ opacity: 0, x: -10 }}
-                    transition={{ delay: 1, duration: 0.5 }}
-                  >
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <polyline points="15 18 9 12 15 6"></polyline>
-                    </svg>
-                  </motion.div>
-                )}
-                {currentImageIndex < product.imageUrls.length - 1 && (
-                  <motion.div 
-                    className={styles.swipeLeftHint}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 0.7, x: 0 }}
-                    exit={{ opacity: 0, x: 10 }}
-                    transition={{ delay: 1, duration: 0.5 }}
-                  >
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <polyline points="9 18 15 12 9 6"></polyline>
-                    </svg>
-                  </motion.div>
-                )}
-              </>
-            )}
-          </AnimatePresence>
-        </motion.div>
-        
-        <motion.div 
-          className={styles.info}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.4 }}
-        >
-          {product.category && (
-            <motion.div 
-              className={styles.categoryTag}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3 }}
-            >
-              {product.category.name}
-            </motion.div>
-          )}
-          <motion.h3 
-            className={styles.name}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-          >
-            {product.name}
-          </motion.h3>
-          
-          <motion.div 
-            className={styles.priceRow}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-          >
-            <p className={styles.price}>{formatPrice(product.price)}</p>
-            {product.avgRating > 0 && (
-              <motion.p 
-                className={styles.productRating}
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.6, type: "spring", stiffness: 400 }}
-              >
-                <span className={styles.starFilled}>★</span> 
-                <span className={styles.ratingValue}>{product.avgRating.toFixed(1)}</span>
-              </motion.p>
-            )}
-          </motion.div>
-        </motion.div>
-      </motion.div>
-      
-      <motion.div 
-        className={styles.wishlistContainer} 
-        onClick={handleWishlistClick}
-        initial={{ opacity: 0, scale: 0.5 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.6, type: "spring", stiffness: 500 }}
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
-      >
-        <WishlistButton 
-          productId={product.id} 
-          className={`${styles.wishlistButton} ${styles.blackWishlist}`}
-          preventNavigation={true}
-        />
-      </motion.div>
-    </motion.div>
-  );
-};
-
-// Enhanced Pagination Skeleton Loading Component with smart loading states
-const PaginationSkeleton = ({ isTransitioning = false }) => {
-  return (
-    <div className={`${styles.paginationSkeleton} ${isTransitioning ? styles.transitioning : ''}`}>
-      <div className={styles.skeletonPrevNext}></div>
-      {[...Array(5)].map((_, index) => (
-        <div key={index} className={`${styles.skeletonButton} ${index === 2 ? styles.skeletonActive : ''}`}>
-          <div className={styles.skeletonShimmer}></div>
-        </div>
-      ))}
-      <div className={styles.skeletonPrevNext}></div>
-    </div>
-  )
+/** Pulls the first "Key: value" pairs out of the specifications blob. */
+function firstSpecs(spec: string | null | undefined, count: number) {
+  if (!spec) return [] as string[]
+  return spec
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line.includes(':'))
+    .slice(0, count)
+    .map((line) => line.split(':').slice(1).join(':').trim())
+    .filter(Boolean)
 }
 
-// Progress Bar Component
-const PaginationProgress = ({ current, total, isLoading }) => {
-  const progressPercentage = total > 0 ? (current / total) * 100 : 0
-  
-  return (
-    <div className={styles.progressContainer}>
-      <div className={styles.progressBar}>
-        <div 
-          className={`${styles.progressFill} ${isLoading ? styles.progressLoading : ''}`}
-          style={{ width: `${progressPercentage}%` }}
-        >
-          <div className={styles.progressGlow}></div>
-        </div>
-      </div>
-      <div className={styles.progressText}>
-        <span className={styles.progressCurrent}>{current}</span>
-        <span className={styles.progressSeparator}>of</span>
-        <span className={styles.progressTotal}>{total}</span>
-      </div>
-    </div>
-  )
-}
+/* -------------------------------------------------------------- */
+/* PAGE                                                            */
+/* -------------------------------------------------------------- */
 
 export default function ProductsMobileClient() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  
-  // Performance optimization hook
-  const { config: perfConfig, trackAnimation } = usePerformanceOptimization()
-  
-  // Create debounced animation trigger
-  const debouncedParticleTransition = useMemo(() => createAnimationDebouncer(200), [])
-  
-  // Consolidated state management using optimized hooks
-  const { 
-    filters, 
-    tempFilters, 
-    updateTempFilter, 
-    applyTempFilters, 
-    resetTempFilters 
-  } = useProductFilters()
-  
-  // Remaining component state (reduced from 15+ to 7 variables)
-  const [allProducts, setAllProducts] = useState([])
-  const [products, setProducts] = useState([])
-  const [usageTags, setUsageTags] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false)
-  const [isSortOpen, setIsSortOpen] = useState(false)
-  const [isParticleTransitionActive, setIsParticleTransitionActive] = useState(false)
-  const [isPageChanging, setIsPageChanging] = useState(false) // Add pagination loading state
-  const [keyboardShortcutsEnabled, setKeyboardShortcutsEnabled] = useState(true) // New: keyboard shortcuts state
-  const [lastPageChangeTime, setLastPageChangeTime] = useState(0) // New: for rate limiting
-  const [pageChangeDirection, setPageChangeDirection] = useState('') // New: track direction for animations
-  const [openSections, setOpenSections] = useState({
-    category: true,
-    rating: true,
-    stock: true,
-    sort: true
-  });
+  const { user } = useAuth()
+  const { addToCart } = useCart()
+  const { wishlistItems, addToWishlist, removeFromWishlist } = useWishlist()
 
-  // Pagination state with URL sync
-  const [currentPage, setCurrentPage] = useState(() => {
-    // Initialize from URL params if available
-    const urlPage = searchParams.get('page')
-    return urlPage ? Math.max(1, parseInt(urlPage, 10)) : 1
-  })
-  const productsPerPage = 16 // Optimized for 2x8 mobile grid layout
-  
-  // Extract individual filter values for easier use
+  const { filters } = useProductFilters()
   const {
     category: currentCategory,
-    usageTag: currentTag,
     priceMin,
     priceMax,
     sortOrder,
     ratingMin,
     lowStockOnly,
-    inStockOnly
+    inStockOnly,
+    usageTag: currentTag,
   } = filters
-  
-  // Get current category name for display with context-aware labels
-  const getCurrentCategoryName = () => {
-    if (!currentCategory) return 'All Products';
-    const category = KNOWN_CATEGORIES.find(cat => cat.slug === currentCategory);
-    const count = allProducts.length
-    const name = category ? category.name : 'Products'
-    return count > 0 ? `${name} (${count})` : name;
-  };
 
-  // Get current sort display name with context-aware labels
-  const getCurrentSortName = () => {
-    const count = allProducts.length
-    switch (sortOrder) {
-      case 'oldest': return `Oldest First • ${count} items`;
-      case 'price_asc': return `Price: Low to High • ${count} items`;
-      case 'price_desc': return `Price: High to Low • ${count} items`;
-      case 'rating-desc': return `Top Rated • ${count} items`;
-      default: return `Recommended • ${count} items`;
-    }
-  };
+  const [products, setProducts] = useState<Product[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [shown, setShown] = useState(PAGE_SIZE)
 
-  // Pagination calculations with safety checks
-  const totalProducts = allProducts.length
-  const safeProductsPerPage = Math.max(productsPerPage, 1) // Prevent division by zero
-  const totalPages = Math.ceil(totalProducts / safeProductsPerPage)
-  const startIndex = (currentPage - 1) * safeProductsPerPage
-  const endIndex = startIndex + safeProductsPerPage
-  const paginatedProducts = allProducts.slice(startIndex, endIndex)
+  const [sortOpen, setSortOpen] = useState(false)
+  const [filterOpen, setFilterOpen] = useState(false)
+  const [peekId, setPeekId] = useState<number | null>(null)
+  const [addingId, setAddingId] = useState<number | null>(null)
 
-  // Update products when pagination changes
+  const [stuck, setStuck] = useState(false)
+  const sentinelRef = useRef<HTMLDivElement | null>(null)
+
+  /* ── data ─────────────────────────────────────────────────── */
+
   useEffect(() => {
-    const newPaginatedProducts = allProducts.slice(startIndex, endIndex)
-    setProducts(newPaginatedProducts)
-  }, [allProducts, startIndex, endIndex])
-
-  // Validate and adjust currentPage when totalPages changes
-  useEffect(() => {
-    if (totalPages > 0 && currentPage > totalPages) {
-      // If current page exceeds total pages, reset to last valid page
-      const lastValidPage = Math.max(1, totalPages)
-      setCurrentPage(lastValidPage)
-      updatePageInURL(lastValidPage)
-    }
-  }, [totalPages, currentPage])
-
-  // Keyboard shortcuts for pagination (1-9 for pages)
-  useEffect(() => {
-    const handleKeyDown = (event) => {
-      // Only handle if shortcuts are enabled and we're not in an input field
-      if (!keyboardShortcutsEnabled || 
-          ['INPUT', 'TEXTAREA', 'SELECT'].includes(event.target.tagName) ||
-          event.target.contentEditable === 'true') {
-        return
-      }
-
-      // Rate limiting - prevent rapid key presses
-      const now = Date.now()
-      if (now - lastPageChangeTime < 300) {
-        return
-      }
-
-      const key = event.key
-      
-      // Handle number keys 1-9 for direct page navigation
-      if (/^[1-9]$/.test(key)) {
-        event.preventDefault()
-        const targetPage = parseInt(key, 10)
-        if (targetPage <= totalPages) {
-          setLastPageChangeTime(now)
-          handlePageSelect(targetPage, 'direct')
-        }
-        return
-      }
-
-      // Handle arrow keys and other shortcuts
-      switch (key) {
-        case 'ArrowLeft':
-        case 'h': // Vim-style navigation
-          event.preventDefault()
-          if (currentPage > 1) {
-            setLastPageChangeTime(now)
-            handlePreviousPage()
-          }
-          break
-        case 'ArrowRight':
-        case 'l': // Vim-style navigation
-          event.preventDefault()
-          if (currentPage < totalPages) {
-            setLastPageChangeTime(now)
-            handleNextPage()
-          }
-          break
-        case 'Home':
-        case 'g': // Go to first page
-          event.preventDefault()
-          if (currentPage !== 1) {
-            setLastPageChangeTime(now)
-            handlePageSelect(1, 'first')
-          }
-          break
-        case 'End':
-        case 'G': // Go to last page (shift+g)
-          event.preventDefault()
-          if (currentPage !== totalPages) {
-            setLastPageChangeTime(now)
-            handlePageSelect(totalPages, 'last')
-          }
-          break
-        case 'Escape':
-          // Disable keyboard shortcuts temporarily
-          setKeyboardShortcutsEnabled(false)
-          setTimeout(() => setKeyboardShortcutsEnabled(true), 2000)
-          break
-      }
-    }
-
-    // Add event listener
-    document.addEventListener('keydown', handleKeyDown)
-    
-    // Cleanup
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown)
-    }
-  }, [currentPage, totalPages, keyboardShortcutsEnabled, lastPageChangeTime])
-
-  // Show keyboard shortcuts hint on first visit
-  useEffect(() => {
-    const hasSeenHint = localStorage.getItem('pagination-keyboard-hint-seen')
-    if (!hasSeenHint && totalPages > 1) {
-      setTimeout(() => {
-        // Show toast or hint - you can implement this
-        console.log('Tip: Use number keys 1-9 to jump to pages, arrow keys to navigate!')
-        localStorage.setItem('pagination-keyboard-hint-seen', 'true')
-      }, 2000)
-    }
-  }, [totalPages])
-
-  // Pagination handlers with better scroll positioning
-  const scrollToProductsTop = () => {
-    // Use setTimeout to ensure state updates are complete
-    setTimeout(() => {
-      // Find the products list container and scroll to it
-      const productsContainer = document.querySelector('.products-container')
-      if (productsContainer) {
-        // Calculate position to scroll a bit above the products container
-        const containerRect = productsContainer.getBoundingClientRect()
-        const scrollY = window.pageYOffset + containerRect.top - 80 // 80px above the container
-        window.scrollTo({ 
-          top: scrollY, 
-          behavior: 'smooth' 
-        })
-      } else {
-        // Fallback to page header if products container not found
-        const pageHeader = document.querySelector('.page-header')
-        if (pageHeader) {
-          const headerRect = pageHeader.getBoundingClientRect()
-          const scrollY = window.pageYOffset + headerRect.top - 40 // 40px above the header
-          window.scrollTo({ 
-            top: scrollY, 
-            behavior: 'smooth' 
-          })
-        } else {
-          // Final fallback to top of page with some offset
-          window.scrollTo({ top: 60, behavior: 'smooth' }) // 60px from very top
-        }
-      }
-    }, 100) // Small delay to ensure DOM updates
-  }
-
-  const updatePageInURL = (page: number) => {
-    const qs = new URLSearchParams(searchParams.toString())
-    if (page === 1) {
-      qs.delete('page') // Remove page param for page 1 to keep URL clean
-    } else {
-      qs.set('page', page.toString())
-    }
-    const newURL = qs.toString() ? `/products?${qs}` : '/products'
-    router.replace(newURL, { scroll: false }) // Don't auto-scroll, we handle it manually
-  }
-
-  const handlePreviousPage = () => {
-    if (currentPage > 1 && !isPageChanging) {
-      setIsPageChanging(true)
-      const newPage = currentPage - 1
-      setCurrentPage(newPage)
-      updatePageInURL(newPage)
-      scrollToProductsTop()
-      // Reset loading state after scroll completes with better timing
-      setTimeout(() => setIsPageChanging(false), 300)
-    }
-  }
-
-  const handleNextPage = () => {
-    if (currentPage < totalPages && !isPageChanging) {
-      setIsPageChanging(true)
-      const newPage = currentPage + 1
-      setCurrentPage(newPage)
-      updatePageInURL(newPage)
-      scrollToProductsTop()
-      // Reset loading state after scroll completes with better timing
-      setTimeout(() => setIsPageChanging(false), 300)
-    }
-  }
-
-  const handlePageSelect = (page: number, direction?: string) => {
-    if (page !== currentPage && page >= 1 && page <= totalPages && !isPageChanging) {
-      setIsPageChanging(true)
-      setPageChangeDirection(direction || '')
-      setCurrentPage(page)
-      updatePageInURL(page)
-      scrollToProductsTop()
-      // Reset loading state after scroll completes with better timing
-      setTimeout(() => {
-        setIsPageChanging(false)
-        setPageChangeDirection('')
-      }, 300)
-    }
-  }
-
-  // Handle sort selection
-  const handleSortSelect = (sortValue: string) => {
-    const qs = new URLSearchParams(searchParams.toString());
-    if (sortValue === '' || sortValue === 'newest') {
-      qs.delete('sort');
-    } else {
-      qs.set('sort', sortValue);
-    }
-    router.replace(qs.toString() ? `/products?${qs}` : '/products');
-    setIsSortOpen(false);
-  };
-
-  // Toggle filter sections
-  const toggleSection = (section) => {
-    setOpenSections(prev => ({
-      ...prev,
-      [section]: !prev[section]
-    }));
-  };
-
-  // Apply filters
-  const applyFilters = () => {
-    const qs = new URLSearchParams();
-    
-    if (tempFilters.category) qs.set('category', tempFilters.category);
-    if (tempFilters.usageTag) qs.set('usageTag', tempFilters.usageTag);
-    if (tempFilters.priceMin) qs.set('priceMin', tempFilters.priceMin);
-    if (tempFilters.priceMax) qs.set('priceMax', tempFilters.priceMax);
-    if (tempFilters.ratingMin) qs.set('ratingMin', tempFilters.ratingMin);
-    if (tempFilters.lowStockOnly) qs.set('lowStock', 'true');
-    if (tempFilters.inStockOnly) qs.set('inStock', 'true');
-    
-    router.replace(qs.toString() ? `/products?${qs}` : '/products');
-    setIsMobileFilterOpen(false);
-  };
-
-  // Clear all filters
-  const clearAllFilters = () => {
-    router.replace('/products');
-    setIsMobileFilterOpen(false);
-  };
-
-  // Reset temp filters when opening filter drawer
-  const handleFilterOpen = () => {
-    resetTempFilters();
-    setIsMobileFilterOpen(true);
-  };
-
-  // Fetch list of available usage tags once
-  useEffect(() => {
-    async function fetchTags() {
+    let cancelled = false
+    async function run() {
       try {
-        const res = await fetch('/api/products/usage-tags')
+        const res = await fetch('/api/categories')
+        if (!res.ok) return
         const data = await res.json()
-        if (Array.isArray(data.tags)) setUsageTags(data.tags)
-      } catch (err) {
-        console.error('Failed to fetch usage tags:', err)
+        if (!cancelled && Array.isArray(data.categories)) setCategories(data.categories)
+      } catch {
+        /* the rail simply doesn't render; the page still works */
       }
     }
-    fetchTags()
+    run()
+    return () => {
+      cancelled = true
+    }
   }, [])
 
-  // fetch products from API with filters
   useEffect(() => {
-    async function fetchProducts() {
+    let cancelled = false
+    async function run() {
       setLoading(true)
       setError(null)
-      
       const params = new URLSearchParams()
-      if (currentCategory) {
-        params.set('category', currentCategory)
-      }
-      if (currentTag) {
-        params.set('usageTag', currentTag)
-      }
+      if (currentCategory) params.set('category', currentCategory)
+      if (currentTag) params.set('usageTag', currentTag)
       if (priceMin) params.set('priceMin', priceMin)
       if (priceMax) params.set('priceMax', priceMax)
       if (sortOrder) params.set('sort', sortOrder)
       if (lowStockOnly) params.set('lowStock', 'true')
       if (inStockOnly) params.set('inStock', 'true')
       if (ratingMin) params.set('ratingMin', ratingMin)
-      
+
       try {
         const res = await fetch(`/api/products?${params.toString()}`)
         const data = await res.json()
         if (!res.ok) throw new Error(data.error || 'Failed to fetch products')
-        
-        // Normalize imageUrls
-        let filteredProducts = (Array.isArray(data.products) ? data.products : []).map((p) => {
-          let urls = []
-          try {
-            urls = Array.isArray(p.imageUrls) ? p.imageUrls : JSON.parse(p.imageUrls || '[]')
-          } catch {
-            urls = []
+        const list: Product[] = (Array.isArray(data.products) ? data.products : []).map(
+          (p: any) => {
+            let urls: string[] = []
+            try {
+              urls = Array.isArray(p.imageUrls) ? p.imageUrls : JSON.parse(p.imageUrls || '[]')
+            } catch {
+              urls = []
+            }
+            const isNew =
+              p.createdAt && new Date(p.createdAt) > new Date(Date.now() - 14 * 864e5)
+            return { ...p, imageUrls: urls, isNew }
           }
-          
-          // Check if product is new (less than 14 days old)
-          const isNew = p.createdAt && new Date(p.createdAt) > new Date(Date.now() - 14 * 24 * 60 * 60 * 1000)
-          
-          return { ...p, imageUrls: urls, isNew }
-        })
-        
-        // Client-side category filtering as backup
-        if (currentCategory && filteredProducts.length > 0) {
-          filteredProducts = filteredProducts.filter((product) => {
-            const categorySlug = product.category?.slug || ''
-            return categorySlug === currentCategory
-          })
-        }
-        
-        // Client-side tag filtering as backup
-        if (currentTag && filteredProducts.length > 0) {
-          filteredProducts = filteredProducts.filter((product) => {
-            return Array.isArray(product.usageTags) && product.usageTags.includes(currentTag)
-          })
-        }
-        
-        setAllProducts(filteredProducts)
-        setCurrentPage(1) // Reset to first page when filters change
-      } catch (err) {
-        setError(err.message)
+        )
+        if (cancelled) return
+        setProducts(list)
+        setShown(PAGE_SIZE)
+      } catch (err: any) {
+        if (!cancelled) setError(err.message || 'Something went wrong')
       } finally {
-        setLoading(false)
+        if (!cancelled) setLoading(false)
       }
     }
-    fetchProducts()
-  }, [currentCategory, currentTag, priceMin, priceMax, sortOrder, lowStockOnly, inStockOnly, ratingMin])
+    run()
+    return () => {
+      cancelled = true
+    }
+  }, [currentCategory, currentTag, priceMin, priceMax, sortOrder, ratingMin, lowStockOnly, inStockOnly])
 
-  // Handle wishlist button click to prevent navigation
-  const handleWishlistClick = (e) => {
-    e.preventDefault()
-    e.stopPropagation()
+  /*
+   * The rail pins to the top of the viewport. An IntersectionObserver on a
+   * zero-height sentinel above it tells us when to draw the hairline, which
+   * is cheaper than reading scroll position on every frame.
+   */
+  useEffect(() => {
+    const el = sentinelRef.current
+    if (!el) return
+    const io = new IntersectionObserver(([entry]) => setStuck(!entry.isIntersecting), {
+      threshold: 0,
+    })
+    io.observe(el)
+    return () => io.disconnect()
+  }, [])
+
+  /* ── derived ──────────────────────────────────────────────── */
+
+  const activeCategory = useMemo(
+    () => categories.find((c) => c.slug === currentCategory) ?? null,
+    [categories, currentCategory]
+  )
+
+  const priceBand = useMemo(
+    () => PRICE_BANDS.find((b) => b.min === priceMin && b.max === priceMax) ?? null,
+    [priceMin, priceMax]
+  )
+
+  const activeFilters = useMemo(() => {
+    const out: { key: string; label: string }[] = []
+    if (inStockOnly) out.push({ key: 'inStock', label: 'In stock' })
+    if (priceBand) out.push({ key: 'price', label: priceBand.label })
+    if (ratingMin) out.push({ key: 'ratingMin', label: `${ratingMin}+ stars` })
+    if (currentTag) out.push({ key: 'usageTag', label: currentTag })
+    return out
+  }, [inStockOnly, priceBand, ratingMin, currentTag])
+
+  const sortLabel = SORTS.find((s) => s.value === sortOrder)?.label ?? 'Recommended'
+  const visible = products.slice(0, shown)
+  const peeked = peekId ? products.find((p) => p.id === peekId) ?? null : null
+
+  /* ── url helpers ──────────────────────────────────────────── */
+
+  const push = useCallback(
+    (mutate: (qs: URLSearchParams) => void) => {
+      const qs = new URLSearchParams(searchParams.toString())
+      mutate(qs)
+      qs.delete('page')
+      router.replace(qs.toString() ? `/products?${qs}` : '/products', { scroll: false })
+    },
+    [router, searchParams]
+  )
+
+  const selectCategory = (slug: string | null) =>
+    push((qs) => (slug ? qs.set('category', slug) : qs.delete('category')))
+
+  const selectSort = (value: string) => {
+    push((qs) => (value ? qs.set('sort', value) : qs.delete('sort')))
+    setSortOpen(false)
   }
 
-  // Format price with commas for thousands
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 0,
-      minimumFractionDigits: 0
-    }).format(price);
-  };
-
-  // Handle particle transition with performance optimization
-  const handleParticleTransition = useCallback((onComplete) => {
-    debouncedParticleTransition(() => {
-      const startTime = performance.now()
-      setIsParticleTransitionActive(true)
-      
-      // Track animation performance
-      const originalOnComplete = onComplete
-      const trackedOnComplete = () => {
-        const endTime = performance.now()
-        trackAnimation('particle-transition', startTime, endTime)
-        if (originalOnComplete) originalOnComplete()
-      }
-      
-      // Use performance-optimized duration
-      setTimeout(trackedOnComplete, perfConfig.animationDuration || 600)
+  const clearFilter = (key: string) =>
+    push((qs) => {
+      if (key === 'inStock') qs.delete('inStock')
+      else if (key === 'price') {
+        qs.delete('priceMin')
+        qs.delete('priceMax')
+      } else qs.delete(key)
     })
-  }, [debouncedParticleTransition, trackAnimation, perfConfig.animationDuration]);
 
-  // Render filters similar to desktop sidebar
-  const renderFilters = () => {
-    return (
-      <>
-        {/* Category filter */}
-        <details open={openSections.category} className={styles.filterSection}>
-          <summary 
-            className={styles.filterHeader}
-            onClick={(e) => {
-              e.preventDefault();
-              toggleSection('category');
-            }}
-          >
-            <span style={{ display: 'flex', alignItems: 'center' }}>
-              <FiGrid style={{ marginRight: '8px' }} />
-              Category
-            </span>
-            <FiChevronRight className={styles.arrow} />
-          </summary>
-          <div className={styles.filterContent}>
-            {KNOWN_CATEGORIES.map(cat => (
-              <label key={cat.slug} className={styles.filterOption}>
-                <input
-                  type="radio"
-                  name="categoryFilter"
-                  checked={tempFilters.category === cat.slug}
-                  onChange={() => {
-                    updateTempFilter('category', 
-                      tempFilters.category === cat.slug ? '' : cat.slug
-                    )
-                  }}
-                />
-                {cat.name}
-              </label>
-            ))}
-          </div>
-        </details>
+  /* ── actions ──────────────────────────────────────────────── */
 
-        {/* Rating */}
-        <details open={openSections.rating} className={styles.filterSection}>
-          <summary 
-            className={styles.filterHeader}
-            onClick={(e) => {
-              e.preventDefault();
-              toggleSection('rating');
-            }}
-          >
-            <span style={{ display: 'flex', alignItems: 'center' }}>
-              <FiStar style={{ marginRight: '8px' }} />
-              Rating
-            </span>
-            <FiChevronRight className={styles.arrow} />
-          </summary>
-          <div className={styles.filterContent}>
-            {[4,3,2,1].map(thr => (
-              <label key={thr} className={styles.filterOption}>
-                <input
-                  type="radio"
-                  name="ratingFilter"
-                  checked={Number(tempFilters.ratingMin) === thr}
-                  onChange={() => {
-                    updateTempFilter('ratingMin', 
-                      Number(tempFilters.ratingMin) === thr ? '' : String(thr)
-                    )
-                  }}
-                />
-                {thr}+ stars
-              </label>
-            ))}
-          </div>
-        </details>
+  const savedIds = useMemo(
+    () => new Set(wishlistItems.map((w) => w.productId)),
+    [wishlistItems]
+  )
 
-        {/* Stock */}
-        <details open={openSections.stock} className={styles.filterSection}>
-          <summary 
-            className={styles.filterHeader}
-            onClick={(e) => {
-              e.preventDefault();
-              toggleSection('stock');
-            }}
-          >
-            <span style={{ display: 'flex', alignItems: 'center' }}>
-              <FiPackage style={{ marginRight: '8px' }} />
-              Stock
-            </span>
-            <FiChevronRight className={styles.arrow} />
-          </summary>
-          <div className={styles.filterContent}>
-            <label className={styles.filterOption}>
-              <input
-                type="checkbox"
-                checked={tempFilters.lowStockOnly}
-                onChange={e => {
-                  updateTempFilter('lowStockOnly', e.target.checked)
-                }}
-              />
-              Only low stock
-            </label>
-            <label className={styles.filterOption}>
-              <input
-                type="checkbox"
-                checked={tempFilters.inStockOnly}
-                onChange={e => {
-                  updateTempFilter('inStockOnly', e.target.checked)
-                }}
-              />
-              In stock only
-            </label>
-          </div>
-        </details>
+  async function toggleSave(product: Product) {
+    if (!user) {
+      router.push('/auth/login')
+      return
+    }
+    try {
+      if (savedIds.has(product.id)) await removeFromWishlist(product.id)
+      else await addToWishlist(product.id)
+    } catch {
+      toast.error('Could not update your saved items')
+    }
+  }
 
-      </>
-    );
-  };
+  async function addPeeked(product: Product) {
+    if (!user) {
+      router.push('/auth/login')
+      return
+    }
+    setAddingId(product.id)
+    try {
+      const ok = await addToCart(product.id, 1)
+      if (ok) setPeekId(null)
+    } finally {
+      setAddingId(null)
+    }
+  }
+
+  /* ── render ───────────────────────────────────────────────── */
 
   return (
-    <div className={styles.container}>
-      {/* Page header with title */}
-      <div className={`${styles.pageHeader} page-header`}>
-        <h1 className={styles.pageTitle}>{getCurrentCategoryName()}</h1>
-        {products.length > 0 && (
-          <p className={styles.resultCount}>{products.length} products</p>
+    <div className="min-h-screen bg-background pb-tabbar">
+      {/* One row of state. The title scrolls away; the rail below does not. */}
+      <div className="flex items-baseline justify-between gap-3 px-4 pb-3 pt-1">
+        <h1 className="text-[22px] font-semibold tracking-tight text-foreground">
+          {activeCategory ? activeCategory.name : 'All pieces'}
+        </h1>
+        {!loading && (
+          <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
+            {products.length} {products.length === 1 ? 'piece' : 'pieces'}
+          </span>
         )}
       </div>
 
-      {/* Sticky Filter/Sort Bar */}
-      <MobileFilterSortBar
-        onFilterClick={handleFilterOpen}
-        onSortClick={() => setIsSortOpen(true)}
-        currentSort={getCurrentSortName()}
-      />
-      
-      {/* Active filters display */}
-      {(currentCategory || currentTag || priceMin || priceMax || sortOrder || lowStockOnly || inStockOnly || ratingMin) && (
-        <div className={styles.mobileActiveFilters}>
-          {currentCategory && (
-            <div className={styles.mobileFilterTag}>
-              Category: {KNOWN_CATEGORIES.find(c => c.slug === currentCategory)?.name || currentCategory}
-              <button onClick={() => {
-                const qs = new URLSearchParams(searchParams.toString())
-                qs.delete('category')
-                router.replace(qs.toString() ? `/products?${qs}` : '/products')
-              }}>×</button>
-            </div>
-          )}
-          {currentTag && (
-            <div className={styles.mobileFilterTag}>
-              Tag: {currentTag}
-              <button onClick={() => {
-                const qs = new URLSearchParams(searchParams.toString())
-                qs.delete('usageTag')
-                router.replace(qs.toString() ? `/products?${qs}` : '/products')
-              }}>×</button>
-            </div>
-          )}
-          {inStockOnly && (
-            <div className={styles.mobileFilterTag}>
-              In Stock Only
-              <button onClick={() => {
-                const qs = new URLSearchParams(searchParams.toString())
-                qs.delete('inStock')
-                router.replace(qs.toString() ? `/products?${qs}` : '/products')
-              }}>×</button>
-            </div>
-          )}
-          {sortOrder && (
-            <div className={styles.mobileFilterTag}>
-              Sort: {sortOrder.replace('_', ' ')}
-              <button onClick={() => {
-                const qs = new URLSearchParams(searchParams.toString())
-                qs.delete('sort')
-                router.replace(qs.toString() ? `/products?${qs}` : '/products')
-              }}>×</button>
-            </div>
-          )}
-        </div>
-      )}
+      <div ref={sentinelRef} aria-hidden className="h-px" />
 
-      {loading ? (
-        <MobileProductsSkeleton />
-      ) : error ? (
-        <div className={styles.error}>
-          <p>Error: {error}</p>
-          <button 
-            onClick={() => router.refresh()}
-            className={styles.clearButton}
+      <div
+        className={cn(
+          'sticky top-0 z-30 border-b bg-background/95 backdrop-blur-md transition-colors duration-200',
+          'supports-[backdrop-filter]:bg-background/85',
+          stuck ? 'border-border' : 'border-transparent'
+        )}
+      >
+        {/* Category rail — the catalogue's navigation, one tap from any depth. */}
+        <div className="flex gap-2 overflow-x-auto px-4 py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <CategoryChip
+            label="All"
+            active={!currentCategory}
+            onClick={() => selectCategory(null)}
+          />
+          {categories.map((c) => (
+            <CategoryChip
+              key={c.id}
+              label={c.name}
+              active={currentCategory === c.slug}
+              onClick={() => selectCategory(c.slug)}
+            />
+          ))}
+        </div>
+
+        <div className="flex items-center gap-2 px-4 pb-2.5">
+          <button
+            type="button"
+            onClick={() => setSortOpen(true)}
+            className="inline-flex h-9 items-center gap-1.5 rounded-full border px-3 text-xs text-foreground transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            Try Again
+            <ArrowUpDown className="h-3.5 w-3.5" />
+            {sortLabel}
+          </button>
+          <button
+            type="button"
+            onClick={() => setFilterOpen(true)}
+            className="inline-flex h-9 items-center gap-1.5 rounded-full border px-3 text-xs text-foreground transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <SlidersHorizontal className="h-3.5 w-3.5" />
+            Filter
+            {activeFilters.length > 0 && (
+              <Badge className="ml-0.5 h-4 min-w-4 justify-center rounded-full px-1 text-[10px] tabular-nums">
+                {activeFilters.length}
+              </Badge>
+            )}
           </button>
         </div>
+
+        {/* What's applied, readable without opening anything. */}
+        {activeFilters.length > 0 && (
+          <div className="flex gap-1.5 overflow-x-auto px-4 pb-2.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {activeFilters.map((f) => (
+              <button
+                key={f.key}
+                type="button"
+                onClick={() => clearFilter(f.key)}
+                className="inline-flex h-7 shrink-0 items-center gap-1.5 rounded-full bg-secondary pl-3 pr-2 text-xs text-foreground"
+              >
+                {f.label}
+                <X className="h-3 w-3" />
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {error ? (
+        <div className="flex flex-col items-center gap-4 px-6 py-20 text-center">
+          <p className="text-sm text-muted-foreground">{error}</p>
+          <Button variant="outline" size="sm" onClick={() => router.refresh()}>
+            Try again
+          </Button>
+        </div>
+      ) : loading ? (
+        <GridSkeleton />
       ) : products.length === 0 ? (
-        <div className={styles.error}>
-          <p>No products found</p>
-          <button 
-            onClick={() => {
-              router.replace('/products')
-            }}
-            className={styles.clearButton}
-          >
-            Clear Filters
-          </button>
+        <div className="flex flex-col items-center gap-4 px-6 py-20 text-center">
+          <span className="flex h-14 w-14 items-center justify-center rounded-full bg-muted text-muted-foreground">
+            <ShoppingBag className="h-6 w-6" />
+          </span>
+          <div className="flex flex-col gap-1">
+            <p className="text-base font-medium text-foreground">Nothing here yet</p>
+            <p className="text-sm text-muted-foreground">
+              Try another category, or clear the filters you have on.
+            </p>
+          </div>
+          <Button variant="outline" size="sm" onClick={() => router.replace('/products')}>
+            Clear everything
+          </Button>
         </div>
       ) : (
-        <div className={styles.mainContent}>
-          <motion.div 
-            className={`${styles.list} products-container`}
-            variants={listVariants}
-            initial="hidden"
-            animate="visible"
-            // Removed key={currentPage} to prevent unmounting
-          >
-            {isPageChanging ? (
-              // Show skeleton during page transitions
-              <div className={styles.skeletonContainer}>
-                {[...Array(16)].map((_, index) => (
-                  <div key={`skeleton-${index}`} className={styles.skeletonCard}>
-                    <div className={styles.skeletonImage}></div>
-                    <div className={styles.skeletonContent}>
-                      <div className={styles.skeletonTitle}></div>
-                      <div className={styles.skeletonPrice}></div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <AnimatePresence mode="popLayout">
-                {products.map((product, index) => (
-                  <ProductCard
-                    key={product.id}
-                    product={product}
-                    formatPrice={formatPrice}
-                    onParticleTransition={handleParticleTransition}
-                  />
-                ))}
-              </AnimatePresence>
-            )}
-          </motion.div>
+        <>
+          <ul className="grid grid-cols-2 gap-x-2.5 gap-y-6 px-3.5 pb-2 pt-1">
+            {visible.map((product) => (
+              <ProductTile
+                key={product.id}
+                product={product}
+                saved={savedIds.has(product.id)}
+                onSave={() => toggleSave(product)}
+                onPeek={() => setPeekId(product.id)}
+              />
+            ))}
+          </ul>
 
-          {/* Enhanced Pagination Controls */}
-          {totalPages > 1 && (
-            <motion.div 
-              className={`${styles.paginationContainer} ${isPageChanging ? styles.loading : ''}`}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.5 }}
-            >
-              {/* Progress indicator */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.4 }}
+          {shown < products.length && (
+            <div className="px-4 pt-3.5">
+              <Button
+                variant="outline"
+                className="h-12 w-full rounded-xl"
+                onClick={() => setShown((n) => n + PAGE_SIZE)}
               >
-                <PaginationProgress 
-                  current={currentPage} 
-                  total={totalPages} 
-                  isLoading={isPageChanging} 
-                />
-              </motion.div>
-              
-              <motion.div 
-                className={styles.paginationInfo}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.5 }}
-              >
-                <span className={styles.paginationInfoText}>
-                  <FiZap className={styles.paginationIcon} />
-                  Page {currentPage} of {totalPages} • {startIndex + 1}-{Math.min(endIndex, totalProducts)} of {totalProducts} items
-                  {keyboardShortcutsEnabled && totalPages <= 9 && (
-                    <span className={styles.keyboardHint}>
-                      <FiClock size={10} /> Press {currentPage === totalPages ? '1' : (currentPage + 1)} for next
-                    </span>
-                  )}
+                Load more
+                <span className="ml-1 text-muted-foreground">
+                  ({products.length - shown} left)
                 </span>
-              </motion.div>
-              
-              {isPageChanging ? (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <PaginationSkeleton isTransitioning={true} />
-                </motion.div>
-              ) : (
-                <motion.div 
-                  className={styles.paginationControls}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.6 }}
-                >
-                  {/* Previous Button */}
-                  <motion.button
-                    onClick={handlePreviousPage}
-                    disabled={currentPage === 1 || isPageChanging}
-                    className={styles.paginationPrevNext}
-                    aria-label="Previous page"
-                    whileHover={{ scale: 1.05, y: -1 }}
-                    whileTap={{ scale: 0.95 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                  >
-                    <FiChevronLeft size={16} />
-                  </motion.button>
-                  
-                  {/* Page Numbers - Enhanced smart display logic */}
-                  <div className={styles.paginationNumbers}>
-                    {(() => {
-                      const pages = []
-                      
-                      // For 5 or fewer pages, show all
-                      if (totalPages <= 5) {
-                        for (let i = 1; i <= totalPages; i++) {
-                          pages.push(
-                            <motion.button
-                              key={i}
-                              onClick={() => handlePageSelect(i)}
-                              disabled={isPageChanging}
-                              className={`${styles.pageNumber} ${i === currentPage ? styles.pageNumberActive : ''}`}
-                              aria-label={`Page ${i}`}
-                              aria-current={i === currentPage ? 'page' : undefined}
-                              whileHover={{ scale: 1.05, y: -2 }}
-                              whileTap={{ scale: 0.95 }}
-                              initial={{ opacity: 0, scale: 0.8 }}
-                              animate={{ 
-                                opacity: 1, 
-                                scale: i === currentPage ? 1.1 : 1,
-                                y: i === currentPage ? -2 : 0
-                              }}
-                              transition={{ 
-                                type: "spring", 
-                                stiffness: 400, 
-                                damping: 25,
-                                delay: i * 0.05
-                              }}
-                            >
-                              {i}
-                            </motion.button>
-                          )
-                        }
-                      } else {
-                        // For more than 5 pages, show smart pagination
-                        
-                        // Always show first page
-                        pages.push(
-                          <motion.button
-                            key={1}
-                            onClick={() => handlePageSelect(1)}
-                            disabled={isPageChanging}
-                            className={`${styles.pageNumber} ${1 === currentPage ? styles.pageNumberActive : ''}`}
-                            aria-label="Page 1"
-                            aria-current={1 === currentPage ? 'page' : undefined}
-                            whileHover={{ scale: 1.05, y: -2 }}
-                            whileTap={{ scale: 0.95 }}
-                            initial={{ opacity: 0, scale: 0.8 }}
-                            animate={{ 
-                              opacity: 1, 
-                              scale: 1 === currentPage ? 1.1 : 1,
-                              y: 1 === currentPage ? -2 : 0
-                            }}
-                            transition={{ 
-                              type: "spring", 
-                              stiffness: 400, 
-                              damping: 25
-                            }}
-                          >
-                            1
-                          </motion.button>
-                        )
-                        
-                        // Show dots if there's a gap between 1 and the current range
-                        if (currentPage > 3) {
-                          pages.push(
-                            <motion.span 
-                              key="dots1" 
-                              className={styles.paginationDots}
-                              initial={{ opacity: 0 }}
-                              animate={{ opacity: 1 }}
-                              transition={{ delay: 0.1 }}
-                            >
-                              …
-                            </motion.span>
-                          )
-                        }
-                        
-                        // Show current page and neighbors (excluding first and last which are handled separately)
-                        const start = Math.max(2, currentPage - 1)
-                        const end = Math.min(totalPages - 1, currentPage + 1)
-                        
-                        for (let i = start; i <= end; i++) {
-                          // Skip first and last page as they're handled separately
-                          if (i !== 1 && i !== totalPages) {
-                            pages.push(
-                              <motion.button
-                                key={i}
-                                onClick={() => handlePageSelect(i)}
-                                disabled={isPageChanging}
-                                className={`${styles.pageNumber} ${i === currentPage ? styles.pageNumberActive : ''}`}
-                                aria-label={`Page ${i}`}
-                                aria-current={i === currentPage ? 'page' : undefined}
-                                whileHover={{ scale: 1.05, y: -2 }}
-                                whileTap={{ scale: 0.95 }}
-                                initial={{ opacity: 0, scale: 0.8 }}
-                                animate={{ 
-                                  opacity: 1, 
-                                  scale: i === currentPage ? 1.1 : 1,
-                                  y: i === currentPage ? -2 : 0
-                                }}
-                                transition={{ 
-                                  type: "spring", 
-                                  stiffness: 400, 
-                                  damping: 25,
-                                  delay: (i - start) * 0.05
-                                }}
-                              >
-                                {i}
-                              </motion.button>
-                            )
-                          }
-                        }
-                        
-                        // Show dots if there's a gap between current range and last page
-                        if (currentPage < totalPages - 2) {
-                          pages.push(
-                            <motion.span 
-                              key="dots2" 
-                              className={styles.paginationDots}
-                              initial={{ opacity: 0 }}
-                              animate={{ opacity: 1 }}
-                              transition={{ delay: 0.2 }}
-                            >
-                              …
-                            </motion.span>
-                          )
-                        }
-                        
-                        // Always show last page (if it's different from first page)
-                        if (totalPages > 1) {
-                          pages.push(
-                            <motion.button
-                              key={totalPages}
-                              onClick={() => handlePageSelect(totalPages)}
-                              disabled={isPageChanging}
-                              className={`${styles.pageNumber} ${totalPages === currentPage ? styles.pageNumberActive : ''}`}
-                              aria-label={`Page ${totalPages}`}
-                              aria-current={totalPages === currentPage ? 'page' : undefined}
-                              whileHover={{ scale: 1.05, y: -2 }}
-                              whileTap={{ scale: 0.95 }}
-                              initial={{ opacity: 0, scale: 0.8 }}
-                              animate={{ 
-                                opacity: 1, 
-                                scale: totalPages === currentPage ? 1.1 : 1,
-                                y: totalPages === currentPage ? -2 : 0
-                              }}
-                              transition={{ 
-                                type: "spring", 
-                                stiffness: 400, 
-                                damping: 25,
-                                delay: 0.3
-                              }}
-                            >
-                              {totalPages}
-                            </motion.button>
-                          )
-                        }
-                      }
-                      
-                      return pages
-                    })()}
-                  </div>
-                  
-                  {/* Next Button */}
-                  <motion.button
-                    onClick={handleNextPage}
-                    disabled={currentPage === totalPages || isPageChanging}
-                    className={styles.paginationPrevNext}
-                    aria-label="Next page"
-                    whileHover={{ scale: 1.05, y: -1 }}
-                    whileTap={{ scale: 0.95 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                  >
-                    <FiChevronRight size={16} />
-                  </motion.button>
-                </motion.div>
-              )}
-            </motion.div>
+              </Button>
+            </div>
           )}
-        </div>
+        </>
       )}
 
-      {/* Mobile Filter Drawer */}
-      <AnimatePresence>
-        {isMobileFilterOpen && (
-          <motion.div 
-            className={styles.mobileFilterOverlay}
-            onClick={() => setIsMobileFilterOpen(false)}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-          />
-        )}
-      </AnimatePresence>
-      
-      <motion.div 
-        className={`${styles.mobileFilterDrawer} ${isMobileFilterOpen ? styles.mobileFilterDrawerOpen : ''}`}
-        onClick={(e) => e.stopPropagation()}
-        initial={{ x: "100%" }}
-        animate={{ x: isMobileFilterOpen ? "0%" : "100%" }}
-        transition={{ 
-          type: "spring", 
-          stiffness: 300, 
-          damping: 30,
-          mass: 0.8
-        }}
-      >
-        <AnimatePresence>
-          {isMobileFilterOpen && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ delay: 0.1, duration: 0.3 }}
-            >
-              <motion.div 
-                className={styles.mobileFilterHeader}
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-              >
-                <h2>Filter Products</h2>
-                <motion.button 
-                  className={styles.mobileFilterCloseButton}
-                  onClick={() => setIsMobileFilterOpen(false)}
-                  whileHover={{ scale: 1.1, rotate: 90 }}
-                  whileTap={{ scale: 0.9 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
+      {/* ── Sort ────────────────────────────────────────────── */}
+      <Drawer open={sortOpen} onOpenChange={setSortOpen}>
+        <DrawerContent>
+          <DrawerHeader>
+            <DrawerTitle>Sort by</DrawerTitle>
+          </DrawerHeader>
+          <div className="px-2 pb-4">
+            {SORTS.map((s) => {
+              const on = (sortOrder || '') === s.value
+              return (
+                <button
+                  key={s.value || 'default'}
+                  type="button"
+                  role="radio"
+                  aria-checked={on}
+                  onClick={() => selectSort(s.value)}
+                  className="flex h-12 w-full items-center gap-3 rounded-lg px-3 text-left text-sm transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
-                  <FiX size={20} />
-                </motion.button>
-              </motion.div>
-              
-              <motion.div 
-                className={styles.mobileFilterContent}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.3, duration: 0.4 }}
-              >
-                {loading ? (
-                  <div className={styles.filterSkeletonContainer}>
-                    {[...Array(3)].map((_, index) => (
-                      <motion.div 
-                        key={index} 
-                        className={styles.filterSectionSkeleton}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.1 }}
-                      >
-                        <div className={styles.filterHeaderSkeleton}>
-                          <div className={styles.filterTitleSkeleton}></div>
-                          <div className={styles.filterArrowSkeleton}></div>
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
-                ) : (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.4 }}
+                  <span
+                    className={cn(
+                      'flex h-[19px] w-[19px] shrink-0 items-center justify-center rounded-full border-[1.5px]',
+                      on ? 'border-foreground' : 'border-muted-foreground/40'
+                    )}
                   >
-                    {renderFilters()}
-                  </motion.div>
-                )}
-              </motion.div>
-              
-              <motion.div 
-                className={styles.mobileFilterActions}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
-              >
-                {loading ? (
-                  <div style={{ display: 'flex', gap: '12px' }}>
-                    {[80, 100].map((width, index) => (
-                      <motion.div 
-                        key={index}
-                        style={{
-                          height: '40px',
-                          width: `${width}px`,
-                          background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
-                          backgroundSize: '200% 100%',
-                          animation: 'shimmer 2s infinite',
-                          borderRadius: '6px'
-                        }}
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: index * 0.1 }}
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <>
-                    <motion.button 
-                      className={styles.clearFilterButton}
-                      onClick={clearAllFilters}
-                      whileHover={{ scale: 1.02, y: -1 }}
-                      whileTap={{ scale: 0.98 }}
-                      transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                    >
-                      Clear All
-                    </motion.button>
-                    <motion.button 
-                      className={styles.applyFilterButton}
-                      onClick={applyFilters}
-                      whileHover={{ scale: 1.02, y: -1 }}
-                      whileTap={{ scale: 0.98 }}
-                      transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                    >
-                      Apply
-                    </motion.button>
-                  </>
-                )}
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.div>
-      
-      {/* Sort Bottom Sheet */}
-      <AnimatePresence>
-        {isSortOpen && (
-          <motion.div 
-            className={styles.sortOverlay}
-            onClick={() => setIsSortOpen(false)}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-          />
-        )}
-      </AnimatePresence>
-      
-      <motion.div 
-        className={`${styles.sortModal} ${isSortOpen ? styles.sortModalVisible : ''}`}
-        initial={{ y: "100%" }}
-        animate={{ y: isSortOpen ? "0%" : "100%" }}
-        transition={{ 
-          type: "spring", 
-          stiffness: 300, 
-          damping: 30,
-          mass: 0.8
+                    {on && <span className="h-[9px] w-[9px] rounded-full bg-foreground" />}
+                  </span>
+                  {s.label}
+                </button>
+              )
+            })}
+          </div>
+        </DrawerContent>
+      </Drawer>
+
+      {/* ── Filter ──────────────────────────────────────────── */}
+      <FilterDrawer
+        open={filterOpen}
+        onOpenChange={setFilterOpen}
+        products={products}
+        inStockOnly={inStockOnly}
+        priceBandKey={priceBand?.key ?? null}
+        ratingMin={ratingMin}
+        onApply={(next) => {
+          push((qs) => {
+            next.inStock ? qs.set('inStock', 'true') : qs.delete('inStock')
+            const band = PRICE_BANDS.find((b) => b.key === next.priceBand)
+            if (band) {
+              band.min ? qs.set('priceMin', band.min) : qs.delete('priceMin')
+              band.max ? qs.set('priceMax', band.max) : qs.delete('priceMax')
+            } else {
+              qs.delete('priceMin')
+              qs.delete('priceMax')
+            }
+            next.ratingMin ? qs.set('ratingMin', next.ratingMin) : qs.delete('ratingMin')
+          })
+          setFilterOpen(false)
         }}
-      >
-        <AnimatePresence>
-          {isSortOpen && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ delay: 0.1, duration: 0.3 }}
-            >
-              <motion.div 
-                className={styles.sortHeader}
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-              >
-                <h3>SORT BY</h3>
-              </motion.div>
-              
-              <motion.div 
-                className={styles.sortOptions}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.3 }}
-              >
-                {[
-                  { value: '', label: 'Recommended', active: sortOrder === '' || sortOrder === 'newest' },
-                  { value: 'oldest', label: 'Oldest', active: sortOrder === 'oldest' },
-                  { value: 'price_desc', label: 'Price High to Low', active: sortOrder === 'price_desc' },
-                  { value: 'price_asc', label: 'Price Low to High', active: sortOrder === 'price_asc' }
-                ].map((option, index) => (
-                  <motion.button 
-                    key={option.value}
-                    className={`${styles.sortOption} ${option.active ? styles.active : ''}`}
-                    onClick={() => handleSortSelect(option.value)}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.3 + (index * 0.05) }}
-                    whileHover={{ backgroundColor: '#f8f8f8', x: 5 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    <motion.div 
-                      className={`${styles.sortRadio} ${option.active ? styles.active : ''}`}
-                      whileHover={{ scale: 1.1 }}
-                      animate={{ 
-                        borderColor: option.active ? '#000' : '#ddd',
-                        scale: option.active ? 1.1 : 1
-                      }}
-                      transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                    />
-                    <span className={styles.sortOptionText}>{option.label}</span>
-                  </motion.button>
-                ))}
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.div>
-      
-      {/* Floating Close Button for Sort Modal */}
-      <AnimatePresence>
-        {isSortOpen && (
-          <motion.button 
-            onClick={() => setIsSortOpen(false)} 
-            className={styles.closeSortButton}
-            initial={{ opacity: 0, scale: 0.5, y: 50 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.5, y: 50 }}
-            transition={{ 
-              type: "spring", 
-              stiffness: 400, 
-              damping: 25,
-              delay: 0.2
-            }}
-            whileHover={{ scale: 1.1, rotate: 90 }}
-            whileTap={{ scale: 0.9 }}
-          >
-            <FiX size={24} />
-          </motion.button>
-        )}
-      </AnimatePresence>
-      
-      {/* Optimized Particle Transition Overlay */}
-      <OptimizedProductTransition 
-        isActive={isParticleTransitionActive}
-        onComplete={() => setIsParticleTransitionActive(false)}
       />
+
+      {/* ── Peek ────────────────────────────────────────────── */}
+      <Drawer open={peekId !== null} onOpenChange={(o) => !o && setPeekId(null)}>
+        <DrawerContent>
+          {peeked && (
+            <>
+              <DrawerHeader className="sr-only">
+                <DrawerTitle>{peeked.name}</DrawerTitle>
+              </DrawerHeader>
+              <div className="flex gap-3.5 px-4 pb-4 pt-3">
+                <Link
+                  href={`/products/${peeked.id}`}
+                  className="aspect-[4/5] w-[104px] shrink-0 overflow-hidden rounded-[10px] bg-muted"
+                >
+                  {peeked.imageUrls[0] ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={peeked.imageUrls[0]}
+                      alt={peeked.name}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : null}
+                </Link>
+                <div className="min-w-0 flex-1">
+                  {peeked.category && (
+                    <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                      {peeked.category.name}
+                    </p>
+                  )}
+                  <p className="mt-1.5 font-serif text-[19px] leading-tight text-foreground">
+                    {peeked.name}
+                  </p>
+                  <p className="mt-2 text-[17px] font-semibold tabular-nums text-foreground">
+                    {formatPrice(peeked.price)}
+                  </p>
+                  <div className="mt-2.5 flex flex-wrap gap-1.5">
+                    {firstSpecs(peeked.specifications, 2).map((s) => (
+                      <span
+                        key={s}
+                        className="rounded-full bg-secondary px-2 py-0.5 text-[11px] text-muted-foreground"
+                      >
+                        {s}
+                      </span>
+                    ))}
+                    {peeked.stockQuantity > 0 && peeked.stockQuantity <= 5 && (
+                      <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-[11px] text-amber-700 dark:text-amber-500">
+                        Only {peeked.stockQuantity} left
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="px-4 pb-1">
+                <Button asChild variant="outline" className="h-11 w-full rounded-[10px]">
+                  <Link href={`/products/${peeked.id}`}>See full details</Link>
+                </Button>
+              </div>
+
+              <DrawerFooter>
+                <Button
+                  variant="outline"
+                  className="h-12 flex-none rounded-xl px-5"
+                  onClick={() => setPeekId(null)}
+                >
+                  Close
+                </Button>
+                <Button
+                  className="h-12 flex-1 rounded-xl"
+                  disabled={peeked.stockQuantity <= 0 || addingId === peeked.id}
+                  onClick={() => addPeeked(peeked)}
+                >
+                  {peeked.stockQuantity <= 0
+                    ? 'Sold out'
+                    : addingId === peeked.id
+                    ? 'Adding…'
+                    : 'Add to bag'}
+                </Button>
+              </DrawerFooter>
+            </>
+          )}
+        </DrawerContent>
+      </Drawer>
     </div>
-  );
-} 
+  )
+}
+
+/* -------------------------------------------------------------- */
+/* PIECES                                                          */
+/* -------------------------------------------------------------- */
+
+function CategoryChip({
+  label,
+  active,
+  onClick,
+}: {
+  label: string
+  active: boolean
+  onClick: () => void
+}) {
+  return (
+    <button
+      type="button"
+      aria-pressed={active}
+      onClick={onClick}
+      className={cn(
+        'h-[34px] shrink-0 whitespace-nowrap rounded-full border px-3.5 text-[13px] font-medium transition-colors duration-200',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+        active
+          ? 'border-foreground bg-foreground text-background'
+          : 'border-border bg-background text-foreground hover:bg-secondary'
+      )}
+    >
+      {label}
+    </button>
+  )
+}
+
+function ProductTile({
+  product,
+  saved,
+  onSave,
+  onPeek,
+}: {
+  product: Product
+  saved: boolean
+  onSave: () => void
+  onPeek: () => void
+}) {
+  const isOut = product.stockQuantity <= 0
+  const isLow = !isOut && product.stockQuantity <= 5
+  const image = product.imageUrls[0]
+
+  return (
+    <li className="group/tile flex min-w-0 flex-col gap-1.5">
+      <div className="relative aspect-[4/5] overflow-hidden rounded-xl bg-muted">
+        <Link href={`/products/${product.id}`} className="absolute inset-0">
+          {image ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={image}
+              alt={product.name}
+              loading="lazy"
+              className={cn(
+                'h-full w-full object-cover transition-transform duration-300 ease-out',
+                'group-active/tile:scale-[0.98]',
+                isOut && 'grayscale opacity-50'
+              )}
+            />
+          ) : null}
+          <span className="sr-only">{product.name}</span>
+        </Link>
+
+        <button
+          type="button"
+          aria-pressed={saved}
+          aria-label={saved ? `Remove ${product.name} from saved` : `Save ${product.name}`}
+          onClick={onSave}
+          className="absolute right-1 top-1 z-10 grid h-9 w-9 place-items-center"
+        >
+          <span
+            className={cn(
+              'grid h-[26px] w-[26px] place-items-center rounded-full shadow-sm transition-transform duration-200',
+              'active:scale-90',
+              saved ? 'bg-foreground text-background' : 'bg-background/90 text-foreground'
+            )}
+          >
+            <Heart className={cn('h-3.5 w-3.5', saved && 'fill-current')} />
+          </span>
+        </button>
+
+        {isOut ? (
+          <span className="absolute bottom-1.5 left-1.5 rounded-full bg-background/95 px-2 py-0.5 text-[10.5px] font-medium shadow-sm">
+            Sold out
+          </span>
+        ) : (
+          <button
+            type="button"
+            onClick={onPeek}
+            className="absolute bottom-1.5 right-1.5 z-10 inline-flex h-7 items-center gap-1 rounded-full bg-background/95 px-2.5 text-[11.5px] font-semibold text-foreground shadow-sm transition-transform duration-200 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <Maximize2 className="h-3 w-3" />
+            Peek
+          </button>
+        )}
+      </div>
+
+      <Link
+        href={`/products/${product.id}`}
+        className="line-clamp-2 min-h-[2.7em] text-[13.5px] font-medium leading-snug text-foreground"
+      >
+        {product.name}
+      </Link>
+
+      <p className="truncate text-[13.5px] font-semibold tabular-nums text-foreground">
+        {formatPrice(product.price)}
+        {isLow && (
+          <span className="font-normal text-amber-600 dark:text-amber-500">
+            {' '}
+            · {product.stockQuantity} left
+          </span>
+        )}
+      </p>
+    </li>
+  )
+}
+
+function GridSkeleton() {
+  return (
+    <ul className="grid grid-cols-2 gap-x-2.5 gap-y-6 px-3.5 pb-2 pt-1">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <li key={i} className="flex flex-col gap-1.5">
+          <Skeleton className="aspect-[4/5] w-full rounded-xl" />
+          <Skeleton className="h-3 w-4/5" />
+          <Skeleton className="h-3 w-3/5" />
+          <Skeleton className="h-3 w-2/5" />
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+function FilterDrawer({
+  open,
+  onOpenChange,
+  products,
+  inStockOnly,
+  priceBandKey,
+  ratingMin,
+  onApply,
+}: {
+  open: boolean
+  onOpenChange: (o: boolean) => void
+  products: Product[]
+  inStockOnly: boolean
+  priceBandKey: string | null
+  ratingMin: string
+  onApply: (next: { inStock: boolean; priceBand: string | null; ratingMin: string }) => void
+}) {
+  const [inStock, setInStock] = useState(inStockOnly)
+  const [band, setBand] = useState<string | null>(priceBandKey)
+  const [rating, setRating] = useState(ratingMin)
+
+  // Re-seed from the URL each time it opens, so a cancelled edit doesn't stick.
+  useEffect(() => {
+    if (!open) return
+    setInStock(inStockOnly)
+    setBand(priceBandKey)
+    setRating(ratingMin)
+  }, [open, inStockOnly, priceBandKey, ratingMin])
+
+  /*
+   * Counting against the loaded set gives the button an honest number for the
+   * current category without a round trip. It is a preview, and it is exact
+   * whenever the whole category is already in memory.
+   */
+  const count = useMemo(() => {
+    const chosen = PRICE_BANDS.find((b) => b.key === band)
+    return products.filter((p) => {
+      if (inStock && p.stockQuantity <= 0) return false
+      if (chosen) {
+        if (chosen.min && p.price < Number(chosen.min)) return false
+        if (chosen.max && p.price > Number(chosen.max)) return false
+      }
+      if (rating && (p.avgRating ?? 0) < Number(rating)) return false
+      return true
+    }).length
+  }, [products, inStock, band, rating])
+
+  return (
+    <Drawer open={open} onOpenChange={onOpenChange}>
+      <DrawerContent>
+        <DrawerHeader>
+          <DrawerTitle>Filter</DrawerTitle>
+        </DrawerHeader>
+
+        <div className="overflow-y-auto px-2 pb-2">
+          <p className="px-3 pb-1 pt-1 text-[11px] uppercase tracking-wider text-muted-foreground">
+            Availability
+          </p>
+          <button
+            type="button"
+            role="checkbox"
+            aria-checked={inStock}
+            onClick={() => setInStock((v) => !v)}
+            className="flex h-12 w-full items-center gap-3 rounded-lg px-3 text-left text-sm transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <span
+              className={cn(
+                'flex h-[19px] w-[19px] shrink-0 items-center justify-center rounded-[6px] border-[1.5px] transition-colors',
+                inStock ? 'border-foreground bg-foreground' : 'border-muted-foreground/40'
+              )}
+            >
+              {inStock && <Check className="h-3 w-3 text-background" strokeWidth={3} />}
+            </span>
+            In stock only
+          </button>
+
+          <p className="px-3 pb-1 pt-3 text-[11px] uppercase tracking-wider text-muted-foreground">
+            Price
+          </p>
+          {PRICE_BANDS.map((b) => {
+            const on = band === b.key
+            return (
+              <button
+                key={b.key}
+                type="button"
+                role="radio"
+                aria-checked={on}
+                onClick={() => setBand(on ? null : b.key)}
+                className="flex h-12 w-full items-center gap-3 rounded-lg px-3 text-left text-sm transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <span
+                  className={cn(
+                    'flex h-[19px] w-[19px] shrink-0 items-center justify-center rounded-full border-[1.5px]',
+                    on ? 'border-foreground' : 'border-muted-foreground/40'
+                  )}
+                >
+                  {on && <span className="h-[9px] w-[9px] rounded-full bg-foreground" />}
+                </span>
+                {b.label}
+              </button>
+            )
+          })}
+
+          <p className="px-3 pb-1 pt-3 text-[11px] uppercase tracking-wider text-muted-foreground">
+            Rating
+          </p>
+          {['4', '3'].map((r) => {
+            const on = rating === r
+            return (
+              <button
+                key={r}
+                type="button"
+                role="radio"
+                aria-checked={on}
+                onClick={() => setRating(on ? '' : r)}
+                className="flex h-12 w-full items-center gap-3 rounded-lg px-3 text-left text-sm transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <span
+                  className={cn(
+                    'flex h-[19px] w-[19px] shrink-0 items-center justify-center rounded-full border-[1.5px]',
+                    on ? 'border-foreground' : 'border-muted-foreground/40'
+                  )}
+                >
+                  {on && <span className="h-[9px] w-[9px] rounded-full bg-foreground" />}
+                </span>
+                {r}+ stars
+              </button>
+            )
+          })}
+        </div>
+
+        <DrawerFooter>
+          <Button
+            variant="outline"
+            className="h-12 flex-none rounded-xl px-5"
+            onClick={() => {
+              setInStock(false)
+              setBand(null)
+              setRating('')
+            }}
+          >
+            Clear
+          </Button>
+          <Button
+            className="h-12 flex-1 rounded-xl"
+            onClick={() => onApply({ inStock, priceBand: band, ratingMin: rating })}
+          >
+            Show {count} {count === 1 ? 'piece' : 'pieces'}
+          </Button>
+        </DrawerFooter>
+      </DrawerContent>
+    </Drawer>
+  )
+}
