@@ -7,7 +7,7 @@ import { Search, Heart, ShoppingCart, ArrowUpRight } from "lucide-react"
 
 import { useAuth } from "../contexts/AuthContext"
 import LoadingSpinner from "../components/LoadingSpinner"
-import SearchModal from "../components/SearchModal"
+import { CommandPalette } from "../components/mobile/CommandPalette"
 import { SidebarNav } from "./_components/SidebarNav"
 import { MobileHeader } from "./_components/MobileHeader"
 import { cn } from "@/lib/utils"
@@ -133,7 +133,7 @@ export default function DashboardLayout({
               aria-label="Open search"
             >
               <Search className="h-4 w-4" />
-              <span>Search products…</span>
+              <span>Search pages, actions, products…</span>
               <kbd className="ml-auto hidden items-center rounded border bg-background px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground xl:inline-flex">
                 ⌘K
               </kbd>
@@ -174,7 +174,12 @@ export default function DashboardLayout({
         </div>
       </main>
 
-      <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
+      {/*
+        The dashboard keeps a navigation palette rather than the storefront's
+        products-only search: "Coupons" is exactly what an admin opens ⌘K to
+        find, and it returns products underneath the pages anyway.
+      */}
+      <CommandPalette open={searchOpen} onOpenChange={setSearchOpen} />
     </div>
   )
 }

@@ -34,6 +34,8 @@ export async function GET(request: Request) {
     const sortParam = url.searchParams.get('sort')?.trim() || undefined
     const inStockParam = url.searchParams.get('inStock') === 'true'
     const idsParam = url.searchParams.get('ids')?.trim() || undefined
+    const fieldsParam = url.searchParams.get('fields')?.trim() || undefined
+    const limitParam = url.searchParams.get('limit')?.trim() || undefined
 
     /*
      * Batched stock lookup. The wishlist needs stockQuantity for every saved
@@ -97,6 +99,41 @@ export async function GET(request: Request) {
         const parsedMax = Number(priceMax)
         if (Number.isFinite(parsedMax) && parsedMax >= 0) (whereClause.price as any).lte = parsedMax
       }
+    }
+
+    /*
+     * Search index projection. Placed after the where clause is complete, so
+     * category/price/stock filters still apply if a caller passes them.
+     *
+     * The storefront search fetches the catalogue once per session and matches
+     * it in memory. It was asking for `?limit=200` — a parameter that did not
+     * exist — so it received every active product with its full description,
+     * plus a groupBy across every review for ratings it never displayed. This
+     * returns only what a result row and its preview need, and skips the
+     * ratings round trip entirely.
+     */
+    if (fieldsParam === 'search') {
+      const requested = Number(limitParam)
+      const take = Math.min(Number.isFinite(requested) && requested > 0 ? requested : 500, 1000)
+      const rows = await prisma.product.findMany({
+        where: whereClause,
+        orderBy: { createdAt: 'desc' },
+        take,
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          shortDesc: true,
+          price: true,
+          currency: true,
+          imageUrls: true,
+          stockQuantity: true,
+          createdAt: true,
+          usageTags: true,
+          category: { select: { id: true, name: true, slug: true } },
+        },
+      })
+      return NextResponse.json({ products: rows })
     }
 
     // 4) Query Prisma with whereClause and dynamic orderBy

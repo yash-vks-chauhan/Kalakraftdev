@@ -10,7 +10,7 @@ import { Heart, ArrowLeft, Share, Save, Search } from 'lucide-react'
 import { useMobileMenu } from '../contexts/MobileMenuContext'
 import { getImageUrl } from '../../lib/cloudinaryImages'
 import { cn } from '@/lib/utils'
-import { CommandPalette } from './mobile/CommandPalette'
+import { ProductSearch } from './search/ProductSearch'
 import { AccountButton } from './mobile/AccountSheet'
 import styles from './MobileLayout.module.css'
 
@@ -614,7 +614,12 @@ export default function MobileLayout({ children, onSwitchToDesktop }: MobileLayo
       </header>
       )}
 
-      <CommandPalette open={searchOpen} onOpenChange={setSearchOpen} />
+      {/*
+        The storefront searches products, nothing else. This used to open the
+        dashboard's command palette, so tapping "Search clocks, trays,
+        rangoli…" on the homepage offered you Sign out.
+      */}
+      <ProductSearch open={searchOpen} onOpenChange={setSearchOpen} />
 
       {/* Main Content Area */}
       <main className={`${

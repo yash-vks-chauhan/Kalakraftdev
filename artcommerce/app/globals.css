@@ -152,6 +152,21 @@
   }
 }
 
+/* Content swap inside the search panel: the preview pane when you arrow to
+   another piece, and the result grid when the query changes. Keyed by React,
+   so it replays on every change. There is no tailwindcss-animate here — the
+   same reason sheet.tsx and drawer.tsx hand-roll their transitions. */
+@keyframes kkFadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: none; }
+}
+.kk-fade {
+  animation: kkFadeIn 200ms cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .kk-fade { animation: none; }
+}
+
 /* Safe-area helpers — app/layout.tsx sets viewport-fit=cover, so without
    these the dashboard runs under the notch and the home indicator. */
 .pt-safe {

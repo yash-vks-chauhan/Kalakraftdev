@@ -9,7 +9,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { useCart } from '../contexts/CartContext'
 import { useWishlist } from '../contexts/WishlistContext'
 import { Search as SearchIcon, Menu, X, User, LogOut, Grid, ShoppingBag, Heart, ShoppingCart, HelpCircle, Filter as FilterIcon, ChevronDown } from 'lucide-react'
-import SearchModal from './SearchModal'
+import { ProductSearch } from './search/ProductSearch'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import styles from './Navbar.module.css'
@@ -257,9 +257,6 @@ export default function Navbar() {
     setSearchOpen(true)
   }
 
-  const handleSearchClose = (instant = false) => {
-    setSearchOpen(false)
-  }
 
   return (
     <>
@@ -511,10 +508,7 @@ export default function Navbar() {
         </div>
       </nav>
 
-            <SearchModal
-        open={searchOpen}
-        onClose={handleSearchClose}
-      />
+      <ProductSearch open={searchOpen} onOpenChange={setSearchOpen} />
 
       {/* Mobile Menu */}
       <div className={`${styles.mobileMenuWrapper} ${isMobileMenuOpen ? styles.mobileMenuWrapperOpen : ''}`}>

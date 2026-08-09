@@ -113,12 +113,11 @@ export const LazyMobileMenuPanel = BundleOptimizer.createLazy({
   preload: false,
 });
 
-export const LazyMobileSearchModal = BundleOptimizer.createLazy({
-  loader: () => import('./MobileSearchModal'),
-  fallback: FallbackComponents.Search,
-  chunkName: 'mobile-search',
-  preload: false,
-});
+/*
+ * LazyMobileSearchModal used to sit here. Its component was never imported by
+ * anything — this registry entry was its only reference — and the storefront
+ * search now lives in components/search/ProductSearch.
+ */
 
 export const LazyMobileFilterSortBar = BundleOptimizer.createLazy({
   loader: () => import('./MobileFilterSortBar'),
@@ -290,7 +289,6 @@ export const LazyComponents = {
   
   // Mobile
   MobileMenuPanel: LazyMobileMenuPanel,
-  MobileSearchModal: LazyMobileSearchModal,
   MobileFilterSortBar: LazyMobileFilterSortBar,
 };
 
