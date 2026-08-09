@@ -8,12 +8,6 @@ import { ArrowRight, ChevronLeft, PackageX, Search } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog"
 import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerTitle,
-} from "@/components/ui/drawer"
-import {
   parseSearchQuery,
   removeChipFromQuery,
   searchHref,
@@ -197,39 +191,69 @@ export function ProductSearch({ open, onOpenChange }: ProductSearchProps) {
     close,
   }
 
+  /*
+   * Focus after the panel has landed, not during.
+   *
+   * Focusing the field inside onOpenAutoFocus raises the on-screen keyboard
+   * while the enter transition is still running, so the viewport resizes
+   * mid-animation and the whole thing judders. Radix's default focus is
+   * suppressed and the field is focused once the transition has finished.
+   */
+  const focusFieldWhenSettled = useCallback((event: Event) => {
+    event.preventDefault()
+    const root = event.currentTarget as HTMLElement | null
+    if (!root) return
+    const settle = () => root.querySelector<HTMLInputElement>("input")?.focus()
+    root.addEventListener("transitionend", settle, { once: true })
+    // transitionend never fires under prefers-reduced-motion.
+    window.setTimeout(settle, 220)
+  }, [])
+
+  const a11y = (
+    <>
+      <DialogTitle className="sr-only">Search pieces</DialogTitle>
+      <DialogDescription className="sr-only">
+        Search the catalogue by name, category, mood, language or price.
+      </DialogDescription>
+    </>
+  )
+
   if (isDesktop) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent
           showClose={false}
           className="dashboard-shell flex h-[580px] max-h-[86vh] w-[calc(100vw-2rem)] max-w-[720px] flex-col overflow-hidden p-0"
-          onOpenAutoFocus={(event) => {
-            // Focus the field, not the dialog, so you can type immediately.
-            event.preventDefault()
-            const root = event.currentTarget as HTMLElement | null
-            root?.querySelector<HTMLInputElement>("input")?.focus()
-          }}
+          onOpenAutoFocus={focusFieldWhenSettled}
         >
-          <DialogTitle className="sr-only">Search pieces</DialogTitle>
-          <DialogDescription className="sr-only">
-            Search the catalogue by name, category, mood, language or price.
-          </DialogDescription>
+          {a11y}
           <DesktopLayout {...shared} />
         </DialogContent>
       </Dialog>
     )
   }
 
+  /*
+   * Mobile is a full page, not a sheet.
+   *
+   * It was a 94vh vaul drawer: rounded corners, a drag handle and a strip of
+   * the homepage showing behind it, which reads as something you can flick
+   * away — and vaul's drag tracking and body-position juggling were running
+   * underneath a surface that never needed either. A plain full-screen dialog
+   * has none of that machinery to stutter.
+   */
   return (
-    <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent className="dashboard-shell flex h-[94vh] max-h-[94vh] flex-col gap-0 p-0">
-        <DrawerTitle className="sr-only">Search pieces</DrawerTitle>
-        <DrawerDescription className="sr-only">
-          Search the catalogue by name, category, mood, language or price.
-        </DrawerDescription>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent
+        showClose={false}
+        variant="fullscreen"
+        className="dashboard-shell flex flex-col overflow-hidden"
+        onOpenAutoFocus={focusFieldWhenSettled}
+      >
+        {a11y}
         <MobileLayoutInner {...shared} />
-      </DrawerContent>
-    </Drawer>
+      </DialogContent>
+    </Dialog>
   )
 }
 
@@ -265,7 +289,6 @@ function SearchField({
   leading,
   trailing,
   placeholder,
-  autoFocus,
 }: {
   query: string
   setQuery: (value: string) => void
@@ -273,7 +296,6 @@ function SearchField({
   leading: React.ReactNode
   trailing?: React.ReactNode
   placeholder: string
-  autoFocus?: boolean
 }) {
   return (
     <div className="flex items-center gap-2.5 px-3.5 py-3">
@@ -281,8 +303,6 @@ function SearchField({
       <input
         type="text"
         value={query}
-        // eslint-disable-next-line jsx-a11y/no-autofocus
-        autoFocus={autoFocus}
         onChange={(e) => setQuery(e.target.value)}
         onKeyDown={onKeyDown}
         placeholder={placeholder}
@@ -619,7 +639,6 @@ function MobileLayoutInner(props: LayoutProps) {
           query={query}
           setQuery={setQuery}
           onKeyDown={onKeyDown}
-          autoFocus
           placeholder="Search pieces, or say it your way"
           leading={
             <button

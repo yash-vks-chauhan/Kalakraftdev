@@ -42,27 +42,57 @@ function DialogOverlay({
   )
 }
 
+/*
+ * Two shapes.
+ *
+ * "center" is the ordinary modal. "fullscreen" takes the whole viewport with
+ * no radius and no visible page behind it — for a phone, where a panel that
+ * leaves a strip of the page showing reads as a sheet you could drag, and
+ * invites you to try.
+ *
+ * Height is 100dvh, not 100vh: vh is frozen at the largest viewport, so with
+ * the on-screen keyboard up a vh-sized panel is taller than the space it has
+ * and its pinned footer sits under the keyboard.
+ */
+const VARIANTS = {
+  center: cn(
+    "fixed left-1/2 top-1/2 w-full max-w-lg -translate-x-1/2 -translate-y-1/2",
+    "rounded-xl border shadow-2xl",
+    "origin-center transition-[opacity,transform] duration-200 ease-out",
+    "data-[state=closed]:scale-[0.97] data-[state=closed]:opacity-0",
+    "data-[state=open]:scale-100 data-[state=open]:opacity-100"
+  ),
+  fullscreen: cn(
+    "fixed inset-0 h-[100dvh] w-screen max-w-none",
+    // A short fade-and-rise rather than a long slide. On a phone the keyboard
+    // comes up as this lands, and a slow travelling panel colliding with a
+    // viewport resize is exactly what makes an opening feel broken.
+    "transition-[opacity,transform] duration-[180ms] ease-out",
+    "data-[state=closed]:translate-y-3 data-[state=closed]:opacity-0",
+    "data-[state=open]:translate-y-0 data-[state=open]:opacity-100"
+  ),
+} as const
+
 function DialogContent({
   className,
   children,
   showClose = true,
+  variant = "center",
   ...props
-}: React.ComponentProps<typeof DialogPrimitive.Content> & { showClose?: boolean }) {
+}: React.ComponentProps<typeof DialogPrimitive.Content> & {
+  showClose?: boolean
+  variant?: keyof typeof VARIANTS
+}) {
   return (
     <DialogPortal>
       <DialogOverlay />
       <DialogPrimitive.Content
         data-slot="dialog-content"
+        data-variant={variant}
         className={cn(
-          "fixed left-1/2 top-1/2 w-full max-w-lg -translate-x-1/2 -translate-y-1/2",
           Z_INDEX,
-          "rounded-xl border bg-background shadow-2xl outline-none",
-          // Rise-and-settle: 8px up and a hair small on the way in. Transform
-          // is composited, so this stays smooth on a mid-range phone.
-          "origin-center transition-[opacity,transform] duration-200 ease-out will-change-[opacity,transform]",
-          "data-[state=closed]:scale-[0.97] data-[state=closed]:opacity-0",
-          "data-[state=open]:scale-100 data-[state=open]:opacity-100",
-          "motion-reduce:transition-none",
+          "bg-background outline-none will-change-[opacity,transform] motion-reduce:transition-none",
+          VARIANTS[variant],
           className
         )}
         {...props}
