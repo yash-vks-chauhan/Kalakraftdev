@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react"
 import { Clock, X } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import { Skeleton } from "@/components/ui/skeleton"
 import type { SearchChip } from "../../../lib/parseSearchQuery"
 
 /* ------------------------------------------------------------------ */
@@ -32,7 +33,11 @@ export interface SearchCategory {
   image: string | null
 }
 
-/** Categories and mood tags, both fetched once when the panel first opens. */
+/**
+ * Categories and mood tags, both fetched once when the panel first opens.
+ * `ready` means the request settled — a store with no tags then shows nothing
+ * rather than shimmering forever.
+ */
 export function useSearchFacets(enabled: boolean) {
   const [categories, setCategories] = useState<SearchCategory[]>([])
   const [moods, setMoods] = useState<string[]>([])
@@ -60,7 +65,7 @@ export function useSearchFacets(enabled: boolean) {
     return () => controller.abort()
   }, [enabled, loaded])
 
-  return { categories, moods }
+  return { categories, moods, ready: loaded }
 }
 
 /** The `recentSearches` key the old desktop modal already wrote to. */
@@ -217,14 +222,113 @@ export function BlockLabel({
   )
 }
 
+/* ------------------------------------------------------------------ */
+/* Skeletons — first open only                                         */
+/* ------------------------------------------------------------------ */
+
+/*
+ * These exist because the panel's resting state opens before the catalogue
+ * and facets land: without them you get section labels sitting above holes,
+ * then content popping in underneath.
+ *
+ * They are deliberately absent while typing. Matching runs against an index
+ * already in memory, so results resolve in the same frame as the keystroke —
+ * a skeleton there would flash placeholders for no real work and read as
+ * latency the search doesn't have.
+ *
+ * Every shape matches the real element's box, so nothing shifts on arrival.
+ */
+
+const RAIL_KEYS = ["a", "b", "c", "d", "e"]
+const CHIP_WIDTHS = ["w-20", "w-28", "w-24", "w-16", "w-24", "w-20"]
+
+export function CategoryRailSkeleton() {
+  return (
+    <div className="-mx-0.5 flex gap-2 px-0.5 pb-1" aria-hidden>
+      {RAIL_KEYS.map((key) => (
+        <div key={key} className="w-[88px] shrink-0">
+          <Skeleton className="h-[66px] w-[88px] rounded-lg" />
+          <Skeleton className="mt-1.5 h-3 w-14 rounded" />
+        </div>
+      ))}
+    </div>
+  )
+}
+
+export function ChipsSkeleton() {
+  return (
+    <div className="flex flex-wrap gap-1.5 px-0.5" aria-hidden>
+      {CHIP_WIDTHS.map((width, i) => (
+        <Skeleton key={i} className={cn("h-8 rounded-full", width)} />
+      ))}
+    </div>
+  )
+}
+
+export function ProductGridSkeleton({ count = 4 }: { count?: number }) {
+  return (
+    <div className="grid grid-cols-2 gap-2.5 px-3.5 pt-3" aria-hidden>
+      {Array.from({ length: count }).map((_, i) => (
+        <div key={i}>
+          <Skeleton className="aspect-square w-full rounded-xl" />
+          <Skeleton className="mt-1.5 h-3 w-3/4 rounded" />
+          <Skeleton className="mt-1.5 h-3 w-1/3 rounded" />
+        </div>
+      ))}
+    </div>
+  )
+}
+
+export function ResultListSkeleton({ count = 5 }: { count?: number }) {
+  return (
+    <div aria-hidden>
+      {Array.from({ length: count }).map((_, i) => (
+        <div key={i} className="flex items-center gap-2.5 px-2.5 py-2.5">
+          <div className="min-w-0 flex-1">
+            <Skeleton className="h-3.5 w-2/3 rounded" />
+            <Skeleton className="mt-1.5 h-2.5 w-1/3 rounded" />
+          </div>
+          <Skeleton className="h-3.5 w-12 shrink-0 rounded" />
+        </div>
+      ))}
+    </div>
+  )
+}
+
+export function PreviewSkeleton() {
+  return (
+    <div className="p-4" aria-hidden>
+      <Skeleton className="h-[158px] w-full rounded-xl" />
+      <div className="mt-2 flex gap-1.5">
+        {[0, 1, 2].map((i) => (
+          <Skeleton key={i} className="h-[34px] w-[42px] rounded-md" />
+        ))}
+      </div>
+      <div className="mt-3 flex items-baseline justify-between gap-3">
+        <Skeleton className="h-5 w-40 rounded" />
+        <Skeleton className="h-5 w-16 shrink-0 rounded" />
+      </div>
+      <Skeleton className="mt-2 h-3 w-32 rounded" />
+      <div className="mt-2.5 flex gap-1.5">
+        <Skeleton className="h-6 w-20 rounded-full" />
+        <Skeleton className="h-6 w-24 rounded-full" />
+      </div>
+      <Skeleton className="mt-3 h-[42px] w-full rounded-lg" />
+    </div>
+  )
+}
+
 /** Category cards with the thumbnail /api/categories borrows from each. */
 export function CategoryRail({
   categories,
   onPick,
+  loading,
 }: {
   categories: SearchCategory[]
   onPick: (name: string) => void
+  loading?: boolean
 }) {
+  if (loading) return <CategoryRailSkeleton />
   if (!categories.length) return null
 
   return (

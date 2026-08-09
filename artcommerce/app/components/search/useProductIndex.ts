@@ -123,6 +123,12 @@ function rank(list: IndexedProduct[]): IndexedProduct[] {
 export function useProductIndex(enabled: boolean) {
   const [catalogue, setCatalogue] = useState<IndexedProduct[]>([])
   const [loading, setLoading] = useState(false)
+  /**
+   * The fetch has finished, successfully or not. Skeletons key off this rather
+   * than off `catalogue.length`, so a shop with no matches shows an honest
+   * empty state instead of shimmering forever.
+   */
+  const [ready, setReady] = useState(false)
   const loadedRef = useRef(false)
 
   useEffect(() => {
@@ -139,7 +145,11 @@ export function useProductIndex(enabled: boolean) {
         // wedging the panel on a stale empty index.
         loadedRef.current = false
       })
-      .finally(() => setLoading(false))
+      .finally(() => {
+        if (controller.signal.aborted) return
+        setLoading(false)
+        setReady(true)
+      })
 
     return () => controller.abort()
   }, [enabled])
@@ -160,7 +170,7 @@ export function useProductIndex(enabled: boolean) {
     [catalogue]
   )
 
-  return { catalogue, fuse, loading }
+  return { catalogue, fuse, loading, ready }
 }
 
 /**

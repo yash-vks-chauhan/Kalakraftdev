@@ -25,9 +25,13 @@ import {
   BlockLabel,
   CategoryRail,
   ChipRow,
+  ChipsSkeleton,
   Highlighted,
   PRICE_BANDS,
+  PreviewSkeleton,
+  ProductGridSkeleton,
   RecentChips,
+  ResultListSkeleton,
   RetreatNotice,
   StockFlag,
   TermChip,
@@ -76,8 +80,8 @@ export function ProductSearch({ open, onOpenChange }: ProductSearchProps) {
   const [active, setActive] = useState(0)
   const [debounced, setDebounced] = useState("")
 
-  const { catalogue, fuse, loading } = useProductIndex(open)
-  const { categories, moods } = useSearchFacets(open)
+  const { catalogue, fuse, loading, ready: indexReady } = useProductIndex(open)
+  const { categories, moods, ready: facetsReady } = useSearchFacets(open)
   const { recents, remember } = useRecentSearches()
 
   // 120ms over an in-memory index, not 500ms over the network.
@@ -180,6 +184,8 @@ export function ProductSearch({ open, onOpenChange }: ProductSearchProps) {
     active,
     setActive,
     loading,
+    indexReady,
+    facetsReady,
     categories,
     moods,
     recents,
@@ -271,6 +277,10 @@ interface LayoutProps {
   active: number
   setActive: (index: number) => void
   loading: boolean
+  /** The catalogue fetch has settled. Drives the first-open skeletons. */
+  indexReady: boolean
+  /** Categories and mood tags have settled. */
+  facetsReady: boolean
   categories: ReturnType<typeof useSearchFacets>["categories"]
   moods: string[]
   recents: string[]
@@ -355,8 +365,8 @@ function SeeAllBar({
 function DesktopLayout(props: LayoutProps) {
   const {
     query, setQuery, outcome, typing, shown, preview, active, setActive,
-    loading, categories, moods, recents, appendTerm, dropChip, seeAll,
-    openPiece, onKeyDown, close,
+    indexReady, facetsReady, categories, moods, recents, appendTerm, dropChip,
+    seeAll, openPiece, onKeyDown, close,
   } = props
 
   const listRef = useRef<HTMLDivElement>(null)
@@ -400,8 +410,13 @@ function DesktopLayout(props: LayoutProps) {
           {typing ? (
             <>
               <p className="px-2 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                {loading ? "Searching…" : `${shown.length} piece${shown.length === 1 ? "" : "s"}`}
+                {indexReady
+                  ? `${shown.length} piece${shown.length === 1 ? "" : "s"}`
+                  : "Loading the catalogue"}
               </p>
+              {/* Only before the index has arrived — matching itself is
+                  synchronous, so there is nothing to wait for after that. */}
+              {!indexReady && <ResultListSkeleton />}
               {shown.map((product, index) => (
                 <button
                   key={product.id}
@@ -445,18 +460,26 @@ function DesktopLayout(props: LayoutProps) {
               )}
               <div>
                 <BlockLabel>Browse by category</BlockLabel>
-                <CategoryRail categories={categories} onPick={appendTerm} />
+                <CategoryRail
+                  categories={categories}
+                  onPick={appendTerm}
+                  loading={!facetsReady}
+                />
               </div>
-              {moods.length > 0 && (
+              {(!facetsReady || moods.length > 0) && (
                 <div>
                   <BlockLabel>Shop by mood</BlockLabel>
-                  <div className="flex flex-wrap gap-1.5 px-0.5">
-                    {moods.slice(0, 8).map((mood) => (
-                      <TermChip key={mood} onClick={() => appendTerm(mood)}>
-                        {mood}
-                      </TermChip>
-                    ))}
-                  </div>
+                  {facetsReady ? (
+                    <div className="flex flex-wrap gap-1.5 px-0.5">
+                      {moods.slice(0, 8).map((mood) => (
+                        <TermChip key={mood} onClick={() => appendTerm(mood)}>
+                          {mood}
+                        </TermChip>
+                      ))}
+                    </div>
+                  ) : (
+                    <ChipsSkeleton />
+                  )}
                 </div>
               )}
               <div>
@@ -482,9 +505,11 @@ function DesktopLayout(props: LayoutProps) {
               onOpen={() => openPiece(preview)}
               onMood={appendTerm}
             />
+          ) : !indexReady ? (
+            <PreviewSkeleton />
           ) : (
             <div className="flex h-full items-center justify-center px-6 text-center text-xs text-muted-foreground">
-              {loading ? "Loading the catalogue…" : "Nothing to preview yet."}
+              Nothing to preview yet.
             </div>
           )}
         </div>
@@ -624,12 +649,14 @@ function PreviewPane({
 
 function MobileLayoutInner(props: LayoutProps) {
   const {
-    query, setQuery, outcome, typing, shown, loading, categories, moods,
-    recents, appendTerm, dropChip, seeAll, openPiece, onKeyDown, close,
+    query, setQuery, outcome, typing, shown, indexReady, facetsReady,
+    categories, moods, recents, appendTerm, dropChip, seeAll, openPiece,
+    onKeyDown, close,
   } = props
 
-  const newest = props.preview ? [props.preview] : []
-  const restingPieces = typing ? [] : shown.length ? shown : newest
+  // The four newest pieces, shown under "in the studio this week" when the
+  // field is empty. outcome.results is already ranked newest-first in stock.
+  const newest = outcome.results.slice(0, 4)
 
   return (
     <>
@@ -673,12 +700,10 @@ function MobileLayoutInner(props: LayoutProps) {
 
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
         {typing ? (
-          shown.length ? (
-            <ProductGrid products={shown} term={outcome.rest} onOpen={openPiece} />
+          !indexReady ? (
+            <ProductGridSkeleton />
           ) : (
-            <p className="px-4 py-10 text-center text-sm text-muted-foreground">
-              {loading ? "Searching…" : "Loading the catalogue…"}
-            </p>
+            <ProductGrid products={shown} term={outcome.rest} onOpen={openPiece} />
           )
         ) : (
           <div className="flex flex-col gap-5 px-3.5 pb-3 pt-3.5">
@@ -690,18 +715,26 @@ function MobileLayoutInner(props: LayoutProps) {
             )}
             <div>
               <BlockLabel>Browse by category</BlockLabel>
-              <CategoryRail categories={categories} onPick={appendTerm} />
+              <CategoryRail
+                categories={categories}
+                onPick={appendTerm}
+                loading={!facetsReady}
+              />
             </div>
-            {moods.length > 0 && (
+            {(!facetsReady || moods.length > 0) && (
               <div>
                 <BlockLabel>Shop by mood</BlockLabel>
-                <div className="flex flex-wrap gap-1.5 px-0.5">
-                  {moods.slice(0, 8).map((mood) => (
-                    <TermChip key={mood} onClick={() => appendTerm(mood)}>
-                      {mood}
-                    </TermChip>
-                  ))}
-                </div>
+                {facetsReady ? (
+                  <div className="flex flex-wrap gap-1.5 px-0.5">
+                    {moods.slice(0, 8).map((mood) => (
+                      <TermChip key={mood} onClick={() => appendTerm(mood)}>
+                        {mood}
+                      </TermChip>
+                    ))}
+                  </div>
+                ) : (
+                  <ChipsSkeleton />
+                )}
               </div>
             )}
             <div>
@@ -714,16 +747,16 @@ function MobileLayoutInner(props: LayoutProps) {
                 ))}
               </div>
             </div>
-            {restingPieces.length > 0 && (
+            {(!indexReady || newest.length > 0) && (
               <div className="-mx-3.5">
                 <div className="px-3.5">
                   <BlockLabel>In the studio this week</BlockLabel>
                 </div>
-                <ProductGrid
-                  products={props.outcome.results.slice(0, 4)}
-                  term=""
-                  onOpen={openPiece}
-                />
+                {indexReady ? (
+                  <ProductGrid products={newest} term="" onOpen={openPiece} />
+                ) : (
+                  <ProductGridSkeleton />
+                )}
               </div>
             )}
           </div>
