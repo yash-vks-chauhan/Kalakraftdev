@@ -264,10 +264,16 @@ interface TitleRule {
   title: string
   /** Detail views get a back chevron instead of a flush-left title. */
   detail?: boolean
+  /**
+   * The page renders its own large title, so the bar holds its title back until
+   * that one has scrolled away. Opt-in: on every other page the bar is the only
+   * place the title appears, and hiding it would leave the header blank.
+   */
+  collapsingTitle?: boolean
 }
 
 const TITLE_RULES: TitleRule[] = [
-  { test: (p) => p === "/dashboard", title: "Overview" },
+  { test: (p) => p === "/dashboard", title: "Overview", collapsingTitle: true },
 
   // Customer
   { test: (p) => /^\/dashboard\/orders\/[^/]+$/.test(p), title: "Order details", detail: true },
@@ -293,11 +299,19 @@ const TITLE_RULES: TitleRule[] = [
   { test: (p) => p === "/dashboard/admin/support", title: "Support tickets" },
 ]
 
-export function pageMetaFor(pathname: string): { title: string; detail: boolean } {
+export function pageMetaFor(pathname: string): {
+  title: string
+  detail: boolean
+  collapsingTitle: boolean
+} {
   for (const rule of TITLE_RULES) {
     if (rule.test(pathname)) {
-      return { title: rule.title, detail: Boolean(rule.detail) }
+      return {
+        title: rule.title,
+        detail: Boolean(rule.detail),
+        collapsingTitle: Boolean(rule.collapsingTitle),
+      }
     }
   }
-  return { title: "Dashboard", detail: false }
+  return { title: "Dashboard", detail: false, collapsingTitle: false }
 }

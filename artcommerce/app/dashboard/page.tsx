@@ -33,6 +33,21 @@ import { useAuth } from "../contexts/AuthContext"
 import { OrderStatusBadge } from "./_components/OrderStatusBadge"
 import { useCart } from "../contexts/CartContext"
 import { useWishlist } from "../contexts/WishlistContext"
+import { useIsDesktop } from "../hooks/useMediaQuery"
+import { AdminMobile } from "./_components/overview/AdminMobile"
+import { UserMobile } from "./_components/overview/UserMobile"
+import { periodLabels, type Period } from "./_components/overview/buckets"
+import {
+  capitalise as capitalize,
+  formatCurrency,
+  formatShortDate,
+} from "./_components/overview/format"
+import type {
+  AdminMetrics,
+  LowStockProduct,
+  OverviewOrder,
+  StatusCount,
+} from "./_components/overview/types"
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -70,67 +85,10 @@ import {
   YAxis,
 } from "recharts"
 
-type Period = "today" | "week" | "month" | "year" | "all"
-
-interface StatusCount {
-  status: string
-  _count: { status: number }
-}
-
-interface DayPoint {
-  date: string
-  count: number
-}
-
-interface Metrics {
-  period: string
-  totalOrders: number
-  statusCounts: StatusCount[]
-  revenue: number
-  ordersPerDay?: DayPoint[]
-  paymentBreakdown?: { method: string; value: number }[]
-}
-
-interface OrderProduct {
-  id: number
-  name: string
-  imageUrls: string[]
-}
-
-interface OrderItemLite {
-  id: number
-  quantity: number
-  priceAtPurchase: number
-  product: OrderProduct
-}
-
-interface OrderLite {
-  id: number
-  orderNumber: string
-  status: string
-  totalAmount: number
-  discountedTotal?: number
-  createdAt: string
-  orderItems: OrderItemLite[]
-  user?: { id: number; fullName: string; email: string }
-}
-
-interface LowStockProduct {
-  id: number
-  name: string
-  slug: string
-  stockQuantity: number
-  price: number
-  imageUrls: string[]
-}
-
-const periodLabels: Record<Period, string> = {
-  today: "Today",
-  week: "Last 7 days",
-  month: "This month",
-  year: "This year",
-  all: "All time",
-}
+/*
+ * Types, period labels and number formatting are shared with the mobile screens
+ * in ./_components/overview, so the two layouts cannot drift apart.
+ */
 
 type QuickLink = {
   href: string
@@ -149,20 +107,6 @@ const adminLinks: QuickLink[] = [
   { href: "/dashboard/admin/support", label: "Support", description: "Tickets from customers", icon: LifeBuoy },
 ]
 
-function formatCurrency(value: number) {
-  if (!Number.isFinite(value)) return "₹0"
-  return `₹${value.toLocaleString("en-IN", { maximumFractionDigits: 0 })}`
-}
-
-function capitalize(str: string) {
-  return str.charAt(0).toUpperCase() + str.slice(1)
-}
-
-function formatShortDate(value: string) {
-  const d = new Date(value)
-  return d.toLocaleDateString("en-GB", { day: "numeric", month: "short" })
-}
-
 type ChartType = "bar" | "line" | "area"
 
 interface ChartBucket {
@@ -172,7 +116,7 @@ interface ChartBucket {
   count: number
 }
 
-function bucketizeOrders(orders: OrderLite[], period: Period): ChartBucket[] {
+function bucketizeOrders(orders: OverviewOrder[], period: Period): ChartBucket[] {
   const now = new Date()
   const buckets: ChartBucket[] = []
 
@@ -303,14 +247,15 @@ export default function DashboardHomePage() {
   const { cartItems, cartLoading } = useCart()
   const { wishlistItems, loading: wishlistLoading } = useWishlist()
   const [period, setPeriod] = useState<Period>("week")
-  const [metrics, setMetrics] = useState<Metrics | null>(null)
+  const [metrics, setMetrics] = useState<AdminMetrics | null>(null)
   const [metricsLoading, setMetricsLoading] = useState(true)
-  const [orders, setOrders] = useState<OrderLite[]>([])
+  const [orders, setOrders] = useState<OverviewOrder[]>([])
   const [ordersLoading, setOrdersLoading] = useState(true)
   const [lowStock, setLowStock] = useState<LowStockProduct[]>([])
   const [lowStockLoading, setLowStockLoading] = useState(true)
 
   const isAdmin = user?.role === "admin"
+  const isDesktop = useIsDesktop()
 
   // Admin metrics
   useEffect(() => {
@@ -344,7 +289,7 @@ export default function DashboardHomePage() {
     fetch("/api/orders", { headers: { Authorization: `Bearer ${token}` } })
       .then((r) => r.json())
       .then((data) => {
-        if (!cancelled) setOrders((data.orders as OrderLite[]) ?? [])
+        if (!cancelled) setOrders((data.orders as OverviewOrder[]) ?? [])
       })
       .catch(console.error)
       .finally(() => {
@@ -355,10 +300,12 @@ export default function DashboardHomePage() {
     }
   }, [user, token])
 
-  // Low stock (admin only)
+  // Low stock — admin, and only the desktop card renders the list. The mobile
+  // screen ranks the same items from metrics.attention.lowStock, which is a
+  // count rather than a full product payload.
   useEffect(() => {
-    if (!isAdmin || !token) {
-      if (!isAdmin) setLowStockLoading(false)
+    if (!isAdmin || !token || !isDesktop) {
+      if (!isAdmin || !isDesktop) setLowStockLoading(false)
       return
     }
     let cancelled = false
@@ -377,7 +324,7 @@ export default function DashboardHomePage() {
     return () => {
       cancelled = true
     }
-  }, [token, isAdmin])
+  }, [token, isAdmin, isDesktop])
 
   const userStats = useMemo(() => {
     const totalSpend = orders.reduce(
@@ -400,6 +347,38 @@ export default function DashboardHomePage() {
   if (!user) return null
 
   const firstName = user.fullName?.split(" ")[0] ?? user.fullName
+
+  /*
+   * Two trees, not one restyled.
+   *
+   * Below lg the Overview is a different screen rather than a narrower version
+   * of this one — a scrubbable hero, a ranked work queue, a tabbed ledger — so
+   * hiding one with `lg:hidden` would mount both, and the hidden recharts
+   * instances would measure zero and warn. `useIsDesktop` defaults to false, so
+   * a phone paints its own layout first and never swaps.
+   */
+  if (!isDesktop) {
+    return isAdmin ? (
+      <AdminMobile
+        period={period}
+        onPeriodChange={setPeriod}
+        metrics={metrics}
+        metricsLoading={metricsLoading}
+        orders={orders}
+        ordersLoading={ordersLoading}
+      />
+    ) : (
+      <UserMobile
+        firstName={firstName}
+        orders={orders}
+        ordersLoading={ordersLoading}
+        cartItems={cartItems}
+        cartLoading={cartLoading}
+        wishlistItems={wishlistItems}
+        wishlistLoading={wishlistLoading}
+      />
+    )
+  }
 
   return (
     <div className="flex flex-col gap-8 lg:gap-10">
@@ -458,7 +437,7 @@ function UserDesktop({
     cartCount: number
     wishlistCount: number
   }
-  orders: OrderLite[]
+  orders: OverviewOrder[]
   ordersLoading: boolean
   wishlistLoading: boolean
   cartLoading: boolean
@@ -550,7 +529,7 @@ function UserDesktop({
   )
 }
 
-function RecentOrderRow({ order }: { order: OrderLite }) {
+function RecentOrderRow({ order }: { order: OverviewOrder }) {
   const items = order.orderItems ?? []
   const itemCount = items.reduce((s, i) => s + i.quantity, 0)
   const displayed = items.slice(0, 3)
@@ -624,7 +603,7 @@ function SpendChartCard({
   orders,
   loading,
 }: {
-  orders: OrderLite[]
+  orders: OverviewOrder[]
   loading: boolean
 }) {
   const months = useMemo(() => {
@@ -984,9 +963,9 @@ function AdminDesktop({
 }: {
   period: Period
   setPeriod: (p: Period) => void
-  metrics: Metrics | null
+  metrics: AdminMetrics | null
   metricsLoading: boolean
-  orders: OrderLite[]
+  orders: OverviewOrder[]
   ordersLoading: boolean
   lowStock: LowStockProduct[]
   lowStockLoading: boolean
@@ -1471,7 +1450,7 @@ function StatusBreakdown({
   )
 }
 
-function AdminRecentOrderRow({ order }: { order: OrderLite }) {
+function AdminRecentOrderRow({ order }: { order: OverviewOrder }) {
   const itemCount =
     order.orderItems?.reduce((s, i) => s + i.quantity, 0) ?? 0
   return (

@@ -167,6 +167,16 @@
   .kk-fade { animation: none; }
 }
 
+/* Horizontal rails (period chips, the saved-items strip) scroll by swipe, so
+   the bar is noise on a trackpad and absent on a phone either way. */
+.kk-no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.kk-no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 /* Safe-area helpers — app/layout.tsx sets viewport-fit=cover, so without
    these the dashboard runs under the notch and the home indicator. */
 .pt-safe {
