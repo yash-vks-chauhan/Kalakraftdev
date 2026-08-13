@@ -16,23 +16,25 @@ import {
   Tag,
   Boxes,
   ChevronRight,
-  Eye,
-  EyeOff,
-  ExternalLink,
 } from 'lucide-react'
 
 import { useAuth } from '../../../contexts/AuthContext'
+import { useIsDesktop } from '../../../hooks/useMediaQuery'
 import LoadingSpinner from '../../../components/LoadingSpinner'
 import ConfirmDialog from '../../../components/ConfirmDialog'
-import { ActionSheet } from '../../_components/ActionSheet'
+import { DesktopTableFrame } from '../../_components/DataCardList'
 import {
-  DataCard,
-  DataCardEmpty,
-  DataCardList,
-  DataCardSkeleton,
-  DataCardThumb,
-  DesktopTableFrame,
-} from '../../_components/DataCardList'
+  ProductsMobile,
+  ProductsMobileSkeleton,
+} from './_components/ProductsMobile'
+import {
+  LOW_STOCK_THRESHOLD,
+  formatPrice,
+  stockLabel,
+  stockTone,
+  type Category,
+  type Product,
+} from './_components/catalogue'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -56,56 +58,12 @@ import {
   TableRow,
 } from '@/components/ui/table'
 
-interface Product {
-  id: number
-  name: string
-  slug: string
-  price: number
-  currency: string
-  stockQuantity: number
-  isActive: boolean
-  categoryId: number | null
-  totalSold: number
-  imageUrls?: string[]
-  shortDesc?: string
-}
-
-interface Category {
-  id: number
-  name: string
-}
-
 type TabKey = 'all' | number
-
-const LOW_STOCK_THRESHOLD = 10
-
-function formatPrice(value: number, currency: string) {
-  try {
-    return new Intl.NumberFormat(undefined, {
-      style: 'currency',
-      currency: currency || 'INR',
-      maximumFractionDigits: 0,
-    }).format(value)
-  } catch {
-    return `${currency} ${value.toFixed(0)}`
-  }
-}
-
-function stockTone(qty: number) {
-  if (qty === 0) return 'text-destructive'
-  if (qty <= LOW_STOCK_THRESHOLD) return 'text-amber-600 dark:text-amber-500'
-  return 'text-foreground'
-}
-
-function stockLabel(qty: number) {
-  if (qty === 0) return 'Out of stock'
-  if (qty <= LOW_STOCK_THRESHOLD) return `${qty} left — low`
-  return `${qty} in stock`
-}
 
 export default function AdminProductsPage() {
   const { user, token } = useAuth()
   const router = useRouter()
+  const isDesktop = useIsDesktop()
 
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<Category[]>([])
@@ -221,16 +179,57 @@ export default function AdminProductsPage() {
     router.push(`/dashboard/admin/products/${id}`)
   }
 
+  function handleNew() {
+    setIsTransitioning(true)
+    router.push('/dashboard/admin/products/new')
+  }
+
   if (isTransitioning) {
     return <LoadingSpinner overlay message="Loading products..." />
   }
   if (loading) {
-    return <ProductsSkeleton />
+    return isDesktop ? <ProductsSkeleton /> : <ProductsMobileSkeleton />
   }
   if (error) {
     return (
       <main>
         <p className="text-sm text-destructive">{error}</p>
+      </main>
+    )
+  }
+
+  /*
+   * Two trees rather than one restyled. Rendering both and hiding one with
+   * `md:hidden` is what left a phone parsing a six-column table it never
+   * paints — and the mobile screen is a different arrangement of the same
+   * rows, not the desktop grid at a smaller width.
+   */
+  if (!isDesktop) {
+    return (
+      <main>
+        <ProductsMobile
+          products={products}
+          categories={categories}
+          onEdit={handleEdit}
+          onToggleActive={handleToggleStatus}
+          onDelete={setDeleteTarget}
+          onNew={handleNew}
+        />
+        <ConfirmDialog
+          open={Boolean(deleteTarget)}
+          title="Delete product"
+          description={
+            deleteTarget
+              ? `Delete "${deleteTarget.name}" permanently? This action cannot be undone.`
+              : ''
+          }
+          confirmLabel="Delete product"
+          isProcessing={isDeleting}
+          onConfirm={handleDelete}
+          onClose={() => {
+            if (!isDeleting) setDeleteTarget(null)
+          }}
+        />
       </main>
     )
   }
@@ -252,13 +251,7 @@ export default function AdminProductsPage() {
               Highest rated
             </Link>
           </Button>
-          <Button
-            onClick={() => {
-              setIsTransitioning(true)
-              router.push('/dashboard/admin/products/new')
-            }}
-            className="gap-1.5"
-          >
+          <Button onClick={handleNew} className="gap-1.5">
             <Plus className="h-4 w-4" />
             Add product
           </Button>
@@ -357,7 +350,6 @@ export default function AdminProductsPage() {
             </CardHeader>
 
             <CardContent className="p-0">
-              {/* Desktop: full table. Mobile: stacked cards below. */}
               <DesktopTableFrame>
                 <Table>
                   <TableHeader>
@@ -494,26 +486,6 @@ export default function AdminProductsPage() {
                   </TableBody>
                 </Table>
               </DesktopTableFrame>
-
-              <DataCardList>
-                {displayProducts.length === 0 ? (
-                  <DataCardEmpty
-                    icon={<Package className="h-5 w-5" />}
-                    title="No products match this view"
-                    description="Try another category, or clear the search."
-                  />
-                ) : (
-                  displayProducts.map((p) => (
-                    <AdminProductCard
-                      key={p.id}
-                      product={p}
-                      onEdit={() => handleEdit(p.id)}
-                      onToggleActive={() => handleToggleStatus(p.id, !p.isActive)}
-                      onDelete={() => setDeleteTarget(p)}
-                    />
-                  ))
-                )}
-              </DataCardList>
             </CardContent>
           </Card>
         </div>
@@ -591,115 +563,6 @@ function CategoryButton({
   )
 }
 
-/* -------------------------------------------------------------- */
-/* MOBILE CARD                                                     */
-/* -------------------------------------------------------------- */
-
-function AdminProductCard({
-  product,
-  onEdit,
-  onToggleActive,
-  onDelete,
-}: {
-  product: Product
-  onEdit: () => void
-  onToggleActive: () => void
-  onDelete: () => void
-}) {
-  const [sheetOpen, setSheetOpen] = useState(false)
-
-  return (
-    <>
-      <DataCard
-        media={
-          <DataCardThumb
-            src={product.imageUrls?.[0]}
-            alt={product.name}
-            fallback={<Package className="h-4 w-4" />}
-          />
-        }
-        title={product.name || 'Untitled product'}
-        badge={
-          !product.isActive ? (
-            <Badge variant="outline" className="h-5 px-1.5 text-[11px]">
-              Inactive
-            </Badge>
-          ) : undefined
-        }
-        meta={
-          <>
-            <span
-              aria-hidden
-              className={cn(
-                'mr-1.5 inline-block h-1.5 w-1.5 rounded-full align-middle',
-                product.stockQuantity === 0
-                  ? 'bg-destructive'
-                  : product.stockQuantity <= LOW_STOCK_THRESHOLD
-                  ? 'bg-amber-500'
-                  : 'bg-emerald-500'
-              )}
-            />
-            <span className={stockTone(product.stockQuantity)}>
-              {stockLabel(product.stockQuantity)}
-            </span>{' '}
-            · {product.totalSold.toLocaleString()} sold
-          </>
-        }
-        value={formatPrice(product.price, product.currency)}
-        onOpenActions={() => setSheetOpen(true)}
-        actionsLabel={`Actions for ${product.name}`}
-      />
-
-      <ActionSheet
-        open={sheetOpen}
-        onOpenChange={setSheetOpen}
-        title={product.name || 'Untitled product'}
-        description={`${formatPrice(product.price, product.currency)} · ${stockLabel(
-          product.stockQuantity
-        )}`}
-        groups={[
-          {
-            actions: [
-              {
-                id: 'edit',
-                label: 'Edit product',
-                icon: Pencil,
-                onSelect: onEdit,
-              },
-              {
-                id: 'toggle',
-                label: product.isActive ? 'Hide from store' : 'Publish to store',
-                icon: product.isActive ? EyeOff : Eye,
-                description: product.isActive
-                  ? 'Customers will no longer see this'
-                  : 'Make this visible to customers',
-                onSelect: onToggleActive,
-              },
-              {
-                id: 'view',
-                label: 'View on storefront',
-                icon: ExternalLink,
-                href: `/products/${product.id}`,
-              },
-            ],
-          },
-          {
-            actions: [
-              {
-                id: 'delete',
-                label: 'Delete product',
-                icon: Trash2,
-                destructive: true,
-                onSelect: onDelete,
-              },
-            ],
-          },
-        ]}
-      />
-    </>
-  )
-}
-
 function ProductsSkeleton() {
   return (
     <main className="flex flex-col gap-6">
@@ -761,12 +624,6 @@ function ProductsSkeleton() {
                   </TableBody>
                 </Table>
               </DesktopTableFrame>
-
-              <DataCardList>
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <DataCardSkeleton key={i} />
-                ))}
-              </DataCardList>
             </CardContent>
           </Card>
         </div>

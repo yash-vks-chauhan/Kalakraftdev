@@ -1,0 +1,1838 @@
+<title>Products on a Phone</title>
+
+<style>
+/* ══════════════════════════════════════════════════════════════════
+   DOC CHROME — same tokens as the four specs before this one, so the
+   series reads as one set. Dark-first; light is the mirrored override.
+   ══════════════════════════════════════════════════════════════════ */
+:root {
+  --ground: #0b0a09; --panel: #141110; --panel-2: #1c1815;
+  --ink: #efe9e3; --ink-2: #a39a91; --ink-3: #6f665e;
+  --line: rgba(240,233,227,.10); --line-2: rgba(240,233,227,.16);
+  --ember: #e2853d; --ember-soft: rgba(226,133,61,.14);
+  --good: #34d399; --bad: #f87171; --warn: #fbbf24;
+  --serif: Georgia, "Iowan Old Style", "Times New Roman", serif;
+  --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  --measure: 64ch; --shell: 1180px;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --ground: #f6f3ef; --panel: #fff; --panel-2: #f1ece5;
+    --ink: #1b1917; --ink-2: #5e574f; --ink-3: #8d857c;
+    --line: rgba(27,25,23,.11); --line-2: rgba(27,25,23,.18);
+    --ember: #b45309; --ember-soft: rgba(180,83,9,.10);
+    --good: #059669; --bad: #dc2626; --warn: #b45309;
+  }
+}
+:root[data-theme="light"] {
+  --ground: #f6f3ef; --panel: #fff; --panel-2: #f1ece5;
+  --ink: #1b1917; --ink-2: #5e574f; --ink-3: #8d857c;
+  --line: rgba(27,25,23,.11); --line-2: rgba(27,25,23,.18);
+  --ember: #b45309; --ember-soft: rgba(180,83,9,.10);
+  --good: #059669; --bad: #dc2626; --warn: #b45309;
+}
+:root[data-theme="dark"] {
+  --ground: #0b0a09; --panel: #141110; --panel-2: #1c1815;
+  --ink: #efe9e3; --ink-2: #a39a91; --ink-3: #6f665e;
+  --line: rgba(240,233,227,.10); --line-2: rgba(240,233,227,.16);
+  --ember: #e2853d; --ember-soft: rgba(226,133,61,.14);
+  --good: #34d399; --bad: #f87171; --warn: #fbbf24;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--ground); color: var(--ink);
+  font-family: var(--sans); font-size: 16px; line-height: 1.6;
+  -webkit-font-smoothing: antialiased; overflow-x: hidden;
+}
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--ember); outline-offset: 2px; border-radius: 4px; }
+.wrap { max-width: var(--shell); margin: 0 auto; padding: 0 24px; }
+.prose { max-width: var(--measure); }
+.kicker {
+  font-family: var(--mono); font-size: 11px; letter-spacing: .16em;
+  text-transform: uppercase; color: var(--ink-3); margin: 0;
+}
+h1, h2, h3, h4 { text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(32px,5.6vw,54px); line-height: 1.05; letter-spacing: -.024em; font-weight: 600; }
+h1 em { font-family: var(--serif); font-style: italic; font-weight: 400; color: var(--ember); }
+h2 { font-size: clamp(22px,2.7vw,30px); line-height: 1.18; letter-spacing: -.016em; font-weight: 600; }
+h2 em { font-family: var(--serif); font-style: italic; font-weight: 400; color: var(--ember); }
+h3 { font-size: 16.5px; font-weight: 650; letter-spacing: -.006em; }
+h4 { font-size: 13.5px; font-weight: 650; letter-spacing: -.004em; }
+p { margin: 0; }
+.lede { color: var(--ink-2); font-size: 17.5px; line-height: 1.62; }
+.note { color: var(--ink-2); font-size: 14.5px; line-height: 1.62; }
+.tiny { color: var(--ink-3); font-size: 12.5px; line-height: 1.55; }
+code, .code { font-family: var(--mono); font-size: .875em; color: var(--ember); }
+.stack { display: flex; flex-direction: column; }
+.g6 { gap: 6px; } .g10 { gap: 10px; } .g14 { gap: 14px; } .g20 { gap: 20px; }
+.g28 { gap: 28px; } .g40 { gap: 40px; }
+
+/* ── page rhythm ───────────────────────────────────────────────── */
+section.band { padding: 78px 0; border-top: 1px solid var(--line); }
+section.band:first-of-type { border-top: 0; }
+.band-head { display: flex; flex-direction: column; gap: 14px; margin-bottom: 40px; }
+
+/* ── masthead ──────────────────────────────────────────────────── */
+.masthead { padding: 84px 0 62px; }
+.masthead .rule { height: 1px; background: var(--line); margin: 34px 0 22px; }
+.facts { display: flex; flex-wrap: wrap; gap: 10px 34px; font-family: var(--mono); font-size: 11.5px; letter-spacing: .04em; color: var(--ink-3); }
+.facts b { color: var(--ink-2); font-weight: 500; }
+
+/* ── panels ────────────────────────────────────────────────────── */
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; }
+.panel-pad { padding: 22px 24px; }
+.cols-2 { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 22px; }
+@media (max-width: 900px) { .cols-2 { grid-template-columns: 1fr; } }
+
+/* ── the audit list ────────────────────────────────────────────── */
+.audit { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.audit > li { display: grid; grid-template-columns: 26px 1fr; gap: 14px; padding: 15px 0; border-top: 1px solid var(--line); }
+.audit > li:first-child { border-top: 0; padding-top: 4px; }
+.sev {
+  width: 22px; height: 22px; border-radius: 999px; display: grid; place-items: center;
+  font-family: var(--mono); font-size: 10.5px; font-weight: 600; margin-top: 1px;
+  border: 1px solid var(--line-2); color: var(--ink-3);
+}
+.sev.broken { background: rgba(248,113,113,.13); border-color: rgba(248,113,113,.4); color: var(--bad); }
+.sev.costly { background: var(--ember-soft); border-color: rgba(226,133,61,.38); color: var(--ember); }
+.audit h4 { margin-bottom: 3px; }
+.audit p { color: var(--ink-2); font-size: 14px; line-height: 1.58; }
+.audit .ev { display: block; margin-top: 5px; font-family: var(--mono); font-size: 11.5px; color: var(--ink-3); }
+.legend { display: flex; gap: 20px; flex-wrap: wrap; align-items: center; font-family: var(--mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); }
+.legend span { display: inline-flex; align-items: center; gap: 7px; }
+.legend i { width: 8px; height: 8px; border-radius: 999px; display: inline-block; }
+
+/* ── rules ─────────────────────────────────────────────────────── */
+.rules { display: grid; grid-template-columns: repeat(auto-fit, minmax(215px,1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+.rule-cell { background: var(--panel); padding: 22px 20px 24px; display: flex; flex-direction: column; gap: 8px; }
+.rule-cell .n { font-family: var(--serif); font-style: italic; font-size: 26px; line-height: 1; color: var(--ember); }
+.rule-cell p { color: var(--ink-2); font-size: 13.5px; line-height: 1.55; }
+
+/* ══════════════════════════════════════════════════════════════════
+   THE PROTOTYPE STAGE
+   ══════════════════════════════════════════════════════════════════ */
+.stage { display: grid; grid-template-columns: 390px minmax(0,1fr); gap: 46px; align-items: start; }
+@media (max-width: 940px) { .stage { grid-template-columns: 1fr; gap: 34px; } }
+
+.device-col { position: sticky; top: 26px; display: flex; flex-direction: column; gap: 12px; align-items: center; }
+@media (max-width: 940px) { .device-col { position: static; } }
+.device {
+  width: 390px; height: 786px; flex: none; position: relative;
+  border-radius: 42px; padding: 11px; background: #17161a;
+  box-shadow: 0 0 0 1px rgba(255,255,255,.07), 0 34px 70px -28px rgba(0,0,0,.72);
+}
+.screen {
+  position: relative; width: 368px; height: 764px; border-radius: 32px; overflow: hidden;
+  background: #fff; color: #1a1a1a;
+  font-family: var(--sans); font-size: 15px; line-height: 1.45;
+  isolation: isolate;
+}
+.device-cap { font-family: var(--mono); font-size: 11px; letter-spacing: .06em; color: var(--ink-3); text-align: center; }
+
+/* ── anatomy notes beside the device ───────────────────────────── */
+.anatomy { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.anatomy > li { display: grid; grid-template-columns: 27px 1fr; gap: 15px; padding: 16px 0; border-top: 1px solid var(--line); }
+.anatomy > li:first-child { border-top: 0; padding-top: 0; }
+.pin {
+  width: 23px; height: 23px; border-radius: 7px; display: grid; place-items: center; margin-top: 1px;
+  background: var(--ember-soft); border: 1px solid rgba(226,133,61,.34); color: var(--ember);
+  font-family: var(--mono); font-size: 11px; font-weight: 600;
+}
+.anatomy h4 { margin-bottom: 4px; }
+.anatomy p { color: var(--ink-2); font-size: 14px; line-height: 1.6; }
+
+/* ── before / after ledger ─────────────────────────────────────── */
+.ledger { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.ledger th { text-align: left; font-family: var(--mono); font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); font-weight: 500; padding: 0 14px 10px 0; border-bottom: 1px solid var(--line); }
+.ledger td { padding: 13px 14px 13px 0; border-bottom: 1px solid var(--line); vertical-align: top; color: var(--ink-2); line-height: 1.5; }
+.ledger td:first-child { color: var(--ink); font-weight: 550; width: 24%; }
+.ledger td.was { color: var(--ink-3); }
+.ledger td.now { color: var(--ink); }
+.scroll-x { overflow-x: auto; }
+
+/* ── component map ─────────────────────────────────────────────── */
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  font-family: var(--mono); font-size: 11.5px; letter-spacing: .02em;
+  padding: 6px 11px; border-radius: 999px; border: 1px solid var(--line-2); color: var(--ink-2);
+}
+.chip.new { border-color: rgba(226,133,61,.42); color: var(--ember); background: var(--ember-soft); }
+.chip.fix { border-color: rgba(52,211,153,.36); color: var(--good); }
+
+/* ── file plan ─────────────────────────────────────────────────── */
+.files { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.files li { display: grid; grid-template-columns: minmax(0,340px) minmax(0,1fr); gap: 20px; padding: 12px 0; border-top: 1px solid var(--line); align-items: baseline; }
+.files li:first-child { border-top: 0; }
+.files .path { font-family: var(--mono); font-size: 12px; color: var(--ember); word-break: break-all; }
+.files .what { color: var(--ink-2); font-size: 13.5px; }
+@media (max-width: 720px) { .files li { grid-template-columns: 1fr; gap: 4px; } }
+
+footer.doc { padding: 56px 0 88px; border-top: 1px solid var(--line); }
+
+/* ══════════════════════════════════════════════════════════════════
+   INSIDE THE PHONE — the app's own tokens (globals.css :root).
+   Fixed light: the app ships no dark theme, so a dark rendering here
+   would depict a screen that does not exist.
+   ══════════════════════════════════════════════════════════════════ */
+.screen {
+  --fg: #1a1a1a; --fg-2: #666; --bg: #fff;
+  --mut: #f5f5f5; --sec: #f0f0f0; --bd: #e5e5e5;
+  --dstr: #dc2626; --amber: #d97706; --emer: #059669;
+}
+.screen * { box-sizing: border-box; }
+.screen button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.screen svg { width: 18px; height: 18px; flex: none; display: block; }
+.screen input { font: inherit; }
+
+/* app bar */
+.appbar {
+  position: absolute; inset: 0 0 auto; z-index: 6; height: 92px;
+  background: rgba(255,255,255,.92); backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--bd);
+  display: flex; flex-direction: column; justify-content: flex-end;
+}
+.statusbar { display: flex; justify-content: space-between; align-items: center; padding: 12px 22px 0; font-size: 12.5px; font-weight: 600; letter-spacing: .01em; }
+.statusbar .sig { display: flex; gap: 4px; align-items: center; }
+.statusbar .sig i { width: 3px; border-radius: 1px; background: var(--fg); display: block; }
+.appbar .bar { height: 56px; display: flex; align-items: center; gap: 4px; padding: 0 8px; }
+.appbar .bar h1 { font-size: 17px; font-weight: 600; letter-spacing: -.01em; margin: 0 0 0 8px; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transition: opacity .2s, transform .2s; }
+.appbar .bar h1[data-hidden="true"] { opacity: 0; transform: translateY(6px); }
+.icon-btn { width: 44px; height: 44px; border-radius: 999px; display: grid; place-items: center; flex: none; }
+.icon-btn:active { background: var(--sec); }
+.avatar { width: 30px; height: 30px; border-radius: 999px; background: var(--fg); color: #fff; display: grid; place-items: center; font-size: 12px; font-weight: 600; }
+
+/* scroll body */
+.body {
+  position: absolute; inset: 92px 0 0; overflow-y: auto; overscroll-behavior: contain;
+  padding: 14px 16px 0; scrollbar-width: none;
+}
+.body::-webkit-scrollbar { display: none; }
+.body.has-bar { padding-bottom: 0; }
+
+/* dock */
+.dock { position: absolute; left: 0; right: 0; bottom: 0; z-index: 7; padding: 0 16px 14px; pointer-events: none; }
+.dock .pill {
+  height: 58px; border-radius: 20px; border: 1px solid var(--bd); background: rgba(255,255,255,.86);
+  backdrop-filter: blur(14px); display: flex; align-items: center; padding: 6px;
+  box-shadow: 0 8px 26px -14px rgba(0,0,0,.4);
+}
+.dock .t { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; color: var(--fg-2); font-size: 10px; font-weight: 600; }
+.dock .t[data-on="true"] { color: var(--fg); }
+.dock .t svg { width: 19px; height: 19px; }
+.dock-fog { position: absolute; left: 0; right: 0; bottom: 0; height: 96px; z-index: 6; pointer-events: none;
+  background: linear-gradient(to top, rgba(255,255,255,.94) 42%, rgba(255,255,255,0)); }
+
+/* ── shared inner primitives ───────────────────────────────────── */
+.hdr-row { display: flex; align-items: flex-start; gap: 12px; padding: 2px 2px 0; }
+.hdr-row h2 { font-size: 30px; font-weight: 700; letter-spacing: -.038em; line-height: 1.1; margin: 0; }
+.hdr-row p { font-size: 13px; color: var(--fg-2); margin: 2px 0 0; }
+.btn-primary {
+  height: 40px; padding: 0 14px; border-radius: 12px; background: var(--fg); color: #fff;
+  font-size: 13.5px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; letter-spacing: -.01em;
+}
+.btn-primary:disabled, .btn-primary[aria-disabled="true"] { opacity: .38; }
+.btn-primary svg { width: 16px; height: 16px; }
+.searchrow { display: flex; gap: 8px; align-items: center; }
+.searchfield { position: relative; flex: 1; min-width: 0; }
+.searchfield svg { position: absolute; left: 12px; top: 13px; color: var(--fg-2); width: 17px; height: 17px; }
+.searchfield input {
+  width: 100%; height: 44px; border-radius: 12px; border: 1px solid var(--bd); background: var(--mut);
+  padding: 0 12px 0 38px; font-size: 15px; outline: none; color: var(--fg);
+}
+.searchfield input::placeholder { color: var(--fg-2); }
+.searchfield input:focus { border-color: var(--fg); background: var(--bg); }
+.sq-btn { width: 44px; height: 44px; border-radius: 12px; border: 1px solid var(--bd); background: var(--mut); display: grid; place-items: center; position: relative; flex: none; }
+.sq-btn[data-on="true"] { background: var(--fg); border-color: var(--fg); color: #fff; }
+.sq-btn .dot { position: absolute; top: 7px; right: 7px; width: 7px; height: 7px; border-radius: 999px; background: var(--fg); border: 1.5px solid #fff; }
+.rail { display: flex; gap: 7px; overflow-x: auto; scrollbar-width: none; margin: 0 -16px; padding: 1px 16px 2px; }
+.rail::-webkit-scrollbar { display: none; }
+.pillbtn {
+  height: 36px; padding: 0 13px; border-radius: 11px; background: var(--mut); color: var(--fg-2);
+  font-size: 12.5px; font-weight: 600; letter-spacing: -.01em; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; flex: none;
+}
+.pillbtn b { font-variant-numeric: tabular-nums; font-weight: 600; opacity: .75; }
+.pillbtn[data-on="true"] { background: var(--fg); color: #fff; }
+.pillbtn[data-on="true"] b { opacity: .68; }
+.group { border-radius: 16px; background: var(--mut); overflow: hidden; }
+.group > * + * { border-top: 1px solid var(--bd); }
+.seclabel { font-size: 11px; font-weight: 650; letter-spacing: .1em; text-transform: uppercase; color: var(--fg-2); padding: 0 4px; display: flex; align-items: baseline; gap: 8px; }
+.seclabel span { margin-left: auto; font-size: 11.5px; letter-spacing: 0; text-transform: none; font-variant-numeric: tabular-nums; }
+.empty { padding: 34px 20px; text-align: center; color: var(--fg-2); font-size: 13.5px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.empty .ic { width: 44px; height: 44px; border-radius: 999px; background: var(--sec); display: grid; place-items: center; }
+.empty strong { color: var(--fg); font-size: 15px; font-weight: 600; }
+.stackcol { display: flex; flex-direction: column; }
+
+/* ── product row ───────────────────────────────────────────────── */
+.prow { display: flex; align-items: stretch; background: transparent; }
+.prow .main { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; padding: 11px 12px; text-align: left; }
+.prow .main:active { background: var(--sec); }
+.thumb { width: 52px; height: 52px; border-radius: 13px; flex: none; position: relative; overflow: hidden; border: 1px solid rgba(0,0,0,.06); }
+.thumb[data-hidden="true"] { opacity: .42; }
+.prow .txt { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 3px; }
+.prow .nm { font-size: 15px; font-weight: 600; letter-spacing: -.012em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 6px; }
+.prow .nm span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.tagpill { font-size: 10.5px; font-weight: 600; padding: 2px 7px; border-radius: 999px; background: var(--sec); color: var(--fg-2); border: 1px solid var(--bd); flex: none; }
+.prow .mt { font-size: 12.5px; color: var(--fg-2); display: flex; align-items: center; gap: 6px; white-space: nowrap; overflow: hidden; }
+.prow .mt b { color: var(--fg); font-weight: 600; font-variant-numeric: tabular-nums; }
+.dot { width: 6px; height: 6px; border-radius: 999px; flex: none; }
+.dot.ok { background: var(--emer); } .dot.low { background: var(--amber); } .dot.out { background: var(--dstr); }
+.prow .more { width: 46px; border-left: 1px solid var(--bd); display: grid; place-items: center; color: var(--fg-2); flex: none; }
+.prow .more:active { background: var(--sec); }
+
+/* ── in-phone sheet ────────────────────────────────────────────── */
+.scrim { position: absolute; inset: 0; z-index: 20; background: rgba(0,0,0,.42); opacity: 0; pointer-events: none; transition: opacity .26s; }
+.scrim[data-open="true"] { opacity: 1; pointer-events: auto; }
+.sheet {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 21; background: var(--bg);
+  border-radius: 22px 22px 0 0; border-top: 1px solid var(--bd); max-height: 84%;
+  display: flex; flex-direction: column; transform: translateY(102%);
+  transition: transform .3s cubic-bezier(.32,.72,0,1);
+  box-shadow: 0 -10px 34px -14px rgba(0,0,0,.4);
+}
+.sheet[data-open="true"] { transform: translateY(0); }
+.sheet .grab { width: 36px; height: 4px; border-radius: 999px; background: var(--bd); margin: 10px auto 0; flex: none; }
+.sheet .sh-head { padding: 12px 18px 10px; }
+.sheet .sh-head h3 { font-size: 15.5px; font-weight: 650; letter-spacing: -.015em; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sheet .sh-head p { font-size: 12.5px; color: var(--fg-2); margin: 2px 0 0; }
+.sheet .sh-body { overflow-y: auto; padding: 0 14px; scrollbar-width: none; }
+.sheet .sh-body::-webkit-scrollbar { display: none; }
+.sheet .sh-foot { padding: 10px 14px calc(14px + 8px); flex: none; }
+.actionlist { border-radius: 14px; border: 1px solid var(--bd); overflow: hidden; margin-bottom: 10px; background: var(--bg); }
+.actionlist > * + * { border-top: 1px solid var(--bd); }
+.act { display: flex; align-items: center; gap: 13px; width: 100%; min-height: 54px; padding: 8px 13px; text-align: left; }
+.act:active { background: var(--sec); }
+.act .ic { width: 36px; height: 36px; border-radius: 11px; background: var(--mut); display: grid; place-items: center; flex: none; color: var(--fg-2); }
+.act .lb { flex: 1; min-width: 0; }
+.act .lb strong { display: block; font-size: 15px; font-weight: 550; letter-spacing: -.01em; }
+.act .lb small { display: block; font-size: 12.5px; color: var(--fg-2); }
+.act[data-danger="true"] .ic { background: rgba(220,38,38,.1); color: var(--dstr); }
+.act[data-danger="true"] .lb strong { color: var(--dstr); }
+.act .tick { color: var(--fg); opacity: 0; }
+.act[data-sel="true"] .tick { opacity: 1; }
+.ghostbtn { width: 100%; min-height: 50px; border-radius: 14px; border: 1px solid var(--bd); font-size: 15px; font-weight: 600; letter-spacing: -.01em; display: grid; place-items: center; }
+.ghostbtn:active { background: var(--sec); }
+.wide-primary { width: 100%; min-height: 50px; border-radius: 14px; background: var(--fg); color: #fff; font-size: 15px; font-weight: 600; letter-spacing: -.01em; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.wide-primary[aria-disabled="true"] { opacity: .35; }
+
+/* ── switch ────────────────────────────────────────────────────── */
+.sw { width: 42px; height: 25px; border-radius: 999px; background: var(--bd); position: relative; transition: background .18s; flex: none; }
+.sw i { position: absolute; top: 2.5px; left: 2.5px; width: 20px; height: 20px; border-radius: 999px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.28); transition: transform .18s; display: block; }
+.sw[data-on="true"] { background: var(--fg); }
+.sw[data-on="true"] i { transform: translateX(17px); }
+
+/* ══════════ SCREEN 2 — the form ══════════ */
+.steprail { display: flex; gap: 5px; padding: 0 0 2px; }
+.step {
+  flex: 1; min-width: 0; height: 52px; border-radius: 13px; background: var(--mut);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  font-size: 12px; font-weight: 600; letter-spacing: -.01em; color: var(--fg-2); position: relative;
+}
+.step[data-on="true"] { background: var(--fg); color: #fff; }
+.step .mark { width: 15px; height: 15px; border-radius: 999px; border: 1.5px solid currentColor; opacity: .4; display: grid; place-items: center; }
+.step .mark svg { width: 10px; height: 10px; }
+.step[data-done="true"] .mark { opacity: 1; border-color: transparent; background: var(--emer); color: #fff; }
+.step[data-on="true"][data-done="true"] .mark { background: #fff; color: var(--fg); }
+.progline { height: 3px; border-radius: 999px; background: var(--sec); overflow: hidden; margin: 10px 2px 0; }
+.progline i { display: block; height: 100%; background: var(--fg); border-radius: 999px; transition: width .35s cubic-bezier(.32,.72,0,1); }
+
+.field { display: flex; flex-direction: column; gap: 7px; }
+.field > label { font-size: 13px; font-weight: 600; letter-spacing: -.008em; display: flex; align-items: baseline; gap: 8px; }
+.field > label em { margin-left: auto; font-style: normal; font-size: 11.5px; font-weight: 500; color: var(--fg-2); font-variant-numeric: tabular-nums; }
+.field input[type="text"], .field input[type="number"], .field textarea {
+  width: 100%; min-height: 46px; border-radius: 12px; border: 1px solid var(--bd); background: var(--bg);
+  padding: 12px 13px; font-size: 15.5px; outline: none; color: var(--fg); resize: none; line-height: 1.4;
+}
+.field textarea { min-height: 104px; }
+.field input:focus, .field textarea:focus { border-color: var(--fg); box-shadow: 0 0 0 3px rgba(26,26,26,.09); }
+.field .help { font-size: 12px; color: var(--fg-2); }
+.slugline { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--fg-2); padding: 2px 2px 0; }
+.slugline code { font-family: var(--mono); font-size: 11.5px; color: var(--fg); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.slugline svg { width: 14px; height: 14px; flex: none; }
+.slugline button { margin-left: auto; font-size: 12.5px; font-weight: 600; color: var(--fg); text-decoration: underline; text-underline-offset: 3px; flex: none; }
+.disclose { width: 100%; display: flex; align-items: center; gap: 11px; min-height: 54px; padding: 8px 14px; text-align: left; }
+.disclose:active { background: var(--sec); }
+.disclose .lb { flex: 1; min-width: 0; }
+.disclose .lb strong { display: block; font-size: 14.5px; font-weight: 550; }
+.disclose .lb small { display: block; font-size: 12px; color: var(--fg-2); }
+.disclose .chev { color: var(--fg-2); transition: transform .2s; }
+.disclose[aria-expanded="true"] .chev { transform: rotate(90deg); }
+.disclosed { padding: 2px 14px 14px; }
+
+.moneyrow { display: flex; gap: 9px; }
+.curseg { display: flex; gap: 3px; background: var(--mut); border-radius: 12px; padding: 3px; flex: none; }
+.curseg button { width: 42px; height: 40px; border-radius: 9px; font-size: 12.5px; font-weight: 650; color: var(--fg-2); }
+.curseg button[data-on="true"] { background: var(--bg); color: var(--fg); box-shadow: 0 1px 2px rgba(0,0,0,.1); }
+.bigmoney { flex: 1; min-width: 0; position: relative; }
+.bigmoney span { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); font-size: 17px; color: var(--fg-2); }
+.bigmoney input { padding-left: 30px !important; font-size: 19px !important; font-weight: 650; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.pickerbtn { width: 100%; min-height: 46px; border-radius: 12px; border: 1px solid var(--bd); background: var(--bg); display: flex; align-items: center; gap: 10px; padding: 0 13px; font-size: 15.5px; text-align: left; }
+.pickerbtn:active { background: var(--sec); }
+.pickerbtn .ph { color: var(--fg-2); }
+.pickerbtn svg { margin-left: auto; color: var(--fg-2); }
+.stepper { display: flex; align-items: center; gap: 0; border: 1px solid var(--bd); border-radius: 12px; overflow: hidden; height: 46px; }
+.stepper button { width: 48px; height: 100%; display: grid; place-items: center; color: var(--fg); }
+.stepper button:active { background: var(--sec); }
+.stepper input { flex: 1; min-width: 0; height: 100%; border: 0 !important; border-left: 1px solid var(--bd) !important; border-right: 1px solid var(--bd) !important; border-radius: 0 !important; text-align: center; font-size: 16px !important; font-weight: 600; font-variant-numeric: tabular-nums; min-height: 0 !important; }
+.stockstate { display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--fg-2); }
+
+.mediahead { display: flex; align-items: center; gap: 8px; }
+.mediahead h4 { font-size: 13.5px; font-weight: 650; margin: 0; }
+.mediahead span { margin-left: auto; font-size: 11.5px; font-weight: 600; color: var(--fg-2); font-variant-numeric: tabular-nums; }
+.dropzone {
+  width: 100%; border: 1.5px dashed var(--bd); border-radius: 15px; background: var(--mut);
+  padding: 20px 14px; display: flex; flex-direction: column; align-items: center; gap: 7px; text-align: center;
+}
+.dropzone:active { background: var(--sec); }
+.dropzone .ic { width: 40px; height: 40px; border-radius: 999px; background: var(--bg); display: grid; place-items: center; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+.dropzone strong { font-size: 14.5px; font-weight: 600; }
+.dropzone small { font-size: 11.5px; color: var(--fg-2); }
+.tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.tile { position: relative; aspect-ratio: 1; border-radius: 13px; overflow: hidden; border: 1px solid var(--bd); }
+.tile .surface { position: absolute; inset: 0; }
+.tile .cov { position: absolute; left: 5px; top: 5px; font-size: 9.5px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; background: var(--fg); color: #fff; padding: 3px 6px; border-radius: 999px; }
+.tile .rm { position: absolute; right: 4px; top: 4px; width: 26px; height: 26px; border-radius: 999px; background: rgba(255,255,255,.94); color: var(--dstr); display: grid; place-items: center; box-shadow: 0 1px 4px rgba(0,0,0,.24); }
+.tile .rm svg { width: 13px; height: 13px; }
+.tile .ord { position: absolute; left: 0; right: 0; bottom: 0; height: 24px; background: linear-gradient(to top, rgba(0,0,0,.5), transparent); color: #fff; font-size: 10.5px; font-weight: 650; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 3px; }
+.tile.up { display: grid; place-items: center; background: var(--mut); border-style: dashed; gap: 6px; }
+.tile.up .bar { position: absolute; left: 12px; right: 12px; bottom: 14px; height: 3px; border-radius: 999px; background: var(--bd); overflow: hidden; }
+.tile.up .bar i { display: block; height: 100%; background: var(--fg); }
+.tile.up .pct { position: absolute; bottom: 22px; left: 0; right: 0; text-align: center; font-size: 10.5px; font-weight: 650; color: var(--fg-2); }
+
+.tagbox { display: flex; flex-wrap: wrap; gap: 7px; }
+.tagchip { display: inline-flex; align-items: center; gap: 3px; height: 34px; padding: 0 5px 0 12px; border-radius: 999px; background: var(--sec); font-size: 13px; font-weight: 550; }
+.tagchip button { width: 26px; height: 26px; border-radius: 999px; display: grid; place-items: center; color: var(--fg-2); }
+.tagchip button:active { background: rgba(0,0,0,.08); }
+.tagchip svg { width: 13px; height: 13px; }
+.tagsug { height: 34px; padding: 0 12px; border-radius: 999px; border: 1px dashed var(--bd); font-size: 13px; color: var(--fg-2); display: inline-flex; align-items: center; gap: 5px; }
+.tagsug:active { background: var(--sec); }
+
+/* sticky action bar (mirrors the cart's checkout card) */
+.actionbar { position: absolute; left: 0; right: 0; bottom: 72px; z-index: 8; padding: 0 12px; }
+.actionbar .card {
+  border-radius: 18px; border: 1px solid var(--bd); background: rgba(255,255,255,.94); backdrop-filter: blur(14px);
+  box-shadow: 0 10px 30px -16px rgba(0,0,0,.45); overflow: hidden;
+}
+.actionbar .blocked { display: flex; align-items: center; gap: 8px; padding: 9px 13px; border-bottom: 1px solid var(--bd); font-size: 12.5px; color: var(--fg-2); background: var(--mut); width: 100%; text-align: left; }
+.actionbar .blocked b { color: var(--fg); font-weight: 600; }
+.actionbar .row { display: flex; align-items: center; gap: 9px; padding: 9px 10px; }
+.actionbar .review { height: 44px; padding: 0 13px; border-radius: 12px; border: 1px solid var(--bd); display: inline-flex; align-items: center; gap: 7px; font-size: 13.5px; font-weight: 600; flex: none; }
+.actionbar .review:active { background: var(--sec); }
+.actionbar .go { flex: 1; height: 44px; border-radius: 12px; background: var(--fg); color: #fff; font-size: 14.5px; font-weight: 650; letter-spacing: -.012em; display: inline-flex; align-items: center; justify-content: center; gap: 7px; }
+.actionbar .go[aria-disabled="true"] { opacity: .34; }
+
+/* review drawer contents */
+.preview { display: flex; gap: 12px; padding: 13px; border-radius: 15px; background: var(--mut); }
+.preview .cov { width: 76px; height: 76px; border-radius: 13px; flex: none; overflow: hidden; border: 1px solid var(--bd); display: grid; place-items: center; color: var(--fg-2); background: var(--bg); }
+.preview .info { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 4px; }
+.preview .info strong { font-size: 15.5px; font-weight: 650; letter-spacing: -.015em; }
+.preview .info .pr { font-size: 17px; font-weight: 700; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.preview .info small { font-size: 12px; color: var(--fg-2); }
+.checkrow { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 50px; padding: 6px 13px; text-align: left; }
+.checkrow:active { background: var(--sec); }
+.checkrow .bx { width: 21px; height: 21px; border-radius: 999px; border: 1.5px solid var(--bd); display: grid; place-items: center; flex: none; color: transparent; }
+.checkrow[data-done="true"] .bx { background: var(--emer); border-color: var(--emer); color: #fff; }
+.checkrow .lb { flex: 1; min-width: 0; }
+.checkrow .lb strong { display: block; font-size: 14px; font-weight: 550; }
+.checkrow .lb small { display: block; font-size: 11.5px; color: var(--fg-2); }
+.pubrow { display: flex; align-items: center; gap: 12px; padding: 12px 13px; }
+.pubrow .lb { flex: 1; min-width: 0; }
+.pubrow .lb strong { display: block; font-size: 14.5px; font-weight: 600; }
+.pubrow .lb small { display: block; font-size: 12px; color: var(--fg-2); }
+
+/* created state */
+.created { position: absolute; inset: 0; z-index: 30; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 40px; text-align: center; opacity: 0; pointer-events: none; transition: opacity .3s; }
+.created[data-open="true"] { opacity: 1; pointer-events: auto; }
+.created .ring { width: 66px; height: 66px; border-radius: 999px; background: rgba(5,150,105,.12); color: var(--emer); display: grid; place-items: center; }
+.created .ring svg { width: 30px; height: 30px; }
+.created strong { font-size: 19px; font-weight: 650; letter-spacing: -.02em; }
+.created p { font-size: 13.5px; color: var(--fg-2); }
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet, .scrim, .progline i, .sw, .sw i, .created, .appbar .bar h1 { transition: none !important; }
+}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <g id="i-search"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></g>
+    <g id="i-sliders"><path d="M4 6h10M18 6h2M4 12h2M10 12h10M4 18h8M16 18h4"/><circle cx="16" cy="6" r="2"/><circle cx="8" cy="12" r="2"/><circle cx="14" cy="18" r="2"/></g>
+    <g id="i-plus"><path d="M12 5v14M5 12h14"/></g>
+    <g id="i-more"><circle cx="5" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="19" cy="12" r="1.4"/></g>
+    <g id="i-left"><path d="m15 18-6-6 6-6"/></g>
+    <g id="i-right"><path d="m9 18 6-6-6-6"/></g>
+    <g id="i-x"><path d="M18 6 6 18M6 6l12 12"/></g>
+    <g id="i-check"><path d="m20 6-11 11-5-5"/></g>
+    <g id="i-pencil"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></g>
+    <g id="i-eye"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></g>
+    <g id="i-eyeoff"><path d="M10.6 6.2A9.9 9.9 0 0 1 12 6c6.4 0 10 7 10 7a17 17 0 0 1-3 3.9M6.6 6.6A17 17 0 0 0 2 13s3.6 7 10 7a9.7 9.7 0 0 0 5.1-1.4"/><path d="M3 3l18 18"/><path d="M9.9 10a3 3 0 0 0 4.2 4.2"/></g>
+    <g id="i-trash"><path d="M4 7h16M10 11v6M14 11v6"/><path d="M6 7l1 13h10l1-13M9 7V4h6v3"/></g>
+    <g id="i-ext"><path d="M14 4h6v6M20 4l-9 9"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></g>
+    <g id="i-box"><path d="M21 8v8l-9 5-9-5V8l9-5Z"/><path d="m3 8 9 5 9-5M12 13v9"/></g>
+    <g id="i-camera"><path d="M3 8.5A1.5 1.5 0 0 1 4.5 7H7l1.5-2h7L17 7h2.5A1.5 1.5 0 0 1 21 8.5v9A1.5 1.5 0 0 1 19.5 19h-15A1.5 1.5 0 0 1 3 17.5Z"/><circle cx="12" cy="13" r="3.4"/></g>
+    <g id="i-image"><rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="8.5" cy="9.5" r="1.6"/><path d="m4 17 5-5 4 4 3-2.5 4 3.5"/></g>
+    <g id="i-star"><path d="m12 3.5 2.6 5.4 5.9.8-4.3 4.1 1 5.9-5.2-2.8-5.2 2.8 1-5.9L3.5 9.7l5.9-.8Z"/></g>
+    <g id="i-home"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1Z"/></g>
+    <g id="i-bag"><path d="M5 7h14l-1 13H6Z"/><path d="M9 7a3 3 0 0 1 6 0"/></g>
+    <g id="i-users"><circle cx="9" cy="8" r="3.2"/><path d="M3 20a6 6 0 0 1 12 0M17 11a3 3 0 0 0 0-6M17.5 20a5.7 5.7 0 0 0-1.6-4"/></g>
+    <g id="i-tag"><path d="M3 12.5V4a1 1 0 0 1 1-1h8.5L21 11.5 12.5 20Z"/><circle cx="7.5" cy="7.5" r="1.4"/></g>
+    <g id="i-alert"><path d="M12 4 2.8 20h18.4Z"/><path d="M12 10v4M12 17.2v.1"/></g>
+    <g id="i-arrowr"><path d="M4 12h15M13 6l6 6-6 6"/></g>
+    <g id="i-cover"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3 15l5-4 4 3 3-2 6 4"/></g>
+    <g id="i-minus"><path d="M5 12h14"/></g>
+    <g id="i-clip"><path d="M9 4h6v3H9z"/><path d="M6 6h12v14H6z"/><path d="m9.5 13 1.8 1.8 3.4-3.4"/></g>
+  </defs>
+</svg>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<header class="masthead">
+  <div class="wrap stack g20">
+    <p class="kicker">Kalakraft · Admin · Mobile rebuild</p>
+    <h1 class="prose">The catalogue, rebuilt for the <em>hand</em> that runs it.</h1>
+    <p class="lede prose">
+      Two admin screens carry the whole catalogue — the list you manage it from, and the form
+      you add to it with. Both were designed at 1440&nbsp;pt and folded down. This is what they
+      become when the phone is the brief, not the leftover.
+    </p>
+    <div class="rule"></div>
+    <div class="facts">
+      <span><b>Scope</b> · 2 screens, below <code>lg</code></span>
+      <span><b>Reference</b> · 390 × 844 pt</span>
+      <span><b>System</b> · shadcn / new-york, zinc, radius 0.625rem</span>
+      <span><b>Desktop</b> · unchanged</span>
+    </div>
+  </div>
+</header>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<section class="band">
+  <div class="wrap">
+    <div class="band-head">
+      <p class="kicker">01 — The audit</p>
+      <h2 class="prose">What a 390-point screen does to these two pages</h2>
+      <p class="note prose">
+        Not "it looks cramped". Each of these is a specific thing an admin cannot do, or pays for,
+        on a phone today — traced back to the rule in the code that causes it.
+      </p>
+    </div>
+
+    <div class="cols-2">
+      <article class="panel panel-pad stack g20">
+        <div class="stack g6">
+          <p class="kicker">Screen one</p>
+          <h3>/dashboard/admin/products</h3>
+        </div>
+        <ul class="audit">
+          <li>
+            <span class="sev costly">₹</span>
+            <div>
+              <h4>Half the first screen is numbers you cannot act on</h4>
+              <p>Four stat cards stack 2×2 above everything. Roughly 160&nbsp;pt of the opening view goes to Total / Active / Low&nbsp;stock / Out — and none of them is tappable, so knowing six items are low does not get you to those six items.</p>
+              <span class="ev">grid-cols-2 · four Card + CardContent p-4 · no href</span>
+            </div>
+          </li>
+          <li>
+            <span class="sev costly">₹</span>
+            <div>
+              <h4>Search is below the fold, on the one screen that needs it most</h4>
+              <p>The field sits inside the list card, after the stats and the category rail — roughly 300&nbsp;pt down. With a catalogue of any size, the first thing you reach for is the thing you have to scroll to.</p>
+              <span class="ev">CardHeader &gt; Input, after the stats grid and the rail</span>
+            </div>
+          </li>
+          <li>
+            <span class="sev costly">₹</span>
+            <div>
+              <h4>Three frames wrap every row</h4>
+              <p>Page padding, then a bordered <code>Card</code>, then the list's own padding. A row gets about 326&nbsp;pt of a 390&nbsp;pt screen, and the card outline earns none of it — it draws a box around something already the width of the phone.</p>
+              <span class="ev">px-4 → Card border → CardContent → li px-4</span>
+            </div>
+          </li>
+          <li>
+            <span class="sev costly">₹</span>
+            <div>
+              <h4>Hiding one product costs three taps and shows no state</h4>
+              <p>The desktop table gives status its own column with a switch. The phone card drops it: nothing on the row says live or hidden, and changing it means ⋯ → sheet → tap.</p>
+              <span class="ev">Switch column is inside DesktopTableFrame only</span>
+            </div>
+          </li>
+          <li>
+            <span class="sev costly">₹</span>
+            <div>
+              <h4>Categories arrive as a sideways scroll</h4>
+              <p>Each rail button carries an icon, a label and a count badge, so two and a half fit across. Filtering by a category near the end of the list means swiping a strip to find it.</p>
+              <span class="ev">nav overflow-x-auto, md:flex-col</span>
+            </div>
+          </li>
+          <li>
+            <span class="sev">·</span>
+            <div>
+              <h4>Two catalogues of the same rows are in the DOM</h4>
+              <p>The desktop table is rendered and hidden with <code>hidden md:block</code>; the card list is rendered and hidden with <code>md:hidden</code>. A phone parses a six-column table it will never paint.</p>
+              <span class="ev">DesktopTableFrame + DataCardList, both mounted</span>
+            </div>
+          </li>
+          <li>
+            <span class="sev">·</span>
+            <div>
+              <h4>"Low stock" means two different numbers</h4>
+              <p>This page calls ten or fewer low; the dashboard's own alert counts five or fewer. Same words, two answers, no way to tell which one you are reading.</p>
+              <span class="ev">LOW_STOCK_THRESHOLD = 10 · api/admin/metrics = 5</span>
+            </div>
+          </li>
+        </ul>
+      </article>
+
+      <article class="panel panel-pad stack g20">
+        <div class="stack g6">
+          <p class="kicker">Screen two</p>
+          <h3>/dashboard/admin/products/new</h3>
+        </div>
+        <ul class="audit">
+          <li>
+            <span class="sev broken">✕</span>
+            <div>
+              <h4>You cannot remove a photo you picked by mistake</h4>
+              <p>The tile's × and its drag grip are <code>opacity-0</code> until <code>group-hover</code>. A touch screen never hovers, so both controls are invisible — the only way to reach the × is to tab a focus ring onto it.</p>
+              <span class="ev">opacity-0 group-hover:opacity-100 focus:opacity-100</span>
+            </div>
+          </li>
+          <li>
+            <span class="sev broken">✕</span>
+            <div>
+              <h4>You cannot choose which photo is the cover</h4>
+              <p>Order is the cover — first image wins — and reordering is HTML5 <code>draggable</code> with <code>onDragStart</code>/<code>onDrop</code>. Touch does not fire those events, so on a phone the cover is whichever file the picker handed over first.</p>
+              <span class="ev">draggable + onDragStart/onDragOver/onDrop</span>
+            </div>
+          </li>
+          <li>
+            <span class="sev broken">✕</span>
+            <div>
+              <h4>You cannot save it as a draft</h4>
+              <p>The Visible / Draft switch lives in the command bar behind <code>hidden sm:flex</code>, and it is the only <code>isActive</code> control on the page. Below 640&nbsp;pt every product you create publishes to the storefront immediately.</p>
+              <span class="ev">div className="hidden … sm:flex" wrapping the only Switch</span>
+            </div>
+          </li>
+          <li>
+            <span class="sev broken">✕</span>
+            <div>
+              <h4>The page's command bar rides over the app's header</h4>
+              <p>Both are <code>sticky top-0 z-30</code>. They claim the same offset and the same layer, so the later one in the DOM — the page's — paints across the header, its back chevron and the account button.</p>
+              <span class="ev">MobileHeader sticky top-0 z-30 · command bar sticky top-0 z-30</span>
+            </div>
+          </li>
+          <li>
+            <span class="sev costly">₹</span>
+            <div>
+              <h4>The live preview is a screen-and-a-half below the field you are typing in</h4>
+              <p>Preview and checklist are the <code>lg</code> right column. Below <code>lg</code> they fall past the entire form — two cards nobody scrolls to, describing what is on screen above them.</p>
+              <span class="ev">aside lg:sticky, stacked after the form on mobile</span>
+            </div>
+          </li>
+          <li>
+            <span class="sev costly">₹</span>
+            <div>
+              <h4>The four tabs do not fit, so they scroll under a sliding thumb</h4>
+              <p>Icon, label and padding put the row near 410&nbsp;pt inside 358&nbsp;pt of screen. Discovery starts off-screen; the animated indicator measures against a container that is itself moving.</p>
+              <span class="ev">SegmentedControl overflow-x-auto, four icon+label items</span>
+            </div>
+          </li>
+          <li>
+            <span class="sev costly">₹</span>
+            <div>
+              <h4>Step one is the longest step, and most of it is optional</h4>
+              <p>Name, slug, short description, description, specifications and care — six fields, two of them tall optional textareas, roughly 940&nbsp;pt of column. The required fields are buried by the ones nobody fills on a phone.</p>
+              <span class="ev">BasicsFields: 4 inputs + 3 textareas, all expanded</span>
+            </div>
+          </li>
+          <li>
+            <span class="sev">·</span>
+            <div>
+              <h4>The copy is written for a mouse</h4>
+              <p>"Drag product images here, or click to browse" describes a gesture the device does not have, on the step where the phone is actually the better tool — the photos are already on it.</p>
+              <span class="ev">dropzone label copy</span>
+            </div>
+          </li>
+        </ul>
+      </article>
+    </div>
+
+    <div class="legend" style="margin-top:26px">
+      <span><i style="background:var(--bad)"></i> Broken — the task cannot be completed on a phone</span>
+      <span><i style="background:var(--ember)"></i> Costly — possible, but it charges taps or screen for nothing</span>
+      <span><i style="background:var(--ink-3)"></i> Noise</span>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<section class="band">
+  <div class="wrap stack g28">
+    <div class="band-head" style="margin-bottom:0">
+      <p class="kicker">02 — The rules</p>
+      <h2 class="prose">Five decisions everything below follows from</h2>
+    </div>
+    <div class="rules">
+      <div class="rule-cell">
+        <span class="n">i</span>
+        <h3>One surface, hairlines inside</h3>
+        <p>No card inside a card. A list is a single filled block divided by rules, the way the mobile Overview already does it — the phone edge is the frame.</p>
+      </div>
+      <div class="rule-cell">
+        <span class="n">ii</span>
+        <h3>A number you cannot tap is decoration</h3>
+        <p>The four stat cards become the four filters. Same counts, a quarter of the height, and now "6 low" is the way to reach those six.</p>
+      </div>
+      <div class="rule-cell">
+        <span class="n">iii</span>
+        <h3>Nothing behind hover</h3>
+        <p>Every control is visible at rest and at least 44&nbsp;pt. Reordering is a tap and a named action, never a drag the OS will not report.</p>
+      </div>
+      <div class="rule-cell">
+        <span class="n">iv</span>
+        <h3>One question per screen</h3>
+        <p>The form asks four things in turn. What is it, what does it cost, what does it look like, how is it found — and the fifth screen is the one where you confirm.</p>
+      </div>
+      <div class="rule-cell">
+        <span class="n">v</span>
+        <h3>The verb stays under the thumb</h3>
+        <p>Continue, and later Create, live in a bar above the dock — the same place and the same shape as the cart's checkout card, so the app has one answer for "the action".</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<section class="band">
+  <div class="wrap">
+    <div class="band-head">
+      <p class="kicker">03 — Screen one</p>
+      <h2 class="prose">Products — <em>a catalogue you can steer with one thumb</em></h2>
+      <p class="note prose">
+        Live prototype. Type in the search field, switch the filters, open a row's actions,
+        open the refine sheet, flip a product between live and hidden.
+      </p>
+    </div>
+
+    <div class="stage">
+      <div class="device-col">
+        <div class="device">
+          <div class="screen" id="s1">
+            <div class="appbar">
+              <div class="statusbar">
+                <span>9:41</span>
+                <span class="sig"><i style="height:5px"></i><i style="height:7px"></i><i style="height:9px"></i><i style="height:11px"></i></span>
+              </div>
+              <div class="bar">
+                <h1 id="s1-bartitle" data-hidden="true">Products</h1>
+                <span class="avatar">YC</span>
+              </div>
+            </div>
+
+            <div class="body" id="s1-body">
+              <div class="stackcol" style="gap:16px;padding-bottom:120px">
+                <div class="hdr-row">
+                  <div style="flex:1;min-width:0">
+                    <h2>Products</h2>
+                    <p id="s1-sub">42 pieces · 38 live</p>
+                  </div>
+                  <button class="btn-primary" type="button" aria-label="New product">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-plus"/></svg>
+                    New
+                  </button>
+                </div>
+
+                <div class="searchrow">
+                  <div class="searchfield">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><use href="#i-search"/></svg>
+                    <input id="s1-q" type="text" placeholder="Search products" aria-label="Search products">
+                  </div>
+                  <button class="sq-btn" id="s1-refine" type="button" aria-label="Refine">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><use href="#i-sliders"/></svg>
+                    <span class="dot" id="s1-refinedot" hidden></span>
+                  </button>
+                </div>
+
+                <div class="rail" id="s1-chips" role="group" aria-label="Filter by status"></div>
+
+                <div class="stackcol" style="gap:9px">
+                  <div class="seclabel" id="s1-listlabel">All products <span id="s1-count">8 shown</span></div>
+                  <div class="group" id="s1-list"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="dock-fog"></div>
+            <div class="dock">
+              <div class="pill">
+                <span class="t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><use href="#i-home"/></svg>Home</span>
+                <span class="t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><use href="#i-bag"/></svg>Orders</span>
+                <span class="t" data-on="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><use href="#i-box"/></svg>Products</span>
+                <span class="t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><use href="#i-users"/></svg>Users</span>
+              </div>
+            </div>
+
+            <div class="scrim" id="s1-scrim"></div>
+
+            <!-- row actions -->
+            <div class="sheet" id="s1-actions" role="dialog" aria-label="Product actions">
+              <div class="grab"></div>
+              <div class="sh-head">
+                <h3 id="s1a-title">Product</h3>
+                <p id="s1a-sub"></p>
+              </div>
+              <div class="sh-body">
+                <div class="actionlist">
+                  <button class="act" type="button" data-act="edit">
+                    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><use href="#i-pencil"/></svg></span>
+                    <span class="lb"><strong>Edit product</strong><small>Photos, price, stock and copy</small></span>
+                  </button>
+                  <button class="act" type="button" data-act="toggle">
+                    <span class="ic" id="s1a-toggleic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><use href="#i-eyeoff"/></svg></span>
+                    <span class="lb"><strong id="s1a-togglelb">Hide from store</strong><small id="s1a-togglesub">Customers stop seeing it</small></span>
+                  </button>
+                  <button class="act" type="button" data-act="view">
+                    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><use href="#i-ext"/></svg></span>
+                    <span class="lb"><strong>View on storefront</strong><small>Open the customer's page</small></span>
+                  </button>
+                </div>
+                <div class="actionlist">
+                  <button class="act" type="button" data-danger="true" data-act="delete">
+                    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><use href="#i-trash"/></svg></span>
+                    <span class="lb"><strong>Delete product</strong><small>Permanent — cannot be undone</small></span>
+                  </button>
+                </div>
+              </div>
+              <div class="sh-foot"><button class="ghostbtn" type="button" data-close="s1">Cancel</button></div>
+            </div>
+
+            <!-- refine -->
+            <div class="sheet" id="s1-refinesheet" role="dialog" aria-label="Refine">
+              <div class="grab"></div>
+              <div class="sh-head"><h3>Refine</h3><p>Category, order and shortcuts</p></div>
+              <div class="sh-body">
+                <p class="seclabel" style="padding:6px 4px 8px">Category</p>
+                <div class="actionlist" id="s1-cats"></div>
+                <p class="seclabel" style="padding:6px 4px 8px">Sort by</p>
+                <div class="actionlist" id="s1-sorts"></div>
+                <p class="seclabel" style="padding:6px 4px 8px">Jump to</p>
+                <div class="actionlist">
+                  <button class="act" type="button">
+                    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><use href="#i-star"/></svg></span>
+                    <span class="lb"><strong>Highest rated</strong><small>What customers score best</small></span>
+                  </button>
+                  <button class="act" type="button">
+                    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><use href="#i-alert"/></svg></span>
+                    <span class="lb"><strong>Restock queue</strong><small>Set stock without opening each product</small></span>
+                  </button>
+                </div>
+              </div>
+              <div class="sh-foot"><button class="wide-primary" type="button" data-close="s1">Done</button></div>
+            </div>
+          </div>
+        </div>
+        <p class="device-cap">Tap anything — the prototype is live</p>
+      </div>
+
+      <div class="stack g28">
+        <ol class="anatomy">
+          <li>
+            <span class="pin">1</span>
+            <div>
+              <h4>The title is the page's, and the bar borrows it</h4>
+              <p>"Products" is set at 30&nbsp;pt in the content with the live count underneath, and the app bar stays empty until it scrolls past — the arrangement the Overview already uses. <em>New</em> sits beside it as a filled 40&nbsp;pt pill, so the one creative action on the screen reads as the one dark thing on it.</p>
+            </div>
+          </li>
+          <li>
+            <span class="pin">2</span>
+            <div>
+              <h4>Search first, and it stays</h4>
+              <p>The field is the second thing on the page instead of the seventh. Beside it, one 44&nbsp;pt button opens everything else — category, order, the two sibling pages — and wears a dot when a refinement is on, so state survives scrolling out of view.</p>
+            </div>
+          </li>
+          <li>
+            <span class="pin">3</span>
+            <div>
+              <h4>The stat cards became the filter rail</h4>
+              <p>All · Live · Hidden · Low · Out, each carrying the count that used to sit in a card. 160&nbsp;pt of read-only tiles becomes a 36&nbsp;pt rail where every number is also the route to the products behind it. Low spells out its threshold in the sheet, so "low" stops meaning two things.</p>
+            </div>
+          </li>
+          <li>
+            <span class="pin">4</span>
+            <div>
+              <h4>One block, hairlines, 74-point rows</h4>
+              <p>No card, no border, no nesting — the row runs the width of the phone. A 52&nbsp;pt photo, the name, then price and stock on one meta line with a severity dot. Hidden products dim their photo and say so; sold-through says "Out of stock" in red where the count would be.</p>
+            </div>
+          </li>
+          <li>
+            <span class="pin">5</span>
+            <div>
+              <h4>Tap the row to edit, tap ⋯ for the rest</h4>
+              <p>Editing is what you came for, so it is the whole row. The 46&nbsp;pt ⋯ column holds hide/publish, storefront and delete — each a 54&nbsp;pt target with a label, so nothing is guessed from an icon.</p>
+            </div>
+          </li>
+          <li>
+            <span class="pin">6</span>
+            <div>
+              <h4>Refine is one sheet, not three controls</h4>
+              <p>Category as a checked list with counts, sort order underneath, and the two sibling pages — Highest rated, and the restock queue — as jumps at the bottom. It replaces a rail that never fit and adds an order control the page never had.</p>
+            </div>
+          </li>
+        </ol>
+
+        <div class="panel panel-pad scroll-x">
+          <table class="ledger">
+            <thead><tr><th>Element</th><th>Was</th><th>Becomes</th></tr></thead>
+            <tbody>
+              <tr><td>Stats</td><td class="was">Four cards, ~160 pt, inert</td><td class="now">Five filter chips, 36 pt, every count a route</td></tr>
+              <tr><td>Search</td><td class="was">Inside the list card, ~300 pt down</td><td class="now">Second element, full width, 44 pt</td></tr>
+              <tr><td>Categories</td><td class="was">Sideways rail, 2.5 visible</td><td class="now">Checked list in the refine sheet, counts intact</td></tr>
+              <tr><td>Order</td><td class="was">Fixed — recently updated</td><td class="now">Five orders including stock and best-selling</td></tr>
+              <tr><td>Row</td><td class="was">326 pt wide inside three frames</td><td class="now">368 pt, one surface, hairline divided</td></tr>
+              <tr><td>Status</td><td class="was">Invisible until the sheet opens</td><td class="now">On the row — dimmed photo, "Hidden" chip</td></tr>
+              <tr><td>Edit</td><td class="was">⋯ → sheet → tap</td><td class="now">Tap the row</td></tr>
+              <tr><td>Table markup</td><td class="was">Mounted and hidden below md</td><td class="now">Not mounted below lg</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<section class="band">
+  <div class="wrap">
+    <div class="band-head">
+      <p class="kicker">04 — Screen two</p>
+      <h2 class="prose">New product — <em>four questions and a confirmation</em></h2>
+      <p class="note prose">
+        Live prototype. Move through the steps, add and reorder photos, pick a category,
+        open Review, and create the product.
+      </p>
+    </div>
+
+    <div class="stage">
+      <div class="device-col">
+        <div class="device">
+          <div class="screen" id="s2">
+            <div class="appbar">
+              <div class="statusbar">
+                <span>9:41</span>
+                <span class="sig"><i style="height:5px"></i><i style="height:7px"></i><i style="height:9px"></i><i style="height:11px"></i></span>
+              </div>
+              <div class="bar">
+                <button class="icon-btn" type="button" aria-label="Back">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-left"/></svg>
+                </button>
+                <h1>New product</h1>
+                <span class="avatar">YC</span>
+              </div>
+            </div>
+
+            <div class="body">
+              <div class="stackcol" style="gap:14px;padding-bottom:150px">
+                <div>
+                  <div class="steprail" id="s2-rail"></div>
+                  <div class="progline"><i id="s2-prog" style="width:0%"></i></div>
+                </div>
+                <div id="s2-step"></div>
+              </div>
+            </div>
+
+            <div class="actionbar">
+              <div class="card">
+                <button class="blocked" id="s2-blocked" type="button" hidden></button>
+                <div class="row">
+                  <button class="review" id="s2-review" type="button">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><use href="#i-clip"/></svg>
+                    Review
+                  </button>
+                  <button class="go" id="s2-go" type="button">
+                    <span id="s2-golabel">Continue</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><use href="#i-arrowr"/></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="dock-fog"></div>
+            <div class="dock">
+              <div class="pill">
+                <span class="t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><use href="#i-home"/></svg>Home</span>
+                <span class="t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><use href="#i-bag"/></svg>Orders</span>
+                <span class="t" data-on="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><use href="#i-box"/></svg>Products</span>
+                <span class="t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><use href="#i-users"/></svg>Users</span>
+              </div>
+            </div>
+
+            <div class="scrim" id="s2-scrim"></div>
+
+            <!-- category picker -->
+            <div class="sheet" id="s2-catsheet" role="dialog" aria-label="Choose a category">
+              <div class="grab"></div>
+              <div class="sh-head"><h3>Category</h3><p>Drives storefront filtering and roll-ups</p></div>
+              <div class="sh-body"><div class="actionlist" id="s2-catlist"></div></div>
+              <div class="sh-foot"><button class="ghostbtn" type="button" data-close="s2">Cancel</button></div>
+            </div>
+
+            <!-- photo actions -->
+            <div class="sheet" id="s2-tilesheet" role="dialog" aria-label="Photo actions">
+              <div class="grab"></div>
+              <div class="sh-head"><h3 id="s2-tiletitle">Photo 1</h3><p id="s2-tilesub">First photo is the cover</p></div>
+              <div class="sh-body"><div class="actionlist" id="s2-tileacts"></div></div>
+              <div class="sh-foot"><button class="ghostbtn" type="button" data-close="s2">Cancel</button></div>
+            </div>
+
+            <!-- review -->
+            <div class="sheet" id="s2-reviewsheet" role="dialog" aria-label="Review">
+              <div class="grab"></div>
+              <div class="sh-head"><h3>Review</h3><p id="s2-reviewsub">3 of 3 required steps done</p></div>
+              <div class="sh-body">
+                <div id="s2-preview"></div>
+                <p class="seclabel" style="padding:12px 4px 8px">Checklist</p>
+                <div class="actionlist" id="s2-checklist"></div>
+                <p class="seclabel" style="padding:12px 4px 8px">When created</p>
+                <div class="actionlist">
+                  <div class="pubrow">
+                    <span class="lb"><strong id="s2-publb">Publish to the store</strong><small id="s2-pubsub">Customers can see and buy it right away</small></span>
+                    <button class="sw" id="s2-pub" data-on="true" role="switch" aria-checked="true" aria-label="Publish when created"><i></i></button>
+                  </div>
+                </div>
+              </div>
+              <div class="sh-foot">
+                <button class="wide-primary" id="s2-create" type="button">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><use href="#i-check"/></svg>
+                  Create product
+                </button>
+              </div>
+            </div>
+
+            <div class="created" id="s2-created">
+              <span class="ring"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><use href="#i-check"/></svg></span>
+              <strong id="s2-createdname">Product created</strong>
+              <p id="s2-createdsub">Live on the storefront now.</p>
+              <button class="ghostbtn" style="max-width:200px" type="button" id="s2-reset">Start another</button>
+            </div>
+          </div>
+        </div>
+        <p class="device-cap">Tap anything — the prototype is live</p>
+      </div>
+
+      <div class="stack g28">
+        <ol class="anatomy">
+          <li>
+            <span class="pin">1</span>
+            <div>
+              <h4>Four steps that fit, and say where you are</h4>
+              <p>Short labels, no icons: <em>Basics · Price · Photos · Tags</em> across 368&nbsp;pt with room to spare. Each carries a ring that fills green when its step is satisfied, and a hairline under the rail tracks required progress. The rail replaces the page's own command bar entirely, so nothing competes with the app header for <code>top: 0</code>.</p>
+            </div>
+          </li>
+          <li>
+            <span class="pin">2</span>
+            <div>
+              <h4>Basics asks four things; the other two are folded</h4>
+              <p>Name, the URL it generates, the short description with its counter, and the full description. Specifications and care collapse into disclosure rows that report their own state — "Not added", "142 characters" — so the optional prose stops burying the required fields.</p>
+            </div>
+          </li>
+          <li>
+            <span class="pin">3</span>
+            <div>
+              <h4>The slug is a line of text until you want it</h4>
+              <p>It writes itself from the name and shows as <code>/products/…</code> under the field, with <em>Edit</em> beside it. The composite input with the prefix inside the border only appears if you ask for it — which on a phone is almost never.</p>
+            </div>
+          </li>
+          <li>
+            <span class="pin">4</span>
+            <div>
+              <h4>Price is set at 19 points, currency is three buttons</h4>
+              <p>A numeric keypad field with the symbol inside it, and INR/USD/EUR as a segmented control — three options do not deserve a portal and a scroll. Stock gets −/+ around the number, because on a phone adjusting by two should not mean selecting text.</p>
+            </div>
+          </li>
+          <li>
+            <span class="pin">5</span>
+            <div>
+              <h4>Photos: every control visible, reorder by naming it</h4>
+              <p>A 26&nbsp;pt × sits on every tile at rest. Tapping a tile opens <em>Make cover · Move earlier · Move later · Remove</em>, and the tile numbers itself so order is legible without dragging. Uploads take their own tile with a percentage. The dashed zone reads "Add photos — camera or library", which is what the device actually offers.</p>
+            </div>
+          </li>
+          <li>
+            <span class="pin">6</span>
+            <div>
+              <h4>Review is the confirmation, and it can be opened from anywhere</h4>
+              <p>One sheet holds what the desktop keeps in its right column: the live preview card, the checklist as jump targets, the publish switch that the phone did not have at all — and the Create button. It is the last screen before the product exists, which is the right place to decide whether it goes live.</p>
+            </div>
+          </li>
+          <li>
+            <span class="pin">7</span>
+            <div>
+              <h4>The bar states the blocker instead of greying out in silence</h4>
+              <p>When Create cannot fire, the strip above it names what is missing — "Needs a price · Price" — and tapping it goes to that step. A disabled button that explains nothing is the commonest way a mobile form loses someone.</p>
+            </div>
+          </li>
+        </ol>
+
+        <div class="panel panel-pad scroll-x">
+          <table class="ledger">
+            <thead><tr><th>Element</th><th>Was</th><th>Becomes</th></tr></thead>
+            <tbody>
+              <tr><td>Header</td><td class="was">Wrapping command bar over the app header</td><td class="now">Removed — the step rail is the page's chrome</td></tr>
+              <tr><td>Steps</td><td class="was">Four icon tabs, ~410 pt, scrolling</td><td class="now">Four labels, 368 pt, with completion rings</td></tr>
+              <tr><td>Draft / live</td><td class="was">Impossible below 640 pt</td><td class="now">A switch in Review, stated before you commit</td></tr>
+              <tr><td>Remove a photo</td><td class="was">Hover-only — unreachable by touch</td><td class="now">A 26 pt × on every tile at rest</td></tr>
+              <tr><td>Set the cover</td><td class="was">HTML5 drag — never fires on touch</td><td class="now">"Make cover" in the tile's sheet</td></tr>
+              <tr><td>Preview</td><td class="was">Below the whole form</td><td class="now">In Review, one tap from every step</td></tr>
+              <tr><td>Optional prose</td><td class="was">Two open textareas in step one</td><td class="now">Disclosures that report their own state</td></tr>
+              <tr><td>Category</td><td class="was">Radix Select popover</td><td class="now">Bottom sheet — the house default</td></tr>
+              <tr><td>Save</td><td class="was">Top bar, and the last step's footer</td><td class="now">Fixed bar above the dock, on every step</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<section class="band">
+  <div class="wrap stack g28">
+    <div class="band-head" style="margin-bottom:0">
+      <p class="kicker">05 — Budget</p>
+      <h2 class="prose">Touch, type and contrast</h2>
+      <p class="note prose">
+        The shadcn primitives ship desktop-sized, and <code>globals.css</code> already lifts them
+        inside <code>.dashboard-shell</code> below 768&nbsp;pt. These two screens hold to that floor
+        without relying on the override.
+      </p>
+    </div>
+    <div class="panel panel-pad scroll-x">
+      <table class="ledger">
+        <thead><tr><th>Target</th><th>Size</th><th>Where</th></tr></thead>
+        <tbody>
+          <tr><td>Primary action</td><td class="now">44 pt</td><td>New, Continue, Create, sheet buttons</td></tr>
+          <tr><td>Row action</td><td class="now">46 × 74 pt</td><td>The ⋯ column, full row height</td></tr>
+          <tr><td>Sheet action</td><td class="now">54 pt</td><td>Every action row, label always present</td></tr>
+          <tr><td>Filter chip</td><td class="now">36 pt tall, 7 pt gaps</td><td>Status rail — a rail, not a form control</td></tr>
+          <tr><td>Photo remove</td><td class="now">26 pt visual, 44 pt slop</td><td>Tile ×, with the tile itself as the larger target</td></tr>
+          <tr><td>Smallest type</td><td class="now">11.5 pt</td><td>Counts and captions only; body holds 13 pt+</td></tr>
+          <tr><td>Row title</td><td class="now">15 pt / 600</td><td>Product name, action labels</td></tr>
+          <tr><td>Numbers</td><td class="now">tabular-nums</td><td>Prices, counts, stock, percentages</td></tr>
+          <tr><td>Status colour</td><td class="now">Never alone</td><td>Dot plus words — "3 left", "Out of stock", "Hidden"</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<section class="band">
+  <div class="wrap stack g28">
+    <div class="band-head" style="margin-bottom:0">
+      <p class="kicker">06 — Component map</p>
+      <h2 class="prose">Everything below is already installed</h2>
+    </div>
+    <div class="cols-2">
+      <div class="panel panel-pad stack g14">
+        <h3>Primitives in use</h3>
+        <div class="chips">
+          <span class="chip">Button</span><span class="chip">Input</span><span class="chip">Textarea</span>
+          <span class="chip">Label</span><span class="chip">Badge</span><span class="chip">Switch</span>
+          <span class="chip">Separator</span><span class="chip">Skeleton</span><span class="chip">Sheet</span>
+          <span class="chip">Drawer</span><span class="chip">Sonner</span><span class="chip">ConfirmDialog</span>
+        </div>
+        <p class="tiny">Nothing new to install. Radix <code>Select</code> and the desktop <code>Table</code> simply stop being mounted below <code>lg</code>.</p>
+      </div>
+      <div class="panel panel-pad stack g14">
+        <h3>House components reused</h3>
+        <div class="chips">
+          <span class="chip">ActionSheet</span><span class="chip">MobileHeader</span><span class="chip">nav-config</span>
+          <span class="chip">useIsDesktop</span><span class="chip">overview/primitives</span>
+          <span class="chip new">MobilePicker</span><span class="chip new">StepRail</span><span class="chip new">ActionBar</span>
+        </div>
+        <p class="tiny">Three new local pieces, all built from the primitives above. <span class="chip new" style="padding:2px 8px">amber</span> marks what this proposal adds.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<section class="band">
+  <div class="wrap stack g28">
+    <div class="band-head" style="margin-bottom:0">
+      <p class="kicker">07 — What ships</p>
+      <h2 class="prose">Two trees, one source of state</h2>
+      <p class="note prose">
+        The same approach the Overview took: pick the tree with <code>useIsDesktop()</code> rather than
+        rendering both and hiding one. The desktop layout is not edited — it moves into its own file
+        and keeps its markup.
+      </p>
+    </div>
+    <ul class="files">
+      <li><span class="path">products/page.tsx</span><span class="what">Fetching, handlers and the desktop tree; picks the mobile tree below <code>lg</code>.</span></li>
+      <li><span class="path">products/_components/ProductsMobile.tsx</span><span class="what">Screen one — title, search, status rail, hairline list, refine sheet.</span></li>
+      <li><span class="path">products/new/page.tsx</span><span class="what">Thin switch between the two trees.</span></li>
+      <li><span class="path">products/new/_lib/useNewProductForm.ts</span><span class="what">All state, uploads, validation and submit — shared, so the trees cannot drift.</span></li>
+      <li><span class="path">products/new/_components/NewProductDesktop.tsx</span><span class="what">Today's layout, moved verbatim.</span></li>
+      <li><span class="path">products/new/_components/NewProductMobile.tsx</span><span class="what">Screen two — step rail, four steps, action bar, review sheet.</span></li>
+      <li><span class="path">dashboard/_components/nav-config.ts</span><span class="what">Products gets <code>collapsingTitle</code>, so the app bar defers to the page's own title.</span></li>
+    </ul>
+  </div>
+</section>
+
+<footer class="doc">
+  <div class="wrap stack g10">
+    <p class="kicker">Kalakraft · design/mobile-admin-products-redesign.html</p>
+    <p class="note prose">
+      Prototypes are HTML and CSS in the app's own tokens — white ground, near-black ink, zinc rules,
+      0.625rem radius. They render fixed light in either document theme because the app ships no dark
+      theme; a dark rendering here would depict a screen that does not exist.
+    </p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var ICON = function (id, w) {
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="' + (w || 1.9) +
+      '" stroke-linecap="round" stroke-linejoin="round"><use href="#' + id + '"/></svg>';
+  };
+  var esc = function (s) {
+    return String(s).replace(/[&<>"]/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+    });
+  };
+  var inr = function (n) { return "₹" + Number(n).toLocaleString("en-IN"); };
+
+  /* Stand-in photography: CSP blocks remote images, and a gradient reads as
+     "a picture is here" without pretending to be one. */
+  var SWATCH = [
+    "linear-gradient(140deg,#dfd3c3,#b9a892)",
+    "linear-gradient(140deg,#e8d9b5,#c8a24a)",
+    "linear-gradient(140deg,#bcd7e8,#4f7f9e)",
+    "linear-gradient(140deg,#e6c9b8,#b06a44)",
+    "linear-gradient(140deg,#dcdcd6,#9a9a92)",
+    "linear-gradient(140deg,#cfe0d4,#5f8a72)",
+    "linear-gradient(140deg,#eadcd0,#a58b7a)",
+    "linear-gradient(140deg,#d6cfe5,#7b6b9c)"
+  ];
+
+  /* ════════════════════════════════════════════ SCREEN ONE ════ */
+  var CATS = [
+    { id: 1, name: "Ceramics" }, { id: 2, name: "Brass & metal" },
+    { id: 3, name: "Resin art" }, { id: 4, name: "Textiles" }, { id: 5, name: "Woodwork" }
+  ];
+  var PRODUCTS = [
+    { id: 1, name: "Hand-painted ceramic vase", price: 2400, stock: 12, live: true, cat: 1, sold: 34, sw: 0 },
+    { id: 2, name: "Brass diya set of six", price: 899, stock: 3, live: true, cat: 2, sold: 128, sw: 1 },
+    { id: 3, name: "Resin ocean coasters", price: 1150, stock: 0, live: true, cat: 3, sold: 76, sw: 2 },
+    { id: 4, name: "Terracotta wall plate", price: 1850, stock: 24, live: false, cat: 1, sold: 12, sw: 3 },
+    { id: 5, name: "Marble inlay coaster set", price: 3200, stock: 7, live: true, cat: 5, sold: 41, sw: 4 },
+    { id: 6, name: "Macramé wall hanging", price: 2750, stock: 9, live: true, cat: 4, sold: 19, sw: 5 },
+    { id: 7, name: "Blue pottery storage jar", price: 1499, stock: 18, live: true, cat: 1, sold: 63, sw: 6 },
+    { id: 8, name: "Warli-painted wooden tray", price: 1299, stock: 0, live: false, cat: 5, sold: 8, sw: 7 }
+  ];
+  var LOW = 10;
+
+  var SORTS = [
+    { id: "updated", label: "Recently updated", sub: "What changed last" },
+    { id: "name", label: "Name A–Z", sub: "Alphabetical" },
+    { id: "price", label: "Price, high to low", sub: "Most valuable first" },
+    { id: "stock", label: "Stock, low to high", sub: "What runs out next" },
+    { id: "sold", label: "Best selling", sub: "Units sold to date" }
+  ];
+
+  var s1 = { q: "", status: "all", cat: "all", sort: "updated", target: null };
+
+  var el = function (id) { return document.getElementById(id); };
+
+  function counts() {
+    var c = { all: 0, live: 0, hidden: 0, low: 0, out: 0 };
+    PRODUCTS.forEach(function (p) {
+      c.all++;
+      if (p.live) c.live++; else c.hidden++;
+      if (p.stock === 0) c.out++;
+      else if (p.stock <= LOW) c.low++;
+    });
+    return c;
+  }
+
+  function visible() {
+    var q = s1.q.trim().toLowerCase();
+    return PRODUCTS.filter(function (p) {
+      if (s1.status === "live" && !p.live) return false;
+      if (s1.status === "hidden" && p.live) return false;
+      if (s1.status === "low" && !(p.stock > 0 && p.stock <= LOW)) return false;
+      if (s1.status === "out" && p.stock !== 0) return false;
+      if (s1.cat !== "all" && p.cat !== s1.cat) return false;
+      if (q && p.name.toLowerCase().indexOf(q) === -1) return false;
+      return true;
+    }).sort(function (a, b) {
+      if (s1.sort === "name") return a.name.localeCompare(b.name);
+      if (s1.sort === "price") return b.price - a.price;
+      if (s1.sort === "stock") return a.stock - b.stock;
+      if (s1.sort === "sold") return b.sold - a.sold;
+      return a.id - b.id;
+    });
+  }
+
+  function stockBits(p) {
+    if (p.stock === 0) return { cls: "out", text: '<span style="color:var(--dstr)">Out of stock</span>' };
+    if (p.stock <= LOW) return { cls: "low", text: p.stock + " left" };
+    return { cls: "ok", text: p.stock + " in stock" };
+  }
+
+  function drawChips() {
+    var c = counts();
+    var defs = [
+      { id: "all", label: "All", n: c.all }, { id: "live", label: "Live", n: c.live },
+      { id: "hidden", label: "Hidden", n: c.hidden }, { id: "low", label: "Low", n: c.low },
+      { id: "out", label: "Out", n: c.out }
+    ];
+    el("s1-chips").innerHTML = defs.map(function (d) {
+      return '<button class="pillbtn" type="button" data-status="' + d.id + '" data-on="' +
+        (s1.status === d.id) + '" aria-pressed="' + (s1.status === d.id) + '">' +
+        d.label + ' <b>' + d.n + '</b></button>';
+    }).join("");
+    el("s1-sub").textContent = c.all + " pieces · " + c.live + " live";
+  }
+
+  function drawList() {
+    var rows = visible();
+    var label = s1.cat === "all" ? "All products"
+      : (CATS.filter(function (c) { return c.id === s1.cat; })[0] || {}).name;
+    el("s1-listlabel").childNodes[0].nodeValue = label + " ";
+    el("s1-count").textContent = rows.length + " shown";
+
+    if (!rows.length) {
+      el("s1-list").innerHTML =
+        '<div class="empty"><span class="ic">' + ICON("i-box", 1.7) + '</span>' +
+        '<strong>Nothing matches</strong><span>Try another filter, or clear the search.</span>' +
+        '<button class="pillbtn" type="button" data-clear="1" style="margin-top:4px">Clear filters</button></div>';
+      return;
+    }
+    el("s1-list").innerHTML = rows.map(function (p) {
+      var s = stockBits(p);
+      return '<div class="prow">' +
+        '<button class="main" type="button" data-edit="' + p.id + '">' +
+          '<span class="thumb" data-hidden="' + (!p.live) + '" style="background:' + SWATCH[p.sw] + '"></span>' +
+          '<span class="txt">' +
+            '<span class="nm"><span>' + esc(p.name) + '</span>' +
+              (p.live ? "" : '<span class="tagpill">Hidden</span>') + '</span>' +
+            '<span class="mt"><b>' + inr(p.price) + '</b> · <i class="dot ' + s.cls + '"></i> ' + s.text + '</span>' +
+          '</span>' +
+        '</button>' +
+        '<button class="more" type="button" data-more="' + p.id + '" aria-label="Actions for ' + esc(p.name) + '">' +
+          ICON("i-more", 2) + '</button>' +
+      '</div>';
+    }).join("");
+  }
+
+  function drawRefine() {
+    var perCat = {};
+    PRODUCTS.forEach(function (p) { perCat[p.cat] = (perCat[p.cat] || 0) + 1; });
+    var rows = [{ id: "all", name: "All products", n: PRODUCTS.length }].concat(
+      CATS.map(function (c) { return { id: c.id, name: c.name, n: perCat[c.id] || 0 }; })
+    );
+    el("s1-cats").innerHTML = rows.map(function (r) {
+      return '<button class="act" type="button" data-cat="' + r.id + '" data-sel="' + (s1.cat === r.id) + '">' +
+        '<span class="lb"><strong>' + esc(r.name) + '</strong><small>' + r.n +
+        (r.n === 1 ? " product" : " products") + '</small></span>' +
+        '<span class="tick">' + ICON("i-check", 2.2) + '</span></button>';
+    }).join("");
+    el("s1-sorts").innerHTML = SORTS.map(function (o) {
+      return '<button class="act" type="button" data-sort="' + o.id + '" data-sel="' + (s1.sort === o.id) + '">' +
+        '<span class="lb"><strong>' + o.label + '</strong><small>' + o.sub + '</small></span>' +
+        '<span class="tick">' + ICON("i-check", 2.2) + '</span></button>';
+    }).join("");
+    var refined = s1.cat !== "all" || s1.sort !== "updated";
+    el("s1-refinedot").hidden = !refined;
+  }
+
+  function openSheet(scope, id) {
+    el(scope + "-scrim").dataset.open = "true";
+    el(id).dataset.open = "true";
+  }
+  function closeSheets(scope) {
+    el(scope + "-scrim").dataset.open = "false";
+    Array.prototype.forEach.call(
+      el(scope).querySelectorAll(".sheet"),
+      function (s) { s.dataset.open = "false"; }
+    );
+  }
+
+  function paint1() { drawChips(); drawList(); drawRefine(); }
+  paint1();
+
+  el("s1-q").addEventListener("input", function (e) { s1.q = e.target.value; drawList(); });
+  el("s1-chips").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-status]"); if (!b) return;
+    s1.status = b.dataset.status; paint1();
+  });
+  el("s1-refine").addEventListener("click", function () { drawRefine(); openSheet("s1", "s1-refinesheet"); });
+  el("s1-scrim").addEventListener("click", function () { closeSheets("s1"); });
+
+  el("s1-list").addEventListener("click", function (e) {
+    var clear = e.target.closest("[data-clear]");
+    if (clear) { s1.q = ""; el("s1-q").value = ""; s1.status = "all"; s1.cat = "all"; paint1(); return; }
+    var more = e.target.closest("[data-more]");
+    if (more) {
+      var p = PRODUCTS.filter(function (x) { return x.id === +more.dataset.more; })[0];
+      s1.target = p.id;
+      el("s1a-title").textContent = p.name;
+      el("s1a-sub").textContent = inr(p.price) + " · " + (p.stock === 0 ? "Out of stock" : p.stock + " in stock") +
+        " · " + p.sold + " sold";
+      el("s1a-togglelb").textContent = p.live ? "Hide from store" : "Publish to store";
+      el("s1a-togglesub").textContent = p.live ? "Customers stop seeing it" : "Customers can see and buy it";
+      el("s1a-toggleic").innerHTML = ICON(p.live ? "i-eyeoff" : "i-eye");
+      openSheet("s1", "s1-actions");
+      return;
+    }
+    var edit = e.target.closest("[data-edit]");
+    if (edit) { edit.animate([{ opacity: 1 }, { opacity: .5 }, { opacity: 1 }], { duration: 260 }); }
+  });
+
+  el("s1-actions").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-act]"); if (!b) return;
+    if (b.dataset.act === "toggle") {
+      PRODUCTS.forEach(function (p) { if (p.id === s1.target) p.live = !p.live; });
+      paint1();
+    }
+    closeSheets("s1");
+  });
+  el("s1-refinesheet").addEventListener("click", function (e) {
+    var c = e.target.closest("[data-cat]");
+    if (c) { s1.cat = c.dataset.cat === "all" ? "all" : +c.dataset.cat; paint1(); return; }
+    var s = e.target.closest("[data-sort]");
+    if (s) { s1.sort = s.dataset.sort; paint1(); }
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-close="s1"]'), function (b) {
+    b.addEventListener("click", function () { closeSheets("s1"); });
+  });
+
+  /* The app bar takes the title over once the page's own has scrolled away. */
+  el("s1-body").addEventListener("scroll", function (e) {
+    el("s1-bartitle").dataset.hidden = String(e.target.scrollTop <= 26);
+  }, { passive: true });
+
+  /* ════════════════════════════════════════════ SCREEN TWO ════ */
+  var STEPS = [
+    { id: "basics", label: "Basics" }, { id: "price", label: "Price" },
+    { id: "media", label: "Photos" }, { id: "tags", label: "Tags" }
+  ];
+  var SUGGEST = ["Diwali", "Housewarming", "Living room", "Gifting", "Wedding"];
+
+  var f = {
+    step: 0, name: "", slug: "", slugOpen: false, short: "", desc: "",
+    specs: "", care: "", specsOpen: false, careOpen: false,
+    price: "", cur: "INR", stock: "", cat: null,
+    photos: [], uploading: null, tile: 0,
+    tags: [], tagDraft: "", publish: true
+  };
+  var SYM = { INR: "₹", USD: "$", EUR: "€" };
+
+  function slugify(s) {
+    return s.toLowerCase().trim().replace(/[^\w\s-]/g, "").replace(/\s+/g, "-");
+  }
+  function done() {
+    return {
+      basics: f.name.trim().length > 0,
+      price: parseFloat(f.price || "0") > 0 && f.cat !== null,
+      media: f.photos.length > 0,
+      tags: f.tags.length > 0
+    };
+  }
+  function required() { var d = done(); return ["basics", "price", "media"].filter(function (k) { return d[k]; }).length; }
+  function ready() { return required() === 3; }
+  function blocker() {
+    var d = done();
+    if (!d.basics) return { text: "Needs a name", step: 0, at: "Basics" };
+    if (!d.price) return { text: parseFloat(f.price || "0") > 0 ? "Needs a category" : "Needs a price", step: 1, at: "Price" };
+    if (!d.media) return { text: "Needs at least one photo", step: 2, at: "Photos" };
+    return null;
+  }
+
+  function drawRail() {
+    var d = done();
+    el("s2-rail").innerHTML = STEPS.map(function (s, i) {
+      var isDone = d[s.id];
+      return '<button class="step" type="button" data-step="' + i + '" data-on="' + (f.step === i) +
+        '" data-done="' + isDone + '" aria-current="' + (f.step === i) + '">' +
+        '<span class="mark">' + (isDone ? ICON("i-check", 3) : "") + '</span>' + s.label + '</button>';
+    }).join("");
+    el("s2-prog").style.width = (required() / 3 * 100) + "%";
+  }
+
+  function fieldRow(label, extra, inner, help) {
+    return '<div class="field"><label>' + label + (extra ? "<em>" + extra + "</em>" : "") + "</label>" +
+      inner + (help ? '<span class="help">' + help + "</span>" : "") + "</div>";
+  }
+
+  function drawStep() {
+    var id = STEPS[f.step].id, h = "";
+
+    if (id === "basics") {
+      h += '<div class="stackcol" style="gap:16px">';
+      h += fieldRow("Product name", "", '<input type="text" id="f-name" value="' + esc(f.name) +
+        '" placeholder="Hand-painted ceramic vase" autocomplete="off">');
+      h += '<div class="slugline">' + ICON("i-ext", 1.8) +
+        '<code>/products/' + esc(f.slug || "…") + '</code>' +
+        '<button type="button" id="f-slugtoggle">' + (f.slugOpen ? "Hide" : "Edit") + '</button></div>';
+      if (f.slugOpen) {
+        h += '<div class="field"><input type="text" id="f-slug" value="' + esc(f.slug) +
+          '" placeholder="hand-painted-ceramic-vase"><span class="help">Changing this changes the product\'s link.</span></div>';
+      }
+      var n = f.short.length;
+      var tone = n === 0 ? "var(--fg-2)" : (n < 50 || n > 160) ? "var(--amber)" : "var(--emer)";
+      h += fieldRow("Short description",
+        '<span style="color:' + tone + '">' + n + "/160</span>",
+        '<input type="text" id="f-short" value="' + esc(f.short) + '" placeholder="One line for the product card">',
+        n === 0 ? "Used on cards and in search results." : (n < 50 ? "A little short for search results." : (n > 160 ? "Search results will trim this." : "Good length for search results.")));
+      h += fieldRow("Full description", "",
+        '<textarea id="f-desc" placeholder="Tell the story behind this piece…">' + esc(f.desc) + "</textarea>");
+      h += '<div class="group">' +
+        disclosure("specs", "Specifications", f.specs, "Material, dimensions, weight") +
+        disclosure("care", "Care & maintenance", f.care, "How to keep it looking its best") +
+        "</div>";
+      h += "</div>";
+    }
+
+    if (id === "price") {
+      h += '<div class="stackcol" style="gap:16px">';
+      h += '<div class="field"><label>Price</label><div class="moneyrow">' +
+        '<div class="curseg">' + ["INR", "USD", "EUR"].map(function (c) {
+          return '<button type="button" data-cur="' + c + '" data-on="' + (f.cur === c) + '">' + c + "</button>";
+        }).join("") + "</div>" +
+        '<div class="bigmoney"><span>' + SYM[f.cur] + '</span>' +
+        '<input type="number" id="f-price" inputmode="decimal" value="' + esc(f.price) + '" placeholder="0"></div>' +
+        "</div>" +
+        '<span class="help">Shown to customers as <b style="color:var(--fg)">' + SYM[f.cur] +
+        Number(parseFloat(f.price || "0")).toLocaleString("en-IN") + "</b></span></div>";
+
+      var st = parseInt(f.stock || "0", 10);
+      h += '<div class="field"><label>Stock</label><div class="stepper">' +
+        '<button type="button" data-stock="-1" aria-label="One fewer">' + ICON("i-minus", 2.2) + "</button>" +
+        '<input type="number" id="f-stock" inputmode="numeric" value="' + esc(f.stock) + '" placeholder="0">' +
+        '<button type="button" data-stock="1" aria-label="One more">' + ICON("i-plus", 2.2) + "</button></div>" +
+        '<span class="stockstate"><i class="dot ' + (st === 0 ? "out" : st <= LOW ? "low" : "ok") + '"></i>' +
+        (st === 0 ? "Out of stock — it will not sell" : st <= LOW ? st + " left · counted as low stock" : st + " units in stock") +
+        "</span></div>";
+
+      var cname = f.cat ? (CATS.filter(function (c) { return c.id === f.cat; })[0] || {}).name : null;
+      h += '<div class="field"><label>Category</label>' +
+        '<button class="pickerbtn" type="button" id="f-cat">' +
+        (cname ? esc(cname) : '<span class="ph">Pick the best fit</span>') + ICON("i-right", 2) + "</button>" +
+        '<span class="help">Drives storefront filtering and analytics roll-ups.</span></div>';
+      h += "</div>";
+    }
+
+    if (id === "media") {
+      h += '<div class="stackcol" style="gap:14px">';
+      h += '<div class="mediahead"><h4>Product photos</h4><span>' + f.photos.length + "/5</span></div>";
+      if (f.photos.length < 5) {
+        h += '<button class="dropzone" type="button" id="f-add">' +
+          '<span class="ic">' + ICON("i-camera", 1.8) + "</span>" +
+          "<strong>Add photos</strong><small>Camera or library · JPG, PNG, WEBP · up to 20MB</small></button>";
+      }
+      if (f.photos.length || f.uploading !== null) {
+        h += '<div class="tiles">' + f.photos.map(function (p, i) {
+          return '<div class="tile"><button class="surface" type="button" data-tile="' + i +
+            '" style="background:' + SWATCH[p] + '" aria-label="Photo ' + (i + 1) + ' options"></button>' +
+            (i === 0 ? '<span class="cov">Cover</span>' : "") +
+            '<span class="ord">' + (i + 1) + "</span>" +
+            '<button class="rm" type="button" data-rm="' + i + '" aria-label="Remove photo ' + (i + 1) + '">' +
+            ICON("i-x", 2.6) + "</button></div>";
+        }).join("") +
+          (f.uploading !== null
+            ? '<div class="tile up">' + ICON("i-image", 1.6) +
+              '<span class="pct">' + f.uploading + '%</span>' +
+              '<span class="bar"><i style="width:' + f.uploading + '%"></i></span></div>'
+            : "") +
+          "</div>";
+        h += '<p class="help" style="font-size:12px;color:var(--fg-2);padding:0 2px">' +
+          "Tap a photo to make it the cover, reorder it or remove it. The cover is what shows on cards.</p>";
+      }
+      h += '<div class="group" style="margin-top:2px">' +
+        disclosure("styling", "Styling photos", "", "Optional inspiration shown beside the product") + "</div>";
+      h += "</div>";
+    }
+
+    if (id === "tags") {
+      h += '<div class="stackcol" style="gap:16px">';
+      h += '<div class="field"><label>Usage tags <em>optional</em></label>' +
+        '<div style="display:flex;gap:8px">' +
+        '<input type="text" id="f-tag" value="' + esc(f.tagDraft) + '" placeholder="Diwali, gifting, living room…" style="flex:1">' +
+        '<button class="sq-btn" type="button" id="f-tagadd" aria-label="Add tag" style="background:var(--fg);border-color:var(--fg);color:#fff;height:46px;width:46px">' +
+        ICON("i-plus", 2.4) + "</button></div>" +
+        '<span class="help">Tags let shoppers find this by mood or occasion.</span></div>';
+      if (f.tags.length) {
+        h += '<div class="stackcol" style="gap:8px"><p class="seclabel">Added</p><div class="tagbox">' +
+          f.tags.map(function (t, i) {
+            return '<span class="tagchip">' + esc(t) +
+              '<button type="button" data-untag="' + i + '" aria-label="Remove ' + esc(t) + '">' + ICON("i-x", 2.4) + "</button></span>";
+          }).join("") + "</div></div>";
+      }
+      var left = SUGGEST.filter(function (t) { return f.tags.indexOf(t) === -1; });
+      if (left.length) {
+        h += '<div class="stackcol" style="gap:8px"><p class="seclabel">Suggestions</p><div class="tagbox">' +
+          left.map(function (t) {
+            return '<button class="tagsug" type="button" data-tag="' + esc(t) + '">' + ICON("i-plus", 2.4) + esc(t) + "</button>";
+          }).join("") + "</div></div>";
+      }
+      h += '<div class="group"><div class="pubrow">' +
+        '<span class="lb"><strong>' + (f.publish ? "Publishes when created" : "Saves as a draft") + "</strong>" +
+        '<small>' + (f.publish ? "Visible on the storefront straight away" : "Only you can see it until you publish") + "</small></span>" +
+        '<button class="sw" data-pub="1" data-on="' + f.publish + '" role="switch" aria-checked="' + f.publish +
+        '" aria-label="Publish when created"><i></i></button></div></div>';
+      h += "</div>";
+    }
+
+    el("s2-step").innerHTML = h;
+  }
+
+  function disclosure(key, title, value, hint) {
+    var open = key === "specs" ? f.specsOpen : key === "care" ? f.careOpen : false;
+    var state = key === "styling" ? "None added"
+      : value.length ? value.length + " characters" : "Not added";
+    var out = '<button class="disclose" type="button" data-disc="' + key + '" aria-expanded="' + open + '">' +
+      '<span class="lb"><strong>' + title + "</strong><small>" + state + "</small></span>" +
+      '<span class="chev">' + ICON("i-right", 2) + "</span></button>";
+    if (open) {
+      out += '<div class="disclosed"><div class="field"><textarea data-disctext="' + key +
+        '" placeholder="' + hint + '">' + esc(value) + "</textarea></div></div>";
+    }
+    return out;
+  }
+
+  function drawBar() {
+    var last = f.step === STEPS.length - 1;
+    var b = blocker();
+    el("s2-golabel").textContent = last ? "Create product" : "Continue";
+    el("s2-go").setAttribute("aria-disabled", String(last && !ready()));
+    el("s2-go").lastElementChild.style.display = last ? "none" : "block";
+
+    var strip = el("s2-blocked");
+    if (last && b) {
+      strip.hidden = false;
+      strip.innerHTML = ICON("i-alert", 1.9) + "<span>" + b.text + " — <b>" + b.at + "</b></span>";
+      strip.dataset.jump = b.step;
+    } else {
+      strip.hidden = true;
+    }
+  }
+
+  function drawReview() {
+    var d = done();
+    el("s2-reviewsub").textContent = required() + " of 3 required steps done";
+    var cname = f.cat ? (CATS.filter(function (c) { return c.id === f.cat; })[0] || {}).name : "Not set";
+    el("s2-preview").innerHTML = '<div class="preview">' +
+      '<span class="cov"' + (f.photos.length ? ' style="background:' + SWATCH[f.photos[0]] + '"' : "") + ">" +
+      (f.photos.length ? "" : ICON("i-image", 1.6)) + "</span>" +
+      '<span class="info"><strong>' + esc(f.name.trim() || "Untitled product") + "</strong>" +
+      '<span class="pr">' + SYM[f.cur] + Number(parseFloat(f.price || "0")).toLocaleString("en-IN") + "</span>" +
+      "<small>" + esc(cname) + " · " + (parseInt(f.stock || "0", 10) || 0) + " in stock · " +
+      f.tags.length + (f.tags.length === 1 ? " tag" : " tags") + "</small></span></div>";
+
+    var rows = [
+      { k: "basics", i: 0, t: "Basics", s: d.basics ? f.name.trim() : "Name required" },
+      { k: "price", i: 1, t: "Price", s: d.price ? SYM[f.cur] + Number(parseFloat(f.price || "0")).toLocaleString("en-IN") + " · " + cname : "Price and category required" },
+      { k: "media", i: 2, t: "Photos", s: d.media ? f.photos.length + (f.photos.length === 1 ? " photo" : " photos") : "At least one photo required" },
+      { k: "tags", i: 3, t: "Tags", s: d.tags ? f.tags.join(", ") : "Optional" }
+    ];
+    el("s2-checklist").innerHTML = rows.map(function (r) {
+      return '<button class="checkrow" type="button" data-jump="' + r.i + '" data-done="' + done()[r.k] + '">' +
+        '<span class="bx">' + ICON("i-check", 3) + "</span>" +
+        '<span class="lb"><strong>' + r.t + "</strong><small>" + esc(r.s) + "</small></span>" +
+        ICON("i-right", 2) + "</button>";
+    }).join("");
+
+    el("s2-pub").dataset.on = String(f.publish);
+    el("s2-pub").setAttribute("aria-checked", String(f.publish));
+    el("s2-publb").textContent = f.publish ? "Publish to the store" : "Save as a draft";
+    el("s2-pubsub").textContent = f.publish
+      ? "Customers can see and buy it right away"
+      : "Only you can see it until you publish";
+    el("s2-create").setAttribute("aria-disabled", String(!ready()));
+  }
+
+  function paint2() { drawRail(); drawStep(); drawBar(); }
+  paint2();
+
+  el("s2-rail").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-step]"); if (!b) return;
+    f.step = +b.dataset.step; paint2();
+  });
+
+  el("s2-step").addEventListener("input", function (e) {
+    var t = e.target;
+    if (t.id === "f-name") {
+      f.name = t.value;
+      f.slug = slugify(t.value);
+      var slot = el("s2-step").querySelector(".slugline code");
+      if (slot) slot.textContent = "/products/" + (f.slug || "…");
+      drawRail(); drawBar(); return;
+    }
+    if (t.id === "f-slug") { f.slug = t.value; return; }
+    if (t.id === "f-short") {
+      f.short = t.value;
+      var lab = t.closest(".field").querySelector("label em");
+      var n = f.short.length;
+      lab.textContent = n + "/160";
+      lab.style.color = n === 0 ? "var(--fg-2)" : (n < 50 || n > 160) ? "var(--amber)" : "var(--emer)";
+      return;
+    }
+    if (t.id === "f-desc") { f.desc = t.value; return; }
+    if (t.dataset.disctext) {
+      if (t.dataset.disctext === "specs") f.specs = t.value; else f.care = t.value;
+      return;
+    }
+    if (t.id === "f-price") {
+      f.price = t.value;
+      t.closest(".field").querySelector(".help b").textContent =
+        SYM[f.cur] + Number(parseFloat(f.price || "0")).toLocaleString("en-IN");
+      drawRail(); drawBar(); return;
+    }
+    if (t.id === "f-stock") { f.stock = t.value; drawStep(); return; }
+    if (t.id === "f-tag") { f.tagDraft = t.value; }
+  });
+
+  function addTag(v) {
+    var t = String(v || "").trim();
+    if (!t || f.tags.indexOf(t) !== -1) { f.tagDraft = ""; drawStep(); return; }
+    f.tags.push(t); f.tagDraft = ""; paint2();
+  }
+
+  el("s2-step").addEventListener("keydown", function (e) {
+    if (e.target.id === "f-tag" && e.key === "Enter") { e.preventDefault(); addTag(e.target.value); }
+  });
+
+  el("s2-step").addEventListener("click", function (e) {
+    var t;
+    if ((t = e.target.closest("[data-disc]"))) {
+      var k = t.dataset.disc;
+      if (k === "specs") f.specsOpen = !f.specsOpen;
+      else if (k === "care") f.careOpen = !f.careOpen;
+      drawStep(); return;
+    }
+    if (e.target.closest("#f-slugtoggle")) { f.slugOpen = !f.slugOpen; drawStep(); return; }
+    if ((t = e.target.closest("[data-cur]"))) { f.cur = t.dataset.cur; drawStep(); return; }
+    if ((t = e.target.closest("[data-stock]"))) {
+      var n = Math.max(0, (parseInt(f.stock || "0", 10) || 0) + (+t.dataset.stock));
+      f.stock = String(n); drawStep(); return;
+    }
+    if (e.target.closest("#f-cat")) {
+      el("s2-catlist").innerHTML = CATS.map(function (c) {
+        return '<button class="act" type="button" data-pickcat="' + c.id + '" data-sel="' + (f.cat === c.id) + '">' +
+          '<span class="lb"><strong>' + esc(c.name) + "</strong></span>" +
+          '<span class="tick">' + ICON("i-check", 2.2) + "</span></button>";
+      }).join("");
+      openSheet("s2", "s2-catsheet"); return;
+    }
+    if (e.target.closest("#f-add")) { fakeUpload(); return; }
+    if ((t = e.target.closest("[data-rm]"))) {
+      f.photos.splice(+t.dataset.rm, 1); paint2(); return;
+    }
+    if ((t = e.target.closest("[data-tile]"))) {
+      f.tile = +t.dataset.tile; openTileSheet(); return;
+    }
+    if (e.target.closest("#f-tagadd")) {
+      var input = el("s2-step").querySelector("#f-tag");
+      addTag(input ? input.value : ""); return;
+    }
+    if ((t = e.target.closest("[data-tag]"))) { addTag(t.dataset.tag); return; }
+    if ((t = e.target.closest("[data-untag]"))) { f.tags.splice(+t.dataset.untag, 1); paint2(); return; }
+    if (e.target.closest("[data-pub]")) { f.publish = !f.publish; drawStep(); return; }
+  });
+
+  function fakeUpload() {
+    if (f.uploading !== null || f.photos.length >= 5) return;
+    f.uploading = 0; drawStep();
+    var tick = setInterval(function () {
+      f.uploading = Math.min(100, f.uploading + 18);
+      if (f.uploading >= 100) {
+        clearInterval(tick);
+        f.uploading = null;
+        f.photos.push(f.photos.length % SWATCH.length);
+        paint2();
+      } else { drawStep(); }
+    }, 130);
+  }
+
+  function openTileSheet() {
+    var i = f.tile, n = f.photos.length;
+    el("s2-tiletitle").textContent = "Photo " + (i + 1) + " of " + n;
+    el("s2-tilesub").textContent = i === 0 ? "This is the cover" : "Shown in the gallery";
+    var acts = [];
+    if (i !== 0) acts.push({ a: "cover", ic: "i-cover", t: "Make cover", s: "Show this one on cards" });
+    if (i > 0) acts.push({ a: "up", ic: "i-left", t: "Move earlier", s: "Swap with photo " + i });
+    if (i < n - 1) acts.push({ a: "down", ic: "i-right", t: "Move later", s: "Swap with photo " + (i + 2) });
+    el("s2-tileacts").innerHTML = acts.map(function (o) {
+      return '<button class="act" type="button" data-tileact="' + o.a + '">' +
+        '<span class="ic">' + ICON(o.ic) + "</span>" +
+        '<span class="lb"><strong>' + o.t + "</strong><small>" + o.s + "</small></span></button>";
+    }).join("") +
+      '<button class="act" type="button" data-danger="true" data-tileact="rm">' +
+      '<span class="ic">' + ICON("i-trash") + "</span>" +
+      '<span class="lb"><strong>Remove photo</strong><small>Takes it out of the gallery</small></span></button>';
+    openSheet("s2", "s2-tilesheet");
+  }
+
+  el("s2-tilesheet").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-tileact]"); if (!b) return;
+    var i = f.tile, a = b.dataset.tileact, moved;
+    if (a === "cover") { moved = f.photos.splice(i, 1)[0]; f.photos.unshift(moved); }
+    if (a === "up") { moved = f.photos[i]; f.photos[i] = f.photos[i - 1]; f.photos[i - 1] = moved; }
+    if (a === "down") { moved = f.photos[i]; f.photos[i] = f.photos[i + 1]; f.photos[i + 1] = moved; }
+    if (a === "rm") { f.photos.splice(i, 1); }
+    closeSheets("s2"); paint2();
+  });
+
+  el("s2-catsheet").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-pickcat]"); if (!b) return;
+    f.cat = +b.dataset.pickcat; closeSheets("s2"); paint2();
+  });
+
+  el("s2-review").addEventListener("click", function () { drawReview(); openSheet("s2", "s2-reviewsheet"); });
+  el("s2-scrim").addEventListener("click", function () { closeSheets("s2"); });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-close="s2"]'), function (b) {
+    b.addEventListener("click", function () { closeSheets("s2"); });
+  });
+
+  el("s2-blocked").addEventListener("click", function () {
+    f.step = +el("s2-blocked").dataset.jump; paint2();
+  });
+
+  el("s2-go").addEventListener("click", function () {
+    if (f.step < STEPS.length - 1) { f.step++; paint2(); return; }
+    if (!ready()) { var b = blocker(); if (b) { f.step = b.step; paint2(); } return; }
+    drawReview(); openSheet("s2", "s2-reviewsheet");
+  });
+
+  el("s2-reviewsheet").addEventListener("click", function (e) {
+    var j = e.target.closest("[data-jump]");
+    if (j) { f.step = +j.dataset.jump; closeSheets("s2"); paint2(); return; }
+    if (e.target.closest("#s2-pub")) { f.publish = !f.publish; drawReview(); drawStep(); return; }
+  });
+
+  el("s2-create").addEventListener("click", function () {
+    if (!ready()) return;
+    closeSheets("s2");
+    el("s2-createdname").textContent = (f.name.trim() || "Product") + " created";
+    el("s2-createdsub").textContent = f.publish
+      ? "Live on the storefront now."
+      : "Saved as a draft — publish it when you are ready.";
+    el("s2-created").dataset.open = "true";
+  });
+
+  el("s2-reset").addEventListener("click", function () {
+    f.step = 0; f.name = ""; f.slug = ""; f.slugOpen = false; f.short = ""; f.desc = "";
+    f.specs = ""; f.care = ""; f.specsOpen = false; f.careOpen = false;
+    f.price = ""; f.cur = "INR"; f.stock = ""; f.cat = null;
+    f.photos = []; f.uploading = null; f.tags = []; f.tagDraft = ""; f.publish = true;
+    el("s2-created").dataset.open = "false";
+    paint2();
+  });
+})();
+</script>

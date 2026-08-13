@@ -42,6 +42,12 @@ interface ActionSheetProps {
   groups: ActionSheetGroup[]
   /** Keep the sheet open after a selection (e.g. while a save is in flight). */
   keepOpenOnSelect?: boolean
+  /**
+   * Word on the closing button. "Cancel" is right when every row commits
+   * something; a sheet whose rows apply as you tap them — the catalogue's
+   * filters — has nothing to cancel and says "Done" instead.
+   */
+  dismissLabel?: string
 }
 
 /**
@@ -59,6 +65,7 @@ export function ActionSheet({
   description,
   groups,
   keepOpenOnSelect = false,
+  dismissLabel = "Cancel",
 }: ActionSheetProps) {
   const handleSelect = (action: SheetAction) => {
     if (action.disabled || action.pending) return
@@ -121,7 +128,7 @@ export function ActionSheet({
             onClick={() => onOpenChange(false)}
             className="flex min-h-[52px] w-full items-center justify-center rounded-xl border bg-card text-[15px] font-semibold text-foreground transition-colors active:bg-secondary"
           >
-            Cancel
+            {dismissLabel}
           </button>
         </div>
 
