@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useMemo } from "react"
-import { PackageX, ShoppingCart } from "lucide-react"
+import { Heart, PackageX, ReceiptText, ShoppingCart, Truck, Wallet } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -128,18 +128,25 @@ export function UserMobile({
             Array.from({ length: 4 }).map((_, i) => <MetricRowSkeleton key={i} />)
           ) : (
             <>
-              <MetricRow label="Orders placed" value={formatCount(stats.count)} />
               <MetricRow
+                icon={ReceiptText}
+                label="Orders placed"
+                value={formatCount(stats.count)}
+              />
+              <MetricRow
+                icon={Truck}
                 label="In progress"
                 value={formatCount(stats.active)}
                 meta={stats.active > 0 ? "on the way" : undefined}
               />
               <MetricRow
+                icon={Wallet}
                 label="Lifetime spend"
                 value={formatCurrency(stats.lifetime)}
                 meta={stats.count > 0 ? `${formatCurrency(stats.average)} avg` : undefined}
               />
               <MetricRow
+                icon={Heart}
                 label="Saved for later"
                 value={wishlistLoading ? "—" : formatCount(wishlistItems.length)}
               />

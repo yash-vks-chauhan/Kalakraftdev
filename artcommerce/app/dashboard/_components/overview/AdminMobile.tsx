@@ -2,7 +2,27 @@
 
 import Link from "next/link"
 import { useMemo, useState } from "react"
-import { LifeBuoy, PackagePlus, Star, Tag, type LucideIcon } from "lucide-react"
+import {
+  AlertTriangle,
+  Ban,
+  Boxes,
+  Layers,
+  LifeBuoy,
+  Package,
+  PackagePlus,
+  PackageX,
+  ReceiptText,
+  Repeat,
+  ShoppingCart,
+  Star,
+  Tag,
+  TicketPercent,
+  UserPlus,
+  UserRoundPlus,
+  Users,
+  Wallet,
+  type LucideIcon,
+} from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -24,7 +44,6 @@ import {
   formatCompactCurrency,
   formatCount,
   formatCurrency,
-  formatDelta,
   formatRelative,
 } from "./format"
 import {
@@ -311,8 +330,14 @@ function NeedsYou({
 /* ----------------------------------------------------------- metric ledger */
 
 /**
- * Thirteen figures in three tabs. A row costs 48 px against a stat tile's 78 px,
- * which is the whole reason the full set fits in less space than four tiles did.
+ * Fifteen figures in three tabs, segmented by what they measure *and* by the
+ * period they answer for.
+ *
+ * Sales and Customers are both scoped to the chip above; Catalogue is a
+ * snapshot of right now and never can be. The scope label beside the heading
+ * changes with the tab, so the section never claims a period it is not
+ * reporting — the earlier arrangement filed point-in-time rows under a "This
+ * month" header, and switching the chip moved only some of the numbers.
  */
 function MetricLedger({
   metrics,
@@ -325,6 +350,8 @@ function MetricLedger({
   period: Period
   averageOrder: number
 }) {
+  const [tab, setTab] = useState("sales")
+
   const previous = metrics?.previous
   const previousAverage =
     previous && previous.orders > 0 ? previous.revenue / previous.orders : null
@@ -338,9 +365,20 @@ function MetricLedger({
   const catalogue = metrics?.catalogue
   const cancelled = metrics?.cancelledCount ?? 0
 
+  const buyers = metrics?.buyers ?? 0
+  const returning = metrics?.returningCustomers
+  const cohortKnown = returning !== null && returning !== undefined
+  // Buyers split cleanly in two: everyone who had ordered before this window
+  // opened, and everyone who had not. Signups are counted separately below,
+  // because registering is not buying and the two must not look additive.
+  const firstTime = cohortKnown ? Math.max(buyers - returning, 0) : null
+
   return (
-    <MobileSection title="Metrics" tail={periodLabels[period]}>
-      <Tabs defaultValue="sales" className="gap-2.5">
+    <MobileSection
+      title="Metrics"
+      tail={tab === "catalogue" ? "Right now" : periodLabels[period]}
+    >
+      <Tabs value={tab} onValueChange={setTab} className="gap-2.5">
         <TabsList className="h-[36px] w-full">
           <TabsTrigger value="sales" className="text-[12.5px]">
             Sales
@@ -353,33 +391,44 @@ function MetricLedger({
           </TabsTrigger>
         </TabsList>
 
+        {/* ── Sales: every row scoped to the period ── */}
         <TabsContent value="sales">
           <Group>
             {loading ? (
-              <LedgerSkeleton rows={5} />
+              <LedgerSkeleton rows={6} />
             ) : (
               <>
                 <MetricRow
+                  icon={ReceiptText}
                   label="Orders"
                   value={formatCount(orderCount)}
-                  meta={formatDelta(metrics?.deltas?.orders)}
+                  trend={metrics?.deltas?.orders ?? null}
                 />
                 <MetricRow
+                  icon={Wallet}
                   label="Average order"
                   value={formatCurrency(averageOrder)}
-                  meta={formatDelta(averageDelta)}
+                  trend={averageDelta}
                 />
                 <MetricRow
+                  icon={Package}
                   label="Units sold"
                   value={formatCount(metrics?.units ?? 0)}
-                  meta={formatDelta(metrics?.deltas?.units)}
+                  trend={metrics?.deltas?.units ?? null}
                 />
                 <MetricRow
+                  icon={Layers}
+                  label="Items per order"
+                  value={orderCount > 0 ? itemsPerOrder.toFixed(1) : "—"}
+                />
+                <MetricRow
+                  icon={TicketPercent}
                   label="Discounts given"
                   value={formatCurrency(metrics?.discounts ?? 0)}
-                  meta={formatDelta(metrics?.deltas?.discounts)}
+                  trend={metrics?.deltas?.discounts ?? null}
                 />
                 <MetricRow
+                  icon={Ban}
                   label="Cancelled"
                   value={formatCount(cancelled)}
                   meta={
@@ -393,63 +442,82 @@ function MetricLedger({
           </Group>
         </TabsContent>
 
+        {/* ── Customers: every row scoped to the period ── */}
         <TabsContent value="customers">
           <Group>
             {loading ? (
-              <LedgerSkeleton rows={4} />
+              <LedgerSkeleton rows={5} />
             ) : (
               <>
                 <MetricRow
-                  label="New customers"
-                  value={formatCount(metrics?.newCustomers ?? 0)}
-                  meta={formatDelta(metrics?.deltas?.newCustomers)}
+                  icon={Users}
+                  label="Buyers"
+                  value={formatCount(buyers)}
+                  meta="placed an order"
                 />
                 <MetricRow
+                  icon={UserPlus}
+                  label="First-time buyers"
+                  value={firstTime === null ? "—" : formatCount(firstTime)}
+                  meta={cohortKnown ? `of ${formatCount(buyers)}` : "too many to split"}
+                />
+                <MetricRow
+                  icon={Repeat}
                   label="Returning buyers"
-                  value={
-                    metrics?.returningCustomers === null ||
-                    metrics?.returningCustomers === undefined
-                      ? "—"
-                      : formatCount(metrics.returningCustomers)
+                  value={!cohortKnown ? "—" : formatCount(returning)}
+                  meta={
+                    cohortKnown && buyers > 0
+                      ? `${Math.round((returning / buyers) * 100)}% repeat`
+                      : undefined
                   }
-                  meta={`of ${formatCount(metrics?.buyers ?? 0)}`}
                 />
                 <MetricRow
-                  label="Items per order"
-                  value={orderCount > 0 ? itemsPerOrder.toFixed(1) : "—"}
+                  icon={UserRoundPlus}
+                  label="New signups"
+                  value={formatCount(metrics?.newCustomers ?? 0)}
+                  trend={metrics?.deltas?.newCustomers ?? null}
                 />
                 <MetricRow
-                  label="Abandoned carts"
+                  icon={ShoppingCart}
+                  label="Carts abandoned"
                   value={formatCount(metrics?.abandonedCarts ?? 0)}
-                  meta="right now"
                 />
               </>
             )}
           </Group>
         </TabsContent>
 
+        {/* ── Catalogue: a snapshot of now; the period chip does not apply ── */}
         <TabsContent value="catalogue">
           <Group>
             {loading ? (
               <LedgerSkeleton rows={4} />
             ) : (
               <>
-                <MetricRow label="Products live" value={formatCount(catalogue?.live ?? 0)} />
                 <MetricRow
+                  icon={Boxes}
+                  label="Products live"
+                  value={formatCount(catalogue?.live ?? 0)}
+                />
+                <MetricRow
+                  icon={AlertTriangle}
                   label="Low on stock"
                   value={formatCount(catalogue?.lowStock ?? 0)}
                   tone={(catalogue?.lowStock ?? 0) > 0 ? "bad" : "neutral"}
                 />
                 <MetricRow
+                  icon={PackageX}
                   label="Out of stock"
                   value={formatCount(catalogue?.outOfStock ?? 0)}
                   tone={(catalogue?.outOfStock ?? 0) > 0 ? "bad" : "neutral"}
                 />
                 <MetricRow
+                  icon={Star}
                   label="Average rating"
                   value={
                     catalogue?.averageRating ? catalogue.averageRating.toFixed(1) : "—"
                   }
+                  meta={catalogue?.averageRating ? "out of 5" : undefined}
                 />
               </>
             )}

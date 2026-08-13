@@ -178,13 +178,7 @@ export async function GET(request: Request) {
       : Promise.resolve(null),
     catalogueSnapshot(),
     attentionCounts(),
-    // One row per (user, product), so distinct users is the number that matters.
-    prisma.cartItem
-      .groupBy({
-        by: ['userId'],
-        where: { addedAt: { lt: new Date(Date.now() - ABANDONED_CART_IDLE_MS) } },
-      })
-      .then((rows) => rows.length),
+    countAbandonedCarts(start),
     countOrdersPerDay(),
     countPaymentBreakdown(dateFilter),
   ])
@@ -230,6 +224,25 @@ export async function GET(request: Request) {
       newCustomers: percentChange(newCustomers, prevNewCustomers ?? null),
     },
   })
+}
+
+/**
+ * Carts that went quiet inside the reporting window.
+ *
+ * Scoped by `addedAt` rather than reported as a running total, so it sits
+ * alongside the other customer figures under the same period instead of being
+ * the one row that ignores the chip.
+ *
+ * One cart row exists per (user, product), so distinct users is the count that
+ * actually means "carts".
+ */
+async function countAbandonedCarts(start: Date | null) {
+  const idleBefore = new Date(Date.now() - ABANDONED_CART_IDLE_MS)
+  const rows = await prisma.cartItem.groupBy({
+    by: ['userId'],
+    where: { addedAt: start ? { gte: start, lt: idleBefore } : { lt: idleBefore } },
+  })
+  return rows.length
 }
 
 /** Catalogue health — a snapshot of now, never of the reporting window. */

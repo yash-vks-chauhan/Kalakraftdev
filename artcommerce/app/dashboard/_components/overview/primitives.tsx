@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { ChevronRight } from "lucide-react"
+import { ChevronRight, MoveDownRight, MoveUpRight, type LucideIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -69,8 +69,8 @@ export function Group({
 /* ------------------------------------------------------------- metric row */
 
 /**
- * Label, value, change. 48 px against a stat tile's 78 px, which is the whole
- * reason seventeen numbers fit where four used to.
+ * Icon, label, value, change. 48 px against a stat tile's 78 px, which is the
+ * whole reason fifteen numbers fit where four used to.
  *
  * `tone="bad"` is the only colour this row can take, and it is reserved for a
  * state that needs acting on — stock you cannot sell. It deliberately does not
@@ -78,19 +78,35 @@ export function Group({
  * and would leave the ledger permanently red. Colour marks the exception.
  */
 export function MetricRow({
+  icon: Icon,
   label,
   value,
   meta,
+  trend,
   tone = "neutral",
 }: {
+  /** A quiet leading marker, so a row can be found by shape instead of read. */
+  icon?: LucideIcon
   label: string
   value: string
+  /** Static context — "of 63 buyers". Mutually exclusive with `trend`. */
   meta?: string
+  /**
+   * Percent change against the previous window, drawn with a direction arrow.
+   * `null` renders "—" (no comparable window); omit the prop entirely for a
+   * figure that has no meaningful previous value at all.
+   */
+  trend?: number | null
   tone?: "neutral" | "bad"
 }) {
   return (
     <div className="flex min-h-12 items-center gap-3 px-3.5 py-2.5">
-      <span className="text-[13.5px] leading-tight text-muted-foreground">{label}</span>
+      {Icon ? (
+        <Icon aria-hidden className="size-4 shrink-0 text-muted-foreground/60" />
+      ) : null}
+      <span className="min-w-0 truncate text-[13.5px] leading-tight text-muted-foreground">
+        {label}
+      </span>
       <span className="ml-auto flex items-baseline gap-2.5">
         <span
           className={cn(
@@ -104,20 +120,39 @@ export function MetricRow({
             value in the group aligned on the same right edge. */}
         <span
           className={cn(
-            "min-w-[46px] whitespace-nowrap text-right text-[11.5px] font-semibold tabular-nums",
+            "flex min-w-[52px] items-center justify-end gap-0.5 whitespace-nowrap text-[11.5px] font-semibold tabular-nums",
             tone === "bad" ? "text-destructive" : "text-muted-foreground/80"
           )}
         >
-          {meta}
+          {trend !== undefined ? <TrendMeta percent={trend} /> : meta}
         </span>
       </span>
     </div>
   )
 }
 
+/**
+ * Direction is carried by an arrow, not by colour: a rise is not always good
+ * (discounts, cancellations), so tinting every increase green would assert
+ * something the number does not support.
+ */
+function TrendMeta({ percent }: { percent: number | null }) {
+  if (percent === null || percent === undefined) return <>—</>
+  if (percent === 0) return <>0%</>
+
+  const Arrow = percent > 0 ? MoveUpRight : MoveDownRight
+  return (
+    <>
+      <Arrow aria-hidden className="size-3 shrink-0" />
+      {Math.abs(percent)}%
+    </>
+  )
+}
+
 export function MetricRowSkeleton() {
   return (
     <div className="flex min-h-12 items-center gap-3 px-3.5 py-2.5">
+      <Skeleton className="size-4 shrink-0 rounded" />
       <Skeleton className="h-3 w-24" />
       <Skeleton className="ml-auto h-4 w-16" />
     </div>

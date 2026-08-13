@@ -28,13 +28,6 @@ export function formatCount(value: number): string {
   return value.toLocaleString("en-IN")
 }
 
-/** `null` reads as "no comparable previous window" — all-time has none. */
-export function formatDelta(percent: number | null | undefined): string {
-  if (percent === null || percent === undefined) return "—"
-  if (percent === 0) return "0%"
-  return `${percent > 0 ? "+" : "−"}${Math.abs(percent)}%`
-}
-
 export function formatShortDate(value: string): string {
   return new Date(value).toLocaleDateString("en-GB", { day: "numeric", month: "short" })
 }
