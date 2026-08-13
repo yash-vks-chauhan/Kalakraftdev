@@ -1,0 +1,2107 @@
+<title>Catalogue as Instrument</title>
+
+<style>
+/* ══════════════════════════════════════════════════════════════════
+   DOC CHROME — a spec sheet, not an editorial.
+   Cool graphite, one quiet accent, mono carrying every label. The
+   previous proposal's warm serif voice argued against its own thesis.
+   Dark-first; light is the mirrored override.
+   ══════════════════════════════════════════════════════════════════ */
+:root {
+  --ground: #0a0b0d; --panel: #101216; --panel-2: #171a1f; --panel-3: #1e2229;
+  --ink: #e8ebef; --ink-2: #98a1ad; --ink-3: #626a76;
+  --line: rgba(232,235,239,.085); --line-2: rgba(232,235,239,.17);
+  --accent: #86a5d6; --accent-soft: rgba(134,165,214,.13);
+  --good: #4bab72; --warn: #c8913f; --bad: #d4736b;
+  --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --measure: 66ch; --shell: 1200px;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --ground: #f6f7f9; --panel: #fff; --panel-2: #f2f4f6; --panel-3: #e9ecf0;
+    --ink: #14171c; --ink-2: #5a626d; --ink-3: #8b939f;
+    --line: rgba(20,23,28,.10); --line-2: rgba(20,23,28,.19);
+    --accent: #3a5f9e; --accent-soft: rgba(58,95,158,.09);
+    --good: #17794a; --warn: #9a6a13; --bad: #b0362c;
+  }
+}
+:root[data-theme="light"] {
+  --ground: #f6f7f9; --panel: #fff; --panel-2: #f2f4f6; --panel-3: #e9ecf0;
+  --ink: #14171c; --ink-2: #5a626d; --ink-3: #8b939f;
+  --line: rgba(20,23,28,.10); --line-2: rgba(20,23,28,.19);
+  --accent: #3a5f9e; --accent-soft: rgba(58,95,158,.09);
+  --good: #17794a; --warn: #9a6a13; --bad: #b0362c;
+}
+:root[data-theme="dark"] {
+  --ground: #0a0b0d; --panel: #101216; --panel-2: #171a1f; --panel-3: #1e2229;
+  --ink: #e8ebef; --ink-2: #98a1ad; --ink-3: #626a76;
+  --line: rgba(232,235,239,.085); --line-2: rgba(232,235,239,.17);
+  --accent: #86a5d6; --accent-soft: rgba(134,165,214,.13);
+  --good: #4bab72; --warn: #c8913f; --bad: #d4736b;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--ground); color: var(--ink);
+  font-family: var(--sans); font-size: 16px; line-height: 1.6;
+  -webkit-font-smoothing: antialiased; overflow-x: hidden;
+  font-variant-numeric: tabular-nums;
+}
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px; }
+.wrap { max-width: var(--shell); margin: 0 auto; padding: 0 26px; }
+.prose { max-width: var(--measure); }
+.eyebrow {
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: .18em;
+  text-transform: uppercase; color: var(--ink-3); margin: 0;
+}
+h1, h2, h3, h4 { text-wrap: balance; margin: 0; font-weight: 600; }
+h1 { font-size: clamp(31px,4.4vw,46px); line-height: 1.04; letter-spacing: -.03em; }
+h2 { font-size: clamp(21px,2.4vw,27px); line-height: 1.18; letter-spacing: -.021em; }
+h3 { font-size: 15.5px; letter-spacing: -.008em; }
+h4 { font-size: 13px; letter-spacing: -.004em; }
+p { margin: 0; }
+.lede { color: var(--ink-2); font-size: 17px; line-height: 1.6; }
+.note { color: var(--ink-2); font-size: 14.5px; line-height: 1.62; }
+.tiny { color: var(--ink-3); font-size: 12.5px; line-height: 1.55; }
+code, .code { font-family: var(--mono); font-size: .86em; color: var(--accent); }
+.stack { display: flex; flex-direction: column; }
+.g6{gap:6px}.g10{gap:10px}.g14{gap:14px}.g20{gap:20px}.g26{gap:26px}.g36{gap:36px}
+
+section.band { padding: 76px 0; border-top: 1px solid var(--line); }
+.band-head { display: flex; flex-direction: column; gap: 13px; margin-bottom: 40px; }
+
+/* ── masthead ──────────────────────────────────────────────────── */
+.masthead { padding: 86px 0 58px; }
+.masthead .rule { height: 1px; background: var(--line); margin: 34px 0 20px; }
+.facts { display: flex; flex-wrap: wrap; gap: 9px 32px; font-family: var(--mono); font-size: 11px; letter-spacing: .05em; color: var(--ink-3); }
+.facts b { color: var(--ink-2); font-weight: 400; }
+
+/* ── panels ────────────────────────────────────────────────────── */
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; }
+.panel-pad { padding: 22px 24px; }
+.cols-2 { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 20px; }
+@media (max-width: 880px){ .cols-2 { grid-template-columns: 1fr; } }
+
+/* ══════════════ THE DIAGNOSIS: NOW vs PROPOSED specimens ════════ */
+.diag { display: flex; flex-direction: column; gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.diag-row { background: var(--panel); display: grid; grid-template-columns: minmax(0,300px) 1fr 1fr; gap: 0; }
+@media (max-width: 1000px){ .diag-row { grid-template-columns: 1fr; } }
+.diag-why { padding: 20px 22px; display: flex; flex-direction: column; gap: 7px; border-right: 1px solid var(--line); }
+@media (max-width: 1000px){ .diag-why { border-right: 0; border-bottom: 1px solid var(--line); } }
+.diag-why p { color: var(--ink-2); font-size: 13.5px; line-height: 1.55; }
+.diag-cell { padding: 18px; display: flex; flex-direction: column; gap: 11px; min-width: 0; }
+.diag-cell + .diag-cell { border-left: 1px solid var(--line); }
+@media (max-width: 1000px){ .diag-cell + .diag-cell { border-left: 0; border-top: 1px solid var(--line); } }
+.cell-tag { font-family: var(--mono); font-size: 9.5px; letter-spacing: .16em; text-transform: uppercase; color: var(--ink-3); }
+.cell-tag.pro { color: var(--accent); }
+.stagelet { background: #fff; border-radius: 8px; padding: 12px; border: 1px solid rgba(20,23,28,.1); }
+
+/* ── rules grid ────────────────────────────────────────────────── */
+.rules { display: grid; grid-template-columns: repeat(auto-fit,minmax(230px,1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.rule-cell { background: var(--panel); padding: 20px 20px 22px; display: flex; flex-direction: column; gap: 8px; }
+.rule-cell .n { font-family: var(--mono); font-size: 10.5px; letter-spacing: .16em; color: var(--accent); }
+.rule-cell p { color: var(--ink-2); font-size: 13px; line-height: 1.55; }
+
+/* ── device stage ──────────────────────────────────────────────── */
+.stage { display: grid; grid-template-columns: 390px minmax(0,1fr); gap: 46px; align-items: start; }
+@media (max-width: 950px){ .stage { grid-template-columns: 1fr; gap: 32px; } }
+.device-col { position: sticky; top: 24px; display: flex; flex-direction: column; gap: 11px; align-items: center; }
+@media (max-width: 950px){ .device-col { position: static; } }
+.device {
+  width: 390px; height: 790px; flex: none; position: relative;
+  border-radius: 44px; padding: 11px; background: #16181c;
+  box-shadow: 0 0 0 1px rgba(255,255,255,.06), 0 30px 64px -26px rgba(0,0,0,.7);
+}
+.screen {
+  position: relative; width: 368px; height: 768px; border-radius: 34px; overflow: hidden;
+  background: #fff; color: #0f1116; isolation: isolate;
+  font-family: var(--sans); font-size: 15px; line-height: 1.45;
+  font-variant-numeric: tabular-nums;
+}
+.device-cap { font-family: var(--mono); font-size: 10.5px; letter-spacing: .07em; color: var(--ink-3); }
+
+.anatomy { list-style: none; margin: 0; padding: 0; }
+.anatomy > li { display: grid; grid-template-columns: 30px 1fr; gap: 15px; padding: 16px 0; border-top: 1px solid var(--line); }
+.anatomy > li:first-child { border-top: 0; padding-top: 0; }
+.pin { width: 24px; height: 20px; border-radius: 4px; display: grid; place-items: center; margin-top: 2px;
+  background: var(--accent-soft); border: 1px solid rgba(134,165,214,.3); color: var(--accent);
+  font-family: var(--mono); font-size: 10px; letter-spacing: .04em; }
+.anatomy h4 { margin-bottom: 4px; }
+.anatomy p { color: var(--ink-2); font-size: 13.8px; line-height: 1.6; }
+
+/* ── tables ────────────────────────────────────────────────────── */
+.scroll-x { overflow-x: auto; }
+.tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
+.tbl th { text-align: left; font-family: var(--mono); font-size: 9.5px; letter-spacing: .15em; text-transform: uppercase; color: var(--ink-3); font-weight: 400; padding: 0 14px 9px 0; border-bottom: 1px solid var(--line-2); white-space: nowrap; }
+.tbl td { padding: 11px 14px 11px 0; border-bottom: 1px solid var(--line); vertical-align: top; color: var(--ink-2); line-height: 1.5; }
+.tbl td:first-child { color: var(--ink); }
+.tbl .mono { font-family: var(--mono); font-size: 11.5px; }
+.tbl .was { color: var(--ink-3); text-decoration: line-through; text-decoration-color: var(--line-2); }
+.tbl .now { color: var(--ink); }
+.sw { display: inline-block; width: 13px; height: 13px; border-radius: 3px; vertical-align: -2px; margin-right: 7px; border: 1px solid rgba(128,128,128,.28); }
+
+/* ── chips ─────────────────────────────────────────────────────── */
+.chips { display: flex; flex-wrap: wrap; gap: 7px; }
+.chip { font-family: var(--mono); font-size: 11px; letter-spacing: .02em; padding: 5px 10px; border-radius: 5px; border: 1px solid var(--line-2); color: var(--ink-2); }
+.chip.add { border-color: rgba(134,165,214,.4); color: var(--accent); background: var(--accent-soft); }
+.chip.have { opacity: .55; }
+
+/* ── decisions ─────────────────────────────────────────────────── */
+.asks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.asks li { display: grid; grid-template-columns: 26px 1fr; gap: 14px; padding: 15px 0; border-top: 1px solid var(--line); }
+.asks li:first-child { border-top: 0; padding-top: 0; }
+.q { font-family: var(--mono); font-size: 11px; color: var(--accent); margin-top: 3px; }
+.asks h4 { margin-bottom: 3px; }
+.asks p { color: var(--ink-2); font-size: 13.5px; line-height: 1.55; }
+
+footer.doc { padding: 52px 0 84px; border-top: 1px solid var(--line); }
+
+/* ══════════════════════════════════════════════════════════════════
+   INSIDE THE PHONE — the proposed system.
+   Hairlines, not fills. Radius 6/8. Desaturated semantics.
+   Fixed light: the app ships no dark theme.
+   ══════════════════════════════════════════════════════════════════ */
+.screen {
+  --fg: #0f1116; --fg-2: #667085; --fg-3: #98a1b0; --bg: #fff;
+  --ln: #e9ebef; --ln-2: #d8dce2; --wash: #f7f8f9;
+  --warn: #b26a05; --bad: #b42318; --good: #067647;
+}
+/* :where() so these resets carry zero specificity — a component class must
+   always beat them, and `.screen button` would otherwise outrank `.wide`. */
+:where(.screen) * { box-sizing: border-box; }
+:where(.screen) button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+:where(.screen) svg { width: 17px; height: 17px; flex: none; display: block; }
+:where(.screen) input, :where(.screen) textarea { font: inherit; color: inherit; }
+.mono { font-family: var(--mono); }
+.lbl { font-family: var(--mono); font-size: 10px; letter-spacing: .13em; text-transform: uppercase; color: var(--fg-3); }
+
+/* app bar */
+.appbar { position: absolute; inset: 0 0 auto; z-index: 6; height: 90px; background: #fff; border-bottom: 1px solid var(--ln);
+  display: flex; flex-direction: column; justify-content: flex-end; }
+.statusbar { display: flex; justify-content: space-between; align-items: center; padding: 11px 22px 0; font-size: 12px; font-weight: 600; }
+.statusbar .sig { display: flex; gap: 3px; align-items: flex-end; }
+.statusbar .sig i { width: 3px; border-radius: 1px; background: var(--fg); display: block; }
+.appbar .bar { height: 52px; display: flex; align-items: center; gap: 2px; padding: 0 8px; }
+.appbar .bar h1 { font-size: 16px; font-weight: 600; letter-spacing: -.014em; margin: 0 0 0 8px; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.icon-btn { width: 40px; height: 40px; border-radius: 6px; display: grid; place-items: center; flex: none; color: var(--fg); }
+.icon-btn:active { background: var(--wash); }
+.avatar { width: 27px; height: 27px; border-radius: 5px; background: var(--fg); color: #fff; display: grid; place-items: center; font-size: 10.5px; font-weight: 600; letter-spacing: .02em; margin-right: 6px; }
+
+.body { position: absolute; inset: 90px 0 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; }
+.body::-webkit-scrollbar { display: none; }
+
+/* dock (screen A only — the create flow hides it, see the proposal) */
+.dock { position: absolute; left: 0; right: 0; bottom: 0; z-index: 7; padding: 0 16px 13px; pointer-events: none; }
+.dock .pill { height: 56px; border-radius: 16px; border: 1px solid var(--ln); background: rgba(255,255,255,.9); backdrop-filter: blur(14px);
+  display: flex; align-items: center; padding: 6px; box-shadow: 0 6px 22px -12px rgba(0,0,0,.35); }
+.dock .t { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; color: var(--fg-3); font-size: 9.5px; font-weight: 600; }
+.dock .t[data-on="true"] { color: var(--fg); }
+.dock .t svg { width: 18px; height: 18px; }
+.dock-fog { position: absolute; left: 0; right: 0; bottom: 0; height: 90px; z-index: 6; pointer-events: none;
+  background: linear-gradient(to top, rgba(255,255,255,.96) 44%, rgba(255,255,255,0)); }
+
+/* ── control surface ───────────────────────────────────────────── */
+.controls { position: sticky; top: 0; z-index: 5; background: #fff; border-bottom: 1px solid var(--ln); }
+.srow { display: flex; align-items: center; gap: 8px; padding: 9px 14px; }
+.sfield { position: relative; flex: 1; min-width: 0; }
+.sfield > svg { position: absolute; left: 10px; top: 11px; color: var(--fg-3); width: 16px; height: 16px; }
+.sfield input { width: 100%; height: 38px; border: 1px solid var(--ln-2); border-radius: 6px; background: #fff;
+  padding: 0 30px 0 33px; font-size: 14.5px; outline: none; }
+.sfield input::placeholder { color: var(--fg-3); }
+.sfield input:focus { border-color: var(--fg); }
+.sfield .clr { position: absolute; right: 2px; top: 3px; width: 32px; height: 32px; display: grid; place-items: center; color: var(--fg-3); }
+.gbtn { width: 38px; height: 38px; border: 1px solid var(--ln-2); border-radius: 6px; display: grid; place-items: center; flex: none; color: var(--fg); position: relative; }
+.gbtn:active { background: var(--wash); }
+.gbtn[data-solid="true"] { background: var(--fg); border-color: var(--fg); color: #fff; }
+.gbtn .mark { position: absolute; top: -2px; right: -2px; width: 7px; height: 7px; border-radius: 99px; background: var(--fg); border: 1.5px solid #fff; }
+
+/* facet strip — the stat cards, spent */
+.facets { display: flex; overflow-x: auto; scrollbar-width: none; padding: 0 14px; gap: 20px; }
+.facets::-webkit-scrollbar { display: none; }
+.facet { display: flex; align-items: baseline; gap: 6px; padding: 3px 0 9px; position: relative; white-space: nowrap; flex: none; }
+.facet .fl { font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--fg-3); }
+.facet .fn { font-size: 13px; font-weight: 500; color: var(--fg-2); }
+.facet[data-on="true"] .fl { color: var(--fg); }
+.facet[data-on="true"] .fn { color: var(--fg); font-weight: 600; }
+.facet[data-on="true"]::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1.5px; background: var(--fg); }
+
+/* column header — the tell */
+.colhead { display: flex; align-items: center; gap: 10px; padding: 8px 14px; border-bottom: 1px solid var(--ln); background: var(--wash); }
+.colhead .c1 { font-family: var(--mono); font-size: 9.5px; letter-spacing: .15em; text-transform: uppercase; color: var(--fg-3); flex: 1; min-width: 0; }
+.colhead .sortbtn { display: inline-flex; align-items: center; gap: 4px; font-family: var(--mono); font-size: 9.5px; letter-spacing: .15em; text-transform: uppercase; color: var(--fg); }
+.colhead .sortbtn svg { width: 11px; height: 11px; }
+.colhead .selbtn { font-family: var(--mono); font-size: 9.5px; letter-spacing: .15em; text-transform: uppercase; color: var(--fg-3); padding-left: 4px; border-left: 1px solid var(--ln-2); }
+.colhead .selbtn[data-on="true"] { color: var(--fg); }
+
+/* rows */
+.rows { display: flex; flex-direction: column; }
+.row { display: flex; align-items: center; gap: 11px; padding: 0 14px; min-height: 57px; position: relative; text-align: left; width: 100%; }
+.row::after { content: ""; position: absolute; left: 61px; right: 0; bottom: 0; height: 1px; background: var(--ln); }
+.row:last-child::after { left: 0; }
+.row:active { background: var(--wash); }
+.row .ck { width: 18px; height: 18px; border-radius: 4px; border: 1px solid var(--ln-2); flex: none; display: grid; place-items: center; color: transparent; }
+.row .ck[data-on="true"] { background: var(--fg); border-color: var(--fg); color: #fff; }
+.row .ck svg { width: 11px; height: 11px; }
+.thumb { width: 36px; height: 36px; border-radius: 5px; flex: none; border: 1px solid var(--ln); overflow: hidden; position: relative; background: var(--wash); }
+.row .txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.row .nmrow { display: flex; align-items: baseline; gap: 7px; min-width: 0; }
+.row .nm { min-width: 0; font-size: 14px; font-weight: 500; letter-spacing: -.008em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.row .off { font-family: var(--mono); font-size: 9px; letter-spacing: .13em; text-transform: uppercase; color: var(--fg-3); flex: none; }
+.row[data-hidden="true"] .nm { color: var(--fg-2); }
+.row[data-hidden="true"] .thumb { opacity: .45; }
+.row .mt { font-family: var(--mono); font-size: 10.5px; letter-spacing: .02em; color: var(--fg-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.row .val { display: flex; align-items: center; gap: 6px; flex: none; }
+.row .val .dot { width: 5px; height: 5px; border-radius: 99px; }
+.row .val .n { font-size: 14px; font-weight: 500; min-width: 26px; text-align: right; }
+.row .val .n[data-tone="warn"] { color: var(--warn); }
+.row .val .n[data-tone="bad"] { color: var(--bad); }
+.row .kebab { width: 34px; height: 56px; display: grid; place-items: center; color: var(--fg-3); flex: none; margin-right: -8px; }
+.row .kebab:active { color: var(--fg); }
+.addrow { display: flex; align-items: center; gap: 11px; padding: 0 14px; min-height: 48px; width: 100%; border-bottom: 1px solid var(--ln); color: var(--fg-2); }
+.addrow:active { background: var(--wash); }
+.addrow .sq { width: 36px; height: 36px; border-radius: 5px; border: 1px dashed var(--ln-2); display: grid; place-items: center; flex: none; }
+.addrow span { font-size: 13.5px; }
+
+.empty { padding: 46px 24px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.empty .lbl { margin-bottom: 2px; }
+.empty strong { font-size: 15px; font-weight: 600; }
+.empty p { font-size: 13px; color: var(--fg-2); max-width: 30ch; }
+.empty button { margin-top: 6px; height: 32px; padding: 0 12px; border: 1px solid var(--ln-2); border-radius: 6px; font-size: 13px; font-weight: 500; }
+
+/* bulk bar */
+.bulkbar { position: absolute; left: 0; right: 0; bottom: 0; z-index: 8; background: #fff; border-top: 1px solid var(--ln-2); padding: 10px 14px calc(10px + 8px);
+  display: flex; align-items: center; gap: 8px; transform: translateY(105%); transition: transform .26s cubic-bezier(.32,.72,0,1); }
+.bulkbar[data-on="true"] { transform: none; }
+.bulkbar .cnt { font-family: var(--mono); font-size: 10px; letter-spacing: .13em; text-transform: uppercase; color: var(--fg-3); flex: 1; }
+.bulkbar button { height: 34px; padding: 0 11px; border-radius: 6px; border: 1px solid var(--ln-2); font-size: 13px; font-weight: 500; }
+.bulkbar button:active { background: var(--wash); }
+.bulkbar button[data-bad="true"] { color: var(--bad); border-color: rgba(180,35,24,.28); }
+
+/* ── sheets ────────────────────────────────────────────────────── */
+.scrim { position: absolute; inset: 0; z-index: 20; background: rgba(15,17,22,.38); opacity: 0; pointer-events: none; transition: opacity .24s; }
+.scrim[data-open="true"] { opacity: 1; pointer-events: auto; }
+.sheet { position: absolute; left: 0; right: 0; bottom: 0; z-index: 21; background: #fff; border-radius: 14px 14px 0 0; border-top: 1px solid var(--ln-2);
+  max-height: 86%; display: flex; flex-direction: column; transform: translateY(102%);
+  transition: transform .3s cubic-bezier(.32,.72,0,1); box-shadow: 0 -8px 30px -14px rgba(0,0,0,.3); }
+.sheet[data-open="true"] { transform: none; }
+.sh-head { display: flex; align-items: baseline; gap: 10px; padding: 15px 16px 11px; border-bottom: 1px solid var(--ln); flex: none; }
+.sh-head h3 { font-size: 14.5px; font-weight: 600; letter-spacing: -.01em; margin: 0; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sh-head button { font-family: var(--mono); font-size: 10px; letter-spacing: .13em; text-transform: uppercase; color: var(--fg-2); }
+.sh-body { overflow-y: auto; scrollbar-width: none; }
+.sh-body::-webkit-scrollbar { display: none; }
+.sh-foot { padding: 11px 16px calc(11px + 8px); border-top: 1px solid var(--ln); flex: none; }
+.sh-group { padding: 12px 16px 4px; }
+.sh-group .lbl { display: block; margin-bottom: 3px; }
+
+.opt { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 50px; padding: 8px 16px; text-align: left; border-bottom: 1px solid var(--ln); }
+.opt:active { background: var(--wash); }
+.opt .lb { flex: 1; min-width: 0; }
+.opt .lb strong { display: block; font-size: 14.5px; font-weight: 450; letter-spacing: -.006em; }
+.opt .lb small { display: block; font-family: var(--mono); font-size: 10.5px; color: var(--fg-3); letter-spacing: .02em; }
+.opt .rt { font-size: 13.5px; color: var(--fg-2); flex: none; }
+.opt .tick { color: var(--fg); opacity: 0; flex: none; }
+.opt[data-sel="true"] .tick { opacity: 1; }
+.opt[data-bad="true"] .lb strong { color: var(--bad); }
+.opt svg.chev { color: var(--fg-3); flex: none; width: 15px; height: 15px; }
+
+.stockedit { display: flex; align-items: center; gap: 12px; padding: 13px 16px; border-bottom: 1px solid var(--ln); }
+.stockedit .lb { flex: 1; min-width: 0; }
+.stockedit .lb strong { display: block; font-size: 14.5px; font-weight: 450; }
+.stockedit .lb small { display: block; font-family: var(--mono); font-size: 10.5px; color: var(--fg-3); }
+.stepper { display: flex; align-items: stretch; height: 36px; border: 1px solid var(--ln-2); border-radius: 6px; overflow: hidden; flex: none; }
+.stepper button { width: 38px; display: grid; place-items: center; }
+.stepper button:active { background: var(--wash); }
+.stepper .v { width: 46px; display: grid; place-items: center; border-left: 1px solid var(--ln-2); border-right: 1px solid var(--ln-2); font-size: 14px; font-weight: 500; }
+
+.wide { width: 100%; height: 44px; border-radius: 6px; background: var(--fg); color: #fff; font-size: 14.5px; font-weight: 500; letter-spacing: -.008em;
+  display: flex; align-items: center; justify-content: center; gap: 7px; }
+.wide[aria-disabled="true"] { opacity: .3; }
+.ghost { width: 100%; height: 44px; border-radius: 6px; border: 1px solid var(--ln-2); font-size: 14.5px; font-weight: 500; display: grid; place-items: center; }
+.ghost:active { background: var(--wash); }
+
+/* ══════════════ SCREEN B — the record editor ══════════════ */
+.progline { height: 2px; background: var(--ln); position: relative; }
+.progline i { position: absolute; inset: 0 auto 0 0; background: var(--fg); transition: width .35s cubic-bezier(.32,.72,0,1); }
+/* Four equal segments rather than a gapped row: the labels then cannot
+   overflow 368pt, and each underline marks its own share of the width. */
+.steps { display: flex; border-bottom: 1px solid var(--ln); background: #fff; }
+.step { position: relative; flex: 1; min-width: 0; padding: 11px 2px 10px; display: flex; align-items: center; justify-content: center; gap: 5px;
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--fg-3); white-space: nowrap; }
+.step .d { width: 5px; height: 5px; border-radius: 99px; border: 1px solid var(--fg-3); }
+.step[data-done="true"] .d { background: var(--good); border-color: var(--good); }
+.step[data-on="true"] { color: var(--fg); }
+.step[data-on="true"]::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 1.5px; background: var(--fg); }
+
+.fields { padding: 4px 16px 0; }
+.fld { padding: 15px 0 13px; border-bottom: 1px solid var(--ln); display: flex; flex-direction: column; gap: 7px; }
+.fld .top { display: flex; align-items: baseline; gap: 10px; }
+.fld .top .lbl { flex: 1; }
+.fld .top .cnt { font-family: var(--mono); font-size: 10px; color: var(--fg-3); }
+.fld input[type="text"], .fld textarea {
+  width: 100%; border: 0; outline: none; background: none; font-size: 16px; letter-spacing: -.01em; padding: 0; resize: none; line-height: 1.4;
+}
+.fld input::placeholder, .fld textarea::placeholder { color: var(--fg-3); }
+.fld textarea { min-height: 66px; }
+.fld .hint { font-size: 12px; color: var(--fg-3); }
+.fld .hint b { color: var(--fg-2); font-weight: 500; }
+/* Focus is carried by the rule the field already has, not by a new mark. */
+.fld:focus-within { border-bottom-color: var(--fg); box-shadow: 0 1px 0 0 var(--fg); }
+.fld:focus-within > .top > .lbl { color: var(--fg); }
+.subline { display: flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 10.5px; color: var(--fg-3); }
+.subline code { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--fg-2); }
+.subline button { font-family: var(--mono); font-size: 10px; letter-spacing: .13em; text-transform: uppercase; color: var(--fg); flex: none; }
+
+.vrow { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 52px; padding: 8px 0; border-bottom: 1px solid var(--ln); text-align: left; }
+.vrow:active { background: var(--wash); }
+.vrow .k { font-size: 14.5px; flex: 1; min-width: 0; }
+.vrow .v { font-size: 14px; color: var(--fg-2); flex: none; }
+.vrow .v[data-unset="true"] { color: var(--fg-3); }
+.vrow svg { color: var(--fg-3); width: 15px; height: 15px; flex: none; }
+
+.moneyfld { display: flex; align-items: baseline; gap: 6px; }
+.moneyfld .cur { font-size: 15px; color: var(--fg-3); }
+.moneyfld input { flex: 1; min-width: 0; border: 0; outline: none; background: none; font-size: 26px; font-weight: 500; letter-spacing: -.03em; padding: 0; }
+.moneyfld input::placeholder { color: var(--fg-3); font-weight: 400; }
+
+.sw2 { width: 38px; height: 22px; border-radius: 99px; background: var(--ln-2); position: relative; transition: background .18s; flex: none; }
+.sw2 i { position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; border-radius: 99px; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.25); transition: transform .18s; display: block; }
+.sw2[data-on="true"] { background: var(--good); }
+.sw2[data-on="true"] i { transform: translateX(16px); }
+
+/* media */
+.mediahead { display: flex; align-items: baseline; gap: 10px; padding: 16px 0 9px; }
+.mediahead .lbl { flex: 1; }
+.mediahead .cnt { font-family: var(--mono); font-size: 10px; color: var(--fg-3); }
+.dropbig { width: 100%; border: 1px dashed var(--ln-2); border-radius: 8px; padding: 26px 16px; display: flex; flex-direction: column; align-items: center; gap: 7px; text-align: center; }
+.dropbig:active { background: var(--wash); }
+.dropbig strong { font-size: 14px; font-weight: 500; }
+.dropbig small { font-family: var(--mono); font-size: 10px; letter-spacing: .04em; color: var(--fg-3); }
+.tiles { display: grid; grid-template-columns: repeat(3,1fr); gap: 6px; }
+.tile { position: relative; aspect-ratio: 1; border-radius: 6px; overflow: hidden; border: 1px solid var(--ln); }
+.tile[data-cover="true"] { border: 1.5px solid var(--fg); }
+.tile .surface { position: absolute; inset: 0; }
+.tile .ix { position: absolute; left: 5px; bottom: 4px; font-family: var(--mono); font-size: 9.5px; letter-spacing: .08em; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.55); }
+.tile .cv { position: absolute; left: 5px; top: 5px; font-family: var(--mono); font-size: 8.5px; letter-spacing: .12em; text-transform: uppercase; background: var(--fg); color: #fff; padding: 2px 5px; border-radius: 3px; }
+.tile .rm { position: absolute; right: 4px; top: 4px; width: 22px; height: 22px; border-radius: 5px; background: rgba(255,255,255,.94); border: 1px solid var(--ln-2); display: grid; place-items: center; color: var(--fg); }
+.tile .rm svg { width: 11px; height: 11px; }
+.tile.add { border-style: dashed; border-color: var(--ln-2); display: grid; place-items: center; color: var(--fg-3); }
+.tile.up { border-style: dashed; display: grid; place-items: center; }
+.tile.up .pct { font-family: var(--mono); font-size: 10px; color: var(--fg-3); }
+.tile.up .bar { position: absolute; left: 8px; right: 8px; bottom: 9px; height: 2px; background: var(--ln); }
+.tile.up .bar i { display: block; height: 100%; background: var(--fg); }
+
+.tagwrap { display: flex; flex-wrap: wrap; gap: 6px; padding-top: 2px; }
+.tg { display: inline-flex; align-items: center; gap: 2px; height: 28px; padding: 0 4px 0 9px; border-radius: 5px; border: 1px solid var(--ln-2); font-size: 13px; }
+.tg button { width: 22px; height: 22px; display: grid; place-items: center; color: var(--fg-3); border-radius: 4px; }
+.tg button:active { background: var(--wash); }
+.tg svg { width: 11px; height: 11px; }
+.tgs { height: 28px; padding: 0 9px; border-radius: 5px; border: 1px dashed var(--ln-2); font-size: 13px; color: var(--fg-2); display: inline-flex; align-items: center; gap: 4px; }
+.tgs:active { background: var(--wash); }
+
+/* action bar — flat, hairline, flush (the dock is hidden on this flow) */
+.actbar { position: absolute; left: 0; right: 0; bottom: 0; z-index: 8; background: #fff; border-top: 1px solid var(--ln); }
+.actbar .why { display: flex; align-items: center; gap: 8px; width: 100%; padding: 9px 16px; border-bottom: 1px solid var(--ln); background: var(--wash); text-align: left;
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: .04em; color: var(--fg-2); }
+.actbar .why b { color: var(--fg); font-weight: 500; }
+.actbar .why svg { width: 13px; height: 13px; color: var(--warn); }
+.actbar .rw { display: flex; align-items: center; gap: 10px; padding: 10px 16px calc(10px + 10px); }
+.actbar .rev { height: 38px; padding: 0 12px; border-radius: 6px; border: 1px solid var(--ln-2); font-size: 13.5px; font-weight: 500; flex: none; }
+.actbar .rev:active { background: var(--wash); }
+.actbar .go { flex: 1; height: 38px; border-radius: 6px; background: var(--fg); color: #fff; font-size: 14px; font-weight: 500; letter-spacing: -.008em;
+  display: flex; align-items: center; justify-content: center; gap: 6px; }
+.actbar .go[aria-disabled="true"] { opacity: .3; }
+
+/* review summary */
+.sumhead { display: flex; gap: 13px; padding: 15px 16px; border-bottom: 1px solid var(--ln); align-items: flex-start; }
+.sumhead .cov { width: 58px; height: 58px; border-radius: 6px; border: 1px solid var(--ln); flex: none; display: grid; place-items: center; color: var(--fg-3); overflow: hidden; }
+.sumhead .info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.sumhead .info strong { font-size: 15.5px; font-weight: 600; letter-spacing: -.015em; }
+.sumhead .info .pr { font-size: 20px; font-weight: 500; letter-spacing: -.025em; }
+.dl { display: flex; flex-direction: column; }
+.dl .r { display: flex; align-items: center; gap: 12px; min-height: 42px; padding: 6px 16px; border-bottom: 1px solid var(--ln); width: 100%; text-align: left; }
+.dl .r:active { background: var(--wash); }
+.dl .r dt { font-family: var(--mono); font-size: 10px; letter-spacing: .13em; text-transform: uppercase; color: var(--fg-3); flex: 1; }
+.dl .r dd { margin: 0; font-size: 13.5px; color: var(--fg); flex: none; max-width: 55%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dl .r dd[data-missing="true"] { color: var(--bad); }
+.dl .r svg { width: 14px; height: 14px; color: var(--fg-3); flex: none; }
+
+.created { position: absolute; inset: 0; z-index: 30; background: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 40px; text-align: center; opacity: 0; pointer-events: none; transition: opacity .3s; }
+.created[data-open="true"] { opacity: 1; pointer-events: auto; }
+.created .ring { width: 42px; height: 42px; border-radius: 8px; border: 1px solid var(--good); color: var(--good); display: grid; place-items: center; }
+.created strong { font-size: 17px; font-weight: 600; letter-spacing: -.02em; }
+.created p { font-family: var(--mono); font-size: 11px; color: var(--fg-3); letter-spacing: .03em; }
+
+/* ══════════════ SPECIMENS (now vs proposed) ══════════════ */
+.sp { font-family: var(--sans); color: #0f1116; font-variant-numeric: tabular-nums; }
+.sp * { box-sizing: border-box; }
+/* v1 — what ships today */
+.sp1-row { display: flex; align-items: stretch; background: #f5f5f5; border-radius: 16px; overflow: hidden; }
+.sp1-row .m { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; padding: 11px 12px; }
+.sp1-row .th { width: 52px; height: 52px; border-radius: 13px; border: 1px solid rgba(0,0,0,.06); flex: none; }
+.sp1-row .tx { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 3px; }
+.sp1-row .nm { font-size: 15px; font-weight: 600; letter-spacing: -.012em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sp1-row .mt { font-size: 12.5px; color: #666; display: flex; align-items: center; gap: 6px; }
+.sp1-row .mt b { color: #1a1a1a; font-weight: 600; }
+.sp1-row .mt .d { width: 6px; height: 6px; border-radius: 99px; background: #d97706; }
+.sp1-row .mt .w { color: #d97706; }
+.sp1-row .kb { width: 46px; border-left: 1px solid #e5e5e5; display: grid; place-items: center; color: #666; }
+.sp1-chips { display: flex; gap: 7px; }
+.sp1-chip { height: 36px; padding: 0 14px; border-radius: 11px; background: #f5f5f5; color: #666; font-size: 12.5px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
+.sp1-chip[data-on="true"] { background: #1a1a1a; color: #fff; }
+.sp1-fld { display: flex; flex-direction: column; gap: 6px; }
+.sp1-fld label { font-size: 13px; font-weight: 600; }
+.sp1-fld .in { height: 44px; border: 1px solid #e5e5e5; border-radius: 12px; display: flex; align-items: center; padding: 0 13px; font-size: 15.5px; }
+.sp1-btn { height: 40px; padding: 0 14px; border-radius: 12px; background: #1a1a1a; color: #fff; font-size: 13.5px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
+.sp1-h { font-size: 30px; font-weight: 700; letter-spacing: -.038em; line-height: 1.1; }
+.sp1-sub { font-size: 13px; color: #666; }
+
+/* v2 — proposed */
+.sp2-row { display: flex; align-items: center; gap: 11px; min-height: 57px; border-bottom: 1px solid #e9ebef; padding: 0 2px; }
+.sp2-row .th { width: 36px; height: 36px; border-radius: 5px; border: 1px solid #e9ebef; flex: none; }
+.sp2-row .tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.sp2-row .nm { font-size: 14px; font-weight: 500; letter-spacing: -.008em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sp2-row .mt { font-family: var(--mono); font-size: 10.5px; color: #98a1b0; letter-spacing: .02em; }
+.sp2-row .val { display: flex; align-items: center; gap: 6px; flex: none; }
+.sp2-row .val .d { width: 5px; height: 5px; border-radius: 99px; background: #b26a05; }
+.sp2-row .val .n { font-size: 14px; font-weight: 500; color: #b26a05; min-width: 26px; text-align: right; }
+.sp2-row .kb { width: 26px; display: grid; place-items: center; color: #98a1b0; flex: none; }
+.sp2-facets { display: flex; gap: 20px; border-bottom: 1px solid #e9ebef; }
+.sp2-facet { display: flex; align-items: baseline; gap: 6px; padding: 3px 0 9px; position: relative; }
+.sp2-facet .fl { font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: #98a1b0; }
+.sp2-facet .fn { font-size: 13px; font-weight: 500; color: #667085; }
+.sp2-facet[data-on="true"] .fl, .sp2-facet[data-on="true"] .fn { color: #0f1116; }
+.sp2-facet[data-on="true"] .fn { font-weight: 600; }
+.sp2-facet[data-on="true"]::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1.5px; background: #0f1116; }
+.sp2-fld { display: flex; flex-direction: column; gap: 7px; padding-bottom: 12px; border-bottom: 1px solid #e9ebef; }
+.sp2-fld .lb { font-family: var(--mono); font-size: 10px; letter-spacing: .13em; text-transform: uppercase; color: #98a1b0; }
+.sp2-fld .in { font-size: 16px; letter-spacing: -.01em; }
+.sp2-btn { height: 38px; padding: 0 13px; border-radius: 6px; background: #0f1116; color: #fff; font-size: 14px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; }
+.sp2-colhead { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid #e9ebef; background: #f7f8f9; }
+.sp2-colhead span { font-family: var(--mono); font-size: 9.5px; letter-spacing: .15em; text-transform: uppercase; color: #98a1b0; }
+.sp2-colhead .r { margin-left: auto; color: #0f1116; }
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet, .scrim, .progline i, .sw2, .sw2 i, .created, .bulkbar { transition: none !important; }
+}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <g id="i-search"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></g>
+    <g id="i-filter"><path d="M3 5h18M6 12h12M10 19h4"/></g>
+    <g id="i-plus"><path d="M12 5v14M5 12h14"/></g>
+    <g id="i-minus"><path d="M5 12h14"/></g>
+    <g id="i-more"><circle cx="12" cy="5" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="12" cy="19" r="1.4"/></g>
+    <g id="i-left"><path d="m15 18-6-6 6-6"/></g>
+    <g id="i-right"><path d="m9 18 6-6-6-6"/></g>
+    <g id="i-down"><path d="M12 5v14M6 13l6 6 6-6"/></g>
+    <g id="i-up"><path d="M12 19V5M6 11l6-6 6 6"/></g>
+    <g id="i-x"><path d="M18 6 6 18M6 6l12 12"/></g>
+    <g id="i-check"><path d="m20 6-11 11-5-5"/></g>
+    <g id="i-eye"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></g>
+    <g id="i-eyeoff"><path d="M10.6 6.2A9.9 9.9 0 0 1 12 6c6.4 0 10 7 10 7a17 17 0 0 1-3 3.9M6.6 6.6A17 17 0 0 0 2 13s3.6 7 10 7a9.7 9.7 0 0 0 5.1-1.4"/><path d="M3 3l18 18"/></g>
+    <g id="i-trash"><path d="M4 7h16M10 11v6M14 11v6"/><path d="M6 7l1 13h10l1-13M9 7V4h6v3"/></g>
+    <g id="i-ext"><path d="M14 4h6v6M20 4l-9 9"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></g>
+    <g id="i-box"><path d="M21 8v8l-9 5-9-5V8l9-5Z"/><path d="m3 8 9 5 9-5M12 13v9"/></g>
+    <g id="i-camera"><path d="M3 8.5A1.5 1.5 0 0 1 4.5 7H7l1.5-2h7L17 7h2.5A1.5 1.5 0 0 1 21 8.5v9A1.5 1.5 0 0 1 19.5 19h-15A1.5 1.5 0 0 1 3 17.5Z"/><circle cx="12" cy="13" r="3.4"/></g>
+    <g id="i-image"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="m4 17 5-5 4 4 3-2.5 4 3.5"/></g>
+    <g id="i-home"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1Z"/></g>
+    <g id="i-bag"><path d="M5 7h14l-1 13H6Z"/><path d="M9 7a3 3 0 0 1 6 0"/></g>
+    <g id="i-users"><circle cx="9" cy="8" r="3.2"/><path d="M3 20a6 6 0 0 1 12 0M17 11a3 3 0 0 0 0-6M17.5 20a5.7 5.7 0 0 0-1.6-4"/></g>
+    <g id="i-star"><path d="m12 3.5 2.6 5.4 5.9.8-4.3 4.1 1 5.9-5.2-2.8-5.2 2.8 1-5.9L3.5 9.7l5.9-.8Z"/></g>
+    <g id="i-alert"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5M12 16v.1"/></g>
+    <g id="i-pencil"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></g>
+    <g id="i-layers"><path d="m12 3 9 5-9 5-9-5Z"/><path d="m3 13 9 5 9-5"/></g>
+  </defs>
+</svg>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<header class="masthead">
+  <div class="wrap stack g20">
+    <p class="eyebrow">Kalakraft · Admin · Mobile · Proposal ii</p>
+    <h1 class="prose">Stop drawing an app. Draw an instrument.</h1>
+    <p class="lede prose">
+      The screens that shipped work. They do not read like software you would trust with a
+      catalogue — they read like a consumer app: 16-point corners, grey blobs, bold everywhere,
+      and figures that never line up. This proposal keeps every function and changes the
+      material: hairlines instead of fills, one column for every number, and type that stops
+      shouting.
+    </p>
+    <div class="rule"></div>
+    <div class="facts">
+      <span><b>Scope</b> · 2 screens, below <code>lg</code></span>
+      <span><b>Reference</b> · 390 × 844 pt</span>
+      <span><b>Status</b> · design only — nothing implemented</span>
+      <span><b>Also proposed</b> · shadcn tokens &amp; primitives</span>
+    </div>
+  </div>
+</header>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<section class="band" style="border-top:0">
+  <div class="wrap">
+    <div class="band-head">
+      <p class="eyebrow">The diagnosis</p>
+      <h2 class="prose">Seven reasons it reads cheap</h2>
+      <p class="note prose">
+        Each row states the cause, then shows the same element as it ships today and as
+        proposed. Both specimens are live HTML at the real sizes — nothing here is a mockup
+        of a mockup.
+      </p>
+    </div>
+
+    <div class="diag">
+      <!-- 1 -->
+      <div class="diag-row">
+        <div class="diag-why">
+          <h4>Corners are twice too round</h4>
+          <p>16&nbsp;pt on a list, 13 on a thumbnail, 11 on a chip. Radius that size is a
+          consumer signal — it is what a photo-sharing app uses. Tools sit at 5–8.</p>
+        </div>
+        <div class="diag-cell">
+          <span class="cell-tag">Ships today</span>
+          <div class="stagelet sp">
+            <div class="sp1-row">
+              <div class="m">
+                <span class="th" style="background:linear-gradient(140deg,#e8d9b5,#c8a24a)"></span>
+                <span class="tx">
+                  <span class="nm">Brass diya set of six</span>
+                  <span class="mt"><b>₹899</b> · <i class="d"></i> <span class="w">3 left</span></span>
+                </span>
+              </div>
+              <span class="kb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="5" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="19" cy="12" r="1.4"/></svg></span>
+            </div>
+          </div>
+        </div>
+        <div class="diag-cell">
+          <span class="cell-tag pro">Proposed</span>
+          <div class="stagelet sp">
+            <div class="sp2-row">
+              <span class="th" style="background:linear-gradient(140deg,#e8d9b5,#c8a24a)"></span>
+              <span class="tx">
+                <span class="nm">Brass diya set of six</span>
+                <span class="mt">#02 · BRASS &amp; METAL · ₹899</span>
+              </span>
+              <span class="val"><i class="d"></i><span class="n">3</span></span>
+              <span class="kb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px"><circle cx="12" cy="5" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="12" cy="19" r="1.3"/></svg></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2 -->
+      <div class="diag-row">
+        <div class="diag-why">
+          <h4>Numbers never line up</h4>
+          <p>Price and stock sit inside a sentence — <code>₹899 · 3 left</code> — so no two rows
+          share an edge. An inventory screen where you cannot scan a column of quantities is
+          not an inventory screen.</p>
+        </div>
+        <div class="diag-cell">
+          <span class="cell-tag">Ships today</span>
+          <div class="stagelet sp" style="display:flex;flex-direction:column;gap:0">
+            <div class="sp1-row" style="border-radius:16px 16px 0 0">
+              <div class="m" style="padding:9px 12px">
+                <span class="tx"><span class="nm" style="font-size:14px">Ceramic vase</span>
+                <span class="mt"><b>₹2,400</b> · 12 in stock</span></span>
+              </div>
+            </div>
+            <div class="sp1-row" style="border-radius:0;border-top:1px solid #e0e0e0">
+              <div class="m" style="padding:9px 12px">
+                <span class="tx"><span class="nm" style="font-size:14px">Marble coasters</span>
+                <span class="mt"><b>₹3,200</b> · <i class="d"></i><span class="w">7 left</span></span></span>
+              </div>
+            </div>
+            <div class="sp1-row" style="border-radius:0 0 16px 16px;border-top:1px solid #e0e0e0">
+              <div class="m" style="padding:9px 12px">
+                <span class="tx"><span class="nm" style="font-size:14px">Resin coasters</span>
+                <span class="mt"><b>₹1,150</b> · <span style="color:#dc2626">Out of stock</span></span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="diag-cell">
+          <span class="cell-tag pro">Proposed</span>
+          <div class="stagelet sp">
+            <div class="sp2-colhead"><span>Product</span><span class="r">Stock ↑</span></div>
+            <div class="sp2-row" style="min-height:44px">
+              <span class="tx"><span class="nm">Resin coasters</span><span class="mt">#03 · RESIN ART · ₹1,150</span></span>
+              <span class="val"><i class="d" style="background:#b42318"></i><span class="n" style="color:#b42318">0</span></span>
+            </div>
+            <div class="sp2-row" style="min-height:44px">
+              <span class="tx"><span class="nm">Marble coasters</span><span class="mt">#05 · WOODWORK · ₹3,200</span></span>
+              <span class="val"><i class="d"></i><span class="n">7</span></span>
+            </div>
+            <div class="sp2-row" style="min-height:44px;border-bottom:0">
+              <span class="tx"><span class="nm">Ceramic vase</span><span class="mt">#01 · CERAMICS · ₹2,400</span></span>
+              <span class="val"><span class="n" style="color:#0f1116">12</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3 -->
+      <div class="diag-row">
+        <div class="diag-why">
+          <h4>Grey is used as a fill, not as a line</h4>
+          <p>Rows, chips, panels, dropzones — all <code>#f5f5f5</code> rounded rectangles. A
+          screen of soft grey lozenges has no structure. One hairline does the same job and
+          leaves the page white.</p>
+        </div>
+        <div class="diag-cell">
+          <span class="cell-tag">Ships today</span>
+          <div class="stagelet sp">
+            <div class="sp1-chips">
+              <span class="sp1-chip" data-on="true">All <span style="opacity:.68">128</span></span>
+              <span class="sp1-chip">Live <span style="opacity:.75">120</span></span>
+              <span class="sp1-chip">Low <span style="opacity:.75">6</span></span>
+            </div>
+          </div>
+        </div>
+        <div class="diag-cell">
+          <span class="cell-tag pro">Proposed</span>
+          <div class="stagelet sp">
+            <div class="sp2-facets">
+              <span class="sp2-facet" data-on="true"><span class="fl">All</span><span class="fn">128</span></span>
+              <span class="sp2-facet"><span class="fl">Live</span><span class="fn">120</span></span>
+              <span class="sp2-facet"><span class="fl">Low</span><span class="fn">6</span></span>
+              <span class="sp2-facet"><span class="fl">Out</span><span class="fn">2</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4 -->
+      <div class="diag-row">
+        <div class="diag-why">
+          <h4>Everything is bold</h4>
+          <p>30/700 title, 15/600 names, 600 prices, 600 chips. When six things are emphasised
+          nothing is. Weight should mark one thing per region; the rest is 400–500 and told
+          apart by size and colour.</p>
+        </div>
+        <div class="diag-cell">
+          <span class="cell-tag">Ships today</span>
+          <div class="stagelet sp" style="display:flex;align-items:flex-start;gap:12px">
+            <div style="flex:1;min-width:0">
+              <div class="sp1-h">Products</div>
+              <div class="sp1-sub">8 pieces · 6 live</div>
+            </div>
+            <span class="sp1-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="width:15px;height:15px"><path d="M12 5v14M5 12h14"/></svg>New</span>
+          </div>
+        </div>
+        <div class="diag-cell">
+          <span class="cell-tag pro">Proposed</span>
+          <div class="stagelet sp">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+              <span style="font-size:16px;font-weight:600;letter-spacing:-.014em">Products</span>
+              <span style="margin-left:auto;font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:#98a1b0">Select</span>
+              <span class="sp2-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M12 5v14M5 12h14"/></svg>New</span>
+            </div>
+            <p class="tiny" style="color:#98a1b0;font-size:11.5px;margin:0">The title moves into the app bar. One 600 on the screen — the row you are looking at.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5 -->
+      <div class="diag-row">
+        <div class="diag-why">
+          <h4>Form fields look like buttons</h4>
+          <p>12&nbsp;pt corners, a full border and a grey fill on every input. It is the same
+          shape as the primary action. Rule-separated fields read as a record and free the
+          only filled shape for the one thing you press.</p>
+        </div>
+        <div class="diag-cell">
+          <span class="cell-tag">Ships today</span>
+          <div class="stagelet sp" style="display:flex;flex-direction:column;gap:14px">
+            <div class="sp1-fld">
+              <label>Product name</label>
+              <div class="in">Hand-painted ceramic vase</div>
+            </div>
+            <div class="sp1-fld">
+              <label>Short description</label>
+              <div class="in" style="color:#98a1b0">One line for the product card</div>
+            </div>
+          </div>
+        </div>
+        <div class="diag-cell">
+          <span class="cell-tag pro">Proposed</span>
+          <div class="stagelet sp" style="display:flex;flex-direction:column;gap:14px">
+            <div class="sp2-fld">
+              <span class="lb">Name</span>
+              <span class="in">Hand-painted ceramic vase</span>
+            </div>
+            <div class="sp2-fld" style="border-bottom:0">
+              <span class="lb">Short description</span>
+              <span class="in" style="color:#98a1b0">One line for the product card</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6 -->
+      <div class="diag-row">
+        <div class="diag-why">
+          <h4>Status shouts in full-strength colour</h4>
+          <p><code>#dc2626</code> text and <code>#d97706</code> text next to a matching dot,
+          at 12.5&nbsp;pt. Saying it twice in a bright hue is what makes a screen look like a
+          warning label. Desaturate, and let the dot carry it.</p>
+        </div>
+        <div class="diag-cell">
+          <span class="cell-tag">Ships today</span>
+          <div class="stagelet sp" style="display:flex;flex-direction:column;gap:9px;font-size:12.5px">
+            <span><i style="display:inline-block;width:6px;height:6px;border-radius:99px;background:#059669;margin-right:7px"></i>12 in stock</span>
+            <span><i style="display:inline-block;width:6px;height:6px;border-radius:99px;background:#d97706;margin-right:7px"></i><span style="color:#d97706">3 left</span></span>
+            <span><i style="display:inline-block;width:6px;height:6px;border-radius:99px;background:#dc2626;margin-right:7px"></i><span style="color:#dc2626">Out of stock</span></span>
+          </div>
+        </div>
+        <div class="diag-cell">
+          <span class="cell-tag pro">Proposed</span>
+          <div class="stagelet sp" style="display:flex;flex-direction:column;gap:9px;font-size:14px;font-weight:500">
+            <span style="display:flex;align-items:center;gap:7px"><span style="width:26px;text-align:right">12</span><span style="font-family:var(--mono);font-size:10px;letter-spacing:.13em;color:#98a1b0">IN STOCK</span></span>
+            <span style="display:flex;align-items:center;gap:7px"><i style="width:5px;height:5px;border-radius:99px;background:#b26a05"></i><span style="width:26px;text-align:right;color:#b26a05">3</span><span style="font-family:var(--mono);font-size:10px;letter-spacing:.13em;color:#98a1b0">LOW</span></span>
+            <span style="display:flex;align-items:center;gap:7px"><i style="width:5px;height:5px;border-radius:99px;background:#b42318"></i><span style="width:26px;text-align:right;color:#b42318">0</span><span style="font-family:var(--mono);font-size:10px;letter-spacing:.13em;color:#98a1b0">OUT</span></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 7 -->
+      <div class="diag-row">
+        <div class="diag-why">
+          <h4>Chrome floats when it should sit</h4>
+          <p>A blurred, shadowed, 18&nbsp;pt-rounded card hovering above a blurred, shadowed
+          pill. Two floating objects stacked read as decoration. One flat bar with a single
+          hairline reads as a tool.</p>
+        </div>
+        <div class="diag-cell">
+          <span class="cell-tag">Ships today</span>
+          <div class="stagelet sp" style="background:#fafafa;padding:10px">
+            <div style="border:1px solid #e5e5e5;border-radius:18px;background:#fff;box-shadow:0 10px 30px -16px rgba(0,0,0,.45);padding:9px 10px;display:flex;gap:9px;align-items:center">
+              <span style="height:38px;padding:0 12px;border:1px solid #e5e5e5;border-radius:12px;display:inline-flex;align-items:center;font-size:13.5px;font-weight:600">Review</span>
+              <span style="flex:1;height:38px;border-radius:12px;background:#1a1a1a;color:#fff;font-size:14.5px;font-weight:650;display:flex;align-items:center;justify-content:center">Continue →</span>
+            </div>
+            <div style="margin-top:8px;height:38px;border:1px solid #e5e5e5;border-radius:14px;background:rgba(255,255,255,.9);box-shadow:0 8px 24px -14px rgba(0,0,0,.4)"></div>
+          </div>
+        </div>
+        <div class="diag-cell">
+          <span class="cell-tag pro">Proposed</span>
+          <div class="stagelet sp" style="background:#fff;padding:0;overflow:hidden">
+            <div style="height:34px"></div>
+            <div style="border-top:1px solid #e9ebef;padding:10px;display:flex;gap:10px;align-items:center">
+              <span style="height:38px;padding:0 12px;border:1px solid #d8dce2;border-radius:6px;display:inline-flex;align-items:center;font-size:13.5px;font-weight:500">Review</span>
+              <span style="flex:1;height:38px;border-radius:6px;background:#0f1116;color:#fff;font-size:14px;font-weight:500;display:flex;align-items:center;justify-content:center">Continue</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<section class="band">
+  <div class="wrap stack g26">
+    <div class="band-head" style="margin-bottom:0">
+      <p class="eyebrow">The direction</p>
+      <h2 class="prose">Six rules, and the whole thing falls out of them</h2>
+    </div>
+    <div class="rules">
+      <div class="rule-cell">
+        <span class="n">R1</span>
+        <h3>Hairlines, not fills</h3>
+        <p>Grey is a 1&nbsp;px rule. Surfaces stay white. The only filled shape on a screen is the one thing you press.</p>
+      </div>
+      <div class="rule-cell">
+        <span class="n">R2</span>
+        <h3>Every figure gets a column</h3>
+        <p>Quantities are tabular, right-aligned, on one axis, under a labelled header. This single move is the difference between a list and a ledger.</p>
+      </div>
+      <div class="rule-cell">
+        <span class="n">R3</span>
+        <h3>Radius 6, containers 8</h3>
+        <p>Nothing rounder, and nothing pill-shaped except a 5&nbsp;px status dot.</p>
+      </div>
+      <div class="rule-cell">
+        <span class="n">R4</span>
+        <h3>Four sizes, three weights</h3>
+        <p>10 mono / 12 / 14 / 16, at 400·500·600. One 600 per region. Labels are mono uppercase; values are sans.</p>
+      </div>
+      <div class="rule-cell">
+        <span class="n">R5</span>
+        <h3>Colour is a signal</h3>
+        <p>Desaturated amber and red, on the quantity only, with a 5&nbsp;px dot. Never on a label, never as a filled chip.</p>
+      </div>
+      <div class="rule-cell">
+        <span class="n">R6</span>
+        <h3>Chrome sits flat</h3>
+        <p>No blur, no shadow, no floating cards. Bars are white with one hairline. Sheets are the only elevated surface.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<section class="band">
+  <div class="wrap">
+    <div class="band-head">
+      <p class="eyebrow">Screen · Catalogue</p>
+      <h2 class="prose">A table that happens to be 390 points wide</h2>
+      <p class="note prose">
+        Live. Search it, switch facets, tap the sort header, open a row's actions and adjust
+        stock inside the sheet, or turn on Select and act on several at once.
+      </p>
+    </div>
+
+    <div class="stage">
+      <div class="device-col">
+        <div class="device">
+          <div class="screen" id="a">
+            <div class="appbar">
+              <div class="statusbar"><span>9:41</span>
+                <span class="sig"><i style="height:5px"></i><i style="height:7px"></i><i style="height:9px"></i><i style="height:11px"></i></span></div>
+              <div class="bar">
+                <h1>Products</h1>
+                <button class="icon-btn" id="a-new" type="button" aria-label="New product">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><use href="#i-plus"/></svg>
+                </button>
+                <span class="avatar">YC</span>
+              </div>
+            </div>
+
+            <div class="body" id="a-body">
+              <div class="controls">
+                <div class="srow">
+                  <div class="sfield">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><use href="#i-search"/></svg>
+                    <input id="a-q" type="text" placeholder="Search catalogue" aria-label="Search catalogue">
+                    <button class="clr" id="a-clr" type="button" aria-label="Clear" hidden>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:14px;height:14px"><use href="#i-x"/></svg>
+                    </button>
+                  </div>
+                  <button class="gbtn" id="a-filter" type="button" aria-label="Filter">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><use href="#i-filter"/></svg>
+                    <span class="mark" id="a-mark" hidden></span>
+                  </button>
+                </div>
+                <div class="facets" id="a-facets" role="group" aria-label="Filter by status"></div>
+              </div>
+
+              <div class="colhead">
+                <span class="c1">Product</span>
+                <button class="sortbtn" id="a-sort" type="button">
+                  <span id="a-sortlabel">Stock</span>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" id="a-sortdir"><use href="#i-down"/></svg>
+                </button>
+                <button class="selbtn" id="a-select" type="button">Select</button>
+              </div>
+
+              <div class="rows" id="a-rows"></div>
+              <div style="height:120px"></div>
+            </div>
+
+            <div class="dock-fog" id="a-fog"></div>
+            <div class="dock" id="a-dock">
+              <div class="pill">
+                <span class="t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><use href="#i-home"/></svg>Home</span>
+                <span class="t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><use href="#i-bag"/></svg>Orders</span>
+                <span class="t" data-on="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><use href="#i-box"/></svg>Products</span>
+                <span class="t"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><use href="#i-users"/></svg>Users</span>
+              </div>
+            </div>
+
+            <div class="bulkbar" id="a-bulk">
+              <span class="cnt" id="a-bulkcount">0 selected</span>
+              <button type="button" data-bulk="publish">Publish</button>
+              <button type="button" data-bulk="hide">Hide</button>
+              <button type="button" data-bad="true" data-bulk="delete">Delete</button>
+            </div>
+
+            <div class="scrim" id="a-scrim"></div>
+
+            <div class="sheet" id="a-rowsheet" role="dialog" aria-label="Product actions">
+              <div class="sh-head"><h3 id="a-rs-title">Product</h3><button type="button" data-close="a">Done</button></div>
+              <div class="sh-body">
+                <div class="stockedit">
+                  <span class="lb"><strong>Stock on hand</strong><small id="a-rs-sku">#01 · CERAMICS</small></span>
+                  <span class="stepper">
+                    <button type="button" id="a-rs-minus" aria-label="One fewer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><use href="#i-minus"/></svg></button>
+                    <span class="v" id="a-rs-stock">0</span>
+                    <button type="button" id="a-rs-plus" aria-label="One more"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><use href="#i-plus"/></svg></button>
+                  </span>
+                </div>
+                <button class="opt" type="button" data-act="toggle">
+                  <span class="lb"><strong id="a-rs-togglelabel">Hide from store</strong><small id="a-rs-togglesub">Live · visible to customers</small></span>
+                  <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" id="a-rs-toggleicon"><use href="#i-eyeoff"/></svg>
+                </button>
+                <button class="opt" type="button" data-act="edit">
+                  <span class="lb"><strong>Edit details</strong><small>NAME · COPY · PHOTOS · PRICE</small></span>
+                  <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><use href="#i-right"/></svg>
+                </button>
+                <button class="opt" type="button" data-act="view">
+                  <span class="lb"><strong>Open on storefront</strong><small>THE CUSTOMER'S PAGE</small></span>
+                  <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><use href="#i-ext"/></svg>
+                </button>
+                <button class="opt" type="button" data-bad="true" data-act="delete">
+                  <span class="lb"><strong>Delete product</strong><small>CANNOT BE UNDONE</small></span>
+                  <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><use href="#i-trash"/></svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="sheet" id="a-sortsheet" role="dialog" aria-label="Sort">
+              <div class="sh-head"><h3>Sort by</h3><button type="button" data-close="a">Done</button></div>
+              <div class="sh-body" id="a-sortlist"></div>
+              <div class="sh-foot"><p class="tiny" style="font-size:11.5px;color:var(--fg-3);margin:0;font-family:var(--mono);letter-spacing:.03em">THE RIGHT-HAND COLUMN FOLLOWS THIS</p></div>
+            </div>
+
+            <div class="sheet" id="a-filtersheet" role="dialog" aria-label="Filter">
+              <div class="sh-head"><h3>Filter</h3><button type="button" id="a-reset">Reset</button></div>
+              <div class="sh-body">
+                <div class="sh-group"><span class="lbl">Category</span></div>
+                <div id="a-cats"></div>
+                <div class="sh-group"><span class="lbl">Elsewhere</span></div>
+                <button class="opt" type="button">
+                  <span class="lb"><strong>Highest rated</strong><small>WHAT CUSTOMERS SCORE BEST</small></span>
+                  <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><use href="#i-star"/></svg>
+                </button>
+                <button class="opt" type="button">
+                  <span class="lb"><strong>Restock queue</strong><small>SET STOCK IN BULK · ≤5 UNITS</small></span>
+                  <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><use href="#i-layers"/></svg>
+                </button>
+              </div>
+              <div class="sh-foot"><button class="wide" type="button" data-close="a">Show results</button></div>
+            </div>
+          </div>
+        </div>
+        <p class="device-cap">Live — tap anything</p>
+      </div>
+
+      <div class="stack g26">
+        <ol class="anatomy">
+          <li>
+            <span class="pin">01</span>
+            <div>
+              <h4>The app bar is the title, and it holds the verb</h4>
+              <p>The 30-point in-page heading goes. The shared bar already says <em>Products</em>;
+              printing it twice cost 54&nbsp;pt and made the screen open on decoration. <em>New</em>
+              becomes a quiet <code>+</code> in the bar, so the one creative action is reachable at
+              any scroll position instead of scrolling away.</p>
+            </div>
+          </li>
+          <li>
+            <span class="pin">02</span>
+            <div>
+              <h4>Search and filter, then the facets, as one sticky control surface</h4>
+              <p>A 38&nbsp;pt hairline field, a 38&nbsp;pt filter button that wears a dot when a
+              category is on, and under them the four counts as an underline strip — the stat cards,
+              spent. It is 78&nbsp;pt of chrome that never moves, drawn flat, with a single rule
+              separating it from the data.</p>
+            </div>
+          </li>
+          <li>
+            <span class="pin">03</span>
+            <div>
+              <h4>A column header — and it is also the sort control</h4>
+              <p><code>PRODUCT</code> on the left, the sort key on the right. Tap it and the sheet
+              offers stock, price, units sold, name, recently updated — and the right-hand column
+              <em>becomes</em> whatever you chose. Sort by best-selling and the figures turn into
+              units sold. One control, one column, no duplicated state.</p>
+            </div>
+          </li>
+          <li>
+            <span class="pin">04</span>
+            <div>
+              <h4>57-point rows, 36-point thumbnails, one figure on the right</h4>
+              <p>Ten rows on a screen instead of seven. The second line is mono: index, category and
+              the fact the sort column is not showing. Hidden products mute their name and dim the
+              photo — no coloured chip needed. The divider insets to the text edge, so the column of
+              thumbnails reads as a column.</p>
+            </div>
+          </li>
+          <li>
+            <span class="pin">05</span>
+            <div>
+              <h4>The row sheet leads with stock, because that is the phone job</h4>
+              <p>Nobody rewrites product copy on a phone; they correct a count after a delivery.
+              So the sheet opens with a stepper on the number itself, then visibility, then edit,
+              storefront and delete. Adjusting stock never leaves the list.</p>
+            </div>
+          </li>
+          <li>
+            <span class="pin">06</span>
+            <div>
+              <h4>Select mode, for when it is not one product</h4>
+              <p>The header's <em>Select</em> turns the rows into checkboxes and raises a flat bar:
+              publish, hide, delete, with a live count. It is the feature that separates a catalogue
+              admin from a list — and it makes the single-row case cheap too, because the same bar
+              handles one.</p>
+            </div>
+          </li>
+        </ol>
+
+        <div class="panel panel-pad scroll-x">
+          <table class="tbl">
+            <thead><tr><th>Element</th><th>Ships today</th><th>Proposed</th></tr></thead>
+            <tbody>
+              <tr><td>Page title</td><td class="was">30 pt / 700, in-page + collapsing bar</td><td class="now">App bar only; 54 pt returned to data</td></tr>
+              <tr><td>Facets</td><td class="was">Filled pills, 36 pt, radius 11</td><td class="now">Underline strip, label + count, no fill</td></tr>
+              <tr><td>Column header</td><td class="was">None</td><td class="now">PRODUCT / sort key — and it is the sort control</td></tr>
+              <tr><td>Row height</td><td class="was">74 pt · 7 visible</td><td class="now">57 pt · 10 visible</td></tr>
+              <tr><td>Thumbnail</td><td class="was">52 pt, radius 13</td><td class="now">36 pt, radius 5</td></tr>
+              <tr><td>Figures</td><td class="was">Inside a sentence, never aligned</td><td class="now">One right-aligned tabular column</td></tr>
+              <tr><td>Second line</td><td class="was">Price · stock, sans</td><td class="now">Index · category · the off-column fact, mono</td></tr>
+              <tr><td>Hidden state</td><td class="was">Filled chip beside the name</td><td class="now">Muted name, dimmed photo</td></tr>
+              <tr><td>Stock edit</td><td class="was">Open the product, find the field</td><td class="now">A stepper in the row sheet</td></tr>
+              <tr><td>Many at once</td><td class="was">Not possible</td><td class="now">Select mode + bulk bar</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<section class="band">
+  <div class="wrap">
+    <div class="band-head">
+      <p class="eyebrow">Screen · New product</p>
+      <h2 class="prose">A record you fill in, not a form you fight</h2>
+      <p class="note prose">
+        Live. Type, move between steps, set a currency and category, add photos and reorder them,
+        then open Review and create.
+      </p>
+    </div>
+
+    <div class="stage">
+      <div class="device-col">
+        <div class="device">
+          <div class="screen" id="b">
+            <div class="appbar">
+              <div class="statusbar"><span>9:41</span>
+                <span class="sig"><i style="height:5px"></i><i style="height:7px"></i><i style="height:9px"></i><i style="height:11px"></i></span></div>
+              <div class="bar">
+                <button class="icon-btn" type="button" aria-label="Back">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-left"/></svg>
+                </button>
+                <h1>New product</h1>
+                <span class="avatar">YC</span>
+              </div>
+            </div>
+
+            <div class="body">
+              <div class="controls" style="border-bottom:0">
+                <div class="progline"><i id="b-prog" style="width:0%"></i></div>
+                <div class="steps" id="b-steps"></div>
+              </div>
+              <div id="b-step"></div>
+              <div style="height:130px"></div>
+            </div>
+
+            <div class="actbar">
+              <button class="why" id="b-why" type="button" hidden></button>
+              <div class="rw">
+                <button class="rev" id="b-review" type="button">Review</button>
+                <button class="go" id="b-go" type="button"><span id="b-golabel">Continue</span></button>
+              </div>
+            </div>
+
+            <div class="scrim" id="b-scrim"></div>
+
+            <div class="sheet" id="b-picker" role="dialog" aria-label="Choose">
+              <div class="sh-head"><h3 id="b-pickertitle">Choose</h3><button type="button" data-close="b">Done</button></div>
+              <div class="sh-body" id="b-pickerlist"></div>
+            </div>
+
+            <div class="sheet" id="b-tilesheet" role="dialog" aria-label="Photo">
+              <div class="sh-head"><h3 id="b-tiletitle">Photo</h3><button type="button" data-close="b">Done</button></div>
+              <div class="sh-body" id="b-tileacts"></div>
+            </div>
+
+            <div class="sheet" id="b-reviewsheet" role="dialog" aria-label="Review">
+              <div class="sh-head"><h3>Review</h3><button type="button" data-close="b">Close</button></div>
+              <div class="sh-body">
+                <div id="b-sumhead"></div>
+                <dl class="dl" id="b-dl"></dl>
+                <div class="stockedit" style="border-bottom:1px solid var(--ln)">
+                  <span class="lb"><strong id="b-publb">Publish on create</strong><small id="b-pubsub">VISIBLE TO CUSTOMERS IMMEDIATELY</small></span>
+                  <button class="sw2" id="b-pub" data-on="true" role="switch" aria-checked="true" aria-label="Publish on create"><i></i></button>
+                </div>
+              </div>
+              <div class="sh-foot">
+                <button class="wide" id="b-create" type="button">Create product</button>
+              </div>
+            </div>
+
+            <div class="created" id="b-created">
+              <span class="ring"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-check"/></svg></span>
+              <strong id="b-createdname">Created</strong>
+              <p id="b-createdsub">LIVE ON THE STOREFRONT</p>
+              <button class="ghost" style="max-width:190px;margin-top:6px" type="button" id="b-reset">Start another</button>
+            </div>
+          </div>
+        </div>
+        <p class="device-cap">Live — the dock is gone on purpose</p>
+      </div>
+
+      <div class="stack g26">
+        <ol class="anatomy">
+          <li>
+            <span class="pin">01</span>
+            <div>
+              <h4>The create flow hides the dock, the way checkout does</h4>
+              <p>It is a task, not a destination. <code>AppRootClient</code> already drops the dock
+              on auth and checkout routes; adding this one lets the action bar sit flush on the
+              bottom edge instead of floating above a floating pill — which is the single biggest
+              reason the current screen reads as an app rather than a tool.</p>
+            </div>
+          </li>
+          <li>
+            <span class="pin">02</span>
+            <div>
+              <h4>Steps as underline tabs, with a 2-point progress rule above them</h4>
+              <p>The four black pills go. Mono uppercase labels, a 5&nbsp;pt dot that fills green
+              when the step is satisfied, and a 1.5&nbsp;pt underline on the one you are in. The
+              rule above tracks required progress across the full bleed. Total chrome: 46&nbsp;pt,
+              against 78.</p>
+            </div>
+          </li>
+          <li>
+            <span class="pin">03</span>
+            <div>
+              <h4>Fields are rules, not boxes</h4>
+              <p>A mono uppercase label, the value at 16&nbsp;pt with no border, and a hairline
+              beneath. Focus darkens that hairline to near-black and lifts the label with it —
+              the field's own rule carries the state, so nothing new appears. It reads as a record
+              being filled in, and it stops every input looking like the button you are meant to
+              press.</p>
+            </div>
+          </li>
+          <li>
+            <span class="pin">04</span>
+            <div>
+              <h4>Structured values are 52-point rows</h4>
+              <p>Currency, category, publish: label left, value right, chevron, hairline. The same
+              row shape the row sheet uses, so the whole product speaks one grammar. Pickers are
+              sheets — never a portal popover on a phone.</p>
+            </div>
+          </li>
+          <li>
+            <span class="pin">05</span>
+            <div>
+              <h4>Price is the one large figure on the screen</h4>
+              <p>26&nbsp;pt, weight 500, tabular, with the symbol as a muted prefix. Nothing else
+              on the step competes with it. Stock sits under it as a stepper, because it is a count
+              you nudge, not a number you type.</p>
+            </div>
+          </li>
+          <li>
+            <span class="pin">06</span>
+            <div>
+              <h4>Photos are numbered, and the cover is a border</h4>
+              <p>Six-point radius, hairline, a mono index in the corner, and the cover marked by a
+              1.5&nbsp;pt near-black border plus a small <code>COVER</code> tag — not a filled
+              black pill. The remove control is a 22&nbsp;pt square that is always there, and
+              tapping a tile opens make-cover / move / remove.</p>
+            </div>
+          </li>
+          <li>
+            <span class="pin">07</span>
+            <div>
+              <h4>Review is a summary, not a product card</h4>
+              <p>A definition list: name, price, stock, category, photos, tags — values right-aligned,
+              missing ones in red with the row as the way to go set them. The publish switch, then
+              Create. It reads like a record about to be committed, which is what it is.</p>
+            </div>
+          </li>
+          <li>
+            <span class="pin">08</span>
+            <div>
+              <h4>Blocked says why, in the bar</h4>
+              <p>A hairline strip above the buttons naming the missing field and the step that holds
+              it, tappable. Kept from the current build — it was the one thing there that already
+              behaved like grown-up software.</p>
+            </div>
+          </li>
+        </ol>
+
+        <div class="panel panel-pad scroll-x">
+          <table class="tbl">
+            <thead><tr><th>Element</th><th>Ships today</th><th>Proposed</th></tr></thead>
+            <tbody>
+              <tr><td>Dock</td><td class="was">Floating pill under a floating action card</td><td class="now">Hidden for the flow; bar sits flush</td></tr>
+              <tr><td>Steps</td><td class="was">Four filled pills, 52 pt + progress</td><td class="now">Underline tabs, 34 pt + 2 pt rule</td></tr>
+              <tr><td>Field</td><td class="was">Boxed, radius 12, grey fill, 13/600 label</td><td class="now">Rule-separated, 16 pt value, 10 pt mono label</td></tr>
+              <tr><td>Price</td><td class="was">19 pt in a box beside a segmented control</td><td class="now">26 pt bare figure; currency is a value row</td></tr>
+              <tr><td>Category</td><td class="was">Bordered picker button</td><td class="now">Value row → sheet</td></tr>
+              <tr><td>Photo tile</td><td class="was">Radius 13, black Cover pill, red ×</td><td class="now">Radius 6, border marks cover, mono index</td></tr>
+              <tr><td>Optional prose</td><td class="was">Disclosures inside a grey panel</td><td class="now">Value rows reporting their own state</td></tr>
+              <tr><td>Review</td><td class="was">Preview card in a grey box + checklist card</td><td class="now">Definition list, values right-aligned</td></tr>
+              <tr><td>Action bar</td><td class="was">Blurred rounded card, shadow, radius 18</td><td class="now">Flat, one hairline, radius 6 buttons</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<section class="band">
+  <div class="wrap stack g36">
+    <div class="band-head" style="margin-bottom:0">
+      <p class="eyebrow">The shadcn layer</p>
+      <h2 class="prose">Most of this is a token change, not a rewrite</h2>
+      <p class="note prose">
+        The look above is not a departure from shadcn — it is shadcn with its dials moved.
+        Three of these are one-line edits in <code>globals.css</code> that would lift every
+        admin page at once, not only these two.
+      </p>
+    </div>
+
+    <div class="cols-2">
+      <div class="panel panel-pad stack g14 scroll-x">
+        <h3>Tokens</h3>
+        <table class="tbl">
+          <thead><tr><th>Token</th><th>Now</th><th>Proposed</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">--radius</td><td class="was mono">0.625rem</td><td class="now mono">0.5rem</td></tr>
+            <tr><td class="mono">--border</td>
+                <td class="was mono"><span class="sw" style="background:#e5e5e5"></span>0 0% 89.8%</td>
+                <td class="now mono"><span class="sw" style="background:#e9ebef"></span>220 13% 93%</td></tr>
+            <tr><td class="mono">--muted</td>
+                <td class="was mono"><span class="sw" style="background:#f5f5f5"></span>0 0% 96.1%</td>
+                <td class="now mono"><span class="sw" style="background:#f7f8f9"></span>220 14% 97%</td></tr>
+            <tr><td class="mono">--muted-foreground</td>
+                <td class="was mono"><span class="sw" style="background:#666"></span>0 0% 40%</td>
+                <td class="now mono"><span class="sw" style="background:#667085"></span>220 12% 46%</td></tr>
+            <tr><td class="mono">--foreground</td>
+                <td class="was mono"><span class="sw" style="background:#1a1a1a"></span>0 0% 10.2%</td>
+                <td class="now mono"><span class="sw" style="background:#0f1116"></span>222 21% 8%</td></tr>
+            <tr><td class="mono">--destructive</td>
+                <td class="was mono"><span class="sw" style="background:#dc2626"></span>0 72% 51%</td>
+                <td class="now mono"><span class="sw" style="background:#b42318"></span>4 76% 40%</td></tr>
+            <tr><td class="mono">--warning <em style="color:var(--ink-3);font-style:normal">new</em></td>
+                <td class="was mono">hard-coded amber-500/600</td>
+                <td class="now mono"><span class="sw" style="background:#b26a05"></span>35 94% 36%</td></tr>
+            <tr><td class="mono">--success <em style="color:var(--ink-3);font-style:normal">new</em></td>
+                <td class="was mono">hard-coded emerald-500/600</td>
+                <td class="now mono"><span class="sw" style="background:#067647"></span>158 92% 24%</td></tr>
+            <tr><td class="mono">--hairline <em style="color:var(--ink-3);font-style:normal">new</em></td>
+                <td class="was mono">reuses --border</td>
+                <td class="now mono">A lighter rule for inside lists</td></tr>
+          </tbody>
+        </table>
+        <p class="tiny">
+          Two notes. The neutrals gain a slight cool cast — a pure <code>0 0% x%</code> grey is
+          the thing that reads flat and unconsidered. And <code>amber-500</code> /
+          <code>emerald-500</code> are currently written literally in eight files; as tokens they
+          become one decision.
+        </p>
+      </div>
+
+      <div class="panel panel-pad stack g14 scroll-x">
+        <h3>Type scale</h3>
+        <table class="tbl">
+          <thead><tr><th>Role</th><th>Now</th><th>Proposed</th></tr></thead>
+          <tbody>
+            <tr><td>Label</td><td class="was">13 px / 600 sentence case</td><td class="now">10 px mono, .13em, uppercase</td></tr>
+            <tr><td>Meta</td><td class="was">11–12.5 px, ad hoc</td><td class="now">10.5 px mono / 12 px sans</td></tr>
+            <tr><td>Body</td><td class="was">13–15.5 px, ad hoc</td><td class="now">14 px / 500</td></tr>
+            <tr><td>Value</td><td class="was">15.5 px / 600</td><td class="now">16 px / 400</td></tr>
+            <tr><td>Figure</td><td class="was">mixed, some tabular</td><td class="now">14 px / 500, always tabular</td></tr>
+            <tr><td>Headline</td><td class="was">30 px / 700, −.038em</td><td class="now">16 px / 600, −.014em</td></tr>
+            <tr><td>Money</td><td class="was">19 px / 700</td><td class="now">26 px / 500, −.03em</td></tr>
+          </tbody>
+        </table>
+        <p class="tiny">
+          There are roughly two hundred <code>text-[12.5px]</code>-style literals across the
+          dashboard. Naming seven roles in <code>tailwind.config.js</code> retires all of them and
+          makes the next screen match this one without anyone remembering the numbers.
+        </p>
+      </div>
+    </div>
+
+    <div class="cols-2">
+      <div class="panel panel-pad stack g14">
+        <h3>Registry components worth adding</h3>
+        <p class="tiny">The shadcn registry has grown since this project was scaffolded. Each of
+        these replaces something currently hand-rolled in the dashboard.</p>
+        <div class="chips">
+          <span class="chip add">field</span>
+          <span class="chip add">input-group</span>
+          <span class="chip add">button-group</span>
+          <span class="chip add">item</span>
+          <span class="chip add">empty</span>
+          <span class="chip add">spinner</span>
+          <span class="chip add">toggle-group</span>
+          <span class="chip add">popover</span>
+          <span class="chip add">tooltip</span>
+        </div>
+        <table class="tbl" style="margin-top:6px">
+          <tbody>
+            <tr><td class="mono">field</td><td>Label + description + error, one composition. Retires the hand-rolled <code>Field</code> in both screens.</td></tr>
+            <tr><td class="mono">input-group</td><td>Search + clear, and currency + amount, without absolute positioning.</td></tr>
+            <tr><td class="mono">button-group</td><td>The stock stepper and the currency segment, properly joined.</td></tr>
+            <tr><td class="mono">item</td><td>One row primitive for the list row, the sheet row and the checklist row — the thing that would keep them in step.</td></tr>
+            <tr><td class="mono">empty</td><td>The three empty states, currently three different blocks.</td></tr>
+            <tr><td class="mono">toggle-group</td><td>The facet strip, with real <code>aria</code> and keyboard behaviour.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="panel panel-pad stack g14">
+        <h3>Primitives worth fixing</h3>
+        <table class="tbl">
+          <tbody>
+            <tr><td class="mono">Input</td><td>Drop <code>shadow-sm</code> — a shadow on a text field is a 2020 look — and move to <code>rounded-md</code>. Add a <code>variant="line"</code> for the rule-separated fields above.</td></tr>
+            <tr><td class="mono">Button</td><td>Add <code>size="xs"</code> at 28 pt; the dashboard fakes it with <code>h-6</code> today. Drop <code>shadow-sm</code> from <code>outline</code>.</td></tr>
+            <tr><td class="mono">Card</td><td>Retire <code>shadow-sm</code> in the dashboard; a hairline is the elevation. Shadows are for sheets only.</td></tr>
+            <tr><td class="mono">Badge</td><td>Currently only pill-shaped. Add a squared 3 pt variant — a filled pill is what the status chips got wrong.</td></tr>
+            <tr><td class="mono">Sheet</td><td>Fold the grabber, the head row and the dismiss word in, so <code>ActionSheet</code> stops re-implementing them.</td></tr>
+            <tr><td class="mono">globals.css</td><td>The mobile touch-target block is attribute selectors inside <code>max-width: 767.98px</code>. It should be control-height tokens, so 768–1023 pt gets them too.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<section class="band">
+  <div class="wrap stack g26">
+    <div class="band-head" style="margin-bottom:0">
+      <p class="eyebrow">Before anything is built</p>
+      <h2 class="prose">Five things only you can answer</h2>
+    </div>
+    <ul class="asks">
+      <li>
+        <span class="q">Q1</span>
+        <div>
+          <h4>Is there a SKU, or should there be?</h4>
+          <p>The row's second line wants a stable handle. <code>Product</code> has no SKU field, so
+          the prototype shows <code>#14</code> — the id. A real <code>sku</code> column would be a
+          small migration and would make this screen, the restock queue and any future export read
+          the way stock software is expected to.</p>
+        </div>
+      </li>
+      <li>
+        <span class="q">Q2</span>
+        <div>
+          <h4>Select mode — in, or later?</h4>
+          <p>It needs bulk endpoints (<code>PATCH</code> many, <code>DELETE</code> many) or a loop
+          on the client. It is the largest single addition here and the one that most makes the
+          screen feel like inventory software. It can also ship second, without redrawing anything.</p>
+        </div>
+      </li>
+      <li>
+        <span class="q">Q3</span>
+        <div>
+          <h4>May the create flow hide the dock?</h4>
+          <p>One line in <code>AppRootClient</code>, alongside the auth and checkout exclusions.
+          It is what lets the action bar sit flush, and it would apply to editing a product too.</p>
+        </div>
+      </li>
+      <li>
+        <span class="q">Q4</span>
+        <div>
+          <h4>Do the tokens move for the whole dashboard, or only here?</h4>
+          <p>Changing <code>--radius</code>, the neutrals and the semantics lifts orders, users,
+          coupons, reviews and support in the same commit — and leaves them consistent. Scoping it
+          to these two screens is possible but guarantees drift.</p>
+        </div>
+      </li>
+      <li>
+        <span class="q">Q5</span>
+        <div>
+          <h4>Rules or boxes for the form?</h4>
+          <p>The rule-separated field is the boldest call in this document. It reads far more
+          expensive; it is also less obviously tappable than a bordered box. The middle road —
+          hairline boxes at radius 6 with the mono labels — gets most of the gain with none of
+          the risk. Say which and I will draw it that way.</p>
+        </div>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<footer class="doc">
+  <div class="wrap stack g10">
+    <p class="eyebrow">Kalakraft · design/mobile-admin-products-v2.html · proposal only</p>
+    <p class="note prose">
+      Nothing here is implemented. The prototypes are HTML and CSS at the proposed values — white
+      ground, cool near-black ink, 6-point radius, desaturated semantics — so what you are judging
+      is the real thing at the real size, not a picture of it.
+    </p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var el = function (id) { return document.getElementById(id); };
+  var ICON = function (id, w, size) {
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="' + (w || 1.9) +
+      '" stroke-linecap="round" stroke-linejoin="round"' + (size ? ' style="width:' + size + 'px;height:' + size + 'px"' : '') +
+      '><use href="#' + id + '"/></svg>';
+  };
+  var esc = function (s) {
+    return String(s).replace(/[&<>"]/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+    });
+  };
+  var inr = function (n) { return "₹" + Number(n).toLocaleString("en-IN"); };
+
+  /* CSP blocks remote images; a gradient reads as "a photograph belongs here". */
+  var SWATCH = [
+    "linear-gradient(140deg,#dfd3c3,#b9a892)", "linear-gradient(140deg,#e8d9b5,#c8a24a)",
+    "linear-gradient(140deg,#bcd7e8,#4f7f9e)", "linear-gradient(140deg,#e6c9b8,#b06a44)",
+    "linear-gradient(140deg,#dcdcd6,#9a9a92)", "linear-gradient(140deg,#cfe0d4,#5f8a72)",
+    "linear-gradient(140deg,#eadcd0,#a58b7a)", "linear-gradient(140deg,#d6cfe5,#7b6b9c)"
+  ];
+
+  var CATS = [
+    { id: 1, name: "Ceramics" }, { id: 2, name: "Brass & metal" }, { id: 3, name: "Resin art" },
+    { id: 4, name: "Textiles" }, { id: 5, name: "Woodwork" }
+  ];
+  var catName = function (id) {
+    for (var i = 0; i < CATS.length; i++) if (CATS[i].id === id) return CATS[i].name;
+    return "—";
+  };
+
+  var openSheet = function (scope, id) {
+    el(scope + "-scrim").dataset.open = "true";
+    el(id).dataset.open = "true";
+  };
+  var closeSheets = function (scope) {
+    el(scope + "-scrim").dataset.open = "false";
+    Array.prototype.forEach.call(el(scope).querySelectorAll(".sheet"), function (s) {
+      s.dataset.open = "false";
+    });
+  };
+  Array.prototype.forEach.call(document.querySelectorAll("[data-close]"), function (b) {
+    b.addEventListener("click", function () { closeSheets(b.dataset.close); });
+  });
+
+  /* ═══════════════════════════════════════════ SCREEN A ═══════ */
+  var PRODUCTS = [
+    ["Hand-painted ceramic vase", 2400, 12, true, 1, 34],
+    ["Brass diya set of six", 899, 3, true, 2, 128],
+    ["Resin ocean coasters", 1150, 0, true, 3, 76],
+    ["Terracotta wall plate", 1850, 24, false, 1, 12],
+    ["Marble inlay coaster set", 3200, 7, true, 5, 41],
+    ["Macramé wall hanging", 2750, 9, true, 4, 19],
+    ["Blue pottery storage jar", 1499, 18, true, 1, 63],
+    ["Warli-painted wooden tray", 1299, 0, false, 5, 8]
+  ].map(function (p, i) {
+    return { id: i + 1, name: p[0], price: p[1], stock: p[2], live: p[3], cat: p[4], sold: p[5], sw: i };
+  });
+  var LOW = 10;
+
+  var SORTS = [
+    { id: "stock", label: "Stock", sub: "WHAT RUNS OUT NEXT" },
+    { id: "price", label: "Price", sub: "MOST VALUABLE FIRST" },
+    { id: "sold", label: "Units sold", sub: "BEST SELLING TO DATE" },
+    { id: "name", label: "Name", sub: "ALPHABETICAL" },
+    { id: "updated", label: "Updated", sub: "WHAT CHANGED LAST" }
+  ];
+
+  var A = { q: "", facet: "all", cat: "all", sort: "stock", dir: "asc", sel: false, picked: {}, target: null };
+
+  function facetCounts() {
+    var scope = A.cat === "all" ? PRODUCTS : PRODUCTS.filter(function (p) { return p.cat === A.cat; });
+    var c = { all: scope.length, live: 0, low: 0, out: 0 };
+    scope.forEach(function (p) {
+      if (p.live) c.live++;
+      if (p.stock === 0) c.out++; else if (p.stock <= LOW) c.low++;
+    });
+    return c;
+  }
+
+  function visible() {
+    var q = A.q.trim().toLowerCase();
+    var list = PRODUCTS.filter(function (p) {
+      if (A.facet === "live" && !p.live) return false;
+      if (A.facet === "low" && !(p.stock > 0 && p.stock <= LOW)) return false;
+      if (A.facet === "out" && p.stock !== 0) return false;
+      if (A.cat !== "all" && p.cat !== A.cat) return false;
+      if (q && p.name.toLowerCase().indexOf(q) === -1) return false;
+      return true;
+    });
+    var k = A.dir === "asc" ? 1 : -1;
+    return list.sort(function (a, b) {
+      if (A.sort === "stock") return (a.stock - b.stock) * k;
+      if (A.sort === "price") return (a.price - b.price) * k;
+      if (A.sort === "sold") return (a.sold - b.sold) * k;
+      if (A.sort === "name") return a.name.localeCompare(b.name) * k;
+      return (a.id - b.id) * k;
+    });
+  }
+
+  /* The right-hand column is whatever you sorted by — one control, one column. */
+  function columnValue(p) {
+    if (A.sort === "price") return { text: inr(p.price), tone: null, dot: null };
+    if (A.sort === "sold") return { text: String(p.sold), tone: null, dot: null };
+    if (A.sort === "name" || A.sort === "updated") {
+      return {
+        text: String(p.stock), dot: p.stock === 0 ? "#b42318" : p.stock <= LOW ? "#b26a05" : null,
+        tone: p.stock === 0 ? "bad" : p.stock <= LOW ? "warn" : null
+      };
+    }
+    return {
+      text: String(p.stock), dot: p.stock === 0 ? "#b42318" : p.stock <= LOW ? "#b26a05" : null,
+      tone: p.stock === 0 ? "bad" : p.stock <= LOW ? "warn" : null
+    };
+  }
+
+  /* The second line carries whatever the column is not showing. */
+  function metaLine(p) {
+    var bits = ["#" + String(p.id).padStart(2, "0"), catName(p.cat).toUpperCase()];
+    if (A.sort === "price") bits.push(p.stock === 0 ? "OUT OF STOCK" : p.stock + " IN STOCK");
+    else bits.push(inr(p.price));
+    return bits.join(" · ");
+  }
+
+  function drawFacets() {
+    var c = facetCounts();
+    var defs = [
+      { id: "all", label: "All", n: c.all }, { id: "live", label: "Live", n: c.live },
+      { id: "low", label: "Low", n: c.low }, { id: "out", label: "Out", n: c.out }
+    ];
+    el("a-facets").innerHTML = defs.map(function (d) {
+      return '<button class="facet" type="button" data-facet="' + d.id + '" data-on="' + (A.facet === d.id) +
+        '" aria-pressed="' + (A.facet === d.id) + '">' +
+        '<span class="fl">' + d.label + '</span><span class="fn">' + d.n + "</span></button>";
+    }).join("");
+  }
+
+  function drawHeader() {
+    var s = SORTS.filter(function (o) { return o.id === A.sort; })[0];
+    el("a-sortlabel").textContent = s.label;
+    el("a-sortdir").innerHTML = '<use href="#' + (A.dir === "asc" ? "i-up" : "i-down") + '"/>';
+    el("a-select").textContent = A.sel ? "Done" : "Select";
+    el("a-select").dataset.on = String(A.sel);
+    el("a-mark").hidden = A.cat === "all";
+  }
+
+  function drawRows() {
+    var rows = visible();
+    if (!rows.length) {
+      el("a-rows").innerHTML =
+        '<div class="empty"><span class="lbl">No match</span>' +
+        "<strong>Nothing in this view</strong>" +
+        "<p>Clear the search, or widen the filter.</p>" +
+        '<button type="button" data-clear="1">Reset</button></div>';
+      return;
+    }
+    el("a-rows").innerHTML = rows.map(function (p) {
+      var v = columnValue(p);
+      return '<div class="row" data-hidden="' + (!p.live) + '" data-row="' + p.id + '">' +
+        (A.sel ? '<span class="ck" data-on="' + !!A.picked[p.id] + '">' + ICON("i-check", 3, 11) + "</span>" : "") +
+        '<span class="thumb" style="background:' + SWATCH[p.sw] + '"></span>' +
+        '<span class="txt">' +
+        '<span class="nmrow"><span class="nm">' + esc(p.name) + "</span>" +
+        (p.live ? "" : '<span class="off">Hidden</span>') + "</span>" +
+        '<span class="mt">' + esc(metaLine(p)) + "</span></span>" +
+        '<span class="val">' +
+        (v.dot ? '<i class="dot" style="background:' + v.dot + '"></i>' : "") +
+        '<span class="n"' + (v.tone ? ' data-tone="' + v.tone + '"' : "") + ">" + v.text + "</span></span>" +
+        (A.sel ? "" : '<button class="kebab" type="button" data-kebab="' + p.id + '" aria-label="Actions for ' + esc(p.name) + '">' + ICON("i-more", 2, 15) + "</button>") +
+        "</div>";
+    }).join("");
+  }
+
+  function drawBulk() {
+    var n = Object.keys(A.picked).filter(function (k) { return A.picked[k]; }).length;
+    el("a-bulk").dataset.on = String(A.sel);
+    el("a-bulkcount").textContent = n + (n === 1 ? " selected" : " selected");
+    el("a-dock").style.display = A.sel ? "none" : "";
+    el("a-fog").style.display = A.sel ? "none" : "";
+  }
+
+  function paintA() { drawFacets(); drawHeader(); drawRows(); drawBulk(); }
+
+  function drawSortList() {
+    el("a-sortlist").innerHTML = SORTS.map(function (o) {
+      return '<button class="opt" type="button" data-sort="' + o.id + '" data-sel="' + (A.sort === o.id) + '">' +
+        '<span class="lb"><strong>' + o.label + "</strong><small>" + o.sub + "</small></span>" +
+        (A.sort === o.id ? '<span class="rt">' + (A.dir === "asc" ? "Low → high" : "High → low") + "</span>" : "") +
+        '<span class="tick">' + ICON("i-check", 2.2, 15) + "</span></button>";
+    }).join("");
+  }
+
+  function drawCats() {
+    var per = {};
+    PRODUCTS.forEach(function (p) { per[p.cat] = (per[p.cat] || 0) + 1; });
+    var rows = [{ id: "all", name: "All categories", n: PRODUCTS.length }].concat(
+      CATS.map(function (c) { return { id: c.id, name: c.name, n: per[c.id] || 0 }; })
+    );
+    el("a-cats").innerHTML = rows.map(function (r) {
+      return '<button class="opt" type="button" data-cat="' + r.id + '" data-sel="' + (A.cat === r.id) + '">' +
+        '<span class="lb"><strong>' + esc(r.name) + "</strong></span>" +
+        '<span class="rt">' + r.n + "</span>" +
+        '<span class="tick">' + ICON("i-check", 2.2, 15) + "</span></button>";
+    }).join("");
+  }
+
+  function openRowSheet(id) {
+    var p = PRODUCTS.filter(function (x) { return x.id === id; })[0];
+    A.target = id;
+    el("a-rs-title").textContent = p.name;
+    el("a-rs-sku").textContent = "#" + String(p.id).padStart(2, "0") + " · " + catName(p.cat).toUpperCase();
+    el("a-rs-stock").textContent = p.stock;
+    el("a-rs-togglelabel").textContent = p.live ? "Hide from store" : "Publish to store";
+    el("a-rs-togglesub").textContent = p.live ? "LIVE · VISIBLE TO CUSTOMERS" : "HIDDEN · NOT ON THE STOREFRONT";
+    el("a-rs-toggleicon").innerHTML = '<use href="#' + (p.live ? "i-eyeoff" : "i-eye") + '"/>';
+    openSheet("a", "a-rowsheet");
+  }
+
+  paintA();
+
+  el("a-q").addEventListener("input", function (e) {
+    A.q = e.target.value;
+    el("a-clr").hidden = !A.q.length;
+    drawRows();
+  });
+  el("a-clr").addEventListener("click", function () {
+    A.q = ""; el("a-q").value = ""; el("a-clr").hidden = true; drawRows();
+  });
+  el("a-facets").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-facet]"); if (!b) return;
+    A.facet = b.dataset.facet; paintA();
+  });
+  el("a-sort").addEventListener("click", function () { drawSortList(); openSheet("a", "a-sortsheet"); });
+  el("a-filter").addEventListener("click", function () { drawCats(); openSheet("a", "a-filtersheet"); });
+  el("a-scrim").addEventListener("click", function () { closeSheets("a"); });
+  el("a-new").addEventListener("click", function () {
+    el("a-new").animate([{ opacity: 1 }, { opacity: .35 }, { opacity: 1 }], { duration: 300 });
+  });
+
+  el("a-select").addEventListener("click", function () {
+    A.sel = !A.sel;
+    if (!A.sel) A.picked = {};
+    paintA();
+  });
+
+  el("a-rows").addEventListener("click", function (e) {
+    if (e.target.closest("[data-clear]")) {
+      A.q = ""; el("a-q").value = ""; el("a-clr").hidden = true;
+      A.facet = "all"; A.cat = "all"; paintA(); return;
+    }
+    var k = e.target.closest("[data-kebab]");
+    if (k) { openRowSheet(+k.dataset.kebab); return; }
+    var r = e.target.closest("[data-row]");
+    if (!r) return;
+    var id = +r.dataset.row;
+    if (A.sel) { A.picked[id] = !A.picked[id]; drawRows(); drawBulk(); return; }
+    r.animate([{ opacity: 1 }, { opacity: .45 }, { opacity: 1 }], { duration: 260 });
+  });
+
+  el("a-sortsheet").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-sort]"); if (!b) return;
+    if (A.sort === b.dataset.sort) A.dir = A.dir === "asc" ? "desc" : "asc";
+    else { A.sort = b.dataset.sort; A.dir = A.sort === "stock" || A.sort === "name" ? "asc" : "desc"; }
+    drawSortList(); paintA();
+  });
+
+  el("a-filtersheet").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-cat]"); if (!b) return;
+    A.cat = b.dataset.cat === "all" ? "all" : +b.dataset.cat;
+    drawCats(); paintA();
+  });
+  el("a-reset").addEventListener("click", function () {
+    A.cat = "all"; A.facet = "all"; drawCats(); paintA();
+  });
+
+  function bumpTargetStock(by) {
+    PRODUCTS.forEach(function (p) {
+      if (p.id === A.target) p.stock = Math.max(0, p.stock + by);
+    });
+    var p = PRODUCTS.filter(function (x) { return x.id === A.target; })[0];
+    el("a-rs-stock").textContent = p.stock;
+    paintA();
+  }
+  el("a-rs-minus").addEventListener("click", function () { bumpTargetStock(-1); });
+  el("a-rs-plus").addEventListener("click", function () { bumpTargetStock(1); });
+
+  el("a-rowsheet").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-act]"); if (!b) return;
+    if (b.dataset.act === "toggle") {
+      PRODUCTS.forEach(function (p) { if (p.id === A.target) p.live = !p.live; });
+      paintA();
+    }
+    closeSheets("a");
+  });
+
+  el("a-bulk").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-bulk]"); if (!b) return;
+    var ids = Object.keys(A.picked).filter(function (k) { return A.picked[k]; }).map(Number);
+    if (!ids.length) return;
+    if (b.dataset.bulk === "delete") {
+      for (var i = PRODUCTS.length - 1; i >= 0; i--) if (ids.indexOf(PRODUCTS[i].id) !== -1) PRODUCTS.splice(i, 1);
+    } else {
+      PRODUCTS.forEach(function (p) {
+        if (ids.indexOf(p.id) !== -1) p.live = b.dataset.bulk === "publish";
+      });
+    }
+    A.picked = {}; A.sel = false; paintA();
+  });
+
+  /* ═══════════════════════════════════════════ SCREEN B ═══════ */
+  var STEPS = [
+    { id: "details", label: "Details" }, { id: "pricing", label: "Pricing" },
+    { id: "media", label: "Media" }, { id: "tags", label: "Tags" }
+  ];
+  var SUGGEST = ["Diwali", "Housewarming", "Living room", "Gifting", "Wedding"];
+  var CUR = [{ id: "INR", sym: "₹", name: "Indian rupee" }, { id: "USD", sym: "$", name: "US dollar" }, { id: "EUR", sym: "€", name: "Euro" }];
+  var symOf = function (id) {
+    for (var i = 0; i < CUR.length; i++) if (CUR[i].id === id) return CUR[i].sym;
+    return "";
+  };
+
+  var B = {
+    step: 0, name: "", slug: "", slugOpen: false, short: "", desc: "", specs: "", care: "",
+    price: "", cur: "INR", stock: 0, cat: null, photos: [], uploading: null, tile: 0,
+    tags: [], draft: "", publish: true, picker: null
+  };
+
+  var slugify = function (s) {
+    return s.toLowerCase().trim().replace(/[^\w\s-]/g, "").replace(/\s+/g, "-");
+  };
+  function doneMap() {
+    return {
+      details: B.name.trim().length > 0,
+      pricing: parseFloat(B.price || "0") > 0 && B.cat !== null,
+      media: B.photos.length > 0,
+      tags: B.tags.length > 0
+    };
+  }
+  var reqDone = function () {
+    var d = doneMap();
+    return ["details", "pricing", "media"].filter(function (k) { return d[k]; }).length;
+  };
+  var ready = function () { return reqDone() === 3; };
+  function blocker() {
+    var d = doneMap();
+    if (!d.details) return { i: 0, at: "Details", msg: "Needs a name" };
+    if (!d.pricing) return { i: 1, at: "Pricing", msg: parseFloat(B.price || "0") > 0 ? "Needs a category" : "Needs a price" };
+    if (!d.media) return { i: 2, at: "Media", msg: "Needs one photo" };
+    return null;
+  }
+
+  function drawSteps() {
+    var d = doneMap();
+    el("b-steps").innerHTML = STEPS.map(function (s, i) {
+      return '<button class="step" type="button" data-step="' + i + '" data-on="' + (B.step === i) +
+        '" data-done="' + d[s.id] + '" aria-current="' + (B.step === i) + '">' +
+        '<span class="d"></span>' + s.label + "</button>";
+    }).join("");
+    el("b-prog").style.width = (reqDone() / 3 * 100) + "%";
+  }
+
+  function fld(label, counter, inner, hint) {
+    return '<div class="fld"><div class="top"><span class="lbl">' + label + "</span>" +
+      (counter ? '<span class="cnt">' + counter + "</span>" : "") + "</div>" + inner +
+      (hint ? '<span class="hint">' + hint + "</span>" : "") + "</div>";
+  }
+  function vrow(key, value, unset, attr) {
+    return '<button class="vrow" type="button" ' + (attr || "") + '>' +
+      '<span class="k">' + key + '</span><span class="v"' + (unset ? ' data-unset="true"' : "") + ">" + value + "</span>" +
+      ICON("i-right", 1.9, 15) + "</button>";
+  }
+
+  function drawStep() {
+    var id = STEPS[B.step].id, h = '<div class="fields">';
+
+    if (id === "details") {
+      h += fld("Name", "", '<input type="text" id="f-name" value="' + esc(B.name) +
+        '" placeholder="Hand-painted ceramic vase" autocomplete="off">');
+      h += '<div class="fld" style="padding-top:11px"><div class="subline">' +
+        "<code>/products/" + esc(B.slug || "…") + "</code>" +
+        '<button type="button" id="f-slugbtn">' + (B.slugOpen ? "Hide" : "Edit") + "</button></div>" +
+        (B.slugOpen ? '<input type="text" id="f-slug" value="' + esc(B.slug) + '" placeholder="hand-painted-ceramic-vase" style="margin-top:8px;font-family:var(--mono);font-size:14px">' : "") +
+        "</div>";
+      var n = B.short.length;
+      h += fld("Short description", n + "/160",
+        '<input type="text" id="f-short" value="' + esc(B.short) + '" placeholder="One line for the product card">',
+        n === 0 ? "Used on cards and in search results."
+          : n < 50 ? "A little short for search results."
+          : n > 160 ? "Search results will trim this." : "Good length for search results.");
+      h += fld("Description", "",
+        '<textarea id="f-desc" placeholder="Tell the story behind this piece…">' + esc(B.desc) + "</textarea>");
+      h += vrow("Specifications", B.specs.length ? B.specs.length + " chars" : "Not set", !B.specs.length, 'data-open="specs"');
+      h += vrow("Care &amp; maintenance", B.care.length ? B.care.length + " chars" : "Not set", !B.care.length, 'data-open="care"');
+    }
+
+    if (id === "pricing") {
+      h += fld("Price", "",
+        '<div class="moneyfld"><span class="cur">' + symOf(B.cur) + "</span>" +
+        '<input type="number" id="f-price" inputmode="decimal" value="' + esc(B.price) + '" placeholder="0"></div>');
+      h += vrow("Currency", B.cur, false, 'data-picker="cur"');
+      h += '<div class="fld"><div class="top"><span class="lbl">Stock on hand</span></div>' +
+        '<div style="display:flex;align-items:center;gap:12px">' +
+        '<span class="stepper"><button type="button" data-stock="-1" aria-label="One fewer">' + ICON("i-minus", 2, 15) + "</button>" +
+        '<span class="v">' + B.stock + "</span>" +
+        '<button type="button" data-stock="1" aria-label="One more">' + ICON("i-plus", 2, 15) + "</button></span>" +
+        '<span class="hint" style="flex:1">' +
+        (B.stock === 0 ? "Out of stock — it will not sell"
+          : B.stock <= 5 ? "<b>" + B.stock + "</b> left · counted as low stock"
+          : "<b>" + B.stock + "</b> units available") + "</span></div></div>";
+      h += vrow("Category", B.cat ? esc(catName(B.cat)) : "Not set", !B.cat, 'data-picker="cat"');
+    }
+
+    if (id === "media") {
+      h += '<div class="mediahead"><span class="lbl">Photographs</span><span class="cnt">' +
+        B.photos.length + "/5</span></div>";
+      if (!B.photos.length && B.uploading === null) {
+        h += '<button class="dropbig" type="button" id="f-add">' + ICON("i-camera", 1.6, 22) +
+          "<strong>Add photos</strong><small>CAMERA OR LIBRARY · UP TO 20MB</small></button>";
+      } else {
+        h += '<div class="tiles">' + B.photos.map(function (p, i) {
+          return '<div class="tile" data-cover="' + (i === 0) + '">' +
+            '<button class="surface" type="button" data-tile="' + i + '" style="background:' + SWATCH[p] +
+            '" aria-label="Photo ' + (i + 1) + ' options"></button>' +
+            (i === 0 ? '<span class="cv">Cover</span>' : "") +
+            '<span class="ix">' + String(i + 1).padStart(2, "0") + "</span>" +
+            '<button class="rm" type="button" data-rm="' + i + '" aria-label="Remove photo ' + (i + 1) + '">' +
+            ICON("i-x", 2.4, 11) + "</button></div>";
+        }).join("") +
+          (B.uploading !== null
+            ? '<div class="tile up"><span class="pct">' + B.uploading + '%</span><span class="bar"><i style="width:' + B.uploading + '%"></i></span></div>'
+            : "") +
+          (B.photos.length < 5 && B.uploading === null
+            ? '<button class="tile add" type="button" id="f-add">' + ICON("i-plus", 1.8, 18) + "</button>"
+            : "") +
+          "</div>";
+        h += '<p class="hint" style="padding:10px 0 2px;font-size:12px;color:var(--fg-3)">' +
+          "Tap a photo to make it the cover, move it, or remove it. Photo 01 is the cover.</p>";
+      }
+      h += '<div style="height:8px"></div>';
+      h += vrow("Styling photos", "None", true, 'data-open="styling"');
+    }
+
+    if (id === "tags") {
+      h += fld("Usage tags", "OPTIONAL",
+        '<input type="text" id="f-tag" value="' + esc(B.draft) + '" placeholder="Diwali, gifting, living room…" enterkeyhint="done">',
+        "Tags let shoppers find this by mood or occasion. Press return to add.");
+      if (B.tags.length) {
+        h += '<div class="fld" style="border-bottom:0"><div class="top"><span class="lbl">Added</span></div><div class="tagwrap">' +
+          B.tags.map(function (t, i) {
+            return '<span class="tg">' + esc(t) + '<button type="button" data-untag="' + i +
+              '" aria-label="Remove ' + esc(t) + '">' + ICON("i-x", 2.2, 11) + "</button></span>";
+          }).join("") + "</div></div>";
+      }
+      var left = SUGGEST.filter(function (t) { return B.tags.indexOf(t) === -1; });
+      if (left.length) {
+        h += '<div class="fld"><div class="top"><span class="lbl">Suggested</span></div><div class="tagwrap">' +
+          left.map(function (t) {
+            return '<button class="tgs" type="button" data-tag="' + esc(t) + '">' + ICON("i-plus", 2, 11) + esc(t) + "</button>";
+          }).join("") + "</div></div>";
+      }
+      h += '<div class="fld" style="flex-direction:row;align-items:center;gap:12px">' +
+        '<span style="flex:1;min-width:0">' +
+        '<span class="lbl" style="display:block;margin-bottom:3px">On create</span>' +
+        '<span style="font-size:14.5px">' + (B.publish ? "Publish to the store" : "Save as a draft") + "</span></span>" +
+        '<button class="sw2" data-pub="1" data-on="' + B.publish + '" role="switch" aria-checked="' + B.publish +
+        '" aria-label="Publish on create"><i></i></button></div>';
+    }
+
+    h += "</div>";
+    el("b-step").innerHTML = h;
+  }
+
+  function drawBar() {
+    var last = B.step === STEPS.length - 1;
+    var b = blocker();
+    el("b-golabel").textContent = last ? "Create product" : "Continue";
+    el("b-go").setAttribute("aria-disabled", String(last && !ready()));
+    var why = el("b-why");
+    if (last && b) {
+      why.hidden = false;
+      why.innerHTML = ICON("i-alert", 2, 13) + "<span>" + b.msg.toUpperCase() + " — <b>" + b.at.toUpperCase() + "</b></span>";
+      why.dataset.jump = b.i;
+    } else { why.hidden = true; }
+  }
+
+  function drawReview() {
+    var d = doneMap();
+    el("b-sumhead").innerHTML = '<div class="sumhead">' +
+      '<span class="cov"' + (B.photos.length ? ' style="background:' + SWATCH[B.photos[0]] + '"' : "") + ">" +
+      (B.photos.length ? "" : ICON("i-image", 1.6, 18)) + "</span>" +
+      '<span class="info"><strong>' + esc(B.name.trim() || "Untitled product") + "</strong>" +
+      '<span class="pr">' + symOf(B.cur) + Number(parseFloat(B.price || "0")).toLocaleString("en-IN") + "</span></span></div>";
+
+    var rows = [
+      { k: "Name", v: B.name.trim() || "Not set", ok: d.details, i: 0 },
+      { k: "Price", v: parseFloat(B.price || "0") > 0 ? symOf(B.cur) + Number(parseFloat(B.price)).toLocaleString("en-IN") : "Not set", ok: parseFloat(B.price || "0") > 0, i: 1 },
+      { k: "Category", v: B.cat ? catName(B.cat) : "Not set", ok: B.cat !== null, i: 1 },
+      { k: "Stock", v: B.stock + " units", ok: true, i: 1 },
+      { k: "Photos", v: B.photos.length ? B.photos.length + (B.photos.length === 1 ? " photo" : " photos") : "None", ok: d.media, i: 2 },
+      { k: "Tags", v: B.tags.length ? B.tags.join(", ") : "None", ok: true, i: 3 }
+    ];
+    el("b-dl").innerHTML = rows.map(function (r) {
+      return '<button class="r" type="button" data-jump="' + r.i + '">' +
+        "<dt>" + r.k + "</dt><dd" + (r.ok ? "" : ' data-missing="true"') + ">" + esc(r.v) + "</dd>" +
+        ICON("i-right", 1.9, 14) + "</button>";
+    }).join("");
+
+    el("b-pub").dataset.on = String(B.publish);
+    el("b-pub").setAttribute("aria-checked", String(B.publish));
+    el("b-publb").textContent = B.publish ? "Publish on create" : "Save as a draft";
+    el("b-pubsub").textContent = B.publish ? "VISIBLE TO CUSTOMERS IMMEDIATELY" : "ONLY YOU CAN SEE IT";
+    el("b-create").setAttribute("aria-disabled", String(!ready()));
+  }
+
+  function paintB() { drawSteps(); drawStep(); drawBar(); }
+  paintB();
+
+  el("b-steps").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-step]"); if (!b) return;
+    B.step = +b.dataset.step; paintB();
+  });
+
+  el("b-step").addEventListener("input", function (e) {
+    var t = e.target;
+    if (t.id === "f-name") {
+      B.name = t.value; B.slug = slugify(t.value);
+      var c = el("b-step").querySelector(".subline code");
+      if (c) c.textContent = "/products/" + (B.slug || "…");
+      drawSteps(); drawBar(); return;
+    }
+    if (t.id === "f-slug") { B.slug = t.value; return; }
+    if (t.id === "f-short") {
+      B.short = t.value;
+      var f = t.closest(".fld");
+      f.querySelector(".cnt").textContent = B.short.length + "/160";
+      var n = B.short.length;
+      f.querySelector(".hint").textContent = n === 0 ? "Used on cards and in search results."
+        : n < 50 ? "A little short for search results."
+        : n > 160 ? "Search results will trim this." : "Good length for search results.";
+      return;
+    }
+    if (t.id === "f-desc") { B.desc = t.value; return; }
+    if (t.id === "f-price") { B.price = t.value; drawSteps(); drawBar(); return; }
+    if (t.id === "f-tag") { B.draft = t.value; }
+  });
+
+  function addTag(v) {
+    var t = String(v || "").trim();
+    if (!t || B.tags.indexOf(t) !== -1) { B.draft = ""; drawStep(); return; }
+    B.tags.push(t); B.draft = ""; paintB();
+  }
+  el("b-step").addEventListener("keydown", function (e) {
+    if (e.target.id === "f-tag" && e.key === "Enter") { e.preventDefault(); addTag(e.target.value); }
+  });
+
+  function openPicker(kind) {
+    B.picker = kind;
+    if (kind === "cur") {
+      el("b-pickertitle").textContent = "Currency";
+      el("b-pickerlist").innerHTML = CUR.map(function (c) {
+        return '<button class="opt" type="button" data-pick="' + c.id + '" data-sel="' + (B.cur === c.id) + '">' +
+          '<span class="lb"><strong>' + c.sym + " " + c.id + "</strong><small>" + c.name.toUpperCase() + "</small></span>" +
+          '<span class="tick">' + ICON("i-check", 2.2, 15) + "</span></button>";
+      }).join("");
+    } else {
+      el("b-pickertitle").textContent = "Category";
+      el("b-pickerlist").innerHTML = CATS.map(function (c) {
+        return '<button class="opt" type="button" data-pick="' + c.id + '" data-sel="' + (B.cat === c.id) + '">' +
+          '<span class="lb"><strong>' + esc(c.name) + "</strong></span>" +
+          '<span class="tick">' + ICON("i-check", 2.2, 15) + "</span></button>";
+      }).join("");
+    }
+    openSheet("b", "b-picker");
+  }
+
+  el("b-picker").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-pick]"); if (!b) return;
+    if (B.picker === "cur") B.cur = b.dataset.pick; else B.cat = +b.dataset.pick;
+    closeSheets("b"); paintB();
+  });
+
+  function fakeUpload() {
+    if (B.uploading !== null || B.photos.length >= 5) return;
+    B.uploading = 0; drawStep();
+    var tick = setInterval(function () {
+      B.uploading = Math.min(100, B.uploading + 20);
+      if (B.uploading >= 100) {
+        clearInterval(tick);
+        B.uploading = null;
+        B.photos.push(B.photos.length % SWATCH.length);
+        paintB();
+      } else drawStep();
+    }, 120);
+  }
+
+  function openTile(i) {
+    B.tile = i;
+    var n = B.photos.length;
+    el("b-tiletitle").textContent = "Photo " + String(i + 1).padStart(2, "0") + " of " + String(n).padStart(2, "0");
+    var acts = "";
+    if (i !== 0) acts += '<button class="opt" type="button" data-t="cover"><span class="lb"><strong>Make cover</strong><small>SHOWN ON CARDS AND IN SEARCH</small></span>' + ICON("i-image", 1.9, 15) + "</button>";
+    if (i > 0) acts += '<button class="opt" type="button" data-t="up"><span class="lb"><strong>Move earlier</strong><small>SWAP WITH PHOTO ' + String(i).padStart(2, "0") + "</small></span>" + ICON("i-left", 1.9, 15) + "</button>";
+    if (i < n - 1) acts += '<button class="opt" type="button" data-t="down"><span class="lb"><strong>Move later</strong><small>SWAP WITH PHOTO ' + String(i + 2).padStart(2, "0") + "</small></span>" + ICON("i-right", 1.9, 15) + "</button>";
+    acts += '<button class="opt" type="button" data-bad="true" data-t="rm"><span class="lb"><strong>Remove photo</strong><small>TAKES IT OUT OF THE GALLERY</small></span>' + ICON("i-trash", 1.9, 15) + "</button>";
+    el("b-tileacts").innerHTML = acts;
+    openSheet("b", "b-tilesheet");
+  }
+
+  el("b-tilesheet").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-t]"); if (!b) return;
+    var i = B.tile, a = b.dataset.t, m;
+    if (a === "cover") { m = B.photos.splice(i, 1)[0]; B.photos.unshift(m); }
+    if (a === "up") { m = B.photos[i]; B.photos[i] = B.photos[i - 1]; B.photos[i - 1] = m; }
+    if (a === "down") { m = B.photos[i]; B.photos[i] = B.photos[i + 1]; B.photos[i + 1] = m; }
+    if (a === "rm") B.photos.splice(i, 1);
+    closeSheets("b"); paintB();
+  });
+
+  el("b-step").addEventListener("click", function (e) {
+    var t;
+    if ((t = e.target.closest("[data-picker]"))) { openPicker(t.dataset.picker); return; }
+    if ((t = e.target.closest("[data-stock]"))) {
+      B.stock = Math.max(0, B.stock + (+t.dataset.stock)); drawStep(); return;
+    }
+    if (e.target.closest("#f-slugbtn")) { B.slugOpen = !B.slugOpen; drawStep(); return; }
+    if (e.target.closest("#f-add")) { fakeUpload(); return; }
+    if ((t = e.target.closest("[data-rm]"))) { B.photos.splice(+t.dataset.rm, 1); paintB(); return; }
+    if ((t = e.target.closest("[data-tile]"))) { openTile(+t.dataset.tile); return; }
+    if ((t = e.target.closest("[data-tag]"))) { addTag(t.dataset.tag); return; }
+    if ((t = e.target.closest("[data-untag]"))) { B.tags.splice(+t.dataset.untag, 1); paintB(); return; }
+    if (e.target.closest("[data-pub]")) { B.publish = !B.publish; drawStep(); return; }
+    if ((t = e.target.closest("[data-open]"))) {
+      t.animate([{ opacity: 1 }, { opacity: .45 }, { opacity: 1 }], { duration: 240 });
+    }
+  });
+
+  el("b-scrim").addEventListener("click", function () { closeSheets("b"); });
+  el("b-review").addEventListener("click", function () { drawReview(); openSheet("b", "b-reviewsheet"); });
+  el("b-why").addEventListener("click", function () { B.step = +el("b-why").dataset.jump; paintB(); });
+  el("b-go").addEventListener("click", function () {
+    if (B.step < STEPS.length - 1) { B.step++; paintB(); return; }
+    if (!ready()) return;
+    drawReview(); openSheet("b", "b-reviewsheet");
+  });
+  el("b-reviewsheet").addEventListener("click", function (e) {
+    var j = e.target.closest("[data-jump]");
+    if (j) { B.step = +j.dataset.jump; closeSheets("b"); paintB(); return; }
+    if (e.target.closest("#b-pub")) { B.publish = !B.publish; drawReview(); drawStep(); }
+  });
+  el("b-create").addEventListener("click", function () {
+    if (!ready()) return;
+    closeSheets("b");
+    el("b-createdname").textContent = B.name.trim() || "Product";
+    el("b-createdsub").textContent = B.publish ? "LIVE ON THE STOREFRONT" : "SAVED AS A DRAFT";
+    el("b-created").dataset.open = "true";
+  });
+  el("b-reset").addEventListener("click", function () {
+    B.step = 0; B.name = ""; B.slug = ""; B.slugOpen = false; B.short = ""; B.desc = "";
+    B.price = ""; B.cur = "INR"; B.stock = 0; B.cat = null; B.photos = []; B.uploading = null;
+    B.tags = []; B.draft = ""; B.publish = true;
+    el("b-created").dataset.open = "false";
+    paintB();
+  });
+})();
+</script>
