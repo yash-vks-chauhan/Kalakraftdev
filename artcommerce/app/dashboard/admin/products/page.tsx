@@ -372,13 +372,18 @@ export default function AdminProductsPage() {
         />
       </div>
 
-      {/* Two-column shell: vertical category rail + table */}
-      <div className="grid gap-6 md:grid-cols-[220px_1fr]">
-        {/* Vertical category rail */}
-        <aside>
+      {/*
+        The rail only takes a column of its own from `xl`. Below that it sits
+        above the table as a horizontal strip: a 220px rail beside a 288px
+        sidebar left the table 400px of a 1024pt window, which is what pushed
+        the Actions column off the end.
+      */}
+      <div className="grid gap-6 xl:grid-cols-[216px_1fr]">
+        {/* Category rail */}
+        <aside className="min-w-0">
           <nav
             aria-label="Filter by category"
-            className="flex gap-1 overflow-x-auto rounded-md border bg-card p-2 md:sticky md:top-20 lg:top-6 md:flex-col md:overflow-visible md:p-2"
+            className="flex gap-1 overflow-x-auto rounded-md border bg-card p-2 xl:sticky xl:top-6 xl:flex-col xl:overflow-visible"
           >
             <CategoryButton
               icon={Package}
@@ -389,7 +394,7 @@ export default function AdminProductsPage() {
             />
 
             {categories.length > 0 && (
-              <Separator className="my-1 hidden md:block" />
+              <Separator className="my-1 hidden xl:block" />
             )}
 
             {categories.map((c) => (
@@ -436,15 +441,25 @@ export default function AdminProductsPage() {
 
             <CardContent className="p-0">
               <DesktopTableFrame>
-                <Table>
+                {/*
+                  `table-fixed` with declared widths, because `truncate` inside
+                  an auto-layout cell sets the column's min-content to the full
+                  untruncated string — one long product name and the table is
+                  1041px wide whatever the container says.
+                */}
+                <Table className="table-fixed">
                   <TableHeader>
                     <TableRow className="bg-muted/30 hover:bg-muted/30">
                       <TableHead className="px-4">Product</TableHead>
-                      <TableHead className="px-4">Price</TableHead>
-                      <TableHead className="px-4">Stock</TableHead>
-                      <TableHead className="px-4">Sold</TableHead>
-                      <TableHead className="px-4">Active</TableHead>
-                      <TableHead className="px-4 text-right">Actions</TableHead>
+                      <TableHead className="w-[96px] px-4">Price</TableHead>
+                      <TableHead className="w-[144px] px-4">Stock</TableHead>
+                      <TableHead className="hidden w-[76px] px-4 2xl:table-cell">
+                        Sold
+                      </TableHead>
+                      <TableHead className="w-[84px] px-4">Active</TableHead>
+                      <TableHead className="w-[112px] px-4 text-right">
+                        Actions
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -487,7 +502,7 @@ export default function AdminProductsPage() {
                               </div>
                             </TableCell>
 
-                            <TableCell className="px-4 py-3 text-sm font-medium text-foreground">
+                            <TableCell className="px-4 py-3 text-sm font-medium tabular-nums text-foreground">
                               {formatPrice(p.price, p.currency)}
                             </TableCell>
 
@@ -495,17 +510,17 @@ export default function AdminProductsPage() {
                               <div className="flex items-center gap-2">
                                 <span
                                   className={cn(
-                                    'inline-flex h-2 w-2 rounded-full',
+                                    'inline-flex h-2 w-2 shrink-0 rounded-full',
                                     p.stockQuantity === 0
                                       ? 'bg-destructive'
                                       : p.stockQuantity <= LOW_STOCK_THRESHOLD
-                                      ? 'bg-amber-500'
-                                      : 'bg-emerald-500'
+                                      ? 'bg-warning'
+                                      : 'bg-success'
                                   )}
                                 />
                                 <span
                                   className={cn(
-                                    'text-sm',
+                                    'truncate text-sm',
                                     stockTone(p.stockQuantity)
                                   )}
                                 >
@@ -514,50 +529,41 @@ export default function AdminProductsPage() {
                               </div>
                             </TableCell>
 
-                            <TableCell className="px-4 py-3 text-sm text-muted-foreground">
+                            <TableCell className="hidden px-4 py-3 text-sm tabular-nums text-muted-foreground 2xl:table-cell">
                               {p.totalSold.toLocaleString()}
                             </TableCell>
 
+                            {/* The switch is the state; a badge beside it said
+                                the same thing again and cost 76px. */}
                             <TableCell className="px-4 py-3">
-                              <div className="flex items-center gap-2">
-                                <Switch
-                                  checked={p.isActive}
-                                  onCheckedChange={(v) =>
-                                    handleToggleStatus(p.id, v)
-                                  }
-                                  aria-label={`Toggle ${p.name} active`}
-                                />
-                                <Badge
-                                  variant={p.isActive ? 'secondary' : 'outline'}
-                                  className="h-5 px-1.5 text-[11px]"
-                                >
-                                  {p.isActive ? 'Active' : 'Inactive'}
-                                </Badge>
-                              </div>
+                              <Switch
+                                checked={p.isActive}
+                                onCheckedChange={(v) => handleToggleStatus(p.id, v)}
+                                aria-label={`${p.name} is ${
+                                  p.isActive ? 'visible on' : 'hidden from'
+                                } the store`}
+                              />
                             </TableCell>
 
                             <TableCell className="px-4 py-3">
-                              <div className="flex items-center justify-end gap-1.5">
+                              <div className="flex items-center justify-end gap-1">
                                 <Button
                                   type="button"
-                                  variant="outline"
-                                  size="sm"
+                                  variant="ghost"
+                                  size="icon-sm"
                                   onClick={() => handleEdit(p.id)}
-                                  className="gap-1.5"
+                                  aria-label={`Edit ${p.name}`}
+                                  title="Edit"
                                 >
-                                  <Pencil className="h-3.5 w-3.5" />
-                                  Edit
+                                  <Pencil className="h-4 w-4" />
                                 </Button>
-                                <Separator
-                                  orientation="vertical"
-                                  className="mx-1 h-6"
-                                />
                                 <Button
                                   type="button"
                                   variant="ghost"
                                   size="icon-sm"
                                   onClick={() => setDeleteTarget(p)}
                                   aria-label={`Delete ${p.name}`}
+                                  title="Delete"
                                   className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                                 >
                                   <Trash2 className="h-4 w-4" />
@@ -614,7 +620,7 @@ function CategoryButton({
       onClick={onClick}
       aria-pressed={isActive}
       className={cn(
-        'group inline-flex shrink-0 items-center gap-2.5 rounded-md px-3 py-2 text-left text-sm transition-colors md:w-full',
+        'group inline-flex shrink-0 items-center gap-2.5 rounded-md px-3 py-2 text-left text-sm transition-colors xl:w-full',
         isActive
           ? 'bg-secondary text-foreground font-medium'
           : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground'
@@ -640,7 +646,7 @@ function CategoryButton({
       </Badge>
       <ChevronRight
         className={cn(
-          'hidden h-3.5 w-3.5 shrink-0 text-muted-foreground/60 md:inline-block',
+          'hidden h-3.5 w-3.5 shrink-0 text-muted-foreground/60 xl:inline-block',
           isActive && 'text-foreground'
         )}
       />
@@ -670,10 +676,10 @@ function ProductsSkeleton() {
         ))}
       </div>
 
-      {/* Two-column: rail + table */}
-      <div className="grid gap-6 md:grid-cols-[220px_1fr]">
-        <aside>
-          <div className="flex gap-1 overflow-x-auto rounded-md border bg-card p-2 md:flex-col">
+      {/* Rail + table */}
+      <div className="grid gap-6 xl:grid-cols-[216px_1fr]">
+        <aside className="min-w-0">
+          <div className="flex gap-1 overflow-x-auto rounded-md border bg-card p-2 xl:flex-col">
             {Array.from({ length: 5 }).map((_, i) => (
               <CategoryButtonSkeleton key={i} />
             ))}
@@ -691,15 +697,19 @@ function ProductsSkeleton() {
             </CardHeader>
             <CardContent className="p-0">
               <DesktopTableFrame>
-                <Table>
+                <Table className="table-fixed">
                   <TableHeader>
                     <TableRow className="bg-muted/30 hover:bg-muted/30">
                       <TableHead className="px-4">Product</TableHead>
-                      <TableHead className="px-4">Price</TableHead>
-                      <TableHead className="px-4">Stock</TableHead>
-                      <TableHead className="px-4">Sold</TableHead>
-                      <TableHead className="px-4">Active</TableHead>
-                      <TableHead className="px-4 text-right">Actions</TableHead>
+                      <TableHead className="w-[96px] px-4">Price</TableHead>
+                      <TableHead className="w-[144px] px-4">Stock</TableHead>
+                      <TableHead className="hidden w-[76px] px-4 2xl:table-cell">
+                        Sold
+                      </TableHead>
+                      <TableHead className="w-[84px] px-4">Active</TableHead>
+                      <TableHead className="w-[112px] px-4 text-right">
+                        Actions
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -733,7 +743,7 @@ function StatCardSkeleton() {
 
 function CategoryButtonSkeleton() {
   return (
-    <div className="inline-flex shrink-0 items-center gap-2.5 rounded-md px-3 py-2 md:w-full">
+    <div className="inline-flex shrink-0 items-center gap-2.5 rounded-md px-3 py-2 xl:w-full">
       <Skeleton className="h-4 w-4 rounded" />
       <Skeleton className="h-3.5 flex-1 max-w-[120px]" />
       <Skeleton className="h-5 w-6 rounded-full" />
@@ -762,19 +772,15 @@ function ProductRowSkeleton() {
           <Skeleton className="h-3.5 w-24" />
         </div>
       </TableCell>
-      <TableCell className="px-4 py-3">
+      <TableCell className="hidden px-4 py-3 2xl:table-cell">
         <Skeleton className="h-3.5 w-8" />
       </TableCell>
       <TableCell className="px-4 py-3">
-        <div className="flex items-center gap-2">
-          <Skeleton className="h-5 w-9 rounded-full" />
-          <Skeleton className="h-5 w-14 rounded-md" />
-        </div>
+        <Skeleton className="h-5 w-9 rounded-full" />
       </TableCell>
       <TableCell className="px-4 py-3">
-        <div className="flex items-center justify-end gap-1.5">
-          <Skeleton className="h-8 w-16 rounded-md" />
-          <Skeleton className="h-6 w-px" />
+        <div className="flex items-center justify-end gap-1">
+          <Skeleton className="h-8 w-8 rounded-md" />
           <Skeleton className="h-8 w-8 rounded-md" />
         </div>
       </TableCell>
@@ -814,7 +820,9 @@ function StatCard({
           <Icon className="h-5 w-5" />
         </span>
         <div className="flex min-w-0 flex-col">
-          <span className="text-[11px] font-medium leading-tight text-muted-foreground sm:truncate sm:text-xs sm:uppercase sm:tracking-wide">
+          {/* Wraps rather than truncates: at 1024 the four cards are ~215px
+              wide and "Total products" was arriving as "TOTAL PR…". */}
+          <span className="text-[11px] font-medium leading-tight text-muted-foreground sm:text-xs sm:uppercase sm:tracking-wide">
             {label}
           </span>
           <div className="flex items-baseline gap-1.5">
