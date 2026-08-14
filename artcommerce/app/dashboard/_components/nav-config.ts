@@ -291,7 +291,7 @@ const TITLE_RULES: TitleRule[] = [
   { test: (p) => p === "/dashboard/admin/products/low-stock", title: "Low stock", detail: true },
   { test: (p) => p === "/dashboard/admin/products/highest-rated", title: "Highest rated", detail: true },
   { test: (p) => /^\/dashboard\/admin\/products\/[^/]+$/.test(p), title: "Edit product", detail: true },
-  { test: (p) => p === "/dashboard/admin/products", title: "Products", collapsingTitle: true },
+  { test: (p) => p === "/dashboard/admin/products", title: "Products" },
   { test: (p) => p === "/dashboard/admin/users", title: "Users" },
   { test: (p) => p === "/dashboard/admin/coupons", title: "Coupons" },
   { test: (p) => p === "/dashboard/admin/reviews", title: "Reviews" },

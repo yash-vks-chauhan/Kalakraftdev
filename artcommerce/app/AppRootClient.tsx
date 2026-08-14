@@ -133,6 +133,8 @@ export default function AppRootClient({ children }: { children: React.ReactNode 
   const isDashboardRoute = pathname === '/dashboard' || pathname.startsWith('/dashboard/');
   const isCheckoutRoute = pathname === '/checkout' || pathname.startsWith('/checkout/');
   const isAuthRoute = pathname === '/auth' || pathname.startsWith('/auth/');
+  /* Single-purpose task flows that own the whole screen — see the dock below. */
+  const isFocusedTaskRoute = pathname === '/dashboard/admin/products/new';
   const isMarketingRoute =
     pathname === '/about' || pathname.startsWith('/about/') ||
     pathname === '/contact' || pathname.startsWith('/contact/') ||
@@ -207,9 +209,12 @@ export default function AppRootClient({ children }: { children: React.ReactNode 
         </AppContentWrapper>
 
         {/* One mobile navigation surface for the whole app — storefront and
-            dashboard alike. Suppressed on auth and checkout, which are
-            single-purpose flows that should not offer somewhere else to go. */}
-        {!isAuthRoute && !isCheckoutRoute && <MobileDock />}
+            dashboard alike. Suppressed on auth, checkout and the create-product
+            flow: all three are single-purpose tasks that should not offer
+            somewhere else to go, and hiding the dock lets each one put its own
+            action bar flush on the bottom edge instead of floating above a
+            floating pill. */}
+        {!isAuthRoute && !isCheckoutRoute && !isFocusedTaskRoute && <MobileDock />}
 
         {/* Performance Optimizer */}
         <PerformanceOptimizer />

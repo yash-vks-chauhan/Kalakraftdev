@@ -48,8 +48,17 @@ function SheetContent({
   side = "right",
   className,
   children,
+  showClose = true,
   ...props
-}: React.ComponentProps<typeof SheetPrimitive.Content> & { side?: Side }) {
+}: React.ComponentProps<typeof SheetPrimitive.Content> & {
+  side?: Side
+  /**
+   * The floating × in the corner. Sheets that put a worded dismiss in their
+   * own header — "Done", "Cancel" — should turn it off rather than offer the
+   * same action twice.
+   */
+  showClose?: boolean
+}) {
   return (
     <SheetPortal>
       <SheetOverlay />
@@ -65,12 +74,14 @@ function SheetContent({
         {...props}
       >
         {children}
-        <SheetPrimitive.Close
-          className="absolute right-4 top-4 inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-          aria-label="Close"
-        >
-          <XIcon className="h-4 w-4" />
-        </SheetPrimitive.Close>
+        {showClose && (
+          <SheetPrimitive.Close
+            className="absolute right-4 top-4 inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            aria-label="Close"
+          >
+            <XIcon className="h-4 w-4" />
+          </SheetPrimitive.Close>
+        )}
       </SheetPrimitive.Content>
     </SheetPortal>
   )

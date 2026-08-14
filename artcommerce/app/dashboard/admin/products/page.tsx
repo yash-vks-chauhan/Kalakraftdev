@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import {
   Package,
   Plus,
@@ -74,6 +75,7 @@ export default function AdminProductsPage() {
   const [deleteTarget, setDeleteTarget] = useState<Product | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
   const [isTransitioning, setIsTransitioning] = useState(false)
+  const [bulkPending, setBulkPending] = useState(false)
 
   useEffect(() => {
     if (user?.role !== 'admin') {
@@ -148,29 +150,109 @@ export default function AdminProductsPage() {
       setProducts((prev) => prev.filter((p) => p.id !== deleteTarget.id))
       setDeleteTarget(null)
     } catch (err: any) {
-      alert('Failed to delete product: ' + err.message)
+      toast.error('Could not delete the product: ' + err.message)
     } finally {
       setIsDeleting(false)
     }
   }
 
+  async function patchProduct(id: number, patch: Partial<Product>) {
+    const res = await fetch(`/api/admin/products/${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(patch),
+    })
+    if (!res.ok) throw new Error((await res.json()).error || res.statusText)
+    return (await res.json()).product as Product
+  }
+
   async function handleToggleStatus(id: number, newStatus: boolean) {
     try {
-      const res = await fetch(`/api/admin/products/${id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ isActive: newStatus }),
-      })
-      if (!res.ok) throw new Error((await res.json()).error)
-      const json = await res.json()
+      const product = await patchProduct(id, { isActive: newStatus })
       setProducts((prev) =>
-        prev.map((p) => (p.id === id ? { ...p, isActive: json.product.isActive } : p))
+        prev.map((p) => (p.id === id ? { ...p, isActive: product.isActive } : p))
       )
     } catch (err: any) {
-      alert('Failed to update product status: ' + err.message)
+      toast.error('Could not change visibility: ' + err.message)
+    }
+  }
+
+  /**
+   * Optimistic, because the stepper in the row sheet is tapped repeatedly and
+   * waiting a round trip per tap would make it feel broken. A failure puts the
+   * previous count back and says so.
+   */
+  async function handleSetStock(id: number, next: number) {
+    const previous = products.find((p) => p.id === id)?.stockQuantity ?? 0
+    setProducts((prev) =>
+      prev.map((p) => (p.id === id ? { ...p, stockQuantity: next } : p))
+    )
+    try {
+      const product = await patchProduct(id, { stockQuantity: next })
+      setProducts((prev) =>
+        prev.map((p) =>
+          p.id === id ? { ...p, stockQuantity: product.stockQuantity } : p
+        )
+      )
+    } catch (err: any) {
+      setProducts((prev) =>
+        prev.map((p) => (p.id === id ? { ...p, stockQuantity: previous } : p))
+      )
+      toast.error('Could not set stock: ' + err.message)
+    }
+  }
+
+  /**
+   * There are no bulk endpoints, so this loops the per-product routes and
+   * reports what actually landed rather than claiming a clean sweep.
+   */
+  async function handleBulk(
+    action: 'publish' | 'hide' | 'delete',
+    ids: number[]
+  ) {
+    if (ids.length === 0) return
+    setBulkPending(true)
+    const failed: number[] = []
+    const succeeded: number[] = []
+
+    for (const id of ids) {
+      try {
+        if (action === 'delete') {
+          const res = await fetch(`/api/admin/products/${id}`, {
+            method: 'DELETE',
+            headers: { Authorization: `Bearer ${token}` },
+          })
+          if (!res.ok) throw new Error((await res.json()).error || res.statusText)
+        } else {
+          await patchProduct(id, { isActive: action === 'publish' })
+        }
+        succeeded.push(id)
+      } catch {
+        failed.push(id)
+      }
+    }
+
+    setProducts((prev) => {
+      if (action === 'delete') return prev.filter((p) => !succeeded.includes(p.id))
+      return prev.map((p) =>
+        succeeded.includes(p.id) ? { ...p, isActive: action === 'publish' } : p
+      )
+    })
+    setBulkPending(false)
+
+    const verb =
+      action === 'delete' ? 'deleted' : action === 'publish' ? 'published' : 'hidden'
+    if (failed.length === 0) {
+      toast.success(
+        `${succeeded.length} ${succeeded.length === 1 ? 'product' : 'products'} ${verb}.`
+      )
+    } else if (succeeded.length === 0) {
+      toast.error(`Could not ${action} ${failed.length === 1 ? 'that product' : 'those products'}.`)
+    } else {
+      toast.warning(`${succeeded.length} ${verb}, ${failed.length} failed.`)
     }
   }
 
@@ -212,8 +294,11 @@ export default function AdminProductsPage() {
           categories={categories}
           onEdit={handleEdit}
           onToggleActive={handleToggleStatus}
+          onSetStock={handleSetStock}
           onDelete={setDeleteTarget}
+          onBulk={handleBulk}
           onNew={handleNew}
+          bulkPending={bulkPending}
         />
         <ConfirmDialog
           open={Boolean(deleteTarget)}

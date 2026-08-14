@@ -126,6 +126,9 @@ export function MobileDock() {
 
   return (
     <div
+      // A screen that takes over the bottom edge — the catalogue's select
+      // mode — sets body[data-hide-dock] rather than painting over the pill.
+      data-mobile-dock
       className={cn(
         "pointer-events-none fixed inset-x-0 bottom-0 z-40 flex flex-col items-center gap-2 px-4 lg:hidden",
         "transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]",

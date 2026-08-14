@@ -45,6 +45,21 @@ module.exports = {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
         },
+        // Added with the radius ladder — see the token block in globals.css.
+        hairline: 'hsl(var(--hairline))',
+        wash: 'hsl(var(--wash))',
+        faint: 'hsl(var(--faint))',
+        warning: {
+          DEFAULT: 'hsl(var(--warning))',
+          foreground: 'hsl(var(--warning-foreground))',
+        },
+        success: {
+          DEFAULT: 'hsl(var(--success))',
+          foreground: 'hsl(var(--success-foreground))',
+        },
+      },
+      boxShadow: {
+        sheet: 'var(--shadow-sheet)',
       },
       keyframes: {
         'accordion-down': {
@@ -61,6 +76,7 @@ module.exports = {
         'accordion-up': 'accordion-up 0.22s cubic-bezier(0.32, 0.72, 0, 1)',
       },
       borderRadius: {
+        xl: 'calc(var(--radius) + 4px)',
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',

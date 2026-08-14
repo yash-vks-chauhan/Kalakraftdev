@@ -3,13 +3,10 @@
 import { useState } from 'react'
 import {
   AlertCircle,
-  ArrowRight,
   Camera,
   Check,
   ChevronRight,
-  ClipboardCheck,
   Image as ImageIcon,
-  ImagePlus,
   Link2,
   Loader2,
   Minus,
@@ -18,7 +15,6 @@ import {
   Package,
   Plus,
   Star,
-  Tags,
   Trash2,
   X,
 } from 'lucide-react'
@@ -39,38 +35,26 @@ import {
   type TabKey,
 } from '../_lib/product-form'
 import { cn } from '@/lib/utils'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetTitle,
-} from '@/components/ui/sheet'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Switch } from '@/components/ui/switch'
-import { Textarea } from '@/components/ui/textarea'
 
 /**
- * Creating a product on a phone.
+ * Creating a product on a phone — a record you fill in, not a form you fight.
  *
- * The desktop workspace puts a tabbed form beside a preview and a checklist.
- * Folded to 390pt that became a wrapping command bar over the app header, four
- * tabs too wide to fit, and a preview a screen and a half below the field it
- * described. Worse, three things simply did not work: the photo remove button
- * and drag grip were hover-only, reordering was HTML5 drag — which touch never
- * fires — and the draft/live switch was `hidden sm:flex`, so every product a
- * phone created published immediately.
+ * Fields are rules, not boxes: a mono uppercase label, the value at 16pt with
+ * no border, and a hairline beneath that darkens on focus. Boxing every input
+ * at the same radius as the primary button is what made the previous version
+ * read as a consumer app; here the only filled shape on the screen is the one
+ * thing you press.
  *
- * So this asks four questions in turn, keeps the verb in a bar above the dock,
- * and puts the preview, the checklist and the publish decision in one Review
- * sheet that opens from any step. Every control is visible at rest.
+ * The dock is suppressed for this route (see AppRootClient), so the action bar
+ * sits flush on the bottom edge instead of floating above a floating pill.
  */
 
 const STEP_LABEL: Record<TabKey, string> = {
-  basics: 'Basics',
-  pricing: 'Price',
-  media: 'Photos',
+  basics: 'Details',
+  pricing: 'Pricing',
+  media: 'Media',
   discovery: 'Tags',
 }
 
@@ -92,9 +76,8 @@ export function NewProductMobile({ form }: { form: ProductForm }) {
   } = form
 
   const [reviewOpen, setReviewOpen] = useState(false)
-  // Held past the close so the sheet does not blank out while it animates down.
-  const [tileIndex, setTileIndex] = useState(0)
   const [tileOpen, setTileOpen] = useState(false)
+  const [tileIndex, setTileIndex] = useState(0)
 
   function openTile(index: number) {
     setTileIndex(index)
@@ -112,16 +95,19 @@ export function NewProductMobile({ form }: { form: ProductForm }) {
 
   return (
     <main className="flex flex-col">
-      {/*
-        Sticky under the app bar rather than at the viewport top: the dashboard
-        header is `sticky top-0`, and the old page's own command bar claimed the
-        same offset and layer, so it rode straight over the back chevron.
-      */}
+      {/* Step rail. Sticky under the app bar — the old page's own command bar
+          claimed `top-0` too and rode over the back chevron. */}
       <div
-        className="sticky z-20 -mx-4 -mt-5 border-b bg-background/95 px-4 pb-3 pt-3 backdrop-blur supports-[backdrop-filter]:bg-background/80 sm:-mx-6 sm:px-6"
+        className="sticky z-20 -mx-4 -mt-5 border-b bg-background sm:-mx-6"
         style={{ top: 'var(--mobile-header-total, 3.5rem)' }}
       >
-        <div className="flex gap-1.5">
+        <div className="h-0.5 bg-border">
+          <div
+            className="h-full rounded-r-full bg-foreground transition-[width] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]"
+            style={{ width: `${progressPct}%` }}
+          />
+        </div>
+        <div className="flex">
           {TAB_ORDER.map((key) => {
             const on = key === activeTab
             const complete = sections[key].complete
@@ -132,105 +118,74 @@ export function NewProductMobile({ form }: { form: ProductForm }) {
                 onClick={() => setActiveTab(key)}
                 aria-current={on ? 'step' : undefined}
                 className={cn(
-                  'flex h-[52px] min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-[13px] text-[12px] font-semibold tracking-tight transition-colors',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
-                  on
-                    ? 'bg-foreground text-background'
-                    : 'bg-muted text-muted-foreground active:bg-secondary'
+                  'relative flex min-w-0 flex-1 items-center justify-center gap-1.5 whitespace-nowrap px-1 pb-2.5 pt-3',
+                  'font-mono text-[9.5px] uppercase tracking-[0.1em] transition-colors',
+                  'after:absolute after:inset-x-2 after:-bottom-px after:h-0.5 after:rounded-t-full after:bg-foreground after:transition-opacity',
+                  on ? 'text-foreground after:opacity-100' : 'text-faint after:opacity-0'
                 )}
               >
                 <span
+                  aria-hidden
                   className={cn(
-                    'flex size-[15px] items-center justify-center rounded-full border-[1.5px]',
-                    complete
-                      ? on
-                        ? 'border-transparent bg-background text-foreground'
-                        : 'border-transparent bg-emerald-500 text-white'
-                      : 'border-current opacity-40'
+                    'size-[5px] rounded-full border',
+                    complete ? 'border-success bg-success' : 'border-current'
                   )}
-                >
-                  {complete && <Check className="size-2.5" strokeWidth={3.5} />}
-                </span>
+                />
                 {STEP_LABEL[key]}
               </button>
             )
           })}
         </div>
-        <div className="mx-0.5 mt-2.5 h-[3px] overflow-hidden rounded-full bg-secondary">
-          <div
-            className="h-full rounded-full bg-foreground transition-[width] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]"
-            style={{ width: `${progressPct}%` }}
-          />
-        </div>
       </div>
 
-      {/* Clears the action bar, which floats above the dock. */}
-      <div className="flex flex-col gap-4 pb-24 pt-4">
-        {activeTab === 'basics' && <BasicsStep form={form} />}
+      <div className="pb-6">
+        {activeTab === 'basics' && <DetailsStep form={form} />}
         {activeTab === 'pricing' && <PricingStep form={form} />}
         {activeTab === 'media' && <MediaStep form={form} onOpenTile={openTile} />}
-        {activeTab === 'discovery' && <DiscoveryStep form={form} />}
+        {activeTab === 'discovery' && <TagsStep form={form} />}
       </div>
 
-      {/*
-        Pinned to --mobile-dock-total, the same anchor the cart's checkout card
-        uses, so the app has one place and one shape for "the action".
-      */}
-      <div
-        className="fixed inset-x-0 z-30 lg:hidden"
-        style={{ bottom: 'var(--mobile-dock-total, 4.375rem)' }}
-      >
-        <div className="mx-3 mb-2.5 overflow-hidden rounded-[18px] border bg-background/95 shadow-lg backdrop-blur-xl backdrop-saturate-150 supports-[backdrop-filter]:bg-background/90">
-          {isLastTab && blocker && (
-            <button
-              type="button"
-              onClick={() => setActiveTab(blocker.tab)}
-              className="flex w-full items-center gap-2 border-b bg-muted px-3.5 py-2.5 text-left text-[12.5px] text-muted-foreground transition-colors active:bg-secondary"
-            >
-              <AlertCircle className="size-4 shrink-0" />
-              <span className="min-w-0 truncate">
-                {blocker.message} —{' '}
-                {/* Named by the step rail's own label, not the desktop tab's. */}
-                <span className="font-semibold text-foreground">
-                  {STEP_LABEL[blocker.tab]}
-                </span>
-              </span>
-              <ChevronRight className="ml-auto size-4 shrink-0" />
-            </button>
-          )}
-          <div className="flex items-center gap-2 p-2.5">
-            <button
-              type="button"
-              onClick={() => setReviewOpen(true)}
-              className="flex h-11 shrink-0 items-center gap-1.5 rounded-xl border px-3.5 text-[13.5px] font-semibold tracking-tight text-foreground transition-colors active:bg-secondary"
-            >
-              <ClipboardCheck className="size-4" />
-              Review
-            </button>
-            <button
-              type="button"
-              onClick={handlePrimary}
-              disabled={submitting || (isLastTab && !allRequiredDone)}
-              className="flex h-11 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-xl bg-foreground text-[14.5px] font-semibold tracking-[-0.012em] text-background transition-opacity active:opacity-90 disabled:opacity-35"
-            >
-              {submitting ? (
-                <>
-                  <Loader2 className="size-4 animate-spin" />
-                  Creating…
-                </>
-              ) : isLastTab ? (
-                <>
-                  <Check className="size-4" strokeWidth={2.6} />
-                  Create product
-                </>
-              ) : (
-                <>
-                  Continue
-                  <ArrowRight className="size-4" />
-                </>
-              )}
-            </button>
-          </div>
+      {/* Flat, one hairline, flush to the bottom edge. */}
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t bg-background pb-safe lg:hidden">
+        {isLastTab && blocker && (
+          <button
+            type="button"
+            onClick={() => setActiveTab(blocker.tab)}
+            className="flex w-full items-center gap-2 border-b bg-wash px-4 py-2.5 text-left font-mono text-[10.5px] uppercase tracking-[0.04em] text-muted-foreground transition-colors active:bg-secondary"
+          >
+            <AlertCircle className="size-3.5 shrink-0 text-warning" />
+            <span className="min-w-0 truncate">
+              {blocker.message} —{' '}
+              <span className="font-medium text-foreground">{STEP_LABEL[blocker.tab]}</span>
+            </span>
+            <ChevronRight className="ml-auto size-3.5 shrink-0" />
+          </button>
+        )}
+        <div className="flex items-center gap-2.5 px-4 py-2.5">
+          <button
+            type="button"
+            onClick={() => setReviewOpen(true)}
+            className="h-[42px] shrink-0 rounded-md border border-input px-3.5 text-[13.5px] font-medium text-foreground transition-colors active:bg-wash"
+          >
+            Review
+          </button>
+          <button
+            type="button"
+            onClick={handlePrimary}
+            disabled={submitting || (isLastTab && !allRequiredDone)}
+            className="flex h-[42px] min-w-0 flex-1 items-center justify-center gap-1.5 rounded-md bg-primary text-[14px] font-medium tracking-[-0.008em] text-primary-foreground transition-opacity active:opacity-90 disabled:opacity-30"
+          >
+            {submitting ? (
+              <>
+                <Loader2 className="size-4 animate-spin" />
+                Creating…
+              </>
+            ) : isLastTab ? (
+              'Create product'
+            ) : (
+              'Continue'
+            )}
+          </button>
         </div>
       </div>
 
@@ -240,7 +195,9 @@ export function NewProductMobile({ form }: { form: ProductForm }) {
       <ActionSheet
         open={tileOpen}
         onOpenChange={setTileOpen}
-        title={`Photo ${tileIndex + 1} of ${imageUrls.length}`}
+        title={`Photo ${String(tileIndex + 1).padStart(2, '0')} of ${String(
+          imageUrls.length
+        ).padStart(2, '0')}`}
         description={tileIndex === 0 ? 'This is the cover' : 'Shown in the gallery'}
         groups={buildTileActions({
           index: tileIndex,
@@ -275,14 +232,14 @@ function buildTileActions({
     actions.push({
       id: 'cover',
       label: 'Make cover',
-      description: 'Show this one on cards and in search',
+      description: 'Shown on cards and in search',
       icon: Star,
       onSelect: onMakeCover,
     })
     actions.push({
       id: 'earlier',
       label: 'Move earlier',
-      description: `Swap with photo ${index}`,
+      description: `Swap with photo ${String(index).padStart(2, '0')}`,
       icon: MoveLeft,
       onSelect: onEarlier,
     })
@@ -291,31 +248,25 @@ function buildTileActions({
     actions.push({
       id: 'later',
       label: 'Move later',
-      description: `Swap with photo ${index + 2}`,
+      description: `Swap with photo ${String(index + 2).padStart(2, '0')}`,
       icon: MoveRight,
       onSelect: onLater,
     })
   }
-  return [
-    ...(actions.length ? [{ actions }] : []),
-    {
-      actions: [
-        {
-          id: 'remove',
-          label: 'Remove photo',
-          description: 'Takes it out of the gallery',
-          icon: Trash2,
-          destructive: true,
-          onSelect: onRemove,
-        },
-      ],
-    },
-  ]
+  actions.push({
+    id: 'remove',
+    label: 'Remove photo',
+    description: 'Takes it out of the gallery',
+    icon: Trash2,
+    destructive: true,
+    onSelect: onRemove,
+  })
+  return [{ actions }]
 }
 
 /* ---------------------------------------------------------------- steps */
 
-function BasicsStep({ form }: { form: ProductForm }) {
+function DetailsStep({ form }: { form: ProductForm }) {
   const {
     name,
     setName,
@@ -335,43 +286,40 @@ function BasicsStep({ form }: { form: ProductForm }) {
   } = form
 
   const [slugOpen, setSlugOpen] = useState(false)
-  const [open, setOpen] = useState<'specs' | 'care' | null>(null)
+  const [expanded, setExpanded] = useState<'specs' | 'care' | null>(null)
 
   return (
-    <div className="flex flex-col gap-4">
-      <Field label="Product name" htmlFor="npm-name">
-        <Input
+    <div className="flex flex-col">
+      <RuleField label="Name" htmlFor="npm-name">
+        <input
           id="npm-name"
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Hand-painted ceramic vase"
           autoComplete="off"
-          className="h-11 rounded-xl text-base"
+          className="w-full bg-transparent p-0 text-[16px] tracking-[-0.01em] text-foreground outline-none placeholder:text-faint"
         />
-      </Field>
+      </RuleField>
 
-      {/*
-        The slug writes itself from the name. On a phone it is a line of text
-        with an Edit beside it, not a composite input whose /products/ prefix
-        eats a third of an already narrow field.
-      */}
-      <div className="-mt-1 flex items-center gap-2 px-0.5">
-        <Link2 className="size-3.5 shrink-0 text-muted-foreground" />
-        <code className="min-w-0 truncate font-mono text-[11.5px] text-foreground">
+      {/* The slug writes itself. On a phone it is a line of text with an Edit
+          beside it, not a composite input whose prefix eats the field. */}
+      <div className="flex items-center gap-2 border-b py-3.5">
+        <Link2 className="size-3.5 shrink-0 text-faint" />
+        <code className="min-w-0 flex-1 truncate font-mono text-[10.5px] text-muted-foreground">
           /products/{slug || '…'}
         </code>
         <button
           type="button"
           onClick={() => setSlugOpen((v) => !v)}
-          className="ml-auto shrink-0 py-1 text-[12.5px] font-semibold text-foreground underline underline-offset-[3px]"
+          className="shrink-0 font-mono text-[10px] uppercase tracking-[0.13em] text-foreground"
         >
           {slugOpen ? 'Hide' : 'Edit'}
         </button>
       </div>
 
       {slugOpen && (
-        <Field label="URL slug" htmlFor="npm-slug" hint="Changing this changes the product's link.">
-          <Input
+        <RuleField label="URL slug" htmlFor="npm-slug" hint="Changing this changes the product's link.">
+          <input
             id="npm-slug"
             value={slug}
             onChange={(e) => {
@@ -380,20 +328,20 @@ function BasicsStep({ form }: { form: ProductForm }) {
             }}
             placeholder="hand-painted-ceramic-vase"
             autoComplete="off"
-            className="h-11 rounded-xl font-mono text-[15px]"
+            className="w-full bg-transparent p-0 font-mono text-[15px] text-foreground outline-none placeholder:text-faint"
           />
-        </Field>
+        </RuleField>
       )}
 
-      <Field
+      <RuleField
         label="Short description"
         htmlFor="npm-short"
         counter={
           <span
             className={cn(
-              shortDescTone === 'emerald' && 'text-emerald-600 dark:text-emerald-400',
-              shortDescTone === 'amber' && 'text-amber-600 dark:text-amber-400',
-              shortDescTone === 'muted' && 'text-muted-foreground'
+              shortDescTone === 'emerald' && 'text-success',
+              shortDescTone === 'amber' && 'text-warning',
+              shortDescTone === 'muted' && 'text-faint'
             )}
           >
             {shortDescLen}/{SHORT_DESC_IDEAL.max}
@@ -409,54 +357,59 @@ function BasicsStep({ form }: { form: ProductForm }) {
             : 'Search results will trim this.'
         }
       >
-        <Input
+        <input
           id="npm-short"
           value={shortDesc}
           onChange={(e) => setShortDesc(e.target.value)}
           placeholder="One line for the product card"
-          className="h-11 rounded-xl text-base"
+          className="w-full bg-transparent p-0 text-[16px] tracking-[-0.01em] text-foreground outline-none placeholder:text-faint"
         />
-      </Field>
+      </RuleField>
 
-      <Field label="Full description" htmlFor="npm-desc">
-        <Textarea
+      <RuleField label="Description" htmlFor="npm-desc">
+        <textarea
           id="npm-desc"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Tell the story behind this piece…"
-          className="min-h-[112px] rounded-xl text-base"
+          rows={3}
+          className="w-full resize-none bg-transparent p-0 text-[16px] leading-[1.45] tracking-[-0.01em] text-foreground outline-none placeholder:text-faint"
         />
-      </Field>
+      </RuleField>
 
-      {/* Optional prose, folded — it used to bury the required fields. */}
-      <Panel>
-        <Disclosure
-          title="Specifications"
-          state={specifications.length ? `${specifications.length} characters` : 'Not added'}
-          open={open === 'specs'}
-          onToggle={() => setOpen(open === 'specs' ? null : 'specs')}
-        >
-          <Textarea
-            value={specifications}
-            onChange={(e) => setSpecifications(e.target.value)}
-            placeholder="Material, dimensions, weight…"
-            className="min-h-[96px] rounded-xl bg-background text-base"
-          />
-        </Disclosure>
-        <Disclosure
-          title="Care & maintenance"
-          state={careInstructions.length ? `${careInstructions.length} characters` : 'Not added'}
-          open={open === 'care'}
-          onToggle={() => setOpen(open === 'care' ? null : 'care')}
-        >
-          <Textarea
-            value={careInstructions}
-            onChange={(e) => setCareInstructions(e.target.value)}
-            placeholder="How to keep it looking its best"
-            className="min-h-[96px] rounded-xl bg-background text-base"
-          />
-        </Disclosure>
-      </Panel>
+      <ExpandRow
+        label="Specifications"
+        value={specifications.length ? `${specifications.length} chars` : 'Not set'}
+        unset={specifications.length === 0}
+        open={expanded === 'specs'}
+        onToggle={() => setExpanded(expanded === 'specs' ? null : 'specs')}
+      >
+        <textarea
+          value={specifications}
+          onChange={(e) => setSpecifications(e.target.value)}
+          placeholder="Material, dimensions, weight…"
+          rows={3}
+          aria-label="Specifications"
+          className="w-full resize-none bg-transparent p-0 text-[15px] leading-[1.45] text-foreground outline-none placeholder:text-faint"
+        />
+      </ExpandRow>
+
+      <ExpandRow
+        label="Care & maintenance"
+        value={careInstructions.length ? `${careInstructions.length} chars` : 'Not set'}
+        unset={careInstructions.length === 0}
+        open={expanded === 'care'}
+        onToggle={() => setExpanded(expanded === 'care' ? null : 'care')}
+      >
+        <textarea
+          value={careInstructions}
+          onChange={(e) => setCareInstructions(e.target.value)}
+          placeholder="How to keep it looking its best"
+          rows={3}
+          aria-label="Care and maintenance"
+          className="w-full resize-none bg-transparent p-0 text-[15px] leading-[1.45] text-foreground outline-none placeholder:text-faint"
+        />
+      </ExpandRow>
     </div>
   )
 }
@@ -477,140 +430,114 @@ function PricingStep({ form }: { form: ProductForm }) {
     categoryLabel,
   } = form
 
-  const [pickerOpen, setPickerOpen] = useState(false)
+  const [picker, setPicker] = useState<'currency' | 'category' | null>(null)
 
   function bumpStock(by: number) {
-    const next = Math.max(0, (parseInt(stockQuantity || '0', 10) || 0) + by)
-    setStockQuantity(String(next))
+    setStockQuantity(String(Math.max(0, (parseInt(stockQuantity || '0', 10) || 0) + by)))
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <Field
+    <div className="flex flex-col">
+      {/* The one large figure on the screen. */}
+      <RuleField
         label="Price"
         htmlFor="npm-price"
         hint={
           <>
             Shown to customers as{' '}
-            <span className="font-semibold text-foreground">
+            <span className="font-medium text-muted-foreground">
               {formatPrice(priceNum, currency)}
             </span>
           </>
         }
       >
-        <div className="flex gap-2">
-          {/* Three options do not deserve a portal and a scroll. */}
-          <div
-            role="group"
-            aria-label="Currency"
-            className="flex shrink-0 gap-0.5 rounded-xl bg-muted p-1"
-          >
-            {CURRENCIES.map((c) => {
-              const on = currency === c
-              return (
-                <button
-                  key={c}
-                  type="button"
-                  onClick={() => setCurrency(c)}
-                  aria-pressed={on}
-                  className={cn(
-                    'h-9 w-[44px] rounded-[9px] text-[12.5px] font-bold transition-colors',
-                    on
-                      ? 'bg-background text-foreground shadow-sm'
-                      : 'text-muted-foreground active:bg-secondary'
-                  )}
-                >
-                  {c}
-                </button>
-              )
-            })}
-          </div>
-          <div className="relative min-w-0 flex-1">
-            <span
-              aria-hidden
-              className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[17px] text-muted-foreground"
-            >
-              {CURRENCY_SYMBOL[currency] ?? ''}
-            </span>
-            <Input
-              id="npm-price"
-              type="number"
-              inputMode="decimal"
-              min="0"
-              step="0.01"
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-              placeholder="0"
-              className="h-11 rounded-xl pl-8 text-[19px] font-bold tabular-nums tracking-tight"
-            />
-          </div>
-        </div>
-      </Field>
-
-      <Field label="Stock" htmlFor="npm-stock">
-        <div className="flex h-11 items-stretch overflow-hidden rounded-xl border bg-background">
-          <button
-            type="button"
-            onClick={() => bumpStock(-1)}
-            aria-label="One fewer"
-            className="flex w-12 shrink-0 items-center justify-center text-foreground transition-colors active:bg-secondary"
-          >
-            <Minus className="size-[18px]" />
-          </button>
-          <input
-            id="npm-stock"
-            type="number"
-            inputMode="numeric"
-            min="0"
-            value={stockQuantity}
-            onChange={(e) => setStockQuantity(e.target.value)}
-            placeholder="0"
-            className="min-w-0 flex-1 border-x bg-transparent text-center text-base font-semibold tabular-nums text-foreground outline-none"
-          />
-          <button
-            type="button"
-            onClick={() => bumpStock(1)}
-            aria-label="One more"
-            className="flex w-12 shrink-0 items-center justify-center text-foreground transition-colors active:bg-secondary"
-          >
-            <Plus className="size-[18px]" />
-          </button>
-        </div>
-        <span className="flex items-center gap-2 text-[12.5px] text-muted-foreground">
-          <span
-            aria-hidden
-            className={cn(
-              'size-1.5 shrink-0 rounded-full',
-              stockNum === 0 ? 'bg-destructive' : stockNum <= 5 ? 'bg-amber-500' : 'bg-emerald-500'
-            )}
-          />
-          {stockNum === 0
-            ? 'Out of stock — it will not sell'
-            : stockNum <= 5
-            ? `${stockNum} left · low stock`
-            : `${stockNum} units in stock`}
-        </span>
-      </Field>
-
-      <Field
-        label="Category"
-        hint="Drives storefront filtering and analytics roll-ups."
-      >
-        <button
-          type="button"
-          onClick={() => setPickerOpen(true)}
-          className="flex h-11 w-full items-center gap-2 rounded-xl border bg-background px-3.5 text-left text-[15.5px] transition-colors active:bg-secondary"
-        >
-          <span className={cn('min-w-0 flex-1 truncate', !categoryLabel && 'text-muted-foreground')}>
-            {categoryLabel ?? 'Pick the best fit'}
+        <div className="flex items-baseline gap-1.5">
+          <span aria-hidden className="text-[15px] text-faint">
+            {CURRENCY_SYMBOL[currency] ?? ''}
           </span>
-          <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
-        </button>
-      </Field>
+          <input
+            id="npm-price"
+            type="number"
+            inputMode="decimal"
+            min="0"
+            step="0.01"
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+            placeholder="0"
+            className="min-w-0 flex-1 bg-transparent p-0 text-[26px] font-medium tracking-[-0.03em] tabular-nums text-foreground outline-none placeholder:font-normal placeholder:text-faint"
+          />
+        </div>
+      </RuleField>
+
+      <ValueRow label="Currency" value={currency} onClick={() => setPicker('currency')} />
+
+      <RuleField label="Stock on hand">
+        <div className="flex items-center gap-3">
+          <span className="flex h-[38px] shrink-0 items-stretch overflow-hidden rounded-md border border-input">
+            <button
+              type="button"
+              aria-label="One fewer"
+              onClick={() => bumpStock(-1)}
+              className="grid w-10 place-items-center text-foreground transition-colors active:bg-wash"
+            >
+              <Minus className="size-[15px]" />
+            </button>
+            <input
+              type="number"
+              inputMode="numeric"
+              min="0"
+              value={stockQuantity}
+              onChange={(e) => setStockQuantity(e.target.value)}
+              placeholder="0"
+              aria-label="Stock on hand"
+              className="w-12 min-w-0 border-x border-input bg-transparent text-center text-[14px] font-medium tabular-nums text-foreground outline-none"
+            />
+            <button
+              type="button"
+              aria-label="One more"
+              onClick={() => bumpStock(1)}
+              className="grid w-10 place-items-center text-foreground transition-colors active:bg-wash"
+            >
+              <Plus className="size-[15px]" />
+            </button>
+          </span>
+          <span className="min-w-0 flex-1 text-[12px] text-faint">
+            {stockNum === 0
+              ? 'Out of stock — it will not sell'
+              : stockNum <= 5
+              ? `${stockNum} left · counted as low stock`
+              : `${stockNum} units available`}
+          </span>
+        </div>
+      </RuleField>
+
+      <ValueRow
+        label="Category"
+        value={categoryLabel ?? 'Not set'}
+        unset={!categoryLabel}
+        onClick={() => setPicker('category')}
+        hint="Drives storefront filtering and analytics roll-ups."
+      />
 
       <ActionSheet
-        open={pickerOpen}
-        onOpenChange={setPickerOpen}
+        open={picker === 'currency'}
+        onOpenChange={(open) => !open && setPicker(null)}
+        title="Currency"
+        groups={[
+          {
+            actions: CURRENCIES.map((c) => ({
+              id: `cur-${c}`,
+              label: `${CURRENCY_SYMBOL[c]} ${c}`,
+              selected: currency === c,
+              onSelect: () => setCurrency(c),
+            })),
+          },
+        ]}
+      />
+
+      <ActionSheet
+        open={picker === 'category'}
+        onOpenChange={(open) => !open && setPicker(null)}
         title="Category"
         description="Drives storefront filtering and roll-ups"
         groups={[
@@ -651,42 +578,42 @@ function MediaStep({
   } = form
 
   const [stylingOpen, setStylingOpen] = useState(false)
-  const full = imageUrls.length >= MAX_IMAGES
+  const empty = imageUrls.length === 0 && productUploadIds.length === 0
+  const room = imageUrls.length < MAX_IMAGES
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className="flex items-center gap-2 px-0.5">
-        <h2 className="text-[13.5px] font-semibold tracking-[-0.008em] text-foreground">
-          Product photos
-        </h2>
-        <span className="ml-auto text-[11.5px] font-semibold tabular-nums text-muted-foreground">
+    <div className="flex flex-col">
+      <div className="flex items-baseline gap-3 pb-2 pt-4">
+        <span className="flex-1 font-mono text-[10px] uppercase tracking-[0.13em] text-faint">
+          Photographs
+        </span>
+        <span className="font-mono text-[10px] tabular-nums text-faint">
           {imageUrls.length}/{MAX_IMAGES}
         </span>
       </div>
 
-      {!full && (
+      {empty ? (
         <div
           {...getProductRootProps()}
-          className="flex cursor-pointer flex-col items-center gap-1.5 rounded-2xl border border-dashed bg-muted px-4 py-5 text-center transition-colors active:bg-secondary"
+          className="flex cursor-pointer flex-col items-center gap-1.5 rounded-lg border border-dashed border-input px-4 py-7 text-center transition-colors active:bg-wash"
         >
           <input {...getProductInputProps()} />
-          <span className="flex size-10 items-center justify-center rounded-full bg-background text-muted-foreground shadow-sm">
-            <Camera className="size-[18px]" />
-          </span>
-          <span className="text-[14.5px] font-semibold text-foreground">Add photos</span>
-          <span className="text-[11.5px] text-muted-foreground">
-            Camera or library · JPG, PNG, WEBP · up to 20MB
+          <Camera className="size-[22px] text-muted-foreground" />
+          <span className="text-[14px] font-medium text-foreground">Add photos</span>
+          <span className="font-mono text-[10px] uppercase tracking-[0.04em] text-faint">
+            Camera or library · up to 20MB
           </span>
         </div>
-      )}
-
-      {(imageUrls.length > 0 || productUploadIds.length > 0) && (
+      ) : (
         <>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-3 gap-[7px]">
             {imageUrls.map((url, i) => (
               <div
                 key={url}
-                className="relative aspect-square overflow-hidden rounded-[13px] border bg-muted"
+                className={cn(
+                  'relative aspect-square overflow-hidden rounded-lg border',
+                  i === 0 ? 'border-[1.5px] border-foreground' : 'border-border'
+                )}
               >
                 <button
                   type="button"
@@ -698,24 +625,23 @@ function MediaStep({
                   <img src={url} alt="" className="size-full object-cover" />
                 </button>
                 {i === 0 && (
-                  <span className="pointer-events-none absolute left-1.5 top-1.5 rounded-full bg-foreground px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-wide text-background">
+                  <span className="pointer-events-none absolute left-1.5 top-1.5 rounded-sm bg-primary px-1.5 py-0.5 font-mono text-[8.5px] uppercase tracking-[0.12em] text-primary-foreground">
                     Cover
                   </span>
                 )}
                 <span
                   aria-hidden
-                  className="pointer-events-none absolute inset-x-0 bottom-0 flex h-6 items-end justify-center bg-gradient-to-t from-black/55 to-transparent pb-0.5 text-[10.5px] font-semibold text-white"
+                  className="pointer-events-none absolute bottom-1 left-2 font-mono text-[9.5px] tracking-[0.08em] text-white [text-shadow:0_1px_3px_rgba(0,0,0,.55)]"
                 >
-                  {i + 1}
+                  {String(i + 1).padStart(2, '0')}
                 </span>
-                {/* Visible at rest — the desktop's × is behind :hover. */}
                 <button
                   type="button"
                   onClick={() => setImageUrls((prev) => prev.filter((_, idx) => idx !== i))}
                   aria-label={`Remove photo ${i + 1}`}
-                  className="absolute right-1 top-1 flex size-[26px] items-center justify-center rounded-full bg-background/95 text-destructive shadow-sm transition-colors active:bg-destructive active:text-destructive-foreground"
+                  className="absolute right-1.5 top-1.5 grid size-6 place-items-center rounded-sm border border-input bg-background/95 text-foreground transition-colors active:bg-destructive active:text-destructive-foreground"
                 >
-                  <X className="size-3.5" strokeWidth={2.6} />
+                  <X className="size-3" strokeWidth={2.6} />
                 </button>
               </div>
             ))}
@@ -723,51 +649,47 @@ function MediaStep({
               <UploadingTile key={id} progress={uploadingProduct[id] ?? 0} />
             ))}
           </div>
-          <p className="px-0.5 text-[12px] text-muted-foreground">
-            Tap a photo to make it the cover, reorder it or remove it. The cover is what
-            shows on cards.
+
+          {room && productUploadIds.length === 0 && (
+            <div
+              {...getProductRootProps()}
+              className="mt-2 flex h-[46px] cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-dashed border-input text-[13.5px] font-medium text-muted-foreground transition-colors active:bg-wash"
+            >
+              <input {...getProductInputProps()} />
+              <Plus className="size-[15px]" />
+              Add photo
+            </div>
+          )}
+
+          <p className="pt-2.5 text-[12px] text-faint">
+            Tap a photo to make it the cover, move it, or remove it. Photo 01 is the cover.
           </p>
         </>
       )}
 
-      <Panel className="mt-1">
-        <Disclosure
-          title="Styling photos"
-          state={
-            stylingIdeas.length
-              ? `${stylingIdeas.length} added`
-              : 'Optional inspiration shown beside the product'
-          }
+      <div className="mt-4">
+        <ExpandRow
+          label="Styling photos"
+          value={stylingIdeas.length ? `${stylingIdeas.length} added` : 'None'}
+          unset={stylingIdeas.length === 0}
           open={stylingOpen}
           onToggle={() => setStylingOpen((v) => !v)}
         >
           <div className="flex flex-col gap-2.5">
             <div
               {...getStylingRootProps()}
-              className="flex cursor-pointer items-center gap-3 rounded-xl border border-dashed bg-background px-3 py-3 transition-colors active:bg-secondary"
+              className="flex h-[46px] cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-dashed border-input text-[13.5px] font-medium text-muted-foreground transition-colors active:bg-wash"
             >
               <input {...getStylingInputProps()} />
-              <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-                <ImagePlus className="size-[18px]" />
-              </span>
-              <span className="flex min-w-0 flex-1 flex-col">
-                <span className="truncate text-[14px] font-medium text-foreground">
-                  Add styling photos
-                </span>
-                <span className="truncate text-[11.5px] text-muted-foreground">
-                  Captions optional · up to 20MB each
-                </span>
-              </span>
+              <Plus className="size-[15px]" />
+              Add styling photo
             </div>
 
             {(stylingIdeas.length > 0 || stylingUploadIds.length > 0) && (
               <div className="grid grid-cols-2 gap-2">
                 {stylingIdeas.map((idea, idx) => (
-                  <div
-                    key={idea.url}
-                    className="flex flex-col gap-1.5 rounded-xl border bg-background p-1.5"
-                  >
-                    <div className="relative aspect-square overflow-hidden rounded-lg bg-muted">
+                  <div key={idea.url} className="flex flex-col gap-1.5">
+                    <div className="relative aspect-square overflow-hidden rounded-lg border">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={idea.url}
@@ -781,12 +703,12 @@ function MediaStep({
                           setStylingIdeas((prev) => prev.filter((_, i) => i !== idx))
                         }
                         aria-label={`Remove styling photo ${idx + 1}`}
-                        className="absolute right-1 top-1 flex size-[26px] items-center justify-center rounded-full bg-background/95 text-destructive shadow-sm transition-colors active:bg-destructive active:text-destructive-foreground"
+                        className="absolute right-1.5 top-1.5 grid size-6 place-items-center rounded-sm border border-input bg-background/95 text-foreground transition-colors active:bg-destructive active:text-destructive-foreground"
                       >
-                        <X className="size-3.5" strokeWidth={2.6} />
+                        <X className="size-3" strokeWidth={2.6} />
                       </button>
                     </div>
-                    <Input
+                    <input
                       value={idea.text}
                       onChange={(e) => {
                         const v = e.target.value
@@ -796,7 +718,7 @@ function MediaStep({
                       }}
                       placeholder="Caption"
                       aria-label={`Caption for styling photo ${idx + 1}`}
-                      className="h-10 rounded-lg text-[13px]"
+                      className="h-9 w-full rounded-sm border border-input bg-transparent px-2 text-[12.5px] text-foreground outline-none placeholder:text-faint focus:border-foreground"
                     />
                   </div>
                 ))}
@@ -806,13 +728,13 @@ function MediaStep({
               </div>
             )}
           </div>
-        </Disclosure>
-      </Panel>
+        </ExpandRow>
+      </div>
     </div>
   )
 }
 
-function DiscoveryStep({ form }: { form: ProductForm }) {
+function TagsStep({ form }: { form: ProductForm }) {
   const {
     usageTags,
     availableTags,
@@ -828,59 +750,48 @@ function DiscoveryStep({ form }: { form: ProductForm }) {
   const suggestions = availableTags.filter((t) => !usageTags.includes(t))
 
   return (
-    <div className="flex flex-col gap-4">
-      <Field
+    <div className="flex flex-col">
+      <RuleField
         label="Usage tags"
         htmlFor="npm-tag"
-        counter={<span className="text-muted-foreground">optional</span>}
-        hint="Tags let shoppers find this by mood or occasion."
+        counter={<span className="text-faint">Optional</span>}
+        hint="Tags let shoppers find this by mood or occasion. Press return to add."
       >
-        <div className="flex gap-2">
-          <Input
-            id="npm-tag"
-            value={newTagInput}
-            onChange={(e) => setNewTagInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault()
-                addTag(newTagInput)
-              }
-            }}
-            placeholder="Diwali, gifting, living room…"
-            enterKeyHint="done"
-            className="h-11 min-w-0 flex-1 rounded-xl text-base"
-          />
-          <button
-            type="button"
-            onClick={() => addTag(newTagInput)}
-            disabled={!newTagInput.trim()}
-            aria-label="Add tag"
-            className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-foreground text-background transition-opacity active:opacity-90 disabled:opacity-35"
-          >
-            <Plus className="size-5" />
-          </button>
-        </div>
-      </Field>
+        <input
+          id="npm-tag"
+          value={newTagInput}
+          onChange={(e) => setNewTagInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault()
+              addTag(newTagInput)
+            }
+          }}
+          placeholder="Diwali, gifting, living room…"
+          enterKeyHint="done"
+          className="w-full bg-transparent p-0 text-[16px] tracking-[-0.01em] text-foreground outline-none placeholder:text-faint"
+        />
+      </RuleField>
 
       {usageTags.length > 0 && (
-        <div className="flex flex-col gap-2">
-          <h3 className="px-1 text-[11px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+        <div className="flex flex-col gap-2 border-b py-3.5">
+          <span className="font-mono text-[10px] uppercase tracking-[0.13em] text-faint">
             Added
-          </h3>
-          <div className="flex flex-wrap gap-2">
+          </span>
+          <div className="flex flex-wrap gap-1.5">
             {usageTags.map((tag) => (
               <span
                 key={tag}
-                className="inline-flex h-9 items-center gap-0.5 rounded-full bg-secondary pl-3 pr-1 text-[13px] font-medium text-foreground"
+                className="inline-flex h-[30px] items-center gap-0.5 rounded-sm border border-input pl-2.5 pr-1 text-[13px] text-foreground"
               >
                 {tag}
                 <button
                   type="button"
                   onClick={() => removeTag(tag)}
                   aria-label={`Remove ${tag}`}
-                  className="flex size-7 items-center justify-center rounded-full text-muted-foreground active:bg-foreground/10"
+                  className="grid size-[22px] place-items-center rounded-sm text-faint transition-colors active:bg-wash"
                 >
-                  <X className="size-3.5" />
+                  <X className="size-3" />
                 </button>
               </span>
             ))}
@@ -889,19 +800,19 @@ function DiscoveryStep({ form }: { form: ProductForm }) {
       )}
 
       {suggestions.length > 0 && (
-        <div className="flex flex-col gap-2">
-          <h3 className="px-1 text-[11px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
-            Suggestions
-          </h3>
-          <div className="flex flex-wrap gap-2">
+        <div className="flex flex-col gap-2 border-b py-3.5">
+          <span className="font-mono text-[10px] uppercase tracking-[0.13em] text-faint">
+            Suggested
+          </span>
+          <div className="flex flex-wrap gap-1.5">
             {suggestions.map((tag) => (
               <button
                 key={tag}
                 type="button"
                 onClick={() => setUsageTags((prev) => [...prev, tag])}
-                className="inline-flex h-9 items-center gap-1 rounded-full border border-dashed px-3 text-[13px] text-muted-foreground transition-colors active:bg-secondary"
+                className="inline-flex h-[30px] items-center gap-1 rounded-sm border border-dashed border-input px-2.5 text-[13px] text-muted-foreground transition-colors active:bg-wash"
               >
-                <Plus className="size-3.5" />
+                <Plus className="size-3" />
                 {tag}
               </button>
             ))}
@@ -909,32 +820,23 @@ function DiscoveryStep({ form }: { form: ProductForm }) {
         </div>
       )}
 
-      {usageTags.length === 0 && suggestions.length === 0 && (
-        <p className="px-1 text-[12.5px] text-muted-foreground">
-          No tags yet. Add a few to help shoppers discover this piece.
-        </p>
-      )}
-
-      {/* The decision the phone could not make before. */}
-      <Panel>
-        <div className="flex items-center gap-3 px-3.5 py-3">
-          <span className="flex min-w-0 flex-1 flex-col">
-            <span className="text-[14.5px] font-semibold text-foreground">
-              {isActive ? 'Publishes when created' : 'Saves as a draft'}
-            </span>
-            <span className="text-[12px] text-muted-foreground">
-              {isActive
-                ? 'Visible on the storefront straight away'
-                : 'Only you can see it until you publish'}
-            </span>
+      {/* The decision the phone could not make at all before. */}
+      <div className="flex items-center gap-3 border-b py-3.5">
+        <span className="min-w-0 flex-1">
+          <span className="block font-mono text-[10px] uppercase tracking-[0.13em] text-faint">
+            On create
           </span>
-          <Switch
-            checked={isActive}
-            onCheckedChange={setIsActive}
-            aria-label="Publish when created"
-          />
-        </div>
-      </Panel>
+          <span className="mt-0.5 block text-[14.5px] text-foreground">
+            {isActive ? 'Publish to the store' : 'Save as a draft'}
+          </span>
+        </span>
+        <Switch
+          size="lg"
+          checked={isActive}
+          onCheckedChange={setIsActive}
+          aria-label="Publish on create"
+        />
+      </div>
     </div>
   )
 }
@@ -942,9 +844,8 @@ function DiscoveryStep({ form }: { form: ProductForm }) {
 /* --------------------------------------------------------------- review */
 
 /**
- * The desktop's whole right column — preview, checklist, publish — plus the
- * Create button, as one sheet reachable from every step. It is the last screen
- * before the product exists, which is where the publish decision belongs.
+ * A record about to be committed, not a product card: label left, value right,
+ * anything missing in red with the row itself as the way to go and set it.
  */
 function ReviewSheet({
   form,
@@ -966,7 +867,6 @@ function ReviewSheet({
     isActive,
     setIsActive,
     sections,
-    tabMeta,
     requiredDone,
     requiredTotal,
     allRequiredDone,
@@ -977,136 +877,89 @@ function ReviewSheet({
 
   const cover = imageUrls[0]
 
-  const detail: Record<TabKey, string> = {
-    basics: sections.basics.complete ? name.trim() : 'Name required',
-    pricing: sections.pricing.complete
-      ? `${formatPrice(priceNum, currency)} · ${categoryLabel}`
-      : 'Price and category required',
-    media: sections.media.complete
-      ? `${imageUrls.length} ${imageUrls.length === 1 ? 'photo' : 'photos'}`
-      : 'At least one photo required',
-    discovery: usageTags.length ? usageTags.join(', ') : 'Optional',
+  const jump = (tab: TabKey) => () => {
+    setActiveTab(tab)
+    onOpenChange(false)
   }
 
+  const missing = (v: string) => <span className="text-destructive">{v}</span>
+
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent
-        side="bottom"
-        className="dashboard-shell max-h-[86vh] gap-0 overflow-y-auto rounded-t-2xl p-0"
-      >
-        <div className="flex justify-center pb-1 pt-2.5">
-          <span aria-hidden className="h-1 w-9 rounded-full bg-border" />
-        </div>
-
-        <div className="px-5 pb-3 pr-14 pt-1.5">
-          <SheetTitle className="text-[15px] font-semibold">Review</SheetTitle>
-          <SheetDescription className="text-[13px]">
-            {requiredDone} of {requiredTotal} required steps done
-          </SheetDescription>
-        </div>
-
-        <div className="px-4 pb-1">
-          <div className="flex gap-3 rounded-2xl bg-muted p-3">
-            <span className="flex size-[76px] shrink-0 items-center justify-center overflow-hidden rounded-xl border bg-background text-muted-foreground">
-              {cover ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={cover} alt="" className="size-full object-cover" />
-              ) : (
-                <ImageIcon className="size-5" />
-              )}
-            </span>
-            <span className="flex min-w-0 flex-1 flex-col gap-1">
-              <span className="truncate text-[15.5px] font-semibold tracking-[-0.015em] text-foreground">
-                {name.trim() || 'Untitled product'}
+    <ActionSheet
+      open={open}
+      onOpenChange={onOpenChange}
+      title="Review"
+      description={`${requiredDone} of ${requiredTotal} required steps done`}
+      dismissLabel="Close"
+      keepOpenOnSelect
+      groups={[
+        {
+          actions: [
+            {
+              id: 'name',
+              label: 'Name',
+              value: sections.basics.complete ? name.trim() : missing('Not set'),
+              onSelect: jump('basics'),
+            },
+            {
+              id: 'price',
+              label: 'Price',
+              value:
+                priceNum > 0 ? formatPrice(priceNum, currency) : missing('Not set'),
+              onSelect: jump('pricing'),
+            },
+            {
+              id: 'category',
+              label: 'Category',
+              value: categoryLabel ?? missing('Not set'),
+              onSelect: jump('pricing'),
+            },
+            {
+              id: 'stock',
+              label: 'Stock',
+              value: `${stockNum} units`,
+              onSelect: jump('pricing'),
+            },
+            {
+              id: 'photos',
+              label: 'Photos',
+              value: sections.media.complete
+                ? `${imageUrls.length} ${imageUrls.length === 1 ? 'photo' : 'photos'}`
+                : missing('None'),
+              onSelect: jump('media'),
+            },
+            {
+              id: 'tags',
+              label: 'Tags',
+              value: usageTags.length ? usageTags.join(', ') : 'None',
+              onSelect: jump('discovery'),
+            },
+          ],
+        },
+      ]}
+      footer={
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-3">
+            <span className="min-w-0 flex-1">
+              <span className="block text-[14.5px] text-foreground">
+                {isActive ? 'Publish on create' : 'Save as a draft'}
               </span>
-              <span className="text-[17px] font-bold tabular-nums tracking-tight text-foreground">
-                {formatPrice(priceNum, currency)}
-              </span>
-              <span className="truncate text-[12px] text-muted-foreground">
-                {categoryLabel ?? 'No category'} · {stockNum} in stock ·{' '}
-                {usageTags.length} {usageTags.length === 1 ? 'tag' : 'tags'}
-              </span>
-            </span>
-          </div>
-        </div>
-
-        <section className="px-4 pb-2">
-          <h3 className="px-1 pb-1.5 pt-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-            Checklist
-          </h3>
-          <ul className="overflow-hidden rounded-xl border bg-card">
-            {TAB_ORDER.map((key, i) => {
-              const complete = sections[key].complete
-              return (
-                <li key={key} className={cn(i > 0 && 'border-t')}>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setActiveTab(key)
-                      onOpenChange(false)
-                    }}
-                    className="flex min-h-[52px] w-full items-center gap-3 px-3.5 py-2 text-left transition-colors active:bg-secondary"
-                  >
-                    <span
-                      className={cn(
-                        'flex size-[21px] shrink-0 items-center justify-center rounded-full border-[1.5px]',
-                        complete
-                          ? 'border-emerald-500 bg-emerald-500 text-white'
-                          : 'border-border text-transparent'
-                      )}
-                    >
-                      <Check className="size-3" strokeWidth={3.5} />
-                    </span>
-                    <span className="flex min-w-0 flex-1 flex-col">
-                      <span className="truncate text-[14px] font-medium text-foreground">
-                        {STEP_LABEL[key]}
-                      </span>
-                      <span className="truncate text-[11.5px] text-muted-foreground">
-                        {detail[key]}
-                      </span>
-                    </span>
-                    {!complete && tabMeta[key].required && (
-                      <span className="shrink-0 text-[11px] font-semibold text-muted-foreground">
-                        Required
-                      </span>
-                    )}
-                    <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
-                  </button>
-                </li>
-              )
-            })}
-          </ul>
-        </section>
-
-        <section className="px-4 pb-2">
-          <h3 className="px-1 pb-1.5 pt-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-            When created
-          </h3>
-          <div className="flex items-center gap-3 rounded-xl border bg-card px-3.5 py-3">
-            <span className="flex min-w-0 flex-1 flex-col">
-              <span className="text-[14.5px] font-semibold text-foreground">
-                {isActive ? 'Publish to the store' : 'Save as a draft'}
-              </span>
-              <span className="text-[12px] text-muted-foreground">
-                {isActive
-                  ? 'Customers can see and buy it right away'
-                  : 'Only you can see it until you publish'}
+              <span className="block font-mono text-[10.5px] uppercase tracking-[0.1em] text-faint">
+                {isActive ? 'Visible to customers immediately' : 'Only you can see it'}
               </span>
             </span>
             <Switch
+              size="lg"
               checked={isActive}
               onCheckedChange={setIsActive}
-              aria-label="Publish when created"
+              aria-label="Publish on create"
             />
           </div>
-        </section>
-
-        <div className="px-4 pb-3 pt-1">
           <button
             type="button"
             onClick={() => void submit()}
             disabled={!allRequiredDone || submitting}
-            className="flex min-h-[52px] w-full items-center justify-center gap-2 rounded-xl bg-foreground text-[15px] font-semibold text-background transition-opacity active:opacity-90 disabled:opacity-35"
+            className="flex h-[46px] w-full items-center justify-center gap-2 rounded-md bg-primary text-[14.5px] font-medium text-primary-foreground transition-opacity active:opacity-90 disabled:opacity-30"
           >
             {submitting ? (
               <>
@@ -1114,23 +967,38 @@ function ReviewSheet({
                 Creating…
               </>
             ) : (
-              <>
-                <Check className="size-4" strokeWidth={2.6} />
-                Create product
-              </>
+              'Create product'
             )}
           </button>
         </div>
-
-        <div className="pb-safe" />
-      </SheetContent>
-    </Sheet>
+      }
+    >
+      <div className="flex items-start gap-3 border-b px-4 py-3.5">
+        <span className="grid size-[60px] shrink-0 place-items-center overflow-hidden rounded-lg border bg-wash text-faint">
+          {cover ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={cover} alt="" className="size-full object-cover" />
+          ) : (
+            <ImageIcon className="size-5" />
+          )}
+        </span>
+        <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+          <span className="truncate text-[15.5px] font-semibold tracking-[-0.015em] text-foreground">
+            {name.trim() || 'Untitled product'}
+          </span>
+          <span className="text-[20px] font-medium tracking-[-0.025em] tabular-nums text-foreground">
+            {formatPrice(priceNum, currency)}
+          </span>
+        </span>
+      </div>
+    </ActionSheet>
   )
 }
 
 /* ----------------------------------------------------------- primitives */
 
-function Field({
+/** A label, a value, and the hairline beneath that carries the focus state. */
+function RuleField({
   label,
   htmlFor,
   counter,
@@ -1144,89 +1012,100 @@ function Field({
   children: React.ReactNode
 }) {
   return (
-    <div className="flex flex-col gap-1.5">
-      <div className="flex items-baseline gap-2 px-0.5">
-        <Label
+    <div className="flex flex-col gap-1.5 border-b py-3.5 transition-colors focus-within:border-foreground">
+      <div className="flex items-baseline gap-3">
+        <label
           htmlFor={htmlFor}
-          className="text-[13px] font-semibold tracking-[-0.008em] text-foreground"
+          className="flex-1 font-mono text-[10px] uppercase tracking-[0.13em] text-faint"
         >
           {label}
-        </Label>
+        </label>
         {counter && (
-          <span className="ml-auto text-[11.5px] font-medium tabular-nums">{counter}</span>
+          <span className="font-mono text-[10px] tabular-nums">{counter}</span>
         )}
       </div>
       {children}
-      {hint && <p className="px-0.5 text-[12px] text-muted-foreground">{hint}</p>}
+      {hint && <p className="text-[12px] text-faint">{hint}</p>}
     </div>
   )
 }
 
-/** One filled surface with hairlines inside — never a column of boxes. */
-function Panel({
-  children,
-  className,
+function ValueRow({
+  label,
+  value,
+  unset,
+  hint,
+  onClick,
 }: {
-  children: React.ReactNode
-  className?: string
+  label: string
+  value: string
+  unset?: boolean
+  hint?: string
+  onClick: () => void
 }) {
   return (
-    <div
-      className={cn(
-        'divide-y divide-border/60 overflow-hidden rounded-2xl bg-muted',
-        className
-      )}
-    >
-      {children}
+    <div className="border-b">
+      <button
+        type="button"
+        onClick={onClick}
+        className="flex min-h-[54px] w-full items-center gap-3 py-2 text-left transition-colors active:bg-wash"
+      >
+        <span className="min-w-0 flex-1 text-[14.5px] text-foreground">{label}</span>
+        <span className={cn('shrink-0 text-[14px]', unset ? 'text-faint' : 'text-muted-foreground')}>
+          {value}
+        </span>
+        <ChevronRight className="size-[15px] shrink-0 text-faint" />
+      </button>
+      {hint && <p className="-mt-1 pb-3 text-[12px] text-faint">{hint}</p>}
     </div>
   )
 }
 
-function Disclosure({
-  title,
-  state,
+/** A value row that opens an editor beneath it, keeping the row grammar. */
+function ExpandRow({
+  label,
+  value,
+  unset,
   open,
   onToggle,
   children,
 }: {
-  title: string
-  state: string
+  label: string
+  value: string
+  unset?: boolean
   open: boolean
   onToggle: () => void
   children: React.ReactNode
 }) {
   return (
-    <div>
+    <div className="border-b">
       <button
         type="button"
         onClick={onToggle}
         aria-expanded={open}
-        className="flex min-h-[54px] w-full items-center gap-3 px-3.5 py-2 text-left transition-colors active:bg-secondary"
+        className="flex min-h-[54px] w-full items-center gap-3 py-2 text-left transition-colors active:bg-wash"
       >
-        <span className="flex min-w-0 flex-1 flex-col">
-          <span className="truncate text-[14.5px] font-medium text-foreground">{title}</span>
-          <span className="truncate text-[12px] text-muted-foreground">{state}</span>
+        <span className="min-w-0 flex-1 text-[14.5px] text-foreground">{label}</span>
+        <span className={cn('shrink-0 text-[14px]', unset ? 'text-faint' : 'text-muted-foreground')}>
+          {value}
         </span>
         <ChevronRight
           className={cn(
-            'size-4 shrink-0 text-muted-foreground transition-transform',
+            'size-[15px] shrink-0 text-faint transition-transform',
             open && 'rotate-90'
           )}
         />
       </button>
-      {open && <div className="px-3.5 pb-3.5">{children}</div>}
+      {open && <div className="pb-4">{children}</div>}
     </div>
   )
 }
 
 function UploadingTile({ progress }: { progress: number }) {
   return (
-    <div className="relative flex aspect-square flex-col items-center justify-center gap-2 rounded-[13px] border border-dashed bg-muted p-3 text-center">
-      <Loader2 className="size-5 animate-spin text-muted-foreground" />
-      <span className="text-[10.5px] font-semibold tabular-nums text-muted-foreground">
-        {progress}%
-      </span>
-      <span className="absolute inset-x-3 bottom-3 h-[3px] overflow-hidden rounded-full bg-background">
+    <div className="relative grid aspect-square place-items-center rounded-lg border border-dashed border-input">
+      <span className="font-mono text-[10px] tabular-nums text-faint">{progress}%</span>
+      <span className="absolute inset-x-2 bottom-2 h-0.5 overflow-hidden bg-border">
         <span
           className="block h-full bg-foreground transition-[width]"
           style={{ width: `${progress}%` }}
@@ -1241,27 +1120,28 @@ function UploadingTile({ progress }: { progress: number }) {
 export function NewProductMobileSkeleton() {
   return (
     <main className="flex flex-col">
-      <div className="-mx-4 -mt-5 border-b px-4 pb-3 pt-3 sm:-mx-6 sm:px-6">
-        <div className="flex gap-1.5">
+      <div className="-mx-4 -mt-5 border-b sm:-mx-6">
+        <div className="h-0.5 bg-border" />
+        <div className="flex">
           {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-[52px] flex-1 rounded-[13px]" />
+            <div key={i} className="flex flex-1 justify-center pb-2.5 pt-3">
+              <Skeleton className="h-2.5 w-12" />
+            </div>
           ))}
         </div>
-        <Skeleton className="mx-0.5 mt-2.5 h-[3px] rounded-full" />
       </div>
 
-      <div className="flex flex-col gap-4 pb-24 pt-4">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="flex flex-col gap-1.5">
-            <Skeleton className="h-3 w-28" />
-            <Skeleton className="h-11 w-full rounded-xl" />
+      <div className="flex flex-col pb-6">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="flex flex-col gap-2 border-b py-3.5">
+            <Skeleton className="h-2.5 w-20" />
+            <Skeleton className="h-5 w-3/4" />
           </div>
         ))}
-        <div className="flex flex-col gap-1.5">
-          <Skeleton className="h-3 w-32" />
-          <Skeleton className="h-[112px] w-full rounded-xl" />
+        <div className="flex items-center gap-3 border-b py-4">
+          <Skeleton className="h-4 w-32" />
+          <Skeleton className="ml-auto h-4 w-14" />
         </div>
-        <Skeleton className="h-[108px] w-full rounded-2xl" />
       </div>
     </main>
   )
@@ -1277,7 +1157,7 @@ export function NewProductMobileError({
 }) {
   return (
     <main className="flex flex-col items-center gap-3 px-6 py-16 text-center">
-      <span className="flex size-12 items-center justify-center rounded-full bg-destructive/10 text-destructive">
+      <span className="grid size-11 place-items-center rounded-lg border border-destructive/30 text-destructive">
         <Package className="size-5" />
       </span>
       <p className="text-[15px] font-semibold text-foreground">Unable to open this page</p>
@@ -1285,9 +1165,8 @@ export function NewProductMobileError({
       <button
         type="button"
         onClick={onBack}
-        className="mt-2 flex h-11 items-center gap-1.5 rounded-xl bg-foreground px-4 text-[14px] font-semibold text-background active:opacity-90"
+        className="mt-2 h-10 rounded-md border border-input px-4 text-[13.5px] font-medium transition-colors active:bg-wash"
       >
-        <Tags className="size-4" />
         Back to products
       </button>
     </main>

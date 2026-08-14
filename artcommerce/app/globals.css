@@ -18,26 +18,58 @@
    * The rest of the site keeps its existing look because it never uses
    * shadcn utility classes like bg-popover or text-foreground directly.
    */
+  /*
+   * The neutrals carry a slight cool cast rather than sitting on pure grey.
+   * A `0 0% x%` ramp is the thing that reads flat and unconsidered; the hue
+   * is small enough that nothing looks tinted, and it makes the ink, the
+   * rules and the washes read as one family.
+   */
   --background: 0 0% 100%;
-  --foreground: 0 0% 10.2%;
+  --foreground: 223 19% 7%;
   --card: 0 0% 100%;
-  --card-foreground: 0 0% 10.2%;
+  --card-foreground: 223 19% 7%;
   --popover: 0 0% 100%;
-  --popover-foreground: 0 0% 10.2%;
-  --primary: 0 0% 10.2%;
+  --popover-foreground: 223 19% 7%;
+  --primary: 223 19% 7%;
   --primary-foreground: 0 0% 98%;
-  --secondary: 0 0% 96.1%;
-  --secondary-foreground: 0 0% 10.2%;
-  --muted: 0 0% 96.1%;
-  --muted-foreground: 0 0% 40%;
-  --accent: 0 0% 96.1%;
-  --accent-foreground: 0 0% 10.2%;
-  --destructive: 0 72% 51%;
+  /* secondary is now a shade below muted, so `active:bg-secondary` on a
+     muted surface actually reads as a press. They used to be identical. */
+  --secondary: 217 20% 94%;
+  --secondary-foreground: 223 19% 7%;
+  --muted: 217 24% 96%;
+  --muted-foreground: 221 13% 46%;
+  --accent: 217 24% 96%;
+  --accent-foreground: 223 19% 7%;
+  --destructive: 4 76% 40%;
   --destructive-foreground: 0 0% 98%;
-  --border: 0 0% 89.8%;
-  --input: 0 0% 89.8%;
-  --ring: 0 0% 10.2%;
-  --radius: 0.625rem;
+  --border: 217 21% 93%;
+  /* Control borders sit a step stronger than the rules inside a list. */
+  --input: 217 19% 86%;
+  --ring: 223 19% 7%;
+
+  /*
+   * A radius ladder rather than one value: sm 8 / md 10 / lg 12 / xl 16.
+   * Thumbnails, chips and checkboxes take sm; inputs, buttons and steppers
+   * md; tiles and containers lg; sheets and the dock xl.
+   */
+  --radius: 0.75rem;
+
+  /* Added tokens ------------------------------------------------------ */
+  /* A rule inside a list, lighter than a control's border. */
+  --hairline: 217 21% 94%;
+  /* The near-white surface under column headers and sticky chrome. */
+  --wash: 210 33% 98%;
+  /* Third-level ink — mono micro-labels, indices, placeholder captions. */
+  --faint: 217 13% 64%;
+  /* Semantic pair, previously written as literal amber-500 / emerald-500
+     in eight files. Desaturated: a quantity that needs attention should
+     not be the brightest thing on the screen. */
+  --warning: 35 94% 36%;
+  --warning-foreground: 0 0% 100%;
+  --success: 155 90% 24%;
+  --success-foreground: 0 0% 100%;
+  /* One elevation, and only sheets get it. */
+  --shadow-sheet: 0 -14px 44px -20px hsl(223 19% 7% / 0.26);
 
   /* The dock is not a tab bar — it is a floating pill. Its container sits at
      bottom-0 with padding-bottom:14px and the pill itself is 58px tall
@@ -92,8 +124,12 @@
    emit, so this applies to every call site without touching page code.
    Two attribute selectors (0,2,0) outrank a single utility class (0,1,0),
    so cva's h-8/h-9 loses — which is what we want below 768px.
+
+   The bound is `lg`, not `md`: the dashboard swaps to its mobile component
+   trees at 1024px, so between 768 and 1023 a phone-shaped layout was being
+   drawn with desktop-sized controls.
    ────────────────────────────────────────────────────────────────────────── */
-@media (max-width: 767.98px) {
+@media (max-width: 1023.98px) {
   .dashboard-shell [data-slot="button"][data-size="default"],
   .auth-shell [data-slot="button"][data-size="default"] {
     height: 2.75rem; /* 44px */
@@ -174,6 +210,13 @@
   -ms-overflow-style: none;
 }
 .kk-no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* A screen that owns the bottom edge — the catalogue's select mode raises a
+   bulk bar there — hides the dock instead of stacking two bars. Set on
+   document.body by the screen, cleared when it unmounts. */
+body[data-hide-dock] [data-mobile-dock] {
   display: none;
 }
 

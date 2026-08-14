@@ -1,14 +1,17 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import {
   AlertTriangle,
+  ArrowDown,
+  ArrowUp,
+  Check,
   ExternalLink,
   Eye,
   EyeOff,
-  MoreHorizontal,
+  Minus,
+  MoreVertical,
   Package,
-  Pencil,
   Plus,
   Search,
   SlidersHorizontal,
@@ -18,13 +21,9 @@ import {
 } from "lucide-react"
 
 import { ActionSheet, type ActionSheetGroup } from "../../../_components/ActionSheet"
-import { DockSpacer, Group } from "../../../_components/overview/primitives"
 import {
   LOW_STOCK_THRESHOLD,
   formatPrice,
-  stockDot,
-  stockLabelShort,
-  stockTone,
   type Category,
   type Product,
 } from "./catalogue"
@@ -32,43 +31,51 @@ import { cn } from "@/lib/utils"
 import { Skeleton } from "@/components/ui/skeleton"
 
 /**
- * The catalogue as a phone screen rather than the desktop page folded in half.
+ * The catalogue as a table that happens to be 390 points wide.
  *
- * Three things drove the shape. The four stat cards cost ~160pt of the opening
- * view and none of them was tappable, so they are the filter rail now — the
- * same counts, a quarter of the height, and "6 low" is also the way to reach
- * those six. Search moved from seventh element to second, and sticks. And the
- * rows lost their card: page padding, a bordered Card and the list's own
- * padding left a row 326pt of a 390pt screen to draw a product in.
+ * Three moves separate this from a list of cards. Every figure lives in one
+ * right-aligned tabular column under a labelled header — an inventory screen
+ * you cannot scan a column of quantities on is not an inventory screen. That
+ * header is also the sort control, and the column shows whatever you sorted
+ * by, so there is one control and one place for the answer. And the four stat
+ * cards that used to cost ~160pt of the opening view are the facet strip now:
+ * the count and the route to what it counts are the same thing.
+ *
+ * Chrome is flat — hairlines, no blur, no floating cards. The only elevated
+ * surface in the screen is a sheet.
  */
 
-type StatusKey = "all" | "live" | "hidden" | "low" | "out"
-type SortKey = "updated" | "name" | "price" | "stock" | "sold"
+type FacetKey = "all" | "live" | "low" | "out"
+type SortKey = "stock" | "price" | "sold" | "name" | "updated"
+type SortDir = "asc" | "desc"
 
 const SORTS: { key: SortKey; label: string; description: string }[] = [
-  { key: "updated", label: "Recently updated", description: "What changed last" },
-  { key: "name", label: "Name A–Z", description: "Alphabetical" },
-  { key: "price", label: "Price, high to low", description: "Most valuable first" },
-  { key: "stock", label: "Stock, low to high", description: "What runs out next" },
-  { key: "sold", label: "Best selling", description: "Units sold to date" },
+  { key: "stock", label: "Stock", description: "What runs out next" },
+  { key: "price", label: "Price", description: "Most valuable first" },
+  { key: "sold", label: "Units sold", description: "Best selling to date" },
+  { key: "name", label: "Name", description: "Alphabetical" },
+  { key: "updated", label: "Updated", description: "What changed last" },
 ]
 
-function describeCount(n: number) {
-  return `${n} ${n === 1 ? "product" : "products"}`
+/** Sorts that read low-to-high first; the rest open descending. */
+const ASCENDING_FIRST: SortKey[] = ["stock", "name"]
+
+const FACETS: { key: FacetKey; label: string }[] = [
+  { key: "all", label: "All" },
+  { key: "live", label: "Live" },
+  { key: "low", label: "Low" },
+  { key: "out", label: "Out" },
+]
+
+function matchesFacet(p: Product, facet: FacetKey) {
+  if (facet === "live") return p.isActive
+  if (facet === "low") return p.stockQuantity > 0 && p.stockQuantity <= LOW_STOCK_THRESHOLD
+  if (facet === "out") return p.stockQuantity === 0
+  return true
 }
 
-/**
- * The heading names the view you are actually looking at. "Low" spells out its
- * threshold here, because the dashboard's attention queue counts five or fewer
- * and this list counts ten — the same word, two numbers, and no way to tell
- * from a chip alone which one you have.
- */
-const STATUS_HEADING: Record<StatusKey, string> = {
-  all: "All products",
-  live: "Live",
-  hidden: "Hidden",
-  low: `Low stock (≤${LOW_STOCK_THRESHOLD})`,
-  out: "Out of stock",
+function padId(id: number) {
+  return `#${String(id).padStart(2, "0")}`
 }
 
 export function ProductsMobile({
@@ -76,144 +83,153 @@ export function ProductsMobile({
   categories,
   onEdit,
   onToggleActive,
+  onSetStock,
   onDelete,
+  onBulk,
   onNew,
+  bulkPending,
 }: {
   products: Product[]
   categories: Category[]
   onEdit: (id: number) => void
   onToggleActive: (id: number, next: boolean) => void
+  onSetStock: (id: number, next: number) => void
   onDelete: (product: Product) => void
+  onBulk: (action: "publish" | "hide" | "delete", ids: number[]) => void
   onNew: () => void
+  bulkPending: boolean
 }) {
   const [query, setQuery] = useState("")
-  const [status, setStatus] = useState<StatusKey>("all")
+  const [facet, setFacet] = useState<FacetKey>("all")
   const [categoryId, setCategoryId] = useState<number | "all">("all")
-  const [sort, setSort] = useState<SortKey>("updated")
-  const [refineOpen, setRefineOpen] = useState(false)
-  // The row whose actions are showing. It is deliberately not cleared on close
-  // — the sheet animates out over 300ms, and emptying it first would blank the
-  // title and the action list on the way down.
-  const [actionTarget, setActionTarget] = useState<Product | null>(null)
-  const [actionsOpen, setActionsOpen] = useState(false)
+  const [sort, setSort] = useState<SortKey>("stock")
+  const [dir, setDir] = useState<SortDir>("asc")
 
-  function openActions(product: Product) {
-    setActionTarget(product)
-    setActionsOpen(true)
-  }
+  const [selecting, setSelecting] = useState(false)
+  const [picked, setPicked] = useState<Set<number>>(new Set())
 
-  const total = useMemo(
-    () => ({
-      all: products.length,
-      live: products.filter((p) => p.isActive).length,
-    }),
-    [products]
+  const [sortOpen, setSortOpen] = useState(false)
+  const [filterOpen, setFilterOpen] = useState(false)
+  const [rowOpen, setRowOpen] = useState(false)
+  /* Held by id, not by value: the sheet stays open while you tap the stepper,
+     so it has to read the product the list is holding now, not a snapshot. */
+  const [targetId, setTargetId] = useState<number | null>(null)
+  const target = useMemo(
+    () => (targetId === null ? null : products.find((p) => p.id === targetId) ?? null),
+    [products, targetId]
   )
 
-  /*
-   * Each facet counts what the *other* facet leaves standing: pick a category
-   * and the status chips report that category, not the whole catalogue. A chip
-   * reading "Low 6" above a list of two was the version that lied.
-   */
+  /* Select mode owns the bottom of the screen; the app-wide dock steps aside
+     rather than being covered by a bar it would paint over anyway. */
+  useEffect(() => {
+    if (!selecting) return
+    document.body.dataset.hideDock = "1"
+    return () => {
+      delete document.body.dataset.hideDock
+    }
+  }, [selecting])
+
+  /* Each facet counts what the other leaves standing: pick a category and the
+     strip reports that category, not the whole catalogue. */
   const counts = useMemo(() => {
     const scope =
       categoryId === "all" ? products : products.filter((p) => p.categoryId === categoryId)
-    let live = 0
-    let low = 0
-    let out = 0
-    for (const p of scope) {
-      if (p.isActive) live++
-      if (p.stockQuantity === 0) out++
-      else if (p.stockQuantity <= LOW_STOCK_THRESHOLD) low++
+    return {
+      all: scope.length,
+      live: scope.filter((p) => matchesFacet(p, "live")).length,
+      low: scope.filter((p) => matchesFacet(p, "low")).length,
+      out: scope.filter((p) => matchesFacet(p, "out")).length,
     }
-    return { all: scope.length, live, hidden: scope.length - live, low, out }
   }, [products, categoryId])
 
   const categoryCounts = useMemo(() => {
     const map = new Map<number | "all", number>()
     let all = 0
     for (const p of products) {
-      if (status === "live" && !p.isActive) continue
-      if (status === "hidden" && p.isActive) continue
-      if (status === "low" && !(p.stockQuantity > 0 && p.stockQuantity <= LOW_STOCK_THRESHOLD))
-        continue
-      if (status === "out" && p.stockQuantity !== 0) continue
+      if (!matchesFacet(p, facet)) continue
       all++
       if (p.categoryId != null) map.set(p.categoryId, (map.get(p.categoryId) ?? 0) + 1)
     }
     map.set("all", all)
     return map
-  }, [products, status])
+  }, [products, facet])
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase()
     const list = products.filter((p) => {
-      if (status === "live" && !p.isActive) return false
-      if (status === "hidden" && p.isActive) return false
-      if (status === "low" && !(p.stockQuantity > 0 && p.stockQuantity <= LOW_STOCK_THRESHOLD))
-        return false
-      if (status === "out" && p.stockQuantity !== 0) return false
+      if (!matchesFacet(p, facet)) return false
       if (categoryId !== "all" && p.categoryId !== categoryId) return false
       if (q && !p.name.toLowerCase().includes(q) && !p.slug.toLowerCase().includes(q)) return false
       return true
     })
-
-    // The API already returns updatedAt DESC, so "recently updated" is the
-    // order it arrived in — sorting it again would be a no-op at best.
-    if (sort === "updated") return list
+    const k = dir === "asc" ? 1 : -1
+    // "updated" is the order the API returned — updatedAt DESC.
     return [...list].sort((a, b) => {
-      if (sort === "name") return a.name.localeCompare(b.name)
-      if (sort === "price") return b.price - a.price
-      if (sort === "stock") return a.stockQuantity - b.stockQuantity
-      return b.totalSold - a.totalSold
+      if (sort === "stock") return (a.stockQuantity - b.stockQuantity) * k
+      if (sort === "price") return (a.price - b.price) * k
+      if (sort === "sold") return (a.totalSold - b.totalSold) * k
+      if (sort === "name") return a.name.localeCompare(b.name) * k
+      return (products.indexOf(a) - products.indexOf(b)) * k
     })
-  }, [products, query, status, categoryId, sort])
+  }, [products, query, facet, categoryId, sort, dir])
 
-  const activeCategory =
-    categoryId === "all" ? null : categories.find((c) => c.id === categoryId) ?? null
-  const refined = categoryId !== "all" || sort !== "updated"
-  const filtered = refined || status !== "all" || query.trim().length > 0
+  const categoryName = (id: number | null) =>
+    categories.find((c) => c.id === id)?.name ?? "Uncategorised"
 
-  const chips: { key: StatusKey; label: string; count: number }[] = [
-    { key: "all", label: "All", count: counts.all },
-    { key: "live", label: "Live", count: counts.live },
-    { key: "hidden", label: "Hidden", count: counts.hidden },
-    { key: "low", label: "Low", count: counts.low },
-    { key: "out", label: "Out", count: counts.out },
-  ]
+  const activeSort = SORTS.find((s) => s.key === sort)!
+  const refined = categoryId !== "all"
+  const pickedIds = [...picked]
 
-  const refineGroups: ActionSheetGroup[] = [
+  function togglePick(id: number) {
+    setPicked((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  function chooseSort(key: SortKey) {
+    if (key === sort) {
+      setDir((d) => (d === "asc" ? "desc" : "asc"))
+      return
+    }
+    setSort(key)
+    setDir(ASCENDING_FIRST.includes(key) ? "asc" : "desc")
+  }
+
+  function openRow(product: Product) {
+    setTargetId(product.id)
+    setRowOpen(true)
+  }
+
+  function leaveSelectMode() {
+    setSelecting(false)
+    setPicked(new Set())
+  }
+
+  const filterGroups: ActionSheetGroup[] = [
     {
       label: "Category",
       actions: [
         {
           id: "cat-all",
-          label: "All products",
-          description: describeCount(categoryCounts.get("all") ?? 0),
+          label: "All categories",
+          value: categoryCounts.get("all") ?? 0,
           selected: categoryId === "all",
           onSelect: () => setCategoryId("all"),
         },
         ...categories.map((c) => ({
           id: `cat-${c.id}`,
           label: c.name,
-          description: describeCount(categoryCounts.get(c.id) ?? 0),
+          value: categoryCounts.get(c.id) ?? 0,
           selected: categoryId === c.id,
           onSelect: () => setCategoryId(c.id),
         })),
       ],
     },
     {
-      label: "Sort by",
-      actions: SORTS.map((s) => ({
-        id: `sort-${s.key}`,
-        label: s.label,
-        description: s.description,
-        selected: sort === s.key,
-        onSelect: () => setSort(s.key),
-      })),
-    },
-    {
-      label: "Jump to",
+      label: "Elsewhere",
       actions: [
         {
           id: "rated",
@@ -225,7 +241,7 @@ export function ProductsMobile({
         {
           id: "restock",
           label: "Restock queue",
-          description: "Set stock without opening each product",
+          description: "Set stock in bulk",
           icon: AlertTriangle,
           href: "/dashboard/admin/products/low-stock",
         },
@@ -234,215 +250,220 @@ export function ProductsMobile({
   ]
 
   return (
-    <div className="flex flex-col gap-4">
-      <header className="flex items-start gap-3 px-0.5 pt-0.5">
-        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-          <h1 className="text-[30px] font-bold leading-[1.1] tracking-[-0.038em] text-foreground">
-            Products
-          </h1>
-          <p className="text-[13px] text-muted-foreground">
-            {total.all} {total.all === 1 ? "piece" : "pieces"} · {total.live} live
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={onNew}
-          className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-xl bg-foreground px-3.5 text-[13.5px] font-semibold tracking-[-0.01em] text-background transition-opacity active:opacity-80"
-        >
-          <Plus className="size-4" />
-          New
-        </button>
-      </header>
-
-      {/*
-        Sticky under the app bar, not under the top of the viewport: the
-        dashboard's MobileHeader is sticky at 0 and this would slide beneath it.
-        --mobile-header-total is that bar's height plus its rule and the notch.
-      */}
+    <div className="flex flex-col">
+      {/* Control surface. Sticky under the app bar, which is `sticky top-0`
+          itself — --mobile-header-total is its height plus rule and notch. */}
       <div
-        className="sticky z-20 -mx-4 bg-background/95 px-4 py-2 backdrop-blur supports-[backdrop-filter]:bg-background/80 sm:-mx-6 sm:px-6"
+        className="sticky z-20 -mx-4 -mt-5 border-b bg-background sm:-mx-6"
         style={{ top: "var(--mobile-header-total, 3.5rem)" }}
       >
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 px-4 py-2.5 sm:px-6">
           <div className="relative min-w-0 flex-1">
-            <Search className="pointer-events-none absolute left-3 top-1/2 size-[17px] -translate-y-1/2 text-muted-foreground" />
+            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-faint" />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search products"
-              aria-label="Search products"
+              placeholder="Search catalogue"
+              aria-label="Search catalogue"
               type="text"
               enterKeyHint="search"
               autoCapitalize="none"
               autoCorrect="off"
               spellCheck={false}
-              className="h-11 w-full rounded-xl border bg-muted pl-10 pr-9 text-[15px] text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-foreground focus:bg-background"
+              className="h-10 w-full rounded-md border border-input bg-background pl-9 pr-9 text-[14.5px] text-foreground outline-none transition-[border-color,box-shadow] placeholder:text-faint focus:border-foreground focus:shadow-[0_0_0_3px_hsl(var(--foreground)/0.07)]"
             />
             {query.length > 0 && (
               <button
                 type="button"
                 onClick={() => setQuery("")}
                 aria-label="Clear search"
-                className="absolute right-1 top-1/2 flex size-9 -translate-y-1/2 items-center justify-center rounded-full text-muted-foreground active:bg-secondary"
+                className="absolute right-1 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center rounded-sm text-faint transition-colors active:bg-wash"
               >
-                <X className="size-4" />
+                <X className="size-3.5" />
               </button>
             )}
           </div>
+
           <button
             type="button"
-            onClick={() => setRefineOpen(true)}
-            aria-label="Refine"
-            className="relative flex size-11 shrink-0 items-center justify-center rounded-xl border bg-muted text-foreground transition-colors active:bg-secondary"
+            onClick={() => setFilterOpen(true)}
+            aria-label="Filter"
+            className="relative flex size-10 shrink-0 items-center justify-center rounded-md border border-input text-foreground transition-colors active:bg-wash"
           >
             <SlidersHorizontal className="size-[18px]" />
             {refined && (
               <span
                 aria-hidden
-                className="absolute right-1.5 top-1.5 size-[7px] rounded-full border-[1.5px] border-background bg-foreground"
+                className="absolute -right-0.5 -top-0.5 size-[7px] rounded-full border-[1.5px] border-background bg-foreground"
               />
             )}
           </button>
+
+          <button
+            type="button"
+            onClick={onNew}
+            aria-label="New product"
+            className="flex size-10 shrink-0 items-center justify-center rounded-md border border-input text-foreground transition-colors active:bg-wash"
+          >
+            <Plus className="size-[18px]" />
+          </button>
+        </div>
+
+        {/* The stat cards, spent as filters. */}
+        <div
+          role="group"
+          aria-label="Filter by status"
+          className="kk-no-scrollbar flex gap-5 overflow-x-auto px-4 sm:px-6"
+        >
+          {FACETS.map((f) => {
+            const on = facet === f.key
+            return (
+              <button
+                key={f.key}
+                type="button"
+                onClick={() => setFacet(f.key)}
+                aria-pressed={on}
+                className={cn(
+                  "relative flex shrink-0 items-baseline gap-1.5 whitespace-nowrap pb-2.5 pt-0.5",
+                  "after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:rounded-t-full after:bg-foreground after:transition-opacity",
+                  on ? "after:opacity-100" : "after:opacity-0"
+                )}
+              >
+                <span
+                  className={cn(
+                    "font-mono text-[10px] uppercase tracking-[0.12em]",
+                    on ? "text-foreground" : "text-faint"
+                  )}
+                >
+                  {f.label}
+                </span>
+                <span
+                  className={cn(
+                    "text-[13px] tabular-nums",
+                    on ? "font-semibold text-foreground" : "font-medium text-muted-foreground"
+                  )}
+                >
+                  {counts[f.key]}
+                </span>
+              </button>
+            )
+          })}
         </div>
       </div>
 
-      {/* The stat cards, spent as filters. */}
-      <div
-        role="group"
-        aria-label="Filter by status"
-        className="kk-no-scrollbar -mx-4 -my-1 flex gap-1.5 overflow-x-auto px-4 py-1 sm:-mx-6 sm:px-6"
-      >
-        {chips.map((chip) => {
-          const on = status === chip.key
-          return (
-            <button
-              key={chip.key}
-              type="button"
-              onClick={() => setStatus(chip.key)}
-              aria-pressed={on}
-              className={cn(
-                "flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-[11px] px-3.5 text-[12.5px] font-semibold tracking-tight transition-colors",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-                on
-                  ? "bg-foreground text-background"
-                  : "bg-muted text-muted-foreground active:bg-secondary"
-              )}
-            >
-              {chip.label}
-              <span className={cn("tabular-nums", on ? "opacity-70" : "opacity-75")}>
-                {chip.count}
-              </span>
-            </button>
-          )
-        })}
-      </div>
-
-      <section className="flex flex-col gap-2.5">
-        <div className="flex items-baseline gap-2 px-1">
-          <h2 className="min-w-0 truncate text-[11px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
-            {activeCategory
-              ? status === "all"
-                ? activeCategory.name
-                : `${activeCategory.name} · ${STATUS_HEADING[status]}`
-              : STATUS_HEADING[status]}
-          </h2>
-          <span className="ml-auto shrink-0 text-xs font-semibold tabular-nums text-muted-foreground">
-            {visible.length} shown
-          </span>
-        </div>
-
-        <Group>
-          {visible.length === 0 ? (
-            <EmptyRow
-              filtered={filtered}
-              onClear={() => {
-                setQuery("")
-                setStatus("all")
-                setCategoryId("all")
-              }}
-              onNew={onNew}
-            />
-          ) : (
-            visible.map((product) => (
-              <ProductRow
-                key={product.id}
-                product={product}
-                onEdit={() => onEdit(product.id)}
-                onOpenActions={() => openActions(product)}
-              />
-            ))
+      {/* Column header — and the sort control. */}
+      <div className="-mx-4 flex items-center gap-2.5 border-b bg-wash px-4 py-2 sm:-mx-6 sm:px-6">
+        <span className="min-w-0 flex-1 font-mono text-[9.5px] uppercase tracking-[0.15em] text-faint">
+          Product
+        </span>
+        <button
+          type="button"
+          onClick={() => setSortOpen(true)}
+          className="inline-flex items-center gap-1 font-mono text-[9.5px] uppercase tracking-[0.15em] text-foreground"
+        >
+          {activeSort.label}
+          {dir === "asc" ? <ArrowUp className="size-3" /> : <ArrowDown className="size-3" />}
+        </button>
+        <button
+          type="button"
+          onClick={() => (selecting ? leaveSelectMode() : setSelecting(true))}
+          className={cn(
+            "border-l border-input pl-2.5 font-mono text-[9.5px] uppercase tracking-[0.15em] transition-colors",
+            selecting ? "text-foreground" : "text-faint"
           )}
-        </Group>
-      </section>
+        >
+          {selecting ? "Done" : "Select"}
+        </button>
+      </div>
 
-      <DockSpacer />
+      {/* Rows */}
+      <div className="-mx-4 sm:-mx-6">
+        {visible.length === 0 ? (
+          <EmptyState
+            filtered={facet !== "all" || refined || query.trim().length > 0}
+            onClear={() => {
+              setQuery("")
+              setFacet("all")
+              setCategoryId("all")
+            }}
+            onNew={onNew}
+          />
+        ) : (
+          visible.map((product) => (
+            <ProductRow
+              key={product.id}
+              product={product}
+              sort={sort}
+              categoryName={categoryName(product.categoryId)}
+              selecting={selecting}
+              picked={picked.has(product.id)}
+              onOpen={() =>
+                selecting ? togglePick(product.id) : onEdit(product.id)
+              }
+              onActions={() => openRow(product)}
+            />
+          ))
+        )}
+      </div>
+
+      {/* Clears the dock, or the bulk bar when selecting. */}
+      <div className={cn("shrink-0", selecting ? "h-24" : "h-6")} />
+
+      {selecting && (
+        <BulkBar
+          count={pickedIds.length}
+          pending={bulkPending}
+          onAction={(action) => {
+            onBulk(action, pickedIds)
+            leaveSelectMode()
+          }}
+        />
+      )}
 
       <ActionSheet
-        open={refineOpen}
-        onOpenChange={setRefineOpen}
-        title="Refine"
-        description="Category, order and shortcuts"
-        groups={refineGroups}
-        keepOpenOnSelect
+        open={sortOpen}
+        onOpenChange={setSortOpen}
+        title="Sort by"
+        description="The right-hand column follows this"
         dismissLabel="Done"
+        keepOpenOnSelect
+        groups={[
+          {
+            actions: SORTS.map((s) => ({
+              id: `sort-${s.key}`,
+              label: s.label,
+              description: s.description,
+              value:
+                sort === s.key ? (dir === "asc" ? "Low → high" : "High → low") : undefined,
+              selected: sort === s.key,
+              onSelect: () => chooseSort(s.key),
+            })),
+          },
+        ]}
       />
 
       <ActionSheet
-        open={actionsOpen}
-        onOpenChange={setActionsOpen}
-        title={actionTarget?.name || "Untitled product"}
-        description={
-          actionTarget
-            ? `${formatPrice(actionTarget.price, actionTarget.currency)} · ${stockLabelShort(
-                actionTarget.stockQuantity
-              )} · ${actionTarget.totalSold.toLocaleString("en-IN")} sold`
-            : undefined
+        open={filterOpen}
+        onOpenChange={setFilterOpen}
+        title="Filter"
+        description="Category and shortcuts"
+        dismissLabel="Done"
+        keepOpenOnSelect
+        headAction={
+          refined ? { label: "Reset", onSelect: () => setCategoryId("all") } : undefined
         }
-        groups={
-          actionTarget
-            ? [
-                {
-                  actions: [
-                    {
-                      id: "edit",
-                      label: "Edit product",
-                      description: "Photos, price, stock and copy",
-                      icon: Pencil,
-                      onSelect: () => onEdit(actionTarget.id),
-                    },
-                    {
-                      id: "toggle",
-                      label: actionTarget.isActive ? "Hide from store" : "Publish to store",
-                      description: actionTarget.isActive
-                        ? "Customers stop seeing it"
-                        : "Customers can see and buy it",
-                      icon: actionTarget.isActive ? EyeOff : Eye,
-                      onSelect: () => onToggleActive(actionTarget.id, !actionTarget.isActive),
-                    },
-                    {
-                      id: "view",
-                      label: "View on storefront",
-                      description: "Open the customer's page",
-                      icon: ExternalLink,
-                      href: `/products/${actionTarget.id}`,
-                    },
-                  ],
-                },
-                {
-                  actions: [
-                    {
-                      id: "delete",
-                      label: "Delete product",
-                      description: "Permanent — cannot be undone",
-                      icon: Trash2,
-                      destructive: true,
-                      onSelect: () => onDelete(actionTarget),
-                    },
-                  ],
-                },
-              ]
-            : []
-        }
+        groups={filterGroups}
+      />
+
+      <RowSheet
+        open={rowOpen}
+        onOpenChange={setRowOpen}
+        product={target}
+        categoryName={target ? categoryName(target.categoryId) : ""}
+        onSetStock={onSetStock}
+        onToggleActive={onToggleActive}
+        onEdit={onEdit}
+        onDelete={onDelete}
       />
     </div>
   )
@@ -450,88 +471,330 @@ export function ProductsMobile({
 
 /* ---------------------------------------------------------------- row */
 
-/**
- * 52pt photo, name, then price and stock on one meta line. The whole left side
- * is the edit target — editing is what an admin opened the list to do — and the
- * ⋯ column keeps its own 46pt lane so the two never fight for the same tap.
- */
 function ProductRow({
   product,
-  onEdit,
-  onOpenActions,
+  sort,
+  categoryName,
+  selecting,
+  picked,
+  onOpen,
+  onActions,
 }: {
   product: Product
-  onEdit: () => void
-  onOpenActions: () => void
+  sort: SortKey
+  categoryName: string
+  selecting: boolean
+  picked: boolean
+  onOpen: () => void
+  onActions: () => void
 }) {
   const cover = product.imageUrls?.[0]
+  const stock = product.stockQuantity
+  const tone =
+    stock === 0 ? "bad" : stock <= LOW_STOCK_THRESHOLD ? "warn" : "plain"
+
+  /* The right column is the sort key; the meta line carries what it is not
+     showing, so the same two facts are always on the row either way. */
+  const showingStock = sort !== "price" && sort !== "sold"
+  const value =
+    sort === "price"
+      ? formatPrice(product.price, product.currency)
+      : sort === "sold"
+      ? product.totalSold.toLocaleString("en-IN")
+      : String(stock)
+
+  const meta = [
+    padId(product.id),
+    categoryName.toUpperCase(),
+    showingStock
+      ? formatPrice(product.price, product.currency)
+      : stock === 0
+      ? "OUT OF STOCK"
+      : `${stock} IN STOCK`,
+  ].join(" · ")
 
   return (
-    <div className="flex items-stretch">
+    <div className="relative flex min-h-[58px] items-center gap-2.5 px-4 transition-colors active:bg-wash sm:px-6">
       <button
         type="button"
-        onClick={onEdit}
-        className="flex min-w-0 flex-1 items-center gap-3 px-3 py-2.5 text-left transition-colors active:bg-secondary"
+        onClick={onOpen}
+        className="flex min-w-0 flex-1 items-center gap-2.5 py-2 text-left"
+        aria-pressed={selecting ? picked : undefined}
       >
+        {selecting && (
+          <span
+            className={cn(
+              "flex size-[19px] shrink-0 items-center justify-center rounded-sm border transition-colors",
+              picked
+                ? "border-foreground bg-foreground text-background"
+                : "border-input text-transparent"
+            )}
+          >
+            <Check className="size-3" strokeWidth={3.5} />
+          </span>
+        )}
+
         <span
           className={cn(
-            "flex size-[52px] shrink-0 items-center justify-center overflow-hidden rounded-[13px] border bg-background",
+            "flex size-[38px] shrink-0 items-center justify-center overflow-hidden rounded-sm border bg-wash",
             !product.isActive && "opacity-45"
           )}
         >
           {cover ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={cover}
-              alt=""
-              loading="lazy"
-              className="size-full object-cover"
-            />
+            <img src={cover} alt="" loading="lazy" className="size-full object-cover" />
           ) : (
-            <Package className="size-4 text-muted-foreground" />
+            <Package className="size-4 text-faint" />
           )}
         </span>
 
         <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-          <span className="flex min-w-0 items-center gap-1.5">
-            <span className="min-w-0 truncate text-[15px] font-semibold tracking-[-0.012em] text-foreground">
+          <span className="flex min-w-0 items-baseline gap-2">
+            <span
+              className={cn(
+                "min-w-0 truncate text-[14px] font-medium tracking-[-0.008em]",
+                product.isActive ? "text-foreground" : "text-muted-foreground"
+              )}
+            >
               {product.name || "Untitled product"}
             </span>
             {!product.isActive && (
-              <span className="shrink-0 rounded-full border bg-secondary px-1.5 py-px text-[10.5px] font-semibold text-muted-foreground">
+              <span className="shrink-0 font-mono text-[9px] uppercase tracking-[0.13em] text-faint">
                 Hidden
               </span>
             )}
           </span>
-          <span className="flex min-w-0 items-center gap-1.5 overflow-hidden whitespace-nowrap text-[12.5px] text-muted-foreground">
-            <span className="font-semibold tabular-nums text-foreground">
-              {formatPrice(product.price, product.currency)}
-            </span>
-            <span aria-hidden>·</span>
+          <span className="truncate font-mono text-[10.5px] tracking-[0.02em] text-faint">
+            {meta}
+          </span>
+        </span>
+
+        <span className="flex shrink-0 items-center gap-1.5">
+          {showingStock && tone !== "plain" && (
             <span
               aria-hidden
-              className={cn("size-1.5 shrink-0 rounded-full", stockDot(product.stockQuantity))}
+              className={cn(
+                "size-[5px] rounded-full",
+                tone === "bad" ? "bg-destructive" : "bg-warning"
+              )}
             />
-            <span className={cn("truncate", stockTone(product.stockQuantity))}>
-              {stockLabelShort(product.stockQuantity)}
-            </span>
+          )}
+          <span
+            className={cn(
+              "min-w-[26px] text-right text-[14px] font-medium tabular-nums",
+              showingStock && tone === "bad"
+                ? "text-destructive"
+                : showingStock && tone === "warn"
+                ? "text-warning"
+                : "text-foreground"
+            )}
+          >
+            {value}
           </span>
         </span>
       </button>
 
-      <button
-        type="button"
-        onClick={onOpenActions}
-        aria-label={`Actions for ${product.name || "this product"}`}
-        className="flex w-[46px] shrink-0 items-center justify-center border-l text-muted-foreground transition-colors active:bg-secondary"
-      >
-        <MoreHorizontal className="size-5" />
-      </button>
+      {!selecting && (
+        <button
+          type="button"
+          onClick={onActions}
+          aria-label={`Actions for ${product.name || "this product"}`}
+          className="-mr-2 flex h-[58px] w-9 shrink-0 items-center justify-center text-faint transition-colors active:text-foreground"
+        >
+          <MoreVertical className="size-4" />
+        </button>
+      )}
+
+      <span
+        aria-hidden
+        className={cn(
+          "absolute bottom-0 right-0 h-px bg-hairline",
+          selecting ? "left-[86px]" : "left-[66px]"
+        )}
+      />
     </div>
   )
 }
 
-function EmptyRow({
+/* -------------------------------------------------------------- sheets */
+
+/**
+ * Nobody rewrites product copy on a phone; they correct a count after a
+ * delivery. So the sheet opens on the number itself.
+ */
+function RowSheet({
+  open,
+  onOpenChange,
+  product,
+  categoryName,
+  onSetStock,
+  onToggleActive,
+  onEdit,
+  onDelete,
+}: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  product: Product | null
+  categoryName: string
+  onSetStock: (id: number, next: number) => void
+  onToggleActive: (id: number, next: boolean) => void
+  onEdit: (id: number) => void
+  onDelete: (product: Product) => void
+}) {
+  if (!product) {
+    return (
+      <ActionSheet open={open} onOpenChange={onOpenChange} title="" groups={[]} />
+    )
+  }
+
+  return (
+    <ActionSheet
+      open={open}
+      onOpenChange={onOpenChange}
+      title={product.name || "Untitled product"}
+      description={`${padId(product.id)} · ${categoryName}`}
+      dismissLabel="Done"
+      keepOpenOnSelect
+      groups={[
+        {
+          actions: [
+            {
+              id: "toggle",
+              label: product.isActive ? "Hide from store" : "Publish to store",
+              description: product.isActive
+                ? "Live · visible to customers"
+                : "Hidden · not on the storefront",
+              icon: product.isActive ? EyeOff : Eye,
+              onSelect: () => onToggleActive(product.id, !product.isActive),
+            },
+            {
+              id: "edit",
+              label: "Edit details",
+              description: "Name · copy · photos · price",
+              onSelect: () => {
+                onOpenChange(false)
+                onEdit(product.id)
+              },
+            },
+            {
+              id: "view",
+              label: "Open on storefront",
+              description: "The customer's page",
+              icon: ExternalLink,
+              href: `/products/${product.id}`,
+            },
+            {
+              id: "delete",
+              label: "Delete product",
+              description: "Cannot be undone",
+              icon: Trash2,
+              destructive: true,
+              onSelect: () => {
+                onOpenChange(false)
+                onDelete(product)
+              },
+            },
+          ],
+        },
+      ]}
+    >
+      <div className="flex items-center gap-3 border-b px-4 py-3">
+        <span className="min-w-0 flex-1">
+          <span className="block text-[14.5px] text-foreground">Stock on hand</span>
+          <span className="block font-mono text-[10.5px] uppercase tracking-[0.1em] text-faint">
+            {product.stockQuantity === 0
+              ? "Out of stock"
+              : product.stockQuantity <= LOW_STOCK_THRESHOLD
+              ? `Low · at or under ${LOW_STOCK_THRESHOLD}`
+              : "In stock"}
+          </span>
+        </span>
+        <span className="flex h-[38px] shrink-0 items-stretch overflow-hidden rounded-md border border-input">
+          <button
+            type="button"
+            aria-label="One fewer"
+            disabled={product.stockQuantity <= 0}
+            onClick={() => onSetStock(product.id, Math.max(0, product.stockQuantity - 1))}
+            className="grid w-10 place-items-center text-foreground transition-colors active:bg-wash disabled:opacity-35"
+          >
+            <Minus className="size-[15px]" />
+          </button>
+          <span className="grid w-12 place-items-center border-x border-input text-[14px] font-medium tabular-nums">
+            {product.stockQuantity}
+          </span>
+          <button
+            type="button"
+            aria-label="One more"
+            onClick={() => onSetStock(product.id, product.stockQuantity + 1)}
+            className="grid w-10 place-items-center text-foreground transition-colors active:bg-wash"
+          >
+            <Plus className="size-[15px]" />
+          </button>
+        </span>
+      </div>
+    </ActionSheet>
+  )
+}
+
+function BulkBar({
+  count,
+  pending,
+  onAction,
+}: {
+  count: number
+  pending: boolean
+  onAction: (action: "publish" | "hide" | "delete") => void
+}) {
+  const disabled = count === 0 || pending
+  return (
+    <div className="fixed inset-x-0 bottom-0 z-30 border-t border-input bg-background pb-safe lg:hidden">
+      <div className="flex items-center gap-2 px-4 py-2.5">
+        <span className="flex-1 font-mono text-[10px] uppercase tracking-[0.13em] text-faint">
+          {pending ? "Working…" : `${count} selected`}
+        </span>
+        <BulkButton disabled={disabled} onClick={() => onAction("publish")}>
+          Publish
+        </BulkButton>
+        <BulkButton disabled={disabled} onClick={() => onAction("hide")}>
+          Hide
+        </BulkButton>
+        <BulkButton disabled={disabled} destructive onClick={() => onAction("delete")}>
+          Delete
+        </BulkButton>
+      </div>
+    </div>
+  )
+}
+
+function BulkButton({
+  children,
+  onClick,
+  disabled,
+  destructive,
+}: {
+  children: React.ReactNode
+  onClick: () => void
+  disabled: boolean
+  destructive?: boolean
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={cn(
+        "h-9 shrink-0 rounded-md border px-3 text-[13px] font-medium transition-colors disabled:opacity-35",
+        destructive
+          ? "border-destructive/30 text-destructive active:bg-destructive/5"
+          : "border-input text-foreground active:bg-wash"
+      )}
+    >
+      {children}
+    </button>
+  )
+}
+
+function EmptyState({
   filtered,
   onClear,
   onNew,
@@ -541,24 +804,24 @@ function EmptyRow({
   onNew: () => void
 }) {
   return (
-    <div className="flex flex-col items-center gap-2.5 px-6 py-10 text-center">
-      <span className="flex size-11 items-center justify-center rounded-full bg-secondary text-muted-foreground">
-        <Package className="size-5" />
+    <div className="flex flex-col items-center gap-2 px-6 py-14 text-center">
+      <span className="font-mono text-[10px] uppercase tracking-[0.13em] text-faint">
+        {filtered ? "No match" : "Empty"}
       </span>
       <p className="text-[15px] font-semibold text-foreground">
-        {filtered ? "Nothing matches" : "No products yet"}
+        {filtered ? "Nothing in this view" : "No products yet"}
       </p>
-      <p className="max-w-[32ch] text-[13px] text-muted-foreground">
+      <p className="max-w-[30ch] text-[13px] text-muted-foreground">
         {filtered
-          ? "Try another filter, or clear the search."
+          ? "Clear the search, or widen the filter."
           : "Add your first piece and it will show up here."}
       </p>
       <button
         type="button"
         onClick={filtered ? onClear : onNew}
-        className="mt-1 flex h-9 items-center gap-1.5 rounded-[11px] bg-foreground px-3.5 text-[12.5px] font-semibold text-background active:opacity-80"
+        className="mt-1.5 h-9 rounded-md border border-input px-3.5 text-[13px] font-medium transition-colors active:bg-wash"
       >
-        {filtered ? "Clear filters" : "Add a product"}
+        {filtered ? "Reset" : "Add a product"}
       </button>
     </div>
   )
@@ -568,45 +831,39 @@ function EmptyRow({
 
 export function ProductsMobileSkeleton() {
   return (
-    <div className="flex flex-col gap-4">
-      <header className="flex items-start gap-3 px-0.5 pt-0.5">
-        <div className="flex min-w-0 flex-1 flex-col gap-2">
-          <Skeleton className="h-8 w-40" />
-          <Skeleton className="h-3.5 w-32" />
+    <div className="flex flex-col">
+      <div className="-mx-4 -mt-5 border-b sm:-mx-6">
+        <div className="flex items-center gap-2 px-4 py-2.5 sm:px-6">
+          <Skeleton className="h-10 flex-1 rounded-md" />
+          <Skeleton className="size-10 shrink-0 rounded-md" />
+          <Skeleton className="size-10 shrink-0 rounded-md" />
         </div>
-        <Skeleton className="h-10 w-[74px] rounded-xl" />
-      </header>
-
-      <div className="flex items-center gap-2 py-2">
-        <Skeleton className="h-11 flex-1 rounded-xl" />
-        <Skeleton className="size-11 shrink-0 rounded-xl" />
+        <div className="flex gap-5 px-4 pb-2.5 sm:px-6">
+          {[42, 46, 42, 42].map((w, i) => (
+            <Skeleton key={i} className="h-4" style={{ width: w }} />
+          ))}
+        </div>
       </div>
 
-      <div className="flex gap-1.5">
-        {[62, 72, 84, 66, 62].map((w, i) => (
-          <Skeleton key={i} className="h-9 shrink-0 rounded-[11px]" style={{ width: w }} />
+      <div className="-mx-4 flex items-center gap-2.5 border-b bg-wash px-4 py-2 sm:-mx-6 sm:px-6">
+        <Skeleton className="h-2.5 w-16" />
+        <Skeleton className="ml-auto h-2.5 w-12" />
+      </div>
+
+      <div className="-mx-4 sm:-mx-6">
+        {Array.from({ length: 9 }).map((_, i) => (
+          <div key={i} className="flex min-h-[58px] items-center gap-2.5 border-b border-hairline px-4 sm:px-6">
+            <Skeleton className="size-[38px] shrink-0 rounded-sm" />
+            <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+              <Skeleton className="h-3 w-1/2" />
+              <Skeleton className="h-2.5 w-2/3" />
+            </div>
+            <Skeleton className="h-3.5 w-7 shrink-0" />
+          </div>
         ))}
       </div>
 
-      <section className="flex flex-col gap-2.5">
-        <div className="flex items-baseline px-1">
-          <Skeleton className="h-3 w-24" />
-          <Skeleton className="ml-auto h-3 w-14" />
-        </div>
-        <Group>
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="flex items-center gap-3 px-3 py-2.5">
-              <Skeleton className="size-[52px] shrink-0 rounded-[13px]" />
-              <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-                <Skeleton className="h-3.5 w-3/5" />
-                <Skeleton className="h-3 w-2/5" />
-              </div>
-            </div>
-          ))}
-        </Group>
-      </section>
-
-      <DockSpacer />
+      <div className="h-6" />
     </div>
   )
 }

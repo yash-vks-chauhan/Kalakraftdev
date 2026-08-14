@@ -2,7 +2,7 @@
 
 import { Fragment, type ReactNode } from "react"
 import Link from "next/link"
-import { Check, Loader2, type LucideIcon } from "lucide-react"
+import { Check, ChevronRight, Loader2, type LucideIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import {
@@ -16,8 +16,10 @@ export interface SheetAction {
   id: string
   label: string
   icon?: LucideIcon
-  /** Secondary line under the label. */
+  /** Secondary line under the label. Rendered as a mono micro-label. */
   description?: string
+  /** Right-aligned value — a count, a current setting. */
+  value?: ReactNode
   /** Renders as a link instead of a button. */
   href?: string
   onSelect?: () => void
@@ -43,20 +45,30 @@ interface ActionSheetProps {
   /** Keep the sheet open after a selection (e.g. while a save is in flight). */
   keepOpenOnSelect?: boolean
   /**
-   * Word on the closing button. "Cancel" is right when every row commits
+   * Word on the closing control. "Cancel" is right when every row commits
    * something; a sheet whose rows apply as you tap them — the catalogue's
    * filters — has nothing to cancel and says "Done" instead.
    */
   dismissLabel?: string
+  /** Extra control on the head row, left of the dismiss word (e.g. "Reset"). */
+  headAction?: { label: string; onSelect: () => void }
+  /** Rendered above the rows — a stock stepper, a summary. */
+  children?: ReactNode
+  /** Pinned below the rows. */
+  footer?: ReactNode
 }
 
 /**
- * Bottom action sheet for row-level admin actions.
+ * Bottom sheet for row-level admin actions.
  *
- * On desktop each table row can afford three or four inline buttons; on a
- * phone that same row became a horizontal scroll of 32px targets. Collapsing
- * them behind one "⋯" and presenting them here gives every action a full-width
- * 52px target and room for a label, so nothing has to be guessed from an icon.
+ * On desktop a table row affords three or four inline buttons; on a phone that
+ * became a horizontal scroll of 32px targets. Collapsing them behind one "⋯"
+ * and presenting them here gives every action a 52px target and room for a
+ * label, so nothing has to be guessed from an icon.
+ *
+ * Drawn in the catalogue's language: hairline-separated rows on white rather
+ * than bordered cards floating on a wash. A sheet is the only elevated surface
+ * in the app, so it is the only one carrying a shadow.
  */
 export function ActionSheet({
   open,
@@ -66,6 +78,9 @@ export function ActionSheet({
   groups,
   keepOpenOnSelect = false,
   dismissLabel = "Cancel",
+  headAction,
+  children,
+  footer,
 }: ActionSheetProps) {
   const handleSelect = (action: SheetAction) => {
     if (action.disabled || action.pending) return
@@ -77,40 +92,61 @@ export function ActionSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="bottom"
-        className="dashboard-shell max-h-[85vh] gap-0 overflow-y-auto rounded-t-2xl p-0"
+        showClose={false}
+        className="dashboard-shell max-h-[86vh] gap-0 overflow-hidden rounded-t-xl border-t-hairline p-0 shadow-sheet"
       >
-        <div className="flex justify-center pb-1 pt-2.5">
-          <span aria-hidden className="h-1 w-9 rounded-full bg-border" />
-        </div>
+        {/* The grabber is the affordance for drag-to-dismiss. */}
+        <span
+          aria-hidden
+          className="mx-auto mt-2 h-1 w-9 shrink-0 rounded-full bg-input"
+        />
 
-        {/* pr-14 clears SheetContent's built-in close button (top-4 right-4),
-            which would otherwise sit on top of a truncated title. */}
-        <div className="px-5 pb-3 pr-14 pt-1.5">
-          <SheetTitle className="truncate text-[15px] font-semibold">
-            {title}
-          </SheetTitle>
-          {description ? (
-            <SheetDescription className="truncate text-[13px]">
-              {description}
-            </SheetDescription>
-          ) : (
-            <SheetDescription className="sr-only">
-              Available actions
-            </SheetDescription>
+        <div className="flex shrink-0 items-baseline gap-3 border-b px-4 pb-3 pt-3.5">
+          <div className="min-w-0 flex-1">
+            <SheetTitle className="truncate text-[15px] font-semibold tracking-[-0.012em]">
+              {title}
+            </SheetTitle>
+            {description ? (
+              <SheetDescription className="truncate font-mono text-[10.5px] uppercase tracking-[0.1em] text-faint">
+                {description}
+              </SheetDescription>
+            ) : (
+              <SheetDescription className="sr-only">
+                Available actions
+              </SheetDescription>
+            )}
+          </div>
+          {headAction && (
+            <button
+              type="button"
+              onClick={headAction.onSelect}
+              className="shrink-0 py-1 font-mono text-[10px] uppercase tracking-[0.13em] text-muted-foreground transition-colors active:text-foreground"
+            >
+              {headAction.label}
+            </button>
           )}
+          <button
+            type="button"
+            onClick={() => onOpenChange(false)}
+            className="shrink-0 py-1 font-mono text-[10px] uppercase tracking-[0.13em] text-foreground"
+          >
+            {dismissLabel}
+          </button>
         </div>
 
-        {groups.map((group, gi) => (
-          <Fragment key={group.label ?? gi}>
-            <section className="px-4 pb-2">
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          {children}
+
+          {groups.map((group, gi) => (
+            <Fragment key={group.label ?? gi}>
               {group.label && (
-                <h3 className="px-1 pb-1.5 pt-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                <h3 className="px-4 pb-1.5 pt-4 font-mono text-[10px] uppercase tracking-[0.13em] text-faint">
                   {group.label}
                 </h3>
               )}
-              <ul className="overflow-hidden rounded-xl border bg-card">
-                {group.actions.map((action, ai) => (
-                  <li key={action.id} className={cn(ai > 0 && "border-t")}>
+              <ul>
+                {group.actions.map((action) => (
+                  <li key={action.id}>
                     <ActionRow
                       action={action}
                       onSelect={() => handleSelect(action)}
@@ -118,21 +154,18 @@ export function ActionSheet({
                   </li>
                 ))}
               </ul>
-            </section>
-          </Fragment>
-        ))}
+            </Fragment>
+          ))}
 
-        <div className="px-4 pb-3 pt-1">
-          <button
-            type="button"
-            onClick={() => onOpenChange(false)}
-            className="flex min-h-[52px] w-full items-center justify-center rounded-xl border bg-card text-[15px] font-semibold text-foreground transition-colors active:bg-secondary"
-          >
-            {dismissLabel}
-          </button>
+          {/* Clears the home indicator when there is no footer. */}
+          {!footer && <div className="h-4 pb-safe" />}
         </div>
 
-        <div className="pb-safe" />
+        {footer && (
+          <div className="shrink-0 border-t px-4 pb-safe pt-3">
+            <div className="pb-3">{footer}</div>
+          </div>
+        )}
       </SheetContent>
     </Sheet>
   )
@@ -150,46 +183,48 @@ function ActionRow({
 
   const inner = (
     <>
-      {Icon && (
-        <span
-          className={cn(
-            "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
-            action.destructive
-              ? "bg-destructive/10 text-destructive"
-              : "bg-muted text-muted-foreground"
-          )}
-        >
-          {action.pending ? (
-            <Loader2 className="h-[18px] w-[18px] animate-spin" />
-          ) : (
-            <Icon className="h-[18px] w-[18px]" />
-          )}
-        </span>
-      )}
       <span className="min-w-0 flex-1">
         <span
           className={cn(
-            "block truncate text-[15px] font-medium",
+            "block truncate text-[14.5px] font-normal tracking-[-0.006em]",
             action.destructive ? "text-destructive" : "text-foreground"
           )}
         >
           {action.label}
         </span>
         {action.description && (
-          <span className="block truncate text-[13px] text-muted-foreground">
+          <span className="block truncate font-mono text-[10.5px] uppercase tracking-[0.1em] text-faint">
             {action.description}
           </span>
         )}
       </span>
-      {action.selected && (
-        <Check className="h-[18px] w-[18px] shrink-0 text-foreground" />
+
+      {action.value !== undefined && action.value !== null && (
+        <span className="max-w-[55%] shrink-0 truncate text-right text-[13.5px] tabular-nums text-foreground">
+          {action.value}
+        </span>
       )}
+
+      {action.selected && <Check className="size-[15px] shrink-0 text-foreground" />}
+
+      {action.pending ? (
+        <Loader2 className="size-[15px] shrink-0 animate-spin text-muted-foreground" />
+      ) : Icon ? (
+        <Icon
+          className={cn(
+            "size-[15px] shrink-0",
+            action.destructive ? "text-destructive" : "text-faint"
+          )}
+        />
+      ) : action.href ? (
+        <ChevronRight className="size-[15px] shrink-0 text-faint" />
+      ) : null}
     </>
   )
 
   const className = cn(
-    "flex min-h-[52px] w-full items-center gap-3.5 px-3.5 text-left transition-colors",
-    action.destructive ? "active:bg-destructive/10" : "active:bg-secondary/70",
+    "flex min-h-[52px] w-full items-center gap-3 border-b border-hairline px-4 py-2 text-left transition-colors",
+    action.destructive ? "active:bg-destructive/5" : "active:bg-wash",
     inert && "pointer-events-none opacity-45"
   )
 
