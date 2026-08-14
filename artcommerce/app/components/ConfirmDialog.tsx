@@ -80,7 +80,9 @@ export default function ConfirmDialog({
        * `pointer-events: none` on <body> for a frame or two afterwards —
        * which this portal would otherwise inherit and become unclickable.
        */
-      className="pointer-events-auto fixed inset-0 z-[10000] flex items-center justify-center bg-black/55 px-4 backdrop-blur-sm animate-in fade-in duration-150"
+      // `animate-in fade-in` was tailwindcss-animate, which this project does
+      // not have installed — the dialog was appearing with no motion at all.
+      className="pointer-events-auto fixed inset-0 z-[10000] flex animate-fade-in items-center justify-center bg-foreground/45 px-4 backdrop-blur-[2px]"
       onClick={isProcessing ? undefined : onClose}
     >
       <div
@@ -89,8 +91,8 @@ export default function ConfirmDialog({
         aria-labelledby="confirm-dialog-title"
         aria-describedby="confirm-dialog-description"
         className={cn(
-          'w-full max-w-md rounded-xl border bg-background p-6 shadow-2xl',
-          'animate-in zoom-in-95 fade-in duration-200',
+          'w-full max-w-md rounded-lg border bg-background p-6 shadow-2xl',
+          'animate-pop-in',
         )}
         onClick={(event) => event.stopPropagation()}
       >

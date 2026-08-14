@@ -138,7 +138,9 @@ export function NewProductMobile({ form }: { form: ProductForm }) {
         </div>
       </div>
 
-      <div className="pb-6">
+      {/* Keyed on the step so React remounts it and the entrance replays —
+          moving between steps should read as a move, not a repaint. */}
+      <div key={activeTab} className="animate-rise-in pb-6">
         {activeTab === 'basics' && <DetailsStep form={form} />}
         {activeTab === 'pricing' && <PricingStep form={form} />}
         {activeTab === 'media' && <MediaStep form={form} onOpenTile={openTile} />}
@@ -1091,12 +1093,26 @@ function ExpandRow({
         </span>
         <ChevronRight
           className={cn(
-            'size-[15px] shrink-0 text-faint transition-transform',
+            'size-[15px] shrink-0 text-faint transition-transform duration-200',
             open && 'rotate-90'
           )}
         />
       </button>
-      {open && <div className="pb-4">{children}</div>}
+      {/*
+        `grid-template-rows: 0fr → 1fr` animates to the content's own height
+        without measuring it, which max-height cannot do without a magic
+        number that is either too small or eases from nothing.
+      */}
+      <div
+        className={cn(
+          'grid transition-[grid-template-rows] duration-[260ms] ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none',
+          open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
+        )}
+      >
+        <div className="overflow-hidden">
+          <div className="pb-4">{children}</div>
+        </div>
+      </div>
     </div>
   )
 }

@@ -323,13 +323,15 @@ export default function AdminProductsPage() {
     <main className="flex flex-col gap-6">
       {/* Page header */}
       <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="hidden flex-col gap-1 md:flex">
+        {/* min-w-0 / shrink-0: the description used to claim the row and push
+            the two buttons onto separate lines at 1024. */}
+        <div className="hidden min-w-0 flex-col gap-1 md:flex">
           <h1 className="text-2xl font-semibold tracking-tight">Products</h1>
           <p className="text-sm text-muted-foreground">
             Manage your catalog, stock levels, and product visibility.
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex shrink-0 gap-2">
           <Button asChild variant="outline" className="gap-1.5">
             <Link href="/dashboard/admin/products/highest-rated">
               <Star className="h-4 w-4" />
@@ -343,8 +345,12 @@ export default function AdminProductsPage() {
         </div>
       </header>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 gap-2.5 sm:gap-3 lg:grid-cols-4">
+      {/*
+        Four across only from `xl`. At 1024 the content column is 656px, so
+        four cards are ~155px — 67px of text once the icon and padding are
+        paid for, which no label fits in.
+      */}
+      <div className="grid grid-cols-2 gap-2.5 sm:gap-3 xl:grid-cols-4">
         <StatCard
           icon={Boxes}
           label="Total products"
@@ -820,9 +826,10 @@ function StatCard({
           <Icon className="h-5 w-5" />
         </span>
         <div className="flex min-w-0 flex-col">
-          {/* Wraps rather than truncates: at 1024 the four cards are ~215px
-              wide and "Total products" was arriving as "TOTAL PR…". */}
-          <span className="text-[11px] font-medium leading-tight text-muted-foreground sm:text-xs sm:uppercase sm:tracking-wide">
+          {/* Sentence case, no letter-spacing: uppercase + tracking pushed
+              "Total products" past the ~127px a card affords at 1024, so it
+              wrapped onto two lines and made the row ragged. */}
+          <span className="text-[11px] font-medium leading-tight text-muted-foreground sm:text-xs">
             {label}
           </span>
           <div className="flex items-baseline gap-1.5">

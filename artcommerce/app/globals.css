@@ -201,6 +201,17 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .kk-fade { animation: none; }
+
+  /* Sheets, dialogs and step panels still need to appear and disappear —
+     Radix waits for animationend before unmounting — so collapse the
+     duration rather than removing the animation. */
+  [data-slot="sheet-content"],
+  [data-slot="sheet-overlay"],
+  .animate-fade-in, .animate-fade-out,
+  .animate-pop-in, .animate-pop-out,
+  .animate-rise-in {
+    animation-duration: 1ms !important;
+  }
 }
 
 /* Horizontal rails (period chips, the saved-items strip) scroll by swipe, so

@@ -58,7 +58,13 @@ export function MobileHeader() {
   const titleHidden = collapsingTitle && !collapsed
 
   return (
-    <header className="sticky top-0 z-30 shrink-0 bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/80 lg:hidden">
+    /*
+     * Opaque, not translucent. At 80% with a blur behind it, a dense list
+     * ghosted straight through the bar — on the catalogue you could read a
+     * product name sitting on top of the page title. A blurred bar is a
+     * flourish; a legible one is the job.
+     */
+    <header className="sticky top-0 z-30 shrink-0 bg-background lg:hidden">
       {/* Notch clearance — app/layout.tsx sets viewport-fit=cover */}
       <div className="pt-safe" />
       <div

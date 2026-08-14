@@ -19,8 +19,8 @@ function SheetOverlay({
     <SheetPrimitive.Overlay
       data-slot="sheet-overlay"
       className={cn(
-        "fixed inset-0 z-50 bg-black/40 backdrop-blur-sm transition-opacity duration-200",
-        "data-[state=closed]:opacity-0 data-[state=open]:opacity-100",
+        "fixed inset-0 z-50 bg-foreground/35 backdrop-blur-[2px]",
+        "data-[state=open]:animate-fade-in data-[state=closed]:animate-fade-out",
         className
       )}
       {...props}
@@ -37,11 +37,19 @@ const baseSide: Record<Side, string> = {
   right: "inset-y-0 right-0 h-full w-80 max-w-[85vw] border-l",
 }
 
-const openTransform: Record<Side, string> = {
-  top: "data-[state=closed]:-translate-y-full data-[state=open]:translate-y-0",
-  bottom: "data-[state=closed]:translate-y-full data-[state=open]:translate-y-0",
-  left: "data-[state=closed]:-translate-x-full data-[state=open]:translate-x-0",
-  right: "data-[state=closed]:translate-x-full data-[state=open]:translate-x-0",
+/**
+ * Keyframes, not transitions. Radix inserts the content already in its open
+ * state, so a transition has no first frame to move from — and it unmounts on
+ * `animationend`, so a transition gets no closing frame either. Both
+ * directions were silent before this.
+ */
+const motion: Record<Side, string> = {
+  top: "data-[state=open]:animate-sheet-in-top data-[state=closed]:animate-sheet-out-top",
+  bottom:
+    "data-[state=open]:animate-sheet-in-bottom data-[state=closed]:animate-sheet-out-bottom",
+  left: "data-[state=open]:animate-sheet-in-left data-[state=closed]:animate-sheet-out-left",
+  right:
+    "data-[state=open]:animate-sheet-in-right data-[state=closed]:animate-sheet-out-right",
 }
 
 function SheetContent({
@@ -65,10 +73,9 @@ function SheetContent({
       <SheetPrimitive.Content
         data-slot="sheet-content"
         className={cn(
-          "fixed z-50 flex flex-col gap-4 bg-background shadow-xl",
-          "transition-transform duration-300 ease-out will-change-transform",
+          "fixed z-50 flex flex-col gap-4 bg-background shadow-xl will-change-transform",
           baseSide[side],
-          openTransform[side],
+          motion[side],
           className
         )}
         {...props}

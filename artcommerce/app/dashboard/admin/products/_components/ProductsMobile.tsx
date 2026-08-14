@@ -251,8 +251,13 @@ export function ProductsMobile({
 
   return (
     <div className="flex flex-col">
-      {/* Control surface. Sticky under the app bar, which is `sticky top-0`
-          itself — --mobile-header-total is its height plus rule and notch. */}
+      {/*
+        Control surface. Sticky under the app bar, which is `sticky top-0`
+        itself — --mobile-header-total is its height plus rule and notch.
+        The column header belongs to this block rather than the list: left in
+        the flow it scrolled away and took the sort control with it, leaving a
+        column of bare figures with nothing naming them.
+      */}
       <div
         className="sticky z-20 -mx-4 -mt-5 border-b bg-background sm:-mx-6"
         style={{ top: "var(--mobile-header-total, 3.5rem)" }}
@@ -349,31 +354,31 @@ export function ProductsMobile({
             )
           })}
         </div>
-      </div>
 
-      {/* Column header — and the sort control. */}
-      <div className="-mx-4 flex items-center gap-2.5 border-b bg-wash px-4 py-2 sm:-mx-6 sm:px-6">
-        <span className="min-w-0 flex-1 font-mono text-[9.5px] uppercase tracking-[0.15em] text-faint">
-          Product
-        </span>
-        <button
-          type="button"
-          onClick={() => setSortOpen(true)}
-          className="inline-flex items-center gap-1 font-mono text-[9.5px] uppercase tracking-[0.15em] text-foreground"
-        >
-          {activeSort.label}
-          {dir === "asc" ? <ArrowUp className="size-3" /> : <ArrowDown className="size-3" />}
-        </button>
-        <button
-          type="button"
-          onClick={() => (selecting ? leaveSelectMode() : setSelecting(true))}
-          className={cn(
-            "border-l border-input pl-2.5 font-mono text-[9.5px] uppercase tracking-[0.15em] transition-colors",
-            selecting ? "text-foreground" : "text-faint"
-          )}
-        >
-          {selecting ? "Done" : "Select"}
-        </button>
+        {/* Column header — and the sort control. */}
+        <div className="flex items-center gap-2.5 border-t bg-wash px-4 py-2 sm:px-6">
+          <span className="min-w-0 flex-1 font-mono text-[9.5px] uppercase tracking-[0.15em] text-faint">
+            Product
+          </span>
+          <button
+            type="button"
+            onClick={() => setSortOpen(true)}
+            className="inline-flex items-center gap-1 font-mono text-[9.5px] uppercase tracking-[0.15em] text-foreground"
+          >
+            {activeSort.label}
+            {dir === "asc" ? <ArrowUp className="size-3" /> : <ArrowDown className="size-3" />}
+          </button>
+          <button
+            type="button"
+            onClick={() => (selecting ? leaveSelectMode() : setSelecting(true))}
+            className={cn(
+              "border-l border-input pl-2.5 font-mono text-[9.5px] uppercase tracking-[0.15em] transition-colors",
+              selecting ? "text-foreground" : "text-faint"
+            )}
+          >
+            {selecting ? "Done" : "Select"}
+          </button>
+        </div>
       </div>
 
       {/* Rows */}
@@ -409,16 +414,17 @@ export function ProductsMobile({
       {/* Clears the dock, or the bulk bar when selecting. */}
       <div className={cn("shrink-0", selecting ? "h-24" : "h-6")} />
 
-      {selecting && (
-        <BulkBar
-          count={pickedIds.length}
-          pending={bulkPending}
-          onAction={(action) => {
-            onBulk(action, pickedIds)
-            leaveSelectMode()
-          }}
-        />
-      )}
+      {/* Always mounted so it can slide both ways; unmounting would give it
+          an entrance and no exit. */}
+      <BulkBar
+        visible={selecting}
+        count={pickedIds.length}
+        pending={bulkPending}
+        onAction={(action) => {
+          onBulk(action, pickedIds)
+          leaveSelectMode()
+        }}
+      />
 
       <ActionSheet
         open={sortOpen}
@@ -737,17 +743,26 @@ function RowSheet({
 }
 
 function BulkBar({
+  visible,
   count,
   pending,
   onAction,
 }: {
+  visible: boolean
   count: number
   pending: boolean
   onAction: (action: "publish" | "hide" | "delete") => void
 }) {
   const disabled = count === 0 || pending
   return (
-    <div className="fixed inset-x-0 bottom-0 z-30 border-t border-input bg-background pb-safe lg:hidden">
+    <div
+      aria-hidden={!visible}
+      className={cn(
+        "fixed inset-x-0 bottom-0 z-30 border-t border-input bg-background pb-safe lg:hidden",
+        "transition-transform duration-[280ms] ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none",
+        visible ? "translate-y-0" : "pointer-events-none translate-y-full"
+      )}
+    >
       <div className="flex items-center gap-2 px-4 py-2.5">
         <span className="flex-1 font-mono text-[10px] uppercase tracking-[0.13em] text-faint">
           {pending ? "Working…" : `${count} selected`}
