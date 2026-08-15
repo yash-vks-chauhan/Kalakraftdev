@@ -2,22 +2,18 @@
 
 'use client'
 
-import Link from 'next/link'
-import { AlertCircle } from 'lucide-react'
-
 import { useIsDesktop } from '../../../../hooks/useMediaQuery'
 import {
-  NewProductDesktop,
-  NewProductDesktopSkeleton,
-} from './_components/NewProductDesktop'
+  ProductFormDesktop,
+  ProductFormDesktopSkeleton,
+} from '../_components/ProductFormDesktop'
 import {
-  NewProductMobile,
-  NewProductMobileError,
-  NewProductMobileSkeleton,
-} from './_components/NewProductMobile'
-import { useNewProductForm } from './_lib/product-form'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
+  ProductFormMobile,
+  ProductFormMobileError,
+  ProductFormMobileSkeleton,
+} from '../_components/ProductFormMobile'
+import { ProductFormError } from '../_components/ProductFormError'
+import { useProductForm } from '../_lib/product-form'
 
 /**
  * Two trees, one source of state.
@@ -26,39 +22,25 @@ import { Card, CardContent } from '@/components/ui/card'
  * the phone screen is a step flow with its own sheets and a fixed action bar,
  * not the workspace at a smaller width, and mounting both would run two copies
  * of the same dropzones and uploads.
+ *
+ * The edit route renders the same two trees in `edit` mode — see
+ * ../[id]/page.tsx.
  */
 export default function NewProductPage() {
-  const form = useNewProductForm()
+  const form = useProductForm({ mode: 'create' })
   const isDesktop = useIsDesktop()
 
   if (form.bootstrapping) {
-    return isDesktop ? <NewProductDesktopSkeleton /> : <NewProductMobileSkeleton />
+    return isDesktop ? <ProductFormDesktopSkeleton /> : <ProductFormMobileSkeleton />
   }
 
   if (form.error) {
-    if (!isDesktop) {
-      return <NewProductMobileError message={form.error} onBack={form.goToList} />
-    }
-    return (
-      <main className="flex flex-col gap-4">
-        <header className="flex flex-col gap-1">
-          <h1 className="text-2xl font-semibold tracking-tight">Create product</h1>
-        </header>
-        <Card className="shadow-sm">
-          <CardContent className="flex flex-col items-center gap-3 p-10 text-center">
-            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 text-destructive">
-              <AlertCircle className="h-5 w-5" />
-            </span>
-            <p className="text-sm font-medium text-foreground">Unable to open this page</p>
-            <p className="text-xs text-muted-foreground">{form.error}</p>
-            <Button asChild size="sm" variant="outline">
-              <Link href="/dashboard/admin/products">Back to products</Link>
-            </Button>
-          </CardContent>
-        </Card>
-      </main>
+    return isDesktop ? (
+      <ProductFormError message={form.error} />
+    ) : (
+      <ProductFormMobileError message={form.error} onBack={form.goToList} />
     )
   }
 
-  return isDesktop ? <NewProductDesktop form={form} /> : <NewProductMobile form={form} />
+  return isDesktop ? <ProductFormDesktop form={form} /> : <ProductFormMobile form={form} />
 }

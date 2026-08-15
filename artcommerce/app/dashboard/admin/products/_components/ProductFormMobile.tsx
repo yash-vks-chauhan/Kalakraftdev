@@ -6,6 +6,7 @@ import {
   Camera,
   Check,
   ChevronRight,
+  ExternalLink,
   Image as ImageIcon,
   Link2,
   Loader2,
@@ -16,14 +17,16 @@ import {
   Plus,
   Star,
   Trash2,
+  Undo2,
   X,
 } from 'lucide-react'
 
+import ConfirmDialog from '../../../../components/ConfirmDialog'
 import {
   ActionSheet,
   type ActionSheetGroup,
   type SheetAction,
-} from '../../../../_components/ActionSheet'
+} from '../../../_components/ActionSheet'
 import {
   CURRENCIES,
   CURRENCY_SYMBOL,
@@ -39,7 +42,13 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Switch } from '@/components/ui/switch'
 
 /**
- * Creating a product on a phone — a record you fill in, not a form you fight.
+ * A product on a phone — a record you fill in, not a form you fight.
+ *
+ * The same screen creates and edits: an admin should not have to learn the
+ * catalogue's form twice. Creating walks the four steps and ends on Create;
+ * editing offers Save from wherever you are, only once something has actually
+ * changed, and keeps the record's own actions — discard, storefront, delete —
+ * in the Review sheet.
  *
  * Fields are rules, not boxes: a mono uppercase label, the value at 16pt with
  * no border, and a hairline beneath that darkens on focus. Boxing every input
@@ -58,7 +67,7 @@ const STEP_LABEL: Record<TabKey, string> = {
   discovery: 'Tags',
 }
 
-export function NewProductMobile({ form }: { form: ProductForm }) {
+export function ProductFormMobile({ form }: { form: ProductForm }) {
   const {
     submitting,
     activeTab,
@@ -75,6 +84,8 @@ export function NewProductMobile({ form }: { form: ProductForm }) {
     submit,
   } = form
 
+  const { isEdit, dirty, submitLabel, submittingLabel, canSubmit } = form
+
   const [reviewOpen, setReviewOpen] = useState(false)
   const [tileOpen, setTileOpen] = useState(false)
   const [tileIndex, setTileIndex] = useState(0)
@@ -84,12 +95,25 @@ export function NewProductMobile({ form }: { form: ProductForm }) {
     setTileOpen(true)
   }
 
+  /*
+   * Creating walks the steps, so the primary is Continue until the last one.
+   * Editing does not walk anything — you came to fix one field — so Save is
+   * offered from wherever you are, and the rail is the only navigation.
+   */
+  const primaryCommits = isEdit || isLastTab
+  const primaryBlocked = isEdit ? !dirty || !canSubmit : isLastTab && !canSubmit
+
+  /* Creating names whichever required section is still open. Editing only
+     objects when the record would become invalid — everything else is a state
+     it is already in, and the step dots report that on their own. */
+  const barBlocker = isEdit ? (canSubmit ? null : blocker) : blocker
+
   function handlePrimary() {
-    if (!isLastTab) {
+    if (!primaryCommits) {
       goNextTab()
       return
     }
-    if (!allRequiredDone || submitting) return
+    if (primaryBlocked || submitting) return
     void submit()
   }
 
@@ -149,16 +173,18 @@ export function NewProductMobile({ form }: { form: ProductForm }) {
 
       {/* Flat, one hairline, flush to the bottom edge. */}
       <div className="fixed inset-x-0 bottom-0 z-30 border-t bg-background pb-safe lg:hidden">
-        {isLastTab && blocker && (
+        {primaryCommits && barBlocker && (
           <button
             type="button"
-            onClick={() => setActiveTab(blocker.tab)}
+            onClick={() => setActiveTab(barBlocker.tab)}
             className="flex w-full items-center gap-2 border-b bg-wash px-4 py-2.5 text-left font-mono text-[10.5px] uppercase tracking-[0.04em] text-muted-foreground transition-colors active:bg-secondary"
           >
             <AlertCircle className="size-3.5 shrink-0 text-warning" />
             <span className="min-w-0 truncate">
-              {blocker.message} —{' '}
-              <span className="font-medium text-foreground">{STEP_LABEL[blocker.tab]}</span>
+              {barBlocker.message} —{' '}
+              <span className="font-medium text-foreground">
+                {STEP_LABEL[barBlocker.tab]}
+              </span>
             </span>
             <ChevronRight className="ml-auto size-3.5 shrink-0" />
           </button>
@@ -174,16 +200,20 @@ export function NewProductMobile({ form }: { form: ProductForm }) {
           <button
             type="button"
             onClick={handlePrimary}
-            disabled={submitting || (isLastTab && !allRequiredDone)}
+            disabled={submitting || primaryBlocked}
             className="flex h-[42px] min-w-0 flex-1 items-center justify-center gap-1.5 rounded-md bg-primary text-[14px] font-medium tracking-[-0.008em] text-primary-foreground transition-opacity active:opacity-90 disabled:opacity-30"
           >
             {submitting ? (
               <>
                 <Loader2 className="size-4 animate-spin" />
-                Creating…
+                {submittingLabel}
               </>
-            ) : isLastTab ? (
-              'Create product'
+            ) : primaryCommits ? (
+              isEdit && !dirty ? (
+                'No changes'
+              ) : (
+                submitLabel
+              )
             ) : (
               'Continue'
             )}
@@ -872,10 +902,22 @@ function ReviewSheet({
     requiredDone,
     requiredTotal,
     allRequiredDone,
+    canSubmit,
     submitting,
     setActiveTab,
     submit,
+    isEdit,
+    productId,
+    dirty,
+    changedCount,
+    discard,
+    remove,
+    deleting,
+    submitLabel,
+    submittingLabel,
   } = form
+
+  const [confirmDelete, setConfirmDelete] = useState(false)
 
   const cover = imageUrls[0]
 
@@ -887,11 +929,18 @@ function ReviewSheet({
   const missing = (v: string) => <span className="text-destructive">{v}</span>
 
   return (
+    <>
     <ActionSheet
       open={open}
       onOpenChange={onOpenChange}
-      title="Review"
-      description={`${requiredDone} of ${requiredTotal} required steps done`}
+      title={isEdit ? 'This product' : 'Review'}
+      description={
+        isEdit
+          ? dirty
+            ? `${changedCount} unsaved ${changedCount === 1 ? 'change' : 'changes'}`
+            : 'No unsaved changes'
+          : `${requiredDone} of ${requiredTotal} required steps done`
+      }
       dismissLabel="Close"
       keepOpenOnSelect
       groups={[
@@ -938,38 +987,82 @@ function ReviewSheet({
             },
           ],
         },
+        /* Editing owns the record, so the record's own actions live here. */
+        ...(isEdit
+          ? [
+              {
+                label: 'This product',
+                actions: [
+                  {
+                    id: 'discard',
+                    label: 'Discard changes',
+                    description: dirty
+                      ? `Back to the saved version`
+                      : 'Nothing to discard',
+                    icon: Undo2,
+                    disabled: !dirty,
+                    onSelect: discard,
+                  },
+                  {
+                    id: 'view',
+                    label: 'Open on storefront',
+                    description: "The customer's page",
+                    icon: ExternalLink,
+                    href: `/products/${productId}`,
+                  },
+                  {
+                    id: 'delete',
+                    label: 'Delete product',
+                    description: 'Cannot be undone',
+                    icon: Trash2,
+                    destructive: true,
+                    pending: deleting,
+                    onSelect: () => setConfirmDelete(true),
+                  },
+                ],
+              },
+            ]
+          : []),
       ]}
       footer={
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-3">
             <span className="min-w-0 flex-1">
               <span className="block text-[14.5px] text-foreground">
-                {isActive ? 'Publish on create' : 'Save as a draft'}
+                {isEdit
+                  ? isActive
+                    ? 'Live on the store'
+                    : 'Hidden from the store'
+                  : isActive
+                  ? 'Publish on create'
+                  : 'Save as a draft'}
               </span>
               <span className="block font-mono text-[10.5px] uppercase tracking-[0.1em] text-faint">
-                {isActive ? 'Visible to customers immediately' : 'Only you can see it'}
+                {isActive ? 'Visible to customers' : 'Only you can see it'}
               </span>
             </span>
             <Switch
               size="lg"
               checked={isActive}
               onCheckedChange={setIsActive}
-              aria-label="Publish on create"
+              aria-label={isEdit ? 'Visible on the store' : 'Publish on create'}
             />
           </div>
           <button
             type="button"
             onClick={() => void submit()}
-            disabled={!allRequiredDone || submitting}
+            disabled={!canSubmit || submitting || (isEdit && !dirty)}
             className="flex h-[46px] w-full items-center justify-center gap-2 rounded-md bg-primary text-[14.5px] font-medium text-primary-foreground transition-opacity active:opacity-90 disabled:opacity-30"
           >
             {submitting ? (
               <>
                 <Loader2 className="size-4 animate-spin" />
-                Creating…
+                {submittingLabel}
               </>
+            ) : isEdit && !dirty ? (
+              'No changes'
             ) : (
-              'Create product'
+              submitLabel
             )}
           </button>
         </div>
@@ -994,6 +1087,19 @@ function ReviewSheet({
         </span>
       </div>
     </ActionSheet>
+
+    <ConfirmDialog
+      open={confirmDelete}
+      title="Delete product"
+      description={`Delete "${name.trim() || 'this product'}" permanently? This cannot be undone.`}
+      confirmLabel="Delete product"
+      isProcessing={deleting}
+      onConfirm={() => void remove()}
+      onClose={() => {
+        if (!deleting) setConfirmDelete(false)
+      }}
+    />
+    </>
   )
 }
 
@@ -1133,7 +1239,7 @@ function UploadingTile({ progress }: { progress: number }) {
 
 /* ------------------------------------------------------------ skeleton */
 
-export function NewProductMobileSkeleton() {
+export function ProductFormMobileSkeleton() {
   return (
     <main className="flex flex-col">
       <div className="-mx-4 -mt-5 border-b sm:-mx-6">
@@ -1164,7 +1270,7 @@ export function NewProductMobileSkeleton() {
 }
 
 /* Kept for the error branch, so the phone gets a full-width action. */
-export function NewProductMobileError({
+export function ProductFormMobileError({
   message,
   onBack,
 }: {

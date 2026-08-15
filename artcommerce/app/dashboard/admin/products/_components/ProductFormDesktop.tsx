@@ -6,6 +6,7 @@ import {
   ArrowLeft,
   ArrowRight,
   CheckCircle2,
+  ExternalLink,
   Circle,
   FileText,
   GripVertical,
@@ -18,11 +19,12 @@ import {
   Sparkles,
   Tag,
   Tags,
+  Trash2,
   UploadCloud,
   X,
 } from 'lucide-react'
 
-import { SegmentedControl, SegmentedControlItem } from '../../../../_components/SegmentedControl'
+import { SegmentedControl, SegmentedControlItem } from '../../../_components/SegmentedControl'
 import {
   MAX_IMAGES,
   SHORT_DESC_IDEAL,
@@ -62,7 +64,13 @@ import { Textarea } from '@/components/ui/textarea'
  * Unchanged from before the mobile rebuild — it only moved out of page.tsx so
  * the two layouts could share one source of state.
  */
-export function NewProductDesktop({ form }: { form: ProductForm }) {
+export function ProductFormDesktop({
+  form,
+  onDelete,
+}: {
+  form: ProductForm
+  onDelete?: () => void
+}) {
   const {
     submitting,
     activeTab,
@@ -132,6 +140,15 @@ export function NewProductDesktop({ form }: { form: ProductForm }) {
     shortDescLen,
     shortDescTone,
     handleSubmit,
+    isEdit,
+    canSubmit,
+    productId,
+    dirty,
+    changedCount,
+    discard,
+    deleting,
+    submitLabel,
+    submittingLabel,
   } = form
 
   // SegmentedControl items: icon swaps to a check when complete
@@ -159,11 +176,14 @@ export function NewProductDesktop({ form }: { form: ProductForm }) {
               All products
             </Link>
             <h1 className="truncate text-lg font-semibold tracking-tight text-foreground sm:text-xl">
-              {name.trim() || 'Untitled product'}
+              {name.trim() || (isEdit ? 'Untitled product' : 'New product')}
             </h1>
           </div>
-          <div className="flex items-center gap-2 sm:gap-3">
-            <ProgressChip
+          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+            <StatusChip
+              isEdit={isEdit}
+              dirty={dirty}
+              changedCount={changedCount}
               percent={progressPct}
               done={requiredDone}
               total={requiredTotal}
@@ -179,19 +199,47 @@ export function NewProductDesktop({ form }: { form: ProductForm }) {
                 {isActive ? 'Visible' : 'Draft'}
               </Label>
             </div>
+
+            {isEdit && (
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                asChild
+                title="Open on storefront"
+                aria-label="Open on storefront"
+              >
+                <Link href={`/products/${productId}`} target="_blank" rel="noreferrer">
+                  <ExternalLink className="h-4 w-4" />
+                </Link>
+              </Button>
+            )}
+            {isEdit && (
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                onClick={onDelete}
+                disabled={submitting || deleting}
+                title="Delete product"
+                aria-label="Delete product"
+                className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            )}
+
             <Button
               variant="outline"
               size="sm"
-              onClick={goToList}
+              onClick={isEdit && dirty ? discard : goToList}
               disabled={submitting}
             >
-              Cancel
+              {isEdit ? (dirty ? 'Discard' : 'Close') : 'Cancel'}
             </Button>
             <Button
               type="submit"
               form="new-product-form"
               size="sm"
-              disabled={submitting || !allRequiredDone}
+              disabled={submitting || !canSubmit || (isEdit && !dirty)}
               className="gap-1.5"
             >
               {submitting ? (
@@ -199,7 +247,7 @@ export function NewProductDesktop({ form }: { form: ProductForm }) {
               ) : (
                 <Save className="h-4 w-4" />
               )}
-              {submitting ? 'Saving…' : 'Create product'}
+              {submitting ? submittingLabel : isEdit && !dirty ? 'Saved' : submitLabel}
             </Button>
           </div>
         </div>
@@ -346,7 +394,7 @@ export function NewProductDesktop({ form }: { form: ProductForm }) {
                 <Button
                   type="submit"
                   size="sm"
-                  disabled={submitting || !allRequiredDone}
+                  disabled={submitting || !canSubmit || (isEdit && !dirty)}
                   className="gap-1.5"
                 >
                   {submitting ? (
@@ -354,7 +402,7 @@ export function NewProductDesktop({ form }: { form: ProductForm }) {
                   ) : (
                     <Save className="h-4 w-4" />
                   )}
-                  Create product
+                  {isEdit && !dirty ? 'Saved' : submitLabel}
                 </Button>
               )}
             </div>
@@ -1127,15 +1175,49 @@ function ChecklistCard({
 /* SMALL HELPERS                                                   */
 /* -------------------------------------------------------------- */
 
-function ProgressChip({
+function StatusChip({
+  isEdit,
+  dirty,
+  changedCount,
   percent,
   done,
   total,
 }: {
+  isEdit: boolean
+  dirty: boolean
+  changedCount: number
   percent: number
   done: number
   total: number
 }) {
+  /* On an existing record "3 of 3 required" is not the open question — whether
+     anything is unsaved is. */
+  if (isEdit) {
+    return (
+      <div
+        className={cn(
+          'flex h-8 items-center gap-2 rounded-md border px-3 text-xs',
+          dirty
+            ? 'border-warning/30 bg-warning/10 text-warning'
+            : 'border-border bg-card text-muted-foreground'
+        )}
+      >
+        <span
+          aria-hidden
+          className={cn(
+            'size-1.5 rounded-full',
+            dirty ? 'bg-warning' : 'bg-success'
+          )}
+        />
+        <span className="font-medium tabular-nums">
+          {dirty
+            ? `${changedCount} unsaved`
+            : 'All changes saved'}
+        </span>
+      </div>
+    )
+  }
+
   const isComplete = percent >= 100
   return (
     <div
@@ -1175,7 +1257,7 @@ function UploadingTile({ progress }: { progress: number }) {
   )
 }
 
-export function NewProductDesktopSkeleton() {
+export function ProductFormDesktopSkeleton() {
   return (
     <main className="flex flex-col gap-4 pb-6">
       <div className="-mx-4 -mt-4 border-b bg-background/80 px-4 py-3 sm:-mx-6 sm:-mt-6 sm:px-6">

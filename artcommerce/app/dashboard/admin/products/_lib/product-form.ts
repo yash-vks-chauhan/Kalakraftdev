@@ -6,15 +6,21 @@ import { useDropzone } from 'react-dropzone'
 import { toast } from 'sonner'
 import { DollarSign, FileText, ImageIcon, Tags } from 'lucide-react'
 
-import { useAuth } from '../../../../../contexts/AuthContext'
+import { useAuth } from '../../../../contexts/AuthContext'
 
 /**
- * Everything the create-product screen knows, in one place.
+ * Everything the product form knows, in one place.
  *
- * The desktop workspace and the phone step flow are different arrangements of
- * the same form, so they share this hook rather than each keeping their own
- * copy of the state — two copies is how the two layouts would quietly stop
- * validating the same thing.
+ * Two axes share it. The desktop workspace and the phone step flow are
+ * different arrangements of the same fields — two copies of the state is how
+ * the layouts would quietly stop validating the same thing. And creating a
+ * product and editing one ask exactly the same questions, so they are the same
+ * screen in two modes rather than two screens: an admin should not have to
+ * learn the catalogue's form twice.
+ *
+ * Editing adds three things creating does not need — hydration from the
+ * record, a dirty check so Save is only offered when there is something to
+ * save, and deletion.
  */
 
 export const MAX_IMAGES = 5
@@ -54,9 +60,62 @@ export function formatPrice(value: number, currency: string) {
   }
 }
 
-export type ProductForm = ReturnType<typeof useNewProductForm>
+export type FormMode = 'create' | 'edit'
 
-export function useNewProductForm() {
+export type ProductForm = ReturnType<typeof useProductForm>
+
+/** The JSON columns come back as arrays or as strings, depending on the driver. */
+function parseArray<T>(value: unknown): T[] {
+  if (Array.isArray(value)) return value as T[]
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value)
+      return Array.isArray(parsed) ? (parsed as T[]) : []
+    } catch {
+      return []
+    }
+  }
+  return []
+}
+
+function parseUrls(value: unknown): string[] {
+  return parseArray<unknown>(value).filter(
+    (url): url is string => typeof url === 'string' && url.length > 0
+  )
+}
+
+function parseStylingIdeas(value: unknown): StylingIdea[] {
+  return parseArray<unknown>(value).filter(
+    (idea): idea is StylingIdea =>
+      typeof idea === 'object' &&
+      idea !== null &&
+      typeof (idea as StylingIdea).url === 'string' &&
+      (idea as StylingIdea).url.length > 0
+  )
+}
+
+/** The shape the dirty check compares. Order matters for the arrays. */
+interface FormSnapshot {
+  name: string
+  slug: string
+  shortDesc: string
+  description: string
+  specifications: string
+  careInstructions: string
+  price: string
+  currency: string
+  stockQuantity: string
+  isActive: boolean
+  categoryId: string
+  imageUrls: string
+  stylingIdeas: string
+  usageTags: string
+}
+
+export function useProductForm({
+  mode = 'create',
+  productId,
+}: { mode?: FormMode; productId?: number } = {}) {
   const { token, user, loading: authLoading } = useAuth()
   const router = useRouter()
 
@@ -90,6 +149,10 @@ export function useNewProductForm() {
 
   const [draggingIndex, setDraggingIndex] = useState<number | null>(null)
 
+  const [deleting, setDeleting] = useState(false)
+  /** What the record looked like when it loaded; null until then. */
+  const [initial, setInitial] = useState<FormSnapshot | null>(null)
+
   useEffect(() => {
     if (authLoading) return
     if (!user) {
@@ -101,17 +164,79 @@ export function useNewProductForm() {
       setBootstrapping(false)
       return
     }
-    Promise.all([
+
+    const requests: Promise<any>[] = [
       fetch('/api/categories').then((r) => r.json()),
       fetch('/api/products/usage-tags').then((r) => r.json()),
-    ])
-      .then(([catJson, tagJson]) => {
+    ]
+    if (mode === 'edit' && productId != null) {
+      requests.push(
+        fetch(`/api/admin/products/${productId}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        }).then(async (r) => {
+          if (!r.ok) {
+            throw new Error((await r.json()).error || 'Could not load this product.')
+          }
+          return r.json()
+        })
+      )
+    }
+
+    Promise.all(requests)
+      .then(([catJson, tagJson, productJson]) => {
         setCategories(catJson?.categories ?? [])
         if (Array.isArray(tagJson?.tags)) setAvailableTags(tagJson.tags)
+
+        const p = productJson?.product
+        if (!p) return
+
+        const urls = parseUrls(p.imageUrls)
+        const ideas = parseStylingIdeas(p.stylingIdeaImages)
+        const tags = parseUrls(p.usageTags)
+
+        setName(p.name ?? '')
+        setSlug(p.slug ?? '')
+        // The record already has a slug; typing a new name must not rewrite it.
+        setSlugTouched(true)
+        setShortDesc(p.shortDesc ?? '')
+        setDescription(p.description ?? '')
+        setSpecifications(p.specifications ?? '')
+        setCareInstructions(p.careInstructions ?? '')
+        setPrice(p.price != null ? String(p.price) : '')
+        setCurrency(p.currency || 'INR')
+        setStockQuantity(p.stockQuantity != null ? String(p.stockQuantity) : '')
+        setIsActive(Boolean(p.isActive))
+        setCategoryId(p.categoryId != null ? String(p.categoryId) : '')
+        setImageUrls(urls)
+        setStylingIdeas(ideas)
+        setUsageTags(tags)
+        setAvailableTags((prev) => [...new Set([...prev, ...tags])])
+
+        setInitial({
+          name: p.name ?? '',
+          slug: p.slug ?? '',
+          shortDesc: p.shortDesc ?? '',
+          description: p.description ?? '',
+          specifications: p.specifications ?? '',
+          careInstructions: p.careInstructions ?? '',
+          price: p.price != null ? String(p.price) : '',
+          currency: p.currency || 'INR',
+          stockQuantity: p.stockQuantity != null ? String(p.stockQuantity) : '',
+          isActive: Boolean(p.isActive),
+          categoryId: p.categoryId != null ? String(p.categoryId) : '',
+          imageUrls: JSON.stringify(urls),
+          stylingIdeas: JSON.stringify(ideas),
+          usageTags: JSON.stringify(tags),
+        })
       })
-      .catch(() => setError('Failed to load categories.'))
+      .catch((err) =>
+        setError(err?.message || 'Failed to load this page.')
+      )
       .finally(() => setBootstrapping(false))
-  }, [authLoading, user, router])
+    // token is intentionally read at call time; re-running on it would refetch
+    // the record every refresh and discard edits in progress.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authLoading, user, router, mode, productId])
 
   useEffect(() => {
     if (slugTouched) return
@@ -300,6 +425,16 @@ export function useNewProductForm() {
   const requiredDone = Object.values(sections).filter((s) => s.required && s.complete).length
   const requiredTotal = Object.values(sections).filter((s) => s.required).length
   const allRequiredDone = requiredDone === requiredTotal
+
+  /**
+   * What the API will actually accept. Creating holds out for every required
+   * section — that gate exists so an incomplete product never reaches the
+   * catalogue. Editing must not: a record that is already live without a photo
+   * would otherwise refuse to let anyone fix its name, which punishes the
+   * admin for a state they came to repair.
+   */
+  const canSave = name.trim().length > 0 && slug.trim().length > 0
+  const canSubmit = mode === 'edit' ? canSave : allRequiredDone
   const progressPct = Math.round((requiredDone / requiredTotal) * 100)
 
   const activeIndex = TAB_ORDER.indexOf(activeTab)
@@ -376,6 +511,70 @@ export function useNewProductForm() {
     router.push('/dashboard/admin/products')
   }, [router])
 
+  /** The current form, in the shape the initial snapshot was taken in. */
+  const snapshot: FormSnapshot = {
+    name,
+    slug,
+    shortDesc,
+    description,
+    specifications,
+    careInstructions,
+    price,
+    currency,
+    stockQuantity,
+    isActive,
+    categoryId,
+    imageUrls: JSON.stringify(imageUrls),
+    stylingIdeas: JSON.stringify(stylingIdeas),
+    usageTags: JSON.stringify(usageTags),
+  }
+
+  /**
+   * Creating is always "dirty" — there is nothing to compare against. Editing
+   * compares field by field, so Save is only offered when it would do
+   * something, and leaving is only guarded when there is something to lose.
+   */
+  const changedFields = useMemo(() => {
+    if (mode === 'create' || !initial) return []
+    return (Object.keys(initial) as (keyof FormSnapshot)[]).filter(
+      (key) => initial[key] !== snapshot[key]
+    )
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, initial, JSON.stringify(snapshot)])
+
+  const dirty = mode === 'create' ? true : changedFields.length > 0
+
+  /* Losing a half-written product to a stray back gesture is the worst thing
+     this screen can do, so the browser asks first. */
+  useEffect(() => {
+    if (!dirty || submitting || deleting) return
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault()
+      e.returnValue = ''
+    }
+    window.addEventListener('beforeunload', onBeforeUnload)
+    return () => window.removeEventListener('beforeunload', onBeforeUnload)
+  }, [dirty, submitting, deleting])
+
+  function body() {
+    return {
+      name: name.trim(),
+      slug: slug.trim(),
+      shortDesc,
+      description,
+      specifications,
+      careInstructions,
+      stylingIdeaImages: stylingIdeas,
+      price: priceNum,
+      currency,
+      stockQuantity: stockNum,
+      isActive,
+      categoryId: numericCategoryId,
+      imageUrls,
+      usageTags,
+    }
+  }
+
   async function submit() {
     setError(null)
     if (!name.trim() || !slug.trim()) {
@@ -385,38 +584,76 @@ export function useNewProductForm() {
     }
     setSubmitting(true)
     try {
-      const res = await fetch('/api/admin/products', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          name: name.trim(),
-          slug: slug.trim(),
-          shortDesc,
-          description,
-          specifications,
-          careInstructions,
-          stylingIdeaImages: stylingIdeas,
-          price: priceNum,
-          currency,
-          stockQuantity: stockNum,
-          isActive,
-          categoryId: numericCategoryId,
-          imageUrls,
-          usageTags,
-        }),
-      })
+      const editing = mode === 'edit' && productId != null
+      const res = await fetch(
+        editing ? `/api/admin/products/${productId}` : '/api/admin/products',
+        {
+          method: editing ? 'PATCH' : 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(body()),
+        }
+      )
       if (!res.ok) {
         const data = await res.json()
-        throw new Error(data.error || 'Failed to create product')
+        throw new Error(
+          data.error || (editing ? 'Failed to save changes' : 'Failed to create product')
+        )
       }
+
+      if (editing) {
+        // Stay put and re-baseline: an admin correcting a price usually has a
+        // second correction to make, and bouncing to the list loses their place.
+        setInitial(snapshot)
+        showNotice('success', 'Changes saved.')
+        setSubmitting(false)
+        return
+      }
+
       showNotice('success', 'Product created successfully.')
       setTimeout(() => router.push('/dashboard/admin/products'), 800)
     } catch (err: any) {
       showNotice('error', err.message)
       setSubmitting(false)
+    }
+  }
+
+  /** Puts every field back to the record as it was loaded. Edit mode only. */
+  const discard = useCallback(() => {
+    if (!initial) return
+    setName(initial.name)
+    setSlug(initial.slug)
+    setSlugTouched(true)
+    setShortDesc(initial.shortDesc)
+    setDescription(initial.description)
+    setSpecifications(initial.specifications)
+    setCareInstructions(initial.careInstructions)
+    setPrice(initial.price)
+    setCurrency(initial.currency)
+    setStockQuantity(initial.stockQuantity)
+    setIsActive(initial.isActive)
+    setCategoryId(initial.categoryId)
+    setImageUrls(JSON.parse(initial.imageUrls))
+    setStylingIdeas(JSON.parse(initial.stylingIdeas))
+    setUsageTags(JSON.parse(initial.usageTags))
+  }, [initial])
+
+  async function remove() {
+    if (mode !== 'edit' || productId == null) return
+    setDeleting(true)
+    try {
+      const res = await fetch(`/api/admin/products/${productId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (!res.ok) throw new Error((await res.json()).error || 'Delete failed')
+      showNotice('success', `${name.trim() || 'Product'} deleted.`)
+      router.push('/dashboard/admin/products')
+    } catch (err: any) {
+      showNotice('error', err.message)
+      setDeleting(false)
     }
   }
 
@@ -426,6 +663,19 @@ export function useNewProductForm() {
   }
 
   return {
+    // mode
+    mode,
+    productId,
+    isEdit: mode === 'edit',
+    /** What the screen is called and what its primary button says. */
+    screenTitle: mode === 'edit' ? name.trim() || 'Edit product' : 'New product',
+    submitLabel: mode === 'edit' ? 'Save changes' : 'Create product',
+    submittingLabel: mode === 'edit' ? 'Saving…' : 'Creating…',
+    dirty,
+    changedCount: changedFields.length,
+    discard,
+    remove,
+    deleting,
     // status
     bootstrapping,
     submitting,
@@ -500,6 +750,8 @@ export function useNewProductForm() {
     requiredDone,
     requiredTotal,
     allRequiredDone,
+    canSave,
+    canSubmit,
     progressPct,
     shortDescLen,
     shortDescTone,

@@ -133,8 +133,12 @@ export default function AppRootClient({ children }: { children: React.ReactNode 
   const isDashboardRoute = pathname === '/dashboard' || pathname.startsWith('/dashboard/');
   const isCheckoutRoute = pathname === '/checkout' || pathname.startsWith('/checkout/');
   const isAuthRoute = pathname === '/auth' || pathname.startsWith('/auth/');
-  /* Single-purpose task flows that own the whole screen — see the dock below. */
-  const isFocusedTaskRoute = pathname === '/dashboard/admin/products/new';
+  /* Single-purpose task flows that own the whole screen — see the dock below.
+     Creating a product and editing one are the same screen, so they get the
+     same treatment; the sibling report pages under /products are not. */
+  const isFocusedTaskRoute =
+    pathname === '/dashboard/admin/products/new' ||
+    /^\/dashboard\/admin\/products\/\d+$/.test(pathname);
   const isMarketingRoute =
     pathname === '/about' || pathname.startsWith('/about/') ||
     pathname === '/contact' || pathname.startsWith('/contact/') ||

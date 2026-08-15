@@ -31,6 +31,7 @@ import {
 import {
   LOW_STOCK_THRESHOLD,
   formatPrice,
+  normalizeProduct,
   stockLabel,
   stockTone,
   type Category,
@@ -95,7 +96,7 @@ export default function AdminProductsPage() {
         .catch(() => ({ categories: [] })),
     ])
       .then(([productsJson, categoriesJson]) => {
-        setProducts(productsJson.products ?? [])
+        setProducts((productsJson.products ?? []).map(normalizeProduct))
         setCategories(categoriesJson.categories ?? [])
       })
       .catch((err) => setError(err.message))

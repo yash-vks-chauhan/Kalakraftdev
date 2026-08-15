@@ -26,6 +26,25 @@ export interface Category {
 }
 
 /**
+ * The list renders numbers straight from the API (`totalSold.toLocaleString()`,
+ * price formatting, stock arithmetic), so a single missing or stringified
+ * field takes down the whole catalogue rather than one cell. /api/admin/products
+ * does coalesce these today; this makes that a property of the screen instead
+ * of a promise the screen has no way to check.
+ */
+export function normalizeProduct(raw: any): Product {
+  return {
+    ...raw,
+    id: Number(raw?.id),
+    price: Number(raw?.price) || 0,
+    stockQuantity: Number(raw?.stockQuantity) || 0,
+    totalSold: Number(raw?.totalSold) || 0,
+    isActive: Boolean(raw?.isActive),
+    imageUrls: Array.isArray(raw?.imageUrls) ? raw.imageUrls : [],
+  }
+}
+
+/**
  * Note: /api/admin/metrics counts five or fewer as low for the dashboard's
  * attention queue. This page has always used ten, and the mobile filter now
  * prints the number beside the option so the two can no longer be confused.
