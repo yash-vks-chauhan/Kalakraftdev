@@ -5,12 +5,31 @@ import { getAuthenticatedUser } from '../../../../../lib/session-auth'
 
 const MAX_REVIEW_COMMENT_LENGTH = 1000
 const MAX_LOCALE_LENGTH = 12
+const MAX_SLUG_LENGTH = 200
+
+/*
+ * /products/[id] accepts either the numeric id or the slug, and the product
+ * page passes that same route parameter straight through to here. Rejecting
+ * slugs meant a product reached by its slug came back 400 and the page drew
+ * every rating on it as zero — so resolve the slug rather than refuse it.
+ */
+async function resolveProductId(raw: string): Promise<number | null> {
+  if (/^[0-9]+$/.test(raw)) {
+    const parsed = parsePositiveInteger(raw, 'productId')
+    return parsed.ok ? parsed.value : null
+  }
+  if (!raw || raw.length > MAX_SLUG_LENGTH) return null
+  const product = await prisma.product.findUnique({
+    where: { slug: raw },
+    select: { id: true },
+  })
+  return product?.id ?? null
+}
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const productIdResult = parsePositiveInteger(id, 'productId')
-  if (!productIdResult.ok) return NextResponse.json({ error: productIdResult.error }, { status: 400 })
-  const productId = productIdResult.value
+  const productId = await resolveProductId(id)
+  if (productId === null) return NextResponse.json({ error: 'Product not found' }, { status: 404 })
 
   // @ts-ignore
   const stats = await prisma.productReview.aggregate({
@@ -48,9 +67,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const userId = authUser.id
 
   const { id } = await params
-  const productIdResult = parsePositiveInteger(id, 'productId')
-  if (!productIdResult.ok) return NextResponse.json({ error: productIdResult.error }, { status: 400 })
-  const productId = productIdResult.value
+  const productId = await resolveProductId(id)
+  if (productId === null) return NextResponse.json({ error: 'Product not found' }, { status: 404 })
 
   const body = await req.json().catch(() => ({}))
   const rating = Number(body.rating)

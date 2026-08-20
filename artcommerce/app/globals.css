@@ -68,6 +68,15 @@
   --warning-foreground: 0 0% 100%;
   --success: 155 90% 24%;
   --success-foreground: 0 0% 100%;
+  /*
+   * Ratings. The gold is the copper the product page already accents with
+   * (#d4a373), lifted into a token so a star row is part of the system rather
+   * than a hex repeated across four files. The track is the unearned part of
+   * a star, and it is a rule-grey rather than a paler gold on purpose: a 3.5
+   * has to read as three-and-a-half, not as a five that has faded.
+   */
+  --rating: 30 53% 64%;
+  --rating-track: 217 21% 91%;
   /* One elevation, and only sheets get it. */
   --shadow-sheet: 0 -14px 44px -20px hsl(223 19% 7% / 0.26);
 

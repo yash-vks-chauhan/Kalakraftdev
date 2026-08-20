@@ -5,8 +5,8 @@ import Link from 'next/link'
 import { AnimatePresence, motion } from 'framer-motion'
 import { BadgeCheck, PenLine, Star, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { Rating, RatingInput } from '@/components/ui/rating'
 import { useAuth } from '../../contexts/AuthContext'
-import Stars from '../../components/Stars'
 import { EASE, formatReviewDate, initialsFrom } from './pdp-utils'
 
 export interface Review {
@@ -56,7 +56,6 @@ export default function ProductReviews({
 
   // Composer
   const [rating, setRating] = useState(0)
-  const [hoverRating, setHoverRating] = useState(0)
   const [comment, setComment] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
@@ -173,28 +172,7 @@ export default function ProductReviews({
               <span className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#999]">
                 Your rating
               </span>
-              <span className="flex items-center gap-1" onMouseLeave={() => setHoverRating(0)}>
-                {[1, 2, 3, 4, 5].map(n => (
-                  <button
-                    key={n}
-                    type="button"
-                    onClick={() => setRating(n)}
-                    onMouseEnter={() => setHoverRating(n)}
-                    aria-label={`${n} star${n > 1 ? 's' : ''}`}
-                    className="p-0.5 outline-none transition-transform duration-200 hover:scale-110"
-                  >
-                    <Star
-                      className={cn(
-                        'h-5 w-5 transition-colors duration-200',
-                        n <= (hoverRating || rating)
-                          ? 'fill-[#d4a373] text-[#d4a373]'
-                          : 'fill-[#ededed] text-[#ededed]',
-                      )}
-                      strokeWidth={1.25}
-                    />
-                  </button>
-                ))}
-              </span>
+              <RatingInput value={rating} onChange={setRating} size="lg" className="-ml-1" />
             </div>
 
             <textarea
@@ -229,7 +207,7 @@ export default function ProductReviews({
   if (reviews.length === 0) {
     return (
       <div className="rounded-2xl border border-[#e5e5e5] bg-[#fafafa] px-10 py-16 text-center">
-        <Stars value={0} size={18} className="justify-center" />
+        <Rating value={0} size="lg" aria-hidden="true" />
         <h3 className="mt-5 font-serif text-3xl font-medium leading-none text-[#1a1a1a]">
           No reviews yet
         </h3>
@@ -253,7 +231,7 @@ export default function ProductReviews({
           </span>
           <span className="pb-1 text-[15px] text-[#b9b9b9]">/ 5</span>
         </div>
-        <Stars value={avg} size={16} className="mt-4" />
+        <Rating value={avg} size="md" className="mt-4" />
         <p className="mt-3 text-[13px] text-[#666]">
           Based on {count || reviews.length} {(count || reviews.length) === 1 ? 'review' : 'reviews'}
         </p>
@@ -277,12 +255,12 @@ export default function ProductReviews({
                 )}
               >
                 <span className="w-3 text-[12px] tabular-nums text-[#666]">{b.star}</span>
-                <Star className="h-3 w-3 shrink-0 fill-[#d4a373] text-[#d4a373]" strokeWidth={1.25} />
+                <Star className="h-3 w-3 shrink-0 fill-rating text-rating" strokeWidth={1.25} />
                 <span className="relative h-[3px] flex-1 overflow-hidden rounded-full bg-[#ececec]">
                   <motion.span
                     className={cn(
                       'absolute inset-y-0 left-0 rounded-full',
-                      isActive ? 'bg-[#d4a373]' : 'bg-[#1a1a1a]',
+                      isActive ? 'bg-rating' : 'bg-[#1a1a1a]',
                     )}
                     initial={{ width: 0 }}
                     whileInView={{ width: `${b.pct}%` }}
@@ -369,7 +347,7 @@ export default function ProductReviews({
                         {formatReviewDate(rev.createdAt)}
                       </span>
                     )}
-                    <Stars value={rev.rating} size={13} className="ml-auto" />
+                    <Rating value={rev.rating} size="sm" className="ml-auto" />
                   </div>
 
                   {rev.comment && (

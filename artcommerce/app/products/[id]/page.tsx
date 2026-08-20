@@ -17,7 +17,7 @@ import ProductChrome, { type ChromeSection } from './ProductChrome'
 import ProductSkeleton from './ProductSkeleton'
 import ProductStage from './ProductStage'
 import ProductReviews, { type Review } from './ProductReviews'
-import Stars from '../../components/Stars'
+import RatingSummary from './RatingSummary'
 import { parseLines, parseSpecs } from './pdp-utils'
 import { formatPrice } from '../../../lib/formatPrice'
 import { useDeviceDetection } from '../../hooks/useDeviceDetection'
@@ -153,12 +153,15 @@ export default function ProductDetailsPage() {
   // Rating stats + the accounts themselves
   const loadReviews = useCallback(() => {
     if (!id) return
-    fetch(`/api/products/${id}/review`)
-      .then(r => r.json())
-      .then(({ avg, count, reviews }) => {
-        setAvgRating(avg || 0)
-        setRatingCount(count || 0)
-        setReviews(reviews || [])
+    // no-store so a freshly posted review is on the page the moment it lands,
+    // rather than the browser handing back the count from before it.
+    fetch(`/api/products/${id}/review`, { cache: 'no-store' })
+      .then(r => (r.ok ? r.json() : null))
+      .then(data => {
+        if (!data) return
+        setAvgRating(data.avg || 0)
+        setRatingCount(data.count || 0)
+        setReviews(data.reviews || [])
       })
       .catch(() => {})
   }, [id])
@@ -344,20 +347,7 @@ export default function ProductDetailsPage() {
             </h1>
 
             {/* Rating jumps to the accounts rather than just sitting there */}
-            <button
-              type="button"
-              onClick={() =>
-                document.getElementById('reviews')?.scrollIntoView({ behavior: 'smooth' })
-              }
-              className="group mt-4 flex w-fit items-center gap-2.5 outline-none"
-            >
-              <Stars value={avgRating} size={14} />
-              <span className="text-[13px] text-[#666] transition-colors group-hover:text-[#1a1a1a]">
-                {ratingCount > 0
-                  ? `${avgRating.toFixed(1)} · ${ratingCount} review${ratingCount > 1 ? 's' : ''}`
-                  : 'No reviews yet'}
-              </span>
-            </button>
+            <RatingSummary value={avgRating} count={ratingCount} className="mt-4" />
 
             <div className="mt-6 flex items-baseline gap-2.5">
               <span className="font-serif text-[38px] font-medium leading-none tracking-tight text-[#1a1a1a]">

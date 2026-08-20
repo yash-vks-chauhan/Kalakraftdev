@@ -20,6 +20,7 @@ import { toast } from 'sonner'
 
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
+import { Rating } from '@/components/ui/rating'
 import {
   Carousel,
   CarouselContent,
@@ -36,6 +37,7 @@ import {
 import { useAuth } from '../../contexts/AuthContext'
 import { useCart } from '../../contexts/CartContext'
 import { useWishlist } from '../../contexts/WishlistContext'
+import RatingSummary from './RatingSummary'
 import type { Review } from './ProductReviews'
 
 /* -------------------------------------------------------------- */
@@ -69,6 +71,9 @@ interface MobileProductDetailsProps {
 }
 
 const LOW_STOCK = 5
+/** Reviews revealed at a time — two fills a phone screen without burying
+ *  the sections under it. */
+const REVIEWS_PAGE = 2
 /** How far the lightbox enlarges. 2.6× shows brush and pour detail without
  *  turning a 1000px photo into mush. */
 const ZOOM_SCALE = 2.6
@@ -127,6 +132,7 @@ export default function MobileProductDetails({
   const [noteExpanded, setNoteExpanded] = useState(false)
   const [barVisible, setBarVisible] = useState(false)
   const [lightboxOpen, setLightboxOpen] = useState(false)
+  const [reviewsShown, setReviewsShown] = useState(REVIEWS_PAGE)
 
   const [api, setApi] = useState<CarouselApi>()
   const [current, setCurrent] = useState(0)
@@ -155,6 +161,11 @@ export default function MobileProductDetails({
       .filter((s) => s && typeof s.url === 'string' && s.url.length > 0)
   }, [product.stylingIdeaImages])
 
+  /*
+   * Only the twenty most recent accounts come down with the page, so the bars
+   * are drawn against what is actually here rather than against the total —
+   * otherwise a piece with fifty reviews shows five stubs and reads as unloved.
+   */
   const distribution = useMemo(() => {
     const buckets = [0, 0, 0, 0, 0]
     reviews.forEach((r) => {
@@ -424,17 +435,12 @@ export default function MobileProductDetails({
           {product.name}
         </h1>
 
-        <div className="mt-2.5 flex items-baseline gap-2.5">
-          <span className="text-[21px] font-semibold tabular-nums text-foreground">
-            {formatPrice(product.price)}
-          </span>
-          {ratingCount > 0 && (
-            <span className="text-[12.5px] text-muted-foreground">
-              ★ <b className="font-semibold text-foreground">{avgRating.toFixed(1)}</b> ·{' '}
-              {ratingCount} {ratingCount === 1 ? 'review' : 'reviews'}
-            </span>
-          )}
-        </div>
+        {/* Stars, then price — and the row is a link down to the accounts. */}
+        <RatingSummary value={avgRating} count={ratingCount} size="sm" className="mt-2" />
+
+        <p className="mt-2 text-[21px] font-semibold tabular-nums text-foreground">
+          {formatPrice(product.price)}
+        </p>
 
         {(isOut || isLow) && (
           <p
@@ -548,68 +554,87 @@ export default function MobileProductDetails({
         </section>
       )}
 
-      {/* ── Reviews — present on the phone at last ──────────── */}
-      {ratingCount > 0 && (
-        <section className="px-4 pt-6">
-          <h2 className="text-[11.5px] font-semibold uppercase tracking-wider text-muted-foreground">
-            What buyers say
-          </h2>
+      {/* ── Reviews ─────────────────────────────────────────── */}
+      <section id="reviews" className="scroll-mt-[var(--mobile-header-total)] px-4 pt-6">
+        <h2 className="text-[11.5px] font-semibold uppercase tracking-wider text-muted-foreground">
+          What buyers say
+        </h2>
 
-          <div className="mt-3 flex items-center gap-4">
-            <div>
-              <p className="text-[32px] font-semibold leading-none tabular-nums text-foreground">
-                {avgRating.toFixed(1)}
-              </p>
-              <p className="mt-1.5 text-[11.5px] text-muted-foreground">
-                {ratingCount} {ratingCount === 1 ? 'review' : 'reviews'}
-              </p>
-            </div>
-            <div className="flex flex-1 flex-col gap-1">
-              {[5, 4, 3, 2, 1].map((star) => {
-                const n = distribution[star - 1]
-                const pct = ratingCount > 0 ? (n / ratingCount) * 100 : 0
-                return (
-                  <div key={star} className="flex items-center gap-1.5 text-[10.5px] text-muted-foreground">
-                    <span className="w-2 text-right">{star}</span>
-                    <span className="h-1 flex-1 overflow-hidden rounded-full bg-secondary">
-                      <span
-                        className="block h-full rounded-full bg-foreground"
-                        style={{ width: `${pct}%` }}
-                      />
-                    </span>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-
-          {reviews.slice(0, 2).map((r) => (
-            <article key={r.id} className="mt-3.5 border-t pt-3.5">
-              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[12.5px]">
-                <b className="font-semibold text-foreground">
-                  {r.user?.fullName || 'Verified buyer'}
-                </b>
-                <span className="inline-flex items-center gap-1 text-[10.5px] text-emerald-700 dark:text-emerald-500">
-                  <Check className="h-3 w-3" strokeWidth={3} />
-                  Verified buyer
-                </span>
-                <span className="tracking-[1px] text-[11px] text-foreground">
-                  {'★'.repeat(Math.round(r.rating))}
-                </span>
+        {ratingCount > 0 ? (
+          <>
+            <div className="mt-3 flex items-center gap-5">
+              <div className="shrink-0">
+                <p className="text-[32px] font-semibold leading-none tabular-nums text-foreground">
+                  {avgRating.toFixed(1)}
+                </p>
+                <Rating value={avgRating} size="sm" className="mt-2" />
+                <p className="mt-1.5 text-[11.5px] text-muted-foreground">
+                  {ratingCount} {ratingCount === 1 ? 'review' : 'reviews'}
+                </p>
               </div>
-              {r.comment && (
-                <p className="mt-1.5 text-[13px] leading-relaxed text-foreground/75">{r.comment}</p>
-              )}
-            </article>
-          ))}
 
-          {ratingCount > 2 && (
-            <Button asChild variant="outline" className="mt-3.5 h-11 w-full rounded-[10px]">
-              <Link href={`/products/${product.id}#reviews`}>Read all {ratingCount} reviews</Link>
-            </Button>
-          )}
-        </section>
-      )}
+              <div className="flex flex-1 flex-col gap-1">
+                {[5, 4, 3, 2, 1].map((star) => {
+                  const n = distribution[star - 1]
+                  const pct = reviews.length > 0 ? (n / reviews.length) * 100 : 0
+                  return (
+                    <div
+                      key={star}
+                      className="flex items-center gap-1.5 text-[10.5px] tabular-nums text-muted-foreground"
+                    >
+                      <span className="w-2 text-right">{star}</span>
+                      <span className="h-1 flex-1 overflow-hidden rounded-full bg-secondary">
+                        <span
+                          className="block h-full rounded-full bg-rating"
+                          style={{ width: `${pct}%` }}
+                        />
+                      </span>
+                      <span className="w-3 text-right text-faint">{n}</span>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+
+            {reviews.slice(0, reviewsShown).map((r) => (
+              <article key={r.id} className="mt-3.5 border-t pt-3.5">
+                <div className="flex items-center gap-2 text-[12.5px]">
+                  <b className="min-w-0 truncate font-semibold text-foreground">
+                    {r.user?.fullName || 'Verified buyer'}
+                  </b>
+                  <span className="inline-flex shrink-0 items-center gap-1 text-[10.5px] text-emerald-700 dark:text-emerald-500">
+                    <Check className="h-3 w-3" strokeWidth={3} />
+                    Verified
+                  </span>
+                  <Rating value={r.rating} size="xs" className="ml-auto" />
+                </div>
+                {r.comment && (
+                  <p className="mt-1.5 text-[13px] leading-relaxed text-foreground/75">{r.comment}</p>
+                )}
+              </article>
+            ))}
+
+            {/* The rest open here rather than sending the page somewhere. */}
+            {reviews.length > reviewsShown && (
+              <Button
+                variant="outline"
+                className="mt-3.5 h-11 w-full rounded-[10px]"
+                onClick={() => setReviewsShown((n) => n + REVIEWS_PAGE)}
+              >
+                Read {Math.min(REVIEWS_PAGE, reviews.length - reviewsShown)} more
+              </Button>
+            )}
+          </>
+        ) : (
+          /* No accounts yet is still an answer — say it plainly. */
+          <div className="mt-3 rounded-[10px] border border-dashed py-7 text-center">
+            <Rating value={0} size="md" aria-hidden="true" />
+            <p className="mx-auto mt-2.5 max-w-[15rem] text-[12.5px] leading-relaxed text-muted-foreground">
+              No reviews yet. They open to buyers once an order has been delivered.
+            </p>
+          </div>
+        )}
+      </section>
 
       {/* ── Everything secondary, behind one disclosure ─────── */}
       <section className="px-4 pt-6">

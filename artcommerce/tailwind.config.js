@@ -57,6 +57,11 @@ module.exports = {
           DEFAULT: 'hsl(var(--success))',
           foreground: 'hsl(var(--success-foreground))',
         },
+        // The star gold, and the unearned part of a star behind it.
+        rating: {
+          DEFAULT: 'hsl(var(--rating))',
+          track: 'hsl(var(--rating-track))',
+        },
       },
       boxShadow: {
         sheet: 'var(--shadow-sheet)',

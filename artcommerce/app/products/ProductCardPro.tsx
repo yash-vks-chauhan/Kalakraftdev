@@ -6,11 +6,11 @@ import { useRouter } from 'next/navigation'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ArrowUpRight, Check, ChevronLeft, ChevronRight, ShoppingCart } from 'lucide-react'
 import WishlistButton from '../components/WishlistButton'
-import Stars from '../components/Stars'
 import { useImagePreload } from '../hooks/useImagePreload'
 import { useAuth } from '../contexts/AuthContext'
 import { useCart } from '../contexts/CartContext'
 import { cn } from '@/lib/utils'
+import { Rating } from '@/components/ui/rating'
 import { formatPrice } from '../../lib/formatPrice'
 import animationStyles from './products-animations.module.css'
 
@@ -274,7 +274,7 @@ export default function ProductCardPro({
 
           {rating > 0 && (
             <span className="flex items-center gap-1.5">
-              <Stars value={rating} size={11} />
+              <Rating value={rating} size="xs" />
               {prod.ratingCount ? (
                 <span className="text-[11px] tabular-nums text-[#b9b9b9]">
                   ({prod.ratingCount})
