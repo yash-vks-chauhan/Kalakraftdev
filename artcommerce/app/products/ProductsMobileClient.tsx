@@ -603,14 +603,14 @@ export default function ProductsMobileClient() {
               <div className="flex gap-3.5 px-4 pb-4 pt-3">
                 <Link
                   href={`/products/${peeked.id}`}
-                  className="aspect-[4/5] w-[104px] shrink-0 overflow-hidden rounded-[10px] bg-muted"
+                  className="aspect-square w-[104px] shrink-0 overflow-hidden rounded-[10px] border bg-muted"
                 >
                   {peeked.imageUrls[0] ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={peeked.imageUrls[0]}
                       alt={peeked.name}
-                      className="h-full w-full object-cover"
+                      className="h-full w-full object-contain p-1.5"
                       decoding="async"
                     />
                   ) : null}
@@ -738,7 +738,11 @@ function ProductTile({
 
   return (
     <li className="group/tile flex min-w-0 flex-col gap-1.5">
-      <div className="relative aspect-[4/5] overflow-hidden rounded-xl bg-muted">
+      {/* Square and contained, not 4:5 and cropped. Product shots are square,
+          so the old frame zoomed them ~25% and clipped the piece at both
+          edges; the tile is also ~44pt shorter now, which is most of another
+          row per screen. */}
+      <div className="relative aspect-square overflow-hidden rounded-xl border bg-muted">
         <Link href={`/products/${product.id}`} className="absolute inset-0">
           {image ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -748,7 +752,7 @@ function ProductTile({
               loading="lazy"
               decoding="async"
               className={cn(
-                'h-full w-full object-cover transition-transform duration-300 ease-out',
+                'h-full w-full object-contain p-2 transition-transform duration-300 ease-out',
                 'group-active/tile:scale-[0.98]',
                 isOut && 'grayscale opacity-50'
               )}
@@ -816,7 +820,7 @@ function GridSkeleton() {
     <ul className="grid grid-cols-2 gap-x-2.5 gap-y-6 px-3.5 pb-2 pt-1">
       {Array.from({ length: 6 }).map((_, i) => (
         <li key={i} className="flex flex-col gap-1.5">
-          <Skeleton className="aspect-[4/5] w-full rounded-xl" />
+          <Skeleton className="aspect-square w-full rounded-xl" />
           <Skeleton className="h-3 w-4/5" />
           <Skeleton className="h-3 w-3/5" />
           <Skeleton className="h-3 w-2/5" />

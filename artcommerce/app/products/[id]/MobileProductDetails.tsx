@@ -311,13 +311,23 @@ export default function MobileProductDetails({
 
   return (
     <div className="min-h-screen bg-background pb-tabbar">
-      {/* ── Hero: the piece, full bleed ─────────────────────── */}
-      <div className="relative">
+      {/*
+        ── Hero ──
+        The frame is inset and square rather than full-bleed and 4:5. Product
+        shots are square, so a 4:5 cover-crop zoomed them ~25% and cut the
+        piece off at both edges — it read as the photo bursting out of the
+        page rather than sitting on it. `object-contain` shows the whole
+        piece, centred, and the square frame gives back ~130pt of the first
+        screen. The absolute offsets below carry the 16px inset themselves:
+        an abspos child is laid out against the padding box, so `px-4` here
+        does not move them.
+      */}
+      <div className="relative px-4 pt-1">
         <Carousel setApi={setApi} opts={{ loop: images.length > 1 }} className="w-full">
           <CarouselContent className="ml-0">
             {(images.length ? images : [null]).map((url, i) => (
               <CarouselItem key={i} className="basis-full pl-0">
-                <div className="relative aspect-[4/5] w-full overflow-hidden bg-muted">
+                <div className="relative aspect-square w-full overflow-hidden rounded-2xl border bg-muted">
                   {url ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
@@ -326,7 +336,10 @@ export default function MobileProductDetails({
                       // Tapping the piece opens it full screen — the gesture
                       // people try first, before they look for a button.
                       onClick={() => setLightboxOpen(true)}
-                      className={cn('h-full w-full cursor-zoom-in object-cover', isOut && 'grayscale')}
+                      className={cn(
+                        'h-full w-full cursor-zoom-in object-contain p-3',
+                        isOut && 'grayscale'
+                      )}
                       loading={i === 0 ? 'eager' : 'lazy'}
                       decoding="async"
                       draggable={false}
@@ -343,7 +356,7 @@ export default function MobileProductDetails({
         </Carousel>
 
         {/* Floating controls — no bar across the artwork. */}
-        <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-center justify-between px-3 pt-3">
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-center justify-between px-7 pt-4">
           <GlassButton label="Go back" onClick={() => router.back()}>
             <ArrowLeft className="h-[17px] w-[17px]" />
           </GlassButton>
@@ -365,26 +378,17 @@ export default function MobileProductDetails({
           <button
             type="button"
             onClick={() => setLightboxOpen(true)}
-            className="absolute bottom-3.5 right-3 z-10 inline-flex h-[30px] items-center gap-1.5 rounded-full bg-background/90 px-2.5 text-[11.5px] font-semibold text-foreground shadow-sm backdrop-blur transition-transform active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="absolute bottom-3.5 right-7 z-10 inline-flex h-[30px] items-center gap-1.5 rounded-full bg-background/90 px-2.5 text-[11.5px] font-semibold text-foreground shadow-sm backdrop-blur transition-transform active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <ZoomIn className="h-3 w-3" />
             Zoom
           </button>
         )}
 
-        {images.length > 1 && (
-          <div className="pointer-events-none absolute inset-x-3.5 bottom-2 z-10 flex gap-1">
-            {images.map((_, i) => (
-              <span
-                key={i}
-                className={cn(
-                  'h-[2.5px] flex-1 rounded-full transition-colors duration-200',
-                  i === current ? 'bg-white' : 'bg-white/45'
-                )}
-              />
-            ))}
-          </div>
-        )}
+        {/* No progress dots. They were white bars over a full-bleed photo;
+            against an inset frame they read as a stray rule at its edge, and
+            the thumbnail strip immediately below already marks the current
+            image — and can be tapped, which dots cannot. */}
       </div>
 
       {/* Thumbnails — jump, don't hunt. */}
@@ -403,7 +407,7 @@ export default function MobileProductDetails({
               )}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={url} alt="" className="h-full w-full object-cover" loading="lazy" decoding="async" />
+              <img src={url} alt="" className="h-full w-full object-contain p-0.5" loading="lazy" decoding="async" />
             </button>
           ))}
         </div>
@@ -665,13 +669,13 @@ export default function MobileProductDetails({
           <div className="flex gap-3 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {similarProducts.map((p) => (
               <Link key={p.id} href={`/products/${p.id}`} className="w-[134px] shrink-0">
-                <div className="aspect-[4/5] overflow-hidden rounded-[10px] bg-muted">
+                <div className="aspect-square overflow-hidden rounded-[10px] bg-muted">
                   {p.imageUrls?.[0] ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={p.imageUrls[0]}
                       alt={p.name}
-                      className="h-full w-full object-cover"
+                      className="h-full w-full object-contain p-1.5"
                       loading="lazy"
                       decoding="async"
                     />
@@ -731,7 +735,7 @@ export default function MobileProductDetails({
             <div className="aspect-square w-14 shrink-0 overflow-hidden rounded-lg bg-muted">
               {images[0] ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={images[0]} alt="" className="h-full w-full object-cover" decoding="async" />
+                <img src={images[0]} alt="" className="h-full w-full object-contain p-1" decoding="async" />
               ) : null}
             </div>
             <div className="min-w-0">
@@ -846,7 +850,7 @@ export default function MobileProductDetails({
                 )}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={url} alt="" className="h-full w-full object-cover" decoding="async" />
+                <img src={url} alt="" className="h-full w-full object-contain p-0.5" decoding="async" />
               </button>
             ))}
           </div>
