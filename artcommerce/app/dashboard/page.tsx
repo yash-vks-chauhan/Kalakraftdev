@@ -987,7 +987,7 @@ function AdminDesktop({
       {/* Period + stats */}
       <section className="flex flex-col gap-4">
         <div className="flex items-center justify-between gap-4">
-          <h2 className="text-xs font-mediumr text-muted-foreground">
+          <h2 className="text-xs font-medium text-muted-foreground">
             Overview
             {/* Period lives in the select beside this, not in the label too */}
             <span className="hidden md:inline"> · {periodLabels[period]}</span>
