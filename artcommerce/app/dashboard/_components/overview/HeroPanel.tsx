@@ -40,7 +40,7 @@ export function HeroPanel({
 }) {
   return (
     <div className="overflow-hidden rounded-[22px] bg-foreground px-[18px] pt-[18px] text-background">
-      <span className="text-[10.5px] font-semibold uppercase tracking-[0.12em] text-background/50">
+      <span className="text-[11px] font-semibold tracking-[0.01em] text-background/50">
         {label}
       </span>
 
@@ -91,7 +91,7 @@ export function HeroPanel({
                 index > 0 && "border-l"
               )}
             >
-              <span className="text-[9.5px] font-semibold uppercase tracking-[0.1em] text-background/45">
+              <span className="text-[10.5px] font-semibold tracking-[0.01em] text-background/45">
                 {item.label}
               </span>
               <span className="truncate text-base font-semibold tracking-[-0.025em] tabular-nums">

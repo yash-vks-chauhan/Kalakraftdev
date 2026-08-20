@@ -143,7 +143,7 @@ export function ProductFormMobile({ form }: { form: ProductForm }) {
                 aria-current={on ? 'step' : undefined}
                 className={cn(
                   'relative flex min-w-0 flex-1 items-center justify-center gap-1.5 whitespace-nowrap px-1 pb-2.5 pt-3',
-                  'font-mono text-[9.5px] uppercase tracking-[0.1em] transition-colors',
+                  'font-mono text-[10.5px] tracking-[0.01em] transition-colors',
                   'after:absolute after:inset-x-2 after:-bottom-px after:h-0.5 after:rounded-t-full after:bg-foreground after:transition-opacity',
                   on ? 'text-foreground after:opacity-100' : 'text-faint after:opacity-0'
                 )}
@@ -177,7 +177,7 @@ export function ProductFormMobile({ form }: { form: ProductForm }) {
           <button
             type="button"
             onClick={() => setActiveTab(barBlocker.tab)}
-            className="flex w-full items-center gap-2 border-b bg-wash px-4 py-2.5 text-left font-mono text-[10.5px] uppercase tracking-[0.04em] text-muted-foreground transition-colors active:bg-secondary"
+            className="flex w-full items-center gap-2 border-b bg-wash px-4 py-2.5 text-left font-mono text-[11px] tracking-[0.01em] text-muted-foreground transition-colors active:bg-secondary"
           >
             <AlertCircle className="size-3.5 shrink-0 text-warning" />
             <span className="min-w-0 truncate">
@@ -343,7 +343,7 @@ function DetailsStep({ form }: { form: ProductForm }) {
         <button
           type="button"
           onClick={() => setSlugOpen((v) => !v)}
-          className="shrink-0 font-mono text-[10px] uppercase tracking-[0.13em] text-foreground"
+          className="shrink-0 font-mono text-[11px] tracking-[0.01em] text-foreground"
         >
           {slugOpen ? 'Hide' : 'Edit'}
         </button>
@@ -616,7 +616,7 @@ function MediaStep({
   return (
     <div className="flex flex-col">
       <div className="flex items-baseline gap-3 pb-2 pt-4">
-        <span className="flex-1 font-mono text-[10px] uppercase tracking-[0.13em] text-faint">
+        <span className="flex-1 font-mono text-[11px] tracking-[0.01em] text-faint">
           Photographs
         </span>
         <span className="font-mono text-[10px] tabular-nums text-faint">
@@ -632,7 +632,7 @@ function MediaStep({
           <input {...getProductInputProps()} />
           <Camera className="size-[22px] text-muted-foreground" />
           <span className="text-[14px] font-medium text-foreground">Add photos</span>
-          <span className="font-mono text-[10px] uppercase tracking-[0.04em] text-faint">
+          <span className="font-mono text-[11px] tracking-[0.01em] text-faint">
             Camera or library · up to 20MB
           </span>
         </div>
@@ -657,7 +657,7 @@ function MediaStep({
                   <img src={url} alt="" className="size-full object-cover" />
                 </button>
                 {i === 0 && (
-                  <span className="pointer-events-none absolute left-1.5 top-1.5 rounded-sm bg-primary px-1.5 py-0.5 font-mono text-[8.5px] uppercase tracking-[0.12em] text-primary-foreground">
+                  <span className="pointer-events-none absolute left-1.5 top-1.5 rounded-sm bg-primary px-1.5 py-0.5 font-mono text-[9.5px] tracking-[0.01em] text-primary-foreground">
                     Cover
                   </span>
                 )}
@@ -807,7 +807,7 @@ function TagsStep({ form }: { form: ProductForm }) {
 
       {usageTags.length > 0 && (
         <div className="flex flex-col gap-2 border-b py-3.5">
-          <span className="font-mono text-[10px] uppercase tracking-[0.13em] text-faint">
+          <span className="font-mono text-[11px] tracking-[0.01em] text-faint">
             Added
           </span>
           <div className="flex flex-wrap gap-1.5">
@@ -833,7 +833,7 @@ function TagsStep({ form }: { form: ProductForm }) {
 
       {suggestions.length > 0 && (
         <div className="flex flex-col gap-2 border-b py-3.5">
-          <span className="font-mono text-[10px] uppercase tracking-[0.13em] text-faint">
+          <span className="font-mono text-[11px] tracking-[0.01em] text-faint">
             Suggested
           </span>
           <div className="flex flex-wrap gap-1.5">
@@ -855,7 +855,7 @@ function TagsStep({ form }: { form: ProductForm }) {
       {/* The decision the phone could not make at all before. */}
       <div className="flex items-center gap-3 border-b py-3.5">
         <span className="min-w-0 flex-1">
-          <span className="block font-mono text-[10px] uppercase tracking-[0.13em] text-faint">
+          <span className="block font-mono text-[11px] tracking-[0.01em] text-faint">
             On create
           </span>
           <span className="mt-0.5 block text-[14.5px] text-foreground">
@@ -1037,7 +1037,7 @@ function ReviewSheet({
                   ? 'Publish on create'
                   : 'Save as a draft'}
               </span>
-              <span className="block font-mono text-[10.5px] uppercase tracking-[0.1em] text-faint">
+              <span className="block font-mono text-[11px] tracking-[0.01em] text-faint">
                 {isActive ? 'Visible to customers' : 'Only you can see it'}
               </span>
             </span>
@@ -1124,7 +1124,7 @@ function RuleField({
       <div className="flex items-baseline gap-3">
         <label
           htmlFor={htmlFor}
-          className="flex-1 font-mono text-[10px] uppercase tracking-[0.13em] text-faint"
+          className="flex-1 font-mono text-[11px] tracking-[0.01em] text-faint"
         >
           {label}
         </label>

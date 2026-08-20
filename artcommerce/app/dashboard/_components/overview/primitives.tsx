@@ -30,7 +30,7 @@ export function MobileSection({
   return (
     <section className={cn("flex flex-col gap-2.5", className)}>
       <div className="flex items-baseline gap-2 px-1">
-        <h2 className="text-[11px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+        <h2 className="text-[12px] font-semibold tracking-[0.01em] text-muted-foreground">
           {title}
         </h2>
         {tail ? (

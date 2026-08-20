@@ -15,19 +15,26 @@ import {
   TicketX,
   Trash2,
   Wallet,
-  Copy,
 } from 'lucide-react'
 
 import { useAuth } from '../../../contexts/AuthContext'
+import { useIsDesktop } from '../../../hooks/useMediaQuery'
 import ConfirmDialog from '../../../components/ConfirmDialog'
-import { ActionSheet } from '../../_components/ActionSheet'
+import { DesktopTableFrame } from '../../_components/DataCardList'
+import { MobileListSkeleton } from '../../_components/MobileListChrome'
+import { CouponsMobile } from './_components/CouponsMobile'
+import { CouponFormSheet } from './_components/CouponFormSheet'
 import {
-  DataCard,
-  DataCardEmpty,
-  DataCardList,
-  DataCardSkeleton,
-  DesktopTableFrame,
-} from '../../_components/DataCardList'
+  EMPTY_FORM,
+  daysFromNow,
+  formatAmount,
+  formatDate,
+  getStatus,
+  toDateInputValue,
+  type Coupon,
+  type CouponStatus,
+  type FormState,
+} from './_components/coupon'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -65,72 +72,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 
-interface Coupon {
-  id: number
-  code: string
-  type: 'percentage' | 'flat'
-  amount: number
-  expiresAt: string
-  usedCount: number
-  usageLimit: number | null
-  createdAt?: string
-}
-
 type StatusFilter = 'all' | 'active' | 'expired' | 'used-up'
-type CouponStatus = 'active' | 'expired' | 'used-up'
-
-interface FormState {
-  code: string
-  type: 'percentage' | 'flat'
-  amount: string
-  expiresAt: string
-  usageLimit: string
-}
-
-const EMPTY_FORM: FormState = {
-  code: '',
-  type: 'percentage',
-  amount: '',
-  expiresAt: '',
-  usageLimit: '',
-}
-
-function getStatus(c: Coupon): CouponStatus {
-  if (new Date(c.expiresAt).getTime() < Date.now()) return 'expired'
-  if (c.usageLimit != null && c.usedCount >= c.usageLimit) return 'used-up'
-  return 'active'
-}
-
-function formatAmount(c: Coupon) {
-  if (c.type === 'percentage') return `${c.amount}% off`
-  return new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
-    maximumFractionDigits: 0,
-  }).format(c.amount)
-}
-
-function formatDate(value: string) {
-  return new Date(value).toLocaleDateString('en-GB', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  })
-}
-
-function daysFromNow(value: string) {
-  const ms = new Date(value).getTime() - Date.now()
-  const days = Math.round(ms / (1000 * 60 * 60 * 24))
-  if (days === 0) return 'today'
-  if (days > 0) return `in ${days} day${days === 1 ? '' : 's'}`
-  return `${Math.abs(days)} day${days === -1 ? '' : 's'} ago`
-}
-
-function toDateInputValue(value: string) {
-  const d = new Date(value)
-  if (Number.isNaN(d.getTime())) return ''
-  return d.toISOString().slice(0, 10)
-}
 
 export default function CouponManager() {
   const { token, user, loading: authLoading } = useAuth()
@@ -150,6 +92,9 @@ export default function CouponManager() {
 
   const [deleteTarget, setDeleteTarget] = useState<Coupon | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [bulkPending, setBulkPending] = useState(false)
+
+  const isDesktop = useIsDesktop()
 
   useEffect(() => {
     if (authLoading) return
@@ -290,8 +235,45 @@ export default function CouponManager() {
     }
   }
 
+  async function handleBulkDelete(ids: number[]) {
+    if (ids.length === 0) return
+    setBulkPending(true)
+    try {
+      const results = await Promise.allSettled(
+        ids.map(async (id) => {
+          const res = await fetch('/api/admin/coupons', {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ id }),
+          })
+          if (!res.ok) throw new Error(String(res.status))
+          return id
+        })
+      )
+      const removed = new Set(
+        results.flatMap((r) => (r.status === 'fulfilled' ? [r.value] : []))
+      )
+      if (removed.size > 0) {
+        setCoupons((prev) => prev.filter((c) => !removed.has(c.id)))
+      }
+      const failed = results.length - removed.size
+      if (failed === 0) {
+        toast.success(`Deleted ${removed.size} coupon${removed.size === 1 ? '' : 's'}.`)
+      } else if (removed.size === 0) {
+        toast.error('No coupons could be deleted.')
+      } else {
+        toast.warning(`${removed.size} deleted, ${failed} failed.`)
+      }
+    } finally {
+      setBulkPending(false)
+    }
+  }
+
   if (loading) {
-    return <CouponsSkeleton />
+    return isDesktop ? <CouponsSkeleton /> : <MobileListSkeleton media={false} rows={8} />
   }
 
   if (error) {
@@ -307,6 +289,55 @@ export default function CouponManager() {
             <p className="text-xs text-muted-foreground">{error}</p>
           </CardContent>
         </Card>
+      </main>
+    )
+  }
+
+  const deleteDialog = (
+    <ConfirmDialog
+      open={Boolean(deleteTarget)}
+      title="Delete coupon"
+      description={
+        deleteTarget
+          ? `Delete coupon "${deleteTarget.code}" permanently? This action cannot be undone.`
+          : ''
+      }
+      confirmLabel="Delete coupon"
+      isProcessing={isDeleting}
+      onConfirm={handleDelete}
+      onClose={() => {
+        if (!isDeleting) setDeleteTarget(null)
+      }}
+    />
+  )
+
+  /*
+   * Two trees rather than one restyled: the phone stops building the
+   * six-column table it never paints, and the form it does show is a sheet
+   * of rules rather than the desktop grid squeezed to 358px.
+   */
+  if (!isDesktop) {
+    return (
+      <main>
+        <CouponsMobile
+          coupons={coupons}
+          onEdit={openEdit}
+          onNew={openCreate}
+          onDelete={setDeleteTarget}
+          onBulkDelete={handleBulkDelete}
+          bulkPending={bulkPending}
+        />
+        <CouponFormSheet
+          open={sheetOpen}
+          onOpenChange={setSheetOpen}
+          editing={editing}
+          form={form}
+          onChange={(patch) => setForm((prev) => ({ ...prev, ...patch }))}
+          error={formError}
+          submitting={submitting}
+          onSubmit={handleSubmit}
+        />
+        {deleteDialog}
       </main>
     )
   }
@@ -373,7 +404,6 @@ export default function CouponManager() {
           </div>
         </CardHeader>
         <CardContent className="p-0">
-          {/* Desktop: full table. Mobile: stacked cards below. */}
           <DesktopTableFrame>
             <Table>
               <TableHeader>
@@ -472,28 +502,6 @@ export default function CouponManager() {
             </Table>
           </DesktopTableFrame>
 
-          <DataCardList>
-            {loading ? (
-              Array.from({ length: 5 }).map((_, i) => (
-                <DataCardSkeleton key={i} media={false} />
-              ))
-            ) : filtered.length === 0 ? (
-              <DataCardEmpty
-                icon={<TicketX className="h-5 w-5" />}
-                title="No coupons match this view"
-                description="Try another status, or clear the search."
-              />
-            ) : (
-              filtered.map((c) => (
-                <AdminCouponCard
-                  key={c.id}
-                  coupon={c}
-                  onEdit={() => openEdit(c)}
-                  onDelete={() => setDeleteTarget(c)}
-                />
-              ))
-            )}
-          </DataCardList>
         </CardContent>
       </Card>
 
@@ -636,21 +644,7 @@ export default function CouponManager() {
         </SheetContent>
       </Sheet>
 
-      <ConfirmDialog
-        open={Boolean(deleteTarget)}
-        title="Delete coupon"
-        description={
-          deleteTarget
-            ? `Delete coupon "${deleteTarget.code}" permanently? This action cannot be undone.`
-            : ''
-        }
-        confirmLabel="Delete coupon"
-        isProcessing={isDeleting}
-        onConfirm={handleDelete}
-        onClose={() => {
-          if (!isDeleting) setDeleteTarget(null)
-        }}
-      />
+      {deleteDialog}
     </main>
   )
 }
@@ -706,100 +700,6 @@ function StatTile({
         </div>
       </CardContent>
     </Card>
-  )
-}
-
-/* -------------------------------------------------------------- */
-/* MOBILE CARD                                                     */
-/* -------------------------------------------------------------- */
-
-function AdminCouponCard({
-  coupon,
-  onEdit,
-  onDelete,
-}: {
-  coupon: Coupon
-  onEdit: () => void
-  onDelete: () => void
-}) {
-  const [sheetOpen, setSheetOpen] = useState(false)
-  const status = getStatus(coupon)
-
-  async function copyCode() {
-    try {
-      await navigator.clipboard.writeText(coupon.code)
-      toast.success(`Copied ${coupon.code}`)
-    } catch {
-      toast.error('Could not copy the code')
-    }
-  }
-
-  return (
-    <>
-      <DataCard
-        title={
-          <span className="font-mono tracking-wide">{coupon.code}</span>
-        }
-        badge={<StatusBadge status={status} />}
-        meta={
-          <>
-            {coupon.type === 'percentage' ? (
-              <Percent className="mr-1.5 inline-block h-3.5 w-3.5 align-[-2px]" />
-            ) : (
-              <Tag className="mr-1.5 inline-block h-3.5 w-3.5 align-[-2px]" />
-            )}
-            {formatAmount(coupon)} off · {coupon.usedCount}
-            {coupon.usageLimit ? `/${coupon.usageLimit}` : ''} used
-          </>
-        }
-        submeta={`Expires ${formatDate(coupon.expiresAt)} · ${daysFromNow(
-          coupon.expiresAt
-        )}`}
-        onOpenActions={() => setSheetOpen(true)}
-        actionsLabel={`Actions for coupon ${coupon.code}`}
-        footer={
-          <UsageMeter used={coupon.usedCount} limit={coupon.usageLimit} />
-        }
-      />
-
-      <ActionSheet
-        open={sheetOpen}
-        onOpenChange={setSheetOpen}
-        title={coupon.code}
-        description={`${formatAmount(coupon)} off · expires ${formatDate(
-          coupon.expiresAt
-        )}`}
-        groups={[
-          {
-            actions: [
-              {
-                id: 'copy',
-                label: 'Copy code',
-                icon: Copy,
-                onSelect: copyCode,
-              },
-              {
-                id: 'edit',
-                label: 'Edit coupon',
-                icon: Pencil,
-                onSelect: onEdit,
-              },
-            ],
-          },
-          {
-            actions: [
-              {
-                id: 'delete',
-                label: 'Delete coupon',
-                icon: Trash2,
-                destructive: true,
-                onSelect: onDelete,
-              },
-            ],
-          },
-        ]}
-      />
-    </>
   )
 }
 

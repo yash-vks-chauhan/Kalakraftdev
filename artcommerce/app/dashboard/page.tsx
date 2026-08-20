@@ -926,7 +926,7 @@ function CartPreviewCard({ loading }: { loading: boolean }) {
 
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                <p className="text-[10px] text-muted-foreground">
                   Subtotal
                 </p>
                 <p className="text-sm font-semibold tabular-nums text-foreground">
@@ -987,7 +987,7 @@ function AdminDesktop({
       {/* Period + stats */}
       <section className="flex flex-col gap-4">
         <div className="flex items-center justify-between gap-4">
-          <h2 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          <h2 className="text-xs font-mediumr text-muted-foreground">
             Overview
             {/* Period lives in the select beside this, not in the label too */}
             <span className="hidden md:inline"> · {periodLabels[period]}</span>
@@ -1568,7 +1568,7 @@ function StatTile({
           <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
         </span>
         <div className="flex min-w-0 flex-col">
-          <span className="text-[11px] font-medium leading-tight text-muted-foreground sm:truncate sm:text-xs sm:uppercase sm:tracking-wide">
+          <span className="text-[11px] font-medium leading-tight text-muted-foreground sm:truncate sm:text-xs">
             {label}
           </span>
           <span className="truncate text-base font-semibold tabular-nums tracking-tight text-foreground sm:text-lg">

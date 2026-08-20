@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { toast } from 'sonner'
 import {
   Users,
   ShieldCheck,
@@ -17,17 +18,12 @@ import {
 } from 'lucide-react'
 
 import { useAuth } from '../../../contexts/AuthContext'
+import { useIsDesktop } from '../../../hooks/useMediaQuery'
 import ConfirmDialog from '../../../components/ConfirmDialog'
 import { SegmentedControl, SegmentedControlItem } from '../../_components/SegmentedControl'
-import { ActionSheet } from '../../_components/ActionSheet'
-import {
-  DataCard,
-  DataCardEmpty,
-  DataCardList,
-  DataCardSkeleton,
-  DesktopTableFrame,
-} from '../../_components/DataCardList'
-import { cn } from '@/lib/utils'
+import { DesktopTableFrame } from '../../_components/DataCardList'
+import { MobileListSkeleton } from '../../_components/MobileListChrome'
+import { UsersMobile, type UserRow } from './_components/UsersMobile'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -49,15 +45,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-
-interface UserRow {
-  id: number
-  fullName: string
-  email: string
-  role: string
-  createdAt: string
-  abandonedCartCount: number
-}
 
 type TabKey = 'all' | 'admin' | 'user'
 
@@ -100,6 +87,9 @@ export default function AdminUsersPage() {
   const [remindingId, setRemindingId] = useState<number | null>(null)
   const [roleTarget, setRoleTarget] = useState<UserRow | null>(null)
   const [isUpdatingRole, setIsUpdatingRole] = useState(false)
+  const [bulkPending, setBulkPending] = useState(false)
+
+  const isDesktop = useIsDesktop()
 
   const activeTab: TabKey =
     filterParam === 'admin' ? 'admin' : filterParam === 'user' ? 'user' : 'all'
@@ -160,8 +150,13 @@ export default function AdminUsersPage() {
       const { user: updated } = await res.json()
       setUsers((prev) => prev.map((u) => (u.id === roleTarget.id ? updated : u)))
       setRoleTarget(null)
+      toast.success(
+        newRole === 'admin'
+          ? `${roleTarget.fullName} is now an admin.`
+          : `${roleTarget.fullName} is now a customer.`
+      )
     } catch (error: any) {
-      alert(error.message || 'Failed to update role')
+      toast.error(error.message || 'Failed to update role')
     } finally {
       setIsUpdatingRole(false)
     }
@@ -177,9 +172,10 @@ export default function AdminUsersPage() {
       })
       if (!res.ok) throw new Error('Failed to delete user')
       setUsers((prev) => prev.filter((u) => u.id !== deleteTarget.id))
+      toast.success(`Deleted ${deleteTarget.fullName}.`)
       setDeleteTarget(null)
     } catch (error: any) {
-      alert(error.message || 'Failed to delete user')
+      toast.error(error.message || 'Failed to delete user')
     } finally {
       setIsDeleting(false)
     }
@@ -188,13 +184,49 @@ export default function AdminUsersPage() {
   async function handleRemind(id: number) {
     setRemindingId(id)
     try {
-      await fetch(`/api/admin/users/${id}/remind-cart`, {
+      const res = await fetch(`/api/admin/users/${id}/remind-cart`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
       })
-      alert('Reminder sent!')
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        throw new Error(body.error || 'Reminder could not be sent.')
+      }
+      toast.success('Reminder sent.')
+    } catch (error: any) {
+      toast.error(error.message || 'Reminder could not be sent.')
     } finally {
       setRemindingId(null)
+    }
+  }
+
+  /* One request per person rather than a batch endpoint — the same shape the
+     catalogue's bulk actions use, and the reminder route is rate-limited per
+     target anyway, so a partial result is a real outcome worth reporting. */
+  async function handleBulkRemind(ids: number[]) {
+    if (ids.length === 0) return
+    setBulkPending(true)
+    try {
+      const results = await Promise.allSettled(
+        ids.map(async (id) => {
+          const res = await fetch(`/api/admin/users/${id}/remind-cart`, {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${token}` },
+          })
+          if (!res.ok) throw new Error(String(res.status))
+        })
+      )
+      const sent = results.filter((r) => r.status === 'fulfilled').length
+      const failed = results.length - sent
+      if (failed === 0) {
+        toast.success(`${sent} reminder${sent === 1 ? '' : 's'} sent.`)
+      } else if (sent === 0) {
+        toast.error('No reminders could be sent.')
+      } else {
+        toast.warning(`${sent} sent, ${failed} failed.`)
+      }
+    } finally {
+      setBulkPending(false)
     }
   }
 
@@ -202,6 +234,80 @@ export default function AdminUsersPage() {
     return (
       <main>
         <p className="text-sm text-muted-foreground">Unauthorized</p>
+      </main>
+    )
+  }
+
+  const dialogs = (
+    <>
+      <ConfirmDialog
+        open={Boolean(deleteTarget)}
+        title="Delete user"
+        description={
+          deleteTarget
+            ? `Delete ${deleteTarget.fullName}? This action cannot be undone.`
+            : ''
+        }
+        confirmLabel="Delete user"
+        isProcessing={isDeleting}
+        onConfirm={handleDeleteUser}
+        onClose={() => {
+          if (!isDeleting) setDeleteTarget(null)
+        }}
+      />
+
+      <ConfirmDialog
+        open={Boolean(roleTarget)}
+        title={
+          roleTarget?.role === 'admin' ? 'Demote to customer' : 'Promote to admin'
+        }
+        description={
+          roleTarget
+            ? roleTarget.role === 'admin'
+              ? `Remove admin privileges from ${roleTarget.fullName}? They will lose access to the dashboard.`
+              : `Grant admin privileges to ${roleTarget.fullName}? They will gain full dashboard access.`
+            : ''
+        }
+        confirmLabel={roleTarget?.role === 'admin' ? 'Demote' : 'Promote'}
+        isProcessing={isUpdatingRole}
+        onConfirm={handleConfirmRoleChange}
+        onClose={() => {
+          if (!isUpdatingRole) setRoleTarget(null)
+        }}
+      />
+    </>
+  )
+
+  /*
+   * Two trees rather than one restyled. Rendering both and hiding one with
+   * `md:hidden` is what left a phone parsing a five-column table it never
+   * paints — and the mobile screen is a different arrangement of the same
+   * accounts, not the desktop grid at a smaller width.
+   */
+  if (!isDesktop) {
+    if (loading) {
+      return (
+        <main>
+          <MobileListSkeleton
+            actions={1}
+            rows={10}
+            mediaClass="size-[34px] rounded-full"
+          />
+        </main>
+      )
+    }
+    return (
+      <main>
+        <UsersMobile
+          users={users}
+          onChangeRole={setRoleTarget}
+          onDelete={setDeleteTarget}
+          onRemind={handleRemind}
+          onBulkRemind={handleBulkRemind}
+          remindingId={remindingId}
+          bulkPending={bulkPending}
+        />
+        {dialogs}
       </main>
     )
   }
@@ -275,7 +381,6 @@ export default function AdminUsersPage() {
         </CardHeader>
 
         <CardContent className="p-0">
-          {/* Desktop: full table. Mobile: stacked cards below. */}
           <DesktopTableFrame>
             <Table>
               <TableHeader>
@@ -428,196 +533,11 @@ export default function AdminUsersPage() {
             </Table>
           </DesktopTableFrame>
 
-          <DataCardList>
-            {loading ? (
-              Array.from({ length: 5 }).map((_, i) => (
-                <DataCardSkeleton key={i} />
-              ))
-            ) : displayUsers.length === 0 ? (
-              <DataCardEmpty
-                icon={<Users className="h-5 w-5" />}
-                title="No users match this view"
-                description="Try another tab, or clear the search."
-              />
-            ) : (
-              displayUsers.map((u) => (
-                <AdminUserCard
-                  key={u.id}
-                  account={u}
-                  reminding={remindingId === u.id}
-                  onChangeRole={() => setRoleTarget(u)}
-                  onRemind={() => handleRemind(u.id)}
-                  onDelete={() => setDeleteTarget(u)}
-                />
-              ))
-            )}
-          </DataCardList>
         </CardContent>
       </Card>
 
-      <ConfirmDialog
-        open={Boolean(deleteTarget)}
-        title="Delete user"
-        description={
-          deleteTarget
-            ? `Delete ${deleteTarget.fullName}? This action cannot be undone.`
-            : ''
-        }
-        confirmLabel="Delete user"
-        isProcessing={isDeleting}
-        onConfirm={handleDeleteUser}
-        onClose={() => {
-          if (!isDeleting) setDeleteTarget(null)
-        }}
-      />
-
-      <ConfirmDialog
-        open={Boolean(roleTarget)}
-        title={
-          roleTarget?.role === 'admin'
-            ? 'Demote to customer'
-            : 'Promote to admin'
-        }
-        description={
-          roleTarget
-            ? roleTarget.role === 'admin'
-              ? `Remove admin privileges from ${roleTarget.fullName}? They will lose access to the dashboard.`
-              : `Grant admin privileges to ${roleTarget.fullName}? They will gain full dashboard access.`
-            : ''
-        }
-        confirmLabel={
-          roleTarget?.role === 'admin' ? 'Demote' : 'Promote'
-        }
-        isProcessing={isUpdatingRole}
-        onConfirm={handleConfirmRoleChange}
-        onClose={() => {
-          if (!isUpdatingRole) setRoleTarget(null)
-        }}
-      />
+      {dialogs}
     </main>
-  )
-}
-
-/* -------------------------------------------------------------- */
-/* MOBILE CARD                                                     */
-/* -------------------------------------------------------------- */
-
-function AdminUserCard({
-  account,
-  reminding,
-  onChangeRole,
-  onRemind,
-  onDelete,
-}: {
-  account: UserRow
-  reminding: boolean
-  onChangeRole: () => void
-  onRemind: () => void
-  onDelete: () => void
-}) {
-  const [sheetOpen, setSheetOpen] = useState(false)
-  const isAdmin = account.role === 'admin'
-  const hasAbandoned = account.abandonedCartCount > 0
-
-  return (
-    <>
-      <DataCard
-        media={
-          <Avatar className="h-12 w-12 border">
-            <AvatarFallback className="bg-secondary text-sm font-medium text-foreground">
-              {initialsOf(account.fullName)}
-            </AvatarFallback>
-          </Avatar>
-        }
-        title={account.fullName}
-        badge={
-          isAdmin ? (
-            <Badge className="gap-1 bg-foreground text-background hover:bg-foreground/90">
-              <ShieldCheck className="h-3 w-3" />
-              Admin
-            </Badge>
-          ) : undefined
-        }
-        meta={account.email}
-        submeta={
-          <>
-            Joined {formatDate(account.createdAt)}
-            {hasAbandoned && (
-              <>
-                {' · '}
-                <span className="text-amber-600 dark:text-amber-500">
-                  <span
-                    aria-hidden
-                    className="mr-1 inline-block h-1.5 w-1.5 rounded-full bg-amber-500 align-middle"
-                  />
-                  {account.abandonedCartCount} abandoned
-                </span>
-              </>
-            )}
-          </>
-        }
-        onOpenActions={() => setSheetOpen(true)}
-        actionsLabel={`Actions for ${account.fullName}`}
-      />
-
-      <ActionSheet
-        open={sheetOpen}
-        onOpenChange={setSheetOpen}
-        title={account.fullName}
-        description={account.email}
-        groups={[
-          {
-            actions: [
-              {
-                id: 'role',
-                label: isAdmin ? 'Demote to customer' : 'Promote to admin',
-                icon: isAdmin ? ArrowDownCircle : ArrowUpCircle,
-                description: isAdmin
-                  ? 'Removes dashboard access'
-                  : 'Grants full dashboard access',
-                onSelect: onChangeRole,
-              },
-              {
-                id: 'orders',
-                label: 'View their orders',
-                icon: ShoppingBag,
-                href: `/dashboard/admin/orders?userId=${account.id}`,
-              },
-              {
-                id: 'remind',
-                label: 'Send cart reminder',
-                icon: Send,
-                description: hasAbandoned
-                  ? `${account.abandonedCartCount} item${
-                      account.abandonedCartCount === 1 ? '' : 's'
-                    } left behind`
-                  : 'Nothing abandoned in their cart',
-                disabled: !hasAbandoned,
-                pending: reminding,
-                onSelect: onRemind,
-              },
-              {
-                id: 'email',
-                label: 'Email customer',
-                icon: Mail,
-                href: `mailto:${account.email}`,
-              },
-            ],
-          },
-          {
-            actions: [
-              {
-                id: 'delete',
-                label: 'Delete user',
-                icon: Trash2,
-                destructive: true,
-                onSelect: onDelete,
-              },
-            ],
-          },
-        ]}
-      />
-    </>
   )
 }
 
@@ -639,7 +559,7 @@ function StatCard({
           <Icon className="h-5 w-5" />
         </span>
         <div className="flex flex-col">
-          <span className="text-[11px] font-medium leading-tight text-muted-foreground sm:truncate sm:text-xs sm:uppercase sm:tracking-wide">
+          <span className="text-[11px] font-medium leading-tight text-muted-foreground sm:truncate sm:text-xs">
             {label}
           </span>
           <span className="truncate text-base font-semibold tracking-tight text-foreground sm:text-xl">

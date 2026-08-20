@@ -93,13 +93,17 @@ export function ActionSheet({
       <SheetContent
         side="bottom"
         showClose={false}
-        className="dashboard-shell max-h-[86vh] gap-0 overflow-hidden rounded-t-xl border-t-hairline p-0 shadow-sheet"
+        className="group dashboard-shell max-h-[86vh] gap-0 overflow-hidden rounded-t-xl border-t-hairline p-0 shadow-sheet"
       >
-        {/* The grabber is the affordance for drag-to-dismiss. */}
+        {/* The grabber is the affordance for drag-to-dismiss, and the gesture
+            is now real — SheetContent tracks the pointer. The 18px band round
+            it is the actual target; the bar itself would be a 4px one. */}
         <span
           aria-hidden
-          className="mx-auto mt-2 h-1 w-9 shrink-0 rounded-full bg-input"
-        />
+          className="flex shrink-0 cursor-grab justify-center pb-1 pt-2.5 active:cursor-grabbing"
+        >
+          <span className="h-1 w-9 rounded-full bg-input transition-colors group-data-[dragging]:bg-faint" />
+        </span>
 
         <div className="flex shrink-0 items-baseline gap-3 border-b px-4 pb-3 pt-3.5">
           <div className="min-w-0 flex-1">
@@ -107,7 +111,7 @@ export function ActionSheet({
               {title}
             </SheetTitle>
             {description ? (
-              <SheetDescription className="truncate font-mono text-[10.5px] uppercase tracking-[0.1em] text-faint">
+              <SheetDescription className="truncate font-mono text-[11px] tracking-[0.01em] text-faint">
                 {description}
               </SheetDescription>
             ) : (
@@ -120,7 +124,7 @@ export function ActionSheet({
             <button
               type="button"
               onClick={headAction.onSelect}
-              className="shrink-0 py-1 font-mono text-[10px] uppercase tracking-[0.13em] text-muted-foreground transition-colors active:text-foreground"
+              className="shrink-0 py-1 font-mono text-[11px] tracking-[0.01em] text-muted-foreground transition-colors active:text-foreground"
             >
               {headAction.label}
             </button>
@@ -128,7 +132,7 @@ export function ActionSheet({
           <button
             type="button"
             onClick={() => onOpenChange(false)}
-            className="shrink-0 py-1 font-mono text-[10px] uppercase tracking-[0.13em] text-foreground"
+            className="shrink-0 py-1 font-mono text-[11px] tracking-[0.01em] text-foreground"
           >
             {dismissLabel}
           </button>
@@ -140,7 +144,7 @@ export function ActionSheet({
           {groups.map((group, gi) => (
             <Fragment key={group.label ?? gi}>
               {group.label && (
-                <h3 className="px-4 pb-1.5 pt-4 font-mono text-[10px] uppercase tracking-[0.13em] text-faint">
+                <h3 className="px-4 pb-1.5 pt-4 font-mono text-[11px] tracking-[0.01em] text-faint">
                   {group.label}
                 </h3>
               )}
@@ -193,7 +197,7 @@ function ActionRow({
           {action.label}
         </span>
         {action.description && (
-          <span className="block truncate font-mono text-[10.5px] uppercase tracking-[0.1em] text-faint">
+          <span className="block truncate font-mono text-[11px] tracking-[0.01em] text-faint">
             {action.description}
           </span>
         )}

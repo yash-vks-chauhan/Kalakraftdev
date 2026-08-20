@@ -694,7 +694,7 @@ function InfoBlock({
 }) {
   return (
     <div className="flex flex-col gap-2 rounded-md border bg-muted/30 p-3">
-      <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+      <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
         <Icon className="h-3.5 w-3.5" />
         {title}
       </div>

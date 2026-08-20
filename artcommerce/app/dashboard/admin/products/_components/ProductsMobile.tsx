@@ -336,7 +336,7 @@ export function ProductsMobile({
               >
                 <span
                   className={cn(
-                    "font-mono text-[10px] uppercase tracking-[0.12em]",
+                    "font-mono text-[11px] tracking-[0.01em]",
                     on ? "text-foreground" : "text-faint"
                   )}
                 >
@@ -357,13 +357,13 @@ export function ProductsMobile({
 
         {/* Column header — and the sort control. */}
         <div className="flex items-center gap-2.5 border-t bg-wash px-4 py-2 sm:px-6">
-          <span className="min-w-0 flex-1 font-mono text-[9.5px] uppercase tracking-[0.15em] text-faint">
+          <span className="min-w-0 flex-1 font-mono text-[10.5px] tracking-[0.01em] text-faint">
             Product
           </span>
           <button
             type="button"
             onClick={() => setSortOpen(true)}
-            className="inline-flex items-center gap-1 font-mono text-[9.5px] uppercase tracking-[0.15em] text-foreground"
+            className="inline-flex items-center gap-1 font-mono text-[10.5px] tracking-[0.01em] text-foreground"
           >
             {activeSort.label}
             {dir === "asc" ? <ArrowUp className="size-3" /> : <ArrowDown className="size-3" />}
@@ -372,7 +372,7 @@ export function ProductsMobile({
             type="button"
             onClick={() => (selecting ? leaveSelectMode() : setSelecting(true))}
             className={cn(
-              "border-l border-input pl-2.5 font-mono text-[9.5px] uppercase tracking-[0.15em] transition-colors",
+              "border-l border-input pl-2.5 font-mono text-[10.5px] tracking-[0.01em] transition-colors",
               selecting ? "text-foreground" : "text-faint"
             )}
           >
@@ -565,7 +565,7 @@ function ProductRow({
               {product.name || "Untitled product"}
             </span>
             {!product.isActive && (
-              <span className="shrink-0 font-mono text-[9px] uppercase tracking-[0.13em] text-faint">
+              <span className="shrink-0 font-mono text-[10px] tracking-[0.01em] text-faint">
                 Hidden
               </span>
             )}
@@ -707,7 +707,7 @@ function RowSheet({
       <div className="flex items-center gap-3 border-b px-4 py-3">
         <span className="min-w-0 flex-1">
           <span className="block text-[14.5px] text-foreground">Stock on hand</span>
-          <span className="block font-mono text-[10.5px] uppercase tracking-[0.1em] text-faint">
+          <span className="block font-mono text-[11px] tracking-[0.01em] text-faint">
             {product.stockQuantity === 0
               ? "Out of stock"
               : product.stockQuantity <= LOW_STOCK_THRESHOLD
@@ -764,7 +764,7 @@ function BulkBar({
       )}
     >
       <div className="flex items-center gap-2 px-4 py-2.5">
-        <span className="flex-1 font-mono text-[10px] uppercase tracking-[0.13em] text-faint">
+        <span className="flex-1 font-mono text-[11px] tracking-[0.01em] text-faint">
           {pending ? "Working…" : `${count} selected`}
         </span>
         <BulkButton disabled={disabled} onClick={() => onAction("publish")}>
@@ -820,7 +820,7 @@ function EmptyState({
 }) {
   return (
     <div className="flex flex-col items-center gap-2 px-6 py-14 text-center">
-      <span className="font-mono text-[10px] uppercase tracking-[0.13em] text-faint">
+      <span className="font-mono text-[11px] tracking-[0.01em] text-faint">
         {filtered ? "No match" : "Empty"}
       </span>
       <p className="text-[15px] font-semibold text-foreground">

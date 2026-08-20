@@ -851,7 +851,7 @@ function StatTile({
           <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
         </span>
         <div className="flex min-w-0 flex-col">
-          <span className="text-[11px] font-medium leading-tight text-muted-foreground sm:truncate sm:text-xs sm:uppercase sm:tracking-wide">
+          <span className="text-[11px] font-medium leading-tight text-muted-foreground sm:truncate sm:text-xs">
             {label}
           </span>
           <span className="truncate text-base font-semibold tabular-nums tracking-tight text-foreground transition-colors sm:text-lg">

@@ -503,7 +503,7 @@ function StatCard({
           <Icon className="h-5 w-5" />
         </span>
         <div className="flex min-w-0 flex-col">
-          <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          <span className="text-xs font-medium text-muted-foreground">
             {label}
           </span>
           <div className="flex items-baseline gap-1.5">

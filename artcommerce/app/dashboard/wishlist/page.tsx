@@ -346,7 +346,7 @@ function WishlistTile({
           {item.product.name}
         </Link>
 
-        <p className="truncate text-[11px] uppercase tracking-wide text-muted-foreground max-sm:hidden">
+        <p className="truncate text-[11px] text-muted-foreground max-sm:hidden">
           {item.product.category?.name ?? " "}
         </p>
 
