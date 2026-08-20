@@ -7,7 +7,8 @@ import { ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { DataCache } from '../../../lib/dataCache'
-import { getImageUrl } from '../../../lib/cloudinaryImages'
+import { getImageSources } from '../../../lib/cloudinaryImages'
+import CategoryImage from '../CategoryImage'
 import SectionHeader from './SectionHeader'
 import Reveal from './Reveal'
 
@@ -22,52 +23,89 @@ const COLLECTIONS = [
   {
     name: 'Clocks',
     slug: 'clocks',
-    image: getImageUrl('category1.png'),
+    stills: ['category1.png'],
     alt: 'Handcrafted resin clocks',
     line: 'Functional art that keeps time in colour.',
   },
   {
     name: 'Wall Decor',
     slug: 'decor',
-    image: 'https://ik.imagekit.io/4pjvf8k9u/Videos/imageclock.png?updatedAt=1754677566365',
+    stills: [
+      'https://ik.imagekit.io/4pjvf8k9u/Videos/imageclock.png?updatedAt=1754677566365',
+      'imageclock.png',
+    ],
     alt: 'Resin wall art pieces',
     line: 'Statement pieces for quiet walls.',
   },
   {
     name: 'Trays',
     slug: 'tray',
-    image: getImageUrl('category4.png'),
+    stills: ['category4.png'],
     alt: 'Stylish resin serving trays',
     line: 'Serveware with a mirror-smooth finish.',
   },
   {
     name: 'Jewelry Trays',
     slug: 'Tray',
-    image: 'https://ik.imagekit.io/4pjvf8k9u/Videos/trayscollection.png?updatedAt=1754677551492',
+    stills: [
+      'https://ik.imagekit.io/4pjvf8k9u/Videos/trayscollection.png?updatedAt=1754677551492',
+      'trayscollection.png',
+    ],
     alt: 'Elegant resin jewelry trays',
     line: 'A resting place for everyday treasures.',
   },
   {
     name: 'Pots & Vases',
     slug: 'pots',
-    image: 'https://ik.imagekit.io/4pjvf8k9u/Videos/vases.png?updatedAt=1754677551331',
+    stills: [
+      'https://ik.imagekit.io/4pjvf8k9u/Videos/vases.png?updatedAt=1754677551331',
+      'vases.png',
+    ],
     alt: 'Decorative resin vases',
     line: 'Sculptural homes for living things.',
   },
   {
     name: 'Rangoli',
     slug: 'rangoli',
-    image: getImageUrl('category8.png'),
+    stills: ['category8.png'],
     alt: 'Traditional rangoli art',
     line: 'Tradition, poured in permanent colour.',
   },
 ]
+
+/** Everywhere this collection's picture might be, best first. */
+function stillsFor(collection: (typeof COLLECTIONS)[number]): string[] {
+  return collection.stills.flatMap(getImageSources)
+}
 
 const FALLBACK_IMG = 'https://placehold.co/900x600/f0f0f0/999?text=Kalakraft'
 
 interface SlugStats {
   count: number
   from: number
+  /** A photo of something actually in this collection — see the note on
+   *  CategoryImage for why the bundled still cannot be relied on alone. */
+  image: string | null
+}
+
+/** imageUrls is a Json column, so it arrives as an array or as a string. */
+function firstImage(value: unknown): string | null {
+  let list: unknown = value
+  if (typeof value === 'string') {
+    try {
+      list = JSON.parse(value)
+    } catch {
+      return null
+    }
+  }
+  if (!Array.isArray(list)) return null
+  for (const entry of list) {
+    if (typeof entry === 'string' && entry.trim()) return entry
+    if (entry && typeof entry === 'object' && typeof (entry as any).url === 'string') {
+      return (entry as any).url
+    }
+  }
+  return null
 }
 
 const formatINR = (value: number) =>
@@ -110,12 +148,14 @@ export default function CollectionsIndex() {
           const slug = p?.category?.slug
           if (!slug || p?.isActive === false) continue
           const price = Number(p?.price)
+          const image = firstImage(p?.imageUrls)
           const entry = map.get(slug)
           if (!entry) {
-            map.set(slug, { count: 1, from: Number.isFinite(price) ? price : Infinity })
+            map.set(slug, { count: 1, from: Number.isFinite(price) ? price : Infinity, image })
           } else {
             entry.count += 1
             if (Number.isFinite(price) && price < entry.from) entry.from = price
+            if (!entry.image && image) entry.image = image
           }
         }
         if (!cancelled && map.size > 0) setStats(map)
@@ -128,14 +168,18 @@ export default function CollectionsIndex() {
     }
   }, [])
 
-  // Warm the frame: fetch every collection image up front so the first full
-  // cycle crossfades instead of loading.
+  // Warm the frame: fetch every collection's candidates up front so the first
+  // full cycle crossfades instead of loading — and so that falling back to the
+  // bundled still, where that happens, is not a second visible wait.
   useEffect(() => {
     for (const c of COLLECTIONS) {
-      const img = new Image()
-      img.src = c.image
+      for (const src of [stats?.get(c.slug)?.image, stillsFor(c)[0]]) {
+        if (!src) continue
+        const img = new Image()
+        img.src = src
+      }
     }
-  }, [])
+  }, [stats])
 
   const current = COLLECTIONS[active]
   const currentStats = stats?.get(current.slug)
@@ -252,10 +296,8 @@ export default function CollectionsIndex() {
               <div className="rounded-2xl border border-[#e5e5e5] bg-white p-4">
                 <div className="relative aspect-[16/10] overflow-hidden rounded-lg bg-[#f5f5f5]">
                   <AnimatePresence initial={false}>
-                    <motion.img
+                    <motion.div
                       key={current.slug}
-                      src={current.image}
-                      alt={current.alt}
                       initial={{
                         opacity: 0,
                         scale: reducedMotion ? 1 : 1.045,
@@ -266,11 +308,14 @@ export default function CollectionsIndex() {
                       // newcomer develops over it, then unmounts.
                       exit={{ opacity: 1, transition: { duration: 0.8 } }}
                       transition={{ duration: 0.8, ease: EASE }}
-                      className="absolute inset-0 h-full w-full object-cover"
-                      onError={e => {
-                        e.currentTarget.src = FALLBACK_IMG
-                      }}
-                    />
+                      className="absolute inset-0"
+                    >
+                      <CategoryImage
+                        sources={[currentStats?.image, ...stillsFor(current), FALLBACK_IMG]}
+                        alt={current.alt}
+                        className="h-full w-full object-cover"
+                      />
+                    </motion.div>
                   </AnimatePresence>
                 </div>
 

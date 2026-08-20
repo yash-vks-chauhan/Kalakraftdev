@@ -14,7 +14,9 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import styles from './Navbar.module.css'
 import { useMobileMenu } from '../contexts/MobileMenuContext'
-import { getImageUrl } from '../../lib/cloudinaryImages'
+import { getImageUrl, getImageSources } from '../../lib/cloudinaryImages'
+import { DataCache } from '../../lib/dataCache'
+import CategoryImage from './CategoryImage'
 
 // Flat, text-first menu — query values mirror the filters the products page
 // already understands (same mapping the old grouped menu used).
@@ -150,6 +152,10 @@ export default function Navbar() {
   const profileDropdownRef = useRef<HTMLDivElement>(null)
   const pathname = usePathname()
   const [showMegaMenu, setShowMegaMenu] = useState(false)
+  // slug → a photo of something in that category. The bundled stills live in
+  // public/images, which is tracked with Git LFS; where those objects are not
+  // fetched the menu is a column of blank squares. See CategoryImage.
+  const [categoryArt, setCategoryArt] = useState<Record<string, string>>({})
   const [isScrolled, setIsScrolled] = useState(false)
   const [isPastHero, setIsPastHero] = useState(false)
   const isHomePage = pathname === '/'
@@ -195,6 +201,30 @@ export default function Navbar() {
   useEffect(() => {
     setIsProfileOpen(false)
   }, [user])
+
+  // Fetched on the first hover rather than on mount: the menu is the only
+  // thing that wants it, and DataCache shares the result with the rest of
+  // the site if anything else asks later.
+  useEffect(() => {
+    if (!showMegaMenu) return
+    let cancelled = false
+    ;(async () => {
+      try {
+        const categories = await DataCache.getCategories()
+        if (cancelled || !Array.isArray(categories)) return
+        const art: Record<string, string> = {}
+        for (const c of categories) {
+          if (c?.slug && typeof c.image === 'string' && c.image) art[c.slug] = c.image
+        }
+        if (Object.keys(art).length > 0) setCategoryArt(art)
+      } catch {
+        // The stills are still there to fall back on.
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [showMegaMenu])
 
   // ⌘K / Ctrl+K opens search from anywhere
   useEffect(() => {
@@ -316,11 +346,9 @@ export default function Navbar() {
                       className={styles.menuItem}
                       onClick={() => setShowMegaMenu(false)}
                     >
-                      <Image
-                        src={getImageUrl(item.image)}
+                      <CategoryImage
+                        sources={[categoryArt[item.query], ...getImageSources(item.image)]}
                         alt=""
-                        width={44}
-                        height={44}
                         className={styles.menuThumb}
                       />
                       <span className={styles.menuItemText}>
@@ -344,11 +372,12 @@ export default function Navbar() {
                 className={styles.menuFeature}
                 onClick={() => setShowMegaMenu(false)}
               >
-                <Image
-                  src={getImageUrl('category1.png')}
+                <CategoryImage
+                  sources={[
+                    ...MENU_LINKS.map(item => categoryArt[item.query]),
+                    ...getImageSources('category1.png'),
+                  ]}
                   alt="Featured collection"
-                  width={340}
-                  height={420}
                   className={styles.menuFeatureImage}
                 />
                 <span className={styles.menuFeatureOverlay}>
